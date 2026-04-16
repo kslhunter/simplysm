@@ -27,11 +27,6 @@ import { SdAngularConfigProvider } from "./config/sd-angular-config.provider";
 import { SdThemeProvider } from "../features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "./config/sd-local-storage.provider";
 import { SdGlobalErrorHandlerPlugin } from "./error-handler/sd-global-error-handler.plugin";
-import { SdSaveCommandEventPlugin } from "./commands/sd-save-command-event.plugin";
-import { SdRefreshCommandEventPlugin } from "./commands/sd-refresh-command-event.plugin";
-import { SdInsertCommandEventPlugin } from "./commands/sd-insert-command-event.plugin";
-import { SdResizeEventPlugin } from "./events/sd-resize-event.plugin";
-import { SdIntersectionEventPlugin } from "./events/sd-intersection-event.plugin";
 import { SdOptionEventPlugin } from "./events/sd-option-event.plugin";
 
 export function provideSdAngular(opt: { clientName: string }): EnvironmentProviders {
@@ -109,11 +104,6 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
         return provider;
       },
     },
-    { provide: EVENT_MANAGER_PLUGINS, useClass: SdSaveCommandEventPlugin, multi: true },
-    { provide: EVENT_MANAGER_PLUGINS, useClass: SdRefreshCommandEventPlugin, multi: true },
-    { provide: EVENT_MANAGER_PLUGINS, useClass: SdInsertCommandEventPlugin, multi: true },
-    { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    { provide: EVENT_MANAGER_PLUGINS, useClass: SdIntersectionEventPlugin, multi: true },
     { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
     { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
     provideZonelessChangeDetection(),

@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdSelectKeyboardTest,
   SdSelectKeyboardMultiTest,
@@ -11,9 +9,6 @@ import "@simplysm/core-browser";
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    ],
   });
 }
 
@@ -45,7 +40,7 @@ describe("Feature 5.1 Slice 5: Keyboard navigation", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const firstItem = itemContents[0] as HTMLElement;
     firstItem.focus();
 
@@ -65,7 +60,7 @@ describe("Feature 5.1 Slice 5: Keyboard navigation", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const firstItem = itemContents[0] as HTMLElement;
     firstItem.focus();
 
@@ -87,7 +82,7 @@ describe("Feature 5.1 Slice 5: Keyboard navigation", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const firstItem = itemContents[0] as HTMLElement;
     firstItem.focus();
 
@@ -108,7 +103,7 @@ describe("Feature 5.1 Slice 5: Keyboard navigation", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const firstItem = itemContents[0] as HTMLElement;
     firstItem.focus();
 
@@ -128,7 +123,7 @@ describe("Feature 5.1 Slice 5: Keyboard navigation", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const firstItem = itemContents[0] as HTMLElement;
     firstItem.focus();
 

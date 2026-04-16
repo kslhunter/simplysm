@@ -63,7 +63,7 @@ Question 도출 기법 — Feature 성격에 맞게 **하나 이상** 선택하�
 
 ### 2-3. 명확화
 
-`.claude/references/sd-clarify.md`를 읽고 범위, Question, 기타 불명확한 부분을 명확화한다.
+@.claude/rules/sd-clarify.md 지침에 따라 범위, Question, 기타 불명확한 부분을 명확화한다.
 답변에 따라 Rule/Example/Question을 갱신하며, 모든 Question이 해소될 때까지 **MUST** 반복한다. (추가 Question 발생 가능)
 - **나쁜 예:** "예약 기능 포함이 결정됨 → 예약 세부규칙(대기열 정책, 미대출 시 자동취소 기간)도 확정" — 기능 포함 여부와 세부 수치/규칙은 별개다. 세부사항은 별도로 분류·질문한다.
 

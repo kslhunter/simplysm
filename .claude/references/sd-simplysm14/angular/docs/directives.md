@@ -6,7 +6,7 @@
 
 ```typescript
 @Directive({
-  selector: `[click.capture], [scroll.passive], [sdResize], [sdSaveCommand], ...`,
+  selector: `[click.capture], [scroll.passive], ...`,
 })
 class SdEvents {
   // 클릭: click.capture, click.once, click.capture.once
@@ -19,10 +19,10 @@ class SdEvents {
   // 터치: touchstart.passive, touchstart.capture.passive, touchmove.passive, touchmove.capture.passive, touchend.passive
   // 드래그: dragover.capture, dragenter.capture, dragleave.capture, drop.capture
   // 애니메이션: transitionend.once, animationend.once
-  // 커스텀: sdResize (SdResizeEvent)
-  // 커맨드: sdRefreshCommand, sdSaveCommand, sdInsertCommand (KeyboardEvent)
 }
 ```
+
+> **NOTE:** `sdResize`, `sdSaveCommand`, `sdRefreshCommand`, `sdInsertCommand`는 `SdEvents`에서 분리되어 각각 `SdResizeDirective`, `SdIntersectionDirective`, `SdCommandDirective`로 독립 디렉티브로 제공된다.
 
 ## `SdRipple`
 
@@ -132,6 +132,77 @@ interface SdItemOfTemplateContext<TItem> {
   {{ item.name }}
 </ng-template>
 ```
+
+## `SdCommandDirective`
+
+키보드 단축키를 output 이벤트로 제공하는 디렉티브. `document` keydown을 감지하며, `shouldProcessCommandEvent()`로 최상위 모달만 이벤트 처리.
+
+```typescript
+@Directive({ selector: "[sdRefreshCommand],[sdSaveCommand],[sdInsertCommand]" })
+class SdCommandDirective {
+  sdRefreshCommand = output<KeyboardEvent>(); // Ctrl+Alt+L
+  sdSaveCommand = output<KeyboardEvent>();    // Ctrl+S
+  sdInsertCommand = output<KeyboardEvent>();  // Ctrl+Insert
+}
+```
+
+사용법: `<div (sdSaveCommand)="onSave($event)" (sdRefreshCommand)="onRefresh($event)">`
+
+## `SdResizeDirective`
+
+ResizeObserver 기반 resize output 이벤트 디렉티브. `requestAnimationFrame`으로 디바운스.
+
+```typescript
+@Directive({ selector: "[sdResize]" })
+class SdResizeDirective {
+  sdResize = output<SdResizeEvent>();
+}
+```
+
+사용법: `<div (sdResize)="onResize($event)">`
+
+## `SdResizeEvent`
+
+```typescript
+interface SdResizeEvent {
+  heightChanged: boolean;
+  widthChanged: boolean;
+  target: HTMLElement;
+  contentRect: DOMRectReadOnly;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `heightChanged` | `boolean` | 높이 변경 여부 |
+| `widthChanged` | `boolean` | 너비 변경 여부 |
+| `target` | `HTMLElement` | 대상 요소 |
+| `contentRect` | `DOMRectReadOnly` | 컨텐츠 영역 크기 |
+
+## `SdIntersectionDirective`
+
+IntersectionObserver 기반 intersection output 이벤트 디렉티브.
+
+```typescript
+@Directive({ selector: "[sdIntersection]" })
+class SdIntersectionDirective {
+  sdIntersection = output<SdIntersectionEvent>();
+}
+```
+
+사용법: `<div (sdIntersection)="onIntersect($event)">`
+
+## `SdIntersectionEvent`
+
+```typescript
+interface SdIntersectionEvent {
+  entry: IntersectionObserverEntry;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `entry` | `IntersectionObserverEntry` | 마지막 IntersectionObserver 엔트리 |
 
 ## `SdRouterLink`
 

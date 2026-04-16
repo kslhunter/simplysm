@@ -20,6 +20,8 @@ vi.mock("esbuild", () => ({
       Promise.resolve({ rebuild: mockRebuild, dispose: mockDispose }),
     ),
   },
+  formatMessagesSync: (messages: Array<{ text: string }>, _opts: unknown) =>
+    messages.map((m) => m.text),
 }));
 
 vi.mock("../../src/esbuild/esbuild-config", async (importOriginal) => {

@@ -1,14 +1,21 @@
+import { formatMessagesSync, type PartialMessage } from "esbuild";
 import { consola } from "consola";
 import type { BuildResult } from "../runtime/ResultCollector";
 
+const logger = consola.withTag("sd:cli:output");
+
 /**
- * esbuild Message를 notes 포함 문자열로 변환한다.
+ * esbuild Message 배열을 포맷된 문자열 배열로 변환한다.
+ * esbuild 네이티브 포맷(코드 컨텍스트, 위치 정보, 밑줄)을 유지한다.
  */
-export function formatEsbuildMessage(
-  msg: { text: string; notes?: ReadonlyArray<{ text: string }> },
-): string {
-  if (msg.notes == null || msg.notes.length === 0) return msg.text;
-  return [msg.text, ...msg.notes.map((n) => `  ${n.text}`)].join("\n");
+export function formatEsbuildMessages(
+  messages: PartialMessage[],
+  kind: "error" | "warning",
+): string[] {
+  if (messages.length === 0) return [];
+  return formatMessagesSync(messages, { kind, color: true }).map((msg) =>
+    msg.replace(/^.*?\x1b\[0m |^X \[ERROR] |^▲ \[WARNING] /, "").trimEnd(),
+  );
 }
 
 /**
@@ -18,25 +25,38 @@ export function formatBuildMessages(name: string, label: string, messages: strin
   const lines: string[] = [`${name} (${label})`];
   for (const msg of messages) {
     for (const line of msg.split("\n")) {
-      lines.push(`  → ${line}`);
+      if (line === "") {
+        lines.push("");
+      } else {
+        lines.push(`  ${line}`);
+      }
     }
   }
   return lines.join("\n");
 }
 
 /**
- * 에러만 출력한다.
+ * 에러와 경고를 출력한다. 에러를 먼저, 경고를 나중에 출력한다.
  * @param results 패키지별 빌드 결과 상태
  */
-export function printErrors(results: ReadonlyMap<string, BuildResult>): void {
+export function printDiagnostics(results: ReadonlyMap<string, BuildResult>): void {
+  // 에러 출력
   for (const result of results.values()) {
     if (result.status === "error") {
       const typeLabel = result.type === "lint" ? "lint" : result.target;
       if (result.message != null && result.message !== "") {
-        consola.error(formatBuildMessages(result.name, typeLabel, [result.message]));
+        logger.error(formatBuildMessages(result.name, typeLabel, [result.message]));
       } else {
-        consola.error(`[${result.name}] (${typeLabel}) 실패`);
+        logger.error(`[${result.name}] (${typeLabel}) 실패`);
       }
+    }
+  }
+
+  // 경고 출력
+  for (const result of results.values()) {
+    if (result.warnings != null && result.warnings !== "") {
+      const typeLabel = result.type === "lint" ? "lint" : result.target;
+      logger.warn(formatBuildMessages(result.name, typeLabel, [result.warnings]));
     }
   }
 }
@@ -63,15 +83,15 @@ export function printServers(
         const activeClients = clients.filter((c) => results.get(`${c}:build`)?.status !== "error");
         if (activeClients.length > 0) {
           for (const clientName of activeClients) {
-            consola.info(`[server] http://localhost:${server.port}/${clientName}/`);
+            logger.info(`[server] http://localhost:${server.port}/${clientName}/`);
           }
         } else {
           // 연결된 클라이언트가 없으면 서버 루트 URL 출력
-          consola.info(`[server] http://localhost:${server.port}/`);
+          logger.info(`[server] http://localhost:${server.port}/`);
         }
       } else {
         // 독립형 클라이언트: 이름 포함하여 출력
-        consola.info(`[server] http://localhost:${server.port}/${server.name}/`);
+        logger.info(`[server] http://localhost:${server.port}/${server.name}/`);
       }
     }
   }

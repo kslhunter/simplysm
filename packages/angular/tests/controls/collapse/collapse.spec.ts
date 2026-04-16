@@ -113,7 +113,7 @@ describe("Feature 4.1 Slice 1: sd-collapse-icon", () => {
 });
 
 describe("Feature 2.2 Slice 1: sd-collapse-icon icon input", () => {
-  it("icon 미지정시 기본 아이콘(tablerChevronRight)이 렌더링된다", async () => {
+  it("icon 미지정시 기본 아이콘(tablerChevronDown)이 렌더링된다", async () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdCollapseIconClosedTest] })
       .createComponent(SdCollapseIconClosedTest);
     fixture.detectChanges();
@@ -121,7 +121,7 @@ describe("Feature 2.2 Slice 1: sd-collapse-icon icon input", () => {
 
     const collapseIconDebug = fixture.debugElement.query(By.css("sd-collapse-icon"));
     const collapseIcon = collapseIconDebug.componentInstance as SdCollapseIcon;
-    expect(collapseIcon.icon()).toBe(tablerChevronRight);
+    expect(collapseIcon.icon()).toBe(tablerChevronDown);
   });
 
   it("커스텀 icon 전달시 해당 아이콘이 렌더링된다", async () => {

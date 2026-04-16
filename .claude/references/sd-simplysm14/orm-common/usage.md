@@ -22,7 +22,7 @@ npm install @simplysm/orm-common
 | `DbErrorCode` | enum | 트랜잭션 에러 코드 (NO_ACTIVE_TRANSACTION, DEADLOCK 등) |
 | `DbTransactionError` | class | DBMS 네이티브 에러를 표준 에러 코드로 래핑하는 에러 클래스 |
 
--> See [docs/core.md](./docs/core.md) for details.
+See [docs/core.md](./docs/core.md) for detailed API documentation.
 
 ### Queryable / Executable
 
@@ -33,7 +33,6 @@ npm install @simplysm/orm-common
 | `getMatchedPrimaryKeys` | function | FK column 배열과 대상 테이블 PK를 매칭하여 PK column 이름 반환 |
 | `QueryableRecord` | type | Queryable column 프록시 레코드 타입 |
 | `QueryableWriteRecord` | type | UPDATE/INSERT용 column 레코드 타입 |
-| `NullableQueryableRecord` | type | 모든 column이 nullable인 Queryable 레코드 타입 |
 | `UnwrapQueryableRecord` | type | QueryableRecord에서 실제 데이터 타입 추출 |
 | `PathProxy` | type | include()에서 관계 경로를 타입 안전하게 지정하기 위한 프록시 타입 |
 | `Executable` | class | Stored Procedure 실행 래퍼 클래스 |
@@ -41,7 +40,7 @@ npm install @simplysm/orm-common
 | `parseSearchQuery` | function | 검색 쿼리 문자열을 SQL LIKE 패턴으로 파싱 |
 | `ParsedSearchQuery` | interface | parseSearchQuery 결과 타입 (or, must, not 배열) |
 
--> See [docs/queryable-executable.md](./docs/queryable-executable.md) for details.
+See [docs/queryable-executable.md](./docs/queryable-executable.md) for detailed API documentation.
 
 ### Expression
 
@@ -54,7 +53,7 @@ npm install @simplysm/orm-common
 | `ExprInput` | type | ExprUnit 또는 리터럴 값을 받는 입력 타입 |
 | `toExpr` | function | ExprInput을 Expr AST로 변환하는 내부 헬퍼 (커스텀 빌더 작성 시 사용) |
 
--> See [docs/expression.md](./docs/expression.md) for details.
+See [docs/expression.md](./docs/expression.md) for detailed API documentation.
 
 ### Schema Builders
 
@@ -88,7 +87,7 @@ npm install @simplysm/orm-common
 | `ExtractRelationTargetResult` | type | FKTarget에서 대상 타입 추출 (배열/단일) |
 | `InferDeepRelations` | type | 관계 정의에서 심층 타입 추론 |
 
--> See [docs/schema-builders.md](./docs/schema-builders.md) for details.
+See [docs/schema-builders.md](./docs/schema-builders.md) for detailed API documentation.
 
 ### Models
 
@@ -96,7 +95,7 @@ npm install @simplysm/orm-common
 |-----|------|-------------|
 | `_Migration` | const | 시스템 마이그레이션 테이블 정의 (TableBuilder 인스턴스) |
 
--> See [docs/models.md](./docs/models.md) for details.
+See [docs/models.md](./docs/models.md) for detailed API documentation.
 
 ### Query Builder
 
@@ -112,7 +111,7 @@ npm install @simplysm/orm-common
 | `PostgresqlQueryBuilder` | class | PostgreSQL용 QueryBuilder |
 | `PostgresqlExprRenderer` | class | PostgreSQL용 ExprRenderer |
 
--> See [docs/query-builder.md](./docs/query-builder.md) for details.
+See [docs/query-builder.md](./docs/query-builder.md) for detailed API documentation.
 
 ### Types
 
@@ -142,18 +141,20 @@ npm install @simplysm/orm-common
 | `WinFn` | type | Window 함수 유니온 타입 |
 | `QueryDef` | type | 모든 쿼리 정의의 유니온 타입 |
 | `SelectQueryDef` | interface | SELECT 쿼리 정의 |
+| `SelectQueryDefJoin` | interface | SELECT 쿼리 JOIN 정의 (SelectQueryDef 확장) |
 | `InsertQueryDef` | interface | INSERT 쿼리 정의 |
 | `UpdateQueryDef` | interface | UPDATE 쿼리 정의 |
 | `DeleteQueryDef` | interface | DELETE 쿼리 정의 |
 | `UpsertQueryDef` | interface | UPSERT 쿼리 정의 |
 | `QueryDefObjectName` | interface | 테이블/뷰 이름 정의 (database, schema, name) |
+| `CudOutputDef` | interface | INSERT/UPDATE/DELETE output 정의 (columns, pkColNames, aiColName) |
 | `DDL_TYPES` | const | DDL 타입 문자열 목록 |
 | `DdlType` | type | DDL 타입 유니온 |
 | 60+ `Expr*` interfaces | interface | 각 표현식 AST 인터페이스 (ExprColumn, ExprValue, ExprEq, ...) |
 | 13+ `WinFn*` interfaces | interface | Window 함수 AST 인터페이스 |
 | DDL QueryDef interfaces | interface | DDL 쿼리 정의 인터페이스 (CreateTable, DropTable, ...) |
 
--> See [docs/types.md](./docs/types.md) for details.
+See [docs/types.md](./docs/types.md) for detailed API documentation.
 
 ## Usage Examples
 

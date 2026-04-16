@@ -93,7 +93,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
         <sd-list [inset]="true" class="flex-fill">
           @if (useUndefined()) {
             <sd-list-item
-              [selected]="selectedItem() === undefined"
+              [selected]="selectedItem() == null"
               (click)="select(undefined)"
               [selectedIcon]="selectedIcon()"
             >

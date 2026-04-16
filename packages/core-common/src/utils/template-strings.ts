@@ -102,7 +102,7 @@ export function pgsql(strings: TemplateStringsArray, ...values: unknown[]): stri
 
 function _combine(strings: TemplateStringsArray, values: unknown[]): string {
   const raw = strings.reduce((result, str, i) => {
-    const value = values[i] !== undefined ? String(values[i]) : "";
+    const value = values[i] != null ? String(values[i]) : "";
     return result + str + value;
   }, "");
   return _trimIndent(raw);

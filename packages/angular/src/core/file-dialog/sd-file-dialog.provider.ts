@@ -18,7 +18,7 @@ export class SdFileDialogProvider {
 
       inputEl.type = "file";
       inputEl.multiple = multiple ?? false;
-      if (accept !== undefined) {
+      if (accept != null) {
         inputEl.accept = accept;
       }
       inputEl.onchange = (event: Event): void => {

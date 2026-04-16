@@ -29,7 +29,7 @@ export function parseInt(text: unknown): number | undefined {
  */
 export function parseRoundedInt(text: unknown): number | undefined {
   const float = parseFloat(text);
-  return float !== undefined ? Math.round(float) : undefined;
+  return float != null ? Math.round(float) : undefined;
 }
 
 /**

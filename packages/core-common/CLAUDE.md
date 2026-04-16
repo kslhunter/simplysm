@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/core-common` — 브라우저와 Node.js 모두에서 사용 가능한 순수 공통 유틸리티 패키지. 다른 `@simplysm/*` 패키지에 대한 내부 의존성이 없는 리프 패키지다. 35개의 TypeScript 소스 파일로 구성된다.
+`@simplysm/core-common` — 브라우저와 Node.js 모두에서 사용 가능한 순수 공통 유틸리티 패키지. 다른 `@simplysm/*` 패키지에 대한 내부 의존성이 없는 리프 패키지다. 35개의 TypeScript 소스 파일로 구성되며, 에러 클래스, 타입 안전 EventEmitter, 비동기 큐, 커스텀 값 타입(DateTime, Uuid, 등), 프로토타입 확장(Array, Map, Set), 그리고 네임스페이스 유틸 함수를 제공한다.
 
-외부 의존성: `@zip.js/zip.js`, `consola`, `fast-xml-parser`, `yaml`
+외부 의존성: `@zip.js/zip.js` (zip 압축), `consola` (로깅), `fast-xml-parser` (XML 파싱), `yaml` (YAML 파싱)
 
-tsconfig: `lib: ["ESNext", "WebWorker"]` — DOM 타입 없이 WebWorker 전역(EventTarget, CustomEvent, crypto 등)만 사용 가능하다.
+**TypeScript 설정**: `lib: ["ESNext", "WebWorker"]` — DOM 타입 없이 WebWorker 전역(EventTarget, CustomEvent, crypto 등)만 사용 가능하다. 이 패키지는 브라우저 DOM API에 의존하지 않는다.
 
 ## Architecture
 
@@ -60,15 +60,33 @@ src/
 
 ### utils 네임스페이스 임포트
 
-`utils/` 하위 함수들은 네임스페이스로 내보내진다. 직접 named import 하지 않고 네임스페이스로 사용한다.
+`utils/` 하위 함수들은 네임스페이스로 내보내진다. 직접 named import 하지 않고 네임스페이스로 사용한다. 네임스페이스는 `obj`, `str`, `num`, `bytes`, `path`, `json`, `xml`, `wait`, `transfer`, `err`, `dt`, `primitive`이며, `template-strings`, `zip`은 직접 임포트한다.
 
 ```typescript
-import { obj, str, bytes, path } from "@simplysm/core-common";
+import {
+  obj,
+  str,
+  num,
+  bytes,
+  path,
+  json,
+  xml,
+  wait,
+  transfer,
+  err,
+  dt,
+  primitive,
+  toTemplateString,
+  fromTemplateString,
+  zip,
+} from "@simplysm/core-common";
 
 const copied = obj.clone(source);
 const merged = obj.merge(a, b);
 const isEqual = obj.equal(x, y);
 const suffix = str.getKoreanSuffix("홍길동", "이");
+const sum = num.sum([1, 2, 3]);
+const hex = bytes.toHex(new Uint8Array([255, 128]));
 ```
 
 ### 프로토타입 확장 활성화

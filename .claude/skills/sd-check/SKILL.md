@@ -9,21 +9,21 @@ description: typecheck, lint, test를 실행하고 에러 발생시 사용자 �
 
 ### 에러 분석 및 수정
 
-에러 분석: @.claude/references/sd-debug.md
+에러 분석: `/sd-inner-debug` 스킬을 호출한다.
 
 #### 에러 처리 범위
 
 이 **대화(conversation)** 에서, sd-check 호출 전에 Claude가 코드를 수정한 것.
 - git status의 미커밋 변경이나 과거 커밋 변경을 말하는것이 아님.
 - sd-check 내부(typecheck/lint/test 단계)에서의 수정을 말하는것이 아님.
-- sd-check 단독 실행시 발견된 모든 에러를 수정해야함
+- **CRITICAL**: sd-check 단독 실행시, 발견된 모든 에러를 수정해야함 (예: test 에러 발견시, typecheck/lint의 수정과는 별개로 모두 수정)
 - sd-check호출전 대화내 수정이 있었던 경우, 해당 수정과 관련된 에러만 수정 대상으로 봄
 
 #### 에스컬레이션 규칙
 
 **CRITICAL: 동일 에러가 2회 반복되면 즉시 수정을 중단하고 사용자에게 보고한다.**
 
-- 1회차: sd-debug.md에 따라 근본 원인을 분석하고 수정을 시도한다.
+- 1회차: `/sd-inner-debug` 스킬을 호출하여 근본 원인을 분석하고 수정을 시도한다.
 - 2회차(동일/유사 에러 재발): 수정을 중단하고, 지금까지의 분석 결과와 시도한 수정 내용을 사용자에게 보고한 뒤 판단을 요청한다.
 - 원인을 특정할 수 없는 경우에도 즉시 사용자에게 보고한다. 추측으로 수정 시도 금지.
 
@@ -63,7 +63,8 @@ Bash 출력이 길면 잘리므로 **반드시 파일로 리다이렉트**한 �
 | 3    | lint, eslint               | 린트      |
 | 4    | test, jest, vitest, mocha  | 테스트    |
 
-**typecheck와 lint는 동시수행할 수 있는 방법이 있다면 하나로 묶어 동시수행**: Step 2 + Step 3가 하나의 Step으로 병합됨
+**typecheck와 lint는 동시수행할 수 있는 `script`가 있다면 하나로 묶어 동시수행**
+- Step 2 + Step 3가 하나의 Step으로 병합됨 (예: `pnpm check`)
 
 ### 1-3. 탐지 결과 표시
 
@@ -71,7 +72,7 @@ Bash 출력이 길면 잘리므로 **반드시 파일로 리다이렉트**한 �
 탐지된 check 스크립트:
 1. typecheck → pnpm run typecheck
 2. lint → pnpm run lint
-3. test → pnpm run test
+3. test → pnpm vitest run
 ```
 
 탐지된 스크립트가 없으면 오류 메시지를 출력하고 종료한다.

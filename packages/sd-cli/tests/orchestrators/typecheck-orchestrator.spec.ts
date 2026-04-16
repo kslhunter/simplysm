@@ -123,7 +123,7 @@ describe("TypecheckOrchestrator", () => {
     expect(mocks.createTypecheckEngine).toHaveBeenCalledTimes(3);
     for (const engine of mockEngines) {
       expect(engine.run).toHaveBeenCalledWith(
-        expect.objectContaining({ js: false, dts: false }),
+        expect.objectContaining({ js: false, dts: false, includeTests: true }),
       );
     }
   });

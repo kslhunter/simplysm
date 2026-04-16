@@ -141,8 +141,8 @@ export abstract class AutoUpdate {
 
       // 이미 최신이거나 서버 버전이 낮으면 반환
       if (
-        semver.valid(currentVersionInfo.versionName) === null ||
-        semver.valid(serverVersionInfo.version) === null
+        semver.valid(currentVersionInfo.versionName) == null ||
+        semver.valid(serverVersionInfo.version) == null
       ) {
         // eslint-disable-next-line no-console
         console.log("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");
@@ -218,8 +218,8 @@ export abstract class AutoUpdate {
 
       // 이미 최신이거나 외부 저장소 버전이 낮으면 반환
       if (
-        semver.valid(currentVersionInfo.versionName) === null ||
-        semver.valid(latestVersion) === null
+        semver.valid(currentVersionInfo.versionName) == null ||
+        semver.valid(latestVersion) == null
       ) {
         // eslint-disable-next-line no-console
         console.log("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");

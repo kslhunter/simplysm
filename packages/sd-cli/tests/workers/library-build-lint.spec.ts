@@ -1,41 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as tscBuildModule from "../../src/utils/tsc-build";
 
 // --- Mocks ---
 
-const { mockLintFn, MockLintWithProgramRunner } = vi.hoisted(() => {
-  const lintFn = vi.fn().mockResolvedValue({
-    success: true,
-    errorCount: 0,
-    warningCount: 0,
-    formattedOutput: "",
+const { mockCompileAsync, MockSdTsCompiler } = vi.hoisted(() => {
+  const compileAsync = vi.fn();
+  const Compiler = vi.fn().mockImplementation(function () {
+    return { compileAsync };
   });
-  const RunnerCls = vi.fn().mockImplementation(function () {
-    return { lint: lintFn };
-  });
-  return { mockLintFn: lintFn, MockLintWithProgramRunner: RunnerCls };
+  return { mockCompileAsync: compileAsync, MockSdTsCompiler: Compiler };
 });
 
-vi.mock("../../src/lint/lint-with-program", () => ({
-  LintWithProgramRunner: MockLintWithProgramRunner,
+vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
+  SdTsCompiler: MockSdTsCompiler,
 }));
 
-const mockTscResult = {
-  success: true,
-  errors: undefined,
-  diagnostics: [],
-  errorCount: 0,
-  warningCount: 0,
-  program: { getSourceFiles: () => [] },
-};
-
-const runTscSpy = vi.spyOn(tscBuildModule, "runTscPackageBuild")
-  .mockReturnValue(mockTscResult as any);
-
-vi.mock("../../src/runtime/worker-utils", () => ({
-  registerCleanupHandlers: vi.fn(),
-  createOnceGuard: vi.fn(() => vi.fn()),
-  setupWorkerConsola: vi.fn(),
+vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
+  setupWorkerLifecycle: vi.fn(() => ({
+    logger: { debug: vi.fn(), warn: vi.fn() },
+    guardStartWatch: vi.fn(),
+  })),
 }));
 
 vi.mock("@simplysm/core-node", () => ({
@@ -52,6 +35,21 @@ vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
   collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
 }));
 
+const defaultCompileResult = {
+  program: { getSourceFiles: () => [] },
+  builderProgram: {},
+  isForAngular: false,
+  affectedFiles: new Set<string>(),
+  diagnostics: [] as any[],
+  errorCount: 0,
+  warningCount: 0,
+  errors: undefined as string[] | undefined,
+  emitResults: undefined,
+  lint: undefined as any,
+  scssErrors: [] as string[],
+  scssDependencies: new Map<string, Set<string>>(),
+};
+
 const workerMethods: Record<string, Function> = {};
 
 await import("../../src/workers/library-build.worker");
@@ -60,33 +58,31 @@ await import("../../src/workers/library-build.worker");
 
 beforeEach(() => {
   vi.clearAllMocks();
-  runTscSpy.mockReturnValue(mockTscResult as any);
-  mockLintFn.mockResolvedValue({
-    success: true,
-    errorCount: 0,
-    warningCount: 0,
-    formattedOutput: "",
-  });
-  mockTscResult.program = { getSourceFiles: () => [] } as any;
+  mockCompileAsync.mockResolvedValue({ ...defaultCompileResult });
 });
 
 describe("library-build.worker lint integration (Slice 3)", () => {
   describe("Scenario: library-build.worker runs lint after typecheck", () => {
     it("returns lint result in build output when lint is enabled", async () => {
+      const lintResult = {
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
+      };
+      mockCompileAsync.mockResolvedValueOnce({
+        ...defaultCompileResult,
+        lint: lintResult,
+      });
+
       const result = await workerMethods["build"]({
         name: "my-lib",
-        config: { target: "node" },
         cwd: "/workspace",
         pkgDir: "/workspace/packages/my-lib",
         output: { js: true, dts: true, lint: true },
       });
 
-      expect(result.lint).toEqual({
-        success: true,
-        errorCount: 0,
-        warningCount: 0,
-        formattedOutput: "",
-      });
+      expect(result.lint).toEqual(lintResult);
     });
   });
 
@@ -94,7 +90,6 @@ describe("library-build.worker lint integration (Slice 3)", () => {
     it("does not run lint when output.lint is false", async () => {
       const result = await workerMethods["build"]({
         name: "my-lib",
-        config: { target: "node" },
         cwd: "/workspace",
         pkgDir: "/workspace/packages/my-lib",
         output: { js: true, dts: true },

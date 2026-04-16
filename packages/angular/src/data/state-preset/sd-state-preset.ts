@@ -31,18 +31,18 @@ export interface SdStatePresetDef {
   template: `
     <div class="_sd-state-preset">
       <sd-anchor (click)="onAddClick()" class="_add-btn">
-        <ng-icon [svg]="tablerStar" />
+        <ng-icon [svg]="tablerStar" class="tx-theme-warning-default" />
       </sd-anchor>
       @for (preset of _presets(); track preset.name) {
         <div class="_preset-item">
-          <sd-anchor class="_preset-name" (click)="onPresetClick(preset)">
+          <sd-anchor class="_preset-name tx-trans-default" (click)="onPresetClick(preset)">
             {{ preset.name }}
           </sd-anchor>
           <sd-anchor class="_preset-save" (click)="onSaveClick(preset)">
-            <ng-icon [svg]="tablerDeviceFloppy" />
+            <ng-icon [svg]="tablerDeviceFloppy" [size]="'1em'" />
           </sd-anchor>
           <sd-anchor class="_preset-delete" [theme]="'danger'" (click)="onDeleteClick(preset)">
-            <ng-icon [svg]="tablerX" />
+            <ng-icon [svg]="tablerX" [size]="'1em'" />
           </sd-anchor>
         </div>
       }
@@ -51,7 +51,8 @@ export interface SdStatePresetDef {
   styles: [
     /* language=SCSS */ `
       sd-state-preset {
-        display: block;
+        display: inline-block;
+        vertical-align: top;
 
         > ._sd-state-preset {
           display: flex;
@@ -60,36 +61,48 @@ export interface SdStatePresetDef {
           flex-wrap: wrap;
 
           > ._add-btn {
-            padding: var(--gap-xs);
+            line-height: var(--line-height);
+            border: 1px solid transparent;
+            padding: var(--gap-sm) var(--gap-default);
           }
 
           > ._preset-item {
             display: inline-flex;
             align-items: center;
             gap: var(--gap-xs);
-            border: 1px solid var(--trans-lighter);
-            border-radius: var(--border-radius-default);
-            padding: var(--gap-xs) var(--gap-sm);
+            line-height: var(--line-height);
+            border: 1px solid transparent;
+            border-radius: var(--border-radius-lg);
+            padding: var(--gap-sm) var(--gap-default);
+            background: var(--theme-gray-lightest);
+
+            &:hover {
+              background: var(--theme-gray-lighter);
+            }
+
+            > sd-anchor {
+              padding: 0 var(--gap-sm);
+            }
           }
         }
 
         &[data-sd-size="sm"] > ._sd-state-preset {
           > ._add-btn {
-            padding: var(--gap-xxs);
+            padding: var(--gap-xs) var(--gap-default);
           }
 
           > ._preset-item {
-            padding: var(--gap-xxs) var(--gap-xs);
+            padding: var(--gap-xs) var(--gap-default);
           }
         }
 
         &[data-sd-size="lg"] > ._sd-state-preset {
           > ._add-btn {
-            padding: var(--gap-sm);
+            padding: var(--gap-default) var(--gap-lg);
           }
 
           > ._preset-item {
-            padding: var(--gap-sm) var(--gap-default);
+            padding: var(--gap-default) var(--gap-lg);
           }
         }
       }

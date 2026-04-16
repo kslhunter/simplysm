@@ -32,7 +32,13 @@ describe("watchReplaceDeps onChanged 콜백", () => {
     tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-replace-deps-"));
 
     // 소스 패키지 생성
-    const sourceDir = path.join(tmpDir, "source-pkg", "src");
+    const sourcePkg = path.join(tmpDir, "source-pkg");
+    await fs.promises.mkdir(sourcePkg, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(sourcePkg, "package.json"),
+      JSON.stringify({ name: "@test/pkg", files: ["src"] }),
+    );
+    const sourceDir = path.join(sourcePkg, "src");
     await fs.promises.mkdir(sourceDir, { recursive: true });
     await fs.promises.writeFile(path.join(sourceDir, "index.ts"), "export const a = 1;");
 

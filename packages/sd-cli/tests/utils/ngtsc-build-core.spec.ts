@@ -88,16 +88,9 @@ vi.mock("../../src/angular/angular-build", () => {
 });
 
 const {
-  buildScssLoadPaths,
-} = await import("../../src/angular/ngtsc-build-core");
-const {
   createLibraryTransformStylesheet,
-} = await import("../../src/angular/angular-build-pipeline");
+} = await import("../../src/angular/ngtsc-build-core");
 
-import { join } from "node:path";
-
-const fakeCwd = "/workspace";
-const fakePkgDir = "/workspace/packages/my-angular-lib";
 
 // ─── createLibraryTransformStylesheet ───
 
@@ -193,39 +186,3 @@ describe("createLibraryTransformStylesheet", () => {
   });
 });
 
-// ─── buildScssLoadPaths ───
-
-describe("buildScssLoadPaths", () => {
-  it("returns [pkgDir/scss, cwd/node_modules] for given NgtscBuildInfo", () => {
-    const info = {
-      name: "my-angular-lib",
-      cwd: fakeCwd,
-      pkgDir: fakePkgDir,
-      output: { js: true, dts: false },
-    };
-
-    const result = buildScssLoadPaths(info);
-
-    expect(result).toEqual([
-      join(fakePkgDir, "scss"),
-      join(fakeCwd, "node_modules"),
-    ]);
-  });
-
-  it("uses cwd from info to construct node_modules path", () => {
-    const customCwd = "/custom/workspace";
-    const customPkgDir = "/custom/workspace/packages/my-pkg";
-
-    const result = buildScssLoadPaths({
-      name: "test",
-      cwd: customCwd,
-      pkgDir: customPkgDir,
-      output: { js: true, dts: false },
-    });
-
-    expect(result).toEqual([
-      join(customPkgDir, "scss"),
-      join(customCwd, "node_modules"),
-    ]);
-  });
-});

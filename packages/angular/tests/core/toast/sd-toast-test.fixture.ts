@@ -72,6 +72,40 @@ export class SdToastTestNoProgress {
 }
 
 /**
+ * ng-content 전용 토스트 테스트 (message 없이 projected content만)
+ */
+@Component({
+  selector: "sd-toast-test-content",
+  standalone: true,
+  imports: [SdToast],
+  template: `
+    <sd-toast [(open)]="open" [theme]="theme()">
+      <div class="_projected">프로젝트된 콘텐츠</div>
+    </sd-toast>
+  `,
+})
+export class SdToastTestContent {
+  open = signal(true);
+  theme = signal<SdToastTheme>("info");
+}
+
+/**
+ * 빈 토스트 테스트 (message 없음, ng-content 없음)
+ */
+@Component({
+  selector: "sd-toast-test-empty",
+  standalone: true,
+  imports: [SdToast],
+  template: `
+    <sd-toast [(open)]="open" [theme]="theme()"></sd-toast>
+  `,
+})
+export class SdToastTestEmpty {
+  open = signal(true);
+  theme = signal<SdToastTheme>("info");
+}
+
+/**
  * SdToastProvider 테스트용 호스트 컴포넌트
  */
 @Component({

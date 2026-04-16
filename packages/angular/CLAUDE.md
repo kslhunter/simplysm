@@ -74,7 +74,7 @@ src/
 - `provideZonelessChangeDetection()` - Zone 없는 변경 감지
 - `IMAGE_CONFIG` disableImageSizeWarning/disableImageLazyLoadWarning
 - `provideNgIconsConfig({ strokeWidth: 1.5, size: "1.33em" })`
-- 커스텀 이벤트 플러그인 등록 (`EVENT_MANAGER_PLUGINS` multi-provider) - 3 command + 3 event plugins
+- `SdOptionEventPlugin` 등록 (`EVENT_MANAGER_PLUGINS` multi-provider) - `.capture`/`.passive`/`.once` 이벤트 수식어
 - 글로벌 에러 핸들러 (`SdGlobalErrorHandlerPlugin`), `unhandledrejection`/`error` 이벤트 핸들링
 - 테마 초기화 (localStorage 동기화, `SdThemeProvider.dark`/`fontSize` signal과 effect로 연결)
 - Service Worker 업데이트 폴링 (5분 간격, 실패 시 exponential backoff, 최대 1시간 간격)
@@ -183,10 +183,15 @@ src/
 
 ### Plugin System
 
-Angular `EventManagerPlugin` 확장. `supports()` 메서드로 이벤트명 매칭:
-- 커맨드 플러그인: `sdSaveCommand`(Ctrl+S), `sdRefreshCommand`(Ctrl+Alt+L), `sdInsertCommand`(Ctrl+Insert). `findTopOpenModalEl()`로 최상위 모달만 이벤트 수신
-- 옵저버 플러그인: `sdResize`(ResizeObserver), `sdIntersection`(IntersectionObserver)
-- 옵션 플러그인: `.capture`, `.passive`, `.once` 이벤트 수식어
+Angular `EventManagerPlugin` 확장:
+- 옵션 플러그인(`SdOptionEventPlugin`): `.capture`, `.passive`, `.once` 이벤트 수식어. `provideSdAngular`에서 자동 등록
+
+### Command & Observer Directives
+
+이벤트 플러그인 대신 Angular 디렉티브로 구현:
+- `SdCommandDirective` (`[sdSaveCommand]`, `[sdRefreshCommand]`, `[sdInsertCommand]`): 키보드 단축키 output 이벤트. 최상위 모달만 이벤트 처리 (`shouldProcessCommandEvent`)
+- `SdResizeDirective` (`[sdResize]`): ResizeObserver 기반 `sdResize` output 이벤트
+- `SdIntersectionDirective` (`[sdIntersection]`): IntersectionObserver 기반 `sdIntersection` output 이벤트
 
 ### Feature Abstractions
 

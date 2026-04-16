@@ -29,7 +29,7 @@ export function useSheetLayoutEngine(options: {
         };
       })
       .filter((def) => !def.hidden)
-      .sort((a, b) => a.ordering - b.ordering);
+      .orderBy((a) => a.ordering);
   });
 
   const hasSummary = computed((): boolean => {

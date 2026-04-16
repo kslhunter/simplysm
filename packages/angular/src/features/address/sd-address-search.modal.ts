@@ -94,7 +94,7 @@ function loadDaumPostcodeScript(): Promise<void> {
   imports: [SdBusyContainer],
   template: `
     <sd-busy-container [busy]="!initialized()">
-      @if (errorMessage() !== null) {
+      @if (errorMessage() != null) {
         <div class="_error">{{ errorMessage() }}</div>
       } @else {
         <div #content style="min-height: 100px;"></div>

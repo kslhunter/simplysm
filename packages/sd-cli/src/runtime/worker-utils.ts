@@ -47,7 +47,7 @@ export function createOnceGuard(label: string): () => void {
   let called = false;
   return () => {
     if (called) {
-      throw new Error(`${label} can only be called once per Worker`);
+      throw new Error(`Worker당 한 번만 호출할 수 있습니다: ${label}`);
     }
     called = true;
   };

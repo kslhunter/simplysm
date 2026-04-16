@@ -163,13 +163,9 @@ export abstract class BaseEngine<
         (data as CommonBuildWorkerEvents["build"]).build,
     });
 
-    // BaseEngine 전용: 경고 로깅 + 린트 결과 보고
+    // BaseEngine 전용: 린트 결과 보고
     this._worker!.on("build", (data) => {
       const event = data;
-
-      if (event.build.warnings != null && event.build.warnings.length > 0) {
-        logger.warn(`${this._pkg.name}: ${event.build.warnings.join(", ")}`);
-      }
 
       if (event.lint != null) {
         const lintResult: BuildResult = {
@@ -184,7 +180,7 @@ export abstract class BaseEngine<
     });
 
     this._callStartWatch(output).catch((err: unknown) => {
-      logger.error(`[${this._pkg.name}] startWatch 실패:`, errNs.message(err));
+      logger.debug(`[${this._pkg.name}] startWatch 실패:`, errNs.message(err));
       this._resultCollector?.add({
         name: this._pkg.name,
         target: this._getTarget(),

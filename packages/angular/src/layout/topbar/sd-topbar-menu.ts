@@ -41,6 +41,15 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
   host: {
     "class": "flex-row gap-sm",
   },
+  styles: [
+    /* language=SCSS */ `
+      sd-topbar-menu {
+        sd-list sd-list {
+          background: var(--trans-lightest);
+        }
+      }
+    `,
+  ],
   template: `
     @for (menu of menus(); track menu.codeChain.join("."); let i = $index) {
       <sd-dropdown>
@@ -83,7 +92,7 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
           [sdRouterLink]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu, dropdownIndex)"
           [selected]="getIsMenuSelected(menu)"
-          [open]="true"
+          [layout]="'flat'"
         >
           @if (menu.icon) {
             <ng-icon [svg]="menu.icon" />
@@ -106,19 +115,6 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
       }
     </ng-template>
   `,
-  styles: [
-    /* language=SCSS */ `
-      sd-topbar-menu {
-        sd-dropdown-popup {
-          sd-list[data-sd-inset="true"] {
-            sd-list {
-              background: var(--trans-lightest);
-            }
-          }
-        }
-      }
-    `,
-  ],
 })
 export class SdTopbarMenu {
   menus = input<SdMenu[]>([]);
@@ -143,7 +139,7 @@ export class SdTopbarMenu {
       window.open(menu.url, "_blank");
     }
 
-    if (menu.children === undefined) {
+    if (menu.children == null) {
       this._dropdowns()[dropdownIndex].open.set(false);
     }
   }

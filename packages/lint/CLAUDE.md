@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 10개 (`src/rules/` 7개, `src/utils/` 1개, 진입점 2개).
+`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 11개 (`src/rules/` 8개, `src/utils/` 1개, 진입점 2개).
 
 두 가지 진입점을 exports한다:
-- `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 7개를 `{ rules: {...} }` 형태로 내보냄
+- `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 8개를 `{ rules: {...} }` 형태로 내보냄
 - `./eslint-recommended` -- 위 플러그인과 외부 플러그인(`typescript-eslint`, `angular-eslint`, `eslint-plugin-import`, `eslint-plugin-unused-imports`)을 조합한 Flat Config 배열
 
 ## Architecture
@@ -22,6 +22,7 @@ src/
 │   ├── ts-no-throw-not-implemented-error.ts  ← TS:    NotImplementedError 사용 경고 (suggestion)
 │   ├── ts-no-unused-injects.ts               ← TS:    미사용 inject() 필드 제거, autofix
 │   ├── ts-no-unused-protected-readonly.ts    ← TS:    미사용 protected readonly 필드 제거, autofix
+│   ├── ng-template-no-strict-null-check.ts   ← HTML:  템플릿에서 `===`/`!==` null/undefined 비교 금지
 │   ├── ng-template-no-todo-comments.ts       ← HTML:  템플릿 내 TODO 주석 경고
 │   └── ng-template-sd-require-binding-attrs.ts ← HTML: sd-* 컴포넌트 plain attr 금지, autofix
 └── utils/
@@ -71,7 +72,7 @@ export default createRule({
 |---|---|---|
 | `**/*.js`, `**/*.mjs`, `**/*.cjs` | `@simplysm`, `import`, `unused-imports` | `no-hard-private`, `no-subpath-imports-from-simplysm`, `require-await` |
 | `**/*.ts` | `@typescript-eslint`, `@simplysm`, `import`, `unused-imports`, `angular-eslint` | 전체 커스텀 규칙 + TS 엄격 규칙 (`require-await`, `strict-boolean-expressions`, `prefer-readonly`, `only-throw-error`, `no-array-delete` 등) |
-| `**/*.html` | `@simplysm`, `@angular-eslint/template` (recommended + accessibility) | `ng-template-*` 2개 규칙 |
+| `**/*.html` | `@simplysm`, `@angular-eslint/template` (recommended + accessibility) | `ng-template-no-strict-null-check`, `ng-template-no-todo-comments`, `ng-template-sd-require-binding-attrs` |
 | `**/tests/**/*.ts` | -- | `no-console`, `import/no-extraneous-dependencies`, `ts-no-throw-not-implemented-error` 비활성화 |
 | `**/vitest.config.ts` | -- | `no-restricted-properties` 비활성화 (`process.env` 접근 허용) |
 

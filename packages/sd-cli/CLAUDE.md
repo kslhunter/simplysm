@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 100개 TypeScript 소스 파일.
+`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 106개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
+
+## Public API
+
+npm 패키지로 배포되는 공개 API:
+
+- **Config Types** (`src/sd-config.types.ts`): `SdConfig`, `SdPackageConfig`, `BuildTarget`, `SdPublishConfig` 등 — sd.config.ts 작성용 타입
+- **TypeScript Compiler** (`src/ts-compiler/SdTsCompiler.ts`): `SdTsCompiler` 클래스, `ISdTsCompilerOptions`, `ISdTsCompilerResult` — Angular/TS 패키지 프로그래매틱 컴파일용
+- **Angular Vite Plugin** (`src/angular/vite-angular-plugin.ts`): `sdAngularPlugin` 함수, `SdAngularPluginOptions` — Vitest 환경에서 Angular 테스트 수행용
 
 ## Architecture
 
@@ -34,8 +42,7 @@ src/
 │   ├── EsbuildClientEngine.ts ← client 패키지용 esbuild+Vite 엔진 (BaseEngine 미사용)
 │   └── engine-factory.ts  ← createBuildEngine / createTypecheckEngine 팩토리
 ├── workers/               ← Node.js Worker Thread 모듈
-│   ├── library-build.worker.ts  ← node/browser/neutral 빌드
-│   ├── ngtsc-build.worker.ts    ← Angular 라이브러리 빌드
+│   ├── library-build.worker.ts  ← node/browser/neutral 및 Angular 라이브러리 빌드 (SdTsCompiler 사용)
 │   ├── server-build.worker.ts   ← server 패키지 esbuild + tsc 플러그인 통합 빌드
 │   ├── server-esbuild-context.ts ← esbuild watch context + tsc 플러그인 관리 (모듈 스코프 상태)
 │   ├── server-watch-manager.ts  ← server-build watch 루프 설정
@@ -46,12 +53,11 @@ src/
 │   ├── build-change-filter.ts   ← 파일 변경 필터링 (shouldSkipRebuild, hasFileAddOrRemove)
 │   └── build-watch-paths.ts     ← watch 대상 경로 수집 (buildWatchPaths)
 ├── angular/               ← Angular AOT 컴파일 + Vite 플러그인
-│   ├── vite-angular-plugin.ts        ← sdAngularPlugin (AngularCompiler + JavaScriptTransformer)
+│   ├── vite-angular-plugin.ts        ← sdAngularPlugin (SdTsCompiler + JavaScriptTransformer)
 │   ├── client-transform-stylesheet.ts
-│   ├── angular-compiler.ts           ← AngularCompiler, AngularSourceFileCache (증분 재컴파일)
-│   ├── angular-build-pipeline.ts     ← AngularBuildPipeline (AOT 컴파일 + emit + 진단 수집 통합 파이프라인)
+│   ├── angular-compiler.ts           ← AngularSourceFileCache, augmentHostWithCaching, EmitResult/EmitOptions
 │   ├── angular-build.ts              ← NgtscProgram 래퍼
-│   ├── ngtsc-build-core.ts           ← Angular 라이브러리 빌드 핵심 로직 (runNgtscBuild)
+│   ├── ngtsc-build-core.ts           ← Angular SCSS 유틸 (createLibraryTransformStylesheet, compileSideEffectScss, compileGlobalScss, writeEmitResults)
 │   └── scss-compiler.ts              ← sass 컴파일 (compileScssString, compileScssFile)
 ├── esbuild/               ← esbuild 설정 및 플러그인
 │   ├── esbuild-config.ts             ← esbuild 설정 생성
@@ -99,11 +105,10 @@ src/
 └── utils/                 ← 범용 빌드 유틸리티
     ├── sd-config.ts             ← loadSdConfig (jiti로 sd.config.ts 동적 로드)
     ├── tsconfig.ts              ← parseTsconfig, getPackageSourceFiles, TypecheckEnv
-    ├── tsc-build.ts             ← TypeScript 컴파일 빌드 핵심 로직
     ├── package-utils.ts         ← 워크스페이스 패키지 탐색·검증 (validateTargets, discoverWorkspacePackages)
     ├── package-classify.ts      ← 패키지 분류·필터링 (classifyWatchPackages, classifyDevPackages)
     ├── diagnostic-utils.ts      ← isWorkspaceDiagnostic, formatDiagnosticError
-    ├── output-utils.ts          ← formatBuildMessages, printErrors, printServers
+    ├── output-utils.ts          ← formatBuildMessages, printDiagnostics, printServers
     ├── output-path-rewriter.ts  ← 출력 경로 변환
     ├── concurrency.ts           ← runWithConcurrency, getMaxConcurrency
     ├── build-env.ts             ← 빌드 환경 변수 처리

@@ -83,7 +83,7 @@ describe("Feature 3.3 Slice 2: SdToastProvider 기본 + 프로그래스", () => 
     expect(getToastsInBody().length).toBe(1);
 
     const toast = getToastsInBody()[0];
-    expect(toast.querySelector("._message")!.textContent).toContain("두 번째");
+    expect(toast.querySelector("._sd-toast-message")!.textContent).toContain("두 번째");
   });
 
   // Acceptance: 일반 토스트 자동 해제 (3초)

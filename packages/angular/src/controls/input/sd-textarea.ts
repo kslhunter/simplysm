@@ -204,7 +204,7 @@ export class SdTextarea {
 
       if (this.validatorFn()) {
         const message = this.validatorFn()!(this.value());
-        if (message !== undefined) {
+        if (message != null) {
           errorMessages.push(message);
         }
       }

@@ -60,7 +60,7 @@ export class Electron {
   //#region Public Methods
 
   async initialize(): Promise<void> {
-    Electron._logger.debug("initialize 시작");
+    Electron._logger.start("initialize 중...");
 
     Electron._logger.debug("package.json 설정 시작");
     await this._setupNpmConf();
@@ -83,11 +83,11 @@ export class Electron {
       await this._exec("pnpm", ["exec", "electron-rebuild"], this._srcPath);
       Electron._logger.debug("electron-rebuild 완료");
     }
-    Electron._logger.debug("initialize 완료");
+    Electron._logger.success("initialize 완료");
   }
 
   async run(url: string): Promise<void> {
-    Electron._logger.debug(`run 시작 (url: ${url})`);
+    Electron._logger.start(`run 중... (url: ${url})`);
 
     await this.initialize();
     await this._copyPublicAssets();
@@ -126,7 +126,7 @@ export class Electron {
           setup: (build) => {
             build.onEnd(async (result) => {
               if (result.errors.length > 0) {
-                Electron._logger.warn("번들링 실패. Electron을 재시작하지 않습니다.");
+                Electron._logger.error("번들링 실패. Electron을 재시작하지 않습니다.");
                 return;
               }
 
@@ -181,11 +181,11 @@ export class Electron {
       process.once("SIGINT", signalHandler);
       process.once("SIGTERM", signalHandler);
     });
-    Electron._logger.debug("run 완료");
+    Electron._logger.success("run 완료");
   }
 
   async build(outPath: string): Promise<void> {
-    Electron._logger.debug("build 시작");
+    Electron._logger.start("build 중...");
 
     await this.initialize();
 
@@ -205,7 +205,7 @@ export class Electron {
     await this._copyBuildOutput(outPath);
     Electron._logger.debug("빌드 산출물 복사 완료");
 
-    Electron._logger.debug("build 완료");
+    Electron._logger.success("build 완료");
   }
 
   //#endregion

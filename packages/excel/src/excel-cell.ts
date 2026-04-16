@@ -49,7 +49,7 @@ export class ExcelCell {
 
   /** 셀에 수식 설정 (undefined: 수식 제거) */
   async setFormula(val: string | undefined): Promise<void> {
-    if (val === undefined) {
+    if (val == null) {
       await this._deleteCell(this.addr);
     } else {
       const wsData = await this._getWsData();
@@ -67,13 +67,13 @@ export class ExcelCell {
 
   /** 셀 값 설정 (undefined: 셀 삭제) */
   async setValue(val: ExcelValueType): Promise<void> {
-    if (val === undefined) {
+    if (val == null) {
       await this._deleteCell(this.addr);
     } else if (typeof val === "string") {
       const wsData = await this._getWsData();
       const ssData = await this._getOrCreateSsData();
       const ssId = ssData.getIdByString(val);
-      if (ssId !== undefined) {
+      if (ssId != null) {
         wsData.setCellType(this.addr, "s");
         wsData.setCellVal(this.addr, ssId.toString());
       } else {
@@ -110,7 +110,7 @@ export class ExcelCell {
   async getValue(): Promise<ExcelValueType> {
     const wsData = await this._getWsData();
     const cellVal = wsData.getCellVal(this.addr);
-    if (cellVal === undefined || str.isNullOrEmpty(cellVal)) {
+    if (cellVal == null || str.isNullOrEmpty(cellVal)) {
       return undefined;
     }
 
@@ -137,9 +137,9 @@ export class ExcelCell {
         `[${ExcelUtils.stringifyAddr(this.addr)}] 셀 타입 분석 실패: 셀에 에러 값이 포함되어 있음 (${cellVal})`,
       );
     } else {
-      // cellType === undefined: 숫자 또는 날짜/시간 타입
+      // cellType == null: 숫자 또는 날짜/시간 타입
       const cellStyleId = wsData.getCellStyleId(this.addr);
-      if (cellStyleId === undefined) {
+      if (cellStyleId == null) {
         return parseFloat(cellVal);
       }
 
@@ -149,13 +149,13 @@ export class ExcelCell {
       }
 
       const numFmtId = styleData.get(cellStyleId).numFmtId;
-      if (numFmtId === undefined) {
+      if (numFmtId == null) {
         return parseFloat(cellVal);
       }
 
       const numFmtCode = styleData.getNumFmtCode(numFmtId);
       let numFmt;
-      if (numFmtCode !== undefined) {
+      if (numFmtCode != null) {
         numFmt = ExcelUtils.convertNumFmtCodeToName(numFmtCode);
       } else {
         const numFmtIdNum = num.parseInt(numFmtId);

@@ -30,7 +30,7 @@ import {
         <span class="tx-trans-light">****</span>
       } @else {
         @if (controlValue()) {
-          <pre>{{ controlValueText() ?? controlValue() }} </pre>
+          <pre>{{ controlValueText() ? controlValueText() : " " }}</pre>
         } @else if (placeholder()) {
           <span class="tx-trans-lighter">{{ placeholder() }}</span>
         } @else {
@@ -274,7 +274,7 @@ import {
     `,
   ],
   host: {
-    "[attr.data-sd-type]": "controlType()",
+    "[attr.data-sd-type]": "type()",
     "[attr.data-sd-disabled]": "disabled()",
     "[attr.data-sd-readonly]": "readonly()",
     "[attr.data-sd-inline]": "inline()",
@@ -336,7 +336,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     if (value == null) return undefined;
     return this._handler().toDisplayText(value, {
       minDigits: this.minDigits(),
-    });
+    }) ?? this.controlValue();
   });
 
   constructor() {
@@ -356,7 +356,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
 
       if (this.validatorFn()) {
         const message = this.validatorFn()!(value);
-        if (message !== undefined) {
+        if (message != null) {
           errorMessages.push(message);
         }
       }
@@ -372,7 +372,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
       return;
     }
     const parsed = this._handler().parse(inputEl.value, { format: this.format() });
-    if (parsed === undefined) {
+    if (parsed == null) {
       inputEl.value = this.controlValue();
       return;
     }
@@ -387,7 +387,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
       return;
     }
     const parsed = this._handler().parse(text, { format: this.format() });
-    if (parsed === undefined) {
+    if (parsed == null) {
       const inputEl = event.target as HTMLInputElement;
       inputEl.value = this.controlValue();
       return;

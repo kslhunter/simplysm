@@ -1,5 +1,4 @@
 import { Directive, output } from "@angular/core";
-import type { SdResizeEvent } from "./sd-resize-event.plugin";
 
 @Directive({
   selector: `
@@ -14,9 +13,7 @@ import type { SdResizeEvent } from "./sd-resize-event.plugin";
     [touchmove.passive], [touchmove.capture.passive],
     [touchend.passive],
     [dragover.capture], [dragenter.capture], [dragleave.capture], [drop.capture],
-    [transitionend.once], [animationend.once],
-    [sdResize],
-    [sdRefreshCommand], [sdSaveCommand], [sdInsertCommand]
+    [transitionend.once], [animationend.once]
   `,
   standalone: true,
 })
@@ -68,12 +65,4 @@ export class SdEvents {
   // Animation/Transition (once로 한 번만)
   "transitionend.once" = output<TransitionEvent>();
   "animationend.once" = output<AnimationEvent>();
-
-  // 커스텀 이벤트
-  "sdResize" = output<SdResizeEvent>();
-
-  // 커맨드 이벤트
-  "sdRefreshCommand" = output<KeyboardEvent>();
-  "sdSaveCommand" = output<KeyboardEvent>();
-  "sdInsertCommand" = output<KeyboardEvent>();
 }

@@ -8,7 +8,7 @@ description: 정적 분석이 잡지 못하는 관점(로직 버그, 일관성, 
 
 ## Step 1: 코드 리뷰
 
-@.claude/references/sd-review.md 를 읽고 따른다.
+`/sd-inner-review` 스킬을 호출한다.
 
 ## Step 2: 문서 기록
 

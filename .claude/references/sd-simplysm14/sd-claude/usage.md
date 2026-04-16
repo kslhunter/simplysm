@@ -1,6 +1,6 @@
 # @simplysm/sd-claude
 
-Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 16개 스킬(`sd-*` 접두어), 2개 rules 파일, 참조 문서, 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 다수의 스킬(`sd-*` 접두어 포함), 2개 rules 파일, 참조 문서, 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -10,7 +10,7 @@ TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트이고, `clau
 npm install @simplysm/sd-claude
 ```
 
-설치 시 `postinstall` 스크립트가 자동 실행되어, `claude/` 디렉토리의 에셋을 프로젝트 루트 `.claude/`에 복사하고 `settings.json`에 훅을 등록한다.
+설치 시 `postinstall` 스크립트가 자동 실행되어, `claude/sd-*` 에셋과 `settings.json`을 프로젝트 루트 `.claude/`에 복사한다. `settings.json`은 훅이 미리 등록된 정적 파일이다.
 
 ## API Overview
 
@@ -27,7 +27,7 @@ npm install @simplysm/sd-claude
 
 | API | Type | Description |
 |-----|------|-------------|
-| `postinstall.mjs` | lifecycle script | `pnpm install` 후 `.claude/`에 에셋 설치 및 settings.json 훅 등록 |
+| `postinstall.mjs` | lifecycle script | `pnpm install` 후 `claude/sd-*` 및 `settings.json`을 소비 프로젝트 `.claude/`에 복사 |
 | `sync.mjs` | lifecycle script | `prepack` 시 루트 `.claude/sd-*` 에셋을 `claude/`로 동기화 |
 | `forEachSdEntry(dir, callback)` | function | 디렉토리에서 `sd-*` 항목을 2단계 깊이로 탐색하며 콜백 호출 |
 | `collectSdEntries(dir)` | function | `forEachSdEntry`로 수집한 `sd-*` 항목의 상대 경로 배열 반환 |
@@ -50,9 +50,9 @@ npm install @simplysm/sd-claude
 
 | API | Type | Description |
 |-----|------|-------------|
-| `claude/skills/` | asset directory | 16개 sd-* 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `references/` 포함) |
+| `claude/skills/` | asset directory | 16개 sd-* 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `SKILL.eval.md`와 `references/` 포함) |
 | `claude/rules/` | asset directory | Claude Code 규칙 파일 (`sd-claude-rules.md`, `sd-options.md`) |
-| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 (7개 md파일 + 1개 디렉토리) |
+| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 및 패키지 문서 디렉토리 |
 
 → See [docs/assets.md](./docs/assets.md) for details.
 

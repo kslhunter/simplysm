@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdSelectSingleTest,
   SdSelectPreselectedTest,
@@ -12,9 +10,6 @@ import "@simplysm/core-browser";
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    ],
   });
 }
 
@@ -35,7 +30,7 @@ describe("Feature 5.1 Slice 1: SdSelect + SdSelectItem basic (single select)", (
 
     // Click item B's _content in the popup
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const itemBContent = itemContents[1] as HTMLElement;
     itemBContent.click();
     fixture.detectChanges();
@@ -69,7 +64,7 @@ describe("Feature 5.1 Slice 1: SdSelect + SdSelectItem basic (single select)", (
 
     // Click item C's _content
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     const itemCContent = itemContents[2] as HTMLElement;
     itemCContent.click();
     fixture.detectChanges();
@@ -90,7 +85,7 @@ describe("Feature 5.1 Slice 1: SdSelect + SdSelectItem basic (single select)", (
     expect(contentEl).toBeTruthy();
     expect(contentEl.textContent.trim()).toBe("Select an item");
     // placeholder should have lighter color class
-    const placeholderSpan = contentEl.querySelector("span.tx-trans-lighter");
+    const placeholderSpan = contentEl.querySelector("span.sd-text-color-gray-default");
     expect(placeholderSpan).toBeTruthy();
   });
 

@@ -10,7 +10,7 @@ npm install @simplysm/capacitor-plugin-usb-storage
 
 ## API Overview
 
-### USB 저장소
+### USB 저장소 - 공개 API
 
 | API | Type | Description |
 |-----|------|-------------|
@@ -122,6 +122,72 @@ export abstract class UsbStorage {
 | `readdir` | `filter: UsbDeviceFilter, dirPath: string` | `Promise<UsbFileInfo[]>` | USB 저장 장치의 디렉토리 내용 읽기 |
 | `readFile` | `filter: UsbDeviceFilter, filePath: string` | `Promise<Bytes \| undefined>` | USB 저장 장치에서 파일 읽기. 파일이 없으면 `undefined` 반환. 최대 100MB |
 
+## Browser-Only Testing API (`UsbStorageWeb`)
+
+브라우저 환경에서 테스트 및 개발 목적으로 사용하는 API. `UsbStorage` 정적 파사드로는 접근할 수 없으며, `UsbStorageWeb` 인스턴스를 직접 사용할 때만 호출 가능하다.
+
+### `addVirtualDevice(device)`
+
+가상 USB 장치를 IndexedDB에 등록한다. (테스트/개발용)
+
+```typescript
+async addVirtualDevice(device: {
+  vendorId: number;
+  productId: number;
+  deviceName: string;
+  manufacturerName: string;
+  productName: string;
+}): Promise<void>
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `device.vendorId` | `number` | USB Vendor ID |
+| `device.productId` | `number` | USB Product ID |
+| `device.deviceName` | `string` | 장치 이름 |
+| `device.manufacturerName` | `string` | 제조사 이름 |
+| `device.productName` | `string` | 제품 이름 |
+
+### `addVirtualFile(filter, filePath, data)`
+
+가상 USB 장치에 파일을 추가한다. (테스트/개발용)
+
+```typescript
+async addVirtualFile(
+  filter: UsbDeviceFilter,
+  filePath: string,
+  data: Uint8Array,
+): Promise<void>
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `filter.vendorId` | `number` | 대상 장치의 USB Vendor ID |
+| `filter.productId` | `number` | 대상 장치의 USB Product ID |
+| `filePath` | `string` | 파일 경로 (예: `/updates/config.json`) |
+| `data` | `Uint8Array` | 파일 바이너리 데이터 |
+
+**주의**: 파일이 위치할 부모 디렉토리가 존재하지 않으면 자동으로 생성된다.
+
+### `addVirtualDirectory(filter, dirPath)`
+
+가상 USB 장치에 디렉토리를 추가한다. (테스트/개발용)
+
+```typescript
+async addVirtualDirectory(
+  filter: UsbDeviceFilter,
+  dirPath: string,
+): Promise<void>
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `filter.vendorId` | `number` | 대상 장치의 USB Vendor ID |
+| `filter.productId` | `number` | 대상 장치의 USB Product ID |
+| `dirPath` | `string` | 생성할 디렉토리 경로 (예: `/updates`) |
+
+---
+
 ## Usage Examples
 
 ### USB 장치 열거 및 권한 요청
@@ -157,4 +223,36 @@ const data = await UsbStorage.readFile(filter, "/updates/config.json");
 if (data != null) {
   const text = new TextDecoder().decode(data);
 }
+```
+
+### 브라우저 테스트 - 가상 USB 장치 설정
+
+브라우저 환경에서 테스트할 때, `UsbStorageWeb`을 직접 import하여 가상 USB 저장소를 설정한다. `UsbStorageWeb`은 패키지 공개 API(`index.ts`)에서 export되지 않으므로, 소스 경로를 직접 참조한다.
+
+```typescript
+import { UsbStorageWeb } from "@simplysm/capacitor-plugin-usb-storage/src/web/UsbStorageWeb";
+import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
+
+const usbStorageWeb = new UsbStorageWeb();
+
+// 가상 장치 등록
+await usbStorageWeb.addVirtualDevice({
+  vendorId: 1234,
+  productId: 5678,
+  deviceName: "Test Device",
+  manufacturerName: "Test Manufacturer",
+  productName: "Test Product",
+});
+
+// 가상 파일 추가
+const fileData = new TextEncoder().encode("Hello, USB!");
+await usbStorageWeb.addVirtualFile(
+  { vendorId: 1234, productId: 5678 },
+  "/updates/config.json",
+  fileData,
+);
+
+// UsbStorage 정적 API로 접근 (Capacitor가 브라우저에서 UsbStorageWeb 인스턴스를 사용)
+const files = await UsbStorage.readdir({ vendorId: 1234, productId: 5678 }, "/updates");
+const data = await UsbStorage.readFile({ vendorId: 1234, productId: 5678 }, "/updates/config.json");
 ```

@@ -79,7 +79,7 @@ function stripTagPrefix(obj: unknown): unknown {
     return obj.map((item) => stripTagPrefix(item));
   }
 
-  if (typeof obj === "object" && obj !== null) {
+  if (typeof obj === "object" && obj != null) {
     const newObj: Record<string, unknown> = {};
     const record = obj as Record<string, unknown>;
 

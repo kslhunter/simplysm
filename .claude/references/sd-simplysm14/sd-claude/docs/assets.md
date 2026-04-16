@@ -9,15 +9,16 @@ claude/
 ├── references/          ← 스킬/규칙에서 참조하는 공유 문서
 ├── rules/               ← Claude Code 규칙 파일
 ├── skills/              ← 스킬 파일 디렉토리
-├── sd-check-bash.py      ← 훅 스크립트
-├── sd-check-write.py    ← 훅 스크립트
-├── sd-session-start.sh  ← 훅 스크립트
-└── sd-statusline.py     ← 훅 스크립트
+├── sd-check-bash.py             ← 훅 스크립트
+├── sd-check-forbidden-files.py ← 훅 스크립트
+├── sd-check-write.py            ← 훅 스크립트
+├── sd-session-start.sh          ← 훅 스크립트
+└── sd-statusline.py             ← 훅 스크립트
 ```
 
 ## `claude/skills/`
 
-16개 `sd-*` 접두어 스킬 디렉토리. 각 스킬은 아래 파일을 포함한다:
+다수의 스킬 디렉토리. `sd-*` 접두어 스킬은 postinstall로 소비 프로젝트에 배포되고, `my-apk-decompile/`·`playwright-cli/` 같이 `sd-*`로 시작하지 않는 스킬은 모노레포 로컬 전용이다. 각 스킬은 아래 파일을 포함한다:
 
 | 파일            | 필수 | Description                                                  |
 | --------------- | ---- | ------------------------------------------------------------ |
@@ -27,24 +28,28 @@ claude/
 
 ### 스킬 목록
 
-| 디렉토리            | 스킬 이름        | Description                                      |
-| ------------------- | ---------------- | ------------------------------------------------ |
-| `sd-check/`         | sd-check         | typecheck/lint/test 실행 및 에러 해결            |
-| `sd-claude-docs/`   | sd-claude-docs   | CLAUDE.md + usage 문서 동시 생성                 |
-| `sd-commit/`        | sd-commit        | 전체 변경사항에 대한 단일 커밋 생성              |
-| `sd-debug/`         | sd-debug         | 버그 근본 원인 분석 및 해결책 제안               |
-| `sd-deliverable/`   | sd-deliverable   | 매뉴얼/SIT 문서 생성                             |
-| `sd-dev/`           | sd-dev           | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰) |
-| `sd-doc-extract/`   | sd-doc-extract   | 문서 파일 텍스트/이미지 추출 (Python)            |
-| `sd-issue/`         | sd-issue         | GitHub 이슈 생성                                 |
-| `sd-outlook/`       | sd-outlook       | Outlook 메일 검색/다운로드 (Python)              |
-| `sd-plan/`          | sd-plan          | 요구명세/구현계획 작성                           |
-| `sd-prompt/`        | sd-prompt        | 스킬/프롬프트 파일 작성/개선                     |
-| `sd-refactor/`      | sd-refactor      | 리팩토링 분석 리포트 생성                        |
-| `sd-review/`        | sd-review        | 코드 리뷰 리포트 생성                            |
-| `sd-tdd/`           | sd-tdd           | TDD 개발                                         |
-| `sd-use/`           | sd-use           | 자연어 → sd-\* 스킬 라우팅                       |
-| `sd-wbs/`           | sd-wbs           | WBS Feature 분해                                 |
+| 디렉토리              | 스킬 이름          | Description                                        |
+| --------------------- | ------------------ | -------------------------------------------------- |
+| `my-apk-decompile/`   | my-apk-decompile   | APK 파일 디컴파일 및 소스코드 분석                 |
+| `playwright-cli/`     | playwright-cli     | 브라우저 자동화 및 Playwright 테스트               |
+| `sd-check/`           | sd-check           | typecheck/lint/test 실행 및 에러 해결              |
+| `sd-claude-docs/`     | sd-claude-docs     | CLAUDE.md + usage 문서 동시 생성                   |
+| `sd-commit/`          | sd-commit          | 전체 변경사항에 대한 단일 커밋 생성                |
+| `sd-debug/`           | sd-debug           | 버그 근본 원인 분석 및 해결책 제안                 |
+| `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
+| `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
+| `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |
+| `sd-inner-debug/`     | sd-inner-debug     | (내부 전용) 근본 원인 분석(ACH) 로직               |
+| `sd-inner-review/`    | sd-inner-review    | (내부 전용) 코드 리뷰 분석 로직                    |
+| `sd-issue/`           | sd-issue           | GitHub 이슈 생성                                   |
+| `sd-outlook/`         | sd-outlook         | Outlook 메일 검색/다운로드 (Python)                |
+| `sd-plan/`            | sd-plan            | 요구명세/구현계획 작성                             |
+| `sd-prompt/`          | sd-prompt          | 스킬/프롬프트 파일 작성/개선                       |
+| `sd-refactor/`        | sd-refactor        | 리팩토링 분석 리포트 생성                          |
+| `sd-review/`          | sd-review          | 코드 리뷰 리포트 생성                              |
+| `sd-tdd/`             | sd-tdd             | TDD 개발                                           |
+| `sd-use/`             | sd-use             | 자연어 → sd-\* 스킬 라우팅                         |
+| `sd-wbs/`             | sd-wbs             | WBS Feature 분해                                   |
 
 ### SKILL.md frontmatter 형식
 
@@ -73,17 +78,21 @@ Claude Code 규칙 파일. 세션 시작 시 `sd-session-start.sh`에 의해 읽
 
 ## `claude/references/`
 
-스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다. 7개 md파일 + 1개 디렉토리.
+스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다. 공유 문서(md파일)와 패키지별 사용 설명서 디렉토리.
 
-| 파일/디렉토리           | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `sd-clarify.md`         | 사용자 요청 명확화 지침                   |
-| `sd-debug.md`           | 디버그 프로세스 참조 문서                 |
-| `sd-frontend-design.md` | 프론트엔드 UI 코드 작성 지침              |
-| `sd-review.md`          | 코드 리뷰 관점 참조 문서                  |
-| `sd-simplysm14.md`      | simplysm 패키지 문서 진입점               |
-| `sd-simplysm14/`        | simplysm v14 패키지별 usage 문서 디렉토리 |
-| `sd-testing.md`         | 테스트 작성 지침                          |
+### 공유 문서
+
+| 파일 | Description |
+|------|-------------|
+| `sd-frontend-design.md` | 프론트엔드 UI 코드 작성 지침 |
+| `sd-simplysm14.md` | simplysm 패키지 문서 진입점 |
+| `sd-testing.md` | 테스트 작성 지침 |
+
+### 패키지 문서 디렉토리
+
+| 디렉토리 | Description |
+|----------|-------------|
+| `sd-simplysm14/` | simplysm v14 패키지별 CLAUDE.md와 usage.md |
 
 ## 소스 오브 트루스
 

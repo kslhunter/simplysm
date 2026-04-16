@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-서비스 클라이언트와 서버가 공유하는 프로토콜, 메시지 타입, 서비스 인터페이스, 앱 구조 정의 패키지.
+서비스 클라이언트와 서버가 공유하는 바이너리 프로토콜, 메시지 타입, 서비스 인터페이스, 앱 구조 정의 패키지.
 
 ## Installation
 
@@ -15,23 +15,23 @@ npm install @simplysm/service-common
 | API | Type | Description |
 |-----|------|-------------|
 | `PROTOCOL_CONFIG` | const | 프로토콜 설정 상수 (최대 크기, 청킹 임계값, 청크 크기, GC 주기, 만료 시간) |
-| `ServiceMessage` | type | 모든 서비스 메시지의 유니언 타입 |
-| `ServiceServerMessage` | type | 서버 → 클라이언트 메시지 유니언 (응답, 에러, 이벤트 알림) |
-| `ServiceServerRawMessage` | type | `ServiceProgressMessage \| ServiceServerMessage` |
-| `ServiceClientMessage` | type | 클라이언트 → 서버 메시지 유니언 (요청, 인증, 이벤트 관련) |
-| `ServiceProgressMessage` | interface | 청크 수신 진행 상태 알림 메시지 |
-| `ServiceErrorMessage` | interface | 서버 에러 알림 메시지 |
+| `ServiceMessage` | type | 양방향 메시지의 유니언 타입 |
+| `ServiceClientMessage` | type | 클라이언트 → 서버 메시지 유니언 |
+| `ServiceServerMessage` | type | 서버 → 클라이언트 메시지 유니언 |
+| `ServiceServerRawMessage` | type | 진행 상태를 포함한 서버 메시지 유니언 |
+| `ServiceProgressMessage` | interface | 청크 수신 진행 상태 알림 |
+| `ServiceErrorMessage` | interface | 서버 에러 알림 |
 | `ServiceAuthMessage` | interface | 클라이언트 인증 메시지 (토큰) |
-| `ServiceRequestMessage` | interface | 서비스 메서드 요청 메시지 |
-| `ServiceResponseMessage` | interface | 서비스 메서드 응답 메시지 |
-| `ServiceAddEventListenerMessage` | interface | 이벤트 리스너 추가 메시지 |
-| `ServiceRemoveEventListenerMessage` | interface | 이벤트 리스너 제거 메시지 |
-| `ServiceGetEventListenerInfosMessage` | interface | 이벤트 리스너 정보 목록 요청 메시지 |
-| `ServiceEmitEventMessage` | interface | 이벤트 발생 메시지 |
-| `ServiceEventMessage` | interface | 서버 이벤트 알림 메시지 |
-| `ServiceProtocol` | interface | 바이너리 프로토콜 인코더/디코더 인터페이스 |
-| `ServiceMessageDecodeResult` | type | 디코딩 결과 (complete 또는 progress) |
-| `createServiceProtocol` | function | ServiceProtocol 인스턴스 팩토리 함수 |
+| `ServiceRequestMessage` | interface | 서비스 메서드 요청 |
+| `ServiceResponseMessage` | interface | 서비스 메서드 응답 |
+| `ServiceAddEventListenerMessage` | interface | 이벤트 리스너 추가 요청 |
+| `ServiceRemoveEventListenerMessage` | interface | 이벤트 리스너 제거 요청 |
+| `ServiceGetEventListenerInfosMessage` | interface | 이벤트 리스너 정보 목록 요청 |
+| `ServiceEmitEventMessage` | interface | 이벤트 발생 요청 |
+| `ServiceEventMessage` | interface | 서버 이벤트 알림 |
+| `ServiceProtocol` | interface | 바이너리 프로토콜 인코더/디코더 |
+| `ServiceMessageDecodeResult` | type | 디코딩 결과 유니언 (complete \| progress) |
+| `createServiceProtocol` | function | ServiceProtocol 인스턴스 생성 팩토리 |
 
 → See [docs/protocol.md](./docs/protocol.md) for details.
 
@@ -39,10 +39,10 @@ npm install @simplysm/service-common
 
 | API | Type | Description |
 |-----|------|-------------|
-| `OrmService` | interface | DB 연결, 트랜잭션 관리, 쿼리 실행 인터페이스 |
-| `DbConnOptions` | type | 데이터베이스 연결 옵션 |
-| `AutoUpdateService` | interface | 클라이언트 최신 버전 정보 조회 인터페이스 |
-| `AppStructureService` | interface | 서버에 등록된 앱 구조 항목을 클라이언트명 기준 맵으로 조회하는 인터페이스 |
+| `OrmService` | interface | DB 연결, 트랜잭션, 쿼리 실행 서비스 인터페이스 |
+| `DbConnOptions` | type | DB 연결 옵션 타입 |
+| `AutoUpdateService` | interface | 클라이언트 최신 버전 조회 서비스 인터페이스 |
+| `AppStructureService` | interface | 앱 구조 항목 조회 서비스 인터페이스 |
 
 → See [docs/service-types.md](./docs/service-types.md) for details.
 
@@ -50,7 +50,7 @@ npm install @simplysm/service-common
 
 | API | Type | Description |
 |-----|------|-------------|
-| `ServiceUploadResult` | interface | 파일 업로드 결과 (경로, 파일명, 크기) |
+| `ServiceUploadResult` | interface | 파일 업로드 결과 |
 
 → See [docs/types.md](./docs/types.md) for details.
 
@@ -58,14 +58,14 @@ npm install @simplysm/service-common
 
 | API | Type | Description |
 |-----|------|-------------|
-| `AppStructureItem` | type | 앱 구조 항목 유니언 (그룹 또는 리프) |
+| `AppStructureItem` | type | 앱 구조 항목 (그룹 또는 리프) |
 | `AppStructureGroupItem` | interface | 자식을 가진 그룹 메뉴 항목 |
 | `AppStructureLeafItem` | interface | 말단 메뉴 항목 (권한, URL 포함) |
 | `AppStructureSubPermission` | interface | 리프 항목의 하위 권한 정의 |
-| `FlatPermission` | interface | 트리를 플래트닝한 권한 결과 |
-| `isUsableModules` | function | 모듈 접근 가능 여부 판단 (modules OR, requiredModules AND) |
+| `FlatPermission` | interface | 플래트닝된 권한 결과 |
+| `isUsableModules` | function | 개별 항목의 모듈 접근 가능 여부 판단 |
 | `isUsableModulesChain` | function | 모듈 체인 전체의 접근 가능 여부 판단 |
-| `getFlatPermissions` | function | 앱 구조 트리를 모듈 조건 필터링하여 FlatPermission[]으로 플래트닝 |
+| `getFlatPermissions` | function | 앱 구조 트리를 플래트닝하여 권한 배열 반환 |
 
 → See [docs/app-structure.md](./docs/app-structure.md) for details.
 
@@ -73,8 +73,8 @@ npm install @simplysm/service-common
 
 | API | Type | Description |
 |-----|------|-------------|
-| `ServiceEventDef` | interface | defineEvent()로 생성된 이벤트 정의 (타입 마커 포함) |
-| `defineEvent` | function | 타입 안전한 서비스 이벤트를 정의하는 팩토리 함수 |
+| `ServiceEventDef` | interface | 타입 안전 이벤트 정의 인터페이스 |
+| `defineEvent` | function | 타입 안전 이벤트를 정의하는 팩토리 함수 |
 
 → See [docs/events.md](./docs/events.md) for details.
 

@@ -138,4 +138,62 @@ describe("setupWatchEvents", () => {
       expect(() => resolveInitialBuild()).not.toThrow();
     });
   });
+
+  //#region Feature 1.1 Slice 1: engine-watch-events warnings 전달
+
+  describe("warnings 전달", () => {
+    it("build 이벤트의 warnings를 ResultCollector에 저장한다", () => {
+      const worker = new MockWorker();
+      const resultCollector = new ResultCollector();
+
+      setupWatchEvents(worker, {
+        name: "client-app",
+        target: "client",
+        resultCollector,
+        normalizeBuild: (d) => d as { success: boolean; warnings?: string[] },
+      });
+
+      worker.emit("build", { success: true, warnings: ["warn1"] });
+
+      const result = resultCollector.get("client-app:build");
+      expect(result?.status).toBe("success");
+      expect(result?.warnings).toBe("warn1");
+    });
+
+    it("build 이벤트에 warnings가 없으면 undefined이다", () => {
+      const worker = new MockWorker();
+      const resultCollector = new ResultCollector();
+
+      setupWatchEvents(worker, {
+        name: "client-app",
+        target: "client",
+        resultCollector,
+        normalizeBuild: (d) => d as { success: boolean },
+      });
+
+      worker.emit("build", { success: true });
+
+      const result = resultCollector.get("client-app:build");
+      expect(result?.warnings).toBeUndefined();
+    });
+
+    it("여러 warnings를 줄바꿈으로 결합하여 저장한다", () => {
+      const worker = new MockWorker();
+      const resultCollector = new ResultCollector();
+
+      setupWatchEvents(worker, {
+        name: "client-app",
+        target: "client",
+        resultCollector,
+        normalizeBuild: (d) => d as { success: boolean; warnings?: string[] },
+      });
+
+      worker.emit("build", { success: true, warnings: ["warn1", "warn2"] });
+
+      const result = resultCollector.get("client-app:build");
+      expect(result?.warnings).toBe("warn1\nwarn2");
+    });
+  });
+
+  //#endregion
 });

@@ -18,7 +18,8 @@ import {
   styles: [
     /* language=SCSS */ `
       sd-list {
-        display: block;
+        display: flex;
+        flex-direction: column;
         user-select: none;
         background: var(--control-color);
 

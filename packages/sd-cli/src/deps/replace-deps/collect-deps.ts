@@ -12,13 +12,15 @@ export interface DepsResult {
 }
 
 /**
- * pnpm-workspace.yaml 기반으로 workspace 패키지의 name → 상대 디렉토리 맵을 구성한다.
+ * 워크스페이스 디렉토리(packages/, tests/) 스캔 기반으로 packages/ 패키지의 name → 상대 디렉토리 맵을 구성한다.
+ * tests/ 패키지는 제외된다.
  * 예: "@simplysm/core-node" → "packages/core-node"
  */
 function buildWorkspacePkgMap(cwd: string): Map<string, string> {
   const map = new Map<string, string>();
   const wsPkgs = discoverWorkspacePackages(cwd);
   for (const [, relDir] of wsPkgs) {
+    if (relDir.startsWith("tests/")) continue;
     const pkgJsonPath = pathx.posix(path.join(cwd, relDir, "package.json"));
     if (!fs.existsSync(pkgJsonPath)) continue;
     const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string };
@@ -35,7 +37,7 @@ export function collectDeps(
   const startTime = performance.now();
   logger.debug("의존성 수집 시작");
 
-  // pnpm-workspace.yaml에서 workspace 패키지 디렉토리 패턴을 읽어 실제 패키지 맵 구성
+  // 워크스페이스 디렉토리 스캔으로 packages/ 패키지 맵 구성 (tests/ 제외)
   const workspacePkgMap = buildWorkspacePkgMap(cwd);
 
   const replaceDepsPatterns: Array<{ regex: RegExp }> = [];

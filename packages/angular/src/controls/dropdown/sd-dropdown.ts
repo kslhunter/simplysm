@@ -208,21 +208,12 @@ export class SdDropdown {
     const leftPos = shouldPlaceLeft ? undefined : rect.left;
     const rightPos = shouldPlaceLeft ? window.innerWidth - rect.right : undefined;
 
-    // Calculate available space for popup
-    const availableHeight = shouldPlaceAbove
-      ? rect.top - gap
-      : window.innerHeight - rect.bottom - gap;
-    const availableWidth = shouldPlaceLeft ? rect.right : window.innerWidth - rect.left;
-
     Object.assign(popupEl.style, {
-      top: topPos !== undefined ? topPos + "px" : "",
-      bottom: bottomPos !== undefined ? bottomPos + "px" : "",
-      left: leftPos !== undefined ? leftPos + "px" : "",
-      right: rightPos !== undefined ? rightPos + "px" : "",
+      top: topPos != null ? topPos + "px" : "",
+      bottom: bottomPos != null ? bottomPos + "px" : "",
+      left: leftPos != null ? leftPos + "px" : "",
+      right: rightPos != null ? rightPos + "px" : "",
       minWidth: contentEl.offsetWidth + "px",
-      maxHeight: availableHeight > 0 ? availableHeight + "px" : "",
-      maxWidth: availableWidth > 0 ? availableWidth + "px" : "",
-      overflow: "auto",
       opacity: "1",
       pointerEvents: "auto",
       transform: "none",
@@ -296,9 +287,6 @@ export class SdDropdown {
         left: "",
         right: "",
         minWidth: "",
-        maxHeight: "",
-        maxWidth: "",
-        overflow: "",
         opacity: "",
         pointerEvents: "",
         transform: "",

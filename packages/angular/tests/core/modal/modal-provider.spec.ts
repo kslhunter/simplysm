@@ -104,7 +104,7 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const backdrop = modal?.querySelector("._backdrop") as HTMLElement;
     expect(backdrop).not.toBeNull();
 
-    backdrop.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    backdrop.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await tick(fixture);
 
     const result = await promise;

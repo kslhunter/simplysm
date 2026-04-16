@@ -28,7 +28,7 @@ export abstract class SdAppStructureUtils {
     permKeys: K[],
     permRecord: Record<string, boolean> | undefined,
   ): K[] {
-    if (permRecord === undefined) return [] as K[];
+    if (permRecord == null) return [] as K[];
 
     const result = [] as K[];
     for (const permKey of permKeys) {

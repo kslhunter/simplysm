@@ -40,7 +40,7 @@ import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
   ],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
-      @if (initialized() === undefined || initialized()) {
+      @if (initialized() == null || initialized()) {
         @if (restricted()) {
           <div class="fill tx-theme-gray-light p-xxl tx-center">
             <br />

@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const commonRules: FlatConfig.Rules = {
   "no-warning-comments": "warn",
-  "eqeqeq": ["error", "always", { null: "ignore" }],
+  "eqeqeq": ["error", "always", { null: "never" }],
   "no-self-compare": "error",
   "array-callback-return": "error",
 };
@@ -63,6 +63,22 @@ const noDirectEnvAccessRules: FlatConfig.Rules = {
     {
       selector: 'CallExpression[callee.name="env"][arguments.0.value="NODE_ENV"]',
       message: "NODE_ENV 환경변수는 사용할 수 없습니다.",
+    },
+    {
+      selector: 'BinaryExpression[operator="==="][right.type="Identifier"][right.name="undefined"]',
+      message: "`== null`를 사용하지 마세요. `== null`을 사용하세요.",
+    },
+    {
+      selector: 'BinaryExpression[operator="==="][left.type="Identifier"][left.name="undefined"]',
+      message: "`== null`를 사용하지 마세요. `== null`을 사용하세요.",
+    },
+    {
+      selector: 'BinaryExpression[operator="!=="][right.type="Identifier"][right.name="undefined"]',
+      message: "`!= null`를 사용하지 마세요. `!= null`을 사용하세요.",
+    },
+    {
+      selector: 'BinaryExpression[operator="!=="][left.type="Identifier"][left.name="undefined"]',
+      message: "`!= null`를 사용하지 마세요. `!= null`을 사용하세요.",
     },
   ],
 };
@@ -231,8 +247,10 @@ export default tseslint.config(
       "@simplysm": plugin as unknown as ESLint.Plugin,
     },
     rules: {
+      "@simplysm/ng-template-no-strict-null-check": "error",
       "@simplysm/ng-template-no-todo-comments": "warn",
       "@simplysm/ng-template-sd-require-binding-attrs": "error",
+      "@angular-eslint/template/eqeqeq": ["error", { allowNullOrUndefined: true }],
       "@angular-eslint/template/label-has-associated-control": "off",
     },
   },

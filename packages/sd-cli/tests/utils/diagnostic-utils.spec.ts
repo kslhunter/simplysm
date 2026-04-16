@@ -50,29 +50,38 @@ describe("isWorkspaceDiagnostic", () => {
 });
 
 describe("formatDiagnosticError", () => {
-  it("formats diagnostic with file info", () => {
-    const diag = {
-      file: {
-        fileName: "/workspace/src/index.ts",
-        getLineAndCharacterOfPosition: () => ({ line: 5, character: 10 }),
-      },
-      start: 100,
+  it("파일 정보가 있는 diagnostic을 컬러+코드 컨텍스트로 포맷한다", () => {
+    const sourceFile = ts.createSourceFile(
+      "/workspace/src/index.ts",
+      "const x = 1;\nconst y: string = 123;\n",
+      ts.ScriptTarget.Latest,
+    );
+    const diag: ts.Diagnostic = {
+      file: sourceFile,
+      start: 27,
+      length: 3,
+      category: ts.DiagnosticCategory.Error,
       code: 2345,
       messageText: "Type error",
     };
-    const result = formatDiagnosticError(diag as any);
-    expect(result).toBe("/workspace/src/index.ts:6:11: TS2345: Type error");
+    const result = formatDiagnosticError(diag, "/workspace");
+    expect(result).toContain("TS2345");
+    expect(result).toContain("Type error");
+    expect(result).toContain("index.ts");
   });
 
-  it("formats diagnostic without file info", () => {
-    const diag = {
-      file: null,
-      start: null,
+  it("파일 정보가 없는 diagnostic을 포맷한다", () => {
+    const diag: ts.Diagnostic = {
+      file: undefined,
+      start: undefined,
+      length: undefined,
+      category: ts.DiagnosticCategory.Error,
       code: 1001,
       messageText: "Global error",
     };
-    const result = formatDiagnosticError(diag as any);
-    expect(result).toBe("TS1001: Global error");
+    const result = formatDiagnosticError(diag, "/workspace");
+    expect(result).toContain("TS1001");
+    expect(result).toContain("Global error");
   });
 });
 

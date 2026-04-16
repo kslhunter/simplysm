@@ -3,7 +3,7 @@
 - 어떠한 경우에도 지침을 무시하고 건너뛰지 않는다. 혼자만의 판단으로 무단 진행 절대(NEVER) 금지
 - 지침이 충돌등의 이유로 애매하면 사용자에게 질문한다.
 - 근거없는 답변 금지. 답변에는 항상 그 근거가 포함되어야 함.
-- 문제의 원인을 지멋대로 추측하지 말것. 코드 문제면 코드베이스 검토 반드시 수행해야함.
+- 코드를 수정할 때, 왜 그 코드가 문제인지 근거를 먼저 확인하고 수정한다. "일단 바꿔보고 되면 넘어가자" 식의 추측성 시행착오를 절대(NEVER) 금지한다.
 
 # CRITICAL: 변경사항 되돌리기 금지
 
@@ -41,7 +41,7 @@
 
 - 사용자의 질문에 답변만 하라. 절대 임의로 다음단계(특히, 코드변경)로 넘어가지 않는다(NEVER). 답변만 하고 사용자의 명시적 요청을 기다린다.
 - 사용자의 질문은 동의를 구하는것이 아니다. 무조건적 동의하려하지 말고, 비판적으로 사고하여 답변한다.
-- 사용자의 요청에 대해 `.claude/references/sd-clarify.md`를 읽고, 사용자의 의도를 명확화 한다. (절대 추측하지 않는다.)
+- 사용자의 요청에 대해 `.claude/rules/sd-clarify.md` 지침에 따라, 사용자의 의도를 명확화 한다. (절대 추측하지 않는다.)
 
 # Playwright
 
@@ -54,7 +54,7 @@
 - `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
 - 테스트 작성 시 `.claude/references/sd-testing.md`를 읽고 따른다.
 - 프론트엔드 UI 코드 작성·수정 시 `.claude/references/sd-frontend-design.md`를 읽고 따른다.
-- 디버깅 시 `.claude/references/sd-debug.md`를 읽고 따른다.
+- 디버깅 시 `/sd-inner-debug` 스킬을 호출한다.
 - 코딩을 하거나 코드예제를 출력할때는, 반드시 코드베이스의 기존 패턴을 확인하여 통일성있게 안내한다.
 - 코드를 수정할 경우 수정에 의한 사이드이펙트를 항상 고려한다. (예, html구조가 바뀌면 css의 selector도 바뀌어야함)
 - 함수 작성 혹은 함수내 기능 추가시 단일 책임 원칙을 따른다. (함수가 이름에서 드러나지 않는 일을 몰래 해선 안됨)
@@ -62,9 +62,15 @@
 - **barrel export 금지**: `src/` 루트의 `index.ts`를 제외하고, 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 패키지 루트 `index.ts`에서 개별 파일 경로를 직접 export한다.
 - 다른 패키지의 타입등 re-export 금지.
 - **dynamic import (`import()`) 사용 금지**: 조건부 peer dependency 로딩, 외부 ts 파일 읽기 등 정적 import가 불가능한 경우를 제외하고 `import()` 사용 금지. 정적 `import` 문을 사용한다.
+- **null/undefined 비교 규칙**: `===`/`!==` 사용이 기본이지만 **null/undefined 비교만 예외**이다. 일반 값 비교는 `===`/`!==`, null/undefined 검사는 `== null`/`!= null`을 사용한다. `=== null`, `!== null`, `=== undefined`, `!== undefined`는 lint 에러이다.
+  - `value === "hello"` ○ (일반 값 비교 → `===`)
+  - `value == null` ○ (null/undefined 검사 → `==`)
+  - `value === null` ✕ (lint 에러)
+  - `value === undefined` ✕ (lint 에러)
 
 ## 자주 하는 실수
 
+- **import 경로에 `.js` 확장자 금지**: 내부 모듈 import 시 `.js` 확장자를 붙이지 않는다. `from "./foo"` ○, `from "./foo.js"` ✕. 이 프로젝트는 번들러(esbuild/Vite)가 확장자를 해석하므로 `.js`를 붙이면 안 된다.
 - **`as any[]` 캐스팅 후 `??` 방어**: `value as any[]`로 캐스팅하면 TypeScript는 nullable이 아니라고 판단하여 `?? []`에 lint 에러 발생. `value as any[] | undefined`로 캐스팅해야 한다
 - **타입 추론 해제 금지**: 타입 추론을 해제하는 방식의 수정은 절대 금지한다.
 - **불필요한 `as` 캐스팅**: 가드(`target !== "client"` 등)로 타입이 좁혀진 후에는 `as SdClientPackageConfig` 같은 캐스팅 불필요. lint 에러 `no-unnecessary-type-assertion` 발생
@@ -75,7 +81,8 @@
 
 # @simplysm 패키지 참조
 
-- `@simplysm/*` 패키지 사용 시, `.claude/references/sd-simplysm{메이저버전}.md`를 읽고 해당 패키지의 문서 경로를 찾아 읽는다
+- `@simplysm/*` 패키지 사용 시, `.claude/references/sd-simplysm{메이저버전}.md`를 읽고 해당 패키지의 문서 경로를 찾아 읽는다.
+  - 주의사항: 해당 패키지의 `CLAUDE.md`를 읽는것이 아니다.
 - simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다
 
 # 프로젝트 경계
@@ -95,9 +102,3 @@
 **CRITICAL: Feature 문서에 명시되지 않은 작업을 임의로 수행하지 않는다.**
 
 - 구현 중 추가 작업이 필요하다고 판단되면, 먼저 사용자에게 확인한다.
-
-# 마이그레이션 규칙
-
-- 원본의 기능을 분석한 뒤, 현재 프로젝트의 API·패턴에 맞게 **새로 구현**한다.
-- 원본 코드를 그대로 복사해 와서 오류를 수정하는 방식이 **아니다**.
-- 원본은 기능 요구사항의 **참고 자료**일 뿐, 코드의 출발점이 아니다.

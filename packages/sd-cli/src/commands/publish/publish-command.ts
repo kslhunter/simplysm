@@ -118,7 +118,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   }
 
   if (publishPackages.length === 0) {
-    process.stdout.write("✔ 배포할 패키지가 없습니다.\n");
+    logger.info("배포할 패키지가 없습니다.");
     return;
   }
 

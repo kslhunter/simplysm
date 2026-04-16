@@ -33,8 +33,8 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
     expect(container.querySelector("._screen")).not.toBeNull();
   });
 
-  // Acceptance: busy=false로 인디케이터 숨김
-  it("busy=false이면 인디케이터가 숨겨지고 data-sd-busy 속성이 없다", () => {
+  // Acceptance: busy=false로 인디케이터 숨김 (CSS visibility로 제어, DOM에는 존재)
+  it("busy=false이면 data-sd-busy 속성이 없고 _screen은 DOM에 존재한다", () => {
     const fixture = setup(SdBusyTestDefault);
     fixture.componentInstance.busy.set(true);
     fixture.detectChanges();
@@ -46,11 +46,11 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
 
     const container = getBusyContainer(fixture);
     expect(container.hasAttribute("data-sd-busy")).toBe(false);
-    expect(container.querySelector("._indicator")).toBeNull();
+    expect(container.querySelector("._screen")).not.toBeNull();
   });
 
-  // Acceptance: message input으로 메시지 표시
-  it("busy=true이고 message가 설정되면 메시지가 표시된다", () => {
+  // Acceptance: message input으로 메시지 표시 (<pre> 래핑)
+  it("busy=true이고 message가 설정되면 <pre> 태그로 래핑된 메시지가 표시된다", () => {
     const fixture = setup(SdBusyTestMessage);
     fixture.componentInstance.message.set("저장 중...");
     fixture.detectChanges();
@@ -59,11 +59,13 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
     const container = getBusyContainer(fixture);
     const messageEl = container.querySelector("._message");
     expect(messageEl).not.toBeNull();
-    expect(messageEl!.textContent).toContain("저장 중...");
+    const preEl = messageEl!.querySelector("pre");
+    expect(preEl).not.toBeNull();
+    expect(preEl!.textContent).toContain("저장 중...");
   });
 
-  // Acceptance: progressPercent input으로 진행률 바 표시
-  it("busy=true이고 progressPercent가 50이면 진행률 바가 50%로 표시된다", () => {
+  // Acceptance: progressPercent input으로 진행률 바 표시 (scaleX transform 방식)
+  it("busy=true이고 progressPercent가 50이면 진행률 바가 scaleX(0.5)로 표시된다", () => {
     const fixture = setup(SdBusyTestProgress);
     fixture.componentInstance.progressPercent.set(50);
     fixture.detectChanges();
@@ -72,7 +74,7 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
     const container = getBusyContainer(fixture);
     const progressBar = container.querySelector("._progress-bar") as HTMLElement;
     expect(progressBar).not.toBeNull();
-    expect(progressBar.style.width).toBe("50%");
+    expect(progressBar.style.transform).toBe("scaleX(0.5)");
   });
 
   // Acceptance: spinner 타입 선택
@@ -100,7 +102,7 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
     expect(container.querySelector("._bar")).not.toBeNull();
   });
 
-  // Acceptance: cube 타입 선택
+  // Acceptance: cube 타입 선택 (v12 클래스: _cube1~4)
   it("type=cube이면 cube 인디케이터가 표시된다", () => {
     const fixture = setup(SdBusyTestDefault);
     fixture.componentInstance.busy.set(true);
@@ -110,8 +112,10 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
 
     const container = getBusyContainer(fixture);
     expect(container.getAttribute("data-sd-type")).toBe("cube");
-    expect(container.querySelector("._cube")).not.toBeNull();
-    expect(container.querySelectorAll("._cube-face").length).toBe(4);
+    expect(container.querySelector("._cube1")).not.toBeNull();
+    expect(container.querySelector("._cube2")).not.toBeNull();
+    expect(container.querySelector("._cube3")).not.toBeNull();
+    expect(container.querySelector("._cube4")).not.toBeNull();
   });
 
   // Acceptance: busy 상태에서 키보드 입력 차단
@@ -168,30 +172,54 @@ describe("Feature 3.4 Slice 1: SdBusyContainer 렌더링", () => {
   });
 });
 
-// region FIX-2 Slice 3: busy-container CSS 변수 배경 (CONSIST-001)
+// region Feature 3.2: sd-busy-container v12 복원
 
-describe("FIX-2 Slice 3: busy-container 배경 CSS 변수 (CONSIST-001)", () => {
-  it("busy overlay 배경이 하드코딩이 아닌 CSS 변수 기반이다", () => {
+describe("Feature 3.2 Slice 1: sd-busy-container 공통 구조 복원", () => {
+  // Acceptance: _screen이 busy=false에서도 DOM에 존재
+  it("busy=false일 때 _screen이 DOM에 항상 존재한다", () => {
     const fixture = setup(SdBusyTestDefault);
-    fixture.componentInstance.busy.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const screen = getBusyContainer(fixture).querySelector("._screen") as HTMLElement;
-    expect(screen).toBeTruthy();
+    const container = getBusyContainer(fixture);
+    expect(container.querySelector("._screen")).not.toBeNull();
+  });
 
-    // CSS 변수를 사용해야 하므로 하드코딩된 rgba(255, 255, 255, 0.6)이 아니어야 한다
-    // 컴포넌트 스타일에서 var(--busy-overlay-bg)를 사용하는지 확인
-    // (런타임에서 computed style은 변수가 resolve되므로 소스 코드 레벨에서 확인)
-    const styles = document.querySelectorAll("style");
-    let foundCssVar = false;
-    for (const style of Array.from(styles)) {
-      if (style.textContent.includes("--busy-overlay-bg")) {
-        foundCssVar = true;
-        break;
-      }
-    }
-    expect(foundCssVar).toBe(true);
+  // Acceptance: _progress가 _screen의 직접 자식
+  it("progressPercent가 설정되면 _progress가 _screen의 직접 자식이다", () => {
+    const fixture = setup(SdBusyTestProgress);
+    fixture.componentInstance.progressPercent.set(50);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const container = getBusyContainer(fixture);
+    const progress = container.querySelector("._progress") as HTMLElement;
+    expect(progress).not.toBeNull();
+    expect(progress.parentElement!.classList.contains("_screen")).toBe(true);
+  });
+
+  // Unit: progressPercent=0이면 scaleX(0)
+  it("progressPercent가 0이면 scaleX(0)으로 표시된다", () => {
+    const fixture = setup(SdBusyTestProgress);
+    fixture.componentInstance.progressPercent.set(0);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const container = getBusyContainer(fixture);
+    const progressBar = container.querySelector("._progress-bar") as HTMLElement;
+    expect(progressBar.style.transform).toBe("scaleX(0)");
+  });
+
+  // Unit: progressPercent=100이면 scaleX(1)
+  it("progressPercent가 100이면 scaleX(1)로 표시된다", () => {
+    const fixture = setup(SdBusyTestProgress);
+    fixture.componentInstance.progressPercent.set(100);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const container = getBusyContainer(fixture);
+    const progressBar = container.querySelector("._progress-bar") as HTMLElement;
+    expect(progressBar.style.transform).toBe("scaleX(1)");
   });
 });
 

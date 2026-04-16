@@ -66,6 +66,27 @@ async function createFixtureAndInit(items: TestItem[] = [], pageLength = 0) {
   return { fixture, host };
 }
 
+describe("Feature 4.3 Slice 1: isDeleted 컬럼 헤더 복원", () => {
+  beforeEach(() => {
+    setupTestBed();
+  });
+
+  describe("Rule: isDeleted 컬럼은 삭제 아이콘 헤더를 표시해야 한다", () => {
+    it("inline 편집모드에서 isDeleted 컬럼 헤더에 삭제 아이콘이 표시된다", async () => {
+      const { fixture } = await createFixtureAndInit([
+        { id: 1, name: "A", isDeleted: false },
+      ]);
+
+      // isDeleted 컬럼의 헤더: p-xs-sm tx-center 클래스를 가진 div 안에 ng-icon이 있어야 한다
+      const sheetEl = fixture.nativeElement as HTMLElement;
+      const headerIconDiv = sheetEl.querySelector(
+        "thead th .p-xs-sm.tx-center ng-icon",
+      );
+      expect(headerIconDiv).toBeTruthy();
+    });
+  });
+});
+
 describe("Feature 7.2a Slice 1: 데이터 조회 기본", () => {
   beforeEach(() => {
     setupTestBed();

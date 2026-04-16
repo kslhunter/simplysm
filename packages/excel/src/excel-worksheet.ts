@@ -79,7 +79,7 @@ export class ExcelWorksheet {
   private _getOrCreateCell(r: number, c: number): ExcelCell {
     const key = `${r},${c}`;
     let cell = this._cellMap.get(key);
-    if (cell === undefined) {
+    if (cell == null) {
       cell = new ExcelCell(this._zipCache, this._targetFileName, r, c);
       this._cellMap.set(key, cell);
     }
@@ -221,8 +221,8 @@ export class ExcelWorksheet {
 
     for (let r = startRow + 1; r <= range.e.r; r++) {
       if (
-        opt?.checkEndColIndex !== undefined &&
-        (await this.cell(r, opt.checkEndColIndex).getValue()) === undefined
+        opt?.checkEndColIndex != null &&
+        (await this.cell(r, opt.checkEndColIndex).getValue()) == null
       ) {
         break;
       }
@@ -332,7 +332,7 @@ export class ExcelWorksheet {
 
     // 1. 미디어 파일명 결정 및 저장
     let mediaIndex = 1;
-    while ((await this._zipCache.get(`xl/media/image${mediaIndex}.${opts.ext}`)) !== undefined) {
+    while ((await this._zipCache.get(`xl/media/image${mediaIndex}.${opts.ext}`)) != null) {
       mediaIndex++;
     }
     const mediaPath = `xl/media/image${mediaIndex}.${opts.ext}`;
@@ -376,7 +376,7 @@ export class ExcelWorksheet {
     // 4. 기존 drawing이 없으면 새로 생성
     if (drawingIndex == null || drawingPath == null || drawing == null) {
       drawingIndex = 1;
-      while ((await this._zipCache.get(`xl/drawings/drawing${drawingIndex}.xml`)) !== undefined) {
+      while ((await this._zipCache.get(`xl/drawings/drawing${drawingIndex}.xml`)) != null) {
         drawingIndex++;
       }
       drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
@@ -490,7 +490,7 @@ export class ExcelWorksheet {
     addr: ExcelAddressPoint,
     val: ExcelValueType,
   ): void {
-    if (val === undefined) {
+    if (val == null) {
       wsData.deleteCell(addr);
     } else if (typeof val === "string") {
       const ssId = ssData.getIdByString(val) ?? ssData.add(val);

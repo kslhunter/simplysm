@@ -45,7 +45,7 @@ export async function executeServiceMethod(
   const requiredPerms = methodPerms ?? serviceDef.authPermissions;
 
   if (requiredPerms != null) {
-    if (server.options.auth === undefined) {
+    if (server.options.auth == null) {
       // auth 설정 누락 — 설정 오류
       throw new Error("auth 설정이 필요합니다. auth 서비스를 사용하려면 서버 옵션에 auth를 설정하세요.");
     }

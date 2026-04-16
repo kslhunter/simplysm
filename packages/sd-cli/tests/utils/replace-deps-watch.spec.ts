@@ -17,7 +17,13 @@ describe("watchReplaceDeps onChanged", () => {
     tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-replace-deps-unit-"));
 
     // 소스 패키지 생성
-    const sourceDir = path.join(tmpDir, "source-pkg", "src");
+    const sourcePkg = path.join(tmpDir, "source-pkg");
+    await fs.promises.mkdir(sourcePkg, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(sourcePkg, "package.json"),
+      JSON.stringify({ name: "@test/pkg", files: ["src"] }),
+    );
+    const sourceDir = path.join(sourcePkg, "src");
     await fs.promises.mkdir(sourceDir, { recursive: true });
     await fs.promises.writeFile(path.join(sourceDir, "index.ts"), "export const v = 1;");
 
@@ -73,6 +79,56 @@ describe("watchReplaceDeps onChanged", () => {
 
     // 배칭으로 인해 1번만 호출
     expect(callCount).toBe(1);
+  }, 10_000);
+
+  it("files에 없는 파일의 변경은 감지되지 않는다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // files에 없는 파일 생성
+    await fs.promises.writeFile(path.join(sourcePath, "tsconfig.json"), "{}");
+
+    let callCount = 0;
+
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath }, {
+      onChanged: () => {
+        callCount++;
+      },
+    });
+
+    // files에 없는 파일 변경
+    await fs.promises.writeFile(path.join(sourcePath, "tsconfig.json"), '{"strict": true}');
+
+    // 충분한 대기 시간 (300ms 배칭 + 여유)
+    await new Promise((r) => setTimeout(r, 1500));
+
+    // files에 없으므로 감지되지 않음
+    expect(callCount).toBe(0);
+  }, 10_000);
+
+  it("npm 기본 파일(README.md) 변경이 감지된다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // 소스에 README.md 생성
+    await fs.promises.writeFile(path.join(sourcePath, "README.md"), "# README v1");
+
+    let resolveChanged: () => void;
+    const changedPromise = new Promise<void>((resolve) => {
+      resolveChanged = resolve;
+    });
+
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath }, {
+      onChanged: () => {
+        resolveChanged();
+      },
+    });
+
+    // README.md 변경
+    await fs.promises.writeFile(path.join(sourcePath, "README.md"), "# README v2");
+
+    // 콜백 호출 대기
+    await changedPromise;
   }, 10_000);
 
   it("options 파라미터가 undefined일 때 에러가 발생하지 않는다", async () => {

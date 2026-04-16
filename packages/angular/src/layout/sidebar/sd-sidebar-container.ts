@@ -14,7 +14,7 @@ import { filter } from "rxjs";
   },
   template: `
     <ng-content />
-    <div class="_backdrop" (mousedown)="onBackdropClick()"></div>
+    <div class="_backdrop" tabindex="0" role="button" (click)="onBackdropClick()" (keydown.enter)="onBackdropClick()"></div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -87,6 +87,6 @@ export class SdSidebarContainer {
   }
 
   onBackdropClick(): void {
-    this.toggle.set(false);
+    this.toggle.update((v) => !v);
   }
 }

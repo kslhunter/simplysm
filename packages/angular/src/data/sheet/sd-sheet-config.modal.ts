@@ -151,6 +151,7 @@ interface ConfigItem {
               [size]="'sm'"
               [inline]="true"
               [theme]="'warning'"
+              [buttonStyle]="'min-width: 60px;'"
               (click)="onResetClick()"
             >
               Reset
@@ -159,12 +160,14 @@ interface ConfigItem {
           <sd-button
             [size]="'sm'"
             [theme]="'success'"
+            [buttonStyle]="'min-width: 60px;'"
             (click)="onOkClick()"
           >
             OK
           </sd-button>
           <sd-button
             [size]="'sm'"
+            [buttonStyle]="'min-width: 60px;'"
             (click)="onCancelClick()"
           >
             Cancel
@@ -194,24 +197,24 @@ export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | und
   constructor() {
     effect(() => {
       const cfg = this.config();
-      const items: ConfigItem[] = this.controls().map((ctrl): ConfigItem => {
-        const key = ctrl.key();
-        const cfgCol = cfg?.columnRecord[key];
-        return {
-          key,
-          header: Array.isArray(ctrl.header())
-            ? (ctrl.header() as string[]).join(" > ")
-            : (ctrl.header() as string),
-          disableResizing: ctrl.disableResizing(),
-          fixed: cfgCol?.fixed ?? ctrl.fixed(),
-          hidden: cfgCol?.hidden ?? ctrl.hidden(),
-          width: cfgCol?.width ?? ctrl.width(),
-          ordering: cfgCol?.ordering ?? ctrl.ordering(),
-        };
-      });
-
-      items.sort((a, b) => (a.ordering ?? 0) - (b.ordering ?? 0));
-      items.sort((a, b) => (a.fixed ? -1 : 0) - (b.fixed ? -1 : 0));
+      const items = this.controls()
+        .map((ctrl): ConfigItem => {
+          const key = ctrl.key();
+          const cfgCol = cfg?.columnRecord[key];
+          return {
+            key,
+            header: Array.isArray(ctrl.header())
+              ? (ctrl.header() as string[]).join(" > ")
+              : (ctrl.header() as string),
+            disableResizing: ctrl.disableResizing(),
+            fixed: cfgCol?.fixed ?? ctrl.fixed(),
+            hidden: cfgCol?.hidden ?? ctrl.hidden(),
+            width: cfgCol?.width ?? ctrl.width(),
+            ordering: cfgCol?.ordering ?? ctrl.ordering(),
+          };
+        })
+        .orderBy((i) => i.ordering ?? 0)
+        .orderBy((i) => (i.fixed ? 0 : 1));
 
       this.items.set(items);
       this.initialized.set(true);

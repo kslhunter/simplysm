@@ -16,7 +16,7 @@ export class ExcelXmlSharedString implements ExcelXml {
   private readonly _stringIndexesMap: Map<string, number[]>;
 
   constructor(data?: ExcelXmlSharedStringData) {
-    if (data === undefined) {
+    if (data == null) {
       this.data = {
         sst: {
           $: {

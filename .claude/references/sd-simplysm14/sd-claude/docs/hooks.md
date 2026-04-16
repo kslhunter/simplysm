@@ -1,6 +1,6 @@
 # Hooks
 
-`claude/` 디렉토리의 훅 스크립트. `postinstall`에 의해 `.claude/`에 설치되고, `settings.json`에 자동 등록되어 Claude Code 세션에서 실행된다.
+`claude/` 디렉토리의 훅 스크립트 (총 5개). `postinstall`에 의해 `.claude/`에 설치되고, `settings.json`에 자동 등록되어 Claude Code 세션에서 실행된다.
 
 ## `sd-session-start.sh`
 
@@ -117,7 +117,7 @@ statusLine 훅. Claude Code 상태바에 `폴더 | 모델 | 컨텍스트% | 5h�
 | Function | Description |
 |----------|-------------|
 | `format_model(model_id)` | 모델 ID를 `Name X.Y` 형식으로 변환 (예: `claude-opus-4-6` → `Opus 4.6`) |
-| `format_remaining(reset_epoch)` | 리셋까지 남은 시간을 `Xd Yh` / `Xh Ym` / `Xm` 형식으로 변환 |
+| `format_remaining(reset_epoch)` | 리셋까지 남은 시간을 `Xd Yh` / `Xh Ym` / `Xm` 형식으로 변환. 만료 시 `0m` 반환 |
 | `format_rate_limit(rate_limit)` | rate limit을 `X%(남은시간)` 형식으로 변환 |
 | `read_cache()` | 캐시 파일을 읽어 딕셔너리로 반환 |
 | `should_fetch(cache)` | 캐시가 없거나 180초 이상 경과했으면 `True` |

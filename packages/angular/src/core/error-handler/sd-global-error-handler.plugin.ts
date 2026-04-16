@@ -24,7 +24,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
             Message: reason.message,
             Stack: reason.stack ?? "(스택 없음)",
           });
-        } else if (typeof reason === "object" && reason !== null) {
+        } else if (typeof reason === "object" && reason != null) {
           this._displayErrorMessage("처리되지 않은 Promise 거부", {
             Reason: JSON.stringify(reason, null, 2),
           });

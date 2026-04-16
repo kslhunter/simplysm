@@ -1,4 +1,4 @@
-import type * as NgtscBuildWorkerModule from "../workers/ngtsc-build.worker";
+import type * as LibraryBuildWorkerModule from "../workers/library-build.worker";
 import type { ResultCollector } from "../runtime/ResultCollector";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, BuildPackageInfo, EngineResult } from "./types";
@@ -24,19 +24,19 @@ export interface NgtscEngineOptions {
 /**
  * NgtscProgram 기반 Angular 라이브러리 패키지용 빌드 엔진
  *
- * NgtscProgram을 사용하여 AOT 컴파일을 수행하는 ngtsc-build.worker를 래핑한다.
- * package.json에 @angular/core 의존성이 있는 Angular 패키지용.
+ * 통합된 library-build.worker를 사용하며, globalScss: true를 전달하여
+ * Angular AOT 컴파일 + SCSS 빌드를 활성화한다.
  */
 export class NgtscEngine extends BaseEngine<
   BuildPackageInfo,
-  typeof NgtscBuildWorkerModule & CommonBuildWorkerModule
+  typeof LibraryBuildWorkerModule & CommonBuildWorkerModule
 > {
   constructor(options: NgtscEngineOptions) {
     super(options);
   }
 
   protected _getWorkerPath(): string {
-    return import.meta.resolve("../workers/ngtsc-build.worker");
+    return import.meta.resolve("../workers/library-build.worker");
   }
 
   protected _getTarget(): string {
@@ -49,7 +49,7 @@ export class NgtscEngine extends BaseEngine<
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
-      output,
+      output: { ...output, globalScss: true },
     });
 
     return this._normalizeResult(result);
@@ -61,7 +61,7 @@ export class NgtscEngine extends BaseEngine<
       name: this._pkg.name,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
-      output,
+      output: { ...output, globalScss: true },
       replaceDeps: this._replaceDeps,
     });
   }

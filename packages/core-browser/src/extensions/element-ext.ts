@@ -104,7 +104,7 @@ Element.prototype.prependChild = function <TEl extends Element>(child: TEl): TEl
 Element.prototype.getParents = function (): Element[] {
   const result: Element[] = [];
   let cursor = this.parentNode;
-  while (cursor !== null && cursor instanceof Element) {
+  while (cursor != null && cursor instanceof Element) {
     result.push(cursor);
     cursor = cursor.parentNode;
   }
@@ -113,7 +113,7 @@ Element.prototype.getParents = function (): Element[] {
 
 Element.prototype.findTabbableParent = function (): HTMLElement | undefined {
   let parentEl = this.parentElement;
-  while (parentEl !== null) {
+  while (parentEl != null) {
     if (isTabbable(parentEl)) {
       return parentEl;
     }
@@ -125,7 +125,7 @@ Element.prototype.findTabbableParent = function (): HTMLElement | undefined {
 Element.prototype.findFirstTabbableChild = function (): HTMLElement | undefined {
   const walker = document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT);
   let node = walker.nextNode();
-  while (node !== null) {
+  while (node != null) {
     if (node instanceof HTMLElement && isTabbable(node)) {
       return node;
     }
@@ -160,7 +160,7 @@ export function copyElement(event: ClipboardEvent): void {
   const firstInputEl = target.findFirst<HTMLInputElement | HTMLTextAreaElement>(
     "input, textarea",
   );
-  if (firstInputEl !== undefined) {
+  if (firstInputEl != null) {
     clipboardData.setData("text/plain", firstInputEl.value);
     event.preventDefault();
   }
@@ -183,7 +183,7 @@ export function pasteToElement(event: ClipboardEvent): void {
   const contentText = clipboardData.getData("text/plain");
 
   const firstInputEl = target.findFirst<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
-  if (firstInputEl !== undefined) {
+  if (firstInputEl != null) {
     firstInputEl.value = contentText;
     firstInputEl.dispatchEvent(new Event("input", { bubbles: true }));
     event.preventDefault();

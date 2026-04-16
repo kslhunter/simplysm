@@ -44,7 +44,7 @@ export function setupModelHook<T, S extends WritableSignal<T>>(
     void canSet
       .then((allowed) => {
         if (allowed !== false) {
-          orgSet(fn(model()));
+          orgSet(value);
         }
       })
       .catch((err) => {

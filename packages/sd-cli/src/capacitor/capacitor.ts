@@ -95,7 +95,7 @@ export class Capacitor {
    * 5. cap sync 또는 cap copy 실행
    */
   async initialize(): Promise<void> {
-    Capacitor._logger.debug("initialize 시작");
+    Capacitor._logger.start("initialize 중...");
     await this._acquireLock();
 
     try {
@@ -152,8 +152,8 @@ export class Capacitor {
       }
     } finally {
       await this._releaseLock();
-      Capacitor._logger.debug("initialize 완료");
     }
+    Capacitor._logger.success("initialize 완료");
   }
 
   //#region Private - 명령어 실행
@@ -278,6 +278,7 @@ export class Capacitor {
    * 3. cap run — 기기에서 앱 실행
    */
   async run(url: string): Promise<void> {
+    Capacitor._logger.start(`run 중... (url: ${url})`);
     Capacitor._logger.debug(`server.url 설정: ${url}`);
     await updateServerUrl(this._capPath, url);
 
@@ -321,6 +322,7 @@ export class Capacitor {
         throw err;
       }
     }
+    Capacitor._logger.success("run 완료");
   }
 
   //#endregion
@@ -336,7 +338,7 @@ export class Capacitor {
    * 4. 빌드 산출물 복사
    */
   async build(outPath: string): Promise<void> {
-    Capacitor._logger.debug("build 시작");
+    Capacitor._logger.start("build 중...");
 
     // 1. 웹 에셋 동기화
     Capacitor._logger.debug("cap copy 시작");
@@ -380,7 +382,7 @@ export class Capacitor {
     );
     Capacitor._logger.debug("빌드 산출물 복사 완료");
 
-    Capacitor._logger.debug("build 완료");
+    Capacitor._logger.success("build 완료");
   }
 
   //#endregion

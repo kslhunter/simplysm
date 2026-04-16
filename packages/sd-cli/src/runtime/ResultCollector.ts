@@ -7,6 +7,7 @@ export interface BuildResult {
   type: "build" | "lint" | "server";
   status: "pending" | "building" | "success" | "error" | "running";
   message?: string;
+  warnings?: string;
   port?: number;
 }
 

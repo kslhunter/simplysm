@@ -17,24 +17,21 @@ import { setupRipple } from "../../core/ripple/setupRipple";
   styles: [
     /* language=SCSS */ `
       sd-select-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--gap-sm) var(--gap-default);
+        display: block;
+        background: var(--control-color);
+        font-weight: bold;
         cursor: pointer;
-        border-left: 1px solid var(--trans-lighter);
-        position: relative;
-        overflow: hidden;
+        color: var(--theme-primary-default);
+        transition: background 0.1s linear;
 
         &:hover {
-          background: var(--trans-lighter);
+          color: var(--theme-primary-darker);
+          background: var(--theme-gray-lightest);
         }
       }
     `,
   ],
-  host: {
-    "[attr.tabindex]": "0",
-  },
+  host: {},
 })
 export class SdSelectButton {
   constructor() {

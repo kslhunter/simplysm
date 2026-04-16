@@ -24,14 +24,17 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
     "[attr.aria-live]": "ariaLive()",
   },
   template: `
-    <div class="_block">
-      @if (message() !== undefined) {
-        <div class="_message">{{ message() }}</div>
-      }
-      <ng-content />
+    <div class="_sd-toast-block">
+      <div class="_sd-toast-message">
+        @if (message() != undefined) {
+          {{ message() }}
+        } @else {
+          <ng-content />
+        }
+      </div>
       @if (useProgress()) {
-        <div class="_progress">
-          <div class="_progress-bar" [style.width.%]="progress()"></div>
+        <div class="_sd-toast-progress">
+          <div class="_sd-toast-progress-bar" [style.width.%]="progress()"></div>
         </div>
       }
     </div>
@@ -49,7 +52,7 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         width: 100%;
         pointer-events: none;
 
-        > ._block {
+        > ._sd-toast-block {
           display: inline-block;
           text-align: left;
           color: var(--text-trans-rev-default);
@@ -59,19 +62,19 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
           @include mixins.elevation(12);
           pointer-events: auto;
 
-          > ._message {
+          > ._sd-toast-message {
             padding: var(--gap-default) var(--gap-lg);
             word-break: break-all;
             white-space: pre-wrap;
           }
 
-          > ._progress {
+          > ._sd-toast-progress {
             background: var(--theme-gray-default);
             height: 4px;
             border-radius: var(--border-radius-xl);
             margin: 0 4px 4px 4px;
 
-            > ._progress-bar {
+            > ._sd-toast-progress-bar {
               border-radius: var(--border-radius-xl);
               height: 4px;
               transition: width 1s ease-out;
@@ -81,14 +84,14 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
 
         @each $theme-name, $theme-map in map.get(variables.$vars, theme) {
           &[data-sd-theme="#{$theme-name}"] {
-            > ._block {
-              background: map.get($theme-map, default);
+            > ._sd-toast-block {
+              background: var(--theme-#{$theme-name}-default);
 
-              > ._progress {
-                background: map.get($theme-map, darker);
+              > ._sd-toast-progress {
+                background: var(--theme-#{$theme-name}-darker);
 
-                > ._progress-bar {
-                  background: map.get($theme-map, lighter);
+                > ._sd-toast-progress-bar {
+                  background: var(--theme-#{$theme-name}-lighter);
                 }
               }
             }
@@ -96,7 +99,7 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         }
 
         &[data-sd-open="true"] {
-          > ._block {
+          > ._sd-toast-block {
             transform: none;
             transition: var(--animation-duration) ease-out;
             transition-property: transform, opacity;
@@ -105,7 +108,7 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         }
 
         &[data-sd-open="false"] {
-          > ._block {
+          > ._sd-toast-block {
             transform: translateY(-100%);
             transition: var(--animation-duration) ease-in;
             transition-property: transform, opacity;
@@ -114,17 +117,17 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         }
 
         @media all and (max-width: variables.$breakpoint-mobile) {
-          > ._block {
+          > ._sd-toast-block {
             border-radius: calc(var(--line-height) / 2);
             transform: translateY(100%);
 
-            > ._message {
+            > ._sd-toast-message {
               padding: var(--gap-xs) var(--gap-default);
             }
           }
 
           &[data-sd-open="false"] {
-            > ._block {
+            > ._sd-toast-block {
               transform: translateY(100%);
             }
           }

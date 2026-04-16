@@ -4,7 +4,7 @@
 
 ## `postinstall.mjs`
 
-`pnpm install` 후 자동 실행되는 라이프사이클 스크립트. `claude/` 디렉토리의 에셋을 소비 프로젝트의 `.claude/`에 설치하고 `settings.json`에 훅을 등록한다.
+`pnpm install` 후 자동 실행되는 라이프사이클 스크립트. `claude/` 디렉토리의 에셋을 소비 프로젝트의 `.claude/`에 복사한다. `settings.json`도 `sd-*` 항목과 함께 복사된다.
 
 전체 try-catch로 감싸서 실패해도 `pnpm install`을 차단하지 않는다.
 
@@ -14,22 +14,9 @@
 2. **자기 자신 설치 방지**: simplysm 모노레포에서 동일 메이저 버전이면 건너뜀
 3. **소스 디렉토리 확인**: `claude/` 디렉토리가 없으면 건너뜀
 4. **cleanSdEntries**: 기존 `.claude/` 내 `sd-*` 항목 삭제
-5. **copySdEntries**: `claude/` → `.claude/` 복사
-6. **setupSettings**: `.claude/settings.json`에 훅 등록
+5. **copySdEntries**: `claude/sd-*` + `settings.json` → `.claude/` 복사
 
-### setupSettings 훅 등록
-
-`settings.json`에 아래 훅을 멱등적으로 등록한다. 기존 항목이 있으면 덮어쓰고, 없으면 추가한다.
-
-| Hook Type | Matcher | Command | Description |
-|-----------|---------|---------|-------------|
-| `SessionStart` | `startup\|resume\|clear\|compact` | `bash .claude/sd-session-start.sh` | 세션 시작 시 규칙 파일 경로 출력 |
-| `PreToolUse` | `Write` | `python .claude/sd-check-write.py` | 기존 파일 Write 차단 |
-| `PreToolUse` | `Bash` | `python .claude/sd-check-bash.py` | 금지 명령어 차단 (git, cd, npx tsc/eslint) |
-| `SubagentStart` | (없음) | `bash .claude/sd-session-start.sh` | 서브에이전트 시작 시 규칙 파일 경로 출력 |
-| `statusLine` | — | `python .claude/sd-statusline.py` | 상태바 표시 |
-
-마이그레이션: 루트 레벨에 잘못 위치한 `SessionStart` 키를 `hooks.SessionStart`로 이동한다.
+`settings.json`은 훅이 미리 등록된 정적 파일로 관리된다. 소비 프로젝트에서 커스텀 훅이 필요하면 `settings.local.json`을 사용한다.
 
 ### 내부 함수
 
@@ -96,8 +83,8 @@ function setupSettings(targetDir) → void
 
 동작:
 1. 기존 `claude/` 디렉토리 삭제
-2. 루트 `.claude/`에서 `sd-*` 항목을 수집
-3. 수집된 항목을 `claude/`로 복사
+2. 루트 `.claude/`에서 `sd-*` 항목 수집, `settings.json` 포함
+3. 수집된 항목을 `claude/`로 복사 (단, `SKILL.eval.md`와 `eval_*` 파일은 제외)
 
 ---
 

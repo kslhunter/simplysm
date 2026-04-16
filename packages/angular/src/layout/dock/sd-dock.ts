@@ -11,7 +11,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { injectSdSystemConfigResource } from "../../core/config/injectSdSystemConfigResource";
-import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
+import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resize";
 
 @Component({
   selector: "sd-dock",
@@ -19,10 +19,11 @@ import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  hostDirectives: [{ directive: SdResizeDirective, outputs: ["sdResize"] }],
   host: {
     "[attr.data-sd-position]": "position()",
     "[attr.data-sd-resizable]": "resizable()",
-    "(sdResize)": "onHostResize($any($event))",
+    "(sdResize)": "onHostResize($event)",
   },
   template: `
     <ng-content></ng-content>

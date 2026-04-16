@@ -1,7 +1,7 @@
 import type ts from "typescript";
 import esbuild from "esbuild";
 import { err as errNs } from "@simplysm/core-common";
-import { formatEsbuildMessage } from "../utils/output-utils.js";
+import { formatEsbuildMessages } from "../utils/output-utils";
 import {
   createServerEsbuildOptions,
   writeChangedOutputFiles,
@@ -9,6 +9,7 @@ import {
 import { createTscPlugin, type TscPluginResult } from "../esbuild/esbuild-tsc-plugin";
 import type { TypecheckEnv } from "../utils/tsconfig";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
 
 /**
  * esbuild watch context 생성 옵션
@@ -24,6 +25,7 @@ export interface EsbuildContextOptions {
     output: { dts: boolean };
     env?: TypecheckEnv;
     includeTests?: boolean;
+    lint?: boolean;
   };
 }
 
@@ -48,6 +50,7 @@ export async function createContext(options: EsbuildContextOptions): Promise<voi
       output: options.tsc.output,
       env: options.tsc.env,
       includeTests: options.tsc.includeTests,
+      lint: options.tsc.lint,
     });
   }
 
@@ -99,10 +102,10 @@ export async function rebuild(): Promise<{
     await writeChangedOutputFiles(result.outputFiles);
   }
 
-  const esbuildErrors = result.errors.map(formatEsbuildMessage);
+  const esbuildErrors = formatEsbuildMessages(result.errors, "error");
   const tscErrors = tscPlugin?.getErrors() ?? [];
   const allErrors = [...esbuildErrors, ...tscErrors];
-  const warnings = result.warnings.map(formatEsbuildMessage);
+  const warnings = formatEsbuildMessages(result.warnings, "warning");
 
   return {
     success: allErrors.length === 0,
@@ -188,4 +191,12 @@ export function getTscAffectedFiles(): ReadonlySet<string> | undefined {
  */
 export function getTscDiagnostics(): SerializedDiagnostic[] {
   return tscPlugin?.getDiagnostics() ?? [];
+}
+
+/**
+ * tsc 플러그인의 lint 결과를 반환한다.
+ * 플러그인이 없거나 lint가 비활성이면 undefined를 반환한다.
+ */
+export function getTscLintResult(): LintWithProgramResult | undefined {
+  return tscPlugin?.getLintResult();
 }

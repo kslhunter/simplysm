@@ -278,4 +278,28 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     expect(dropdownCtrl.open()).toBe(false);
     openSpy.mockRestore();
   });
+
+  it("리프 메뉴 항목(children 없음)도 flat 레이아웃이 적용된다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [TopbarMenuBasicTest],
+      providers: [provideRouter([])],
+    }).createComponent(TopbarMenuBasicTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 드롭다운 열기
+    const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+    dropdown.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 리프 메뉴(children 없음)도 layout="flat"이어야 한다
+    const listItem = document.body.querySelector(
+      "sd-dropdown-popup sd-list-item",
+    ) as HTMLElement;
+    expect(listItem).toBeTruthy();
+    expect(listItem.getAttribute("data-sd-layout")).toBe("flat");
+    // children이 없으므로 has-children은 false
+    expect(listItem.getAttribute("data-sd-has-children")).toBe("false");
+  });
 });

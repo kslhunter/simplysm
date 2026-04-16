@@ -26,7 +26,7 @@ export function useSheetCellAgent(options: {
       const cell = options.domAccessor.getCell(r, c);
       if (cell == null) return;
       const tabbable = cell.findFirstTabbableChild();
-      if (tabbable !== undefined) {
+      if (tabbable != null) {
         tabbable.focus();
       }
     });
@@ -52,7 +52,7 @@ export function useSheetCellAgent(options: {
         const targetCell = options.domAccessor.getCell(r, c);
         if (targetCell == null) return;
         const tabbable = targetCell.findFirstTabbableChild();
-        if (tabbable !== undefined) {
+        if (tabbable != null) {
           tabbable.focus();
         }
       });

@@ -30,7 +30,7 @@ async function createFixture(opts?: { value?: number | number[]; selectMode?: "s
   if (opts?.selectMode != null) {
     host.selectMode.set(opts.selectMode);
   }
-  if (opts?.value !== undefined) {
+  if (opts?.value != null) {
     host.value.set(opts.value as any);
   }
 

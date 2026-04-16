@@ -367,7 +367,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
         colSql += " IDENTITY(1,1)";
       }
 
-      if (col.default !== undefined) {
+      if (col.default != null) {
         colSql += ` DEFAULT ${this.expr.escapeValue(col.default)}`;
       }
 
@@ -421,7 +421,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       colSql += " IDENTITY(1,1)";
     }
 
-    if (col.default !== undefined) {
+    if (col.default != null) {
       colSql += ` DEFAULT ${this.expr.escapeValue(col.default)}`;
     }
 
@@ -535,7 +535,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       def.params
         ?.map((p) => {
           let sql = `@${p.name} ${this.expr.renderDataType(p.dataType)}`;
-          if (p.default !== undefined) {
+          if (p.default != null) {
             sql += ` = ${this.expr.escapeValue(p.default)}`;
           }
           return sql;

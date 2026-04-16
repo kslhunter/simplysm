@@ -34,7 +34,7 @@ export function env(key: string, value?: string): string | undefined | void {
 
   if (typeof process !== "undefined") {
     const val = process.env[key];
-    if (val !== undefined) return val;
+    if (val != null) return val;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Node.js에서 import.meta.env는 undefined

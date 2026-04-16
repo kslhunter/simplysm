@@ -26,7 +26,7 @@ export class Time {
   /** Date 객체에서 시간 부분만 추출하여 생성 */
   constructor(date: Date);
   constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number) {
-    if (arg1 === undefined) {
+    if (arg1 == null) {
       const now = new Date();
       this._tick =
         (now.getMilliseconds() +
@@ -34,7 +34,7 @@ export class Time {
           now.getMinutes() * 60 * 1000 +
           now.getHours() * 60 * 60 * 1000) %
         Time._MS_PER_DAY;
-    } else if (arg2 !== undefined) {
+    } else if (arg2 != null) {
       let tick =
         ((arg4 ?? 0) + (arg3 ?? 0) * 1000 + arg2 * 60 * 1000 + (arg1 as number) * 60 * 60 * 1000) %
         Time._MS_PER_DAY;

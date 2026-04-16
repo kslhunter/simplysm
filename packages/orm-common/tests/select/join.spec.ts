@@ -447,4 +447,125 @@ describe("SELECT - INCLUDE", () => {
       expect(builder.build(def)).toMatchSql(expected.include3Depth[dialect]);
     });
   });
+
+  it("FKT→FK include + select 중첩 접근", () => {
+    // User -> posts(FKT) -> user(FK): select에서 배열 map으로 중첩 접근
+    const db = createTestDb();
+    const def = db
+      .user()
+      .include((item) => item.posts.user)
+      .select((item) => ({
+        id: item.id,
+        posts: item.posts!.map((post) => ({
+          title: post.title,
+          authorName: post.user!.name,
+        })),
+      }))
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "User" },
+      select: {
+        "id": { type: "column", path: ["T1", "id"] },
+        "posts.title": { type: "column", path: ["T1.posts", "title"] },
+        "posts.authorName": { type: "column", path: ["T1.posts.user", "name"] },
+      },
+      joins: [
+        {
+          type: "select",
+          as: "T1.posts",
+          from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+          isSingle: false,
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1.posts", "userId"] },
+              target: { type: "column", path: ["T1", "id"] },
+            },
+          ],
+        },
+        {
+          type: "select",
+          as: "T1.posts.user",
+          from: { database: "TestDb", schema: "TestSchema", name: "User" },
+          isSingle: true,
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1.posts.user", "id"] },
+              target: { type: "column", path: ["T1.posts", "userId"] },
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("FK→FKT→FK 3단계 include + select 중첩 접근", () => {
+    // Post -> user(FK) -> posts(FKT) -> user(FK): select에서 다단계 중첩 접근
+    const db = createTestDb();
+    const def = db
+      .post()
+      .include((item) => item.user.posts.user)
+      .select((item) => ({
+        userName: item.user!.name,
+        postAuthors: item.user!.posts!.map((p) => ({
+          name: p.user!.name,
+        })),
+      }))
+      .getSelectQueryDef();
+
+    expect(def).toEqual({
+      type: "select",
+      as: "T1",
+      from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+      select: {
+        "userName": { type: "column", path: ["T1.user", "name"] },
+        "postAuthors.name": { type: "column", path: ["T1.user.posts.user", "name"] },
+      },
+      joins: [
+        {
+          type: "select",
+          as: "T1.user",
+          from: { database: "TestDb", schema: "TestSchema", name: "User" },
+          isSingle: true,
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1.user", "id"] },
+              target: { type: "column", path: ["T1", "userId"] },
+            },
+          ],
+        },
+        {
+          type: "select",
+          as: "T1.user.posts",
+          from: { database: "TestDb", schema: "TestSchema", name: "Post" },
+          isSingle: false,
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1.user.posts", "userId"] },
+              target: { type: "column", path: ["T1.user", "id"] },
+            },
+          ],
+        },
+        {
+          type: "select",
+          as: "T1.user.posts.user",
+          from: { database: "TestDb", schema: "TestSchema", name: "User" },
+          isSingle: true,
+          where: [
+            {
+              type: "eq",
+              source: { type: "column", path: ["T1.user.posts.user", "id"] },
+              target: { type: "column", path: ["T1.user.posts", "userId"] },
+            },
+          ],
+        },
+      ],
+    });
+  });
 });

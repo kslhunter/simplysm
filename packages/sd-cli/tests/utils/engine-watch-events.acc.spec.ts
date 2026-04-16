@@ -192,6 +192,65 @@ describe("setupWatchEvents (Acceptance)", () => {
     await expect(promise).resolves.toBeUndefined();
   });
 
+  it("build 성공 + warnings 시 ResultCollector에 warnings가 저장된다", () => {
+    const worker = new MockWorker();
+    const resultCollector = new ResultCollector();
+
+    setupWatchEvents(worker, {
+      name: "test-pkg",
+      target: "node",
+      resultCollector,
+      normalizeBuild: (d) => d as NormalizedBuildInfo,
+    });
+
+    worker.emit("build", { success: true, warnings: ["warn1"] });
+
+    const result = resultCollector.get("test-pkg:build");
+    expect(result).toMatchObject({
+      status: "success",
+      warnings: "warn1",
+    });
+  });
+
+  it("build 성공 + warnings 없음 시 ResultCollector에 warnings가 undefined이다", () => {
+    const worker = new MockWorker();
+    const resultCollector = new ResultCollector();
+
+    setupWatchEvents(worker, {
+      name: "test-pkg",
+      target: "node",
+      resultCollector,
+      normalizeBuild: (d) => d as NormalizedBuildInfo,
+    });
+
+    worker.emit("build", { success: true });
+
+    const result = resultCollector.get("test-pkg:build");
+    expect(result?.status).toBe("success");
+    expect(result?.warnings).toBeUndefined();
+  });
+
+  it("build 실패 + warnings 시 에러와 경고 모두 저장된다", () => {
+    const worker = new MockWorker();
+    const resultCollector = new ResultCollector();
+
+    setupWatchEvents(worker, {
+      name: "test-pkg",
+      target: "node",
+      resultCollector,
+      normalizeBuild: (d) => d as NormalizedBuildInfo,
+    });
+
+    worker.emit("build", { success: false, errors: ["err1"], warnings: ["warn1"] });
+
+    const result = resultCollector.get("test-pkg:build");
+    expect(result).toMatchObject({
+      status: "error",
+      message: "err1",
+      warnings: "warn1",
+    });
+  });
+
   it("두 번째 build 이벤트에서는 waitForInitialBuild가 다시 resolve되지 않는다", async () => {
     const worker = new MockWorker();
     const resultCollector = new ResultCollector();

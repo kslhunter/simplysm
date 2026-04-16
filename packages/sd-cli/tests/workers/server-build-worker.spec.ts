@@ -26,14 +26,24 @@ const mockRebuild = vi.fn();
 const mockDispose = vi.fn();
 let mockMetafileInputs: Record<string, unknown> = {};
 
-// tsc build mock
-const mockRunTscPackageBuild = vi.fn(() => ({
-  success: true,
-  errors: undefined as string[] | undefined,
+// SdTsCompiler mock (js=false path)
+const mockCompileAsync = vi.fn(() => Promise.resolve({
+  program: { getSourceFiles: () => [] },
+  builderProgram: {},
+  isForAngular: false,
+  affectedFiles: undefined,
   diagnostics: [] as unknown[],
   errorCount: 0,
   warningCount: 0,
+  errors: undefined as string[] | undefined,
+  emitResults: undefined,
+  lint: undefined,
+  scssErrors: [],
+  scssDependencies: new Map(),
 }));
+const MockSdTsCompiler = vi.fn().mockImplementation(function () {
+  return { compileAsync: mockCompileAsync };
+});
 
 const mockCpxSpawnSync = vi.fn().mockReturnValue({ stdout: "v20.11.0", stderr: "", exitCode: 0 });
 
@@ -76,6 +86,8 @@ vi.mock("esbuild", () => ({
       outputFiles: [{ path: "/workspace/packages/my-server/dist/main.js", text: "export {}" }],
     })),
   },
+  formatMessagesSync: (messages: Array<{ text: string }>, _opts: unknown) =>
+    messages.map((m) => m.text),
 }));
 
 vi.mock("fs", () => ({
@@ -112,8 +124,8 @@ vi.mock("../../src/esbuild/esbuild-config", async (importOriginal) => {
   };
 });
 
-vi.mock("../../src/utils/tsc-build", () => ({
-  runTscPackageBuild: mockRunTscPackageBuild,
+vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
+  SdTsCompiler: MockSdTsCompiler,
 }));
 
 // tsc plugin mock (build() js=true path uses createTscPlugin)
@@ -123,6 +135,7 @@ const mockTscPlugin = {
   getAffectedFiles: vi.fn(),
   getDiagnostics: vi.fn((): unknown[] => []),
   getErrors: vi.fn((): string[] | undefined => undefined),
+  getLintResult: vi.fn((): unknown => undefined),
   resetBuilderProgram: vi.fn(),
 };
 
@@ -183,12 +196,19 @@ describe("server-build.worker build()", () => {
       optionalPeerDeps: [],
       nativeModules: [],
     });
-    mockRunTscPackageBuild.mockReturnValue({
-      success: true,
-      errors: undefined,
+    mockCompileAsync.mockResolvedValue({
+      program: { getSourceFiles: () => [] },
+      builderProgram: {},
+      isForAngular: false,
+      affectedFiles: undefined,
       diagnostics: [],
       errorCount: 0,
       warningCount: 0,
+      errors: undefined,
+      emitResults: undefined,
+      lint: undefined,
+      scssErrors: [],
+      scssDependencies: new Map(),
     });
 
     // Reset tsc plugin mock (used for js=true path)
@@ -196,6 +216,7 @@ describe("server-build.worker build()", () => {
     mockTscPlugin.getAffectedFiles.mockReset();
     mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
     mockTscPlugin.getErrors.mockReset().mockReturnValue(undefined);
+    mockTscPlugin.getLintResult.mockReset().mockReturnValue(undefined);
     mockTscPlugin.resetBuilderProgram.mockReset();
 
     // Reset lockfile content and cache
@@ -275,14 +296,21 @@ describe("server-build.worker build()", () => {
     );
   });
 
-  // Acceptance: js=false uses runTscPackageBuild directly
-  it("uses runTscPackageBuild directly when output.js=false", async () => {
-    mockRunTscPackageBuild.mockReturnValueOnce({
-      success: false,
-      errors: ["TS2345: type error"],
+  // Acceptance: js=false uses SdTsCompiler directly
+  it("uses SdTsCompiler directly when output.js=false", async () => {
+    mockCompileAsync.mockResolvedValueOnce({
+      program: { getSourceFiles: () => [] },
+      builderProgram: {},
+      isForAngular: false,
+      affectedFiles: undefined,
       diagnostics: [{ code: 2345, category: 1 }] as any,
       errorCount: 1,
       warningCount: 0,
+      errors: ["TS2345: type error"],
+      emitResults: undefined,
+      lint: undefined,
+      scssErrors: [],
+      scssDependencies: new Map(),
     });
 
     const result = await workerFns["build"]({
@@ -525,12 +553,19 @@ describe("server-build.worker startWatch()", () => {
     vi.mocked(esbuild.context).mockClear();
     vi.mocked(FsWatcher.watch).mockClear();
     vi.mocked(watchPublicFiles).mockClear();
-    mockRunTscPackageBuild.mockReturnValue({
-      success: true,
-      errors: undefined,
+    mockCompileAsync.mockResolvedValue({
+      program: { getSourceFiles: () => [] },
+      builderProgram: {},
+      isForAngular: false,
+      affectedFiles: undefined,
       diagnostics: [],
       errorCount: 0,
       warningCount: 0,
+      errors: undefined,
+      emitResults: undefined,
+      lint: undefined,
+      scssErrors: [],
+      scssDependencies: new Map(),
     });
 
     // Reset tsc plugin mock (used for watch mode rebuild)
@@ -651,7 +686,6 @@ describe("server-build.worker startWatch()", () => {
     ) => Promise<void>;
 
     mockRebuild.mockClear();
-    mockRunTscPackageBuild.mockClear();
     mockSend.mockClear();
 
     const absPath = path.resolve("/workspace", "packages/my-server/src/main.ts").replace(/\\/g, "/");
@@ -659,8 +693,6 @@ describe("server-build.worker startWatch()", () => {
 
     // esbuild rebuild should have been called (tsc triggered by plugin inside)
     expect(mockRebuild).toHaveBeenCalled();
-    // runTscPackageBuild should NOT be called directly for js=true
-    expect(mockRunTscPackageBuild).not.toHaveBeenCalled();
     // Build event should be sent
     expect(mockSend).toHaveBeenCalledWith("build", expect.objectContaining({
       build: expect.objectContaining({ success: true }),
@@ -687,13 +719,20 @@ describe("server-build.worker stopWatch()", () => {
     resetGuard();
     mockDispose.mockClear();
     mockWatcherClose.mockClear();
-    mockRunTscPackageBuild.mockReturnValue({
-      success: true,
-      errors: undefined,
+    mockCompileAsync.mockResolvedValue({
+      program: { getSourceFiles: () => [] },
+      builderProgram: {},
+      isForAngular: false,
+      affectedFiles: undefined,
       diagnostics: [],
       errorCount: 0,
       warningCount: 0,
-      });
+      errors: undefined,
+      emitResults: undefined,
+      lint: undefined,
+      scssErrors: [],
+      scssDependencies: new Map(),
+    });
     mockReadFileSync.mockImplementation(() => JSON.stringify({ name: "x", version: "1.0.0", type: "module" }));
   });
 

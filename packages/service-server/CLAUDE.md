@@ -88,6 +88,7 @@ interface ServiceContext<TAuthInfo> {
   server: ServiceServer<TAuthInfo>;
   socket?: ServiceSocket;     // WebSocket 요청일 때만 존재
   http?: { clientName: string; authTokenPayload? };  // HTTP 요청일 때만 존재
+  legacy?: { clientName?: string };  // V1 레거시 컨텍스트 (자동 업데이트 전용)
 
   get authInfo(): TAuthInfo | undefined;    // 토큰에서 추출한 사용자 데이터
   get clientName(): string | undefined;     // 클라이언트 앱 이름 (경로 탐색용)

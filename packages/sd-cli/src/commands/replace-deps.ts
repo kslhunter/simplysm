@@ -2,6 +2,8 @@ import { consola } from "consola";
 import { loadSdConfig } from "../utils/sd-config";
 import { setupReplaceDeps } from "../deps/replace-deps/replace-deps";
 
+const logger = consola.withTag("sd:cli:replace-deps");
+
 /**
  * replace-deps 명령어 옵션
  */
@@ -19,7 +21,7 @@ export async function runReplaceDeps(opts: ReplaceDepsOptions): Promise<void> {
   const sdConfig = await loadSdConfig({ cwd, dev: false, opt: opts.options });
 
   if (sdConfig.replaceDeps == null) {
-    consola.warn("sd.config.ts에 replaceDeps 설정이 없습니다.");
+    logger.warn("sd.config.ts에 replaceDeps 설정이 없습니다.");
     return;
   }
 

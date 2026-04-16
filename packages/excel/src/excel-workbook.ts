@@ -126,7 +126,7 @@ export class ExcelWorkbook {
         ? wbData.getWsRelIdByName(nameOrIndex)
         : wbData.getWsRelIdByIndex(nameOrIndex);
 
-    if (wsId === undefined) {
+    if (wsId == null) {
       if (typeof nameOrIndex === "string") {
         throw new Error(`이름이 '${nameOrIndex}'인 시트를 찾을 수 없습니다.`);
       } else {

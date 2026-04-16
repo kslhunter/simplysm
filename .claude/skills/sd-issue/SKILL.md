@@ -1,7 +1,7 @@
 ---
 name: sd-issue
 description:  simplysm 라이브러리에 대한 GitHub 이슈를 생성하는 스킬. "이슈 생성", "이슈 등록", "버그 리포트" 등을 요청할 때 사용한다.
-model: sonnet[1m]
+model: sonnet
 effort: low
 ---
 

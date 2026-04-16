@@ -14,7 +14,7 @@ export function setupRipple(enableFn?: () => boolean): void {
     let indicatorEl: HTMLElement | undefined;
 
     const onPointerDown = (event: PointerEvent): void => {
-      if (enableFn !== undefined && !enableFn()) return;
+      if (enableFn != null && !enableFn()) return;
 
       const rect = el.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height);
@@ -22,7 +22,7 @@ export function setupRipple(enableFn?: () => boolean): void {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      if (indicatorEl !== undefined) {
+      if (indicatorEl != null) {
         indicatorEl.remove();
       }
 
@@ -45,21 +45,21 @@ export function setupRipple(enableFn?: () => boolean): void {
       el.appendChild(indicatorEl);
 
       indicatorEl.ontransitionend = (ev: TransitionEvent) => {
-        if (ev.propertyName === "opacity" && indicatorEl !== undefined) {
+        if (ev.propertyName === "opacity" && indicatorEl != null) {
           indicatorEl.remove();
           indicatorEl = undefined;
         }
       };
 
       requestAnimationFrame(() => {
-        if (indicatorEl !== undefined) {
+        if (indicatorEl != null) {
           indicatorEl.style.transform = "scale(1)";
         }
       });
     };
 
     const onPointerUp = (): void => {
-      if (indicatorEl !== undefined) {
+      if (indicatorEl != null) {
         indicatorEl.style.opacity = "0";
       }
     };

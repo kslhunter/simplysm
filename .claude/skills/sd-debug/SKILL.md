@@ -7,7 +7,7 @@ description: 버그·동작 이상의 근본 원인 분석 및 해결책을 제�
 
 ## Step 1: 근본 원인 분석
 
-@.claude/references/sd-debug.md 를 읽고 따른다.
+`/sd-inner-debug` 스킬을 호출한다.
 
 ## Step 2: 문서 기록
 

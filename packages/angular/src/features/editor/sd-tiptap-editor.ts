@@ -101,7 +101,7 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
           <button type="button" data-cmd="clean" (click)="execCmd('clean')">Tx</button>
         </div>
       </div>
-      @if (colorPickerMode() !== undefined) {
+      @if (colorPickerMode() != undefined) {
         <div class="_color-picker">
           @for (color of colorPresets; track color) {
             <button type="button" class="_color-swatch"
@@ -271,10 +271,10 @@ export class SdTiptapEditor {
 
   private readonly _resolvedExtensions = computed(() => {
     const custom = this.extensions();
-    if (custom !== undefined) return custom;
+    if (custom != null) return custom;
 
     const ph = this.placeholder();
-    if (ph !== undefined) {
+    if (ph != null) {
       return [...DEFAULT_EXTENSIONS, Placeholder.configure({ placeholder: ph })];
     }
     return DEFAULT_EXTENSIONS;
@@ -325,7 +325,7 @@ export class SdTiptapEditor {
 
       if (this.validatorFn()) {
         const message = this.validatorFn()!(this.value());
-        if (message !== undefined) {
+        if (message != null) {
           errorMessages.push(message);
         }
       }

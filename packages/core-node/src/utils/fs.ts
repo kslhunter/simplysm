@@ -108,7 +108,7 @@ function collectCopyEntries(
 ): CopyEntry[] {
   const entries: CopyEntry[] = [];
   for (const childPath of children) {
-    if (filter !== undefined && !filter(childPath)) {
+    if (filter != null && !filter(childPath)) {
       continue;
     }
     const relativeChildPath = path.relative(sourcePath, childPath);
@@ -168,7 +168,7 @@ export function copySync(
         }
       }
     }
-    if (lastErr !== undefined) {
+    if (lastErr != null) {
       throw new SdError(lastErr, targetPath);
     }
   }
@@ -222,7 +222,7 @@ export async function copy(
         }
       }
     }
-    if (lastErr !== undefined) {
+    if (lastErr != null) {
       throw new SdError(lastErr, targetPath);
     }
   }

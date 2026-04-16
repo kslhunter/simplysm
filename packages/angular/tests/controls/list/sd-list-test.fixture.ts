@@ -169,6 +169,33 @@ export class SdListItemUnselectedIconTest {
 export class SdListItemReadonlyTest {}
 
 @Component({
+  selector: "sd-list-item-flat-no-children-test",
+  template: `
+    <sd-list>
+      <sd-list-item [layout]="'flat'">Flat Leaf</sd-list-item>
+    </sd-list>
+  `,
+  standalone: true,
+  imports: [SdList, SdListItem],
+})
+export class SdListItemFlatNoChildrenTest {}
+
+@Component({
+  selector: "sd-list-item-dynamic-icon-test",
+  template: `
+    <sd-list>
+      <sd-list-item [selectedIcon]="icon()" [selected]="true">Item</sd-list-item>
+    </sd-list>
+  `,
+  standalone: true,
+  imports: [SdList, SdListItem],
+})
+export class SdListItemDynamicIconTest {
+  icon = signal<string | undefined>(undefined);
+  iconValue = tablerCheck;
+}
+
+@Component({
   selector: "sd-list-item-tool-test",
   template: `
     <sd-list>

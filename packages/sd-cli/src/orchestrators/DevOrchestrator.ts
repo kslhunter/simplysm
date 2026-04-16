@@ -6,7 +6,7 @@ import type {
   SdServerPackageConfig,
 } from "../sd-config.types";
 import { filterPackagesByTargets, classifyDevPackages } from "../utils/package-classify";
-import { printErrors, printServers } from "../utils/output-utils";
+import { printDiagnostics, printServers } from "../utils/output-utils";
 import { createBuildEngine } from "../engines/engine-factory";
 import type { BuildEngine, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
 import { Capacitor } from "../capacitor/capacitor";
@@ -130,14 +130,14 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
     for (const [name, engine] of this._clientEngines) {
       initialBuildPromises.push({
         name: `${name} (client)`,
-        promise: engine.startWatch({ js: true, dts: false, lint: false }),
+        promise: engine.startWatch({ js: true, dts: false, lint: false, includeTests: false }),
       });
     }
 
     for (const [name, engine] of this._serverEngines) {
       initialBuildPromises.push({
         name: `${name} (server)`,
-        promise: engine.startWatch({ js: true, dts: false, lint: false }),
+        promise: engine.startWatch({ js: true, dts: false, lint: false, includeTests: false }),
       });
     }
 
@@ -217,7 +217,7 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
     this._logger.debug(`배치 완료 (${completedKeys.join(", ")})`);
     const serverBuildKeys = this._serverPackages.map((p) => `${p.name}:build`);
     if (!completedKeys.some((k) => serverBuildKeys.includes(k))) {
-      printErrors(this._resultCollector.toMap());
+      printDiagnostics(this._resultCollector.toMap());
       return;
     }
 
@@ -259,7 +259,7 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
     }
     await Promise.all(restartPromises);
     this._logger.debug("서버 재시작 완료");
-    printErrors(this._resultCollector.toMap());
+    printDiagnostics(this._resultCollector.toMap());
   }
 
   private _schedulePrintServers(): void {

@@ -122,10 +122,12 @@ describe("client.worker build() — Acceptance", () => {
     const result = await workerFns["build"](baseBuildInfo);
 
     expect(result.success).toBe(false);
-    expect(result.errors).toContain("Could not resolve 'missing-module'");
-    expect(result.errors).toContain("Syntax error in file.ts");
+    // formatEsbuildMessages가 ANSI 색상 코드를 포함하므로 부분 문자열 매칭
+    const errorsJoined = result.errors!.join("\n");
+    expect(errorsJoined).toContain("Could not resolve 'missing-module'");
+    expect(errorsJoined).toContain("Syntax error in file.ts");
     // 요약 메시지("Build failed with 2 errors")가 아닌 상세 에러만 포함
-    expect(result.errors).not.toContain("Build failed with 2 errors");
+    expect(errorsJoined).not.toContain("Build failed with 2 errors");
   });
 
   // Scenario: 일반 Error 발생 시 기존 폴백이 동작한다
@@ -183,3 +185,4 @@ describe("client.worker build() — browserSupport 전달", () => {
     );
   });
 });
+

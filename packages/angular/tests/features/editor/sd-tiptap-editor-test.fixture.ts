@@ -93,7 +93,7 @@ export class SdTiptapEditorRequiredTest {
 export class SdTiptapEditorValidatorTest {
   value = signal<string | undefined>("<p>short</p>");
   validator = (val: string | undefined): string | undefined => {
-    if (val !== undefined && val.length < 20) return "내용이 너무 짧습니다.";
+    if (val != null && val.length < 20) return "내용이 너무 짧습니다.";
     return undefined;
   };
 }

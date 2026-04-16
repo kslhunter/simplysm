@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/core-browser` — 브라우저 전용 유틸리티 패키지. DOM 프로토타입 확장, 파일 다운로드/업로드, HTTP fetch, IndexedDB 추상화를 제공한다. 소스 파일 8개.
+`@simplysm/core-browser` — 브라우저 전용 유틸리티 패키지. DOM 프로토타입 확장, 파일 다운로드/업로드, HTTP fetch, IndexedDB 추상화를 제공한다. TypeScript 소스 파일 8개.
 
 ## Architecture
 

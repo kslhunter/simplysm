@@ -63,7 +63,7 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
     const failed = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
     if (failed.length > 0) {
       for (const result of failed) {
-        this._logger.error("리빌드 에러 발생", { error: String(result.reason) });
+        this._logger.error(`리빌드 에러 발생: ${String(result.reason)}`);
       }
     }
 

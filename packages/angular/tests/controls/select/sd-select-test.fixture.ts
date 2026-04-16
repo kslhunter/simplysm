@@ -214,6 +214,27 @@ export class SdSelectItemsTemplateTest {
   ];
 }
 
+@Component({
+  selector: "sd-select-track-by-fn-test",
+  template: `
+    <sd-select [(value)]="value" [items]="items" [trackByFn]="trackByFn">
+      <ng-template [itemOf]="items" let-item>
+        <sd-select-item [value]="item.value">{{ item.label }}</sd-select-item>
+      </ng-template>
+    </sd-select>
+  `,
+  standalone: true,
+  imports: [SdSelect, SdSelectItem, SdItemOfTemplate],
+})
+export class SdSelectTrackByFnTest {
+  value = signal<string | undefined>(undefined);
+  items = [
+    { value: "A", label: "Label A" },
+    { value: "B", label: "Label B" },
+  ];
+  trackByFn = (item: { value: string; label: string }) => item.value;
+}
+
 interface TreeItem {
   value: string;
   label: string;

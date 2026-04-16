@@ -72,7 +72,7 @@ function getHeaderTh(fixture: any): HTMLElement {
   // isLastRow th에 title이 있는것으로 식별
   for (const th of ths) {
     const title = th.getAttribute("title");
-    if (title !== null && title !== "") return th;
+    if (title != null && title !== "") return th;
   }
   // fallback: 마지막 th
   return ths[ths.length - 1];

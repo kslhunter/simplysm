@@ -391,7 +391,7 @@ describe("Feature 2.4 Slice 1: sd-textfield string types", () => {
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
-  it("기본 상태에서 host의 data-sd-type이 컨트롤 타입이다", () => {
+  it("기본 상태에서 host의 data-sd-type이 사용자 지정 타입이다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
       .createComponent(SdTextfieldTextTest);
     fixture.detectChanges();
@@ -495,7 +495,7 @@ describe("Feature 2.4 Slice 2: sd-textfield number + format types", () => {
     expect(input.getAttribute("inputmode")).toBe("numeric");
 
     const host = fixture.nativeElement.querySelector("sd-textfield") as HTMLElement;
-    expect(host.getAttribute("data-sd-type")).toBe("text");
+    expect(host.getAttribute("data-sd-type")).toBe("number");
   });
 
   it("number 타입의 value가 있으면 콤마 포매팅된 값이 표시된다", () => {
@@ -790,13 +790,13 @@ describe("Feature 2.4 Slice 3: sd-textfield date/datetime/time types", () => {
     expect(input.value).toBe("2025");
   });
 
-  it("year 타입의 host data-sd-type은 'text'이다", () => {
+  it("year 타입의 host data-sd-type은 'year'이다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldYearTest] })
       .createComponent(SdTextfieldYearTest);
     fixture.detectChanges();
 
     const host = fixture.nativeElement.querySelector("sd-textfield") as HTMLElement;
-    expect(host.getAttribute("data-sd-type")).toBe("text");
+    expect(host.getAttribute("data-sd-type")).toBe("year");
   });
 
   it("datetime 타입에 value 설정 시 input value가 yyyy-MM-ddTHH:mm 형식이다", () => {
@@ -811,13 +811,13 @@ describe("Feature 2.4 Slice 3: sd-textfield date/datetime/time types", () => {
     expect(input.value).toBe("2025-03-15T10:30");
   });
 
-  it("datetime 타입의 host data-sd-type은 'datetime-local'이다", () => {
+  it("datetime 타입의 host data-sd-type은 'datetime'이다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldDatetimeTest] })
       .createComponent(SdTextfieldDatetimeTest);
     fixture.detectChanges();
 
     const host = fixture.nativeElement.querySelector("sd-textfield") as HTMLElement;
-    expect(host.getAttribute("data-sd-type")).toBe("datetime-local");
+    expect(host.getAttribute("data-sd-type")).toBe("datetime");
   });
 
   it("datetime-sec 타입의 input step 속성은 1이다", () => {
@@ -992,6 +992,37 @@ describe("FIX-2 Slice 1: textfield paste 실패 복원 (LOGIC-010)", () => {
 
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
+});
+
+// endregion
+
+// region Feature 1.3: sd-textfield 표시 로직 복원
+
+describe("Feature 1.3 Slice 1: sd-textfield 표시 로직 및 호스트 바인딩 복원", () => {
+  it("datetime readonly에서 controlValueText의 포매팅된 표시 텍스트가 pre 태그에 표시된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldDatetimeReadonlyTest] })
+      .createComponent(SdTextfieldDatetimeReadonlyTest);
+    fixture.componentInstance.value.set(new DateTime(2025, 3, 15, 10, 30, 0));
+    fixture.detectChanges();
+
+    const contents = fixture.nativeElement.querySelector("sd-textfield ._contents") as HTMLElement;
+    const pre = contents.querySelector("pre");
+    expect(pre).toBeTruthy();
+    expect(pre!.textContent).toContain("2025-03-15");
+    expect(pre!.textContent).toContain("10:30");
+  });
+
+  it("text readonly에서 controlValueText가 controlValue 폴백을 통해 값을 표시한다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldReadonlyTest] })
+      .createComponent(SdTextfieldReadonlyTest);
+    fixture.detectChanges();
+
+    const contents = fixture.nativeElement.querySelector("sd-textfield ._contents") as HTMLElement;
+    const pre = contents.querySelector("pre");
+    expect(pre).toBeTruthy();
+    expect(pre!.textContent).toContain("readonly value");
+  });
+
 });
 
 // endregion

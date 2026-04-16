@@ -105,10 +105,10 @@ function createStringHandler(type: "text" | "password" | "email" | "color"): Tex
 
       if (type !== "color") {
         const str = value as string;
-        if (opts.minlength !== undefined && opts.minlength > str.length) {
+        if (opts.minlength != null && opts.minlength > str.length) {
           errors.push(`문자의 길이가 ${opts.minlength}보다 길거나 같아야 합니다.`);
         }
-        if (opts.maxlength !== undefined && opts.maxlength < str.length) {
+        if (opts.maxlength != null && opts.maxlength < str.length) {
           errors.push(`문자의 길이가 ${opts.maxlength}보다 짧거나 같아야 합니다.`);
         }
 

@@ -39,6 +39,8 @@ export interface BuildOutput {
   env?: TypecheckEnv;
   /** 타입체크 범위에 tests/ 파일을 포함한다. check 커맨드에서만 사용된다. */
   includeTests?: boolean;
+  /** Angular 라이브러리의 글로벌 SCSS 컴파일 여부 */
+  globalScss?: boolean;
 }
 
 /**

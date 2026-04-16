@@ -152,47 +152,47 @@ export function format(
   const { year, month, day, hour, minute, second, millisecond, timezoneOffsetMinutes } = args;
 
   const absOffsetMinutes =
-    timezoneOffsetMinutes !== undefined ? Math.abs(timezoneOffsetMinutes) : undefined;
-  const offsetHour = absOffsetMinutes !== undefined ? Math.floor(absOffsetMinutes / 60) : undefined;
-  const offsetMinute = absOffsetMinutes !== undefined ? absOffsetMinutes % 60 : undefined;
+    timezoneOffsetMinutes != null ? Math.abs(timezoneOffsetMinutes) : undefined;
+  const offsetHour = absOffsetMinutes != null ? Math.floor(absOffsetMinutes / 60) : undefined;
+  const offsetMinute = absOffsetMinutes != null ? absOffsetMinutes % 60 : undefined;
   const offsetSign =
-    timezoneOffsetMinutes !== undefined ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
+    timezoneOffsetMinutes != null ? (timezoneOffsetMinutes >= 0 ? "+" : "-") : undefined;
 
   const week =
-    year !== undefined && month !== undefined && day !== undefined
+    year != null && month != null && day != null
       ? new Date(year, month - 1, day).getDay()
       : undefined;
 
   let result = formatString;
 
   // 연도
-  if (year !== undefined) {
+  if (year != null) {
     const yearStr = year.toString();
     result = result.replace(patterns.yyyy, yearStr);
     result = result.replace(patterns.yy, yearStr.substring(2, 4));
   }
 
   // 월
-  if (month !== undefined) {
+  if (month != null) {
     const monthStr = month.toString();
     result = result.replace(patterns.MM, monthStr.padStart(2, "0"));
     result = result.replace(patterns.M, monthStr);
   }
 
   // 요일
-  if (week !== undefined) {
+  if (week != null) {
     result = result.replace(patterns.ddd, weekStrings[week]);
   }
 
   // 일
-  if (day !== undefined) {
+  if (day != null) {
     const dayStr = day.toString();
     result = result.replace(patterns.dd, dayStr.padStart(2, "0"));
     result = result.replace(patterns.d, dayStr);
   }
 
   // 시
-  if (hour !== undefined) {
+  if (hour != null) {
     result = result.replace(patterns.tt, hour < 12 ? "AM" : "PM");
 
     const hour12 = hour % 12 || 12;
@@ -206,21 +206,21 @@ export function format(
   }
 
   // 분
-  if (minute !== undefined) {
+  if (minute != null) {
     const minuteStr = minute.toString();
     result = result.replace(patterns.mm, minuteStr.padStart(2, "0"));
     result = result.replace(patterns.m, minuteStr);
   }
 
   // 초
-  if (second !== undefined) {
+  if (second != null) {
     const secondStr = second.toString();
     result = result.replace(patterns.ss, secondStr.padStart(2, "0"));
     result = result.replace(patterns.s, secondStr);
   }
 
   // 밀리초
-  if (millisecond !== undefined) {
+  if (millisecond != null) {
     const msStr = millisecond.toString().padStart(3, "0");
     result = result.replace(patterns.fff, msStr);
     result = result.replace(patterns.ff, msStr.substring(0, 2));
@@ -228,7 +228,7 @@ export function format(
   }
 
   // 타임존
-  if (offsetSign !== undefined && offsetHour !== undefined && offsetMinute !== undefined) {
+  if (offsetSign != null && offsetHour != null && offsetMinute != null) {
     result = result.replace(
       patterns.zzz,
       `${offsetSign}${offsetHour.toString().padStart(2, "0")}:${offsetMinute.toString().padStart(2, "0")}`,

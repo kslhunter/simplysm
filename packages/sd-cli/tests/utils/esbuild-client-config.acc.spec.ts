@@ -15,23 +15,17 @@ vi.mock("esbuild", () => ({
   },
 }));
 
-const mockSourceFileCache = {
-  loadResultCache: { name: "mockLoadResultCache" },
-  invalidate: vi.fn(),
-  modifiedFiles: new Set<string>(),
-};
+const mockAngularPlugin = { name: "sd-angular-compiler" };
 
-const mockAngularPlugin = { name: "angular-compiler" };
+vi.mock("../../src/esbuild/esbuild-angular-compiler-plugin", () => ({
+  createAngularCompilerPlugin: vi.fn(() => mockAngularPlugin),
+}));
 
-vi.mock("@angular/build/private", () => {
-  function MockSourceFileCache() {
-    return mockSourceFileCache;
-  }
-  return {
-    createCompilerPlugin: vi.fn(() => mockAngularPlugin),
-    SourceFileCache: vi.fn(MockSourceFileCache),
-  };
-});
+const mockTransformStylesheet = vi.fn();
+
+vi.mock("../../src/angular/client-transform-stylesheet", () => ({
+  createClientTransformStylesheet: vi.fn(() => mockTransformStylesheet),
+}));
 
 vi.mock("browserslist-to-esbuild", () => ({
   default: vi.fn(() => ["chrome61"]),
@@ -52,11 +46,16 @@ vi.mock("module", async (importOriginal) => {
 
 // --- Imports (after mocks) ---
 
-const { createClientEsbuildContext } = await import(
+const { createClientEsbuildContext, ClientSourceFileCache } = await import(
   "../../src/esbuild/esbuild-client-config"
 );
 const esbuild = (await import("esbuild")).default;
-const { createCompilerPlugin, SourceFileCache } = await import("@angular/build/private");
+const { createAngularCompilerPlugin } = await import(
+  "../../src/esbuild/esbuild-angular-compiler-plugin"
+);
+const { createClientTransformStylesheet } = await import(
+  "../../src/angular/client-transform-stylesheet"
+);
 const browserslistToEsbuild = (await import("browserslist-to-esbuild")).default;
 
 describe("createClientEsbuildContext — Acceptance", () => {
@@ -65,10 +64,10 @@ describe("createClientEsbuildContext — Acceptance", () => {
   });
 
   // Scenario: Angular main.ts를 ESM 번들로 빌드
-  // + CompilerPluginOptions와 BundleStylesheetOptions로 플러그인 생성
-  // + SourceFileCache로 LMDB 기반 증분 캐시
+  // + AngularCompilerPluginOptions로 플러그인 생성
+  // + ClientSourceFileCache로 증분 캐시
   // + dev 모드 Angular 플래그 + 소스맵
-  it("dev 모드: ESM 번들 설정, Angular 플래그, 소스맵, SourceFileCache로 esbuild context 생성", async () => {
+  it("dev 모드: ESM 번들 설정, Angular 플래그, 소스맵, ClientSourceFileCache로 esbuild context 생성", async () => {
     const result = await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
@@ -102,16 +101,14 @@ describe("createClientEsbuildContext — Acceptance", () => {
     expect(esbuildOptions.define!["ngDevMode"]).toBeUndefined();
     expect(esbuildOptions.define!["ngHmrMode"]).toBeUndefined();
 
-    // SourceFileCache 생성
-    expect(SourceFileCache).toHaveBeenCalledWith(
-      path.join("/workspace/packages/my-app", ".angular", "cache"),
-    );
+    // ClientSourceFileCache 인스턴스
+    expect(result.sourceFileCache).toBeInstanceOf(ClientSourceFileCache);
 
-    // createCompilerPlugin 호출 검증
-    expect(createCompilerPlugin).toHaveBeenCalledOnce();
-    const [pluginOpts, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    // createAngularCompilerPlugin 호출 검증
+    expect(createAngularCompilerPlugin).toHaveBeenCalledOnce();
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
 
-    // CompilerPluginOptions
+    // AngularCompilerPluginOptions
     expect(pluginOpts.tsconfig).toBe(
       path.join("/workspace/packages/my-app", "tsconfig.json"),
     );
@@ -119,20 +116,20 @@ describe("createClientEsbuildContext — Acceptance", () => {
     expect(pluginOpts.advancedOptimizations).toBe(false);
     expect(pluginOpts.thirdPartySourcemaps).toBe(true);
     expect(pluginOpts.incremental).toBe(true);
-    expect(pluginOpts.sourceFileCache).toBe(mockSourceFileCache);
-    expect(pluginOpts.loadResultCache).toBe(mockSourceFileCache.loadResultCache);
+    expect(pluginOpts.sourceFileCache).toBe(result.sourceFileCache);
+    expect(pluginOpts.typeScriptFileCache).toBe(result.sourceFileCache.typeScriptFileCache);
+    expect(pluginOpts.loadResultCache).toBe(result.sourceFileCache.loadResultCache);
     expect(pluginOpts.includeTestMetadata).toBe(true);
+    expect(pluginOpts.persistentCachePath).toBe(
+      path.join("/workspace/packages/my-app", ".angular", "cache"),
+    );
 
-    // BundleStylesheetOptions
-    expect(styleOpts.workspaceRoot).toBe("/workspace");
-    expect(styleOpts.optimization).toBe(false);
-    expect(styleOpts.sourcemap).toBe("linked");
-    expect(styleOpts.inlineStyleLanguage).toBe("scss");
-    expect(styleOpts.cacheOptions.enabled).toBe(true);
+    // transformStylesheet 콜백 전달
+    expect(pluginOpts.transformStylesheet).toBe(mockTransformStylesheet);
+    expect(createClientTransformStylesheet).toHaveBeenCalledOnce();
 
     // 반환값
     expect(result.context).toBe(mockContext);
-    expect(result.sourceFileCache).toBe(mockSourceFileCache);
 
     // angularPlugin이 plugins에 포함됨
     expect(esbuildOptions.plugins).toContainEqual(mockAngularPlugin);
@@ -169,18 +166,13 @@ describe("createClientEsbuildContext — Acceptance", () => {
     expect(esbuildOptions.define!["ngJitMode"]).toBe("false");
     expect(esbuildOptions.define!["ngHmrMode"]).toBe("false");
 
-    // CompilerPluginOptions
-    const [pluginOpts, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    // AngularCompilerPluginOptions
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
     expect(pluginOpts.sourcemap).toBe(false);
     expect(pluginOpts.advancedOptimizations).toBe(true);
     expect(pluginOpts.thirdPartySourcemaps).toBe(false);
     expect(pluginOpts.incremental).toBe(false);
     expect(pluginOpts.includeTestMetadata).toBe(false);
-    expect((pluginOpts as unknown as Record<string, unknown>)["browserOnlyBuild"]).toBeUndefined();
-
-    // BundleStylesheetOptions
-    expect(styleOpts.optimization).toBe(true);
-    expect(styleOpts.sourcemap).toBe(false);
   });
 
   // Scenario: 커스텀 env 주입
@@ -198,8 +190,8 @@ describe("createClientEsbuildContext — Acceptance", () => {
     );
   });
 
-  // Scenario: PostCSS 설정 — postcssConfiguration 비활성화 + sd-postcss 등록
-  it("postcssPlugins 전달 시 postcssConfiguration은 undefined이고 sd-postcss 플러그인이 등록된다", async () => {
+  // Scenario: PostCSS 설정 — sd-postcss 등록 + transformStylesheet에 postcssPlugins 전달
+  it("postcssPlugins 전달 시 sd-postcss 플러그인이 등록되고 transformStylesheet에도 전달된다", async () => {
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
@@ -207,12 +199,13 @@ describe("createClientEsbuildContext — Acceptance", () => {
       postcssPlugins: [["autoprefixer", {}]],
     });
 
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.postcssConfiguration).toBeUndefined();
-
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     const pluginNames = esbuildOptions.plugins!.map((p: any) => p.name);
     expect(pluginNames).toContain("sd-postcss");
+
+    const transformOpts = vi.mocked(createClientTransformStylesheet).mock.calls[0][0];
+    expect(transformOpts.postcssPlugins).toBeDefined();
+    expect(transformOpts.postcssPlugins).toHaveLength(1);
   });
 
   // Scenario: 프로덕션 일회성 빌드
@@ -306,7 +299,7 @@ describe("createClientEsbuildContext — Acceptance", () => {
   });
 
   // Scenario: browserslist 미설정 시 기본 target "es2022"
-  it("browserslist 미설정 시 esbuild target과 BundleStylesheetOptions.target이 [es2022]", async () => {
+  it("browserslist 미설정 시 esbuild target이 [es2022]", async () => {
     await createClientEsbuildContext({
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
@@ -315,9 +308,6 @@ describe("createClientEsbuildContext — Acceptance", () => {
 
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(esbuildOptions.target).toEqual(["es2022"]);
-
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.target).toEqual(["es2022"]);
   });
 
   // Scenario: browserslist 문자열 설정 시 변환
@@ -335,9 +325,6 @@ describe("createClientEsbuildContext — Acceptance", () => {
 
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(esbuildOptions.target).toEqual(["chrome61"]);
-
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.target).toEqual(["chrome61"]);
   });
 
   // Scenario: polyfills 경로 전달 시 entryPoints에 추가
@@ -413,9 +400,6 @@ describe("createClientEsbuildContext — Acceptance", () => {
 
     const esbuildOptions = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(esbuildOptions.target).toEqual(["chrome61", "firefox60"]);
-
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.target).toEqual(["chrome61", "firefox60"]);
   });
 
   // Scenario: esbuild context에 tsconfig 옵션이 전달된다
@@ -447,12 +431,12 @@ describe("createClientEsbuildContext — Acceptance", () => {
     const pluginNames = esbuildOptions.plugins!.map((p: any) => p.name);
 
     expect(pluginNames).toContain("custom");
-    expect(pluginNames).toContain("angular-compiler");
+    expect(pluginNames).toContain("sd-angular-compiler");
     expect(pluginNames).toContain("sd-scss");
     expect(pluginNames[pluginNames.length - 1]).toBe("sd-on-end");
 
     const customIdx = pluginNames.indexOf("custom");
-    const angularIdx = pluginNames.indexOf("angular-compiler");
+    const angularIdx = pluginNames.indexOf("sd-angular-compiler");
     const scssIdx = pluginNames.indexOf("sd-scss");
     expect(customIdx).toBeLessThan(angularIdx);
     expect(angularIdx).toBeLessThan(scssIdx);

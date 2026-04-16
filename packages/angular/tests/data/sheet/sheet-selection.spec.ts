@@ -19,18 +19,18 @@ describe("Feature 6.1 Slice 3: 행 선택 + 시각 표시", () => {
     await fixture.whenStable();
 
     const host = fixture.nativeElement as HTMLElement;
-    // Single select uses sd-anchor, not sd-checkbox
+    // Single select uses sd-anchor with pointerdown event
     const anchors = host.querySelectorAll("tbody tr td._feature-cell sd-anchor");
 
-    // Click row A anchor
-    (anchors[0] as HTMLElement).click();
+    // Pointerdown row A anchor
+    (anchors[0] as HTMLElement).dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.componentInstance.selectedItems().length).toBe(1);
     expect(fixture.componentInstance.selectedItems()[0].name).toBe("A");
 
-    // Click row B anchor
-    (anchors[1] as HTMLElement).click();
+    // Pointerdown row B anchor
+    (anchors[1] as HTMLElement).dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.componentInstance.selectedItems().length).toBe(1);

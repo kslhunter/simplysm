@@ -1,9 +1,11 @@
 import type esbuild from "esbuild";
 import type ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
-import { parseTsconfig, type TypecheckEnv } from "../utils/tsconfig";
-import { runTscPackageBuild, type TscPackageBuildResult } from "../utils/tsc-build";
+import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
+import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import type { LintWithProgramResult } from "../lint/lint-with-program";
+import type { TypecheckEnv } from "../utils/tsconfig";
 
 export interface TscPluginOptions {
   pkgDir: string;
@@ -11,6 +13,7 @@ export interface TscPluginOptions {
   output: { dts: boolean };
   env?: TypecheckEnv;
   includeTests?: boolean;
+  lint?: boolean;
 }
 
 export interface TscPluginResult {
@@ -19,6 +22,7 @@ export interface TscPluginResult {
   getAffectedFiles(): ReadonlySet<string> | undefined;
   getDiagnostics(): SerializedDiagnostic[];
   getErrors(): string[] | undefined;
+  getLintResult(): LintWithProgramResult | undefined;
   resetBuilderProgram(): void;
 }
 
@@ -28,43 +32,48 @@ export function createTscPlugin(options: TscPluginOptions): TscPluginResult {
   let lastAffectedFiles: ReadonlySet<string> | undefined;
   let lastDiagnostics: SerializedDiagnostic[] = [];
   let lastErrors: string[] | undefined;
-  let lastBuilderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
+  let lastLintResult: LintWithProgramResult | undefined;
 
-  // onStart에서 생성한 tsc Promise (onEnd에서 await)
-  let tscPromise: Promise<TscPackageBuildResult> | undefined;
+  // SdTsCompiler 인스턴스 (lazy 생성, resetBuilderProgram 시 재생성)
+  let compiler: SdTsCompiler | undefined;
+
+  // onStart에서 생성한 compile Promise (onEnd에서 await)
+  let compilePromise: Promise<ISdTsCompilerResult> | undefined;
 
   const plugin: esbuild.Plugin = {
     name: "sd-tsc",
     setup(build) {
       build.onStart(() => {
         // microtask로 tsc 스케줄링 (await하지 않음)
-        tscPromise = Promise.resolve().then(() => {
-          const parsedConfig = parseTsconfig(options.pkgDir);
-          return runTscPackageBuild({
-            pkgDir: options.pkgDir,
-            cwd: options.cwd,
-            output: { js: false, dts: options.output.dts },
-            parsedConfig,
-            env: options.env,
-            includeTests: options.includeTests,
-            oldBuilderProgram: lastBuilderProgram,
-          });
+        compilePromise = Promise.resolve().then(() => {
+          if (compiler == null) {
+            compiler = new SdTsCompiler({
+              pkgDir: options.pkgDir,
+              cwd: options.cwd,
+              output: { js: false, dts: options.output.dts },
+              env: options.env,
+              includeTests: options.includeTests,
+              lint: options.lint,
+            });
+          }
+          return compiler.compileAsync();
         });
       });
 
       build.onEnd(async () => {
         try {
-          const tscResult = await tscPromise!;
-          lastProgram = tscResult.program;
-          lastAffectedFiles = tscResult.affectedFiles;
-          lastDiagnostics = tscResult.diagnostics;
-          lastErrors = tscResult.errors;
-          lastBuilderProgram = tscResult.builderProgram;
+          const result = await compilePromise!;
+          lastProgram = result.program;
+          lastAffectedFiles = result.affectedFiles;
+          lastDiagnostics = result.diagnostics;
+          lastErrors = result.errors;
+          lastLintResult = result.lint;
         } catch (err) {
           lastProgram = undefined;
           lastAffectedFiles = undefined;
           lastDiagnostics = [];
           lastErrors = [errNs.message(err)];
+          lastLintResult = undefined;
         }
       });
     },
@@ -76,8 +85,9 @@ export function createTscPlugin(options: TscPluginOptions): TscPluginResult {
     getAffectedFiles: () => lastAffectedFiles,
     getDiagnostics: () => lastDiagnostics,
     getErrors: () => lastErrors,
+    getLintResult: () => lastLintResult,
     resetBuilderProgram: () => {
-      lastBuilderProgram = undefined;
+      compiler = undefined;
     },
   };
 }

@@ -42,6 +42,7 @@ import { NgIcon } from "@ng-icons/core";
     <ng-template #itemTpl [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
       @for (menu of currMenus; track menu.codeChain.join(".")) {
         <sd-list-item
+          [contentClass]="depth === 0 ? 'pv-default' : ''"
           [style.text-indent.em]="depth > 0 ? (depth + 1) * 0.5 : undefined"
           [sdRouterLink]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu)"
@@ -76,9 +77,6 @@ import { NgIcon } from "@ng-icons/core";
             background: var(--trans-lightest);
           }
 
-          > sd-list-item > ._content {
-            padding-block: var(--gap-default);
-          }
         }
 
         &:not([data-sd-root-layout="accordion"]) {

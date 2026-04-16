@@ -56,10 +56,13 @@ try {
 const wb = new ExcelWorkbook(bytes);
 try {
   const ws = await wb.getWorksheet(0); // 인덱스(0 기반) 또는 시트명
+  const ws2 = await wb.getWorksheet("Sheet1"); // 시트명으로도 조회 가능
 } finally {
   await wb.close();
 }
 ```
+
+`ExcelWorkbook`은 닫힌 후 사용 불가능하며, 닫힌 워크북의 메서드 호출 시 에러 발생.
 
 `ExcelWrapper.write()`가 반환하는 `ExcelWorkbook`은 호출자가 직접 닫아야 한다. `ExcelWrapper.write()` 내부에서 에러 발생 시 자동으로 `close()`를 호출한다.
 
@@ -134,7 +137,7 @@ await ws.cell(0, 0).setStyle({
 
 ### 이미지 삽입
 
-`ExcelWorksheet.addImage()`를 사용한다. `from`/`to`는 0 기반 행/열 인덱스이며, 오프셋은 EMU 단위다.
+`ExcelWorksheet.addImage()`를 사용한다. `from`/`to`는 0 기반 행/열 인덱스이며, 선택적 `rOff`/`cOff`는 EMU 단위 오프셋이다.
 
 ```typescript
 await ws.addImage({
@@ -143,6 +146,69 @@ await ws.addImage({
   from: { r: 1, c: 1 },
   to: { r: 5, c: 4 },
 });
+```
+
+첫 호출 시 `drawing1.xml` 생성. 이후 동일 시트의 이미지는 같은 drawing에 추가된다. 이미지 파일은 `xl/media/image1.png` 등으로 자동 관리.
+
+### 행/열 복사 (Copy Methods)
+
+`ExcelWorksheet`의 복사 메서드들은 셀 값과 스타일을 원본에서 대상으로 복사한다.
+
+```typescript
+// 행 전체 복사 (스타일 포함)
+await ws.copyRow(srcR, targetR);
+
+// 행 스타일만 복사
+await ws.copyRowStyle(srcR, targetR);
+
+// 개별 셀 복사
+await ws.copyCell({ r: 0, c: 0 }, { r: 5, c: 5 });
+
+// 행을 삽입 위치에 복사 (기존 행 이동)
+// targetR 이하의 행들을 1행 아래로 밀고 srcR의 행을 targetR에 삽입
+await ws.insertCopyRow(srcR, targetR);
+```
+
+`insertCopyRow()`는 병합된 셀도 자동으로 처리한다. 삽입 지점을 관통하는 다중행 병합은 1행 확장되고, 단일행 병합만 대상 행에 복사된다.
+
+### 데이터 읽기/쓰기 (Data Methods)
+
+```typescript
+// 데이터 테이블 읽기 (첫 행이 헤더)
+const table = await ws.getDataTable();
+// [{ "헤더1": value, "헤더2": value }, ...]
+
+// 특정 행부터 시작하는 경우
+const table = await ws.getDataTable({ headerRowIndex: 1 });
+
+// 헤더 필터링
+const table = await ws.getDataTable({
+  usableHeaderNameFn: (name) => !name.startsWith("_"),
+});
+
+// 2차원 배열 쓰기
+await ws.setDataMatrix([
+  ["이름", "나이"],
+  ["김철수", 30],
+  ["이영희", 28],
+]);
+
+// 레코드 배열 쓰기 (헤더 자동 생성)
+await ws.setRecords([
+  { name: "김철수", age: 30 },
+  { name: "이영희", age: 28 },
+]);
+```
+
+### 뷰 설정 (View Methods)
+
+```typescript
+// 확대/축소 설정 (퍼센트)
+await ws.setZoom(85);
+
+// 행/열 틀 고정
+// point.r: 고정할 행 인덱스, point.c: 고정할 열 인덱스
+await ws.freezeAt({ r: 1, c: 0 }); // 2행부터, A열 전체 고정
 ```
 
 ### XML 레이어 직접 접근

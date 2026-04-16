@@ -23,7 +23,7 @@ export class SdBusyProvider {
   private _containerRef: ComponentRef<SdBusyContainer> | undefined;
 
   get containerRef(): ComponentRef<SdBusyContainer> {
-    if (this._containerRef === undefined) {
+    if (this._containerRef == null) {
       this._containerRef = createComponent(SdBusyContainer, {
         environmentInjector: this._envInjector,
       });

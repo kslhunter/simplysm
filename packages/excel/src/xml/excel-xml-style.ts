@@ -28,7 +28,7 @@ export class ExcelXmlStyle implements ExcelXml {
   data: ExcelXmlStyleData;
 
   constructor(data?: ExcelXmlStyleData) {
-    if (data === undefined) {
+    if (data == null) {
       this.data = {
         styleSheet: {
           $: {
@@ -71,16 +71,16 @@ export class ExcelXmlStyle implements ExcelXml {
   add(style: ExcelStyle): string {
     const newXf: ExcelXmlStyleDataXf = { $: {} };
 
-    if (style.numFmtId !== undefined) {
+    if (style.numFmtId != null) {
       newXf.$.numFmtId = style.numFmtId;
     }
 
-    if (style.numFmtCode !== undefined) {
+    if (style.numFmtCode != null) {
       newXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
       newXf.$.applyNumberFormat = "1";
     }
 
-    if (style.background !== undefined) {
+    if (style.background != null) {
       const newFill: ExcelXmlStyleDataFill = {
         patternFill: [
           {
@@ -94,7 +94,7 @@ export class ExcelXmlStyle implements ExcelXml {
       newXf.$.fillId = this._getSameOrCreateFill(newFill);
     }
 
-    if (style.border !== undefined) {
+    if (style.border != null) {
       const newBorder = this._createBorderFromPositions(style.border);
       newXf.$.applyBorder = "1";
       newXf.$.borderId = this._getSameOrCreateBorder(newBorder);
@@ -117,19 +117,19 @@ export class ExcelXmlStyle implements ExcelXml {
     const prevXf = xfArray[idNum];
     const cloneXf = obj.clone(prevXf);
 
-    if (style.numFmtId !== undefined) {
+    if (style.numFmtId != null) {
       cloneXf.$.numFmtId = style.numFmtId;
     }
 
-    if (style.numFmtCode !== undefined) {
+    if (style.numFmtCode != null) {
       cloneXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
       cloneXf.$.applyNumberFormat = "1";
     }
 
-    if (style.background !== undefined) {
-      const fillIdNum = cloneXf.$.fillId !== undefined ? num.parseInt(cloneXf.$.fillId) : undefined;
+    if (style.background != null) {
+      const fillIdNum = cloneXf.$.fillId != null ? num.parseInt(cloneXf.$.fillId) : undefined;
       const prevFill =
-        fillIdNum !== undefined ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
+        fillIdNum != null ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
 
       if (prevFill != null) {
         const cloneFill = obj.clone(prevFill);
@@ -157,11 +157,11 @@ export class ExcelXmlStyle implements ExcelXml {
       }
     }
 
-    if (style.border !== undefined) {
+    if (style.border != null) {
       const borderIdNum =
-        cloneXf.$.borderId !== undefined ? num.parseInt(cloneXf.$.borderId) : undefined;
+        cloneXf.$.borderId != null ? num.parseInt(cloneXf.$.borderId) : undefined;
       const prevBorder =
-        borderIdNum !== undefined ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
+        borderIdNum != null ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
 
       if (prevBorder != null) {
         const cloneBorder = obj.clone(prevBorder);
@@ -193,10 +193,10 @@ export class ExcelXmlStyle implements ExcelXml {
 
     const result: ExcelStyle = {};
 
-    if (xf !== undefined) {
+    if (xf != null) {
       result.numFmtId = xf.$.numFmtId;
 
-      if (xf.$.fillId !== undefined) {
+      if (xf.$.fillId != null) {
         const fillIdNum = num.parseInt(xf.$.fillId);
         if (fillIdNum != null) {
           const fill = this.data.styleSheet.fills[0].fill[fillIdNum] as
@@ -211,7 +211,7 @@ export class ExcelXmlStyle implements ExcelXml {
         }
       }
 
-      if (xf.$.borderId !== undefined) {
+      if (xf.$.borderId != null) {
         const borderIdNum = num.parseInt(xf.$.borderId);
         if (borderIdNum == null) {
           throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
@@ -321,7 +321,7 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _applyAlignment(xf: ExcelXmlStyleDataXf, style: ExcelStyle): void {
-    if (style.verticalAlign !== undefined) {
+    if (style.verticalAlign != null) {
       xf.$.applyAlignment = "1";
       if (xf.alignment == null) {
         xf.alignment = [{ $: { vertical: style.verticalAlign } }];
@@ -330,7 +330,7 @@ export class ExcelXmlStyle implements ExcelXml {
       }
     }
 
-    if (style.horizontalAlign !== undefined) {
+    if (style.horizontalAlign != null) {
       xf.$.applyAlignment = "1";
       if (xf.alignment == null) {
         xf.alignment = [{ $: { horizontal: style.horizontalAlign } }];

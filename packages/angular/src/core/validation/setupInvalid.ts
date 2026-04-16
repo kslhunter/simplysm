@@ -84,7 +84,7 @@ function createInputHiddenEl(renderer: Renderer2, hostEl: HTMLElement): HTMLInpu
     const tabbableElement =
       (isTabbable(hostEl) ? hostEl : hostEl.findFirstTabbableChild()) ??
       hostEl.findTabbableParent();
-    if (tabbableElement !== undefined) {
+    if (tabbableElement != null) {
       tabbableElement.focus();
     }
   });

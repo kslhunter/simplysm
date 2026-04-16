@@ -59,11 +59,11 @@ export class Queryable<TData extends DataRecord, TFrom extends TableBuilder | ne
 
   // UPDATE
   update(recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>): Promise<void>;
-  update<K>(recordFwd: ..., outputColumns: K[]): Promise<Pick<TFrom["$columns"], K>[]>;
+  update<K>(recordFwd: ..., outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
 
   // DELETE
   delete(): Promise<void>;
-  delete<K>(outputColumns: K[]): Promise<Pick<TFrom["$columns"], K>[]>;
+  delete<K>(outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
 
   // UPSERT
   upsert(updateFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>): Promise<void>;
@@ -129,11 +129,19 @@ Queryable의 column 프록시 레코드 타입. 각 column이 `ExprUnit`으로 �
 export type QueryableRecord<TData extends DataRecord> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive
     ? ExprUnit<TData[K]>
-    : TData[K] extends (infer U extends DataRecord)[]
-      ? [QueryableRecord<U>]
-      : TData[K] extends DataRecord
-        ? QueryableRecord<TData[K]>
-        : ExprUnit<TData[K] & ColumnPrimitive>;
+    : TData[K] extends (infer U)[]
+      ? U extends DataRecord
+        ? QueryableRecord<U>[]
+        : never
+      : TData[K] extends (infer U)[] | undefined
+        ? U extends DataRecord
+          ? QueryableRecord<U>[] | undefined
+          : never
+        : TData[K] extends DataRecord
+          ? QueryableRecord<TData[K]>
+          : TData[K] extends DataRecord | undefined
+            ? QueryableRecord<Exclude<TData[K], undefined>> | undefined
+            : never;
 };
 ```
 
@@ -143,23 +151,7 @@ UPDATE/INSERT용 column 레코드 타입. `ExprUnit` 또는 리터럴 값을 받
 
 ```typescript
 export type QueryableWriteRecord<TData> = {
-  [K in keyof TData]: ExprInput<TData[K] & ColumnPrimitive>;
-};
-```
-
-## `NullableQueryableRecord`
-
-모든 column이 nullable인 Queryable 레코드 타입.
-
-```typescript
-export type NullableQueryableRecord<TData extends DataRecord> = {
-  [K in keyof TData]: TData[K] extends ColumnPrimitive
-    ? ExprUnit<TData[K] | undefined>
-    : TData[K] extends (infer U extends DataRecord)[]
-      ? [NullableQueryableRecord<U>]
-      : TData[K] extends DataRecord
-        ? NullableQueryableRecord<TData[K]>
-        : ExprUnit<(TData[K] & ColumnPrimitive) | undefined>;
+  [K in keyof TData]: TData[K] extends ColumnPrimitive ? ExprInput<TData[K]> : never;
 };
 ```
 
@@ -169,25 +161,28 @@ QueryableRecord에서 실제 데이터 타입을 추출한다.
 
 ```typescript
 export type UnwrapQueryableRecord<R> = {
-  [K in keyof R]: R[K] extends ExprUnit<infer T> ? T
-    : R[K] extends [infer U] ? UnwrapQueryableRecord<U>[]
-    : R[K] extends Record<string, any> ? UnwrapQueryableRecord<R[K]>
-    : R[K];
+  [K in keyof R as K extends symbol ? never : K]: R[K] extends ExprUnit<infer T>
+    ? T
+    : NonNullable<R[K]> extends (infer U)[]
+      ? U extends Record<string, any>
+        ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>
+        : never
+      : NonNullable<R[K]> extends Record<string, any>
+        ? UnwrapQueryableRecord<NonNullable<R[K]>> | Extract<R[K], undefined>
+        : never;
 };
 ```
 
 ## `PathProxy`
 
-include()에서 관계 경로를 타입 안전하게 지정하기 위한 프록시 타입.
+include()에서 관계 경로를 타입 안전하게 지정하기 위한 프록시 타입. `ColumnPrimitive`가 아닌 필드(FK, FKT 관계)만 접근 가능하다.
 
 ```typescript
 export type PathProxy<TObject> = {
-  [K in keyof TObject]-?: TObject[K] extends (infer U)[] | undefined
-    ? PathProxy<U>
-    : TObject[K] extends infer U | undefined
-      ? PathProxy<U>
-      : PathProxy<TObject[K]>;
-} & { [PATH_SYMBOL]: string[] };
+  [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<
+    UnwrapArray<TObject[K]>
+  >;
+} & { readonly [PATH_SYMBOL]: string[] };
 ```
 
 ## `Executable`

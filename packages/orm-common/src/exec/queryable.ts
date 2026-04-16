@@ -811,11 +811,7 @@ export class Queryable<
         result = result.joinSingle(chainParts.join("."), (joinQr, parentCols) => {
           const qr = joinQr.from(targetTable);
 
-          // FKT JOIN은 배열로 저장되므로, 배열이면 첫 번째 요소 사용
-          const srcColsRaw = parentChain ? parentCols[parentChain] : parentCols;
-          const srcCols = (
-            Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw
-          ) as QueryableRecord<any>;
+          const srcCols = resolveNestedCols(parentCols, parentChain);
           const conditions: WhereExprUnit[] = [];
 
           for (let i = 0; i < fkColKeys.length; i++) {
@@ -853,11 +849,7 @@ export class Queryable<
         const buildJoin = (joinQr: JoinQueryable, parentCols: QueryableRecord<DataRecord>) => {
           const qr = joinQr.from(sourceTable);
 
-          // FKT JOIN은 배열로 저장되므로, 배열이면 첫 번째 요소 사용
-          const srcColsRaw = parentChain ? parentCols[parentChain] : parentCols;
-          const srcCols = (
-            Array.isArray(srcColsRaw) ? srcColsRaw[0] : srcColsRaw
-          ) as QueryableRecord<any>;
+          const srcCols = resolveNestedCols(parentCols, parentChain);
           const conditions: WhereExprUnit[] = [];
 
           for (let i = 0; i < fkColKeys.length; i++) {
@@ -875,6 +867,38 @@ export class Queryable<
           : result.join(chainParts.join("."), buildJoin);
 
         currentTable = sourceTable;
+      }
+
+      // 다단계 include: flat dotted key를 부모 관계 내부로 이동
+      if (parentChain !== "") {
+        const flatKey = chainParts.join(".");
+        const cols = result.meta.columns as Record<string, unknown>;
+        const joinedCols = cols[flatKey];
+
+        const newCols: Record<string, unknown> = { ...cols };
+
+        // parentChain을 따라 부모를 shallow clone하며 도달
+        let target = newCols;
+        for (const part of parentChain.split(".")) {
+          const val = target[part];
+          if (Array.isArray(val)) {
+            const cloned = { ...(val[0] as Record<string, unknown>) };
+            target[part] = [cloned];
+            target = cloned;
+          } else if (val != null && typeof val === "object" && !(val instanceof ExprUnit)) {
+            const cloned = { ...(val as Record<string, unknown>) };
+            target[part] = cloned;
+            target = cloned;
+          }
+        }
+
+        target[relationName] = joinedCols;
+        delete newCols[flatKey];
+
+        result = new Queryable({
+          ...result.meta,
+          columns: newCols as QueryableRecord<any>,
+        });
       }
     }
 
@@ -1392,7 +1416,7 @@ export class Queryable<
     // AI column에 명시적 값이 있으면 overrideIdentity 설정
     const overrideIdentity =
       outputDef.aiColName != null &&
-      records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] !== undefined);
+      records.some((r) => (r as Record<string, unknown>)[outputDef.aiColName!] != null);
 
     return obj.clearUndefined({
       type: "insert",
@@ -1484,15 +1508,15 @@ export class Queryable<
   async update(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
   ): Promise<void>;
-  async update<K extends keyof TFrom["$columns"] & string>(
+  async update<K extends keyof TFrom["$inferColumns"] & string>(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns: K[],
-  ): Promise<Pick<TFrom["$columns"], K>[]>;
-  async update<K extends keyof TFrom["$columns"] & string>(
+  ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+  async update<K extends keyof TFrom["$inferColumns"] & string>(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: K[],
-  ): Promise<Pick<TFrom["$columns"], K>[] | void> {
-    const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
+  ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
       [this.getUpdateQueryDef(recordFwd, outputColumns)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1522,13 +1546,13 @@ export class Queryable<
    * ```
    */
   async delete(): Promise<void>;
-  async delete<K extends keyof TFrom["$columns"] & string>(
+  async delete<K extends keyof TFrom["$inferColumns"] & string>(
     outputColumns: K[],
-  ): Promise<Pick<TFrom["$columns"], K>[]>;
-  async delete<K extends keyof TFrom["$columns"] & string>(
+  ): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+  async delete<K extends keyof TFrom["$inferColumns"] & string>(
     outputColumns?: K[],
-  ): Promise<Pick<TFrom["$columns"], K>[] | void> {
-    const results = await this.meta.db.executeDefs<Pick<TFrom["$columns"], K>>(
+  ): Promise<Pick<TFrom["$inferColumns"], K>[] | void> {
+    const results = await this.meta.db.executeDefs<Pick<TFrom["$inferColumns"], K>>(
       [this.getDeleteQueryDef(outputColumns)],
       outputColumns ? [this.getResultMeta(outputColumns)] : undefined,
     );
@@ -1865,36 +1889,17 @@ export type QueryableRecord<TData extends DataRecord> = {
         : never
       : TData[K] extends (infer U)[] | undefined
         ? U extends DataRecord
-          ? NullableQueryableRecord<U>[] | undefined
+          ? QueryableRecord<U>[] | undefined
           : never
         : TData[K] extends DataRecord
           ? QueryableRecord<TData[K]>
           : TData[K] extends DataRecord | undefined
-            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
+            ? QueryableRecord<Exclude<TData[K], undefined>> | undefined
             : never;
 };
 
 export type QueryableWriteRecord<TData> = {
   [K in keyof TData]: TData[K] extends ColumnPrimitive ? ExprInput<TData[K]> : never;
-};
-
-export type NullableQueryableRecord<TData extends DataRecord> = {
-  // 원시값 — 항상 | undefined (LEFT JOIN NULL 전파)
-  [K in keyof TData]: TData[K] extends ColumnPrimitive
-    ? ExprUnit<TData[K] | undefined>
-    : TData[K] extends (infer U)[]
-      ? U extends DataRecord
-        ? NullableQueryableRecord<U>[]
-        : never
-      : TData[K] extends (infer U)[] | undefined
-        ? U extends DataRecord
-          ? NullableQueryableRecord<U>[] | undefined
-          : never
-        : TData[K] extends DataRecord
-          ? NullableQueryableRecord<TData[K]>
-          : TData[K] extends DataRecord | undefined
-            ? NullableQueryableRecord<Exclude<TData[K], undefined>> | undefined
-            : never;
 };
 
 /**
@@ -1903,7 +1908,7 @@ export type NullableQueryableRecord<TData extends DataRecord> = {
  * ExprUnit<T>를 T로 언래핑, 중첩 객체/배열을 재귀적으로 언래핑
  */
 export type UnwrapQueryableRecord<R> = {
-  [K in keyof R]: R[K] extends ExprUnit<infer T>
+  [K in keyof R as K extends symbol ? never : K]: R[K] extends ExprUnit<infer T>
     ? T
     : NonNullable<R[K]> extends (infer U)[]
       ? U extends Record<string, any>
@@ -1944,6 +1949,23 @@ export type PathProxy<TObject> = {
     UnwrapArray<TObject[K]>
   >;
 } & { readonly [PATH_SYMBOL]: string[] };
+
+/**
+ * parentChain(점 구분 경로)을 따라 nested columns 구조를 탐색하여 대상 컬럼을 반환.
+ * 배열(1:N 관계)은 첫 번째 요소를 사용.
+ */
+function resolveNestedCols(
+  cols: QueryableRecord<any>,
+  parentChain: string,
+): QueryableRecord<any> {
+  if (parentChain === "") return cols;
+  let current: unknown = cols;
+  for (const part of parentChain.split(".")) {
+    current = (current as Record<string, unknown>)[part];
+    if (Array.isArray(current)) current = current[0];
+  }
+  return current as QueryableRecord<any>;
+}
 
 /**
  * PathProxy 인스턴스 생성

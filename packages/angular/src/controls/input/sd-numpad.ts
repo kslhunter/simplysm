@@ -42,7 +42,7 @@ import { tablerArrowLeft, tablerEraser } from "@ng-icons/tabler-icons";
               <sd-button
                 [size]="'lg'"
                 [theme]="'primary'"
-                [disabled]="required() && value() === undefined"
+                [disabled]="required() && value() == undefined"
                 (click)="onButtonClick('ENT')"
               >
                 ENT

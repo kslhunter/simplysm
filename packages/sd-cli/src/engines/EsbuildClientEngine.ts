@@ -101,20 +101,14 @@ export class EsbuildClientEngine implements BuildEngine {
     });
 
     // 공통 이벤트 처리 (buildStart/build/error)
-    setupWatchEvents(this._worker!, {
+    const { resolveInitialBuild } = setupWatchEvents(this._worker!, {
       name: this._pkg.name,
       target: "client",
       resultCollector: this._resultCollector,
       rebuildManager: this._rebuildManager,
       normalizeBuild: (data) => data as NormalizedBuildInfo,
     });
-    // waitForInitialBuild 미사용 — worker.startWatch() await로 완료 감지
-
-    // EsbuildClientEngine 전용: error 로깅
-    this._worker!.on("error", (data) => {
-      const event = data as { message: string };
-      logger.error(`${this._pkg.name}: ${event.message}`);
-    });
+    resolveInitialBuild(); // EsbuildClientEngine은 worker.startWatch() await로 초기 빌드 완료를 감지하므로 즉시 정리
 
     const port =
       typeof this._pkg.config.server === "number"
@@ -132,15 +126,27 @@ export class EsbuildClientEngine implements BuildEngine {
       browserSupport: this._pkg.config.browserSupport,
     });
 
+    const warningsText = result.warnings != null && result.warnings.length > 0
+      ? result.warnings.join("\n")
+      : undefined;
+
     if (!result.success) {
-      const errorDetail = result.errors?.join("; ") ?? "unknown error";
-      logger.error(`[${this._pkg.name}] 초기 빌드 실패: ${errorDetail}`);
+      const errorDetail = result.errors?.join("\n") ?? "unknown error";
       this._resultCollector?.add({
         name: this._pkg.name,
         target: "client",
         type: "build",
         status: "error",
         message: errorDetail,
+        warnings: warningsText,
+      });
+    } else if (warningsText != null) {
+      this._resultCollector?.add({
+        name: this._pkg.name,
+        target: "client",
+        type: "build",
+        status: "success",
+        warnings: warningsText,
       });
     }
   }

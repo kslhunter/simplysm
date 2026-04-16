@@ -15,7 +15,7 @@ export async function publishNpm(
   const prereleaseInfo = semver.prerelease(version);
   const args = ["publish", "--access", "public", "--no-git-checks"];
 
-  if (prereleaseInfo !== null && typeof prereleaseInfo[0] === "string") {
+  if (prereleaseInfo != null && typeof prereleaseInfo[0] === "string") {
     args.push("--tag", prereleaseInfo[0]);
   }
 

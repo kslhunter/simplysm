@@ -157,7 +157,7 @@ describe("result-parser", () => {
 
   //#endregion
 
-  //#region ========== null/undefined processing ==========
+  //#region ========= null/undefined processing ==========
 
   describe("null/undefined processing", () => {
     it("null value removes the key", async () => {

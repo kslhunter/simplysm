@@ -1,4 +1,3 @@
-import { cpx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { executeTypecheck, type TypecheckResult } from "../orchestrators/TypecheckOrchestrator";
 import { executeLint, type LintResult } from "../lint/lint-core";
@@ -8,7 +7,7 @@ import { runLintInWorker } from "../lint/lint-utils";
 
 //#region Types
 
-export type CheckType = "typecheck" | "lint" | "test";
+export type CheckType = "typecheck" | "lint";
 
 export interface CheckOptions {
   targets: string[];
@@ -22,62 +21,6 @@ interface CheckResult {
   errorCount: number;
   warningCount: number;
   formattedOutput: string;
-}
-
-//#endregion
-
-//#region Utilities
-
-async function spawnVitest(targets: string[]): Promise<CheckResult> {
-  const logger = consola.withTag("sd:cli:test");
-  try {
-    const args = ["vitest", ...targets, "--run"];
-    logger.debug("vitest 실행", { args });
-    logger.start("테스트 실행 중...");
-    const result = await cpx.spawn("pnpm", args, {
-      cwd: process.cwd(),
-      reject: false,
-      stdio: "inherit",
-    });
-    const code = result.exitCode;
-
-    logger.success("테스트 실행 완료");
-    logger.info("테스트 완료", { errorCount: code === 0 ? 0 : 1, warningCount: 0 });
-
-    return {
-      name: "TEST",
-      success: code === 0,
-      errorCount: code === 0 ? 0 : 1,
-      warningCount: 0,
-      formattedOutput: "",
-    };
-  } catch (err) {
-    logger.fail("테스트 실행 실패");
-    return {
-      name: "TEST",
-      success: false,
-      errorCount: 1,
-      warningCount: 0,
-      formattedOutput: errNs.message(err),
-    };
-  }
-}
-
-function formatSection(result: CheckResult): string {
-  const header = `\n${"=".repeat(6)} ${result.name} ${"=".repeat(6)}`;
-  const icon = result.success ? "✔" : "✖";
-
-  let summary: string;
-  if (result.name === "TEST") {
-    const testCount = result.errorCount > 0 ? `${result.errorCount}개 실패` : "";
-    summary = result.success ? `${icon} 통과` : `${icon} ${testCount}`;
-  } else {
-    summary = `${icon} ${result.errorCount}개 에러, ${result.warningCount}개 경고`;
-  }
-
-  const detail = !result.success && result.formattedOutput ? `\n${result.formattedOutput}` : "";
-
-  return `${header}\n${summary}${detail}`;
 }
 
 //#endregion
@@ -102,8 +45,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
 
   const needsTypecheck = types.includes("typecheck");
   const needsLint = types.includes("lint");
-  const needsTest = types.includes("test");
-  logger.debug("체크 구성", { needsTypecheck, needsLint, needsTest });
+  logger.debug("체크 구성", { needsTypecheck, needsLint });
 
   logger.start(`체크 실행 중... (${types.join(", ")})`);
 
@@ -177,11 +119,6 @@ export async function runCheck(options: CheckOptions): Promise<void> {
     );
   }
 
-  // 테스트 (서브프로세스)
-  if (needsTest) {
-    tasks.push(spawnVitest(normalizedTargets));
-  }
-
   const results = await Promise.allSettled(tasks);
   logger.success("체크 실행 완료");
 
@@ -200,12 +137,20 @@ export async function runCheck(options: CheckOptions): Promise<void> {
     }];
   });
 
-  // 섹션별 출력 (순서 보장: typecheck → lint → test)
-  const order = ["TYPECHECK", "LINT", "TEST"];
+  // 섹션별 출력 (순서 보장: typecheck → lint)
+  const order = ["TYPECHECK", "LINT"];
   checkResults.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 
   for (const result of checkResults) {
-    process.stdout.write(formatSection(result));
+    const header = `${result.name}: ${result.errorCount}개 에러, ${result.warningCount}개 경고`;
+    if (result.success) {
+      logger.success(header);
+    } else {
+      logger.error(header);
+      if (result.formattedOutput !== "") {
+        logger.error(result.formattedOutput);
+      }
+    }
   }
 
   // 요약
@@ -213,17 +158,13 @@ export async function runCheck(options: CheckOptions): Promise<void> {
   const totalErrors = checkResults.reduce((sum, r) => sum + r.errorCount, 0);
   const totalWarnings = checkResults.reduce((sum, r) => sum + r.warningCount, 0);
 
-  process.stdout.write(`\n\n${"=".repeat(6)} 요약 ${"=".repeat(6)}\n`);
-
   if (failed.length === 0) {
-    process.stdout.write(`✔ 전체 통과\n`);
+    logger.success(`전체 통과 — 합계: ${totalErrors}개 에러, ${totalWarnings}개 경고`);
   } else {
     const failedNames = failed.map((r) => r.name.toLowerCase()).join(", ");
-    process.stdout.write(`✖ ${failed.length}/${checkResults.length}개 실패 (${failedNames})\n`);
-  }
-  process.stdout.write(`합계: ${totalErrors}개 에러, ${totalWarnings}개 경고\n`);
-
-  if (failed.length > 0) {
+    logger.error(
+      `${failed.length}/${checkResults.length}개 실패 (${failedNames}) — 합계: ${totalErrors}개 에러, ${totalWarnings}개 경고`,
+    );
     process.exitCode = 1;
   }
 }

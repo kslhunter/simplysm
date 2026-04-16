@@ -10,7 +10,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   data: ExcelXmlWorkbookData;
 
   constructor(data?: ExcelXmlWorkbookData) {
-    if (data === undefined) {
+    if (data == null) {
       this.data = {
         workbook: {
           $: {

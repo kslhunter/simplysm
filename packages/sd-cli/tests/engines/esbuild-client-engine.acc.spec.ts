@@ -163,6 +163,85 @@ describe("EsbuildClientEngine Acceptance", () => {
     await engine.stop();
   });
 
+  //#region Feature 2.1: 초기 빌드 warnings → ResultCollector
+
+  it("초기 빌드 성공 + warnings → ResultCollector에 success + warnings 저장", async () => {
+    const mockResultCollector = { add: vi.fn() };
+
+    mockWorker.startWatch.mockResolvedValue({
+      success: true,
+      warnings: ["unused variable"],
+    });
+
+    const engine = new EsbuildClientEngine({
+      cwd: "/root",
+      pkg: createMockPkg(),
+      resultCollector: mockResultCollector as any,
+    });
+
+    await engine.startWatch({ js: true, dts: false });
+
+    const warningReport = mockResultCollector.add.mock.calls.find(
+      (c: any[]) => c[0].type === "build" && c[0].warnings != null,
+    );
+    expect(warningReport).toBeDefined();
+    expect(warningReport![0].status).toBe("success");
+    expect(warningReport![0].warnings).toBe("unused variable");
+
+    await engine.stop();
+  });
+
+  it("초기 빌드 실패 + warnings → ResultCollector에 error + warnings 모두 저장", async () => {
+    const mockResultCollector = { add: vi.fn() };
+
+    mockWorker.startWatch.mockResolvedValue({
+      success: false,
+      errors: ["type error"],
+      warnings: ["deprecated API"],
+    });
+
+    const engine = new EsbuildClientEngine({
+      cwd: "/root",
+      pkg: createMockPkg(),
+      resultCollector: mockResultCollector as any,
+    });
+
+    await engine.startWatch({ js: true, dts: false });
+
+    const errorReport = mockResultCollector.add.mock.calls.find(
+      (c: any[]) => c[0].type === "build" && c[0].status === "error",
+    );
+    expect(errorReport).toBeDefined();
+    expect(errorReport![0].message).toContain("type error");
+    expect(errorReport![0].warnings).toBe("deprecated API");
+
+    await engine.stop();
+  });
+
+  it("초기 빌드 성공 + warnings 없음 → ResultCollector에 추가 저장 없음", async () => {
+    const mockResultCollector = { add: vi.fn() };
+
+    mockWorker.startWatch.mockResolvedValue({ success: true });
+
+    const engine = new EsbuildClientEngine({
+      cwd: "/root",
+      pkg: createMockPkg(),
+      resultCollector: mockResultCollector as any,
+    });
+
+    await engine.startWatch({ js: true, dts: false });
+
+    // setupWatchEvents에 의한 호출은 있을 수 있으나, startWatch 결과에 의한 추가 저장은 없음
+    const warningReport = mockResultCollector.add.mock.calls.find(
+      (c: any[]) => c[0].warnings != null,
+    );
+    expect(warningReport).toBeUndefined();
+
+    await engine.stop();
+  });
+
+  //#endregion
+
   // Scenario: 엔진 중지
   it("stop()으로 worker를 종료하고 .dev-port를 삭제한다", async () => {
     // Given: dev watch 모드가 실행 중이다

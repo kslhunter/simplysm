@@ -26,11 +26,11 @@ export class DateOnly {
   /** Date 타입으로 생성 */
   constructor(date: Date);
   constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
-    if (arg1 === undefined) {
+    if (arg1 == null) {
       const tick = Date.now();
       const date = new Date(tick);
       this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    } else if (arg2 !== undefined && arg3 !== undefined) {
+    } else if (arg2 != null && arg3 != null) {
       this.date = new Date(arg1 as number, arg2 - 1, arg3);
     } else if (arg1 instanceof Date) {
       const date = arg1;

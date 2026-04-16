@@ -1,23 +1,25 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   forwardRef,
   inject,
   ViewEncapsulation,
 } from "@angular/core";
 import { SdDropdown } from "./sd-dropdown";
+import { SdResizeDirective } from "../../core/events/sd-resize";
 
 @Component({
   selector: "sd-dropdown-popup",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [],
+  imports: [SdResizeDirective],
   host: {
     "(keydown)": "onKeydown($event)",
   },
   template: `
-    <div>
+    <div (sdResize)="onResize()">
       <ng-content></ng-content>
     </div>
   `,
@@ -88,8 +90,19 @@ export class SdDropdownPopup {
   private readonly _parentControl = inject<SdDropdown>(
     forwardRef(() => SdDropdown),
   );
+  private readonly _elRef = inject(ElementRef<HTMLElement>);
 
   onKeydown(event: KeyboardEvent): void {
     this._parentControl.onPopupKeydown(event);
+  }
+
+  onResize(): void {
+    const el = this._elRef.nativeElement;
+    const divEl = el.firstElementChild!;
+    if (divEl.clientHeight > 300) {
+      el.style.height = "300px";
+    } else {
+      el.style.removeProperty("height");
+    }
   }
 }

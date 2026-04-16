@@ -2,20 +2,21 @@ import path from "path";
 import fs from "node:fs";
 import { createWorker, FsWatcher } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { setupWorkerLifecycle } from "./shared-worker-lifecycle.js";
+import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import {
   createClientEsbuildContext,
   type ClientEsbuildResult,
-} from "../esbuild/esbuild-client-config.js";
-import { generateIndexHtml } from "../esbuild/esbuild-index-html.js";
-import { formatEsbuildMessage } from "../utils/output-utils.js";
-import { applyPwa, createPwaHtmlTransform } from "../esbuild/esbuild-pwa.js";
-import { createDevHttpServer, type DevHttpServer } from "../dev-server/dev-http-server.js";
-import { createHmrService, type HmrService } from "../dev-server/hmr-service.js";
-import { createHmrPostTransform } from "../dev-server/hmr-client-script.js";
-import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public.js";
-import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types.js";
+} from "../esbuild/esbuild-client-config";
+import { generateIndexHtml } from "../esbuild/esbuild-index-html";
+import { formatEsbuildMessages } from "../utils/output-utils";
+import { applyPwa, createPwaHtmlTransform } from "../esbuild/esbuild-pwa";
+import { createDevHttpServer, type DevHttpServer } from "../dev-server/dev-http-server";
+import { createHmrService, type HmrService } from "../dev-server/hmr-service";
+import { createHmrPostTransform } from "../dev-server/hmr-client-script";
+import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
+import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types";
 import type esbuild from "esbuild";
+import type { PartialMessage } from "esbuild";
 
 //#region Types
 
@@ -64,6 +65,9 @@ let devServer: DevHttpServer | undefined;
 let hmrService: HmrService | undefined;
 let publicWatcher: FsWatcher | undefined;
 let indexHtmlWatcher: FsWatcher | undefined;
+let lastMetafile: esbuild.Metafile | undefined;
+let isInitialBuild = true;
+let initialBuildResolve: ((result: ClientBuildResult) => void) | undefined;
 
 const { logger, guardStartWatch } = setupWorkerLifecycle("client", async () => {
   await stopWatch();
@@ -172,15 +176,149 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   } catch (err) {
     const errors: string[] = [];
     if (err != null && typeof err === "object" && "errors" in err) {
-      const buildErrors = (err as { errors: Array<{ text: string; notes: Array<{ text: string }> }> }).errors;
-      errors.push(...buildErrors.map(formatEsbuildMessage));
+      const buildErrors = (err as { errors: PartialMessage[] }).errors;
+      errors.push(...formatEsbuildMessages(buildErrors, "error"));
     }
     if (errors.length === 0) {
       errors.push(errNs.message(err));
     }
-    logger.debug(`[${info.name}] client worker build 예외: ${errors.join("; ")}`);
+    logger.debug(`[${info.name}] client worker build 예외: ${errors.join("\n")}`);
     return { success: false, errors };
   }
+}
+
+/**
+ * sourceFileCache 무효화 + mtime 추적 플러그인 생성
+ */
+function createSourceFileCachePlugin(): esbuild.Plugin {
+  return {
+    name: "sd-build-start",
+    setup(pluginBuild: esbuild.PluginBuild) {
+      const prevMtimes = new Map<string, number>();
+
+      pluginBuild.onStart(() => {
+        // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
+        if (esbuildResult != null) {
+          const { loadResultCache, typeScriptFileCache } =
+            esbuildResult.sourceFileCache;
+          const changedFiles = new Set<string>();
+          // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 감시
+          const watchTargets = [
+            ...loadResultCache.watchFiles,
+            ...typeScriptFileCache.keys(),
+          ];
+          for (const file of watchTargets) {
+            try {
+              const mtime = fs.statSync(file).mtimeMs;
+              const prev = prevMtimes.get(file);
+              if (prev != null && prev !== mtime) {
+                changedFiles.add(file);
+              }
+            } catch {
+              if (prevMtimes.has(file)) {
+                changedFiles.add(file);
+              }
+            }
+          }
+          if (changedFiles.size > 0) {
+            esbuildResult.sourceFileCache.invalidate(changedFiles);
+          }
+        }
+
+        if (!isInitialBuild) {
+          sender.send("buildStart", {});
+        }
+      });
+
+      pluginBuild.onEnd(() => {
+        if (esbuildResult == null) return;
+        prevMtimes.clear();
+        // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 기록
+        const watchTargets = [
+          ...esbuildResult.sourceFileCache.loadResultCache.watchFiles,
+          ...esbuildResult.sourceFileCache.typeScriptFileCache.keys(),
+        ];
+        for (const file of watchTargets) {
+          try {
+            prevMtimes.set(file, fs.statSync(file).mtimeMs);
+          } catch {
+            // 삭제된 파일
+          }
+        }
+      });
+    },
+  };
+}
+
+/**
+ * dev watch 빌드 완료 핸들러 생성 (index.html 재생성 + HMR + 이벤트 전송)
+ */
+function createDevBuildEndHandler(
+  basePath: string,
+  actualPort: number,
+  outdir: string,
+  entryNames: string[],
+  pkgDir: string,
+): (result: esbuild.BuildResult) => Promise<void> {
+  return async (result: esbuild.BuildResult) => {
+    try {
+      // index.html 재생성 (lastMetafile 보관 — index.html 단독 변경 시 재생성용)
+      if (result.metafile != null) {
+        lastMetafile = result.metafile;
+        const hmrPostTransform = createHmrPostTransform(basePath, actualPort);
+        const indexPath = path.join(pkgDir, "src", "index.html");
+        const indexResult = await generateIndexHtml({
+          indexPath,
+          metafile: result.metafile,
+          outdir,
+          baseHref: basePath,
+          mode: "dev",
+          entryNames,
+          postTransform: hmrPostTransform,
+        });
+        fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+      }
+
+      // HMR 메시지 디스패치
+      if (hmrService != null && result.metafile != null && !isInitialBuild) {
+        hmrService.onBuildEnd(result.metafile);
+      }
+
+      // build 이벤트 전송
+      const success = result.errors.length === 0;
+      const errors = result.errors.length > 0
+        ? formatEsbuildMessages(result.errors, "error")
+        : undefined;
+      const warnings = result.warnings.length > 0
+        ? formatEsbuildMessages(result.warnings, "warning")
+        : undefined;
+
+      if (!isInitialBuild) {
+        sender.send("build", { success, errors, warnings });
+      }
+
+      // 초기 빌드 완료 시 resolve
+      if (isInitialBuild) {
+        isInitialBuild = false;
+        initialBuildResolve?.({ success, errors, warnings });
+      }
+    } catch (err) {
+      const message = errNs.message(err);
+      if (!isInitialBuild) {
+        sender.send("error", { message });
+      } else {
+        isInitialBuild = false;
+        initialBuildResolve?.({
+          success: false,
+          errors: [message],
+          warnings:
+            result.warnings.length > 0
+              ? formatEsbuildMessages(result.warnings, "warning")
+              : undefined,
+        });
+      }
+    }
+  };
 }
 
 /**
@@ -233,10 +371,6 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     });
 
     // 7. esbuild context 생성
-    let lastMetafile: esbuild.Metafile | undefined;
-    let initialBuildResolve: ((result: ClientBuildResult) => void) | undefined;
-    let isInitialBuild = true;
-
     esbuildResult = await createClientEsbuildContext({
       pkgDir: info.pkgDir,
       cwd: info.cwd,
@@ -248,125 +382,8 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
       legacyModule,
       postcssPlugins,
       templateUpdates: legacyModule ? undefined : templateUpdates,
-      plugins: [
-        {
-          name: "sd-build-start",
-          setup(pluginBuild: esbuild.PluginBuild) {
-            const prevMtimes = new Map<string, number>();
-
-            pluginBuild.onStart(() => {
-              // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
-              if (esbuildResult != null) {
-                const { loadResultCache, typeScriptFileCache } =
-                  esbuildResult.sourceFileCache;
-                const changedFiles = new Set<string>();
-                // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 감시
-                const watchTargets = [
-                  ...loadResultCache.watchFiles,
-                  ...typeScriptFileCache.keys(),
-                ];
-                for (const file of watchTargets) {
-                  try {
-                    const mtime = fs.statSync(file).mtimeMs;
-                    const prev = prevMtimes.get(file);
-                    if (prev != null && prev !== mtime) {
-                      changedFiles.add(file);
-                    }
-                  } catch {
-                    if (prevMtimes.has(file)) {
-                      changedFiles.add(file);
-                    }
-                  }
-                }
-                if (changedFiles.size > 0) {
-                  esbuildResult.sourceFileCache.invalidate(changedFiles);
-                }
-              }
-
-              if (!isInitialBuild) {
-                sender.send("buildStart", {});
-              }
-            });
-
-            pluginBuild.onEnd(() => {
-              if (esbuildResult == null) return;
-              prevMtimes.clear();
-              // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 기록
-              const watchTargets = [
-                ...esbuildResult.sourceFileCache.loadResultCache.watchFiles,
-                ...esbuildResult.sourceFileCache.typeScriptFileCache.keys(),
-              ];
-              for (const file of watchTargets) {
-                try {
-                  prevMtimes.set(file, fs.statSync(file).mtimeMs);
-                } catch {
-                  // 삭제된 파일
-                }
-              }
-            });
-          },
-        },
-      ],
-      onEnd: async (result: esbuild.BuildResult) => {
-        try {
-          // index.html 재생성 (lastMetafile 보관 — index.html 단독 변경 시 재생성용)
-          if (result.metafile != null) {
-            lastMetafile = result.metafile;
-            const hmrPostTransform = createHmrPostTransform(basePath, actualPort);
-            const indexPath = path.join(info.pkgDir, "src", "index.html");
-            const indexResult = await generateIndexHtml({
-              indexPath,
-              metafile: result.metafile,
-              outdir,
-              baseHref: basePath,
-              mode: "dev",
-              entryNames,
-              postTransform: hmrPostTransform,
-            });
-            fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
-          }
-
-          // HMR 메시지 디스패치
-          if (hmrService != null && result.metafile != null && !isInitialBuild) {
-            hmrService.onBuildEnd(result.metafile);
-          }
-
-          // build 이벤트 전송
-          const success = result.errors.length === 0;
-          if (!isInitialBuild) {
-            sender.send("build", {
-              success,
-              errors:
-                result.errors.length > 0
-                  ? result.errors.map(formatEsbuildMessage)
-                  : undefined,
-              warnings:
-                result.warnings.length > 0
-                  ? result.warnings.map(formatEsbuildMessage)
-                  : undefined,
-            });
-          }
-
-          // 초기 빌드 완료 시 resolve
-          if (isInitialBuild) {
-            isInitialBuild = false;
-            initialBuildResolve?.({
-              success,
-              errors:
-                result.errors.length > 0
-                  ? result.errors.map(formatEsbuildMessage)
-                  : undefined,
-            });
-          }
-        } catch (err) {
-          const message = errNs.message(err);
-          sender.send("error", { message });
-          if (isInitialBuild) {
-            isInitialBuild = false;
-            initialBuildResolve?.({ success: false, errors: [message] });
-          }
-        }
-      },
+      plugins: [createSourceFileCachePlugin()],
+      onEnd: createDevBuildEndHandler(basePath, actualPort, outdir, entryNames, info.pkgDir),
     });
 
     // 8. esbuild watch 시작 + 초기 빌드 대기
@@ -451,6 +468,11 @@ async function stopWatch(): Promise<void> {
     await indexHtmlWatcher.close();
     indexHtmlWatcher = undefined;
   }
+
+  // 6. 빌드 세션 상태 리셋
+  lastMetafile = undefined;
+  isInitialBuild = true;
+  initialBuildResolve = undefined;
 
   logger.debug("esbuild watch 정리 완료");
 }

@@ -229,6 +229,7 @@ describe("BuildOrchestrator.initialize", () => {
     const hasError = await orchestrator.start();
 
     expect(hasError).toBe(false);
+    expect(mockLogger.info).toHaveBeenCalledWith("빌드할 패키지가 없습니다.");
   });
 });
 
@@ -266,7 +267,7 @@ describe("BuildOrchestrator.start", () => {
 
     // BuildEngine should be created and run() called
     expect(createBuildEngine).toHaveBeenCalledOnce();
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
     expect(mockEngines[0].stop).toHaveBeenCalled();
   });
 
@@ -617,7 +618,7 @@ describe("BuildOrchestrator client build", () => {
       expect.any(Object),
     );
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
     expect(engineMock.stop).toHaveBeenCalled();
   });
 
@@ -844,7 +845,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
     // ViteEngine should have been called
     expect(createBuildEngine).toHaveBeenCalled();
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
 
     // Capacitor should have been created, initialized, and built
     expect(Capacitor.create).toHaveBeenCalledWith(

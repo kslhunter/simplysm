@@ -112,9 +112,11 @@ log(html`
 `);
 ```
 
-### 웹 폴백 버전 정보
+### 웹 폴백 버전 정보 및 권한
 
 `ApkInstallerWeb.getVersionInfo()`는 `env("__VER__") ?? "0.0.0"`을 `versionName`으로 반환한다. 빌드 도구가 `__VER__`을 주입하지 않으면 `"0.0.0"`이 된다. `env.d.ts`에 `ImportMetaEnv.__VER__?: string` 타입이 선언되어 있다.
+
+`ApkInstallerWeb.checkPermissions()`는 항상 `{ granted: true, manifest: true }`를 반환한다. 브라우저 환경에서는 권한 확인을 생략하고 통과시킨다.
 
 ## Android 네이티브
 

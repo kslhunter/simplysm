@@ -232,7 +232,7 @@ describe("Feature 3.5.1 Slice 1: printAsync + 공통 인프라", () => {
     let hasClass = false;
     printSpy.mockImplementation(() => {
       const templateEl = document.body.querySelector("._sd-print-template");
-      hasClass = templateEl !== null;
+      hasClass = templateEl != null;
     });
 
     await provider.printAsync({ type: SdPrintTestBasic, inputs: {} });

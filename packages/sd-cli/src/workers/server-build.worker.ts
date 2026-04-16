@@ -1,10 +1,9 @@
-import type ts from "typescript";
 import path from "path";
 import fs from "fs";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { formatEsbuildMessage } from "../utils/output-utils.js";
+import { formatEsbuildMessages } from "../utils/output-utils";
 import type { BuildOutput } from "../engines/types";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
@@ -17,9 +16,8 @@ import {
   writeChangedOutputFiles,
 } from "../esbuild/esbuild-config";
 import { collectAllExternals, generateProductionFiles } from "../deps/server-externals/server-production-files";
-import { runTscPackageBuild } from "../utils/tsc-build";
+import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import { createTscPlugin } from "../esbuild/esbuild-tsc-plugin";
-import { LintWithProgramRunner } from "../lint/lint-with-program";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import { buildWatchPaths } from "./build-watch-paths";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
@@ -147,7 +145,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     let jsResult: { success: boolean; errors?: string[]; warnings?: string[] };
     let tscErrors: string[];
     let tscDiagnostics: SerializedDiagnostic[];
-    let tscProgram: ts.Program | undefined;
+    let lint: LintWithProgramResult | undefined;
 
     if (info.output.js) {
       // js=true: tsc 플러그인 통합 — 단일 esbuild.build() 호출
@@ -157,6 +155,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
         output: { dts: info.output.dts },
         env: info.output.env,
         includeTests: info.output.includeTests,
+        lint: info.output.lint,
       });
 
       const esbuildOptions = createServerEsbuildOptions({
@@ -171,8 +170,8 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
           if (result.outputFiles) {
             await writeChangedOutputFiles(result.outputFiles);
           }
-          const errors = result.errors.map(formatEsbuildMessage);
-          const warnings = result.warnings.map(formatEsbuildMessage);
+          const errors = formatEsbuildMessages(result.errors, "error");
+          const warnings = formatEsbuildMessages(result.warnings, "warning");
           return {
             success: result.errors.length === 0,
             errors: errors.length > 0 ? errors : undefined,
@@ -187,34 +186,23 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
 
       tscErrors = tscPlugin.getErrors() ?? [];
       tscDiagnostics = tscPlugin.getDiagnostics();
-      tscProgram = tscPlugin.getProgram();
+      lint = tscPlugin.getLintResult();
     } else {
-      // js=false: runTscPackageBuild 직접 호출 (플러그인 경유 불가)
-      const tscResult = runTscPackageBuild({
+      // js=false: SdTsCompiler 직접 호출 (플러그인 경유 불가)
+      const compiler = new SdTsCompiler({
         pkgDir: info.pkgDir,
         cwd: info.cwd,
         output: { js: false, dts: info.output.dts },
-        parsedConfig,
         env: info.output.env,
         includeTests: info.output.includeTests,
+        lint: info.output.lint,
       });
+      const tscResult = await compiler.compileAsync();
 
       jsResult = { success: true, errors: undefined, warnings: undefined };
       tscErrors = tscResult.errors ?? [];
       tscDiagnostics = tscResult.diagnostics;
-      tscProgram = tscResult.program;
-    }
-
-    // lint 실행 (활성화 + program 사용 가능 시)
-    let lint: LintWithProgramResult | undefined;
-    if (info.output.lint === true && tscProgram != null) {
-      logger.debug(`[${info.name}] lint 시작`);
-      const lintRunner = new LintWithProgramRunner({
-        cwd: info.cwd,
-        pkgName: info.name,
-      });
-      lint = await lintRunner.lint({ program: tscProgram });
-      logger.debug(`[${info.name}] lint 완료`);
+      lint = tscResult.lint;
     }
 
     // JS 출력이 요청된 경우에만 프로덕션 아티팩트 생성
@@ -262,65 +250,45 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
   logger.debug(`[${info.name}] server worker startWatch 시작`);
 
   // watch 모드 로컬 상태 (클로저로 관리)
-  let lastBuilderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram | undefined;
-  let watchLintRunner: LintWithProgramRunner | undefined;
+  // js=false 경로에서 SdTsCompiler 인스턴스를 유지하여 증분 빌드를 지원한다
+  let watchCompiler: SdTsCompiler | undefined;
 
   /**
    * esbuild + tsc 리빌드 (watch 모드)
    * js=true: esbuildCtx.rebuild() 단일 호출 (tsc 플러그인 자동 트리거)
-   * js=false: runTscPackageBuild 직접 호출
+   * js=false: SdTsCompiler.compileAsync() 직접 호출
    */
   async function rebuildAll(): Promise<ServerCombinedBuildEvent> {
     logger.debug(`[${info.name}] rebuildAll 시작`);
     const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
 
     let jsResult: { success: boolean; errors?: string[]; warnings?: string[] };
-    let tscProgram: ts.Program | undefined;
-    let tscAffectedFiles: ReadonlySet<string> | undefined;
     let tscErrors: string[];
+    let lint: LintWithProgramResult | undefined;
 
     if (info.output.js) {
       // js=true: esbuildCtx.rebuild() 단일 호출 (tsc 에러 자동 병합)
       const rebuildResult = await esbuildCtx.rebuild();
       jsResult = rebuildResult ?? { success: true, errors: undefined, warnings: undefined };
-      tscProgram = esbuildCtx.getTscProgram();
-      tscAffectedFiles = esbuildCtx.getTscAffectedFiles();
       tscErrors = [];
+      lint = esbuildCtx.getTscLintResult();
     } else {
-      // js=false: runTscPackageBuild 직접 호출
-      const parsedConfig = parseTsconfig(info.pkgDir);
-      const tscResult = runTscPackageBuild({
-        pkgDir: info.pkgDir,
-        cwd: info.cwd,
-        output: { js: false, dts: info.output.dts },
-        parsedConfig,
-        env: info.output.env,
-        includeTests: info.output.includeTests,
-        oldBuilderProgram: lastBuilderProgram,
-      });
-      lastBuilderProgram = tscResult.builderProgram ?? lastBuilderProgram;
-
-      jsResult = { success: true, errors: undefined, warnings: undefined };
-      tscProgram = tscResult.program;
-      tscAffectedFiles = tscResult.affectedFiles;
-      tscErrors = tscResult.errors ?? [];
-    }
-
-    // lint 실행 (활성화 + program 사용 가능 시)
-    let lint: LintWithProgramResult | undefined;
-    if (info.output.lint === true && tscProgram != null) {
-      logger.debug(`[${info.name}] lint 시작`);
-      if (watchLintRunner == null) {
-        watchLintRunner = new LintWithProgramRunner({
+      // js=false: SdTsCompiler 직접 호출
+      if (watchCompiler == null) {
+        watchCompiler = new SdTsCompiler({
+          pkgDir: info.pkgDir,
           cwd: info.cwd,
-          pkgName: info.name,
+          output: { js: false, dts: info.output.dts },
+          env: info.output.env,
+          includeTests: info.output.includeTests,
+          lint: info.output.lint,
         });
       }
-      lint = await watchLintRunner.lint({
-        program: tscProgram,
-        affectedFiles: tscAffectedFiles,
-      });
-      logger.debug(`[${info.name}] lint 완료`);
+      const tscResult = await watchCompiler.compileAsync();
+
+      jsResult = { success: true, errors: undefined, warnings: undefined };
+      tscErrors = tscResult.errors ?? [];
+      lint = tscResult.lint;
     }
 
     const allErrors = [...(jsResult.errors ?? []), ...tscErrors];
@@ -356,6 +324,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
           output: { dts: info.output.dts },
           env: info.output.env,
           includeTests: info.output.includeTests,
+          lint: info.output.lint,
         },
       });
     }

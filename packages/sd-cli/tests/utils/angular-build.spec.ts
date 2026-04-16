@@ -55,7 +55,7 @@ describe("Angular Build Adapter - Scope after Feature 3.1", () => {
 
 describe("Angular Build Adapter - Isolation", () => {
   const sdCliSrcDir = path.resolve(import.meta.dirname, "../../src");
-  const adapterFiles = ["angular-build.ts", "vite-angular-plugin.ts", "esbuild-client-config.ts", "esbuild-index-html.ts", "esbuild-pwa.ts"];
+  const adapterFiles = ["angular-build.ts", "vite-angular-plugin.ts", "esbuild-angular-compiler-plugin.ts", "esbuild-client-config.ts", "esbuild-index-html.ts", "esbuild-pwa.ts"];
   let srcFiles: string[];
 
   beforeAll(() => {

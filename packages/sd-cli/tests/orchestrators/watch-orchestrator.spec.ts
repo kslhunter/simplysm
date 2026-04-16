@@ -18,7 +18,7 @@ vi.mock("../../src/utils/output-utils", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../src/utils/output-utils")>();
   return {
     ...actual,
-    printErrors: vi.fn(),
+    printDiagnostics: vi.fn(),
     printServers: vi.fn(),
   };
 });
@@ -104,7 +104,7 @@ vi.mock("child_process", () => ({
 const { WatchOrchestrator } = await import("../../src/orchestrators/WatchOrchestrator");
 const { loadSdConfig } = await import("../../src/utils/sd-config");
 const { watchReplaceDeps } = await import("../../src/deps/replace-deps/replace-deps");
-const { printErrors } = await import("../../src/utils/output-utils");
+const { printDiagnostics } = await import("../../src/utils/output-utils");
 const { createBuildEngine } = await import("../../src/engines/engine-factory");
 const { watchCopySrcFiles } = await import("../../src/utils/copy-src");
 const { FsWatcher } = await import("@simplysm/core-node");
@@ -189,7 +189,7 @@ describe("WatchOrchestrator", () => {
 
     // Library engine started with js+dts
     expect(mockBuildEngines).toHaveLength(1);
-    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
+    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
 
     // copySrc watcher started
     expect(watchCopySrcFiles).toHaveBeenCalledWith(
@@ -316,7 +316,7 @@ describe("WatchOrchestrator", () => {
     expect(spawn).toHaveBeenCalled();
   });
 
-  it("triggers printErrors on batchComplete", async () => {
+  it("triggers printDiagnostics on batchComplete", async () => {
     setupDefaults(createConfig({
       packages: { "core-common": { target: "node" } },
     }));
@@ -326,7 +326,7 @@ describe("WatchOrchestrator", () => {
     await orchestrator.start();
 
     await new Promise((r) => setTimeout(r, 50));
-    expect(printErrors).toHaveBeenCalled();
+    expect(printDiagnostics).toHaveBeenCalled();
   });
 
   it("delegates awaitTermination to SignalHandler", async () => {
@@ -425,7 +425,7 @@ describe("WatchOrchestrator", () => {
     await orchestrator.start();
 
     expect(mockBuildEngines).toHaveLength(1);
-    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
+    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
     expect(spawn).toHaveBeenCalledWith("node", ["sync.mjs"], expect.objectContaining({ shell: true }));
   });
 
@@ -488,7 +488,7 @@ describe("WatchOrchestrator", () => {
     await orchestrator.start();
 
     for (const engine of mockBuildEngines) {
-      expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false });
+      expect(engine.startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
     }
   });
 

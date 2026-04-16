@@ -34,7 +34,7 @@ export class SdNavigateWindowProvider {
         });
       }
     } else {
-      const paramStr = params !== undefined ? new URLSearchParams(params).toString() : "";
+      const paramStr = params != null ? new URLSearchParams(params).toString() : "";
       const suffix = paramStr !== "" ? `;${paramStr}` : "";
       window.open(
         `${location.pathname}#${navigate}${suffix}`,

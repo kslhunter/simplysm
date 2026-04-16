@@ -70,7 +70,10 @@ vi.mock("esbuild", () => ({
 const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
 const mockLoggerInfo = vi.fn();
-vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockLoggerDebug, warn: mockLoggerWarn, info: mockLoggerInfo } as any);
+const mockLoggerStart = vi.fn();
+const mockLoggerSuccess = vi.fn();
+const mockLoggerError = vi.fn();
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockLoggerDebug, warn: mockLoggerWarn, info: mockLoggerInfo, start: mockLoggerStart, success: mockLoggerSuccess, error: mockLoggerError } as any);
 
 //#endregion
 

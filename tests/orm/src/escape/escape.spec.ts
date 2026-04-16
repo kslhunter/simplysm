@@ -26,7 +26,7 @@ interface DialectDef {
 
 function createTableDef(schema?: string) {
   const builder = Table("EscapeTest").database("TestDb");
-  const withSchema = schema !== undefined ? builder.schema(schema) : builder;
+  const withSchema = schema != null ? builder.schema(schema) : builder;
   return withSchema
     .columns((c) => ({
       id: c.int(),
@@ -121,7 +121,7 @@ describe.each(dialects)("$name Escape Integration Test", (dialect) => {
     await conn.close();
 
     const dbContextOpts: { database: string; schema?: string } = { database: "TestDb" };
-    if (dialect.schema !== undefined) {
+    if (dialect.schema != null) {
       dbContextOpts.schema = dialect.schema;
     }
     const executor = new NodeDbContextExecutor(dialect.config);

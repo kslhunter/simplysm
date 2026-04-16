@@ -125,9 +125,9 @@ export class SdModalProvider {
 
       // 6. 옵션 바인딩
       modalRef.setInput("title", modal.title);
-      if (options !== undefined) {
+      if (options != null) {
         for (const [key, value] of Object.entries(options)) {
-          if (value !== undefined && key !== "noFirstControlFocusing") {
+          if (value != null && key !== "noFirstControlFocusing") {
             modalRef.setInput(key, value);
           }
         }
@@ -174,7 +174,7 @@ export class SdModalProvider {
           // 컨텐츠 영역에서 첫 탭 이동 가능 요소 검색
           const contentEl = modalEl.querySelector("._content");
           const firstTabbable = contentEl?.findFirstTabbableChild();
-          if (firstTabbable !== undefined) {
+          if (firstTabbable != null) {
             firstTabbable.focus();
           } else {
             dialogEl.focus();
@@ -197,7 +197,7 @@ export class SdModalProvider {
 
         const doDestroy = () => {
           // DOM에서 제거
-          if (modalEl.parentNode !== null) {
+          if (modalEl.parentNode != null) {
             modalEl.parentNode.removeChild(modalEl);
           }
 
@@ -211,7 +211,7 @@ export class SdModalProvider {
           this.modalCount.update((v) => v - 1);
 
           // 포커스 복귀
-          if (prevActiveEl !== null && prevActiveEl.isConnected) {
+          if (prevActiveEl != null && prevActiveEl.isConnected) {
             prevActiveEl.focus();
           }
 

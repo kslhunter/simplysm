@@ -1,0 +1,5 @@
+@use 'variables' as vars;
+
+body {
+  color: vars.$primary;
+}

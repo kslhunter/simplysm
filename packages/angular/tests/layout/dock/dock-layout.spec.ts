@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdSystemConfigProvider } from "../../../src/core/config/sd-system-config.provider";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdDockTestTop,
   SdDockTestMulti,
@@ -22,7 +20,6 @@ function setupTestBed(component: any) {
     imports: [component],
     providers: [
       { provide: SdSystemConfigProvider, useValue: mockConfigProvider },
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
     ],
   });
 

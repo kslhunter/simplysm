@@ -26,7 +26,7 @@ export class FtpStorageClient implements StorageClient {
    * - 자동 연결/종료 관리를 위해 {@link StorageFactory.connect} 사용을 권장합니다.
    */
   async connect(config: StorageConnConfig): Promise<void> {
-    if (this._client !== undefined) {
+    if (this._client != null) {
       throw new SdError("FTP 서버에 이미 연결되어 있습니다. 먼저 close()를 호출해 주세요.");
     }
     const client = new ftp.Client();
@@ -46,7 +46,7 @@ export class FtpStorageClient implements StorageClient {
   }
 
   private _requireClient(): ftp.Client {
-    if (this._client === undefined) {
+    if (this._client == null) {
       throw new SdError("FTP 서버에 연결되어 있지 않습니다.");
     }
     return this._client;
@@ -135,7 +135,7 @@ export class FtpStorageClient implements StorageClient {
    * 종료 후 동일 인스턴스에서 {@link connect}를 다시 호출하여 재연결할 수 있습니다.
    */
   close(): Promise<void> {
-    if (this._client === undefined) {
+    if (this._client == null) {
       return Promise.resolve();
     }
 

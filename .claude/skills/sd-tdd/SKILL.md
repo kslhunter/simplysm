@@ -19,9 +19,9 @@ Feature 문서(요구명세 + 구현계획)를 기반으로, Double Loop TDD로 
 1. **해당 구현을 중단**한다.
 2. `.claude/rules/sd-options.md` 의 지침에 따라, 사용자에게 대안을 제시한다.
 3. 사용자가 결정하면
-  - 해당 결정을 Feature 문서의 `### 설계 결정` 섹션에 역방향 피드백으로 기록한다
-  - 결정에 따라 구현계획을 갱신한다
-  - 갱신된 Feature 문서로 구현을 재개한다
+- 해당 결정을 Feature 문서의 `### 설계 결정` 섹션에 역방향 피드백으로 기록한다
+- 결정에 따라 구현계획을 갱신한다
+- 갱신된 Feature 문서로 구현을 재개한다
 
 설계 결정의 변경은 사용자만이 할 수 있다.
 sd-tdd는 설계를 그대로 구현하는 역할이므로, 문서(요구명세·구현계획·설계 결정)를 사용자 결정 없이 독자적으로 변경하지 않는다(NEVER).
@@ -117,11 +117,11 @@ Feature 문서의 `## 참조 자료` 섹션 및 그 하위섹션을 반드시 �
 ### 1-3. 문서 정합성 확인
 
 요구명세의 각 Scenario에서 참조하는 기능·메서드를 구현계획과 대조한다.
-@.claude/references/sd-clarify.md 를 읽고 누락된 기능등 불명확한 부분을 명확화한다.
+@.claude/rules/sd-clarify.md 지침에 따라 누락된 기능등 불명확한 부분을 명확화한다.
 
 ## Step 2: Double Loop TDD
 
-테스트 작성 시 @.claude/references/sd-testing.md 를 읽고 따른다.
+테스트 작성 시 @.claude/references/sd-testing.md 를 읽고 따른다. (특히, mock 남발 금지)
 
 구현계획의 Slice 순서대로 진행한다. 각 Slice 내에서 Scenario를 하나씩 처리한다.
 각 Scenario 시작 시 **테스트 분류 기준**에 따라 검증 항목을 분류한다.
@@ -153,8 +153,8 @@ Acceptance Test를 통과시키기 위해 **반드시 Unit Test를 먼저 작성
 1. **Unit Test 작성 (Red)** — Acceptance Test와 별개의 도구 호출(Write/Edit)로 작성한다
 2. **최소 구현 (Green)** — Unit Test를 통과시키는 최소한의 코드를 작성한다
 3. **Refactor**
-   - 방금 작성한 코드 범위에서 중복 제거, 하드코딩 제거(Fake It → 실제 구현), 네이밍 개선, Extract Variable/Method.
-   - 모듈·아키텍처 수준 정리는 여기서 하지 않는다 — 그것은 `Outer Loop Refactor`의 영역이다.
+  - 방금 작성한 코드 범위에서 중복 제거, 하드코딩 제거(Fake It → 실제 구현), 네이밍 개선, Extract Variable/Method.
+  - 모듈·아키텍처 수준 정리는 여기서 하지 않는다 — 그것은 `Outer Loop Refactor`의 영역이다.
 
 Acceptance Test가 성공할때 까지 반복한다.
 

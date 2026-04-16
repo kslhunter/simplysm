@@ -36,7 +36,7 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
   styles: [
     /* language=SCSS */ `
       sd-topbar {
-        height: var(--topbar-height);
+        min-height: var(--topbar-height);
         overflow-x: auto;
         overflow-y: hidden;
         user-select: none;

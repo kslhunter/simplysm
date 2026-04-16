@@ -1,24 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type esbuild from "esbuild";
-import type { TscPackageBuildResult } from "../../src/utils/tsc-build";
+import type { ISdTsCompilerResult } from "../../src/ts-compiler/sd-ts-compiler-result";
 
 //#region Mocks
 
-const mockRunTscPackageBuild = vi.fn<(...args: unknown[]) => TscPackageBuildResult>();
-
-vi.mock("../../src/utils/tsc-build", () => ({
-  runTscPackageBuild: (...args: unknown[]) => mockRunTscPackageBuild(...args),
-}));
-
-const mockParseTsconfig = vi.fn();
-
-vi.mock("../../src/utils/tsconfig", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/tsconfig")>();
-  return {
-    ...actual,
-    parseTsconfig: (...args: unknown[]) => mockParseTsconfig(...args),
-  };
+const mockCompileAsync = vi.fn<() => Promise<ISdTsCompilerResult>>();
+const MockSdTsCompiler = vi.fn().mockImplementation(function () {
+  return { compileAsync: mockCompileAsync };
 });
+
+vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
+  SdTsCompiler: MockSdTsCompiler,
+}));
 
 //#endregion
 
@@ -59,29 +52,27 @@ const baseOptions = {
   output: { dts: true },
 };
 
-const mockParsedConfig = {
-  options: { target: 99 },
-  fileNames: [],
-  errors: [],
-} as any;
-
-function createSuccessTscResult(): TscPackageBuildResult {
+function createSuccessCompileResult(): ISdTsCompilerResult {
   return {
-    success: true,
+    program: { getSourceFiles: () => [] } as any,
+    builderProgram: {} as any,
+    isForAngular: false,
+    affectedFiles: new Set(["/workspace/packages/my-server/src/main.ts"]),
     diagnostics: [],
     errorCount: 0,
     warningCount: 0,
-    program: { getSourceFiles: () => [] } as any,
-    affectedFiles: new Set(["/workspace/packages/my-server/src/main.ts"]),
-    builderProgram: {} as any,
+    errors: undefined,
+    emitResults: undefined,
+    lint: undefined,
+    scssErrors: [],
+    scssDependencies: new Map(),
   };
 }
 
 describe("createTscPlugin — Unit Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockParseTsconfig.mockReturnValue(mockParsedConfig);
-    mockRunTscPackageBuild.mockReturnValue(createSuccessTscResult());
+    mockCompileAsync.mockResolvedValue(createSuccessCompileResult());
   });
 
   describe("plugin 구조", () => {
@@ -102,20 +93,19 @@ describe("createTscPlugin — Unit Tests", () => {
     });
   });
 
-  describe("onStart — runTscPackageBuild 옵션 전달", () => {
-    it("pkgDir, cwd, output.dts를 올바르게 전달한다", async () => {
+  describe("onStart — SdTsCompiler 옵션 전달", () => {
+    it("pkgDir, cwd, output.js=false, output.dts를 올바르게 전달한다", async () => {
       const result = createTscPlugin(baseOptions);
       const lifecycle = setupPlugin(result.plugin);
 
       await lifecycle.invokeOnStart();
       await lifecycle.invokeOnEnd();
 
-      expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
+      expect(MockSdTsCompiler).toHaveBeenCalledWith(
         expect.objectContaining({
           pkgDir: "/workspace/packages/my-server",
           cwd: "/workspace",
           output: { js: false, dts: true },
-          parsedConfig: mockParsedConfig,
         }),
       );
     });
@@ -130,23 +120,59 @@ describe("createTscPlugin — Unit Tests", () => {
       await lifecycle.invokeOnStart();
       await lifecycle.invokeOnEnd();
 
-      expect(mockRunTscPackageBuild).toHaveBeenCalledWith(
+      expect(MockSdTsCompiler).toHaveBeenCalledWith(
         expect.objectContaining({
           output: { js: false, dts: false },
+        }),
+      );
+    });
+
+    it("lint 옵션을 SdTsCompiler에 전달한다", async () => {
+      const result = createTscPlugin({
+        ...baseOptions,
+        lint: true,
+      });
+      const lifecycle = setupPlugin(result.plugin);
+
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+
+      expect(MockSdTsCompiler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lint: true,
+        }),
+      );
+    });
+
+    it("env, includeTests 옵션을 SdTsCompiler에 전달한다", async () => {
+      const result = createTscPlugin({
+        ...baseOptions,
+        env: "node" as any,
+        includeTests: true,
+      });
+      const lifecycle = setupPlugin(result.plugin);
+
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+
+      expect(MockSdTsCompiler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          env: "node",
+          includeTests: true,
         }),
       );
     });
   });
 
   describe("onEnd — 상태 저장", () => {
-    it("tsc 결과의 diagnostics를 정확히 저장한다", async () => {
+    it("compileAsync 결과의 diagnostics를 정확히 저장한다", async () => {
       const diagnostics = [
         { category: 0, code: 6031, messageText: "Watching for changes" },
         { category: 1, code: 2322, messageText: "Type error" },
       ];
-      mockRunTscPackageBuild.mockReturnValue({
-        ...createSuccessTscResult(),
-        diagnostics,
+      mockCompileAsync.mockResolvedValue({
+        ...createSuccessCompileResult(),
+        diagnostics: diagnostics as any,
       });
 
       const result = createTscPlugin(baseOptions);
@@ -158,10 +184,8 @@ describe("createTscPlugin — Unit Tests", () => {
       expect(result.getDiagnostics()).toEqual(diagnostics);
     });
 
-    it("parseTsconfig 예외 시에도 에러를 저장한다", async () => {
-      mockParseTsconfig.mockImplementation(() => {
-        throw new Error("Invalid tsconfig.json");
-      });
+    it("compileAsync 예외 시에도 에러를 저장한다", async () => {
+      mockCompileAsync.mockRejectedValue(new Error("Invalid tsconfig.json"));
 
       const result = createTscPlugin(baseOptions);
       const lifecycle = setupPlugin(result.plugin);
@@ -172,6 +196,28 @@ describe("createTscPlugin — Unit Tests", () => {
       expect(result.getErrors()).toEqual(["Invalid tsconfig.json"]);
       expect(result.getDiagnostics()).toEqual([]);
       expect(result.getProgram()).toBeUndefined();
+      expect(result.getLintResult()).toBeUndefined();
+    });
+
+    it("compileAsync 결과에서 lint 결과를 저장한다", async () => {
+      const lintResult = {
+        success: true,
+        errorCount: 0,
+        warningCount: 0,
+        formattedOutput: "",
+      };
+      mockCompileAsync.mockResolvedValue({
+        ...createSuccessCompileResult(),
+        lint: lintResult,
+      });
+
+      const result = createTscPlugin({ ...baseOptions, lint: true });
+      const lifecycle = setupPlugin(result.plugin);
+
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+
+      expect(result.getLintResult()).toEqual(lintResult);
     });
   });
 
@@ -181,20 +227,17 @@ describe("createTscPlugin — Unit Tests", () => {
       const lifecycle = setupPlugin(result.plugin);
 
       // 첫 번째 빌드 — 에러
-      const errorResult: TscPackageBuildResult = {
-        success: false,
+      mockCompileAsync.mockResolvedValue({
+        ...createSuccessCompileResult(),
         errors: ["first error"],
-        diagnostics: [{ category: 1, code: 1, messageText: "err" }],
         errorCount: 1,
-        warningCount: 0,
-      };
-      mockRunTscPackageBuild.mockReturnValue(errorResult);
+      });
       await lifecycle.invokeOnStart();
       await lifecycle.invokeOnEnd();
       expect(result.getErrors()).toEqual(["first error"]);
 
       // 두 번째 빌드 — 성공
-      mockRunTscPackageBuild.mockReturnValue(createSuccessTscResult());
+      mockCompileAsync.mockResolvedValue(createSuccessCompileResult());
       await lifecycle.invokeOnStart();
       await lifecycle.invokeOnEnd();
       expect(result.getErrors()).toBeUndefined();
@@ -208,23 +251,44 @@ describe("createTscPlugin — Unit Tests", () => {
       expect(() => result.resetBuilderProgram()).not.toThrow();
     });
 
-    it("여러 번 호출해도 안전하다", async () => {
+    it("리셋 후 다음 빌드에서 새 SdTsCompiler 인스턴스를 생성한다", async () => {
+      const result = createTscPlugin(baseOptions);
+      const lifecycle = setupPlugin(result.plugin);
+
+      // 첫 번째 빌드
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+      expect(MockSdTsCompiler).toHaveBeenCalledTimes(1);
+
+      // 두 번째 빌드 — 같은 인스턴스 재사용
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+      expect(MockSdTsCompiler).toHaveBeenCalledTimes(1);
+
+      // 리셋 후 세 번째 빌드 — 새 인스턴스 생성
+      result.resetBuilderProgram();
+      await lifecycle.invokeOnStart();
+      await lifecycle.invokeOnEnd();
+      expect(MockSdTsCompiler).toHaveBeenCalledTimes(2);
+    });
+
+    it("여러 번 호출해도 안전하다", () => {
+      const result = createTscPlugin(baseOptions);
+      result.resetBuilderProgram();
+      result.resetBuilderProgram();
+      // No throw
+    });
+  });
+
+  describe("getLintResult", () => {
+    it("lint 미활성 시 undefined를 반환한다", async () => {
       const result = createTscPlugin(baseOptions);
       const lifecycle = setupPlugin(result.plugin);
 
       await lifecycle.invokeOnStart();
       await lifecycle.invokeOnEnd();
 
-      result.resetBuilderProgram();
-      result.resetBuilderProgram();
-
-      // 리셋 후 빌드 가능
-      await lifecycle.invokeOnStart();
-      await lifecycle.invokeOnEnd();
-
-      expect(mockRunTscPackageBuild).toHaveBeenLastCalledWith(
-        expect.objectContaining({ oldBuilderProgram: undefined }),
-      );
+      expect(result.getLintResult()).toBeUndefined();
     });
   });
 });

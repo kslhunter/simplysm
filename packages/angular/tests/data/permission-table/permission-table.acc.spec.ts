@@ -47,8 +47,8 @@ describe("Feature 7.4b Slice 1: 계층형 권한 트리 렌더링", () => {
   });
 });
 
-describe("Feature 3.5 Slice 2: collapse icon 방향", () => {
-  it("펼친 상태에서 아이콘이 회전(open)되고, 접힌 상태에서 회전 해제된다", () => {
+describe("Feature 4.4: collapse icon [open] 논리 복원", () => {
+  it("펼친 상태에서 아이콘이 회전하지 않고, 접힌 상태에서 회전한다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
       .createComponent(SdPermissionTableTwoLevelTest);
     fixture.detectChanges();
@@ -57,8 +57,8 @@ describe("Feature 3.5 Slice 2: collapse icon 방향", () => {
       "sd-permission-table sd-collapse-icon",
     ) as HTMLElement;
 
-    // 초기: 펼쳐진 상태 → open=true → rotate(90deg)
-    expect(collapseIcon.style.transform).toBe("rotate(90deg)");
+    // 초기: 펼쳐진 상태 → open=false → transform 없음
+    expect(collapseIcon.style.transform).toBe("");
 
     // 클릭하여 접기
     const anchor = fixture.nativeElement.querySelector(
@@ -67,8 +67,8 @@ describe("Feature 3.5 Slice 2: collapse icon 방향", () => {
     anchor.click();
     fixture.detectChanges();
 
-    // 접힌 상태 → open=false → transform 없음
-    expect(collapseIcon.style.transform).toBe("");
+    // 접힌 상태 → open=true → rotate(90deg)
+    expect(collapseIcon.style.transform).toBe("rotate(90deg)");
   });
 });
 

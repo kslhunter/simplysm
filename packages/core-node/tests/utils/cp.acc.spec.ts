@@ -25,9 +25,9 @@ describe("getSystemEncoding", () => {
 
   afterEach(() => {
     Object.defineProperty(process, "platform", { value: originalPlatform });
-    if (originalLang !== undefined) process.env["LANG"] = originalLang;
+    if (originalLang != null) process.env["LANG"] = originalLang;
     else delete process.env["LANG"];
-    if (originalLcAll !== undefined) process.env["LC_ALL"] = originalLcAll;
+    if (originalLcAll != null) process.env["LC_ALL"] = originalLcAll;
     else delete process.env["LC_ALL"];
   });
 

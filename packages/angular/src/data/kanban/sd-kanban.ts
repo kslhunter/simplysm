@@ -17,15 +17,14 @@ import {
   type SdKanbanDropTarget,
 } from "./sd-kanban-board";
 import { SdKanbanLane } from "./sd-kanban-lane";
-import { SdEvents } from "../../core/events/sd-events";
-import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
+import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resize";
 
 @Component({
   selector: "sd-kanban",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdEvents],
+  imports: [SdResizeDirective],
   host: {
     "[attr.data-sd-dragging-this]": "dragKanban() === thisRef",
     "[attr.data-sd-dragging]": "dragKanban() != null",
@@ -186,9 +185,9 @@ export class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget
   }
 
   onCardResize(event: SdResizeEvent) {
-    const marginBottom = getComputedStyle(event.target as HTMLElement).marginBottom;
+    const marginBottom = getComputedStyle(event.target).marginBottom;
     this.cardHeight.set(
-      (event.target as HTMLElement).clientHeight + (parseInt(marginBottom) || 0),
+      event.target.clientHeight + (parseInt(marginBottom) || 0),
     );
   }
 

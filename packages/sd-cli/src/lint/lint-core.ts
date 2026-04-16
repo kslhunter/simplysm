@@ -130,13 +130,13 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
   }
 
   // ESLint 설정 로드
-  logger.start("ESLint 설정 로딩 중");
+  logger.debug("ESLint 설정 로딩 중");
   const ignorePatterns = await loadIgnorePatterns(cwd);
   logger.debug("무시 패턴 로드 완료", { ignorePatternCount: ignorePatterns.length });
-  logger.success(`ESLint 설정 로드 완료 (${ignorePatterns.length}개 무시 패턴)`);
+  logger.debug(`ESLint 설정 로드 완료 (${ignorePatterns.length}개 무시 패턴)`);
 
   // 린트 대상 파일 수집
-  logger.start("린트 대상 파일 수집 중");
+  logger.debug("린트 대상 파일 수집 중");
   let files = await fsx.glob("**/*.{ts,js,mjs,cjs}", {
     cwd,
     ignore: ignorePatterns,
@@ -145,19 +145,19 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
   });
   files = pathx.filterByTargets(files, targets, cwd);
   logger.debug("파일 수집 완료", { fileCount: files.length });
-  logger.success(`린트 대상 파일 수집 완료 (${files.length}개 파일)`);
+  logger.debug(`린트 대상 파일 수집 완료 (${files.length}개 파일)`);
 
   // 린트 실행
   let eslint: ESLint | undefined;
   let eslintResults: ESLint.LintResult[] | undefined;
   if (files.length > 0) {
-    logger.start(`린트 실행 중... (${files.length}개 파일)`);
+    logger.debug(`린트 실행 중... (${files.length}개 파일)`);
     eslint = new ESLint({
       cwd,
       fix,
     });
     eslintResults = await eslint.lintFiles(files);
-    logger.success("린트 실행 완료");
+    logger.debug("린트 실행 완료");
 
     // 자동 수정 적용
     if (fix) {
@@ -180,7 +180,7 @@ export async function executeLint(options: LintOptions): Promise<LintResult> {
   if (errorCount > 0) {
     logger.error("린트 에러 발생", { errorCount, warningCount });
   } else {
-    logger.info("린트 완료", { errorCount, warningCount });
+    logger.success("린트 완료", { errorCount, warningCount });
   }
 
   // 포매터 출력 수집

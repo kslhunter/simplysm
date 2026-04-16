@@ -1,7 +1,7 @@
 ---
 name: sd-doc-extract
 description: 문서 파일(docx, xlsx, xlsb, pptx, pdf, eml, msg)에서 텍스트, 이미지, 임베디드 파일을 추출하는 스킬. "문서 추출", "문서 분해", "docx 분석", "PDF 내용 뽑아줘", "eml 파일 추출" 등을 요청할 때 사용한다.
-model: sonnet[1m]
+model: sonnet
 effort: low
 ---
 

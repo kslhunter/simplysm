@@ -154,6 +154,35 @@ export class SdModalSelectButtonErasableTest {
 }
 
 /**
+ * 이벤트 전파 테스트 호스트 — 부모 div에 click 리스너를 걸어 전파 여부 확인
+ */
+@Component({
+  selector: "sd-modal-select-button-event-test",
+  standalone: true,
+  imports: [SdModalSelectButton],
+  template: `
+    <div class="parent-wrapper" tabindex="0" role="button" (click)="onParentClick()" (keydown.enter)="onParentClick()">
+      <sd-modal-select-button
+        [selectMode]="'single'"
+        [(value)]="value"
+        [modal]="modalInfo"
+      >
+        선택하세요
+      </sd-modal-select-button>
+    </div>
+  `,
+})
+export class SdModalSelectButtonEventTest {
+  value = signal<number | undefined>(undefined);
+  modalInfo = TEST_MODAL_INFO;
+  parentClicked = signal(false);
+
+  onParentClick(): void {
+    this.parentClicked.set(true);
+  }
+}
+
+/**
  * multi 모드 + required=false + 값 있는 상태 (취소 버튼 표시 확인)
  */
 @Component({

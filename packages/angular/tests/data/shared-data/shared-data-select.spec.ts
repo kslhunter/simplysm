@@ -391,4 +391,26 @@ describe("SdSharedDataSelect", () => {
   });
 
   //#endregion
+
+  //#region Acceptance Test — trackByFn 전달
+
+  describe("sd-shared-data-select가 sd-select에 trackByFn을 전달한다", () => {
+    it("내부 sd-select의 trackByFn이 __valueKey 기반으로 설정된다", () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A"), item(2, "B")]);
+      fixture.detectChanges();
+
+      const sharedDataSelect = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
+      const selectCtrl = (sharedDataSelect as any)._selectCtrl();
+
+      // sd-select에 trackByFn input이 전달되었는지 확인
+      expect(selectCtrl.trackByFn()).toBeDefined();
+
+      // trackByFn이 __valueKey를 반환하는지 확인
+      const testItem = item(42, "Test");
+      expect(selectCtrl.trackByFn()(testItem, 0)).toBe(42);
+    });
+  });
+
+  //#endregion
 });

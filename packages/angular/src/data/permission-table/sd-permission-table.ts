@@ -152,7 +152,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
           <td class="_title">
             @if (item.children && item.children.length > 0) {
               <sd-anchor (click)="onPermCollapseToggle(item)">
-                <sd-collapse-icon [open]="!getIsPermCollapsed(item)" />
+                <sd-collapse-icon [open]="getIsPermCollapsed(item)" />
                 {{ item.title }}
               </sd-anchor>
             } @else {
@@ -226,7 +226,7 @@ export class SdPermissionTable<TModule> {
     const walk = (item: SdPermission<TModule>, type: "use" | "edit"): boolean => {
       const key = item.codeChain.join(".") + "." + type;
       const cached = cache.get(key);
-      if (cached !== undefined) return cached;
+      if (cached != null) return cached;
 
       if (item.perms) {
         const result = item.perms.includes(type);
@@ -259,7 +259,7 @@ export class SdPermissionTable<TModule> {
     const walk = (item: SdPermission<TModule>, type: "use" | "edit"): boolean => {
       const key = item.codeChain.join(".") + "." + type;
       const cached = cache.get(key);
-      if (cached !== undefined) return cached;
+      if (cached != null) return cached;
 
       if (item.perms) {
         const permCode = item.codeChain.join(".");
@@ -295,7 +295,7 @@ export class SdPermissionTable<TModule> {
     const walk = (item: SdPermission<TModule>): boolean => {
       const key = item.codeChain.join(".");
       const cached = cache.get(key);
-      if (cached !== undefined) return cached;
+      if (cached != null) return cached;
 
       if (isDisabled) {
         cache.set(key, true);

@@ -31,7 +31,7 @@ const workerResolvers = new LazyGcMap<
 let workerAvailable: boolean | undefined;
 
 function isWorkerAvailable(): boolean {
-  if (workerAvailable === undefined) {
+  if (workerAvailable == null) {
     workerAvailable = isWorkerSupported();
   }
   return workerAvailable;

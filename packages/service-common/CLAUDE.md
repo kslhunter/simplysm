@@ -13,17 +13,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 src/
 ├── protocol/
-│   ├── protocol.types.ts              ← 프로토콜 상수(PROTOCOL_CONFIG) 및 모든 메시지 타입 정의
-│   └── create-service-protocol.ts     ← ServiceProtocol 인터페이스 및 팩토리 함수
+│   ├── protocol.types.ts              ← 프로토콜 설정 상수, 메시지 타입 정의
+│   └── create-service-protocol.ts     ← ServiceProtocol 인터페이스 및 팩토리
 ├── service-types/
-│   ├── orm-service.types.ts           ← OrmService 인터페이스 (DB 연결·트랜잭션·쿼리)
+│   ├── orm-service.types.ts           ← OrmService 인터페이스 (DB 연결·쿼리)
 │   ├── auto-update-service.types.ts   ← AutoUpdateService 인터페이스
 │   └── app-structure-service.types.ts ← AppStructureService 인터페이스
 ├── app-structure/
-│   ├── app-structure.types.ts         ← 앱 구조 타입 (메뉴 트리, 권한, 모듈)
-│   └── app-structure.utils.ts         ← 앱 구조 유틸 (모듈 필터링, 권한 플래트닝)
+│   ├── app-structure.types.ts         ← 앱 구조 타입 (메뉴 트리, 권한)
+│   └── app-structure.utils.ts         ← 앱 구조 유틸 (모듈 필터링)
 ├── types.ts                           ← 공통 타입 (ServiceUploadResult)
-├── define-event.ts                    ← defineEvent() 팩토리 및 ServiceEventDef 인터페이스
+├── define-event.ts                    ← defineEvent() 팩토리 함수
 └── index.ts                           ← public API re-export
 ```
 
@@ -31,109 +31,103 @@ src/
 
 ### 바이너리 프로토콜 (V2)
 
-`createServiceProtocol()`은 상태를 가진 팩토리 함수 패턴을 사용한다. 내부 청크 누적기(`LazyGcMap`)를 캡슐화하며, 사용 후 반드시 `dispose()`를 호출해야 한다.
+`createServiceProtocol()`은 상태를 가진 팩토리 함수로, 내부에 청크 누적기(`LazyGcMap`)를 캡슐화한다. 사용 후 반드시 `dispose()`를 호출해야 한다.
 
+**헤더 구조** (28바이트, Big Endian):
+- 0–15: UUID (16바이트)
+- 16–23: TotalSize (uint64)
+- 24–27: Index (uint32)
+
+**청킹 규칙**:
+- 임계값: 3MB (`SPLIT_MESSAGE_SIZE`)
+- 청크 크기: 300KB (`CHUNK_SIZE`)
+- 최대 메시지: 100MB (`MAX_TOTAL_SIZE`)
+- GC 주기: 10초 (`GC_INTERVAL`)
+- 만료 시간: 60초 (`EXPIRE_TIME`)
+
+**사용 패턴**:
 ```typescript
 const protocol = createServiceProtocol();
-
-// 인코딩 (3MB 초과 시 자동 청킹)
 const { chunks, totalSize } = protocol.encode(uuid, message);
-
-// 디코딩 (청크 자동 재조립)
 const result = protocol.decode(chunk);
-if (result.type === "complete") {
-  // result.message: 재조립 완료
-} else {
-  // result.type === "progress": 수신 진행 중
-}
-
-// 반드시 해제
+// result.type: "complete" | "progress"
 protocol.dispose();
 ```
 
-헤더 구조 (28바이트, Big Endian):
-- offset 0–15: UUID (16바이트 바이너리)
-- offset 16–23: TotalSize (uint64, 상위 4바이트 = 0, 하위 4바이트에 실제 크기)
-- offset 24–27: Index (uint32)
-
 ### 메시지 타입 계층
 
-`ServiceMessage`는 클라이언트·서버 양방향 메시지의 유니언 타입이다. 방향별로 나뉜다:
-- `ServiceClientMessage` — 클라이언트 → 서버 (요청, 인증, 이벤트 구독·해제·발생)
-- `ServiceServerMessage` — 서버 → 클라이언트 (응답, 에러, 이벤트 알림)
-- `ServiceServerRawMessage` — `ServiceProgressMessage | ServiceServerMessage` (청크 진행 포함)
+`ServiceMessage`는 양방향 메시지의 유니언이다:
+- `ServiceClientMessage` — 클라이언트 → 서버
+- `ServiceServerMessage` — 서버 → 클라이언트
+- `ServiceServerRawMessage` — 진행 상태 포함
 
-메시지 이름 규칙:
-- 서비스 메서드 호출: `` `${서비스명}.${메서드명}` `` (예: `"OrmService.connect"`)
-- 시스템 메시지: 고정 문자열 (`"response"`, `"error"`, `"auth"`, `"progress"`)
+**메시지 명명 규칙**:
+- 서비스 호출: `"{ServiceName}.{methodName}"` (예: `"OrmService.connect"`)
+- 시스템 메시지: `"response"`, `"error"`, `"auth"`, `"progress"`
 - 이벤트 메시지: `"evt:add"`, `"evt:remove"`, `"evt:gets"`, `"evt:emit"`, `"evt:on"`
 
-### 타입 안전 이벤트 정의
+### 타입 안전 이벤트
 
-`defineEvent()`로 이벤트를 정의하면 `info`(필터 조건)와 `data`(페이로드)에 대한 제네릭 타입이 보장된다. `$info`, `$data` 필드는 런타임에 사용하지 않는 타입 마커다.
+`defineEvent<TInfo, TData>(eventName)`로 정의하면 `$info`와 `$data` 필드가 타입 마커로 제공된다. 런타임에는 사용되지 않음.
 
-서버/클라이언트에서 `getEvent()` 프록시 패턴으로 사용한다 (`getService()`와 동일):
-
+**사용 패턴**:
 ```typescript
-// 서버에서 이벤트 정의 + 타입 export
-export const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
+// 정의
+export const MyEvent = defineEvent<FilterInfo, DataPayload>("MyEvent");
 
-// 서버에서 이벤트 프록시 생성 후 발생
-const orderEvt = server.getEvent<typeof OrderUpdated>("OrderUpdated");
-await orderEvt.emit((info) => info.orderId === 123, { status: "shipped" });
+// 발생 (서버)
+const evt = server.getEvent<typeof MyEvent>("MyEvent");
+await evt.emit((info) => filter(info), payload);
 
-// 클라이언트에서 구독 (import type으로 타입만 가져옴)
-import type { OrderUpdated } from "@server-package";
-const orderEvt = client.getEvent<typeof OrderUpdated>("OrderUpdated");
-const key = await orderEvt.addListener({ orderId: 123 }, async (data) => {
-  // data.status는 string으로 타입 추론됨
-});
+// 구독 (클라이언트)
+const evt = client.getEvent<typeof MyEvent>("MyEvent");
+const key = await evt.addListener(filterInfo, (data) => handle(data));
 ```
 
 ### 서비스 인터페이스
 
-`OrmService`, `AutoUpdateService`, `AppStructureService`는 서버 구현체와 클라이언트 프록시가 공유하는 인터페이스다. 이 패키지에는 구현체가 없으며, 타입 계약만 정의한다.
+`OrmService`, `AutoUpdateService`, `AppStructureService`는 타입 계약만 정의한다 (구현체는 다른 패키지).
 
-`OrmService`는 연결 ID(`connId: number`) 기반으로 상태를 관리한다. 사용 순서는 `connect()` → `beginTransaction()` → `executeDefs()`/`executeParametrized()` → `commitTransaction()`/`rollbackTransaction()` → `close()`이다.
+**OrmService 사용 순서**:
+1. `connect()` → connId 획득
+2. `beginTransaction()` (선택)
+3. `executeDefs()` 또는 `executeParametrized()`
+4. `commitTransaction()` 또는 `rollbackTransaction()`
+5. `close()`
 
 ### 앱 구조 (App Structure)
 
-`AppStructureItem`은 메뉴·권한 트리를 표현하는 재귀 타입이다. `children`이 있으면 `AppStructureGroupItem`, 없으면 `AppStructureLeafItem`이다. 각 항목에 `modules`(OR 조건)과 `requiredModules`(AND 조건)로 모듈 접근 제어를 설정한다.
+`AppStructureItem`은 재귀 트리 타입이다:
+- `children` 있음 → `AppStructureGroupItem` (폴더)
+- `children` 없음 → `AppStructureLeafItem` (말단, 권한 정보 포함)
 
-`getFlatPermissions()`는 트리를 BFS로 순회하며 모듈 조건을 필터링하여 `FlatPermission[]`으로 플래트닝한다. `isUsableModules()`와 `isUsableModulesChain()`은 모듈 접근 가능 여부를 판단하는 헬퍼 함수다.
+**모듈 접근 제어**:
+- `modules` (OR): 하나라도 있으면 접근 가능
+- `requiredModules` (AND): 모두 있어야 접근 가능
+
+**유틸 함수**:
+- `isUsableModules()` — 개별 항목의 모듈 조건 판단
+- `isUsableModulesChain()` — 트리 경로 전체의 모듈 조건 판단
+- `getFlatPermissions()` — 트리를 BFS로 순회하며 FlatPermission[]으로 플래트닝
 
 ## 컴파일러 설정
 
-`lib: ["ESNext", "WebWorker"]` — 브라우저와 웹 워커 양쪽 환경에서 사용 가능한 API만 허용한다 (`lib: ["DOM"]` 미포함).
+`lib: ["ESNext", "WebWorker"]` — 브라우저 및 웹 워커 환경 지원 (DOM 제외).
 
 ## Testing
 
 **프레임워크**: Vitest
 
+**구조**:
 ```
 tests/
 ├── protocol/
-│   └── service-protocol.spec.ts       ← ServiceProtocol encode/decode/청킹/UUID 인터리빙 테스트
+│   └── service-protocol.spec.ts   ← encode/decode, 청킹, UUID 인터리빙
 └── app-structure/
-    ├── app-structure.spec.ts          ← getFlatPermissions 통합 테스트 (모듈 필터링, subPerms)
-    └── app-structure-utils.spec.ts    ← isUsableModules/isUsableModulesChain 단위 테스트
+    ├── app-structure.spec.ts      ← getFlatPermissions 통합 테스트
+    └── app-structure-utils.spec.ts ← isUsableModules 단위 테스트
 ```
 
-`service-protocol.spec.ts`는 `beforeEach`/`afterEach`로 프로토콜 인스턴스를 생성·해제한다. 청킹 테스트는 4MB 데이터를 직접 생성하여 검증한다.
-
-```typescript
-describe("ServiceProtocol", () => {
-  let protocol: ServiceProtocol;
-
-  beforeEach(() => { protocol = createServiceProtocol(); });
-  afterEach(() => { protocol.dispose(); });
-
-  it("chunk message larger than 3MB", () => {
-    const largeData = "x".repeat(4 * 1024 * 1024);
-    const result = protocol.encode(uuid, { name: "test.method", body: [largeData] });
-    expect(result.chunks.length).toBeGreaterThan(1);
-  });
-});
-```
-
-`app-structure.spec.ts`와 `app-structure-utils.spec.ts`는 트리 구조 데이터를 직접 구성하여 모듈 필터링과 권한 플래트닝 로직을 검증한다.
+**패턴**:
+- 프로토콜: `beforeEach/afterEach`로 인스턴스 생성·해제, 4MB 데이터로 청킹 검증
+- 앱 구조: 트리 데이터를 직접 구성하여 필터링 로직 검증

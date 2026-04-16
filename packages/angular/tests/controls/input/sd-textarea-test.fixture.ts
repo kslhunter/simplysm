@@ -43,7 +43,7 @@ export class SdTextareaRequiredTest {
 export class SdTextareaValidatorTest {
   value = signal<string | undefined>("abc");
   validator = (v: string | undefined): string | undefined =>
-    v !== undefined && v.length < 10 ? "10자 이상 입력하세요" : undefined;
+    v != null && v.length < 10 ? "10자 이상 입력하세요" : undefined;
 }
 
 @Component({

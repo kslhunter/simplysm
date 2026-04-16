@@ -30,10 +30,10 @@ export function injectDragResize(opt: DragResizeOptions): {
     | undefined;
 
   function applyDrag(event: MouseEvent): void {
-    if (dragState === undefined) return;
+    if (dragState == null) return;
 
     const dialogEl = opt.getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
     const dx = event.clientX - dragState.startX;
     const dy = event.clientY - dragState.startY;
@@ -43,10 +43,10 @@ export function injectDragResize(opt: DragResizeOptions): {
   }
 
   function applyResize(event: MouseEvent): void {
-    if (resizeState === undefined) return;
+    if (resizeState == null) return;
 
     const dialogEl = opt.getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
     const dx = event.clientX - resizeState.startX;
     const dy = event.clientY - resizeState.startY;
@@ -86,16 +86,16 @@ export function injectDragResize(opt: DragResizeOptions): {
   }
 
   function onDocumentMouseMove(event: MouseEvent): void {
-    if (resizeState !== undefined) {
+    if (resizeState != null) {
       applyResize(event);
     }
-    if (dragState !== undefined) {
+    if (dragState != null) {
       applyDrag(event);
     }
   }
 
   function onDocumentMouseUp(): void {
-    const hadState = resizeState !== undefined || dragState !== undefined;
+    const hadState = resizeState != null || dragState != null;
     resizeState = undefined;
     dragState = undefined;
     document.removeEventListener("mousemove", onDocumentMouseMove);
@@ -114,7 +114,7 @@ export function injectDragResize(opt: DragResizeOptions): {
 
   function startDrag(event: MouseEvent): void {
     const dialogEl = opt.getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
     const dialogRect = dialogEl.getBoundingClientRect();
     const parentRect = getParentRect(dialogEl);
@@ -131,7 +131,7 @@ export function injectDragResize(opt: DragResizeOptions): {
 
   function startResize(event: MouseEvent, dir: string): void {
     const dialogEl = opt.getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
     const dialogRect = dialogEl.getBoundingClientRect();
     const parentRect = getParentRect(dialogEl);

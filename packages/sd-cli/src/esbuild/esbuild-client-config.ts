@@ -4,12 +4,13 @@ import { createRequire } from "module";
 import esbuild from "esbuild";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import type { AcceptedPlugin } from "postcss";
+import { AngularSourceFileCache } from "../angular/angular-compiler.js";
+import { createClientTransformStylesheet } from "../angular/client-transform-stylesheet.js";
 import {
-  createCompilerPlugin,
-  SourceFileCache,
-  type CompilerPluginOptions,
-  type BundleStylesheetOptions,
-} from "@angular/build/private";
+  createAngularCompilerPlugin,
+  type AngularCompilerPluginOptions,
+} from "./esbuild-angular-compiler-plugin.js";
+import { MemoryLoadResultCache } from "./load-result-cache.js";
 import { createScssPlugin } from "./esbuild-scss-plugin";
 import { createPostcssPlugin } from "./esbuild-postcss-plugin";
 
@@ -42,9 +43,21 @@ export interface CreateClientEsbuildOptions {
   legacyModule?: boolean;
 }
 
+export class ClientSourceFileCache extends AngularSourceFileCache {
+  readonly typeScriptFileCache = new Map<string, string | Uint8Array>();
+  readonly loadResultCache = new MemoryLoadResultCache();
+
+  override invalidate(files: Iterable<string>): void {
+    for (const file of files) {
+      this.loadResultCache.invalidate(file);
+    }
+    super.invalidate(files);
+  }
+}
+
 export interface ClientEsbuildResult {
   context: esbuild.BuildContext;
-  sourceFileCache: InstanceType<typeof SourceFileCache>;
+  sourceFileCache: ClientSourceFileCache;
 }
 
 export async function createClientEsbuildContext(
@@ -61,44 +74,14 @@ export async function createClientEsbuildContext(
     esbuildTarget = browserslistToEsbuild(queries);
   }
 
-  // SourceFileCache 생성 (LMDB 디스크 캐시)
-  const cachePath = path.join(options.pkgDir, ".angular", "cache");
-  const sourceFileCache = new SourceFileCache(cachePath);
+  // ClientSourceFileCache 생성
+  const sourceFileCache = new ClientSourceFileCache();
 
-  // CompilerPluginOptions
-  const pluginOptions: CompilerPluginOptions = {
-    tsconfig: options.tsconfig ?? path.join(options.pkgDir, "tsconfig.json"),
-    sourcemap: isDev,
-    advancedOptimizations: !isDev,
-    thirdPartySourcemaps: isDev,
-    incremental: isDev,
-    sourceFileCache,
-    loadResultCache: sourceFileCache.loadResultCache,
-    templateUpdates: options.templateUpdates,
-    includeTestMetadata: isDev,
-  };
+  // SCSS 스타일시트 변환용 공유 상태
+  const stylesheetDependencies = new Map<string, Set<string>>();
+  const stylesheetErrors: string[] = [];
 
-  // BundleStylesheetOptions
-  const styleOptions: BundleStylesheetOptions & { inlineStyleLanguage: string } = {
-    workspaceRoot: options.cwd,
-    optimization: !isDev,
-    inlineFonts: false,
-    sourcemap: isDev ? "linked" : false,
-    outputNames: { bundles: "[name]", media: "media/[name]" },
-    includePaths: [],
-    target: esbuildTarget,
-    cacheOptions: {
-      enabled: true,
-      path: cachePath,
-      basePath: cachePath,
-    },
-    postcssConfiguration: undefined,
-    inlineStyleLanguage: "scss",
-  };
-
-  const angularPlugin = createCompilerPlugin(pluginOptions, styleOptions);
-
-  // PostCSS 플러그인 로딩 (튜플 → 인스턴스)
+  // PostCSS 플러그인 로딩 (튜플 → 인스턴스) — transformStylesheet와 createPostcssPlugin 양쪽에 사용
   let loadedPostcssPlugins: AcceptedPlugin[] | undefined;
   if (options.postcssPlugins != null && options.postcssPlugins.length > 0) {
     const req = createRequire(path.join(options.pkgDir, "package.json"));
@@ -108,6 +91,39 @@ export async function createClientEsbuildContext(
       return pluginOpts != null ? fn(pluginOpts) : fn;
     });
   }
+
+  // transformStylesheet 콜백 생성
+  const cachePath = path.join(options.pkgDir, ".angular", "cache");
+  const transformStylesheet = createClientTransformStylesheet({
+    loadPaths: [
+      path.join(options.pkgDir, "node_modules"),
+      path.join(options.cwd, "node_modules"),
+    ],
+    postcssPlugins: loadedPostcssPlugins,
+    scssErrors: stylesheetErrors,
+    scssDependencies: stylesheetDependencies,
+    cacheDir: path.join(cachePath, "scss"),
+  });
+
+  // AngularCompilerPluginOptions
+  const pluginOptions: AngularCompilerPluginOptions = {
+    tsconfig: options.tsconfig ?? path.join(options.pkgDir, "tsconfig.json"),
+    sourcemap: isDev,
+    advancedOptimizations: !isDev,
+    thirdPartySourcemaps: isDev,
+    incremental: isDev,
+    sourceFileCache,
+    typeScriptFileCache: sourceFileCache.typeScriptFileCache,
+    loadResultCache: sourceFileCache.loadResultCache,
+    templateUpdates: options.templateUpdates,
+    includeTestMetadata: isDev,
+    persistentCachePath: cachePath,
+    transformStylesheet,
+    stylesheetDependencies,
+    stylesheetErrors,
+  };
+
+  const angularPlugin = createAngularCompilerPlugin(pluginOptions);
 
   // SCSS side-effect import 처리 플러그인
   const scssPlugin = createScssPlugin({
@@ -172,7 +188,7 @@ export async function createClientEsbuildContext(
     metafile: true,
     write: true,
     sourcemap: isDev ? "linked" : false,
-    logLevel: isDev ? "warning" : "silent",
+    logLevel: "silent",
     tsconfig: options.tsconfig ?? path.join(options.pkgDir, "tsconfig.json"),
     define,
     banner: hmrBanner != null ? { js: hmrBanner } : undefined,

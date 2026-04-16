@@ -22,6 +22,6 @@ describe("setupWorkerLifecycle", () => {
     expect(() => guardStartWatch()).not.toThrow();
 
     // guardStartWatch: 두 번째 호출은 에러
-    expect(() => guardStartWatch()).toThrow("startWatch can only be called once per Worker");
+    expect(() => guardStartWatch()).toThrow("Worker당 한 번만 호출할 수 있습니다: startWatch");
   });
 });

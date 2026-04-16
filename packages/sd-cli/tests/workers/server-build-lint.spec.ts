@@ -2,34 +2,35 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // --- Mocks ---
 
-const { mockLintFn, MockLintWithProgramRunner } = vi.hoisted(() => {
-  const lintFn = vi.fn().mockResolvedValue({
-    success: true,
-    errorCount: 0,
-    warningCount: 0,
-    formattedOutput: "",
-  });
-  const RunnerCls = vi.fn().mockImplementation(function () {
-    return { lint: lintFn };
-  });
-  return { mockLintFn: lintFn, MockLintWithProgramRunner: RunnerCls };
-});
-
-vi.mock("../../src/lint/lint-with-program", () => ({
-  LintWithProgramRunner: MockLintWithProgramRunner,
-}));
-
-const mockTscResult = {
+// SdTsCompiler mock (js=false path) — lint result is part of compileAsync result
+const mockLintResult = {
   success: true,
-  errors: undefined,
+  errorCount: 0,
+  warningCount: 0,
+  formattedOutput: "",
+};
+
+const mockCompileAsync = vi.fn(() => Promise.resolve({
+  program: { getSourceFiles: () => [] },
+  builderProgram: {},
+  isForAngular: false,
+  affectedFiles: undefined,
   diagnostics: [],
   errorCount: 0,
   warningCount: 0,
-  program: { getSourceFiles: () => [] },
-};
+  errors: undefined as string[] | undefined,
+  emitResults: undefined,
+  lint: undefined as typeof mockLintResult | undefined,
+  scssErrors: [],
+  scssDependencies: new Map(),
+}));
 
-vi.mock("../../src/utils/tsc-build", () => ({
-  runTscPackageBuild: vi.fn(() => mockTscResult),
+const MockSdTsCompiler = vi.fn().mockImplementation(function () {
+  return { compileAsync: mockCompileAsync };
+});
+
+vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
+  SdTsCompiler: MockSdTsCompiler,
 }));
 
 // tsc plugin mock (build() js=true path)
@@ -39,6 +40,7 @@ const mockTscPlugin = {
   getAffectedFiles: vi.fn(),
   getDiagnostics: vi.fn((): unknown[] => []),
   getErrors: vi.fn((): string[] | undefined => undefined),
+  getLintResult: vi.fn((): typeof mockLintResult | undefined => undefined),
   resetBuilderProgram: vi.fn(),
 };
 
@@ -114,25 +116,48 @@ await import("../../src/workers/server-build.worker");
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockLintFn.mockResolvedValue({
-    success: true,
+  mockCompileAsync.mockResolvedValue({
+    program: { getSourceFiles: () => [] },
+    builderProgram: {},
+    isForAngular: false,
+    affectedFiles: undefined,
+    diagnostics: [],
     errorCount: 0,
     warningCount: 0,
-    formattedOutput: "",
+    errors: undefined,
+    emitResults: undefined,
+    lint: undefined,
+    scssErrors: [],
+    scssDependencies: new Map(),
   });
-  mockTscResult.program = { getSourceFiles: () => [] } as any;
 
   // Reset tsc plugin mock
   mockTscPlugin.getProgram.mockReset();
   mockTscPlugin.getAffectedFiles.mockReset();
   mockTscPlugin.getDiagnostics.mockReset().mockReturnValue([]);
   mockTscPlugin.getErrors.mockReset().mockReturnValue(undefined);
+  mockTscPlugin.getLintResult.mockReset().mockReturnValue(undefined);
   mockTscPlugin.resetBuilderProgram.mockReset();
 });
 
 describe("server-build.worker lint integration (Slice 3)", () => {
-  describe("Scenario: server-build.worker runs lint after typecheck", () => {
-    it("returns lint result in build output when lint is enabled", async () => {
+  describe("Scenario: js=false lint via SdTsCompiler", () => {
+    it("returns lint result from SdTsCompiler when lint is enabled", async () => {
+      mockCompileAsync.mockResolvedValueOnce({
+        program: { getSourceFiles: () => [] },
+        builderProgram: {},
+        isForAngular: false,
+        affectedFiles: undefined,
+        diagnostics: [],
+        errorCount: 0,
+        warningCount: 0,
+        errors: undefined,
+        emitResults: undefined,
+        lint: mockLintResult,
+        scssErrors: [],
+        scssDependencies: new Map(),
+      });
+
       const result = await workerMethods["build"]({
         name: "my-server",
         cwd: "/workspace",
@@ -141,19 +166,13 @@ describe("server-build.worker lint integration (Slice 3)", () => {
       });
 
       expect(result).toHaveProperty("lint");
-      expect(result.lint).toEqual({
-        success: true,
-        errorCount: 0,
-        warningCount: 0,
-        formattedOutput: "",
-      });
+      expect(result.lint).toEqual(mockLintResult);
     });
   });
 
-  describe("Scenario: build js=true runs lint using tscPlugin.getProgram()", () => {
-    it("returns lint result using plugin program when js=true and lint enabled", async () => {
-      const fakeProgram = { getSourceFiles: () => [] };
-      mockTscPlugin.getProgram.mockReturnValue(fakeProgram);
+  describe("Scenario: js=true lint via tscPlugin.getLintResult()", () => {
+    it("returns lint result from tsc plugin when js=true and lint enabled", async () => {
+      mockTscPlugin.getLintResult.mockReturnValue(mockLintResult);
 
       const result = await workerMethods["build"]({
         name: "my-server",
@@ -163,12 +182,7 @@ describe("server-build.worker lint integration (Slice 3)", () => {
       });
 
       expect(result).toHaveProperty("lint");
-      expect(result.lint).toEqual({
-        success: true,
-        errorCount: 0,
-        warningCount: 0,
-        formattedOutput: "",
-      });
+      expect(result.lint).toEqual(mockLintResult);
     });
   });
 

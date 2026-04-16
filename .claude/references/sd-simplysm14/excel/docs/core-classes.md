@@ -63,7 +63,7 @@ ZIP 리더와 내부 캐시를 정리한다. 이미 닫힌 워크북에 대해 �
 
 ## `ExcelWorksheet`
 
-Excel 워크시트를 나타내는 클래스. 셀 접근, 행/열 복사, 데이터 테이블 처리, 이미지 삽입 기능을 제공한다.
+Excel 워크시트를 나타내는 클래스. 셀 접근, 행/열 복사, 데이터 테이블 처리, 이미지 삽입, 뷰 설정 기능을 제공한다.
 
 ```typescript
 export class ExcelWorksheet {
@@ -90,7 +90,11 @@ export class ExcelWorksheet {
   async getCells(): Promise<ExcelCell[][]>;
 
   // Data
-  async getDataTable(opt?: { ... }): Promise<Record<string, ExcelValueType>[]>;
+  async getDataTable(opt?: {
+    headerRowIndex?: number;
+    checkEndColIndex?: number;
+    usableHeaderNameFn?: (headerName: string) => boolean;
+  }): Promise<Record<string, ExcelValueType>[]>;
   async setDataMatrix(matrix: ExcelValueType[][]): Promise<void>;
   async setRecords(records: Record<string, ExcelValueType>[]): Promise<void>;
 
@@ -99,7 +103,12 @@ export class ExcelWorksheet {
   async freezeAt(point: { r?: number; c?: number }): Promise<void>;
 
   // Image
-  async addImage(opts: { ... }): Promise<void>;
+  async addImage(opts: {
+    bytes: Bytes;
+    ext: string;
+    from: { r: number; c: number; rOff?: number | string; cOff?: number | string };
+    to?: { r: number; c: number; rOff?: number | string; cOff?: number | string };
+  }): Promise<void>;
 }
 ```
 
@@ -193,6 +202,10 @@ export class ExcelWorksheet {
 | `srcR` | `number` | 복사할 원본 행 인덱스 (0 기반) |
 | `targetR` | `number` | 삽입할 대상 행 인덱스 (0 기반) |
 
+**병합 셀 처리:**
+- 삽입 지점을 관통하는 다중행 병합은 자동으로 1행 확장됨
+- 원본 행의 단일행 병합만 대상 행에 복사됨
+
 ### Range Methods
 
 #### `getRange()`
@@ -207,25 +220,27 @@ export class ExcelWorksheet {
 
 #### `getDataTable(opt?)`
 
-워크시트 데이터를 테이블(레코드 배열)로 반환한다. 첫 번째 행(또는 `headerRowIndex`)을 헤더로 사용한다.
+워크시트 데이터를 테이블(레코드 배열)로 반환한다. 지정된 헤더 행(기본값: 첫 번째 행)을 기준으로 이하의 데이터를 읽는다.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `opt.headerRowIndex` | `number \| undefined` | 헤더 행 인덱스 (기본값: 첫 번째 행) |
-| `opt.checkEndColIndex` | `number \| undefined` | 데이터 끝을 판단할 열 인덱스. 이 열이 비어있으면 데이터가 끝난 것으로 판단한다 |
-| `opt.usableHeaderNameFn` | `(headerName: string) => boolean \| undefined` | 사용 가능한 헤더를 필터링하는 함수 |
+| `opt.headerRowIndex` | `number \| undefined` | 헤더 행 인덱스 (기본값: 데이터 범위의 시작 행) |
+| `opt.checkEndColIndex` | `number \| undefined` | 데이터 끝을 판단할 열 인덱스. 이 열이 비어있는 행을 만나면 데이터가 끝난 것으로 판단한다 |
+| `opt.usableHeaderNameFn` | `(headerName: string) => boolean \| undefined` | 사용 가능한 헤더를 필터링하는 함수. 반환값이 `false`인 헤더는 제외된다 |
+
+**반환값:** `Record<string, ExcelValueType>[]` - 헤더를 키로 하는 레코드 배열
 
 #### `setDataMatrix(matrix)`
 
-2차원 배열 데이터를 워크시트에 쓴다.
+2차원 배열 데이터를 워크시트에 쓴다. (0, 0) 위치부터 시작하여 데이터를 기록한다.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `matrix` | `ExcelValueType[][]` | 2차원 배열 데이터 (행 우선, 인덱스 0이 첫 번째 행) |
+| `matrix` | `ExcelValueType[][]` | 2차원 배열 데이터 (행 우선, `matrix[0]`이 첫 번째 행) |
 
 #### `setRecords(records)`
 
-레코드 배열을 워크시트에 쓴다. 첫 번째 행에 헤더가 자동 생성되고, 이후 행에 데이터가 기록된다.
+레코드 배열을 워크시트에 쓴다. 첫 번째 행(r=0)에 헤더가 자동 생성되고, 이후 행(r=1...)에 데이터가 기록된다. 모든 레코드의 필드를 수집하여 헤더로 사용한다.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -254,14 +269,18 @@ export class ExcelWorksheet {
 
 #### `addImage(opts)`
 
-워크시트에 이미지를 삽입한다.
+워크시트에 이미지를 삽입한다. 같은 시트의 첫 이미지 호출 시 `drawing1.xml` 생성, 이후 이미지는 동일 drawing에 추가된다.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `opts.bytes` | `Bytes` | 이미지 바이너리 데이터 |
-| `opts.ext` | `string` | 이미지 확장자 (png, jpg 등) |
-| `opts.from` | `{ r: number; c: number; rOff?: number \| string; cOff?: number \| string }` | 이미지 시작 위치 (0 기반 행/열 인덱스, rOff/cOff는 EMU 오프셋) |
-| `opts.to` | `{ r: number; c: number; rOff?: number \| string; cOff?: number \| string } \| undefined` | 이미지 끝 위치 (생략 시 from 위치에서 1행x1열 크기) |
+| `opts.ext` | `string` | 이미지 확장자 (예: `"png"`, `"jpg"`, `"gif"`) |
+| `opts.from` | `{ r: number; c: number; rOff?: number \| string; cOff?: number \| string }` | 이미지 시작 위치. `r`/`c`는 0 기반 행/열 인덱스, `rOff`/`cOff`는 선택적 EMU 오프셋 |
+| `opts.to` | `{ r: number; c: number; rOff?: number \| string; cOff?: number \| string } \| undefined` | 이미지 끝 위치. 생략 시 기본값은 `{ r: from.r + 1, c: from.c + 1 }`이다 |
+
+**이미지 파일 관리:**
+- 이미지는 `xl/media/image1.ext`, `xl/media/image2.ext` 등으로 자동 관리됨
+- 기존 파일명과 중복되지 않도록 인덱스 자동 증가
 
 ---
 

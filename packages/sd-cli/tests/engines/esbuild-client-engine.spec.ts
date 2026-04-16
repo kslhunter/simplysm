@@ -271,7 +271,7 @@ describe("EsbuildClientEngine", () => {
       await engine.stop();
     });
 
-    it("초기 빌드 실패 시 에러를 logger.error로 출력한다", async () => {
+    it("초기 빌드 실패 시 reject하지 않고 정상 완료된다", async () => {
       mockWorker.startWatch.mockResolvedValue({
         success: false,
         errors: ["Module not found: @angular/core", "Syntax error in app.ts"],
@@ -280,8 +280,7 @@ describe("EsbuildClientEngine", () => {
       const engine = new EsbuildClientEngine({ cwd: "/root", pkg: createMockPkg() });
       await engine.startWatch({ js: true, dts: false });
 
-      // startWatch가 reject하지 않고 정상 완료되는지 확인 (기존 동작 유지)
-      // 에러 로깅은 verify.md에서 검증
+      // startWatch가 reject하지 않고 정상 완료되는지 확인
       expect(mockWorker.startWatch).toHaveBeenCalled();
 
       await engine.stop();
@@ -293,6 +292,77 @@ describe("EsbuildClientEngine", () => {
       const engine = new EsbuildClientEngine({ cwd: "/root", pkg: createMockPkg() });
       // 예외 없이 완료
       await expect(engine.startWatch({ js: true, dts: false })).resolves.toBeUndefined();
+
+      await engine.stop();
+    });
+
+    it("초기 빌드 ��공 + warnings 시 ResultCollector에 success와 warnings가 저장된다", async () => {
+      const mockResultCollector = { add: vi.fn(), get: vi.fn(), toMap: vi.fn() };
+      mockWorker.startWatch.mockResolvedValue({ success: true, warnings: ["w1", "w2"] });
+
+      const engine = new EsbuildClientEngine({
+        cwd: "/root",
+        pkg: createMockPkg(),
+        resultCollector: mockResultCollector as any,
+      });
+      await engine.startWatch({ js: true, dts: false });
+
+      const addCall = mockResultCollector.add.mock.calls.find(
+        (c: any[]) => c[0].warnings != null,
+      );
+      expect(addCall).toBeDefined();
+      expect(addCall![0]).toMatchObject({
+        status: "success",
+        warnings: "w1\nw2",
+      });
+
+      await engine.stop();
+    });
+
+    it("초기 빌드 실패 + warnings 시 ResultCollector에 에러와 경고 모두 저장된다", async () => {
+      const mockResultCollector = { add: vi.fn(), get: vi.fn(), toMap: vi.fn() };
+      mockWorker.startWatch.mockResolvedValue({
+        success: false,
+        errors: ["e1"],
+        warnings: ["w1"],
+      });
+
+      const engine = new EsbuildClientEngine({
+        cwd: "/root",
+        pkg: createMockPkg(),
+        resultCollector: mockResultCollector as any,
+      });
+      await engine.startWatch({ js: true, dts: false });
+
+      const errorResult = mockResultCollector.add.mock.calls.find(
+        (c: any[]) => c[0].status === "error",
+      );
+      expect(errorResult).toBeDefined();
+      expect(errorResult![0]).toMatchObject({
+        status: "error",
+        message: "e1",
+        warnings: "w1",
+      });
+
+      await engine.stop();
+    });
+
+    it("초기 빌드 성공 + warnings 없음 시 ResultCollector에 추가 저장하지 않는다", async () => {
+      const mockResultCollector = { add: vi.fn(), get: vi.fn(), toMap: vi.fn() };
+      mockWorker.startWatch.mockResolvedValue({ success: true });
+
+      const engine = new EsbuildClientEngine({
+        cwd: "/root",
+        pkg: createMockPkg(),
+        resultCollector: mockResultCollector as any,
+      });
+      await engine.startWatch({ js: true, dts: false });
+
+      // setupWatchEvents에 의한 add 호출만 있고, 초기 빌드 경로의 add 호출은 없어야 한다
+      const directAdd = mockResultCollector.add.mock.calls.find(
+        (c: any[]) => c[0].target === "client" && (c[0].message != null || c[0].warnings != null),
+      );
+      expect(directAdd).toBeUndefined();
 
       await engine.stop();
     });

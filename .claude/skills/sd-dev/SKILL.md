@@ -42,7 +42,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 6: sd-review
 
-`.claude/references/sd-review.md` 를 읽고, 발견사항에 대해 수정한다.
+`/sd-inner-review` 스킬을 호출하고, 발견사항에 대해 수정한다.
 
 - wbs/feature 문서를 읽고 잘 구현되었는지 함께 검토한다.
 - 수정사항이 있는 경우, `/sd-check` 스킬을 재 수행한다.

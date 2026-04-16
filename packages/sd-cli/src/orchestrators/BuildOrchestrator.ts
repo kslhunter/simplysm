@@ -1,4 +1,3 @@
-import ts from "typescript";
 import { fsx, pathx } from "@simplysm/core-node";
 import { consola } from "consola";
 import type {
@@ -9,10 +8,8 @@ import type {
 } from "../sd-config.types";
 import { loadAndValidateConfig } from "../utils/orchestrator-utils";
 import { getVersion } from "../utils/build-env";
-import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
 import { copySrcFiles } from "../utils/copy-src";
 import { formatBuildMessages } from "../utils/output-utils";
-import { formatDiagnosticsOutput } from "../utils/diagnostic-utils";
 import { createBuildEngine } from "../engines/engine-factory";
 import type { BuildOutput, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
@@ -43,7 +40,6 @@ interface BuildStepResult {
   success: boolean;
   errors?: string[];
   warnings?: string[];
-  diagnostics?: ts.Diagnostic[];
 }
 
 /**
@@ -174,7 +170,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
     ];
 
     if (this._allPackageNames.length === 0) {
-      process.stdout.write("✔ 빌드할 패키지가 없습니다.\n");
+      this._logger.info("빌드할 패키지가 없습니다.");
       return;
     }
 
@@ -252,8 +248,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
         hasUntrackedError.value = true;
       }
     }
-    this._logger.success("빌드 실행 완료");
-
     return { results, hasUntrackedError: hasUntrackedError.value };
   }
 
@@ -282,9 +276,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
     try {
       const engineResult = await engine.run(params.output);
 
-      const diagnostics = engineResult.build.diagnostics.map((d) =>
-        deserializeDiagnostic(d, params.fileCache),
-      );
       return {
         name: params.name,
         target: params.target,
@@ -293,7 +284,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
         errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
         warnings:
           engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
-        diagnostics,
       };
     } finally {
       await engine.stop();
@@ -316,7 +306,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           name,
           target: config.target,
           config,
-          output: { js: true, dts: true, lint: false },
+          output: { js: true, dts: true, lint: false, includeTests: false },
           fileCache,
         });
         results.push(result);
@@ -349,7 +339,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           name,
           target: "server",
           config: { ...config, env: { ...baseEnv, ...config.env } },
-          output: { js: true, dts: false, lint: false },
+          output: { js: true, dts: false, lint: false, includeTests: false },
           fileCache,
         });
         results.push(result);
@@ -385,7 +375,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           name,
           target: "client",
           config: { ...config, env: { ...baseEnv, ...config.env } },
-          output: { js: true, dts: false, lint: false },
+          output: { js: true, dts: false, lint: false, includeTests: false },
           engineOptions: { outDir, base: isNativeBuild ? "" : undefined },
           fileCache,
         });
@@ -462,7 +452,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
     results: BuildStepResult[],
     hasUntrackedError: boolean,
   ): boolean {
-    const allDiagnostics: ts.Diagnostic[] = [];
     for (const result of results) {
       const typeLabel = result.type === "lint" ? "lint" : result.target;
 
@@ -477,14 +466,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           this._logger.error(`[${result.name}] (${typeLabel}) 실패`);
         }
       }
-      if (result.diagnostics != null) {
-        allDiagnostics.push(...result.diagnostics);
-      }
-    }
-
-    const diagnosticMessage = formatDiagnosticsOutput(allDiagnostics, this._cwd);
-    if (diagnosticMessage !== "") {
-      process.stdout.write(diagnosticMessage);
     }
 
     const errorCount = results.filter((r) => !r.success).length;
@@ -493,7 +474,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
     if (hasError) {
       this._logger.error("빌드 에러 발생", { errorCount, warningCount });
     } else {
-      this._logger.info("빌드 완료", { errorCount, warningCount });
+      this._logger.success("빌드 완료", { errorCount, warningCount });
     }
 
     return hasError;

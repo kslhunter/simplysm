@@ -6,7 +6,7 @@ import type {
   SdScriptsPackageConfig,
 } from "../sd-config.types";
 import { filterPackagesByTargets, classifyWatchPackages } from "../utils/package-classify";
-import { printErrors } from "../utils/output-utils";
+import { printDiagnostics } from "../utils/output-utils";
 import { createBuildEngine } from "../engines/engine-factory";
 import type { BuildEngine, BuildPackageInfo } from "../engines/types";
 import { watchCopySrcFiles } from "../utils/copy-src";
@@ -66,7 +66,7 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
     // 처리할 패키지가 있는지 확인
     const totalPackages = this._libraryPackages.length + this._watchHookPackages.length;
     if (totalPackages === 0) {
-      process.stdout.write("⚠ 워치 대상 패키지가 없습니다.\n");
+      this._logger.warn("워치 대상 패키지가 없습니다.");
       return;
     }
 
@@ -76,7 +76,7 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
   protected _initializeEngines(_config: SdConfig): void {
     // 배치 완료 핸들러 등록
     this._rebuildManager.on("batchComplete", (_completedKeys) => {
-      printErrors(this._resultCollector.toMap());
+      printDiagnostics(this._resultCollector.toMap());
     });
 
     // 라이브러리 패키지용 BuildEngine 생성
@@ -127,7 +127,7 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
 
     const watchPromises = this._libraryEngines.map(async (engine, i) => {
       const pkgName = this._libraryPackages[i].name;
-      await engine.startWatch({ js: true, dts: true, lint: false });
+      await engine.startWatch({ js: true, dts: true, lint: false, includeTests: false });
       completed++;
       this._logger.info(`  [${completed}/${total}] ${pkgName} 완료`);
     });
@@ -136,7 +136,7 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
     this._logger.success("초기 빌드 실행 완료");
 
     // Print initial build results
-    printErrors(this._resultCollector.toMap());
+    printDiagnostics(this._resultCollector.toMap());
 
     // Start watch hook watchers for scripts+watch packages
     for (const pkg of this._watchHookPackages) {
@@ -196,7 +196,7 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
       this._logger.error(`[${pkgName}] 워치 훅 에러: ${err.message}`);
     });
     child.on("close", (code) => {
-      if (code !== 0 && code !== null) {
+      if (code !== 0 && code != null) {
         this._logger.warn(`[${pkgName}] 워치 훅이 코드 ${String(code)}로 종료됨`);
       }
     });

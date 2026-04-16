@@ -73,7 +73,7 @@ function encodeImpl(
 
     // 이미 인코딩된 객체이면 캐싱된 결과 재사용
     const cached = cache.get(obj);
-    if (cached !== undefined) return cached;
+    if (cached != null) return cached;
 
     // 재귀 스택에 추가
     ancestors.add(obj);
@@ -118,8 +118,8 @@ function encodeImpl(
           name: errObj.name,
           message: errObj.message,
           stack: errObj.stack,
-          ...(errObj.code !== undefined ? { code: errObj.code } : {}),
-          ...(errObj.detail !== undefined
+          ...(errObj.code != null ? { code: errObj.code } : {}),
+          ...(errObj.detail != null
             ? {
                 detail: encodeImpl(
                   errObj.detail,
@@ -130,7 +130,7 @@ function encodeImpl(
                 ),
               }
             : {}),
-          ...(errObj.cause !== undefined
+          ...(errObj.cause != null
             ? {
                 cause: encodeImpl(errObj.cause, transferList, [...path, "cause"], ancestors, cache),
               }
@@ -217,11 +217,11 @@ export function decode(obj: unknown): unknown {
     if (typed.__type__ === "DateOnly" && typeof data === "number") return new DateOnly(data);
     if (typed.__type__ === "Time" && typeof data === "number") return new Time(data);
     if (typed.__type__ === "Uuid" && typeof data === "string") return new Uuid(data);
-    if (typed.__type__ === "RegExp" && typeof data === "object" && data !== null) {
+    if (typed.__type__ === "RegExp" && typeof data === "object" && data != null) {
       const regexData = data as { source: string; flags: string };
       return new RegExp(regexData.source, regexData.flags);
     }
-    if (typed.__type__ === "Error" && typeof data === "object" && data !== null) {
+    if (typed.__type__ === "Error" && typeof data === "object" && data != null) {
       const errorData = data as {
         name: string;
         message: string;
@@ -238,9 +238,9 @@ export function decode(obj: unknown): unknown {
       err.name = errorData.name;
       err.stack = errorData.stack;
 
-      if (errorData.code !== undefined) err.code = errorData.code;
-      if (errorData.cause !== undefined) (err as Error).cause = decode(errorData.cause);
-      if (errorData.detail !== undefined) err.detail = decode(errorData.detail);
+      if (errorData.code != null) err.code = errorData.code;
+      if (errorData.cause != null) (err as Error).cause = decode(errorData.cause);
+      if (errorData.detail != null) err.detail = decode(errorData.detail);
       return err;
     }
   }

@@ -38,14 +38,15 @@ pnpm device -t my-client-app             # 네이티브 앱 디바이스/데스�
 ### 코드 품질
 
 ```bash
-pnpm check                               # 전체 검사 (typecheck + lint + test 병렬)
-pnpm check -t core-common               # 특정 패키지만 검사
-pnpm check --type lint test              # 특정 타입만 검사
-pnpm check -t angular --type         # 특정 패키지의 특정 타입만 검사
+pnpm check                               # 전체 검사 (typecheck + lint 병렬)
+pnpm check --fix                         # 전체 검사 + 린트 자동 수정
+pnpm check -t core-common                # 특정 패키지만 검사
+pnpm check --type lint                   # 특정 타입만 검사
+pnpm check -t angular --type typecheck   # 특정 패키지의 특정 타입만 검사
 pnpm typecheck                           # TypeScript 타입 체크
 pnpm lint                                # ESLint
 pnpm lint --fix                          # 린트 자동 수정
-pnpm test                                # vitest 1회 실행
+pnpm test                                # = vitest run
 ```
 
 ## 아키텍처

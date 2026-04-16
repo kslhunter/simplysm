@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
-import * as tscBuild from "../../src/utils/tsc-build";
 import * as collectDepsModule from "../../src/deps/replace-deps/collect-deps";
 
 //#region Mocks
@@ -11,6 +10,35 @@ let mockSend: ReturnType<typeof vi.fn>;
 // FsWatcher mock
 const mockOnChange = vi.fn();
 const mockWatcherClose = vi.fn();
+
+// SdTsCompiler mock
+const { mockCompileAsync, MockSdTsCompiler, mockSideEffectScssRegistry } = vi.hoisted(() => {
+  const compileAsync = vi.fn();
+  const sideEffectScssRegistry = new Map();
+  const Compiler = vi.fn().mockImplementation(function (this: any) {
+    this.compileAsync = compileAsync;
+    this.sideEffectScssRegistry = sideEffectScssRegistry;
+  });
+  return { mockCompileAsync: compileAsync, MockSdTsCompiler: Compiler, mockSideEffectScssRegistry: sideEffectScssRegistry };
+});
+
+vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
+  SdTsCompiler: MockSdTsCompiler,
+}));
+
+// ngtsc-build-core mock (writeEmitResults + compileSideEffectScss)
+const { mockWriteEmitResults, mockCompileSideEffectScss } = vi.hoisted(() => {
+  return { mockWriteEmitResults: vi.fn(), mockCompileSideEffectScss: vi.fn() };
+});
+
+vi.mock("../../src/angular/ngtsc-build-core", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../src/angular/ngtsc-build-core")>();
+  return {
+    ...original,
+    writeEmitResults: mockWriteEmitResults,
+    compileSideEffectScss: mockCompileSideEffectScss,
+  };
+});
 
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn((fns: Record<string, Function>) => {
@@ -39,18 +67,6 @@ vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
   })),
 }));
 
-// tsc build spy
-const mockRunTscPackageBuild = vi.spyOn(tscBuild, "runTscPackageBuild").mockReturnValue({
-  success: true,
-  errors: undefined,
-  diagnostics: [],
-  errorCount: 0,
-  warningCount: 0,
-  program: {
-    getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
-  },
-} as any);
-
 // collect-deps spy
 const mockCollectDeps = vi.spyOn(collectDepsModule, "collectDeps").mockReturnValue({
   workspaceDeps: [],
@@ -59,27 +75,33 @@ const mockCollectDeps = vi.spyOn(collectDepsModule, "collectDeps").mockReturnVal
 
 //#endregion
 
+const defaultCompileResult = {
+  program: { getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }] },
+  builderProgram: {},
+  isForAngular: false,
+  affectedFiles: new Set<string>(),
+  diagnostics: [] as any[],
+  errorCount: 0,
+  warningCount: 0,
+  errors: undefined as string[] | undefined,
+  emitResults: undefined,
+  lint: undefined,
+  scssErrors: [] as string[],
+  scssDependencies: new Map<string, Set<string>>(),
+};
+
 // Import triggers createWorker, capturing the functions
 await import("../../src/workers/library-build.worker");
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockRunTscPackageBuild.mockReturnValue({
-    success: true,
-    errors: undefined,
-    diagnostics: [],
-    errorCount: 0,
-    warningCount: 0,
-    program: {
-      getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
-    },
-  } as any);
+  mockCompileAsync.mockResolvedValue({ ...defaultCompileResult });
   mockCollectDeps.mockReturnValue({ workspaceDeps: [], replaceDeps: [] });
+  mockSideEffectScssRegistry.clear();
 });
 
 const buildInfo = {
   name: "test-pkg",
-  config: { target: "node" as const },
   cwd: "/",
   pkgDir: "/pkg",
   output: { js: true, dts: true },
@@ -109,16 +131,13 @@ describe("library-build.worker build()", () => {
 
   // Unit: tsc failure reflects in build result
   it("reports failure in build when tsc fails", async () => {
-    mockRunTscPackageBuild.mockReturnValueOnce({
-      success: false,
-      errors: ["TS2345: type error"],
-      diagnostics: [{ code: 2345, category: 1 }],
+    mockCompileAsync.mockResolvedValueOnce({
+      ...defaultCompileResult,
       errorCount: 1,
       warningCount: 0,
-      program: {
-        getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }],
-      },
-    } as any);
+      errors: ["TS2345: type error"],
+      diagnostics: [{ code: 2345, category: 1 }],
+    });
 
     const result = await workerFns["build"]({ ...buildInfo, output: { js: true, dts: true } });
 
@@ -127,6 +146,117 @@ describe("library-build.worker build()", () => {
     expect(result.build.diagnostics).toHaveLength(1);
   });
 
+});
+
+const angularBuildInfo = {
+  name: "test-angular-lib",
+  cwd: "/workspace",
+  pkgDir: "/workspace/packages/test-angular-lib",
+  output: { js: true, dts: true, globalScss: true },
+};
+
+const angularCompileResult = {
+  ...defaultCompileResult,
+  program: { getSourceFiles: () => [{ fileName: "/workspace/packages/test-angular-lib/src/index.ts" }] },
+  isForAngular: true,
+  emitResults: [
+    { filename: "/workspace/packages/test-angular-lib/dist/index.js", contents: "export {};", sourceFileName: "/workspace/packages/test-angular-lib/src/index.ts" },
+  ],
+};
+
+describe("library-build.worker build() — Angular", () => {
+  // Acceptance: Angular one-shot build — writeEmitResults 호출
+  it("calls writeEmitResults with emitResults filtered to src/", async () => {
+    mockCompileAsync.mockResolvedValueOnce({
+      ...angularCompileResult,
+      emitResults: [
+        { filename: "dist/src-file.js", contents: "a", sourceFileName: "/workspace/packages/test-angular-lib/src/src-file.ts" },
+        { filename: "dist/ext.js", contents: "b", sourceFileName: "/workspace/packages/test-angular-lib/node_modules/ext.ts" },
+      ],
+    });
+
+    await workerFns["build"](angularBuildInfo);
+
+    expect(mockWriteEmitResults).toHaveBeenCalledTimes(1);
+    const emitArg = mockWriteEmitResults.mock.calls[0][0] as any[];
+    // src/ 하위만 필터됨
+    expect(emitArg).toHaveLength(1);
+    expect(emitArg[0].sourceFileName).toContain("src/src-file.ts");
+    // pkgDir 전달
+    expect(mockWriteEmitResults.mock.calls[0][1]).toBe(angularBuildInfo.pkgDir);
+    // Angular build 모드에서 scss 옵션 전달
+    expect(mockWriteEmitResults.mock.calls[0][2]).toEqual({
+      loadPaths: [
+        path.join(angularBuildInfo.pkgDir, "scss"),
+        path.join(angularBuildInfo.cwd, "node_modules"),
+      ],
+      scssErrors: [],
+      scssDependencies: expect.any(Map),
+      registry: expect.any(Map),
+    });
+  });
+
+  // Acceptance: Angular build with SCSS errors
+  it("returns success=false when scssErrors exist", async () => {
+    mockCompileAsync.mockResolvedValueOnce({
+      ...angularCompileResult,
+      scssErrors: ["SCSS error in styles.scss: variable not found"],
+    });
+
+    const result = await workerFns["build"](angularBuildInfo);
+
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("SCSS error in styles.scss: variable not found");
+  });
+
+  // Unit: ts errors + scss errors 병합
+  it("merges both ts errors and scss errors into build.errors", async () => {
+    mockCompileAsync.mockResolvedValueOnce({
+      ...angularCompileResult,
+      errorCount: 1,
+      errors: ["TS2345: type error"],
+      scssErrors: ["SCSS error"],
+    });
+
+    const result = await workerFns["build"](angularBuildInfo);
+
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toEqual(["TS2345: type error", "SCSS error"]);
+  });
+
+  // Acceptance: Angular build 예외 처리
+  it("catches exceptions and returns error result", async () => {
+    mockCompileAsync.mockRejectedValueOnce(new Error("Fatal crash"));
+
+    const result = await workerFns["build"](angularBuildInfo);
+
+    expect(result.build.success).toBe(false);
+    expect(result.build.errors).toContain("Fatal crash");
+    expect(result.build.diagnostics).toEqual([]);
+  });
+
+  // Unit: emitResults가 undefined이면 writeEmitResults 미호출
+  it("skips writeEmitResults when emitResults is undefined", async () => {
+    mockCompileAsync.mockResolvedValueOnce({
+      ...angularCompileResult,
+      emitResults: undefined,
+    });
+
+    await workerFns["build"](angularBuildInfo);
+
+    expect(mockWriteEmitResults).not.toHaveBeenCalled();
+  });
+
+  // Unit: globalScss 옵션이 SdTsCompiler에 전달됨
+  it("passes globalScss to SdTsCompiler", async () => {
+    mockCompileAsync.mockResolvedValueOnce({ ...angularCompileResult });
+
+    await workerFns["build"](angularBuildInfo);
+
+    expect(MockSdTsCompiler).toHaveBeenCalledWith(expect.objectContaining({
+      globalScss: true,
+    }));
+  });
 });
 
 describe("library-build.worker startWatch()", () => {
@@ -172,7 +302,7 @@ describe("library-build.worker startWatch()", () => {
   it("sends error event on rebuild exception", async () => {
     await workerFns["startWatch"]({ ...buildInfo, output: { js: true, dts: true } });
 
-    mockRunTscPackageBuild.mockImplementationOnce(() => { throw new Error("tsc crash"); });
+    mockCompileAsync.mockRejectedValueOnce(new Error("tsc crash"));
     const onChangeCallback = mockOnChange.mock.calls[0][1];
     mockSend.mockClear();
 
@@ -219,14 +349,10 @@ describe("library-build.worker startWatch() dependency filter", () => {
   });
 
   const buildInfoWithProgram = () => {
-    mockRunTscPackageBuild.mockReturnValue({
-      success: true,
-      errors: undefined,
-      diagnostics: [],
-      errorCount: 0,
-      warningCount: 0,
+    mockCompileAsync.mockResolvedValue({
+      ...defaultCompileResult,
       program: createMockProgram(["/pkg/src/index.ts", "/pkg/src/utils.ts"]),
-    } as any);
+    });
   };
 
   // Acceptance: Skip rebuild when changed file is not in program
@@ -293,6 +419,134 @@ describe("library-build.worker startWatch() dependency filter", () => {
     expect(mockDebug).toHaveBeenCalledWith(
       expect.stringContaining("빌드에 포함되지 않아 리빌드 건너뜀"),
     );
+  });
+});
+
+describe("library-build.worker startWatch() — Angular", () => {
+  const angularWatchInfo = {
+    ...angularBuildInfo,
+    replaceDeps: undefined as Record<string, string> | undefined,
+  };
+
+  const angularWatchCompileResult = {
+    ...angularCompileResult,
+    program: {
+      getSourceFiles: () => [
+        { fileName: "/workspace/packages/test-angular-lib/src/index.ts" },
+        { fileName: "/workspace/packages/test-angular-lib/src/comp.ts" },
+      ],
+    },
+    scssDependencies: new Map<string, ReadonlySet<string>>(),
+  };
+
+  // Acceptance: Angular 초기 빌드 with SCSS globs
+  it("starts FsWatcher with scss globs when globalScss is true", async () => {
+    mockCompileAsync.mockResolvedValue({ ...angularWatchCompileResult });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    const { FsWatcher } = await import("@simplysm/core-node");
+    const watchPaths = vi.mocked(FsWatcher.watch).mock.calls[0][0];
+    // src/**/*.{ts,scss,css} + scss/**/*.{scss,css}
+    expect(watchPaths.length).toBeGreaterThanOrEqual(2);
+    expect(watchPaths.some((p: string) => p.includes("*.{ts,scss,css}"))).toBe(true);
+    expect(watchPaths.some((p: string) => p.includes("*.{scss,css}"))).toBe(true);
+  });
+
+  // Acceptance: Angular 초기 빌드 — writeEmitResults with scss option
+  it("calls writeEmitResults with scss option in initial watch build", async () => {
+    mockCompileAsync.mockResolvedValue({ ...angularWatchCompileResult });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    expect(mockWriteEmitResults).toHaveBeenCalledWith(
+      expect.any(Array),
+      angularWatchInfo.pkgDir,
+      expect.objectContaining({
+        loadPaths: expect.any(Array),
+        scssErrors: expect.any(Array),
+        scssDependencies: expect.any(Map),
+        registry: mockSideEffectScssRegistry,
+      }),
+    );
+  });
+
+  // Acceptance: globalScss가 SdTsCompiler에 전달됨
+  it("passes globalScss to SdTsCompiler in watch mode", async () => {
+    mockCompileAsync.mockResolvedValue({ ...angularWatchCompileResult });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    expect(MockSdTsCompiler).toHaveBeenCalledWith(expect.objectContaining({
+      globalScss: true,
+    }));
+  });
+
+  // Acceptance: SCSS 의존성 역방향 탐색
+  it("adds SCSS-dependent files to modifiedFiles via combinedScssDeps", async () => {
+    const scssDeps = new Map<string, ReadonlySet<string>>();
+    scssDeps.set(
+      "/workspace/packages/test-angular-lib/src/comp.ts",
+      new Set(["/workspace/packages/test-angular-lib/scss/shared.scss"]),
+    );
+    mockCompileAsync.mockResolvedValue({
+      ...angularWatchCompileResult,
+      scssDependencies: scssDeps,
+    });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockSend.mockClear();
+
+    // shared.scss 변경 → comp.ts도 modifiedFiles에 추가
+    await onChangeCallback([
+      { event: "change", path: "/workspace/packages/test-angular-lib/scss/shared.scss" },
+    ]);
+
+    expect(mockSend).toHaveBeenCalledWith("buildStart", {});
+    const compileCall = mockCompileAsync.mock.calls[mockCompileAsync.mock.calls.length - 1];
+    const modifiedFiles = compileCall[0] as Set<string>;
+    expect(modifiedFiles.has("/workspace/packages/test-angular-lib/scss/shared.scss")).toBe(true);
+    expect(modifiedFiles.has("/workspace/packages/test-angular-lib/src/comp.ts")).toBe(true);
+  });
+
+  // Acceptance: SCSS 변경 시 compileSideEffectScss 호출
+  it("calls compileSideEffectScss when scss files change", async () => {
+    mockCompileAsync.mockResolvedValue({ ...angularWatchCompileResult });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockCompileSideEffectScss.mockClear();
+
+    await onChangeCallback([
+      { event: "change", path: "/workspace/packages/test-angular-lib/src/styles.scss" },
+      { event: "change", path: "/workspace/packages/test-angular-lib/src/index.ts" },
+    ]);
+
+    expect(mockCompileSideEffectScss).toHaveBeenCalledWith(
+      mockSideEffectScssRegistry,
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Map),
+    );
+  });
+
+  // Unit: SCSS 미변경 시 compileSideEffectScss 미호출
+  it("does not call compileSideEffectScss when no scss changes", async () => {
+    mockCompileAsync.mockResolvedValue({ ...angularWatchCompileResult });
+
+    await workerFns["startWatch"](angularWatchInfo);
+
+    const onChangeCallback = mockOnChange.mock.calls[0][1];
+    mockCompileSideEffectScss.mockClear();
+
+    await onChangeCallback([
+      { event: "change", path: "/workspace/packages/test-angular-lib/src/index.ts" },
+    ]);
+
+    expect(mockCompileSideEffectScss).not.toHaveBeenCalled();
   });
 });
 

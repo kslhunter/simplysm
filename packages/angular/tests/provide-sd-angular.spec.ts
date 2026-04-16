@@ -9,12 +9,7 @@ import { Subject } from "rxjs";
 import { provideSdAngular } from "../src/core/provideSdAngular";
 import { SdAngularConfigProvider } from "../src/core/config/sd-angular-config.provider";
 import { SdGlobalErrorHandlerPlugin } from "../src/core/error-handler/sd-global-error-handler.plugin";
-import { SdSaveCommandEventPlugin } from "../src/core/commands/sd-save-command-event.plugin";
-import { SdRefreshCommandEventPlugin } from "../src/core/commands/sd-refresh-command-event.plugin";
-import { SdInsertCommandEventPlugin } from "../src/core/commands/sd-insert-command-event.plugin";
-import { SdResizeEventPlugin } from "../src/core/events/sd-resize-event.plugin";
 import { SdOptionEventPlugin } from "../src/core/events/sd-option-event.plugin";
-import { SdIntersectionEventPlugin } from "../src/core/events/sd-intersection-event.plugin";
 import { SdThemeProvider } from "../src/features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "../src/core/config/sd-local-storage.provider";
 import { SdBusyProvider } from "../src/core/busy/sd-busy.provider";
@@ -55,10 +50,6 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
       const plugins = TestBed.inject(EVENT_MANAGER_PLUGINS);
       const pluginClasses = plugins.map((p) => p.constructor);
-      expect(pluginClasses).toContain(SdSaveCommandEventPlugin);
-      expect(pluginClasses).toContain(SdRefreshCommandEventPlugin);
-      expect(pluginClasses).toContain(SdInsertCommandEventPlugin);
-      expect(pluginClasses).toContain(SdResizeEventPlugin);
       expect(pluginClasses).toContain(SdOptionEventPlugin);
 
       const imageConfig = TestBed.inject(IMAGE_CONFIG);
@@ -321,18 +312,6 @@ describe("FIX-1 Slice 3: provideSdAngular 수정", () => {
     });
   });
 
-  describe("Rule: 모든 이벤트 플러그인이 provideSdAngular에 등록되어야 한다", () => {
-    it("SdIntersectionEventPlugin이 EVENT_MANAGER_PLUGINS에 등록된다", () => {
-      TestBed.configureTestingModule({
-        providers: [provideSdAngular({ clientName: "test-app" })],
-      });
-      TestBed.inject(ApplicationRef);
-
-      const plugins = TestBed.inject(EVENT_MANAGER_PLUGINS);
-      const pluginClasses = plugins.map((p) => p.constructor);
-      expect(pluginClasses).toContain(SdIntersectionEventPlugin);
-    });
-  });
 });
 
 describe("Feature 4.3: 테마 write 방지", () => {

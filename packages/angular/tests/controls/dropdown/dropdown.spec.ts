@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdDropdownTestDefault,
   SdDropdownTestDisabled,
@@ -14,9 +12,6 @@ import "@simplysm/core-browser";
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    ],
   });
 }
 
@@ -636,8 +631,9 @@ describe("Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 �
     expect(popup.style.right).toBe("");
   });
 
-  // Acceptance: 팝업 닫힘 시 maxHeight/maxWidth/overflow가 리셋된다
-  it("팝업 닫힘 시 maxHeight, maxWidth, overflow 인라인 스타일이 리셋된다", () => {
+  // Acceptance: 팝업 닫힘 시 위치 인라인 스타일이 리셋된다
+  // (maxHeight/maxWidth/overflow는 Feature 3.1에서 제거 — v12 복원으로 sd-dropdown-popup이 자체 높이 제한 담당)
+  it("팝업 닫힘 시 위치 인라인 스타일이 리셋된다", () => {
     setupTestBed(SdDropdownTestDefault);
     const fixture = TestBed.createComponent(SdDropdownTestDefault);
     fixture.detectChanges();
@@ -652,8 +648,6 @@ describe("Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 �
 
     const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
     expect(popup).not.toBeNull();
-    // _updatePopupPosition에서 설정된 스타일 확인
-    expect(popup.style.overflow).toBe("auto");
 
     // 닫기
     dropdown.click();
@@ -661,9 +655,12 @@ describe("Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 �
     TestBed.flushEffects();
 
     // _removePopup에서 리셋되어야 하는 스타일
-    expect(popup.style.maxHeight).toBe("");
-    expect(popup.style.maxWidth).toBe("");
-    expect(popup.style.overflow).toBe("");
+    expect(popup.style.top).toBe("");
+    expect(popup.style.bottom).toBe("");
+    expect(popup.style.left).toBe("");
+    expect(popup.style.right).toBe("");
+    expect(popup.style.minWidth).toBe("");
+    expect(popup.style.opacity).toBe("");
   });
 
   // Unit: 수평 좌표도 viewport 기준 (getBoundingClientRect.right 사용)
@@ -700,32 +697,8 @@ describe("Feature 3.2 Slice 1: 드롭다운 위치 viewport 기준 + 스타일 �
 
 // endregion
 
-// region FIX-2 Slice 3: dropdown popup 뷰포트 제한 (DESIGN-004)
-
-describe("FIX-2 Slice 3: dropdown popup 뷰포트 제한 (DESIGN-004)", () => {
-  it("popup이 뷰포트 하단을 초과하면 maxHeight가 설정된다", () => {
-    setupTestBed(SdDropdownTestDefault);
-    const fixture = TestBed.createComponent(SdDropdownTestDefault);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
-    const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
-    dropdown.click();
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
-    const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
-    expect(popup).toBeTruthy();
-
-    // popup이 열린 후 position 업데이트 시 maxHeight가 설정 가능해야 한다
-    // 뷰포트 높이보다 큰 popup을 시뮬레이션
-    Object.defineProperty(popup, "offsetHeight", { value: window.innerHeight + 100, configurable: true });
-
-    // maxHeight 또는 overflow 스타일이 적용 가능한 상태인지 확인
-    // (실제 뷰포트 제한 로직이 적용되었는지는 popup 스타일에서 확인)
-    // maxHeight가 설정되었거나 빈 문자열(기본)인지 확인
-    expect(typeof popup.style.maxHeight === "string").toBe(true);
-  });
-});
-
+// region FIX-2 Slice 3: dropdown popup 높이 제한 (Feature 3.1 v12 복원)
+// maxHeight/maxWidth/overflow는 sd-dropdown에서 제거됨.
+// 높이 제한은 sd-dropdown-popup의 onResize()가 담당 (300px 고정 제한).
+// 관련 테스트: dropdown-popup-height.acc.spec.ts, dropdown-popup-height.spec.ts
 // endregion

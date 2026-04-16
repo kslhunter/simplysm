@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { NgIcon } from "@ng-icons/core";
-import { tablerChevronRight } from "@ng-icons/tabler-icons";
+import { tablerChevronDown } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-collapse-icon",
@@ -36,7 +36,7 @@ import { tablerChevronRight } from "@ng-icons/tabler-icons";
   },
 })
 export class SdCollapseIcon {
-  icon = input(tablerChevronRight);
+  icon = input(tablerChevronDown);
   open = input(false, { transform: booleanAttribute });
   openRotate = input(90, { transform: numberAttribute });
 

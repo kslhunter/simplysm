@@ -16,6 +16,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isDev = path.extname(__filename) === ".ts";
+const logger = consola.withTag("sd:cli");
 
 if (isDev) {
   // 개발 모드 (.ts): affinity 적용 후 직접 실행
@@ -40,7 +41,7 @@ if (isDev) {
     // sd.config.ts가 없거나 replaceDeps가 설정되지 않으면 건너뜀
     const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
     if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
-      consola.warn("[sd-cli] replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
+      logger.warn("replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
     }
   }
 
@@ -101,9 +102,8 @@ function configureAffinityAndPriority(pid: number): void {
   }
 
   cpx.spawn(command, [], { shell: true }).catch((err: unknown) => {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "Failed to configure CPU affinity/priority:",
+    logger.warn(
+      "CPU affinity/priority 설정 실패:",
       err instanceof Error ? err.message : String(err),
     );
   });

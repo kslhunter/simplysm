@@ -31,7 +31,7 @@ export function createWorker<
   __methods: TMethods;
   __events: TEvents;
 } {
-  if (parentPort === null) {
+  if (parentPort == null) {
     throw new SdError("이 스크립트는 worker thread에서 실행되어야 합니다 (parentPort 필요).");
   }
 

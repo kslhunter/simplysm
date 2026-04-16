@@ -5,7 +5,7 @@ export type { SdMenu } from "../app-structure/sd-app-structure.types";
 export function getMenuRouterLinkOption(
   menu: SdMenu,
 ): { link: string; queryParams: Record<string, string> | undefined } | undefined {
-  if (menu.children !== undefined || menu.url != null) {
+  if (menu.children != null || menu.url != null) {
     return undefined;
   }
 

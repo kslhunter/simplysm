@@ -10,7 +10,7 @@ export function injectFocusTrap(): {
     const result: HTMLElement[] = [];
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
     let node = walker.nextNode();
-    while (node !== null) {
+    while (node != null) {
       if (node instanceof HTMLElement && isTabbable(node)) {
         result.push(node);
       }

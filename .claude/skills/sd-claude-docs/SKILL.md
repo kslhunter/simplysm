@@ -91,7 +91,7 @@ root 문서는 생성·변경하지 않는다.
 
 ## Step 3: 패키지별 문서 생성 (모노레포)
 
-각 패키지에 대해 **Agent 도구로 subagent(model: `sonnet[1m]`, effort: `low`)를 병렬 실행**한다.
+각 패키지에 대해 **Agent 도구로 subagent(model: `sonnet`, effort: `low`)를 병렬 실행**한다.
 하나의 메시지에서 모든 패키지의 Agent 호출을 동시에 보낸다.
 
 ### subagent 프롬프트
@@ -175,7 +175,7 @@ pnpm watch [targets..]                   # 라이브러리 패키지를 watch �
 ### 코드 품질
 
 ```bash
-pnpm check [targets..]                   # 전체 검사 (typecheck + lint + test 병렬)
+pnpm check [targets..]                   # 전체 검사 (typecheck + lint 병렬)
 pnpm typecheck [targets..]               # TypeScript 타입 체크
 ```
 

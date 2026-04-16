@@ -57,7 +57,7 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
         </sd-anchor>
       }
       @if (!disabled()) {
-        <sd-button [inset]="true" (click)="onSearchClick()">
+        <sd-button [inset]="true" (click)="onSearchClick($event)">
           <ng-icon [svg]="searchIcon()" />
         </sd-button>
       }
@@ -72,6 +72,8 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
         flex-direction: row;
         gap: var(--gap-sm);
         position: relative;
+        width: 100%;
+        min-width: 3em;
 
         border: 1px solid var(--trans-light);
         border-radius: var(--border-radius-default);
@@ -188,7 +190,10 @@ export class SdModalSelectButton<
     this.selectedItems.set([]);
   }
 
-  async onSearchClick(): Promise<void> {
+  async onSearchClick(event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
     const modal = this.modal();
     const result = await this._sdModal.showAsync({
       ...modal,

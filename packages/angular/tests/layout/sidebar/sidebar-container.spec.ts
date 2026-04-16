@@ -67,7 +67,7 @@ describe("Feature 4.3 Slice 1: Container + Sidebar 토글", () => {
     expect(backdrop).toBeTruthy();
 
     // Click backdrop
-    backdrop.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    backdrop.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
 

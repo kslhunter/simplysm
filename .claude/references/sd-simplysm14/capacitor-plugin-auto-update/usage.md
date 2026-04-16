@@ -66,7 +66,7 @@ export interface ApkInstallerPlugin {
 
 ## `ApkInstaller`
 
-APK 설치 플러그인 정적 파사드 클래스. Android에서는 네이티브 플러그인을 실행하고, 브라우저 환경에서는 `ApkInstallerWeb`으로 폴백한다(설치 시 알림 표시, 권한은 항상 `true` 반환).
+APK 설치 플러그인 정적 파사드 클래스. Android에서는 네이티브 플러그인을 실행하고, 브라우저 환경에서는 `ApkInstallerWeb`으로 폴백한다. 브라우저 폴백: `install()`은 `alert()` 표시 후 반환, `checkPermissions()`는 항상 `{ granted: true, manifest: true }` 반환, `requestPermissions()`는 무동작, `getVersionInfo()`는 `env("__VER__") ?? "0.0.0"`을 `versionName`으로 반환.
 
 ```typescript
 export abstract class ApkInstaller {

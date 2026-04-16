@@ -64,9 +64,18 @@ export interface StorageClient {
 
 `readFile`은 `Bytes` (`Uint8Array`)를 반환한다. `put`은 로컬 파일 경로(`string`) 또는 바이트 데이터(`Bytes`) 모두 수신한다.
 
-### SFTP 인증 방식
+### FtpStorageClient 구현 세부사항
 
-`SftpStorageClient`는 `password`가 있으면 패스워드 인증, 없으면 SSH agent(`SSH_AUTH_SOCK`) + `~/.ssh/id_ed25519` 키 파일 인증을 순서대로 시도한다.
+- 생성자의 `_secure` 매개변수로 FTPS 여부를 결정한다 (기본값: `false` = FTP)
+- `exists()` 메서드는 먼저 `size()` 명령으로 파일을 O(1) 확인하고, 실패 시 부모 디렉토리 목록을 조회하여 디렉토리 존재 여부를 확인한다
+- 모든 메서드에서 예외가 발생해도 `close()`는 이미 종료된 상태에서 호출되면 안전하게 처리된다
+
+### SftpStorageClient 구현 세부사항
+
+- `password`가 있으면 패스워드 인증 수행
+- `password`가 없으면 SSH agent(`SSH_AUTH_SOCK` 환경변수) + `~/.ssh/id_ed25519` 키 파일 인증을 순서대로 시도
+- privateKey 파싱 실패 시 (암호화된 키 등) agent만으로 재시도
+- `exists()` 메서드는 `ssh2-sftp-client`의 `exists()` 반환값을 검사한다 (`false | 'd' | '-' | 'l'` 중 문자열 반환 시 존재)
 
 ### `_requireClient()` 패턴
 

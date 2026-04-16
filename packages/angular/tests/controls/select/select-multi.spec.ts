@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdSelectMultiTest,
   SdSelectMultiPreselectedTest,
@@ -13,9 +11,6 @@ import "@simplysm/core-browser";
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    ],
   });
 }
 
@@ -43,7 +38,7 @@ describe("Feature 5.1 Slice 2: Multi select", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     (itemContents[0] as HTMLElement).click();
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -60,7 +55,7 @@ describe("Feature 5.1 Slice 2: Multi select", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     // Item A is at index 0, already selected
     (itemContents[0] as HTMLElement).click();
     fixture.detectChanges();
@@ -139,9 +134,13 @@ describe("Feature 5.1 Slice 2: Multi select", () => {
     const selectEl = fixture.nativeElement.querySelector("sd-select") as HTMLElement;
     const contentEl = selectEl.querySelector("._sd-select-control-content") as HTMLElement;
     expect(contentEl).toBeTruthy();
-    // In vertical mode, items should be separated by <br>
-    const brElements = contentEl.querySelectorAll("br");
-    expect(brElements.length).toBeGreaterThanOrEqual(1);
+    // In vertical mode, items should be separated by <div class="p-sm-0">
+    const separators = contentEl.querySelectorAll("div.p-sm-0");
+    expect(separators.length).toBeGreaterThanOrEqual(1);
+    // Each item should be wrapped in <span>
+    const innerDiv = contentEl.querySelector("div") as HTMLElement;
+    const directSpans = innerDiv.querySelectorAll(":scope > span");
+    expect(directSpans.length).toBeGreaterThanOrEqual(2);
   });
 
   // Scenario: 다중 선택 가로 표시 (기본)

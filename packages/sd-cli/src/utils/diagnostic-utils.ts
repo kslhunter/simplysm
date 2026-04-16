@@ -30,14 +30,13 @@ export function formatDiagnosticsOutput(diagnostics: ts.Diagnostic[], cwd: strin
 }
 
 /**
- * 진단 에러를 "파일:줄:열: TS코드: 메시지" 형식으로 포맷한다.
- * 파일 정보가 없는 경우 "TS코드: 메시지" 형식으로 반환한다.
+ * 진단 에러를 TypeScript 네이티브 컬러+코드 컨텍스트 포맷으로 변환한다.
  */
-export function formatDiagnosticError(diagnostic: ts.Diagnostic): string {
-  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-  if (diagnostic.file != null && diagnostic.start != null) {
-    const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-    return `${diagnostic.file.fileName}:${line + 1}:${character + 1}: TS${diagnostic.code}: ${message}`;
-  }
-  return `TS${diagnostic.code}: ${message}`;
+export function formatDiagnosticError(diagnostic: ts.Diagnostic, cwd: string): string {
+  const formatHost: ts.FormatDiagnosticsHost = {
+    getCanonicalFileName: (f) => f,
+    getCurrentDirectory: () => cwd,
+    getNewLine: () => ts.sys.newLine,
+  };
+  return ts.formatDiagnosticsWithColorAndContext([diagnostic], formatHost).trimEnd();
 }

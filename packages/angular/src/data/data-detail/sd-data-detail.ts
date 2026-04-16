@@ -22,6 +22,7 @@ import {
   tablerRestore,
 } from "@ng-icons/tabler-icons";
 import { SdDataDetailBase } from "./sd-data-detail.base";
+import { SdCommandDirective } from "../../core/commands/sd-command";
 
 export type { SdDataDetailDataInfo } from "./sd-data-detail.base";
 
@@ -40,6 +41,9 @@ export type { SdDataDetailDataInfo } from "./sd-data-detail.base";
     FormatPipe,
     SdAnchor,
     NgIcon,
+  ],
+  hostDirectives: [
+    { directive: SdCommandDirective, outputs: ["sdRefreshCommand", "sdSaveCommand"] },
   ],
   host: {
     "(sdRefreshCommand)": "onRefreshButtonClick()",
@@ -169,18 +173,18 @@ export type { SdDataDetailDataInfo } from "./sd-data-detail.base";
             </div>
           </div>
         </ng-template>
-      }
 
-      <ng-template #modalActionTpl>
-        <sd-anchor
-          [theme]="'gray'"
-          class="p-sm-default"
-          (click)="onRefreshButtonClick()"
-          title="새로고침(CTRL+ALT+L)"
-        >
-          <ng-icon [svg]="icons.tablerRefresh" />
-        </sd-anchor>
-      </ng-template>
+        <ng-template #modalActionTpl>
+          <sd-anchor
+            [theme]="'gray'"
+            class="p-sm-default"
+            (click)="onRefreshButtonClick()"
+            title="새로고침(CTRL+ALT+L)"
+          >
+            <ng-icon [svg]="icons.tablerRefresh" />
+          </sd-anchor>
+        </ng-template>
+      }
     </sd-base-container>
   `,
 })

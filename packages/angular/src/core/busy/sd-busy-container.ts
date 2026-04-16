@@ -20,38 +20,39 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
     "[attr.data-sd-type]": "currType()",
   },
   template: `
-    @if (busy()) {
-      <div class="_screen">
-        <div class="_rect">
-          <div class="_indicator">
-            @switch (currType()) {
-              @case ("spinner") {
-                <div class="_spinner"></div>
-              }
-              @case ("bar") {
-                <div class="_bar"></div>
-              }
-              @case ("cube") {
-                <div class="_cube">
-                  <div class="_cube-face _cube-face-1"></div>
-                  <div class="_cube-face _cube-face-2"></div>
-                  <div class="_cube-face _cube-face-3"></div>
-                  <div class="_cube-face _cube-face-4"></div>
-                </div>
-              }
+    <div class="_screen">
+      <div class="_rect">
+        <div class="_indicator">
+          @switch (currType()) {
+            @case ("spinner") {
+              <div class="_spinner"></div>
             }
-          </div>
-          @if (message() !== undefined) {
-            <div class="_message">{{ message() }}</div>
-          }
-          @if (progressPercent() !== undefined) {
-            <div class="_progress">
-              <div class="_progress-bar" [style.width.%]="progressPercent()"></div>
-            </div>
+            @case ("bar") {
+              <div class="_bar"></div>
+            }
+            @case ("cube") {
+              <div class="_cube1"></div>
+              <div class="_cube2"></div>
+              <div class="_cube4"></div>
+              <div class="_cube3"></div>
+            }
           }
         </div>
+        @if (message() != undefined) {
+          <div class="_message">
+            <pre>{{ message() }}</pre>
+          </div>
+        }
       </div>
-    }
+      @if (progressPercent() != null) {
+        <div class="_progress">
+          <div
+            class="_progress-bar"
+            [style.transform]="'scaleX(' + progressPercent()! / 100 + ')'"
+          ></div>
+        </div>
+      }
+    </div>
     <ng-content></ng-content>
   `,
   styles: [
@@ -62,160 +63,267 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
       sd-busy-container {
         display: block;
         position: relative;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         min-width: 70px;
         min-height: 70px;
+        overflow: auto;
 
         > ._screen {
           position: absolute;
           top: 0;
           left: 0;
-          right: 0;
-          bottom: 0;
+          width: 100%;
+          height: 100%;
           z-index: map.get(variables.$vars, z-index, busy);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--busy-overlay-bg);
 
-          > ._rect {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--gap-default);
+          visibility: hidden;
+          pointer-events: none;
+
+          opacity: 0;
+          transition: opacity var(--animation-duration);
+          transition-timing-function: linear;
+
+          > ._progress {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background-color: var(--background-color);
+
+            > ._progress-bar {
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: inline-block;
+              content: "";
+              height: 4px;
+              width: 100%;
+              transition: 0.1s ease-in;
+              transition-property: transform;
+              transform-origin: left;
+              transform: scaleX(0);
+              background-color: var(--theme-primary-default);
+            }
+          }
+        }
+
+        &[data-sd-busy="true"] {
+          > ._screen {
+            visibility: visible;
+            pointer-events: auto;
+
+            opacity: 1;
+          }
+        }
+
+        &[data-sd-type="spinner"] {
+          > ._screen > ._rect {
+            transform: translateY(-100%);
+            transition: 0.1s ease-in;
+            transition-property: transform;
 
             > ._indicator {
-              > ._spinner {
-                width: 2rem;
-                height: 2rem;
-                border: 0.1667rem solid var(--theme-primary-lighter);
-                border-top-color: var(--theme-primary-default);
-                border-radius: 50%;
-                animation: sd-busy-spin 0.8s linear infinite;
+              top: 0;
+              width: 30px;
+              height: 30px;
+              margin: 20px auto 0 auto;
+              border: 6px solid var(--background-color);
+              border-radius: 100%;
+              border-bottom-color: var(--theme-primary-default);
+              animation: sd-busy-spin 1s linear infinite;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+              > div {
+                display: none;
+              }
+            }
+
+            > ._message {
+              position: absolute;
+              top: 55px;
+              width: 100%;
+              color: var(--background-color);
+              font-weight: bold;
+              text-align: center;
+              text-shadow: 0 0 2px var(--background-rev-color);
+            }
+          }
+
+          &[data-sd-busy="true"] {
+            > ._screen > ._rect {
+              transform: none;
+              transition: 0.1s ease-out;
+            }
+          }
+        }
+
+        &[data-sd-type="bar"] {
+          min-height: 4px;
+
+          &[data-sd-busy="true"] {
+            > ._screen > ._rect {
+              > ._indicator {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 4px;
+                width: 100%;
+                background-color: var(--background-color);
+
+                &:before,
+                &:after {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  display: inline-block;
+                  content: "";
+                  height: 4px;
+                  width: 100%;
+
+                  transform-origin: left;
+                }
+
+                &:before {
+                  background-color: var(--theme-primary-default);
+                  animation: sd-busy-bar-indicator-before 2s infinite ease-in;
+                }
+
+                &:after {
+                  background-color: var(--background-color);
+                  animation: sd-busy-bar-indicator-after 2s infinite ease-out;
+                }
+
+                > div {
+                  display: none;
+                }
               }
 
-              > ._bar {
-                width: 6rem;
-                height: 0.25rem;
-                background: var(--theme-primary-lighter);
-                border-radius: var(--border-radius-default);
-                overflow: hidden;
+              > ._message {
+                position: absolute;
+                top: 4px;
+                right: 0;
+                display: inline-block;
+              }
+            }
+          }
+        }
+
+        &[data-sd-type="cube"] {
+          > ._screen > ._rect {
+            > ._indicator {
+              position: absolute;
+              top: calc(50% - 20px);
+              left: calc(50% - 20px);
+              width: 40px;
+              height: 40px;
+              transform: rotateZ(45deg);
+
+              ._cube1,
+              ._cube2,
+              ._cube3,
+              ._cube4 {
+                float: left;
+                width: 50%;
+                height: 50%;
                 position: relative;
 
-                &::after {
+                &:before {
                   content: "";
                   position: absolute;
                   top: 0;
                   left: 0;
+                  width: 100%;
                   height: 100%;
-                  width: 40%;
-                  background: var(--theme-primary-default);
-                  border-radius: var(--border-radius-default);
-                  animation: sd-busy-bar 1.5s ease-in-out infinite;
+                  background-color: var(--trans-light);
+                  animation: sd-busy-cube 2.4s infinite linear both;
+                  transform-origin: 100% 100%;
                 }
               }
 
-              > ._cube {
-                width: 2rem;
-                height: 2rem;
-                position: relative;
-                animation: sd-busy-cube-rotate 1.8s infinite ease-in-out;
+              ._cube2 {
+                transform: rotateZ(90deg);
 
-                > ._cube-face {
-                  position: absolute;
-                  width: 50%;
-                  height: 50%;
-                  background: var(--theme-primary-default);
-                  animation: sd-busy-cube-fold 1.8s infinite ease-in-out;
+                &:before {
+                  animation-delay: 0.3s;
+                }
+              }
 
-                  &._cube-face-1 {
-                    top: 0;
-                    left: 0;
-                  }
+              ._cube3 {
+                transform: rotateZ(180deg);
 
-                  &._cube-face-2 {
-                    top: 0;
-                    right: 0;
-                    animation-delay: 0.45s;
-                  }
+                &:before {
+                  animation-delay: 0.6s;
+                }
+              }
 
-                  &._cube-face-3 {
-                    bottom: 0;
-                    right: 0;
-                    animation-delay: 0.9s;
-                  }
+              ._cube4 {
+                transform: rotateZ(270deg);
 
-                  &._cube-face-4 {
-                    bottom: 0;
-                    left: 0;
-                    animation-delay: 1.35s;
-                  }
+                &:before {
+                  animation-delay: 0.9s;
                 }
               }
             }
 
             > ._message {
-              font-size: var(--font-size-sm);
-              color: var(--text-trans-light);
-              text-align: center;
-            }
-
-            > ._progress {
-              width: 10rem;
-              height: 0.25rem;
-              background: var(--theme-primary-lighter);
-              border-radius: var(--border-radius-default);
-              overflow: hidden;
-
-              > ._progress-bar {
-                height: 100%;
-                background: var(--theme-primary-default);
-                transition: width 0.3s ease;
-              }
+              position: absolute;
+              top: 4px;
+              right: 0;
+              display: inline-block;
             }
           }
         }
       }
 
       @keyframes sd-busy-spin {
+        from {
+          transform: rotate(0deg);
+        }
         to {
           transform: rotate(360deg);
         }
       }
 
-      @keyframes sd-busy-bar {
+      @keyframes sd-busy-bar-indicator-before {
         0% {
-          left: -40%;
+          transform: scaleX(0);
         }
+        60%,
         100% {
-          left: 100%;
+          transform: scaleX(1);
         }
       }
 
-      @keyframes sd-busy-cube-rotate {
-        0% {
-          transform: perspective(6.25rem) rotateX(0deg) rotateY(0deg);
-        }
+      @keyframes sd-busy-bar-indicator-after {
+        0%,
         50% {
-          transform: perspective(6.25rem) rotateX(-180deg) rotateY(0deg);
+          transform: scaleX(0);
         }
         100% {
-          transform: perspective(6.25rem) rotateX(-180deg) rotateY(-180deg);
+          transform: scaleX(1);
         }
       }
 
-      @keyframes sd-busy-cube-fold {
+      @keyframes sd-busy-cube {
         0%,
         10% {
-          transform: scale(1);
+          transform: perspective(140px) rotateX(-180deg);
+          opacity: 0;
         }
-        25% {
-          transform: scale(0.5);
+        25%,
+        75% {
+          transform: perspective(140px) rotateX(0deg);
+          opacity: 1;
         }
-        50%,
+        90%,
         100% {
-          transform: scale(1);
+          transform: perspective(140px) rotateY(180deg);
+          opacity: 0;
         }
       }
     `,

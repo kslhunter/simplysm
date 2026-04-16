@@ -49,7 +49,6 @@ describe("NgtscEngine adapter isolation", () => {
 
     const filesToCheck = [
       path.join(sdCliSrc, "engines", "NgtscEngine.ts"),
-      path.join(sdCliSrc, "workers", "ngtsc-build.worker.ts"),
       path.join(sdCliSrc, "angular", "ngtsc-build-core.ts"),
       path.join(sdCliSrc, "utils", "output-path-rewriter.ts"),
     ];
@@ -68,13 +67,13 @@ describe("NgtscEngine adapter isolation", () => {
 
   it("all Angular API access goes through angular-compiler.ts adapter", () => {
 
-    // Angular API 접근은 angular-build-pipeline.ts를 통해 angular-compiler.ts로 이루어진다
-    const buildPipeline = path.resolve(
+    // Angular API 접근은 ngtsc-build-core.ts → angular-compiler.ts 또는 SdTsCompiler → angular-compiler.ts로 이루어진다
+    const compilerFile = path.resolve(
       import.meta.dirname,
-      "../../src/angular/angular-build-pipeline.ts",
+      "../../src/ts-compiler/SdTsCompiler.ts",
     );
-    const content = fs.readFileSync(buildPipeline, "utf-8");
+    const content = fs.readFileSync(compilerFile, "utf-8");
 
-    expect(content).toContain("./angular-compiler");
+    expect(content).toContain("angular-compiler");
   });
 });

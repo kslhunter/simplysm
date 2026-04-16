@@ -182,7 +182,7 @@ export class ZipArchive {
     }
 
     const entry = entries.find((item) => item.filename === fileName) as FileEntry | undefined;
-    return entry !== undefined;
+    return entry != null;
   }
   //#endregion
 

@@ -23,11 +23,12 @@ import { SdGap } from "../gap/sd-gap";
   standalone: true,
   imports: [SdCheckbox, SdGap],
   template: `
-    <div class="_content" tabindex="0" (click)="onClick()" (keydown)="onKeydown($event)">
-      @if (_parentControl.selectMode() === "multi") {
-        <sd-checkbox [value]="isSelected()" [inline]="true" />
-        <sd-gap [width]="'sm'" />
-      }
+    @if (_parentControl.selectMode() === "multi") {
+      <sd-checkbox [value]="isSelected()" [inline]="true" />
+      <sd-gap [width]="'sm'" />
+    }
+
+    <div class="_content" style="display: inline-block;">
       <ng-content />
     </div>
   `,
@@ -37,32 +38,33 @@ import { SdGap } from "../gap/sd-gap";
 
       sd-select-item {
         display: block;
+        padding: var(--gap-sm) var(--gap-default);
+        cursor: pointer;
+        transition: background 0.1s ease-in;
+        background: var(--control-color);
 
-        > ._content {
-          padding: var(--gap-sm) var(--gap-default);
-          cursor: pointer;
-
-          &:hover {
-            background: var(--trans-lighter);
-          }
-
-          &:focus {
-            outline: none;
-            background: var(--trans-lighter);
-          }
+        &:hover {
+          transition: background 0.1s ease-out;
+          background: rgba(0, 0, 0, 0.07);
         }
 
-        &[data-sd-selected="true"] > ._content {
-          background: var(--trans-lighter);
+        &:focus {
+          outline: none;
+          transition: background 0.1s ease-out;
+          background: rgba(0, 0, 0, 0.07);
+        }
+
+        &[data-sd-selected="true"] {
+          color: var(--theme-primary-default);
           font-weight: bold;
+          background: rgba(0, 0, 0, 0.07);
         }
 
         &[data-sd-disabled="true"] {
-          > ._content {
-            opacity: 0.3;
-            cursor: default;
-            pointer-events: none;
-          }
+          background: var(--theme-gray-default);
+          opacity: 0.3;
+          cursor: default;
+          pointer-events: none;
         }
 
         &[data-sd-hidden="true"] {
@@ -72,9 +74,13 @@ import { SdGap } from "../gap/sd-gap";
     `,
   ],
   host: {
+    "[attr.tabindex]": "'0'",
+    "[attr.data-sd-select-mode]": "_parentControl.selectMode()",
     "[attr.data-sd-selected]": "isSelected()",
     "[attr.data-sd-disabled]": "disabled()",
     "[attr.data-sd-hidden]": "hidden()",
+    "(click)": "onClick($event)",
+    "(keydown)": "onKeydown($event)",
   },
 })
 export class SdSelectItem<T> {
@@ -84,7 +90,7 @@ export class SdSelectItem<T> {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _destroyRef = inject(DestroyRef);
 
-  value = input.required<T>();
+  value = input<T | undefined>(undefined);
   disabled = input(false, { transform: booleanAttribute });
   hidden = input(false, { transform: booleanAttribute });
 
@@ -95,7 +101,7 @@ export class SdSelectItem<T> {
     const itemValue = this.value();
     if (this._parentControl.selectMode() === "multi") {
       const arr = parentValue as T[] | undefined;
-      return arr != null && arr.includes(itemValue);
+      return arr != null && arr.includes(itemValue as T);
     }
     return parentValue === itemValue;
   });
@@ -116,7 +122,9 @@ export class SdSelectItem<T> {
     });
   }
 
-  onClick(): void {
+  onClick(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
     if (this.disabled()) return;
     this._parentControl.selectItem(this.value());
   }

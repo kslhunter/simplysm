@@ -18,7 +18,7 @@ vi.mock("../../src/utils/output-utils", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../src/utils/output-utils")>();
   return {
     ...actual,
-    printErrors: vi.fn(),
+    printDiagnostics: vi.fn(),
     printServers: vi.fn(),
   };
 });
@@ -117,7 +117,7 @@ vi.mock("../../src/electron/electron", () => ({
 const { DevOrchestrator } = await import("../../src/orchestrators/DevOrchestrator");
 const { loadSdConfig } = await import("../../src/utils/sd-config");
 const { watchReplaceDeps } = await import("../../src/deps/replace-deps/replace-deps");
-const { printErrors, printServers: _printServers } = await import("../../src/utils/output-utils");
+const { printDiagnostics, printServers: _printServers } = await import("../../src/utils/output-utils");
 const { createBuildEngine } = await import("../../src/engines/engine-factory");
 const { Worker } = await import("@simplysm/core-node");
 const { getVersion } = await import("../../src/utils/build-env");
@@ -302,7 +302,7 @@ describe("DevOrchestrator", () => {
 
     expect(mockBuildEngines).toHaveLength(1);
     expect(mockBuildEngines[0]._pkgName).toBe("service-server");
-    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+    expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
     expect(Worker.create).toHaveBeenCalled();
     expect(mockRuntimeProxies[0].start).toHaveBeenCalled();
   });
@@ -397,7 +397,7 @@ describe("DevOrchestrator", () => {
     await orchestrator.start();
 
     expect(Worker.create).not.toHaveBeenCalled();
-    expect(printErrors).toHaveBeenCalled();
+    expect(printDiagnostics).toHaveBeenCalled();
   });
 
   // --- Unit: excludes library packages ---
@@ -504,7 +504,7 @@ describe("DevOrchestrator", () => {
     await orchestrator.start();
 
     const clientEngine = mockBuildEngines.find((e) => e._pkgName === "my-client")!;
-    expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false });
+    expect(clientEngine.startWatch).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
   });
 
   it("passes clientPorts to server runtime for connected clients", async () => {

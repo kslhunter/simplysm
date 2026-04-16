@@ -52,7 +52,7 @@ describe("Feature 3.2 Slice 2: SdModal 렌더링 + 닫기", () => {
     const backdrop = getBackdrop(modal);
 
     expect(backdrop).not.toBeNull();
-    backdrop!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    backdrop!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     fixture.detectChanges();
 
     expect(fixture.componentInstance.closed).toBe(true);
@@ -65,7 +65,7 @@ describe("Feature 3.2 Slice 2: SdModal 렌더링 + 닫기", () => {
     const backdrop = getBackdrop(modal);
 
     expect(backdrop).not.toBeNull();
-    backdrop!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    backdrop!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     fixture.detectChanges();
 
     expect(fixture.componentInstance.closed).toBe(false);

@@ -33,7 +33,7 @@ export async function upgradeVersion(
 
   // 프리릴리스 여부에 따라 증가 전략 결정
   const newVersion =
-    prereleaseInfo !== null
+    prereleaseInfo != null
       ? semver.inc(currentVersion, "prerelease")!
       : semver.inc(currentVersion, "patch")!;
 

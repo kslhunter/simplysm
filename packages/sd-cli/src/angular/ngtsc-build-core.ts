@@ -1,101 +1,11 @@
 import path from "path";
 import fs from "fs";
-import ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
 import { consola } from "consola";
 
 const logger = consola.withTag("sd:cli:ngtsc-build");
-import type { BuildOutput } from "../engines/types";
-import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
-import type { LintWithProgramResult } from "../lint/lint-with-program";
-import type { TypecheckEnv } from "../utils/tsconfig";
-import { compileScssFile } from "./scss-compiler";
-
-//#region Types
-
-export interface NgtscBuildInfo {
-  name: string;
-  cwd: string;
-  pkgDir: string;
-  output: BuildOutput;
-  /** 타입체크 환경. 설정 시 getCompilerOptionsForEnv()로 compilerOptions를 조정한다. */
-  env?: TypecheckEnv;
-  /** sd.config.ts의 replaceDeps 설정 */
-  replaceDeps?: Record<string, string>;
-}
-
-export interface NgtscBuildResult {
-  build: { success: boolean; errors?: string[]; warnings?: string[]; diagnostics: SerializedDiagnostic[] };
-  lint?: LintWithProgramResult;
-}
-
-export interface NgtscCombinedBuildEvent {
-  build: { success: boolean; errors?: string[]; warnings?: string[] };
-  lint?: LintWithProgramResult;
-}
-
-//#endregion
-
-//#region CompilerOptions helpers
-
-export function buildCompilerOptions(
-  baseOptions: ts.CompilerOptions,
-  pkgDir: string,
-  output: BuildOutput,
-): ts.CompilerOptions {
-  const needsEmit = output.js || output.dts;
-  const options: ts.CompilerOptions = {
-    ...baseOptions,
-    sourceMap: false,
-    outDir: path.join(pkgDir, "dist"),
-    incremental: true,
-    tsBuildInfoFile: path.join(
-      pkgDir,
-      ".cache",
-      needsEmit ? "ngtsc-build.tsbuildinfo" : "ngtsc-typecheck.tsbuildinfo",
-    ),
-  };
-
-  if (output.js && output.dts) {
-    options.noEmit = false;
-    options.declaration = true;
-    options.declarationMap = true;
-    options.emitDeclarationOnly = false;
-    options.declarationDir = path.join(pkgDir, "dist");
-  } else if (output.js && !output.dts) {
-    options.noEmit = false;
-    options.declaration = false;
-    options.declarationMap = false;
-    options.emitDeclarationOnly = false;
-  } else if (!output.js && output.dts) {
-    options.noEmit = false;
-    options.declaration = true;
-    options.declarationMap = true;
-    options.emitDeclarationOnly = true;
-    options.declarationDir = path.join(pkgDir, "dist");
-  } else {
-    // 둘 다 false — 타입체크만 수행
-    options.noEmit = true;
-    options.declaration = false;
-    options.declarationMap = false;
-    options.emitDeclarationOnly = false;
-  }
-
-  return options;
-}
-
-//#endregion
-
-//#region SCSS loadPaths helper
-
-export function buildScssLoadPaths(info: NgtscBuildInfo): string[] {
-  return [
-    path.join(info.pkgDir, "scss"),
-    path.join(info.cwd, "node_modules"),
-  ];
-}
-
-//#endregion
+import { compileScssFile, compileScssString } from "./scss-compiler";
+import { createOutputPathRewriter, rewriteScssImports } from "../utils/output-path-rewriter";
 
 export function trackDeps(
   depsMap: Map<string, Set<string>>,
@@ -129,6 +39,52 @@ export interface SideEffectScssOptions {
   scssDependencies: Map<string, Set<string>>;
   registry?: Map<string, SideEffectScssEntry>;
 }
+
+//#region Library SCSS transform
+
+/**
+ * Library용 transformStylesheet 콜백 팩토리.
+ * AngularCompiler의 transformStylesheet 옵션에 주입된다.
+ *
+ * - 외부 .scss 파일: compileScssFile로 CSS 반환 + 의존성 기록
+ * - 외부 비-SCSS 파일 (.css 등): null 반환 (readResource가 처리)
+ * - 인라인 스타일: compileScssString으로 CSS 반환 + 의존성 기록
+ * - 에러 시: scssErrors에 추가, SCSS error comment 반환
+ */
+export function createLibraryTransformStylesheet(
+  loadPaths: string[],
+  scssErrors: string[],
+  scssDependencies: Map<string, Set<string>>,
+): (data: string, containingFile: string, stylesheetFile?: string) => Promise<string | null> {
+  return (
+    data: string,
+    containingFile: string,
+    stylesheetFile?: string,
+  ): Promise<string | null> => {
+    try {
+      if (stylesheetFile != null && stylesheetFile.endsWith(".scss")) {
+        const result = compileScssFile(stylesheetFile, loadPaths);
+        trackDeps(scssDependencies, containingFile, result.dependencies);
+        return Promise.resolve(result.css);
+      }
+
+      if (stylesheetFile != null) {
+        // .css 등 비-SCSS 파일 → null 반환 (readResource가 처리)
+        return Promise.resolve(null);
+      }
+
+      // 인라인 스타일 — SCSS로 컴파일
+      const result = compileScssString(data, containingFile, loadPaths);
+      trackDeps(scssDependencies, containingFile, result.dependencies);
+      return Promise.resolve(result.css);
+    } catch (err) {
+      scssErrors.push(formatScssError(err, containingFile));
+      return Promise.resolve("/* SCSS compilation error */");
+    }
+  };
+}
+
+//#endregion
 
 //#region Side-effect SCSS
 
@@ -180,6 +136,83 @@ export function compileGlobalScss(
   }
   logger.debug("global SCSS 컴파일 완료");
   return errors;
+}
+
+//#endregion
+
+//#region writeEmitResults
+
+export interface WriteEmitResultsOptions {
+  /** 출력 대상 패키지 디렉토리 */
+  pkgDir: string;
+  /** emit 결과 필터 (src/ 하위만 등) */
+  sourceFilter?: (fileName: string) => boolean;
+  /** side-effect SCSS 옵션 */
+  scss?: SideEffectScssOptions;
+}
+
+/**
+ * emitAffectedFiles 결과를 output-path-rewriting 적용 후 파일로 쓴다.
+ * scss 옵션이 제공되면 .js 파일 내 .scss side-effect import를 처리한다:
+ * 1. import 경로를 .scss → .css로 변환
+ * 2. 참조된 SCSS 파일을 CSS로 컴파일하여 dist에 출력
+ */
+export function writeEmitResults(
+  emitResults: Iterable<{ filename: string; contents: string; sourceFileName?: string }>,
+  pkgDir: string,
+  scss?: SideEffectScssOptions,
+): void {
+  logger.debug("emit 결과 파일 쓰기 시작");
+  const rewritePath = createOutputPathRewriter(pkgDir);
+  for (const { filename, contents, sourceFileName } of emitResults) {
+    const rewrite = rewritePath(filename, contents);
+    if (rewrite == null) continue;
+    let [newPath, newContent] = rewrite;
+
+    // .js 파일 내 side-effect SCSS import 처리
+    if (scss != null && newPath.endsWith(".js")) {
+      const { text, scssImports } = rewriteScssImports(newContent);
+      newContent = text;
+
+      // 새 항목 등록 전에 이 소스 파일의 기존 레지스트리 항목 제거
+      if (scss.registry != null && sourceFileName != null) {
+        for (const [key, entry] of scss.registry) {
+          if (entry.sourceFileName === sourceFileName) {
+            scss.registry.delete(key);
+          }
+        }
+      }
+
+      if (scssImports.length > 0 && sourceFileName != null) {
+        const sourceDir = path.dirname(sourceFileName);
+        const outputDir = path.dirname(newPath);
+
+        for (const scssImport of scssImports) {
+          const scssAbsPath = path.resolve(sourceDir, scssImport);
+          const cssFileName = scssImport.replace(/\.scss$/, ".css");
+          const cssAbsPath = path.resolve(outputDir, cssFileName);
+
+          // 레지스트리가 제공된 경우 등록 (scssAbsPath를 키로 사용하여 중복 방지)
+          if (scss.registry != null) {
+            scss.registry.set(scssAbsPath, { scssAbsPath, cssAbsPath, sourceFileName });
+          }
+
+          try {
+            const result = compileScssFile(scssAbsPath, scss.loadPaths);
+            fs.mkdirSync(path.dirname(cssAbsPath), { recursive: true });
+            fs.writeFileSync(cssAbsPath, result.css, "utf-8");
+            trackDeps(scss.scssDependencies, sourceFileName, result.dependencies);
+          } catch (err) {
+            scss.scssErrors.push(formatScssError(err, scssAbsPath));
+          }
+        }
+      }
+    }
+
+    fs.mkdirSync(path.dirname(newPath), { recursive: true });
+    fs.writeFileSync(newPath, newContent, "utf-8");
+  }
+  logger.debug("emit 결과 파일 쓰기 완료");
 }
 
 //#endregion

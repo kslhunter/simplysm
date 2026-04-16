@@ -61,6 +61,7 @@ import { matchesSearchText } from "./matchesSearchText";
       [inline]="inline()"
       [size]="size()"
       [items]="rootDisplayItems()"
+      [trackByFn]="trackByFn"
       [selectMode]="selectMode()"
       [contentClass]="selectClass()"
       [multiSelectionDisplayDirection]="multiSelectionDisplayDirection()"
@@ -93,19 +94,13 @@ import { matchesSearchText } from "./matchesSearchText";
           (!required() && selectMode() === "single") ||
           (useUndefined() && selectMode() === "multi")
         ) {
-          <div
-            class="_sd-shared-data-select-undefined"
-            tabindex="0"
-            (click)="onUndefinedClick()"
-            (keydown.enter)="onUndefinedClick()"
-            (keydown.space)="onUndefinedClick(); $event.preventDefault()"
-          >
+          <sd-select-item>
             @if (undefinedTplRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
             } @else {
               <span class="tx-theme-gray-default">미지정</span>
             }
-          </div>
+          </sd-select-item>
         }
       </ng-template>
 
@@ -185,6 +180,8 @@ export class SdSharedDataSelect<
     read: TemplateRef,
   });
 
+  trackByFn = (item: TItem): TItem["__valueKey"] => item.__valueKey;
+
   searchText = signal<string | undefined>(undefined);
 
   isDropdownOpen = computed(() => this._selectCtrl()?.dropdownOpen() ?? false);
@@ -224,13 +221,7 @@ export class SdSharedDataSelect<
 
     const orderProp = this.displayOrderKeyProp();
     if (orderProp != null) {
-      result = [...result].sort((a, b) => {
-        const aVal = (a as any)[orderProp];
-        const bVal = (b as any)[orderProp];
-        if (aVal < bVal) return -1;
-        if (aVal > bVal) return 1;
-        return 0;
-      });
+      result = result.orderBy((item) => (item as any)[orderProp]);
     }
 
     return result;
@@ -247,7 +238,7 @@ export class SdSharedDataSelect<
     const check = (item: TItem, index: number): boolean => {
       const key = item.__valueKey;
       const cached = cache.get(key);
-      if (cached !== undefined) return cached;
+      if (cached != null) return cached;
 
       const itemText = getSearchTextFn(item, index);
       if (matchesSearchText(itemText, searchText)) {
@@ -332,13 +323,7 @@ export class SdSharedDataSelect<
     for (const [key, children] of parentMap) {
       sorted.set(
         key,
-        [...children].sort((a, b) => {
-          const aVal = (a as any)[orderProp];
-          const bVal = (b as any)[orderProp];
-          if (aVal < bVal) return -1;
-          if (aVal > bVal) return 1;
-          return 0;
-        }),
+        children.orderBy((item) => (item as any)[orderProp]),
       );
     }
     return sorted;
@@ -350,10 +335,6 @@ export class SdSharedDataSelect<
       []
     );
   };
-
-  onUndefinedClick(): void {
-    this.value.set(undefined as any);
-  }
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
     event.preventDefault();

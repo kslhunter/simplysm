@@ -33,6 +33,7 @@ import {
   tablerUpload,
 } from "@ng-icons/tabler-icons";
 import { SdDataSheetBase } from "./sd-data-sheet.base";
+import { SdCommandDirective } from "../../core/commands/sd-command";
 
 //#region SdDataSheet
 
@@ -52,6 +53,9 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
     FormatPipe,
     SdAnchor,
     NgIcon,
+  ],
+  hostDirectives: [
+    { directive: SdCommandDirective, outputs: ["sdRefreshCommand", "sdSaveCommand"] },
   ],
   host: {
     "(sdRefreshCommand)": "onRefreshButtonClick()",
@@ -214,6 +218,11 @@ import { SdDataSheetBase } from "./sd-data-sheet.base";
                 parent.editMode === "inline" && parent.canEdit() && parent.itemPropInfo.isDeleted
               ) {
                 <sd-sheet-column [fixed]="true" [key]="parent.itemPropInfo.isDeleted!">
+                  <ng-template #headerTpl>
+                    <div class="p-xs-sm tx-center">
+                      <ng-icon [svg]="deleteIcon()" />
+                    </div>
+                  </ng-template>
                   <ng-template [cell]="parent.items()" let-item="item">
                     <div class="p-xs-sm tx-center">
                       <sd-anchor

@@ -26,7 +26,7 @@ import type {
 
 const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   single<T>(predicate?: (item: T, index: number) => boolean): T | undefined {
-    const arr = predicate !== undefined ? this.filter(predicate) : this;
+    const arr = predicate != null ? this.filter(predicate) : this;
     if (arr.length > 1) {
       throw new ArgumentError("여러 개의 결과가 발견되었습니다.", { count: arr.length });
     }
@@ -34,7 +34,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 
   first<T>(predicate?: (item: T, index: number) => boolean): T | undefined {
-    return predicate !== undefined ? this.find(predicate) : this[0];
+    return predicate != null ? this.find(predicate) : this[0];
   },
 
   async filterAsync<T>(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]> {
@@ -48,7 +48,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 
   last<T>(predicate?: (item: T, index: number) => boolean): T | undefined {
-    if (predicate !== undefined) {
+    if (predicate != null) {
       for (let i = this.length - 1; i >= 0; i--) {
         if (predicate(this[i], i)) {
           return this[i];
@@ -113,7 +113,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   },
 
   async mapManyAsync<T, R>(selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
-    const arr = selector !== undefined ? await this.mapAsync(selector) : this;
+    const arr = selector != null ? await this.mapAsync(selector) : this;
     return arr.mapMany();
   },
 
@@ -139,13 +139,13 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     for (let i = 0; i < this.length; i++) {
       const keyObj = keySelector(this[i], i);
-      const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
+      const valueObj = valueSelector != null ? valueSelector(this[i], i) : this[i];
 
       // 원시 key는 Map을 사용하여 O(n)으로 처리
       if (keyObj == null || typeof keyObj !== "object") {
         const keyStr = typeof keyObj + ":" + String(keyObj);
         const existingIndex = primitiveKeyIndex.get(keyStr);
-        if (existingIndex !== undefined) {
+        if (existingIndex != null) {
           result[existingIndex].values.push(valueObj);
         } else {
           primitiveKeyIndex.set(keyStr, result.length);
@@ -156,7 +156,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
       // 객체 key는 기존 방식 O(n²) 사용
       const existsRecord = result.find((item) => equal(item.key, keyObj));
-      if (existsRecord !== undefined) {
+      if (existsRecord != null) {
         existsRecord.values.push(valueObj);
       } else {
         result.push({ key: keyObj, values: [valueObj] });
@@ -176,7 +176,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const item = this[i];
 
       const keyObj = keySelector(item, i);
-      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+      const valueObj = valueSelector != null ? valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
         throw new ArgumentError("중복된 key입니다.", { duplicatedKey: keyObj });
@@ -197,7 +197,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const item = this[i];
 
       const keyObj = await keySelector(item, i);
-      const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
+      const valueObj = valueSelector != null ? await valueSelector(item, i) : item;
 
       if (result.has(keyObj)) {
         throw new ArgumentError("중복된 key입니다.", { duplicatedKey: keyObj });
@@ -218,7 +218,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const item = this[i];
 
       const keyObj = keySelector(item, i);
-      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+      const valueObj = valueSelector != null ? valueSelector(item, i) : item;
 
       const arr = result.getOrCreate(keyObj, []);
       arr.push(valueObj);
@@ -237,7 +237,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const item = this[i];
 
       const keyObj = keySelector(item, i);
-      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+      const valueObj = valueSelector != null ? valueSelector(item, i) : item;
 
       const set = result.getOrCreate(keyObj, new Set<V | T>());
       set.add(valueObj);
@@ -280,10 +280,10 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       const item = this[i];
 
       const key = keySelector(item, i);
-      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+      const valueObj = valueSelector != null ? valueSelector(item, i) : item;
 
       // undefined 값은 "없음"으로 처리하여 덮어쓰기 허용
-      if (result[key] !== undefined) {
+      if (result[key] != null) {
         throw new ArgumentError("중복된 key입니다.", { duplicatedKey: key });
       }
       result[key] = valueObj;
@@ -345,7 +345,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     const uncheckedTarget = [...target];
     const uncheckedTargetSet = new Set(uncheckedTarget);
-    const hasKeys = options?.keys !== undefined && options.keys.length > 0;
+    const hasKeys = options?.keys != null && options.keys.length > 0;
     const excludeOpts = { topLevelExcludes: options?.excludes };
 
     // keys 옵션이 제공되면 target을 Map으로 사전 인덱싱하여 O(n×m) → O(n+m)으로 개선
@@ -381,7 +381,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
       }
 
       // 전체 일치가 없고 keys 옵션이 있으면 Map에서 O(1) 조회 수행
-      if (sameTarget === undefined && keyIndexedTarget) {
+      if (sameTarget == null && keyIndexedTarget) {
         const sourceKeyStr = JSON.stringify(
           options!.keys!.map((k) => (sourceItem as Record<string, unknown>)[k]),
         );
@@ -392,9 +392,9 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
         }
       }
 
-      if (sameTarget !== undefined) {
+      if (sameTarget != null) {
         uncheckedTargetSet.delete(sameTarget);
-      } else if (sameKeyTarget !== undefined) {
+      } else if (sameKeyTarget != null) {
         result.push({ source: sourceItem, target: sameKeyTarget });
         uncheckedTargetSet.delete(sameKeyTarget);
       } else {
@@ -481,15 +481,15 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
 
     for (const diff of diffs) {
       // 업데이트 시
-      if (diff.source !== undefined && diff.target !== undefined) {
+      if (diff.source != null && diff.target != null) {
         const sourceIndex = sourceIndexMap.get(diff.source);
-        if (sourceIndex === undefined) {
+        if (sourceIndex == null) {
           throw new SdError("예상치 못한 오류: merge에서 source 항목을 찾을 수 없습니다.");
         }
         result[sourceIndex] = merge(diff.source, diff.target);
       }
       // 추가 시
-      else if (diff.target !== undefined) {
+      else if (diff.target != null) {
         result.push(diff.target);
       }
     }
@@ -500,7 +500,7 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   sum<T>(selector?: (item: T, index: number) => number): number {
     let result = 0;
     for (let i = 0; i < this.length; i++) {
-      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      const item = selector != null ? selector(this[i], i) : this[i];
       if (typeof item !== "number") {
         throw new ArgumentError("sum은 숫자에만 사용할 수 있습니다.", {
           type: typeof item,
@@ -515,13 +515,13 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   min<T>(selector?: (item: T, index: number) => string | number): string | number | undefined {
     let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
-      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      const item = selector != null ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
         throw new ArgumentError("min은 숫자/문자열에만 사용할 수 있습니다.", {
           type: typeof item,
         });
       }
-      if (result === undefined || result > item) {
+      if (result == null || result > item) {
         result = item;
       }
     }
@@ -532,13 +532,13 @@ const arrayReadonlyExtensions: ReadonlyArrayExt<any> & ThisType<any[]> = {
   max<T>(selector?: (item: T, index: number) => string | number): string | number | undefined {
     let result: string | number | undefined;
     for (let i = 0; i < this.length; i++) {
-      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      const item = selector != null ? selector(this[i], i) : this[i];
       if (typeof item !== "number" && typeof item !== "string") {
         throw new ArgumentError("max는 숫자/문자열에만 사용할 수 있습니다.", {
           type: typeof item,
         });
       }
-      if (result === undefined || result < item) {
+      if (result == null || result < item) {
         result = item;
       }
     }

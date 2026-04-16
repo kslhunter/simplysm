@@ -19,7 +19,7 @@ describe("Feature 1.1 Slice 5: CSS 출력 동일성 검증", () => {
     const selectorRegex = /(\.[a-zA-Z][\w-]*)\s*\{/g;
     const selectors: string[] = [];
     let match: RegExpExecArray | null;
-    while ((match = selectorRegex.exec(utilitiesBlock)) !== null) {
+    while ((match = selectorRegex.exec(utilitiesBlock)) != null) {
       selectors.push(match[1].trim());
     }
     return [...new Set(selectors)].sort();

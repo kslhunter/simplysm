@@ -31,7 +31,7 @@ async function createFixture(
   if (opts?.selectMode != null) {
     fixture.componentRef.setInput("selectMode", opts.selectMode);
   }
-  if (opts?.value !== undefined) {
+  if (opts?.value != null) {
     fixture.componentRef.setInput("value", opts.value);
   }
 

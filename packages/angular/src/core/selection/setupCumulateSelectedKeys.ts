@@ -15,11 +15,11 @@ export function setupCumulateSelectedKeys<TItem, TKey>(options: {
     if (selectedItems.length === 0) return;
 
     const itemKeySet = new Set(
-      items.map((item) => options.keySelectorFn(item)).filter((k) => k !== undefined),
+      items.map((item) => options.keySelectorFn(item)).filter((k) => k != null),
     );
     const filtered = selectedItems.filter((item) => {
       const key = options.keySelectorFn(item);
-      return key !== undefined && itemKeySet.has(key);
+      return key != null && itemKeySet.has(key);
     });
 
     if (filtered.length !== selectedItems.length) {
@@ -32,7 +32,7 @@ export function setupCumulateSelectedKeys<TItem, TKey>(options: {
     const selectedItems = options.selectedItems();
     const keys = selectedItems
       .map((item) => options.keySelectorFn(item))
-      .filter((k): k is TKey => k !== undefined);
+      .filter((k): k is TKey => k != null);
     options.selectedItemKeys.set(keys);
   });
 }

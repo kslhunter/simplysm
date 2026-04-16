@@ -29,7 +29,7 @@ description: 스킬/프롬프트 파일의 작성·개선을 위한 EDD 스킬. 
 - **입력**: 무엇을 받는가
 - **출력**: 무엇을 내놓는가
 
-`.claude/references/sd-clarify.md`를 읽고 명확화한다.
+@.claude/rules/sd-clarify.md 지침에 따라 명확화한다.
 
 ## Step 2: Eval 시나리오 정의
 
@@ -171,7 +171,7 @@ Judge 보고서의 개선 제안을:
 | **상충 지시** — 서로 모순/충돌          | 우선순위 결정 후 통합 또는 삭제 |
 | **구조 산만** — 관련 지시가 흩어져 있음     | 재배치                |
 
-발견된 Prompt Smell에 대해 `.claude/references/sd-clarify.md`를 읽고 진행여부와 방법을 명확화하여 수정한다.
+발견된 Prompt Smell에 대해 `.claude/rules/sd-clarify.md` 지침에 따라 진행여부와 방법을 명확화하여 수정한다.
 
 ### Regression Guard
 

@@ -137,7 +137,7 @@ describe("server-runtime.worker start", () => {
   afterEach(async () => {
     // Restore modified env vars
     for (const [key, value] of Object.entries(savedEnv)) {
-      if (value === undefined) {
+      if (value == null) {
         delete process.env[key];
       } else {
         process.env[key] = value;

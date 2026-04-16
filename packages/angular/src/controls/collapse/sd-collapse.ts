@@ -11,21 +11,21 @@ import {
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
+import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resize";
 
 @Component({
   selector: "sd-collapse",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [],
+  imports: [SdResizeDirective],
   template: `
     <div
       #contentEl
       class="_content"
       [style.margin-top]="contentMarginTop()"
       [style.transition]="contentTransition()"
-      (sdResize)="onContentResize($any($event))"
+      (sdResize)="onContentResize($event)"
     >
       <ng-content />
     </div>
@@ -42,8 +42,7 @@ import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
 export class SdCollapse {
   open = input(false, { transform: booleanAttribute });
 
-  private readonly _contentElRef =
-    viewChild.required<ElementRef<HTMLElement>>("contentEl");
+  private readonly _contentElRef = viewChild.required<ElementRef<HTMLElement>>("contentEl");
 
   contentHeight = signal(0);
 

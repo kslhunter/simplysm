@@ -11,6 +11,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import * as echarts from "echarts";
+import { SdResizeDirective } from "../../core/events/sd-resize";
 
 @Component({
   selector: "sd-echarts",
@@ -18,6 +19,7 @@ import * as echarts from "echarts";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
+  hostDirectives: [{ directive: SdResizeDirective, outputs: ["sdResize"] }],
   host: {
     "(sdResize)": "onHostResize()",
   },

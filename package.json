@@ -19,11 +19,11 @@
     "---": "",
     "check": "pnpm sd-cli check",
     "typecheck": "pnpm sd-cli check --type typecheck",
-    "test": "pnpm sd-cli check --type test",
+    "test": "vitest run",
     "lint": "pnpm sd-cli check --type lint",
     "----": "",
     "sd-cli": "tsx packages/sd-cli/src/sd-cli.ts",
-    "auth": "node packages/sd-claude/scripts/cli.mjs auth",
+    "cc-auth": "node packages/sd-claude/scripts/cli.mjs auth",
     "postinstall": "playwright-cli install --skills && playwright install chromium"
   },
   "devDependencies": {

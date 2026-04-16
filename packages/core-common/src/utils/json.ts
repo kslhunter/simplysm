@@ -56,7 +56,7 @@ export function stringify(
    */
   const convertSpecialTypes = (key: string | undefined, value: unknown): unknown => {
     // 커스텀 replacer 적용
-    const currValue = options?.replacer !== undefined ? options.replacer(key, value) : value;
+    const currValue = options?.replacer != null ? options.replacer(key, value) : value;
 
     if (currValue instanceof Date) {
       return { __type__: "Date", data: currValue.toISOString() };
@@ -121,7 +121,7 @@ export function stringify(
     }
 
     // 일반 객체 처리
-    if (currValue !== null && typeof currValue === "object") {
+    if (currValue != null && typeof currValue === "object") {
       // 순환 참조 감지
       if (seen.has(currValue)) {
         throw new TypeError("Converting circular structure to JSON");
@@ -142,7 +142,7 @@ export function stringify(
       for (const [k, v] of Object.entries(currValue)) {
         const converted = convertSpecialTypes(k, v);
         // undefined는 JSON에서 제외됨
-        if (converted !== undefined) {
+        if (converted != null) {
           result[k] = converted;
         }
       }

@@ -66,7 +66,7 @@ vi.mock("sharp", () => ({
 
 // consola mock (logger assertion 필요)
 const mockLoggerWarn = vi.fn();
-vi.spyOn(consola, "withTag").mockReturnValue({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn() } as any);
+vi.spyOn(consola, "withTag").mockReturnValue({ debug: vi.fn(), warn: mockLoggerWarn, error: vi.fn(), info: vi.fn(), success: vi.fn(), start: vi.fn() } as any);
 
 //#endregion
 

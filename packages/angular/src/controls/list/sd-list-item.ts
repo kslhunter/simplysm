@@ -15,20 +15,17 @@ import { NgIcon } from "@ng-icons/core";
 import { SdCollapse } from "../collapse/sd-collapse";
 import { SdCollapseIcon } from "../collapse/sd-collapse-icon";
 import { SdList } from "./sd-list";
-import { setupRipple } from "../../core/ripple/setupRipple";
+import { SdRipple } from "../../core/ripple/sd-ripple";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapse, SdCollapseIcon, NgTemplateOutlet, NgIcon],
+  imports: [SdCollapse, SdCollapseIcon, NgTemplateOutlet, NgIcon, SdRipple],
   template: `
-    <div class="_content" [style]="contentStyle()" [class]="contentClass()" tabindex="0" (click)="onContentClick()" (keydown.enter)="onContentClick()">
-      @if (layout() === "accordion" && hasChildren()) {
-        <sd-collapse-icon [open]="open()" />
-      }
-      @if (selectedIcon() !== undefined && !hasChildren()) {
+    <div class="_content" [style]="contentStyle()" [class]="contentClass()" tabindex="0" (click)="onContentClick()" (keydown.enter)="onContentClick()" [sdRipple]="!readonly() && !(layout() === 'flat' && hasChildren())">
+      @if (selectedIcon() != null && !hasChildren()) {
         <ng-icon
           [class.tx-theme-primary-default]="selected()"
           [class.tx-trans-lightest]="!selected()"
@@ -42,6 +39,9 @@ import { setupRipple } from "../../core/ripple/setupRipple";
         <div class="_tool">
           <ng-template [ngTemplateOutlet]="toolTpl()!" />
         </div>
+      }
+      @if (layout() === "accordion" && hasChildren()) {
+        <sd-collapse-icon [open]="open()" />
       }
     </div>
     @if (hasChildren()) {
@@ -57,18 +57,14 @@ import { setupRipple } from "../../core/ripple/setupRipple";
 
         > ._content {
           display: flex;
-          align-items: center;
           padding: var(--gap-sm) var(--gap-default);
           cursor: pointer;
-          gap: var(--gap-sm);
+          gap: var(--gap-xs);
 
           > ._label {
-            flex: 1;
+            flex: 1 1 auto;
+            overflow: auto;
           }
-        }
-
-        &:hover > ._content {
-          background: var(--trans-lighter);
         }
 
         &[data-sd-selected="true"] > ._content {
@@ -76,35 +72,57 @@ import { setupRipple } from "../../core/ripple/setupRipple";
           font-weight: bold;
         }
 
+        &[data-sd-has-selected-icon="true"][data-sd-selected="true"] > ._content {
+          color: var(--text-trans-default);
+
+          &:hover {
+            background: var(--trans-lighter);
+          }
+        }
+
         &[data-sd-readonly="true"] {
           > ._content {
             cursor: default;
           }
+        }
 
-          &:hover > ._content {
-            background: transparent;
+        &[data-sd-layout="accordion"] {
+          &:not([data-sd-readonly="true"]) {
+            > ._content:hover {
+              background: var(--trans-lighter);
+            }
+          }
+
+          > sd-collapse > ._content > sd-list {
+            padding: var(--gap-xs) 0;
           }
         }
 
-        &[data-sd-layout="flat"] {
+        &[data-sd-layout="flat"][data-sd-has-children="true"] {
           > ._content {
-            font-size: 0.85em;
-            opacity: 0.7;
-            cursor: default;
-          }
-
-          &:hover > ._content {
+            display: block;
             background: transparent;
+            cursor: default;
+            font-size: var(--font-size-sm);
+            opacity: 0.7;
           }
+        }
+      }
+
+      .sd-theme-mobile > sd-list-item {
+        > ._content:hover {
+          background: transparent;
         }
       }
     `,
   ],
   host: {
     "[attr.data-sd-layout]": "layout()",
+    "[attr.data-sd-open]": "open()",
     "[attr.data-sd-selected]": "selected()",
     "[attr.data-sd-readonly]": "readonly()",
     "[attr.data-sd-has-children]": "hasChildren()",
+    "[attr.data-sd-has-selected-icon]": "selectedIcon() != null",
   },
 })
 export class SdListItem {
@@ -125,10 +143,6 @@ export class SdListItem {
   childrenOpen = computed(() => {
     return this.layout() === "flat" ? true : this.open();
   });
-
-  constructor() {
-    setupRipple(() => !this.readonly() && this.layout() !== "flat");
-  }
 
   onContentClick(): void {
     if (this.readonly()) return;

@@ -519,7 +519,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
         colSql += " AUTO_INCREMENT";
       }
 
-      if (col.default !== undefined) {
+      if (col.default != null) {
         colSql += ` DEFAULT ${this.expr.escapeValue(col.default)}`;
       }
 
@@ -570,7 +570,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       colSql += " AUTO_INCREMENT";
     }
 
-    if (col.default !== undefined) {
+    if (col.default != null) {
       colSql += ` DEFAULT ${this.expr.escapeValue(col.default)}`;
     }
 
@@ -600,7 +600,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       colSql += " AUTO_INCREMENT";
     }
 
-    if (col.default !== undefined) {
+    if (col.default != null) {
       colSql += ` DEFAULT ${this.expr.escapeValue(col.default)}`;
     }
 
@@ -682,7 +682,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       def.params
         ?.map((p) => {
           let sql = `IN ${this.expr.wrap(p.name)} ${this.expr.renderDataType(p.dataType)}`;
-          if (p.default !== undefined) {
+          if (p.default != null) {
             sql += ` DEFAULT ${this.expr.escapeValue(p.default)}`;
           }
           return sql;

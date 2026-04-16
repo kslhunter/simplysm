@@ -8,6 +8,7 @@ import {
   SdModalSelectButtonRequiredTest,
   SdModalSelectButtonErasableTest,
   SdModalSelectButtonMultiErasableTest,
+  SdModalSelectButtonEventTest,
   TestSelectModalComponent,
 } from "./sd-modal-select-button-test.fixture";
 import "@simplysm/core-browser";
@@ -169,6 +170,29 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
     const eraserBtn = host.querySelector("[data-sd-eraser]");
     expect(searchBtn).toBeNull();
     expect(eraserBtn).toBeNull();
+  });
+
+  // Acceptance: search 버튼 클릭 시 이벤트 전파 차단
+  it("search 버튼 클릭 시 부모 요소로 이벤트가 전파되지 않는다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdModalSelectButtonEventTest],
+    }).createComponent(SdModalSelectButtonEventTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const host = fixture.nativeElement.querySelector("sd-modal-select-button") as HTMLElement;
+    const searchBtn = host.querySelector("._button sd-button button") as HTMLElement;
+    expect(searchBtn).not.toBeNull();
+
+    // 모달 호출 모킹
+    const modalProvider = TestBed.inject(SdModalProvider);
+    vi.spyOn(modalProvider, "showAsync").mockResolvedValue(undefined);
+
+    searchBtn.click();
+    await tick(fixture);
+
+    // 부모의 click 리스너가 호출되지 않아야 한다
+    expect(fixture.componentInstance.parentClicked()).toBe(false);
   });
 
   // Acceptance: required인데 값이 없으면 invalid 표시

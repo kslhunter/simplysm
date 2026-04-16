@@ -126,8 +126,8 @@ describe("Feature 1.2: model.update async canFn stale value 방지 (LOGIC-005)",
     resolveCanFn(true);
     await new Promise((r) => setTimeout(r, 0));
 
-    // With fix: fn(model()) recalculated = fn(5) = 5 + 10 = 15
-    expect(model()).toBe(15);
+    // canFn이 검증한 값(10)이 설정됨 — 검증 후 재계산하지 않음
+    expect(model()).toBe(10);
   });
 
   it("model.update에서 async canFn이 reject되면 ErrorHandler.handleError가 호출된다", async () => {

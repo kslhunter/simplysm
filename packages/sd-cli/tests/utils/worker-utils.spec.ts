@@ -11,7 +11,7 @@ describe("setupWorkerConsola", () => {
   afterEach(() => {
     consola.level = originalLevel;
     consola.options.reporters = originalReporters;
-    if (originalEnv === undefined) {
+    if (originalEnv == null) {
       delete process.env["SD_DEBUG"];
     } else {
       process.env["SD_DEBUG"] = originalEnv;
@@ -40,7 +40,13 @@ describe("createOnceGuard", () => {
   it("throws on second call", () => {
     const guard = createOnceGuard("startWatch");
     guard();
-    expect(() => guard()).toThrow("startWatch can only be called once per Worker");
+    expect(() => guard()).toThrow("Worker당 한 번만 호출할 수 있습니다: startWatch");
+  });
+
+  it("includes the label in Korean error message", () => {
+    const guard = createOnceGuard("myFunction");
+    guard();
+    expect(() => guard()).toThrow("Worker당 한 번만 호출할 수 있습니다: myFunction");
   });
 });
 

@@ -64,12 +64,11 @@ describe("sd-cli-entry COMMAND_NAMES", () => {
     ).resolves.toBeDefined();
   });
 
-  it("parses --target separately from --type", async () => {
+  it("throws on --type test (removed type)", async () => {
     const { createCliParser } = await import("../src/sd-cli-entry");
 
-    // --type test 뒤의 --target angular가 type으로 먹히지 않아야 한다
     await expect(
-      createCliParser(["check", "--type", "test", "--target", "angular"]).exitProcess(false).parse(),
-    ).resolves.toBeDefined();
+      createCliParser(["check", "--type", "test"]).exitProcess(false).parse(),
+    ).rejects.toThrow("Invalid check type(s): test");
   });
 });

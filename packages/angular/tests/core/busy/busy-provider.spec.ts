@@ -44,7 +44,7 @@ describe("Feature 3.4 Slice 1: SdBusyProvider 전역 busy 카운팅", () => {
   });
 
   // Acceptance: globalBusyCount 1→0 감소 시 전역 busy 비활성화
-  it("globalBusyCount가 1에서 0으로 감소하면 sd-busy-container의 busy가 false가 되고 인디케이터가 숨겨진다", () => {
+  it("globalBusyCount가 1에서 0으로 감소하면 sd-busy-container의 busy가 false가 되고 _screen은 DOM에 유지된다", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdBusyProvider);
 
@@ -57,7 +57,7 @@ describe("Feature 3.4 Slice 1: SdBusyProvider 전역 busy 카운팅", () => {
     const container = getGlobalBusyContainer();
     expect(container).not.toBeNull();
     expect(container!.hasAttribute("data-sd-busy")).toBe(false);
-    expect(container!.querySelector("._indicator")).toBeNull();
+    expect(container!.querySelector("._screen")).not.toBeNull();
   });
 
   // Acceptance: 동시 비동기 작업의 카운팅

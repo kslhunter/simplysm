@@ -45,7 +45,7 @@ export async function initialize(
     },
   options?: { dbs?: string[]; force?: boolean },
 ): Promise<boolean> {
-  const dbNames = options?.dbs ?? (db.database !== undefined ? [db.database] : []);
+  const dbNames = options?.dbs ?? (db.database != null ? [db.database] : []);
   if (dbNames.length < 1) {
     throw new Error("초기화할 데이터베이스가 없습니다.");
   }

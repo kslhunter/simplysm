@@ -85,6 +85,29 @@ async function createFixtureAndInit(
   return { fixture, host };
 }
 
+describe("Feature 4.3 Slice 2: modalActionTpl 위치 복원", () => {
+  beforeEach(() => {
+    setupTestBed();
+  });
+
+  describe("Rule: modalActionTpl은 canEdit() 조건 내에서만 렌더링되어야 한다", () => {
+    it("canEdit()=true일 때 actionTplRef가 설정된다", async () => {
+      const { host } = await createFixtureAndInit();
+
+      expect(host.actionTplRef).toBeTruthy();
+    });
+
+    it("canEdit()=false일 때 actionTplRef가 undefined이다", async () => {
+      const { host, fixture } = await createFixtureAndInit();
+      host.canEdit.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.actionTplRef).toBeUndefined();
+    });
+  });
+});
+
 describe("SdDataDetailBase", () => {
   beforeEach(() => {
     setupTestBed();

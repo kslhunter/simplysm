@@ -8,6 +8,7 @@ import {
   input,
   model,
   output,
+  signal,
   ViewEncapsulation,
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
@@ -25,7 +26,7 @@ import {
 import { useSheetLayoutEngine } from "./useSheetLayoutEngine";
 import { useSheetColumnFixing } from "./useSheetColumnFixing";
 import { useSelectionManager } from "../../core/selection/useSelectionManager";
-import { useSortingManager, type SortingDef } from "../../core/selection/useSortingManager";
+import { type SortingDef, useSortingManager } from "../../core/selection/useSortingManager";
 import { SdPagination } from "../../controls/pagination/sd-pagination";
 import { SdAnchor } from "../../controls/button/sd-anchor";
 import { SdButton } from "../../controls/button/sd-button";
@@ -35,7 +36,8 @@ import type {
   SdSheetHeaderDef,
   SdSheetItemKeydownEventParam,
 } from "./types";
-import type { SdResizeEvent } from "../../core/events/sd-resize-event.plugin";
+import type { SdResizeEvent } from "../../core/events/sd-resize";
+import { SdResizeDirective } from "../../core/events/sd-resize";
 import { injectSdSystemConfigResource } from "../../core/config/injectSdSystemConfigResource";
 import { injectSheetDomAccessor } from "./injectSheetDomAccessor";
 import { useSheetCellAgent } from "./useSheetCellAgent";
@@ -46,13 +48,26 @@ import { useSheetFocusIndicator } from "./useSheetFocusIndicator";
 import { injectSheetSelectRowIndicator } from "./injectSheetSelectRowIndicator";
 import { SdModalProvider } from "../../core/modal/sd-modal.provider";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
+import { SdEvents } from "../../core/events/sd-events";
 
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [NgTemplateOutlet, SdCheckbox, NgIcon, SdPagination, SdAnchor, SdButton],
+  imports: [NgTemplateOutlet, SdCheckbox, NgIcon, SdPagination, SdAnchor, SdButton, SdResizeDirective],
+  hostDirectives: [
+    { directive: SdEvents, outputs: ["keydown.capture", "focus.capture", "blur.capture"] },
+  ],
+  host: {
+    "class": "flex-column fill",
+    "[attr.data-sd-inset]": "inset()",
+    "[attr.data-sd-focus-mode]": "focusMode()",
+    "(keydown.capture)": "onKeydownCapture($event)",
+    "(focus.capture)": "onFocusCapture($event)",
+    "(dblclick)": "onDblClick($event)",
+    "(blur.capture)": "onBlurCapture($event)",
+  },
   template: `
     @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
@@ -72,23 +87,32 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
       </div>
     }
 
-    <div class="_sheet-container flex-fill" (scroll.passive)="onContainerScroll()" [style]="contentStyle()">
+    <div
+      class="_sheet-container flex-fill"
+      (scroll.passive)="onContainerScroll()"
+      [style]="contentStyle()"
+    >
       <table (sdResize)="onTableResize($event)">
         <thead>
           @for (row of layout.headerDefTable(); track $index; let rowIdx = $index) {
             <tr>
               @if (rowIdx === 0) {
+                @let _fc = expanding.hasExpandable() ? -2 : -1;
                 <th
                   class="_fixed _feature-cell _last-depth"
                   [attr.rowspan]="
                     layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
                   "
+                  [attr.data-c]="_fc"
+                  [style.left.px]="featureFixedLeftMap().get(_fc)"
+                  (sdResize)="onFeatureCellResize($event, _fc)"
                 >
-                  @if (selectMode() === "multi") {
+                  @if (selection.hasSelectable() && selectMode() === "multi") {
                     <sd-checkbox
                       [value]="selection.isAllSelected()"
-                      (click)="selection.toggleAll()"
+                      (valueChange)="selection.toggleAll()"
                       [inline]="true"
+                      [theme]="'white'"
                     />
                   }
                 </th>
@@ -98,6 +122,9 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                     [attr.rowspan]="
                       layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
                     "
+                    [attr.data-c]="-1"
+                    [style.left.px]="featureFixedLeftMap().get(-1)"
+                    (sdResize)="onFeatureCellResize($event, -1)"
                   >
                     <ng-icon
                       [svg]="icons.tablerCaretRight"
@@ -108,12 +135,13 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                   </th>
                 }
               }
-              @for (cell of row; track $index) {
+              @for (cell of row; track $index; let c = $index) {
                 @if (!cell.isLastRow) {
                   <th
                     [class._fixed]="cell.colDef?.fixed"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
+                    [attr.data-c]="c"
                     [attr.title]="cell.text"
                     [style.left.px]="
                       cell.colDef?.fixed ? fixing.fixedLeftMap().get(cell.colDef!.key) : null
@@ -130,6 +158,7 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                     [class._sort]="cell.colDef && !cell.colDef.disableSorting"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
+                    [attr.data-c]="c"
                     [attr.title]="cell.colDef?.tooltip ?? cell.text"
                     [class.help]="cell.colDef?.tooltip"
                     [style]="getHeaderCellStyle(cell)"
@@ -146,18 +175,17 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                         </div>
                       }
                       @if (cell.colDef && !cell.colDef.disableSorting) {
+                        @let _sortDef = getSortDef(cell.colDef.key);
                         <div class="_sort-icon">
-                          @if (getSortDef(cell.colDef.key); as sortDef) {
-                            @if (sortDef.desc) {
-                              <ng-icon [svg]="icons.tablerSortDescending" />
-                            } @else {
-                              <ng-icon [svg]="icons.tablerSortAscending" />
-                            }
-                            @if (sortDef.indexText) {
-                              <sub>{{ sortDef.indexText }}</sub>
-                            }
+                          @if (_sortDef?.desc === false) {
+                            <ng-icon [svg]="icons.tablerSortAscending" />
+                          } @else if (_sortDef?.desc === true) {
+                            <ng-icon [svg]="icons.tablerSortDescending" />
                           } @else {
                             <ng-icon [svg]="icons.tablerArrowsSort" class="tx-trans-lightest" />
+                          }
+                          @if (_sortDef?.indexText) {
+                            <sub>{{ _sortDef?.indexText }}</sub>
                           }
                         </div>
                       }
@@ -180,9 +208,10 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
               @if (expanding.hasExpandable()) {
                 <th class="_fixed _feature-cell"></th>
               }
-              @for (colDef of layout.columnDefs(); track colDef.key) {
+              @for (colDef of layout.columnDefs(); track colDef.key; let c = $index) {
                 <th
                   [class._fixed]="colDef.fixed"
+                  [attr.data-c]="c"
                   [style.left.px]="colDef.fixed ? fixing.fixedLeftMap().get(colDef.key) : null"
                 >
                   @if (getColumnSummaryTpl(colDef.key); as tpl) {
@@ -194,32 +223,38 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
           }
         </thead>
         <tbody>
-          @for (
-            item of displayItems();
-            track trackByFn() ? trackByFn()!(item, $index) : $index;
-            let rowIdx = $index
-          ) {
+          @for (item of displayItems(); track trackByFn()(item, $index); let rowIdx = $index) {
             <tr
               [attr.data-r]="rowIdx"
               (click)="onRowClick(item)"
               (keydown)="onItemKeydown($event, item)"
             >
-              <td class="_fixed _feature-cell">
+              @let _fc = expanding.hasExpandable() ? -2 : -1;
+              <td
+                class="_fixed _feature-cell"
+                [attr.data-r]="rowIdx"
+                [attr.data-c]="_fc"
+                [style.left.px]="featureFixedLeftMap().get(_fc)"
+              >
                 @if (selectMode() === "multi") {
+                  @let _selectable = selection.getSelectable(item);
                   <sd-checkbox
                     [value]="selection.isSelected(item)"
                     [canChangeFn]="selection.getCanChangeFn(item)"
-                    (click)="onSelectCheckboxClick($event, item)"
+                    (valueChange)="selection.toggle(item)"
                     (mousedown)="onSelectorMouseDown($event, rowIdx)"
                     [inline]="true"
-                    [attr.title]="getSelectableTooltip(item)"
+                    [theme]="'white'"
+                    [disabled]="_selectable !== true"
+                    [attr.title]="_selectable"
                   />
                 } @else if (selectMode() === "single") {
-                  @let selectable = selection.getSelectable(item);
-                  @if (selectable === true) {
+                  @let _selectable = selection.getSelectable(item);
+                  @if (_selectable === true && selection.getCanChangeFn(item)) {
                     <sd-anchor
                       [theme]="selection.isSelected(item) ? 'primary' : 'gray'"
-                      (click)="onSelectCheckboxClick($event, item)"
+                      (pointerdown)="selection.toggle(item)"
+                      [attr.title]="_selectable"
                     >
                       <ng-icon [svg]="icons.tablerArrowRight" />
                     </sd-anchor>
@@ -227,7 +262,12 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                 }
               </td>
               @if (expanding.hasExpandable()) {
-                <td class="_fixed _feature-cell">
+                <td
+                  class="_fixed _feature-cell"
+                  [attr.data-r]="rowIdx"
+                  [attr.data-c]="-1"
+                  [style.left.px]="featureFixedLeftMap().get(-1)"
+                >
                   @let itemDef = getItemDef(item);
                   @if (itemDef.depth > 0) {
                     <div
@@ -264,7 +304,7 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
                         $implicit: item,
                         item: item,
                         index: rowIdx,
-                        depth: getChildrenFn() !== undefined ? getItemDef(item).depth : 0,
+                        depth: getChildrenFn() != null ? getItemDef(item).depth : 0,
                         edit: cellAgent.isCellEditMode({ r: rowIdx, c: colIdx }),
                       }"
                     />
@@ -518,21 +558,12 @@ import { SdSheetConfigModal } from "./sd-sheet-config.modal";
       }
     `,
   ],
-  host: {
-    "class": "flex-column fill",
-    "[attr.data-sd-inset]": "inset()",
-    "[attr.data-sd-focus-mode]": "focusMode()",
-    "(keydown.capture)": "onKeydownCapture($event)",
-    "(focus.capture)": "onFocusCapture($event)",
-    "(dblclick)": "onDblClick($event)",
-    "(blur.capture)": "onBlurCapture($event)",
-  },
 })
 export class SdSheet<T> {
   // Inputs
   key = input<string>();
   items = input<T[]>([]);
-  trackByFn = input<(item: T, index: number) => unknown>();
+  trackByFn = input<(item: T, index: number) => unknown>((item) => item);
   selectMode = input<"single" | "multi">();
   autoSelect = input<"click" | "focus">();
   getItemSelectableFn = input<(item: T) => boolean | string>();
@@ -592,6 +623,23 @@ export class SdSheet<T> {
   // Column fixing
   fixing = useSheetColumnFixing({
     columnDefs: this.layout.columnDefs,
+  });
+
+  // Feature cell fixing (select/expand columns)
+  private readonly _featureCellWidths = signal(new Map<number, number>());
+
+  featureFixedLeftMap = computed(() => {
+    const map = new Map<number, number>();
+    const widths = this._featureCellWidths();
+    const hasExpand = this.expanding.hasExpandable();
+
+    if (hasExpand) {
+      map.set(-2, 0);
+      map.set(-1, widths.get(-2) ?? 0);
+    } else {
+      map.set(-1, 0);
+    }
+    return map;
   });
 
   // Sorting manager
@@ -695,11 +743,6 @@ export class SdSheet<T> {
     }
   }
 
-  onSelectCheckboxClick(event: Event, item: T): void {
-    event.stopPropagation();
-    this.selection.toggle(item);
-  }
-
   onCellClick(event: Event, item: T): void {
     if (this.autoSelect() === "click") {
       this.selection.select(item);
@@ -753,21 +796,21 @@ export class SdSheet<T> {
     return sortDef.desc ? "descending" : "ascending";
   }
 
-  async onKeydownCapture(event: Event): Promise<void> {
-    await this.cellAgent.handleKeydownCapture(event as KeyboardEvent);
+  async onKeydownCapture(event: KeyboardEvent): Promise<void> {
+    await this.cellAgent.handleKeydownCapture(event);
   }
 
   onDblClick(event: MouseEvent): void {
     this.cellAgent.handleCellDoubleClick(event);
   }
 
-  onFocusCapture(event: Event): void {
-    this._autoScrollOnFocus(event as FocusEvent);
+  onFocusCapture(event: FocusEvent): void {
+    this._autoScrollOnFocus(event);
     this._focusIndicator.redraw();
   }
 
-  onBlurCapture(event: Event): void {
-    this.cellAgent.handleBlurCapture(event as FocusEvent);
+  onBlurCapture(event: FocusEvent): void {
+    this.cellAgent.handleBlurCapture(event);
     this._focusIndicator.redraw();
   }
 
@@ -775,10 +818,20 @@ export class SdSheet<T> {
     this._focusIndicator.redraw();
   }
 
-  onTableResize(event: Event): void {
-    if (!(event as unknown as SdResizeEvent).widthChanged) return;
+  onTableResize(event: SdResizeEvent): void {
+    if (!event.widthChanged) return;
     this._focusIndicator.redraw();
     this._selectRowIndicator.redraw();
+  }
+
+  onFeatureCellResize(event: SdResizeEvent, key: number): void {
+    if (!event.widthChanged) return;
+    const width = event.target.offsetWidth;
+    this._featureCellWidths.update((m) => {
+      const newMap = new Map(m);
+      newMap.set(key, width);
+      return newMap;
+    });
   }
 
   onSelectorMouseDown(event: MouseEvent, r: number): void {
@@ -798,9 +851,9 @@ export class SdSheet<T> {
     const fr = parseInt(frAttr, 10);
     if (Number.isNaN(fr)) return;
 
-    setTimeout(() => {
-      const items = this.displayItems();
-      const isSelect = this.selection.isSelected(items[fr]);
+    const items = this.displayItems();
+    const isSelect = this.selection.isSelected(items[fr]);
+    queueMicrotask(() => {
       for (let i = Math.min(fr, r); i <= Math.max(fr, r); i++) {
         if (isSelect) {
           this.selection.select(items[i]);
@@ -808,7 +861,7 @@ export class SdSheet<T> {
           this.selection.deselect(items[i]);
         }
       }
-    }, 100);
+    });
 
     const row = this.domAccessor.getRow(r);
     row?.querySelector<HTMLElement>("[tabindex]")?.focus();
@@ -818,9 +871,7 @@ export class SdSheet<T> {
     if (!(event.target instanceof HTMLElement)) return;
 
     const tdEl =
-      event.target.tagName.toLowerCase() === "td"
-        ? event.target
-        : event.target.closest("td");
+      event.target.tagName.toLowerCase() === "td" ? event.target : event.target.closest("td");
     if (!(tdEl instanceof HTMLTableCellElement)) return;
     if (tdEl.classList.contains("_fixed")) return;
 

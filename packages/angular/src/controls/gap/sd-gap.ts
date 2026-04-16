@@ -45,12 +45,12 @@ export class SdGap {
     if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
       return "none";
     } else if (
-      this.width() !== undefined ||
-      this.widthPx() !== undefined ||
-      this.widthEm() !== undefined
+      this.width() != null ||
+      this.widthPx() != null ||
+      this.widthEm() != null
     ) {
       return "inline-block";
-    } else if (this.height() !== undefined || this.heightPx() !== undefined) {
+    } else if (this.height() != null || this.heightPx() != null) {
       return "block";
     } else {
       return undefined;

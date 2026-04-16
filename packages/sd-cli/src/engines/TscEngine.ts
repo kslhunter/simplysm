@@ -47,7 +47,6 @@ export class TscEngine extends BaseEngine<
     logger.debug(`[${this._pkg.name}] worker.build 호출`);
     const result = await this._worker!.build({
       name: this._pkg.name,
-      config: this._pkg.config,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
       output,
@@ -60,7 +59,6 @@ export class TscEngine extends BaseEngine<
     logger.debug(`[${this._pkg.name}] worker.startWatch 호출`);
     await this._worker!.startWatch({
       name: this._pkg.name,
-      config: this._pkg.config,
       cwd: this._cwd,
       pkgDir: this._pkg.dir,
       output,

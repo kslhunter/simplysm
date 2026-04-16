@@ -1,67 +1,112 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
-import { formatBuildMessages, formatEsbuildMessage, printErrors, printServers } from "../../src/utils/output-utils";
 import type { BuildResult } from "../../src/runtime/ResultCollector";
+import type { PartialMessage } from "esbuild";
+
+// output-utils.ts가 모듈 로드 시 consola.withTag("sd:cli:output")로 로거를 생성하므로,
+// withTag가 consola 자체를 반환하도록 하여 기존 스파이가 태그 로거 호출을 캡처하게 한다.
+vi.mock("consola", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("consola")>();
+  const orig = mod.consola;
+  vi.spyOn(orig, "withTag").mockReturnValue(orig);
+  return { consola: orig };
+});
+
+const { formatBuildMessages, formatEsbuildMessages, printDiagnostics, printServers } =
+  await import("../../src/utils/output-utils");
 
 vi.spyOn(consola, "error").mockImplementation(() => {});
+vi.spyOn(consola, "warn").mockImplementation(() => {});
 vi.spyOn(consola, "info").mockImplementation(() => {});
 
 describe("formatBuildMessages", () => {
   it("formats name, label, and messages into indented lines", () => {
     const result = formatBuildMessages("core", "node", ["error in file.ts"]);
-    expect(result).toBe("core (node)\n  → error in file.ts");
+    expect(result).toBe("core (node)\n  error in file.ts");
   });
 
   it("splits multiline messages into separate indented lines", () => {
     const result = formatBuildMessages("core", "node", ["line1\nline2"]);
-    expect(result).toContain("→ line1");
-    expect(result).toContain("→ line2");
+    expect(result).toContain("  line1");
+    expect(result).toContain("  line2");
   });
 
   it("handles multiple messages", () => {
     const result = formatBuildMessages("core", "node", ["err1", "err2"]);
     expect(result).toContain("core (node)");
-    expect(result).toContain("→ err1");
-    expect(result).toContain("→ err2");
+    expect(result).toContain("  err1");
+    expect(result).toContain("  err2");
+  });
+
+  it("preserves empty lines without arrow prefix", () => {
+    const result = formatBuildMessages("core", "node", ["line1\n\nline3"]);
+    const lines = result.split("\n");
+    expect(lines[0]).toBe("core (node)");
+    expect(lines[1]).toBe("  line1");
+    expect(lines[2]).toBe("");
+    expect(lines[3]).toBe("  line3");
   });
 });
 
-describe("formatEsbuildMessage", () => {
-  it("notes가 없으면 text만 반환한다", () => {
-    const msg = { text: "Type error", notes: [] };
-    expect(formatEsbuildMessage(msg)).toBe("Type error");
+describe("formatEsbuildMessages", () => {
+  it("빈 배열이면 빈 배열을 반환한다", () => {
+    expect(formatEsbuildMessages([], "error")).toEqual([]);
   });
 
-  it("notes가 1개면 text 뒤에 들여쓰기된 note를 포함한다", () => {
-    const msg = {
-      text: "Angular compilation initialization failed",
-      notes: [{ text: "Component X has error" }],
-    };
-    expect(formatEsbuildMessage(msg)).toBe(
-      "Angular compilation initialization failed\n  Component X has error",
-    );
+  it("location이 없는 에러 메시지를 포맷한다", () => {
+    const msgs: PartialMessage[] = [{ text: "Some global error" }];
+    const result = formatEsbuildMessages(msgs, "error");
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain("Some global error");
+    expect(result[0]).not.toContain("[ERROR]");
   });
 
-  it("notes가 여러 개면 각 note를 줄바꿈으로 연결한다", () => {
-    const msg = {
+  it("location이 있으면 파일 경로와 코드 컨텍스트를 포함한다", () => {
+    const msgs: PartialMessage[] = [{
+      text: "Property 'id' does not exist",
+      location: {
+        file: "src/app/page.ts",
+        line: 10,
+        column: 4,
+        length: 2,
+        lineText: "    item.id;",
+      },
+    }];
+    const result = formatEsbuildMessages(msgs, "error");
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain("src/app/page.ts");
+    expect(result[0]).toContain("Property 'id' does not exist");
+  });
+
+  it("notes를 포함한다", () => {
+    const msgs: PartialMessage[] = [{
       text: "Build failed",
-      notes: [{ text: "Error in file A" }, { text: "Error in file B" }],
-    };
-    expect(formatEsbuildMessage(msg)).toBe(
-      "Build failed\n  Error in file A\n  Error in file B",
-    );
+      notes: [{ text: "hint message" }],
+    }];
+    const result = formatEsbuildMessages(msgs, "error");
+    expect(result[0]).toContain("hint message");
   });
 
-  it("esbuild Message의 추가 프로퍼티(location 등)가 있어도 무시한다", () => {
-    const msg = {
-      text: "Error",
-      notes: [{ text: "detail", location: { file: "a.ts", line: 1 } }],
-    };
-    expect(formatEsbuildMessage(msg)).toBe("Error\n  detail");
+  it("warning kind에서 [WARNING] 접두사를 제거한다", () => {
+    const msgs: PartialMessage[] = [{ text: "Unused variable" }];
+    const result = formatEsbuildMessages(msgs, "warning");
+    expect(result[0]).not.toContain("[WARNING]");
+    expect(result[0]).toContain("Unused variable");
+  });
+
+  it("여러 메시지를 각각 포맷한다", () => {
+    const msgs: PartialMessage[] = [
+      { text: "Error A" },
+      { text: "Error B" },
+    ];
+    const result = formatEsbuildMessages(msgs, "error");
+    expect(result).toHaveLength(2);
+    expect(result[0]).toContain("Error A");
+    expect(result[1]).toContain("Error B");
   });
 });
 
-describe("printErrors", () => {
+describe("printDiagnostics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -70,7 +115,7 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["core:build", { name: "core", target: "node", type: "build", status: "error", message: "failed" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     expect(consola.error).toHaveBeenCalledOnce();
   });
 
@@ -78,7 +123,7 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["core:build", { name: "core", target: "node", type: "build", status: "error" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     expect(consola.error).toHaveBeenCalledOnce();
   });
 
@@ -86,7 +131,7 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["core:build", { name: "core", target: "node", type: "build", status: "success" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     expect(consola.error).not.toHaveBeenCalled();
   });
 
@@ -96,7 +141,7 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["my-server:lint", { name: "my-server", target: "server", type: "lint", status: "error", message: "no-unused-vars" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     const callArg = vi.mocked(consola.error).mock.calls[0][0] as string;
     expect(callArg).toContain("my-server (lint)");
   });
@@ -105,7 +150,7 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["core:build", { name: "core-common", target: "node", type: "build", status: "error", message: "build err" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     const callArg = vi.mocked(consola.error).mock.calls[0][0] as string;
     expect(callArg).toContain("core-common (node)");
   });
@@ -114,8 +159,48 @@ describe("printErrors", () => {
     const results = new Map<string, BuildResult>([
       ["core:lint", { name: "core-common", target: "node", type: "lint", status: "success" }],
     ]);
-    printErrors(results);
+    printDiagnostics(results);
     expect(consola.error).not.toHaveBeenCalled();
+  });
+
+  //#endregion
+
+  //#region Feature 1.1 Slice 2: printDiagnostics() 경고 출력 확장
+
+  it("prints warnings with consola.warn", () => {
+    const results = new Map<string, BuildResult>([
+      ["core:build", { name: "core", target: "node", type: "build", status: "success", warnings: "unused var" }],
+    ]);
+    printDiagnostics(results);
+    expect(consola.error).not.toHaveBeenCalled();
+    expect(consola.warn).toHaveBeenCalledOnce();
+    const callArg = vi.mocked(consola.warn).mock.calls[0][0] as string;
+    expect(callArg).toContain("core (node)");
+    expect(callArg).toContain("unused var");
+  });
+
+  it("prints errors before warnings", () => {
+    const results = new Map<string, BuildResult>([
+      ["core:build", { name: "core", target: "node", type: "build", status: "error", message: "type error" }],
+      ["lib:build", { name: "lib", target: "browser", type: "build", status: "success", warnings: "deprecation" }],
+    ]);
+    printDiagnostics(results);
+    expect(consola.error).toHaveBeenCalledOnce();
+    expect(consola.warn).toHaveBeenCalledOnce();
+
+    // error가 warn보다 먼저 호출되었는지 확인
+    const errorOrder = vi.mocked(consola.error).mock.invocationCallOrder[0];
+    const warnOrder = vi.mocked(consola.warn).mock.invocationCallOrder[0];
+    expect(errorOrder).toBeLessThan(warnOrder);
+  });
+
+  it("does not print warnings when there are none", () => {
+    const results = new Map<string, BuildResult>([
+      ["core:build", { name: "core", target: "node", type: "build", status: "success" }],
+    ]);
+    printDiagnostics(results);
+    expect(consola.error).not.toHaveBeenCalled();
+    expect(consola.warn).not.toHaveBeenCalled();
   });
 
   //#endregion

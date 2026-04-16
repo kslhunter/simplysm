@@ -298,8 +298,16 @@ describe("runPublish", () => {
         },
       });
 
-      const writeSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+      const { consola } = await import("consola");
+      const infoSpy = vi.fn();
+      const origWithTag = consola.withTag.bind(consola);
+      const withTagSpy = vi.spyOn(consola, "withTag").mockImplementation((tag: string) => {
+        const logger = origWithTag(tag);
+        logger.info = infoSpy as any;
+        return logger;
+      });
 
+      // Re-import to pick up the spy (module already loaded, but logger is created at call time)
       await runPublish({
         targets: [],
         noBuild: false,
@@ -307,9 +315,9 @@ describe("runPublish", () => {
         options: [],
       });
 
-      const output = writeSpy.mock.calls.map((c) => String(c[0])).join("");
-      expect(output).toContain("배포할 패키지가 없습니다");
-      writeSpy.mockRestore();
+      const infoArgs = infoSpy.mock.calls.map((c: unknown[]) => String(c[0]));
+      expect(infoArgs.some((a: string) => a.includes("배포할 패키지가 없습니다"))).toBe(true);
+      withTagSpy.mockRestore();
     });
   });
 

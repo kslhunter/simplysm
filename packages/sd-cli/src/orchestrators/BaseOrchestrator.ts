@@ -102,9 +102,9 @@ export abstract class BaseOrchestrator {
     this._replaceDepWatcher = undefined;
 
     if (!this._hasPackages) return;
-    process.stdout.write("⏳ 종료 중...\n");
+    this._logger.start("종료 중...");
     await this._shutdownMode();
-    process.stdout.write("✔ 종료 완료\n");
+    this._logger.success("종료 완료");
   }
 
   protected abstract _initializeMode(

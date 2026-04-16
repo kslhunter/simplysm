@@ -19,17 +19,15 @@ export type {
 
 // core/events
 export { SdOptionEventPlugin } from "./core/events/sd-option-event.plugin";
-export { SdResizeEventPlugin, type SdResizeEvent } from "./core/events/sd-resize-event.plugin";
+export { SdResizeDirective, type SdResizeEvent } from "./core/events/sd-resize";
 export {
-  SdIntersectionEventPlugin,
+  SdIntersectionDirective,
   type SdIntersectionEvent,
-} from "./core/events/sd-intersection-event.plugin";
+} from "./core/events/sd-intersection";
 export { SdEvents } from "./core/events/sd-events";
 
 // core/commands
-export { SdSaveCommandEventPlugin } from "./core/commands/sd-save-command-event.plugin";
-export { SdRefreshCommandEventPlugin } from "./core/commands/sd-refresh-command-event.plugin";
-export { SdInsertCommandEventPlugin } from "./core/commands/sd-insert-command-event.plugin";
+export { SdCommandDirective } from "./core/commands/sd-command";
 
 // core/error-handler
 export { SdGlobalErrorHandlerPlugin } from "./core/error-handler/sd-global-error-handler.plugin";

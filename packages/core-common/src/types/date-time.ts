@@ -40,9 +40,9 @@ export class DateTime {
     arg6?: number,
     arg7?: number,
   ) {
-    if (arg1 === undefined) {
+    if (arg1 == null) {
       this.date = new Date();
-    } else if (arg2 !== undefined && arg3 !== undefined) {
+    } else if (arg2 != null && arg3 != null) {
       this.date = new Date(
         arg1 as number,
         arg2 - 1,

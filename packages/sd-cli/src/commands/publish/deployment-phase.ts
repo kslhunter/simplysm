@@ -63,17 +63,21 @@ export async function runDeployment(
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           await publishPackage(pkg.path, pkg.config, version, projectPath, logger, dryRun);
-          logger.debug(dryRun ? `[DRY-RUN] ${pkg.name}` : pkg.name);
+          if (dryRun) {
+            logger.info(`[DRY-RUN] ${pkg.name}`);
+          } else {
+            logger.debug(pkg.name);
+          }
           publishedPackages.push(pkg.name);
           return { status: "success" as const, name: pkg.name };
         } catch (err) {
           if (attempt < maxRetries) {
             const delay = attempt * 5_000;
-            logger.debug(
-              dryRun
-                ? `[DRY-RUN] ${pkg.name} (retry ${attempt + 1}/${maxRetries})`
-                : `${pkg.name} (retry ${attempt + 1}/${maxRetries})`,
-            );
+            if (dryRun) {
+              logger.info(`[DRY-RUN] ${pkg.name} (retry ${attempt + 1}/${maxRetries})`);
+            } else {
+              logger.debug(`${pkg.name} (retry ${attempt + 1}/${maxRetries})`);
+            }
             await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
             throw err;
@@ -95,7 +99,7 @@ export async function runDeployment(
       for (const r of rejectedResults) {
         logger.error(r.reason instanceof Error ? r.reason.message : r.reason);
       }
-      logger.fail(`Level ${levelIdx + 1}/${levels.length}`);
+      logger.error(`Level ${levelIdx + 1}/${levels.length}`);
     } else {
       logger.success(`Level ${levelIdx + 1}/${levels.length}`);
     }

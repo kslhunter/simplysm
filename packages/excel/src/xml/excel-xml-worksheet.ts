@@ -25,7 +25,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   private readonly _dataMap: Map<number, RowInfo>;
 
   constructor(data?: ExcelXmlWorksheetData) {
-    if (data === undefined) {
+    if (data == null) {
       this.data = {
         worksheet: {
           $: {
@@ -90,7 +90,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
   setCellVal(addr: { r: number; c: number }, val: string | undefined): void {
     const cellData = this._getOrCreateCellData(addr);
-    if (val === undefined) {
+    if (val == null) {
       delete cellData.v;
     } else {
       cellData.v = [val];
@@ -106,7 +106,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
   setCellFormula(addr: { r: number; c: number }, val: string | undefined): void {
     const cellData = this._getOrCreateCellData(addr);
-    if (val === undefined) {
+    if (val == null) {
       delete cellData.f;
     } else {
       cellData.f = [val];
@@ -194,7 +194,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
   getMergeCells(): { s: { r: number; c: number }; e: { r: number; c: number } }[] {
     const mergeCells = this.data.worksheet.mergeCells;
-    if (mergeCells === undefined) return [];
+    if (mergeCells == null) return [];
     return mergeCells[0].mergeCell.map((item) => ExcelUtils.parseRangeAddr(item.$.ref));
   }
 
@@ -223,7 +223,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
   shiftMergeCells(fromRow: number, delta: number): void {
     const mergeCells = this.data.worksheet.mergeCells;
-    if (mergeCells === undefined) return;
+    if (mergeCells == null) return;
 
     for (const mergeCell of mergeCells[0].mergeCell) {
       const range = ExcelUtils.parseRangeAddr(mergeCell.$.ref);
@@ -501,7 +501,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
     // 셀이 존재하지 않으면 생성
     let cellData = rowInfo.cellMap.get(addr.c);
-    if (cellData === undefined) {
+    if (cellData == null) {
       rowInfo.data.c = rowInfo.data.c ?? [];
 
       cellData = { $: { r: ExcelUtils.stringifyAddr(addr) }, v: [""] };

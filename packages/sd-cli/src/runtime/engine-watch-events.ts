@@ -68,6 +68,9 @@ export function setupWatchEvents(
       type: "build",
       status: info.success ? "success" : "error",
       message: info.errors?.join("\n"),
+      warnings: info.warnings != null && info.warnings.length > 0
+        ? info.warnings.join("\n")
+        : undefined,
     };
     resultCollector?.add(buildResult);
 

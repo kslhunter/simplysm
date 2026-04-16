@@ -99,7 +99,7 @@ export function getDistinctIndices<TItem>(
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
 
-    if (item === null || typeof item !== "object") {
+    if (item == null || typeof item !== "object") {
       const type = typeof item;
 
       if (type === "symbol" || type === "function") {

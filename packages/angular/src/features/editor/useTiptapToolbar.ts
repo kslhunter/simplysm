@@ -151,13 +151,13 @@ export function useTiptapToolbar(opt: TiptapToolbarOptions): {
     const chain = ed.chain().focus();
     const mode = colorPickerMode();
     if (mode === "text") {
-      if (color !== undefined) {
+      if (color != null) {
         chain.setColor(color).run();
       } else {
         chain.unsetColor().run();
       }
     } else if (mode === "bg") {
-      if (color !== undefined) {
+      if (color != null) {
         chain.setHighlight({ color }).run();
       } else {
         chain.unsetHighlight().run();

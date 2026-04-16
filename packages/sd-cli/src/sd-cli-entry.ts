@@ -18,6 +18,8 @@ import { EventEmitter } from "node:events";
 import { consola } from "consola";
 import { setupConsola } from "@simplysm/core-node";
 
+const logger = consola.withTag("sd:cli:entry");
+
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
 
@@ -98,7 +100,7 @@ export function createCliParser(argv: string[]): Argv {
               type: "string",
               array: true,
               describe: "Check types to run (e.g., --type typecheck --type lint)",
-              default: ["typecheck", "lint", "test"] as string[],
+              default: ["typecheck", "lint"] as string[],
             },
             fix: {
               type: "boolean",
@@ -110,7 +112,7 @@ export function createCliParser(argv: string[]): Argv {
         await runCheck({
           targets: args.target,
           types: (() => {
-            const validTypes = ["typecheck", "lint", "test"] as const;
+            const validTypes = ["typecheck", "lint"] as const;
             const types = args.type.flatMap((t) => t.split(",").map((s) => s.trim()));
             const invalidTypes = types.filter((t) => !validTypes.includes(t as CheckType));
             if (invalidTypes.length > 0) {
@@ -324,7 +326,7 @@ export function createCliParser(argv: string[]): Argv {
     .strict()
     .fail((msg, err) => {
       if (msg) {
-        consola.error(msg);
+        logger.error(msg);
         process.exit(1);
       }
       throw err;

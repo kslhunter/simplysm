@@ -23,7 +23,7 @@ export async function until(
   let count = 0;
   while (!(await forwarder())) {
     count++;
-    if (maxCount !== undefined && count >= maxCount) {
+    if (maxCount != null && count >= maxCount) {
       throw new TimeoutError(count);
     }
 

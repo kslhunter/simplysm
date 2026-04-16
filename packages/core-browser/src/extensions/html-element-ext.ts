@@ -72,7 +72,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   };
 
   let currentEl = this.parentElement;
-  while (currentEl !== null && currentEl !== parentEl) {
+  while (currentEl != null && currentEl !== parentEl) {
     const style = getComputedStyle(currentEl);
     relativeOffset.top += parseFloat(style.borderTopWidth) || 0;
     relativeOffset.left += parseFloat(style.borderLeftWidth) || 0;

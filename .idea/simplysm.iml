@@ -48,6 +48,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-server/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.logs" />
       <excludeFolder url="file://$MODULE_DIR$/tests/service/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.playwright-cli" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

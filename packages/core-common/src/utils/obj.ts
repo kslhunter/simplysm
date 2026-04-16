@@ -22,7 +22,7 @@ export function clone<TObj>(source: TObj): TObj {
 
 function cloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unknown {
   // 원시 값은 그대로 반환
-  if (typeof source !== "object" || source === null) {
+  if (typeof source !== "object" || source == null) {
     return source;
   }
 
@@ -66,14 +66,14 @@ function cloneImpl(source: unknown, prevClones?: WeakMap<object, unknown>): unkn
     cloned.message = source.message;
     cloned.name = source.name;
     cloned.stack = source.stack;
-    if (source.cause !== undefined) {
+    if (source.cause != null) {
       cloned.cause = cloneImpl(source.cause, currPrevClones);
     }
     // 커스텀 Error 속성 복사
     for (const key of Object.keys(source)) {
       if (!["message", "name", "stack", "cause"].includes(key)) {
         const desc = Object.getOwnPropertyDescriptor(source, key);
-        if (desc !== undefined) {
+        if (desc != null) {
           Object.defineProperty(cloned, key, {
             ...desc,
             value: "value" in desc ? cloneImpl(desc.value, currPrevClones) : desc.value,
@@ -352,13 +352,13 @@ function equalObject(
 ): boolean {
   const sourceKeys = Object.keys(source).filter(
     (key) =>
-      (options?.topLevelIncludes === undefined || options.topLevelIncludes.includes(key)) &&
+      (options?.topLevelIncludes == null || options.topLevelIncludes.includes(key)) &&
       !options?.topLevelExcludes?.includes(key) &&
       source[key] != null,
   );
   const targetKeys = Object.keys(target).filter(
     (key) =>
-      (options?.topLevelIncludes === undefined || options.topLevelIncludes.includes(key)) &&
+      (options?.topLevelIncludes == null || options.topLevelIncludes.includes(key)) &&
       !options?.topLevelExcludes?.includes(key) &&
       target[key] != null,
   );
@@ -460,14 +460,12 @@ export function merge<TSource, TMergeTarget>(
     return clone(target) as TSource & TMergeTarget;
   }
 
-  if (target === undefined) {
+  if (target == null) {
+    // null(typeof "object")이면 useDelTargetNull 옵션 적용, undefined면 항상 clone
+    if (typeof target === "object" && opt?.useDelTargetNull) {
+      return undefined as TSource & TMergeTarget;
+    }
     return clone(source) as TSource & TMergeTarget;
-  }
-
-  if (target === null) {
-    return opt?.useDelTargetNull
-      ? (undefined as TSource & TMergeTarget)
-      : (clone(source) as TSource & TMergeTarget);
   }
 
   if (typeof target !== "object") {
@@ -506,7 +504,7 @@ export function merge<TSource, TMergeTarget>(
   if (opt?.arrayProcess === "concat" && source instanceof Array && target instanceof Array) {
     let result = [...new Set([...source, ...target])];
     if (opt.useDelTargetNull) {
-      result = result.filter((item) => item !== null);
+      result = result.filter((item) => item != null);
     }
     return result as TSource & TMergeTarget;
   }
@@ -516,7 +514,7 @@ export function merge<TSource, TMergeTarget>(
   const resultRec = clone(sourceRec);
   for (const key of Object.keys(target)) {
     resultRec[key] = merge(sourceRec[key], targetRec[key], opt);
-    if (resultRec[key] === undefined) {
+    if (resultRec[key] == null) {
       delete resultRec[key];
     }
   }
@@ -706,7 +704,7 @@ export function getChainValue(
   const splits = getChainSplits(chain);
   let result: unknown = obj;
   for (const splitItem of splits) {
-    if (optional && result === undefined) {
+    if (optional && result == null) {
       result = undefined;
     } else {
       result = (result as Record<string | number, unknown>)[splitItem];
@@ -813,7 +811,7 @@ export function deleteChainValue(obj: unknown, chain: string): void {
 export function clearUndefined<T extends object>(obj: T): T {
   const record = obj as Record<string, unknown>;
   for (const key of Object.keys(record)) {
-    if (record[key] === undefined) {
+    if (record[key] == null) {
       delete record[key];
     }
   }

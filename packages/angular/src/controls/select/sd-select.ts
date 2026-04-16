@@ -51,10 +51,10 @@ export type SelectModeValue<T> = {
     <sd-dropdown [disabled]="disabled()" [(open)]="dropdownOpen">
       <div class="_sd-select-control" [sdRipple]="!disabled()">
         <div class="_sd-select-control-content" #contentEl>
-          @if (_selectedItemContentHTML() !== undefined) {
+          @if (_selectedItemContentHTML() != null) {
             <div [innerHTML]="_selectedItemContentHTML()"></div>
           } @else if (placeholder()) {
-            <span class="tx-trans-lighter">{{ placeholder() }}</span>
+            <span class="sd-text-color-gray-default">{{ placeholder() }}</span>
           } @else {
             <span>&nbsp;</span>
           }
@@ -83,7 +83,7 @@ export type SelectModeValue<T> = {
           <ng-template [ngTemplateOutlet]="_beforeTpl()!" />
         }
         @if (_itemOfTpl(); as tpl) {
-          @for (item of _flatItems(); track item) {
+          @for (item of _flatItems(); track trackByFn()(item.data, item.index)) {
             <ng-template
               [ngTemplateOutlet]="tpl"
               [ngTemplateOutletContext]="{ $implicit: item.data, item: item.data, index: item.index, depth: item.depth }"
@@ -97,22 +97,32 @@ export type SelectModeValue<T> = {
   `,
   styles: [
     /* language=SCSS */ `
-      @use "../../../scss/commons/mixins";
-
       sd-select {
         display: block;
         position: relative;
+        width: 100%;
+        min-width: 10em;
 
         > sd-dropdown {
-          > ._sd-select-control {
-            @include mixins.form-control-base();
-            display: flex;
-            align-items: center;
-            cursor: pointer;
+          display: flex;
+          overflow: hidden;
 
-            border: 1px solid var(--trans-lighter);
-            border-radius: var(--border-radius-default);
-            background: var(--theme-secondary-lightest);
+          border: 1px solid var(--trans-lighter);
+          border-radius: var(--border-radius-default);
+          background: var(--theme-secondary-lightest);
+
+          &:focus,
+          &:focus-within {
+            border-color: var(--theme-primary-default);
+          }
+
+          > ._sd-select-control {
+            display: flex;
+            position: relative;
+            gap: var(--gap-default);
+            flex-grow: 1;
+            padding: var(--gap-sm) var(--gap-default);
+            cursor: pointer;
 
             > ._sd-select-control-content {
               flex: 1;
@@ -122,45 +132,103 @@ export type SelectModeValue<T> = {
             }
 
             > ._sd-select-control-icon {
-              margin-left: var(--gap-sm);
               opacity: 0.3;
+            }
+
+            &:hover > ._sd-select-control-icon,
+            &:focus > ._sd-select-control-icon,
+            &:active > ._sd-select-control-icon {
+              opacity: 1;
             }
           }
 
-          &:focus-within > ._sd-select-control {
-            border-color: var(--theme-secondary-default);
+          > sd-select-button {
+            padding: var(--gap-sm);
+            border-left: 1px solid var(--theme-gray-lightest);
+
+            &:last-of-type {
+              border-top-right-radius: var(--border-radius-default);
+              border-bottom-right-radius: var(--border-radius-default);
+            }
           }
         }
 
-        &[data-sd-size="sm"] > sd-dropdown > ._sd-select-control {
-          padding: var(--gap-xs) var(--gap-sm);
-        }
+        &[data-sd-disabled="true"] {
+          > sd-dropdown {
+            background: var(--theme-gray-lightest);
 
-        &[data-sd-size="lg"] > sd-dropdown > ._sd-select-control {
-          padding: var(--gap-default) var(--gap-lg);
+            > ._sd-select-control {
+              color: var(--text-trans-light);
+              cursor: default;
+
+              > ._sd-select-control-icon {
+                display: none;
+              }
+            }
+          }
         }
 
         &[data-sd-inline="true"] {
           display: inline-block;
           width: auto;
+          vertical-align: top;
         }
 
-        &[data-sd-inset="true"] > sd-dropdown > ._sd-select-control {
-          border: none;
-          border-radius: 0;
+        &[data-sd-size="sm"] {
+          > sd-dropdown {
+            > ._sd-select-control {
+              padding: var(--gap-xs) var(--gap-sm);
+              gap: var(--gap-sm);
+            }
 
-          &:focus-within {
-            outline: 1px solid var(--theme-primary-default);
+            > sd-select-button {
+              padding: var(--gap-xs);
+            }
           }
         }
 
-        &[data-sd-disabled="true"] {
-          > sd-dropdown > ._sd-select-control {
-            background: var(--trans-lighter);
-            cursor: default;
+        &[data-sd-size="lg"] {
+          > sd-dropdown {
+            > ._sd-select-control {
+              padding: var(--gap-default) var(--gap-lg);
+              gap: var(--gap-lg);
+            }
 
-            > ._sd-select-control-icon {
-              display: none;
+            > sd-select-button {
+              padding: var(--gap-default);
+            }
+          }
+        }
+
+        &[data-sd-inset="true"] {
+          min-width: auto;
+          border-radius: 0;
+
+          > sd-dropdown {
+            border: none;
+            border-radius: 0;
+
+            > sd-select-button {
+              border-radius: 0;
+            }
+
+            &:focus,
+            &:focus-within {
+              outline: 1px solid var(--theme-primary-default);
+              outline-offset: -1px;
+
+              > sd-select-button {
+                outline: 1px solid var(--theme-primary-default);
+                outline-offset: -1px;
+              }
+            }
+          }
+
+          &[data-sd-disabled="true"] > sd-dropdown {
+            background: var(--control-color);
+
+            > ._sd-select-control {
+              color: var(--text-trans-default);
             }
           }
         }
@@ -194,12 +262,13 @@ export class SdSelect<M extends "single" | "multi", T> {
   multiSelectionDisplayDirection = input<"vertical">();
 
   items = input<T[]>();
+  trackByFn = input<(item: T, index: number) => unknown>((item) => item);
   getChildrenFn = input<(item: T) => T[] | undefined>();
 
   contentClass = input<string>();
   contentStyle = input<string>();
 
-  dropdownOpen = signal(false);
+  dropdownOpen = model(false);
 
   protected readonly tablerCaretDown = tablerCaretDown;
 
@@ -225,9 +294,9 @@ export class SdSelect<M extends "single" | "multi", T> {
     const walk = (list: T[], depth: number) => {
       for (const item of list) {
         flat.push({ data: item, index: index++, depth });
-        if (getChildren !== undefined) {
+        if (getChildren != null) {
           const children = getChildren(item);
-          if (children !== undefined) {
+          if (children != null) {
             walk(children, depth + 1);
           }
         }
@@ -254,7 +323,7 @@ export class SdSelect<M extends "single" | "multi", T> {
         const popupEl = this._dropdownControl().popupElRef().nativeElement;
         const cls = this.contentClass();
         const addedClasses: string[] = [];
-        if (cls !== undefined) {
+        if (cls != null) {
           for (const c of cls.split(" ").filter(Boolean)) {
             popupEl.classList.add(c);
             addedClasses.push(c);
@@ -262,7 +331,7 @@ export class SdSelect<M extends "single" | "multi", T> {
         }
         const style = this.contentStyle();
         const addedStyleProps: string[] = [];
-        if (style !== undefined) {
+        if (style != null) {
           const tempEl = document.createElement("div");
           tempEl.style.cssText = style;
           for (let i = 0; i < tempEl.style.length; i++) {
@@ -330,12 +399,13 @@ export class SdSelect<M extends "single" | "multi", T> {
 
         const selectedItems = untracked(() => items.filter((item) => arr.includes(item.value())));
 
-        const separator = this.multiSelectionDisplayDirection() === "vertical" ? "<br>" : ", ";
+        const isVertical = this.multiSelectionDisplayDirection() === "vertical";
+        const separator = isVertical ? "<div class='p-sm-0'></div>" : ", ";
         const htmlParts: string[] = [];
         for (const item of selectedItems) {
           const html = item.contentHTML();
           if (html !== "") {
-            htmlParts.push(html);
+            htmlParts.push(`<span style="display: inline">${html}</span>`);
           }
         }
         if (htmlParts.length > 0) {
@@ -360,24 +430,24 @@ export class SdSelect<M extends "single" | "multi", T> {
     });
   }
 
-  selectItem(itemValue: T): void {
+  selectItem(itemValue: T | undefined): void {
     this._setOrToggle(itemValue);
     if (this.selectMode() === "single") {
       this.closeDropdown();
     }
   }
 
-  toggleItem(itemValue: T): void {
+  toggleItem(itemValue: T | undefined): void {
     this._setOrToggle(itemValue);
   }
 
-  private _setOrToggle(itemValue: T): void {
+  private _setOrToggle(itemValue: T | undefined): void {
     if (this.selectMode() === "single") {
       this.value.set(itemValue);
     } else {
       this.value.update((v) => {
         const arr = (v as T[] | undefined) ?? [];
-        if (arr.includes(itemValue)) {
+        if (arr.includes(itemValue as T)) {
           return arr.filter((item) => item !== itemValue);
         } else {
           return [...arr, itemValue];

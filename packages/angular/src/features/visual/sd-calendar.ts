@@ -157,7 +157,7 @@ export class SdCalendar<T> {
       const item = this.items()[i];
       const tick = getDateFn(item, i).tick;
       const arr = itemsByTick.get(tick);
-      if (arr !== undefined) {
+      if (arr != null) {
         arr.push(item);
       } else {
         itemsByTick.set(tick, [item]);

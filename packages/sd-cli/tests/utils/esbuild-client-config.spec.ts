@@ -16,24 +16,17 @@ vi.mock("esbuild", () => ({
   },
 }));
 
-const mockSourceFileCache = {
-  loadResultCache: { name: "mockLoadResultCache" },
-  invalidate: vi.fn(),
-  modifiedFiles: new Set<string>(),
-};
+const mockAngularPlugin = { name: "sd-angular-compiler" };
 
-const mockAngularPlugin = { name: "angular-compiler" };
+vi.mock("../../src/esbuild/esbuild-angular-compiler-plugin", () => ({
+  createAngularCompilerPlugin: vi.fn(() => mockAngularPlugin),
+}));
 
-vi.mock("@angular/build/private", () => {
-  // vi.fn()의 arrow function은 new로 호출 불가 — 일반 function 사용
-  function MockSourceFileCache() {
-    return mockSourceFileCache;
-  }
-  return {
-    createCompilerPlugin: vi.fn(() => mockAngularPlugin),
-    SourceFileCache: vi.fn(MockSourceFileCache),
-  };
-});
+const mockTransformStylesheet = vi.fn();
+
+vi.mock("../../src/angular/client-transform-stylesheet", () => ({
+  createClientTransformStylesheet: vi.fn(() => mockTransformStylesheet),
+}));
 
 vi.mock("browserslist-to-esbuild", () => ({
   default: vi.fn(() => ["chrome61"]),
@@ -54,11 +47,16 @@ vi.mock("module", async (importOriginal) => {
 
 // --- Imports (after mocks) ---
 
-const { createClientEsbuildContext } = await import(
+const { createClientEsbuildContext, ClientSourceFileCache } = await import(
   "../../src/esbuild/esbuild-client-config"
 );
 const esbuild = (await import("esbuild")).default;
-const { createCompilerPlugin, SourceFileCache } = await import("@angular/build/private");
+const { createAngularCompilerPlugin } = await import(
+  "../../src/esbuild/esbuild-angular-compiler-plugin"
+);
+const { createClientTransformStylesheet } = await import(
+  "../../src/angular/client-transform-stylesheet"
+);
 const browserslistToEsbuild = (await import("browserslist-to-esbuild")).default;
 
 // --- Helpers ---
@@ -140,43 +138,55 @@ describe("createClientEsbuildContext — define 생성", () => {
 describe("createClientEsbuildContext — 소스맵 설정", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("dev 모드: esbuild sourcemap=linked, CompilerPlugin sourcemap=true, StyleOptions sourcemap=linked", async () => {
+  it("dev 모드: esbuild sourcemap=linked, AngularCompilerPlugin sourcemap=true", async () => {
     await createClientEsbuildContext(baseDev);
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(opts.sourcemap).toBe("linked");
 
-    const [pluginOpts, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
     expect(pluginOpts.sourcemap).toBe(true);
-    expect(styleOpts.sourcemap).toBe("linked");
   });
 
-  it("build 모드: esbuild sourcemap=false, CompilerPlugin sourcemap=false, StyleOptions sourcemap=false", async () => {
+  it("build 모드: esbuild sourcemap=false, AngularCompilerPlugin sourcemap=false", async () => {
     await createClientEsbuildContext(baseBuild);
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(opts.sourcemap).toBe(false);
 
-    const [pluginOpts, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
     expect(pluginOpts.sourcemap).toBe(false);
-    expect(styleOpts.sourcemap).toBe(false);
   });
 });
 
-describe("createClientEsbuildContext — PostCSS 설정", () => {
+describe("createClientEsbuildContext — transformStylesheet 설정", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("postcssPlugins 미전달 시 postcssConfiguration이 undefined", async () => {
+  it("transformStylesheet 콜백이 createAngularCompilerPlugin에 전달된다", async () => {
     await createClientEsbuildContext(baseBuild);
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.postcssConfiguration).toBeUndefined();
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
+    expect(pluginOpts.transformStylesheet).toBe(mockTransformStylesheet);
   });
 
-  it("postcssPlugins 전달해도 postcssConfiguration은 항상 undefined", async () => {
+  it("stylesheetDependencies와 stylesheetErrors가 createAngularCompilerPlugin에 전달된다", async () => {
+    await createClientEsbuildContext(baseBuild);
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
+    expect(pluginOpts.stylesheetDependencies).toBeInstanceOf(Map);
+    expect(pluginOpts.stylesheetErrors).toBeInstanceOf(Array);
+  });
+
+  it("postcssPlugins가 createClientTransformStylesheet에 전달된다", async () => {
     await createClientEsbuildContext({
       ...baseBuild,
       postcssPlugins: [["autoprefixer"]],
     });
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.postcssConfiguration).toBeUndefined();
+    const transformOpts = vi.mocked(createClientTransformStylesheet).mock.calls[0][0];
+    expect(transformOpts.postcssPlugins).toBeDefined();
+    expect(transformOpts.postcssPlugins).toHaveLength(1);
+  });
+
+  it("postcssPlugins 미전달 시 createClientTransformStylesheet에 postcssPlugins가 undefined", async () => {
+    await createClientEsbuildContext(baseBuild);
+    const transformOpts = vi.mocked(createClientTransformStylesheet).mock.calls[0][0];
+    expect(transformOpts.postcssPlugins).toBeUndefined();
   });
 });
 
@@ -232,21 +242,28 @@ describe("createClientEsbuildContext — PostCSS 플러그인 통합", () => {
   });
 });
 
-describe("createClientEsbuildContext — SourceFileCache", () => {
+describe("createClientEsbuildContext — ClientSourceFileCache", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("SourceFileCache가 .angular/cache 경로로 생성됨", async () => {
-    await createClientEsbuildContext(baseDev);
-    expect(SourceFileCache).toHaveBeenCalledWith(
-      path.join("/workspace/packages/my-app", ".angular", "cache"),
-    );
+  it("반환된 sourceFileCache가 ClientSourceFileCache 인스턴스", async () => {
+    const result = await createClientEsbuildContext(baseDev);
+    expect(result.sourceFileCache).toBeInstanceOf(ClientSourceFileCache);
   });
 
-  it("sourceFileCache와 loadResultCache가 CompilerPluginOptions에 전달됨", async () => {
+  it("sourceFileCache의 typeScriptFileCache와 loadResultCache가 AngularCompilerPlugin에 전달됨", async () => {
+    const result = await createClientEsbuildContext(baseDev);
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
+    expect(pluginOpts.sourceFileCache).toBe(result.sourceFileCache);
+    expect(pluginOpts.typeScriptFileCache).toBe(result.sourceFileCache.typeScriptFileCache);
+    expect(pluginOpts.loadResultCache).toBe(result.sourceFileCache.loadResultCache);
+  });
+
+  it("persistentCachePath가 .angular/cache 경로로 전달됨", async () => {
     await createClientEsbuildContext(baseDev);
-    const [pluginOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(pluginOpts.sourceFileCache).toBe(mockSourceFileCache);
-    expect(pluginOpts.loadResultCache).toBe(mockSourceFileCache.loadResultCache);
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
+    expect(pluginOpts.persistentCachePath).toBe(
+      path.join("/workspace/packages/my-app", ".angular", "cache"),
+    );
   });
 });
 
@@ -258,7 +275,7 @@ describe("createClientEsbuildContext — 추가 옵션", () => {
       ...baseDev,
       tsconfig: "/workspace/packages/my-app/tsconfig.build.json",
     });
-    const [pluginOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
     expect(pluginOpts.tsconfig).toBe(
       "/workspace/packages/my-app/tsconfig.build.json",
     );
@@ -283,13 +300,13 @@ describe("createClientEsbuildContext — 추가 옵션", () => {
     expect(opts.plugins).toContainEqual(customPlugin);
   });
 
-  it("templateUpdates가 CompilerPluginOptions에 전달됨", async () => {
+  it("templateUpdates가 AngularCompilerPluginOptions에 전달됨", async () => {
     const updates = new Map([["comp1", "template1"]]);
     await createClientEsbuildContext({
       ...baseDev,
       templateUpdates: updates,
     });
-    const [pluginOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
+    const pluginOpts = vi.mocked(createAngularCompilerPlugin).mock.calls[0][0];
     expect(pluginOpts.templateUpdates).toBe(updates);
   });
 });
@@ -303,10 +320,13 @@ describe("createClientEsbuildContext — browserslist → target 변환", () => 
     expect(opts.target).toEqual(["es2022"]);
   });
 
-  it("browserslist 미설정 시 BundleStylesheetOptions.target이 [es2022]", async () => {
+  it("browserslist 미설정 시 createClientTransformStylesheet의 loadPaths가 설정됨", async () => {
     await createClientEsbuildContext(baseDev);
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
-    expect(styleOpts.target).toEqual(["es2022"]);
+    const transformOpts = vi.mocked(createClientTransformStylesheet).mock.calls[0][0];
+    expect(transformOpts.loadPaths).toEqual([
+      path.join("/workspace/packages/my-app", "node_modules"),
+      path.join("/workspace", "node_modules"),
+    ]);
   });
 
   it("browserslist 문자열은 배열로 변환하여 browserslistToEsbuild에 전달", async () => {
@@ -324,16 +344,14 @@ describe("createClientEsbuildContext — browserslist → target 변환", () => 
     expect(browserslistToEsbuild).toHaveBeenCalledWith(["Chrome 61", "Firefox 60"]);
   });
 
-  it("browserslistToEsbuild 결과가 esbuild target과 styleOptions.target에 동일하게 적용", async () => {
+  it("browserslistToEsbuild 결과가 esbuild target에 적용", async () => {
     vi.mocked(browserslistToEsbuild).mockReturnValueOnce(["chrome61", "firefox60"]);
     await createClientEsbuildContext({
       ...baseDev,
       browserslist: ["Chrome 61", "Firefox 60"],
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
-    const [, styleOpts] = vi.mocked(createCompilerPlugin).mock.calls[0];
     expect(opts.target).toEqual(["chrome61", "firefox60"]);
-    expect(styleOpts.target).toEqual(["chrome61", "firefox60"]);
   });
 });
 
@@ -448,7 +466,7 @@ describe("createClientEsbuildContext — onEnd 플러그인", () => {
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     const pluginNames = opts.plugins!.map((p: any) => p.name);
     const customIdx = pluginNames.indexOf("custom");
-    const angularIdx = pluginNames.indexOf("angular-compiler");
+    const angularIdx = pluginNames.indexOf("sd-angular-compiler");
     expect(customIdx).toBeLessThan(angularIdx);
   });
 });
@@ -493,7 +511,7 @@ describe("createClientEsbuildContext — SCSS 플러그인 통합", () => {
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     const pluginNames = opts.plugins!.map((p: any) => p.name);
 
-    const angularIdx = pluginNames.indexOf("angular-compiler");
+    const angularIdx = pluginNames.indexOf("sd-angular-compiler");
     const scssIdx = pluginNames.indexOf("sd-scss");
 
     expect(scssIdx).toBe(angularIdx + 1);

@@ -2,6 +2,8 @@
 
 Angular 21 기반 UI 컴포넌트 라이브러리. Zoneless, signal-based, standalone 컴포넌트로 구성된다.
 
+> **NOTE:** 이 문서는 `@simplysm/angular` 라이브러리의 사용법만 다룬다. Angular 프레임워크 자체의 사용법(컴포넌트 작성, DI, 라우팅, signal 등)은 `angular-cli` MCP를 활용한다.
+
 ## Installation
 
 ```bash
@@ -81,6 +83,11 @@ npm install @simplysm/angular
 | `SdItemOfTemplate` | directive | `ng-template[itemOf]` 항목 반복 템플릿 타입 가드 |
 | `SdItemOfTemplateContext` | interface | itemOf 템플릿 컨텍스트 (`$implicit`, `item`, `index`, `depth`) |
 | `SdRouterLink` | directive | `[sdRouterLink]` 라우터 네비게이션 (Ctrl+클릭 새 창) |
+| `SdCommandDirective` | directive | `[sdSaveCommand]`, `[sdRefreshCommand]`, `[sdInsertCommand]` 키보드 단축키 output 이벤트 디렉티브 |
+| `SdResizeDirective` | directive | `[sdResize]` ResizeObserver 기반 resize output 이벤트 디렉티브 |
+| `SdResizeEvent` | interface | resize 이벤트 데이터 (`heightChanged`, `widthChanged`, `target`, `contentRect`) |
+| `SdIntersectionDirective` | directive | `[sdIntersection]` IntersectionObserver 기반 intersection output 이벤트 디렉티브 |
+| `SdIntersectionEvent` | interface | intersection 이벤트 데이터 (`entry`) |
 
 -> See [docs/directives.md](./docs/directives.md) for details.
 
@@ -88,14 +95,7 @@ npm install @simplysm/angular
 
 | API | Type | Description |
 |-----|------|-------------|
-| `SdSaveCommandEventPlugin` | class | `(sdSaveCommand)` Ctrl+S 이벤트 플러그인 |
-| `SdRefreshCommandEventPlugin` | class | `(sdRefreshCommand)` Ctrl+Alt+L 이벤트 플러그인 |
-| `SdInsertCommandEventPlugin` | class | `(sdInsertCommand)` Ctrl+Insert 이벤트 플러그인 |
-| `SdResizeEventPlugin` | class | `(sdResize)` ResizeObserver 이벤트 플러그인 |
-| `SdResizeEvent` | interface | resize 이벤트 데이터 |
-| `SdIntersectionEventPlugin` | class | `(sdIntersection)` IntersectionObserver 이벤트 플러그인 |
-| `SdIntersectionEvent` | interface | intersection 이벤트 데이터 |
-| `SdOptionEventPlugin` | class | `.capture`, `.passive`, `.once` 이벤트 옵션 플러그인 |
+| `SdOptionEventPlugin` | class | `.capture`, `.passive`, `.once` 이벤트 옵션 플러그인 (`provideSdAngular`에서 자동 등록) |
 | `SdGlobalErrorHandlerPlugin` | class | 글로벌 에러 핸들러 (PromiseRejection, ErrorEvent 등) |
 
 -> See [docs/plugins.md](./docs/plugins.md) for details.

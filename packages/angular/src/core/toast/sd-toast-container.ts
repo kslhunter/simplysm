@@ -14,7 +14,7 @@ import {
   host: {
     "[attr.data-sd-overlap]": "overlap() || undefined",
   },
-  template: `<ng-content />`,
+  template: "",
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/variables";

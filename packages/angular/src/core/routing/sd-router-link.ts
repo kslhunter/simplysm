@@ -55,7 +55,7 @@ export class SdRouterLink {
         ? "?" + new URLSearchParams(option.queryParams).toString()
         : "";
       this._sdNavigateWindow.open(option.link + qp, option.params);
-    } else if (option.outletName === undefined) {
+    } else if (option.outletName == null) {
       await this._router.navigate(
         [option.link, ...(option.params ? [option.params] : [])],
         option.queryParams ? { queryParams: option.queryParams } : undefined,

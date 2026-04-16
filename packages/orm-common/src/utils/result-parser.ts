@@ -97,7 +97,7 @@ function flatToNested(
     const parsedValue = parseValue(rawValue, type);
 
     // undefined 값은 key로 추가하지 않음
-    if (parsedValue === undefined) continue;
+    if (parsedValue == null) continue;
 
     if (parts != null) {
       // 중첩 key: "posts.id" → { posts: { id: ... } }

@@ -33,7 +33,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
   }
 
   async beginTransaction(isolationLevel?: IsolationLevel): Promise<void> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -41,7 +41,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
   }
 
   async commitTransaction(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -49,7 +49,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
   }
 
   async rollbackTransaction(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -57,7 +57,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
   }
 
   async close(): Promise<void> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -69,7 +69,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     defs: QueryDef[],
     options?: (ResultMeta | undefined)[],
   ): Promise<T[][]> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -77,7 +77,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
   }
 
   async executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 
@@ -89,7 +89,7 @@ export class OrmClientDbContextExecutor implements DbContextExecutor {
     columnDefs: Record<string, ColumnMeta>,
     records: Record<string, unknown>[],
   ): Promise<void> {
-    if (this._connId === undefined) {
+    if (this._connId == null) {
       throw new Error("데이터베이스에 연결되지 않았습니다.");
     }
 

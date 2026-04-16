@@ -25,7 +25,7 @@ export default createRule({
     const source = sourceCode.getText();
     const commentRegex = /<!--([\s\S]*?)-->/g;
     let match;
-    while ((match = commentRegex.exec(source)) !== null) {
+    while ((match = commentRegex.exec(source)) != null) {
       const commentContent = match[1];
       const todoIndex = commentContent.indexOf("TODO:");
       if (todoIndex < 0) continue;

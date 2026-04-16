@@ -100,7 +100,7 @@ describe("Feature 3.3 Slice 3: 커스텀 토스트 + 에러 래핑", () => {
 
     const toast = getToastsInBody()[0];
     expect(toast.getAttribute("data-sd-theme")).toBe("danger");
-    expect(toast.querySelector("._message")!.textContent).toContain("실패");
+    expect(toast.querySelector("._sd-toast-message")!.textContent).toContain("실패");
 
     expect(writeSpy).toHaveBeenCalledWith("error", expect.stringContaining("실패"));
     writeSpy.mockRestore();
@@ -121,7 +121,7 @@ describe("Feature 3.3 Slice 3: 커스텀 토스트 + 에러 래핑", () => {
 
     expect(result).toBeUndefined();
     const toast = getToastsInBody()[0];
-    expect(toast.querySelector("._message")!.textContent).toContain("커스텀: 원본");
+    expect(toast.querySelector("._sd-toast-message")!.textContent).toContain("커스텀: 원본");
   });
 
   // Acceptance: try 실패 — Error가 아닌 예외

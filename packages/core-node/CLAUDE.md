@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작, 자식 프로세스 실행, 경로 처리, 파일 감시, Worker thread 래퍼, consola 로깅 설정을 제공한다. 소스 파일 11개.
+`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작(fsx), 자식 프로세스 실행(cpx), 경로 처리(pathx), 파일 감시(FsWatcher), Worker thread 래퍼, consola 로깅 설정을 제공한다. 11개 TypeScript 소스 파일.
 
 ## Architecture
 
@@ -40,7 +40,7 @@ src/
 import { fsx, cpx, pathx } from "@simplysm/core-node";
 
 await fsx.write("/path/to/file.txt", "content");
-const result = await cpx.spawn("node", ["--version"], []);
+const result = await cpx.spawn("node", ["--version"]);
 const posixPath = pathx.posixResolve("/base", "sub");
 ```
 

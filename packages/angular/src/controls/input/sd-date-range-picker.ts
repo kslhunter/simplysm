@@ -68,14 +68,7 @@ export class SdDateRangePicker {
 
   handleDatePeriodTypeChanged(): void {
     if (this.periodType() === "월") {
-      const fromDate = this.from();
-      if (fromDate) {
-        const firstOfMonth = fromDate.setDay(1);
-        this.from.set(firstOfMonth);
-        this.to.set(firstOfMonth.addMonths(1).addDays(-1));
-      } else {
-        this.to.set(undefined);
-      }
+      this._syncMonthRange();
     } else if (this.periodType() === "일") {
       this.to.set(this.from());
     }
@@ -83,14 +76,7 @@ export class SdDateRangePicker {
 
   handleFromDateChanged(): void {
     if (this.periodType() === "월") {
-      const fromDate = this.from();
-      if (fromDate) {
-        const firstOfMonth = fromDate.setDay(1);
-        this.from.set(firstOfMonth);
-        this.to.set(firstOfMonth.addMonths(1).addDays(-1));
-      } else {
-        this.to.set(undefined);
-      }
+      this._syncMonthRange();
     } else if (this.periodType() === "일") {
       this.to.set(this.from());
     } else if (
@@ -100,6 +86,17 @@ export class SdDateRangePicker {
       this.from()!.tick > this.to()!.tick
     ) {
       this.to.set(this.from());
+    }
+  }
+
+  private _syncMonthRange(): void {
+    const fromDate = this.from();
+    if (fromDate) {
+      const firstOfMonth = fromDate.setDay(1);
+      this.from.set(firstOfMonth);
+      this.to.set(firstOfMonth.addMonths(1).addDays(-1));
+    } else {
+      this.to.set(undefined);
     }
   }
 }

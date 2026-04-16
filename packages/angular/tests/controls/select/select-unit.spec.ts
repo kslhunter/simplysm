@@ -1,20 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdResizeEventPlugin } from "../../../src/core/events/sd-resize-event.plugin";
 import {
   SdSelectSingleTest,
   SdSelectPreselectedTest,
   SdSelectPlaceholderTest,
+  SdSelectTrackByFnTest,
+  SdSelectItemsTemplateTest,
 } from "./sd-select-test.fixture";
 import "@simplysm/core-browser";
 
 function setupTestBed(component: any) {
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
-    ],
   });
 }
 
@@ -70,7 +67,7 @@ describe("SdSelect unit tests", () => {
     const contentEl = selectEl.querySelector("._sd-select-control-content") as HTMLElement;
     expect(contentEl).toBeTruthy();
 
-    const placeholderSpan = contentEl.querySelector("span.tx-trans-lighter");
+    const placeholderSpan = contentEl.querySelector("span.sd-text-color-gray-default");
     expect(placeholderSpan).toBeTruthy();
     expect(placeholderSpan!.textContent.trim()).toBe("Select an item");
   });
@@ -82,7 +79,7 @@ describe("SdSelect unit tests", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     (itemContents[0] as HTMLElement).click();
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -97,7 +94,7 @@ describe("SdSelect unit tests", () => {
     TestBed.flushEffects();
 
     const popup = openDropdown(fixture);
-    const itemContents = popup.querySelectorAll("sd-select-item ._content");
+    const itemContents = popup.querySelectorAll("sd-select-item");
     (itemContents[0] as HTMLElement).click();
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -123,6 +120,42 @@ describe("SdSelect unit tests", () => {
   });
 });
 
+// region trackByFn input
+
+describe("SdSelect trackByFn input", () => {
+  it("trackByFn 미설정 시 기본값 (item) => item으로 동작한다", () => {
+    setupTestBed(SdSelectItemsTemplateTest);
+    const fixture = TestBed.createComponent(SdSelectItemsTemplateTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const selectDebug = fixture.debugElement.query(
+      (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select",
+    );
+    const selectInstance = selectDebug.componentInstance;
+
+    const testItem = { value: "X", label: "Test" };
+    expect(selectInstance.trackByFn()(testItem, 0)).toBe(testItem);
+  });
+
+  it("trackByFn 설정 시 해당 함수가 사용된다", () => {
+    setupTestBed(SdSelectTrackByFnTest);
+    const fixture = TestBed.createComponent(SdSelectTrackByFnTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const selectDebug = fixture.debugElement.query(
+      (de) => de.nativeElement.tagName?.toLowerCase() === "sd-select",
+    );
+    const selectInstance = selectDebug.componentInstance;
+
+    const testItem = { value: "A", label: "Label A" };
+    expect(selectInstance.trackByFn()(testItem, 0)).toBe("A");
+  });
+});
+
+// endregion
+
 // region FIX-2 Slice 4: sd-select-item 효율화 (PERF-003)
 
 describe("FIX-2 Slice 4: sd-select-item isSelected 동작 확인 (PERF-003)", () => {
@@ -138,8 +171,7 @@ describe("FIX-2 Slice 4: sd-select-item isSelected 동작 확인 (PERF-003)", ()
     expect(items.length).toBe(3);
 
     // Select first item
-    const firstContent = items[0].querySelector("._content") as HTMLElement;
-    firstContent.click();
+    (items[0] as HTMLElement).click();
     fixture.detectChanges();
     TestBed.flushEffects();
 

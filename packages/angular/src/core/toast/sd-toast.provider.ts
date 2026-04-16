@@ -48,14 +48,14 @@ export class SdToastProvider {
 
   constructor() {
     effect(() => {
-      if (this._containerRef !== undefined) {
+      if (this._containerRef != null) {
         this._containerRef.setInput("overlap", this.overlap());
       }
     });
   }
 
   private _getContainerRef(): ComponentRef<SdToastContainer> {
-    if (this._containerRef === undefined) {
+    if (this._containerRef == null) {
       this._containerRef = createComponent(SdToastContainer, {
         environmentInjector: this._envInjector,
       });
@@ -158,7 +158,7 @@ export class SdToastProvider {
         throw err;
       }
 
-      const message = messageFn !== undefined ? messageFn(err) : err.message;
+      const message = messageFn != null ? messageFn(err) : err.message;
       this.danger(message);
       await this._sdSystemLog.writeAsync("error", err.stack ?? err.message);
       return undefined;
@@ -177,7 +177,7 @@ export class SdToastProvider {
     }
 
     // beforeShowFn 콜백
-    if (this.beforeShowFn !== undefined) {
+    if (this.beforeShowFn != null) {
       this.beforeShowFn(theme);
     }
 
@@ -299,14 +299,14 @@ export class SdToastProvider {
 
     // 연결된 contentRef 파괴
     const contentRef = this._contentRefs.get(toastRef);
-    if (contentRef !== undefined) {
+    if (contentRef != null) {
       this._contentRefs.delete(toastRef);
       this._appRef.detachView(contentRef.hostView);
       contentRef.destroy();
     }
 
     const el = toastRef.location.nativeElement as HTMLElement;
-    if (el.parentNode !== null) {
+    if (el.parentNode != null) {
       el.parentNode.removeChild(el);
     }
     this._appRef.detachView(toastRef.hostView);

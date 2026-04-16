@@ -18,6 +18,8 @@ import { SdActivatedModalProvider } from "./sd-activated-modal.provider";
 import { SdSystemConfigProvider } from "../config/sd-system-config.provider";
 import { injectFocusTrap } from "./injectFocusTrap";
 import { injectDragResize } from "./injectDragResize";
+import { SdAnchor } from "../../controls/button/sd-anchor";
+import { SdResizeDirective, type SdResizeEvent } from "../events/sd-resize";
 import "@simplysm/core-browser";
 
 @Component({
@@ -25,39 +27,86 @@ import "@simplysm/core-browser";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [NgTemplateOutlet, NgIcon],
+  imports: [NgTemplateOutlet, NgIcon, SdAnchor, SdResizeDirective],
+  hostDirectives: [{ directive: SdResizeDirective, outputs: ["sdResize"] }],
   host: {
     "[attr.data-sd-open]": "open() || undefined",
     "[attr.data-sd-float]": "float() || undefined",
     "[attr.data-sd-fill]": "fill() || undefined",
     "[attr.data-sd-position]": "position() || undefined",
+    "(sdResize)": "onHostResize($event)",
+    "(window:resize)": "onWindowResize()",
   },
   template: `
-    <div class="_backdrop" (mousedown)="onBackdropClick()"></div>
-    <div class="_dialog" tabindex="-1"
-         (keydown)="onDialogKeydown($event)"
-         (focus)="onDialogFocus()">
+    <div
+      class="_backdrop"
+      tabindex="-1"
+      role="button"
+      (click)="onBackdropClick()"
+      (keydown.enter)="onBackdropClick()"
+    ></div>
+    <div
+      class="_dialog"
+      tabindex="-1"
+      (keydown)="onDialogKeydown($event)"
+      (focus)="onDialogFocus()"
+      (sdResize)="onDialogResize($event)"
+    >
       @if (!hideHeader()) {
         <div class="_header" (mousedown)="onHeaderMouseDown($event)" [style]="headerStyle()">
-          <span class="_title">{{ title() }}</span>
+          <h5 class="_title">{{ title() }}</h5>
           @if (actionTplRef()) {
             <ng-container *ngTemplateOutlet="actionTplRef()!" />
           }
           @if (!hideCloseButton()) {
-            <button class="_close-btn" (click)="onCloseButtonClick()"><ng-icon [svg]="tablerX" /></button>
+            <sd-anchor [theme]="'gray'" class="_close-btn" (click)="onCloseButtonClick()">
+              <ng-icon [svg]="tablerX" />
+            </sd-anchor>
           }
         </div>
       }
       <div class="_content"><ng-content /></div>
       @if (resizable()) {
-        <div class="_resize-handle _resize-top" data-resize-dir="top" (mousedown)="onResizeMouseDown($event, 'top')"></div>
-        <div class="_resize-handle _resize-bottom" data-resize-dir="bottom" (mousedown)="onResizeMouseDown($event, 'bottom')"></div>
-        <div class="_resize-handle _resize-left" data-resize-dir="left" (mousedown)="onResizeMouseDown($event, 'left')"></div>
-        <div class="_resize-handle _resize-right" data-resize-dir="right" (mousedown)="onResizeMouseDown($event, 'right')"></div>
-        <div class="_resize-handle _resize-top-left" data-resize-dir="top-left" (mousedown)="onResizeMouseDown($event, 'top-left')"></div>
-        <div class="_resize-handle _resize-top-right" data-resize-dir="top-right" (mousedown)="onResizeMouseDown($event, 'top-right')"></div>
-        <div class="_resize-handle _resize-bottom-left" data-resize-dir="bottom-left" (mousedown)="onResizeMouseDown($event, 'bottom-left')"></div>
-        <div class="_resize-handle _resize-bottom-right" data-resize-dir="bottom-right" (mousedown)="onResizeMouseDown($event, 'bottom-right')"></div>
+        <div
+          class="_resize-handle _resize-top"
+          data-resize-dir="top"
+          (mousedown)="onResizeMouseDown($event, 'top')"
+        ></div>
+        <div
+          class="_resize-handle _resize-bottom"
+          data-resize-dir="bottom"
+          (mousedown)="onResizeMouseDown($event, 'bottom')"
+        ></div>
+        <div
+          class="_resize-handle _resize-left"
+          data-resize-dir="left"
+          (mousedown)="onResizeMouseDown($event, 'left')"
+        ></div>
+        <div
+          class="_resize-handle _resize-right"
+          data-resize-dir="right"
+          (mousedown)="onResizeMouseDown($event, 'right')"
+        ></div>
+        <div
+          class="_resize-handle _resize-top-left"
+          data-resize-dir="top-left"
+          (mousedown)="onResizeMouseDown($event, 'top-left')"
+        ></div>
+        <div
+          class="_resize-handle _resize-top-right"
+          data-resize-dir="top-right"
+          (mousedown)="onResizeMouseDown($event, 'top-right')"
+        ></div>
+        <div
+          class="_resize-handle _resize-bottom-left"
+          data-resize-dir="bottom-left"
+          (mousedown)="onResizeMouseDown($event, 'bottom-left')"
+        ></div>
+        <div
+          class="_resize-handle _resize-bottom-right"
+          data-resize-dir="bottom-right"
+          (mousedown)="onResizeMouseDown($event, 'bottom-right')"
+        ></div>
       }
     </div>
   `,
@@ -117,19 +166,7 @@ import "@simplysm/core-browser";
             }
 
             > ._close-btn {
-              display: flex;
-              align-items: center;
-              justify-content: center;
               padding: var(--gap-sm) var(--gap-default);
-              border: none;
-              background: transparent;
-              cursor: pointer;
-              font-size: inherit;
-              color: inherit;
-
-              &:hover {
-                background: var(--trans-lightest);
-              }
             }
           }
 
@@ -329,16 +366,16 @@ export class SdModal {
     // widthPx/heightPx를 dialog 스타일에 적용
     effect(() => {
       const dialogEl = this._getDialogEl();
-      if (dialogEl === null) return;
+      if (dialogEl == null) return;
 
       const w = this.widthPx();
       const h = this.heightPx();
-      if (w !== undefined) {
+      if (w != null) {
         dialogEl.style.width = `${w}px`;
       } else {
         dialogEl.style.width = "";
       }
-      if (h !== undefined) {
+      if (h != null) {
         dialogEl.style.height = `${h}px`;
       } else {
         dialogEl.style.height = "";
@@ -348,11 +385,10 @@ export class SdModal {
     // key 기반 설정 복원
     effect(() => {
       const k = this.key();
-      if (k === undefined || this._sdSystemConfig == null) return;
+      if (k == null || this._sdSystemConfig == null) return;
 
       void this._restoreConfig(k).catch((err) => this._errorHandler.handleError(err));
     });
-
   }
 
   onResizeMouseDown(event: MouseEvent, dir: string): void {
@@ -362,7 +398,7 @@ export class SdModal {
 
   onHeaderMouseDown(event: MouseEvent): void {
     if (!this.movable()) return;
-    if ((event.target as HTMLElement).closest("button") !== null) return;
+    if ((event.target as HTMLElement).closest("button, sd-anchor") != null) return;
     event.preventDefault();
     this._dragResize.startDrag(event);
   }
@@ -389,8 +425,30 @@ export class SdModal {
     this._bringToFront();
   }
 
+  onHostResize(event: SdResizeEvent): void {
+    if (event.heightChanged) this._calcHeight();
+    if (event.widthChanged) this._calcWidth();
+  }
+
+  onDialogResize(event: SdResizeEvent): void {
+    if (event.heightChanged) this._calcHeight();
+    if (event.widthChanged) this._calcWidth();
+  }
+
+  onWindowResize(): void {
+    const dialogEl = this._getDialogEl();
+    if (dialogEl == null) return;
+    const hostEl = this._elRef.nativeElement;
+    if (dialogEl.offsetLeft > hostEl.offsetWidth - 100) {
+      dialogEl.style.left = hostEl.offsetWidth - 100 + "px";
+    }
+    if (dialogEl.offsetTop > hostEl.offsetHeight - 100) {
+      dialogEl.style.top = hostEl.offsetHeight - 100 + "px";
+    }
+  }
+
   private _requestClose(): void {
-    if (this._sdActivatedModal !== null && !this._sdActivatedModal.canDeactivateFn()) {
+    if (this._sdActivatedModal != null && !this._sdActivatedModal.canDeactivateFn()) {
       return;
     }
     void this._saveConfig().catch((err) => this._errorHandler.handleError(err));
@@ -413,16 +471,36 @@ export class SdModal {
     hostEl.style.zIndex = String(maxZ + 1);
   }
 
+  private _calcHeight(): void {
+    const dialogEl = this._getDialogEl();
+    if (dialogEl == null) return;
+    const style = getComputedStyle(this._elRef.nativeElement);
+    const paddingTop = style.paddingTop === "" ? 0 : parseInt(style.paddingTop, 10) || 0;
+    if (dialogEl.offsetHeight > this._elRef.nativeElement.offsetHeight - paddingTop) {
+      dialogEl.style.maxHeight = "100%";
+      dialogEl.style.height = "100%";
+    }
+  }
+
+  private _calcWidth(): void {
+    const dialogEl = this._getDialogEl();
+    if (dialogEl == null) return;
+    if (dialogEl.offsetWidth > this._elRef.nativeElement.offsetWidth) {
+      dialogEl.style.maxWidth = "100%";
+      dialogEl.style.width = "100%";
+    }
+  }
+
   private _getDialogEl(): HTMLElement | null {
     return this._elRef.nativeElement.querySelector("._dialog");
   }
 
   private async _saveConfig(): Promise<void> {
     const k = this.key();
-    if (k === undefined || this._sdSystemConfig == null) return;
+    if (k == null || this._sdSystemConfig == null) return;
 
     const dialogEl = this._getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
     const config: Record<string, string> = {};
     if (dialogEl.style.width !== "") config["width"] = dialogEl.style.width;
@@ -442,11 +520,11 @@ export class SdModal {
     if (config == null) return;
 
     const dialogEl = this._getDialogEl();
-    if (dialogEl === null) return;
+    if (dialogEl == null) return;
 
-    if (config["width"] !== undefined) dialogEl.style.width = config["width"];
-    if (config["height"] !== undefined) dialogEl.style.height = config["height"];
-    if (config["left"] !== undefined) dialogEl.style.left = config["left"];
-    if (config["top"] !== undefined) dialogEl.style.top = config["top"];
+    if (config["width"] != null) dialogEl.style.width = config["width"];
+    if (config["height"] != null) dialogEl.style.height = config["height"];
+    if (config["left"] != null) dialogEl.style.left = config["left"];
+    if (config["top"] != null) dialogEl.style.top = config["top"];
   }
 }
