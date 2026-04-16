@@ -88,16 +88,19 @@ export function createPostcssPlugin(options: CreatePostcssPluginOptions): esbuil
 
             if (replacements.length === 0) continue;
 
-            // PostCSS 적용 및 역순 교체
-            let modified = code;
-            // 끝에서 시작 방향으로 교체하여 offset 유지
-            const sorted = replacements.sort((a, b) => b.start - a.start);
+            // PostCSS 적용 — 정방향 청크 배열 + join
+            const sorted = replacements.sort((a, b) => a.start - b.start);
+            const chunks: string[] = [];
+            let cursor = 0;
 
             for (const rep of sorted) {
+              chunks.push(code.slice(cursor, rep.start));
               const processed = await processor.process(rep.text, { from: file });
-              const escaped = JSON.stringify(processed.css);
-              modified = modified.slice(0, rep.start) + escaped + modified.slice(rep.end);
+              chunks.push(JSON.stringify(processed.css));
+              cursor = rep.end;
             }
+            chunks.push(code.slice(cursor));
+            const modified = chunks.join("");
 
             await fs.promises.writeFile(file, modified);
           } catch (e: unknown) {

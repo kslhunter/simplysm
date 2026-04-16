@@ -339,6 +339,49 @@ export class SomePage implements OnInit {
 - constructor 내 `void this._init()` 같은 수동 호출 패턴 **금지** — ngOnInit이 이미 같은 역할
 - `resource()` / `httpResource()`는 데이터 로딩 → signal 매핑 용도. 사이드이펙트(라우팅, toast 등) 포함 초기화에는 사용하지 않는다
 
+## 소비 프로젝트 네이밍 규칙
+
+`@simplysm/angular`를 소비하는 앱 프로젝트에서의 파일명·클래스명 규칙이다.
+파일명은 **kebab-case + dot-suffix**, 클래스명은 **PascalCase**를 따른다.
+
+| 접미어 | 조건 | 파일명 예시 | 클래스명 예시 |
+|--------|------|-------------|---------------|
+| `.sheet.ts` / `*Sheet` | `SdDataSheetBase` 상속 | `outbound-instruction.sheet.ts` | `OutboundInstructionSheet` |
+| `.detail.ts` / `*Detail` | `SdDataDetailBase` 상속 | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` |
+| `.view.ts` / `*View` | sheet/detail 아닌 병합 컴포넌트 + route 연결 | `dashboard.view.ts` | `DashboardView` |
+| `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 | `item-select.modal.ts` | `ItemSelectModal` |
+| `.provider.ts` / `*Provider` | `@Injectable` 클래스 (**`*Service` 금지**) | `app-service.provider.ts` | `AppServiceProvider` |
+| 접미어 없음 | route 미연결 일반 컨트롤 컴포넌트 | `instruction-item.ts` | `InstructionItem` |
+
+- `pipe`, `directive` 등 기타 Angular 구성요소는 `@simplysm/angular` 패키지 자체의 네이밍 패턴(`.pipe.ts`, `.directive.ts`)을 따른다
+
+## 소비 프로젝트 디렉토리 구조
+
+```
+src/
+├── app/                                  # 라우팅 페이지 (사이드바 메뉴 트리 구조와 대응)
+│   ├── login/
+│   └── home/
+│       ├── {메뉴-그룹}/                  # 사이드바 메뉴 그룹
+│       │   └── {도메인}/                 # 개별 도메인 (트리 깊이 제한 없음)
+│       │       ├── {도메인}.view.ts      # route 연결 병합 컴포넌트
+│       │       ├── {도메인}.sheet.ts     # SdDataSheetBase 상속
+│       │       ├── {도메인}.detail.ts    # SdDataDetailBase 상속
+│       │       ├── {이름}.modal.ts       # 도메인 전용 모달
+│       │       └── {이름}.ts            # 일반 컨트롤 (route 미연결)
+│       └── main/
+├── controls/                             # 앱 공유 컨트롤 컴포넌트
+├── directives/                           # 앱 공유 디렉티브
+├── modals/                               # 앱 전역 공통 모달
+├── providers/                            # 앱 전역 프로바이더
+├── types/                                # 타입 정의
+└── utils/                                # 유틸리티
+```
+
+- `app/` 하위 트리는 사이드바 메뉴 구조와 거의 대응된다
+- **배치 기준은 "어느 도메인에 소속되는가"**이다. provider, modal, directive, print-template, util 등 모든 종류의 파일이 소속 도메인 폴더 안에 배치된다 (다른 도메인에서 import하여 사용하는 것은 자유)
+- 특정 도메인에 소속되지 않는 공통 파일만 `src/` 직하의 `controls/`, `modals/`, `providers/` 등에 배치한다
+
 ## inject 네이밍 컨벤션
 
 `Sd*Provider`를 `inject()`할 때 변수명은 다음 규칙을 따른다:

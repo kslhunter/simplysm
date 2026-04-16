@@ -428,6 +428,130 @@ describe("writeEmitResults with registry", () => {
   });
 });
 
+// Feature 1.1 (review fix): writeEmitResults에서 sideEffectScssDeps 갱신
+describe("writeEmitResults with sideEffectScssDeps", () => {
+  let tmpDir: string;
+  let pkgDir: string;
+  let srcDir: string;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "write-emit-se-deps-"));
+    pkgDir = path.join(tmpDir, "my-pkg");
+    srcDir = path.join(pkgDir, "src");
+    fs.mkdirSync(path.join(pkgDir, "dist"), { recursive: true });
+    fs.mkdirSync(path.join(srcDir, "ui", "layout"), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  // Acceptance: 새 side-effect SCSS의 의존성이 sideEffectScssDeps에 기록된다
+  it("records side-effect SCSS dependencies in sideEffectScssDeps after compileScssFile", async () => {
+    const { writeEmitResults } = await import("../../src/angular/ngtsc-build-core");
+
+    // Create shared variables file
+    const scssLoadDir = path.join(pkgDir, "scss");
+    fs.mkdirSync(path.join(scssLoadDir, "commons"), { recursive: true });
+    fs.writeFileSync(
+      path.join(scssLoadDir, "commons", "_variables.scss"),
+      "$primary: #ff0000;",
+      "utf-8",
+    );
+
+    // Create source SCSS that uses @use
+    const scssPath = path.join(srcDir, "ui", "layout", "sd-card.scss");
+    fs.writeFileSync(
+      scssPath,
+      '@use "commons/variables" as vars;\n.sd-card { color: vars.$primary; }',
+      "utf-8",
+    );
+
+    const distDir = path.join(pkgDir, "dist");
+    const jsPath = path.join(distDir, "my-pkg", "src", "ui", "layout", "sd-card.directive.js");
+    const sourceFileName = path.join(srcDir, "ui", "layout", "sd-card.directive.ts");
+    const emitResults = [
+      {
+        filename: jsPath,
+        contents: 'import "./sd-card.scss";\nexport class SdCardDirective {}',
+        sourceFileName,
+      },
+    ];
+
+    const sideEffectScssDeps = new Map<string, Set<string>>();
+    const scss: SideEffectScssOptions = {
+      loadPaths: [scssLoadDir],
+      scssErrors: [],
+      scssDependencies: new Map(),
+      sideEffectScssDeps,
+    };
+    writeEmitResults(emitResults, pkgDir, scss);
+
+    // sideEffectScssDeps should have the SCSS entry with its dependencies
+    expect(sideEffectScssDeps.has(scssPath)).toBe(true);
+    const deps = sideEffectScssDeps.get(scssPath)!;
+    expect(deps.size).toBeGreaterThan(0);
+    expect([...deps].some((d) => d.includes("_variables.scss"))).toBe(true);
+  });
+
+  // Unit: sideEffectScssDeps 미제공 시 기존 동작 유지
+  it("does not crash when sideEffectScssDeps is not provided", async () => {
+    const { writeEmitResults } = await import("../../src/angular/ngtsc-build-core");
+
+    const scssPath = path.join(srcDir, "ui", "layout", "sd-flex.scss");
+    fs.writeFileSync(scssPath, ".sd-flex { display: flex; }", "utf-8");
+
+    const distDir = path.join(pkgDir, "dist");
+    const jsPath = path.join(distDir, "my-pkg", "src", "ui", "layout", "sd-flex.directive.js");
+    const emitResults = [
+      {
+        filename: jsPath,
+        contents: 'import "./sd-flex.scss";\nexport class SdFlexDirective {}',
+        sourceFileName: path.join(srcDir, "ui", "layout", "sd-flex.directive.ts"),
+      },
+    ];
+
+    const scss: SideEffectScssOptions = {
+      loadPaths: [],
+      scssErrors: [],
+      scssDependencies: new Map(),
+    };
+
+    // Should not throw
+    writeEmitResults(emitResults, pkgDir, scss);
+    expect(scss.scssErrors).toEqual([]);
+  });
+
+  // Unit: SCSS 컴파일 에러 시 sideEffectScssDeps에 기록하지 않는다
+  it("does not record in sideEffectScssDeps when SCSS compilation fails", async () => {
+    const { writeEmitResults } = await import("../../src/angular/ngtsc-build-core");
+
+    const distDir = path.join(pkgDir, "dist");
+    const jsPath = path.join(distDir, "my-pkg", "src", "ui", "layout", "missing.directive.js");
+    const emitResults = [
+      {
+        filename: jsPath,
+        contents: 'import "./missing.scss";\nexport class MissingDirective {}',
+        sourceFileName: path.join(srcDir, "ui", "layout", "missing.directive.ts"),
+      },
+    ];
+
+    const sideEffectScssDeps = new Map<string, Set<string>>();
+    const scss: SideEffectScssOptions = {
+      loadPaths: [],
+      scssErrors: [],
+      scssDependencies: new Map(),
+      sideEffectScssDeps,
+    };
+    writeEmitResults(emitResults, pkgDir, scss);
+
+    // Error should be reported
+    expect(scss.scssErrors.length).toBeGreaterThan(0);
+    // sideEffectScssDeps should be empty (no successful compilation)
+    expect(sideEffectScssDeps.size).toBe(0);
+  });
+});
+
 // Feature 1.2: compileSideEffectScss
 describe("compileSideEffectScss", () => {
   let tmpDir: string;

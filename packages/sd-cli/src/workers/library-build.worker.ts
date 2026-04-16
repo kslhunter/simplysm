@@ -7,7 +7,7 @@ import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization"
 import type { LintWithProgramResult } from "../lint/lint-with-program";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result";
-import { writeEmitResults, compileSideEffectScss } from "../angular/ngtsc-build-core";
+import { writeEmitResults, compileSideEffectScss, buildReverseDeps } from "../angular/ngtsc-build-core";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import { buildWatchPaths } from "./build-watch-paths";
 import { hasFileAddOrRemove, shouldSkipRebuild } from "./build-change-filter";
@@ -46,6 +46,9 @@ export interface LibraryBuildWorkerEvents extends Record<string, unknown> {
 let fsWatcher: FsWatcher | undefined;
 let compiler: SdTsCompiler | undefined;
 let combinedScssDeps = new Map<string, Set<string>>();
+let reverseScssDeps = new Map<string, Set<string>>();
+let registryReverseIndex = new Map<string, Set<string>>();
+let sideEffectScssDeps = new Map<string, Set<string>>();
 
 async function cleanup(): Promise<void> {
   const watcherToClose = fsWatcher;
@@ -53,6 +56,9 @@ async function cleanup(): Promise<void> {
   compiler = undefined;
   lastSourceFilePaths = undefined;
   combinedScssDeps = new Map();
+  reverseScssDeps = new Map();
+  registryReverseIndex = new Map();
+  sideEffectScssDeps = new Map();
   await watcherToClose?.close();
 }
 
@@ -93,13 +99,17 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
           scssErrors: sideEffectScssErrors,
           scssDependencies: combinedScssDeps,
           registry: compiler.sideEffectScssRegistry,
+          registryReverseIndex,
+          sideEffectScssDeps,
         });
-        // 초기 빌드: 등록된 side-effect SCSS 전체 컴파일
+        // 초기 빌드: 등록된 side-effect SCSS 전체 컴파일 (changedScssFiles 미전달)
         compileSideEffectScss(
           compiler.sideEffectScssRegistry,
           loadPaths,
           sideEffectScssErrors,
           combinedScssDeps,
+          undefined,
+          sideEffectScssDeps,
         );
       } else {
         writeEmitResults(filteredEmitResults, info.pkgDir);
@@ -147,12 +157,18 @@ function extractSourceFilePaths(program: ts.Program | undefined): Set<string> | 
   return paths;
 }
 
-/** compile-time SCSS 의존성으로 combinedScssDeps를 갱신한다 */
+/** compile-time SCSS 의존성으로 combinedScssDeps와 reverseScssDeps를 갱신한다 */
 function updateCombinedScssDeps(result: ISdTsCompilerResult): void {
   combinedScssDeps = new Map();
   for (const [file, deps] of result.scssDependencies) {
     combinedScssDeps.set(file, new Set(deps));
   }
+  rebuildReverseScssDeps();
+}
+
+/** combinedScssDeps에서 역방향 인덱스를 재구축한다 */
+function rebuildReverseScssDeps(): void {
+  reverseScssDeps = buildReverseDeps(combinedScssDeps);
 }
 
 /**
@@ -162,7 +178,7 @@ function updateCombinedScssDeps(result: ISdTsCompilerResult): void {
 function buildWatchEvent(
   info: LibraryBuildInfo,
   result: ISdTsCompilerResult,
-  hasScssChanges: boolean,
+  changedScssFiles?: ReadonlySet<string>,
 ): CombinedBuildEvent {
   const isAngular = info.output.globalScss === true;
 
@@ -182,17 +198,25 @@ function buildWatchEvent(
         scssErrors: sideEffectScssErrors,
         scssDependencies: combinedScssDeps,
         registry: compiler!.sideEffectScssRegistry,
+        registryReverseIndex,
+        sideEffectScssDeps,
       },
     );
 
-    // SCSS 변경 시 side-effect SCSS 재컴파일
-    if (hasScssChanges) {
+    // side-effect SCSS 재컴파일
+    // changedScssFiles 미제공 = 초기 빌드 → 전체 컴파일
+    // changedScssFiles 제공 + size > 0 → 증분 컴파일
+    if (changedScssFiles == null || changedScssFiles.size > 0) {
       compileSideEffectScss(
         compiler!.sideEffectScssRegistry,
         loadPaths,
         sideEffectScssErrors,
         combinedScssDeps,
+        changedScssFiles,
+        sideEffectScssDeps,
       );
+      // side-effect SCSS 의존성이 combinedScssDeps에 추가되었으므로 역방향 인덱스 재구축
+      rebuildReverseScssDeps();
     }
 
     // 모든 에러 통합
@@ -240,7 +264,7 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
     if (isAngular) {
       updateCombinedScssDeps(initialResult);
     }
-    const initialEvent = buildWatchEvent(info, initialResult, isAngular);
+    const initialEvent = buildWatchEvent(info, initialResult);
     sender.send("build", initialEvent);
 
     // workspace 의존성 경로 + replaceDeps 수집
@@ -265,12 +289,13 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
         for (const f of changedFiles) {
           modifiedFiles.add(f.path);
 
-          // Angular: SCSS 역방향 의존성 탐색
+          // Angular: SCSS 역방향 의존성 탐색 (O(1) 조회)
           if (isAngular && (f.path.endsWith(".scss") || f.path.endsWith(".css"))) {
             const normalizedPath = pathx.posix(f.path);
-            for (const [ownerFile, deps] of combinedScssDeps) {
-              if (deps.has(normalizedPath)) {
-                modifiedFiles.add(ownerFile);
+            const owners = reverseScssDeps.get(normalizedPath);
+            if (owners != null) {
+              for (const owner of owners) {
+                modifiedFiles.add(owner);
               }
             }
           }
@@ -289,11 +314,13 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
           updateCombinedScssDeps(result);
         }
 
-        const hasScssChanges = changedFiles.some(
-          (f) => f.path.endsWith(".scss") || f.path.endsWith(".css"),
+        const changedScssFiles = new Set(
+          changedFiles
+            .filter((f) => f.path.endsWith(".scss") || f.path.endsWith(".css"))
+            .map((f) => pathx.posix(f.path)),
         );
 
-        const event = buildWatchEvent(info, result, hasScssChanges);
+        const event = buildWatchEvent(info, result, changedScssFiles);
         sender.send("build", event);
       } catch (err) {
         sender.send("error", { message: errNs.message(err) });

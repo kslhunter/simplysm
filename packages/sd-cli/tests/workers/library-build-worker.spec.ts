@@ -193,6 +193,8 @@ describe("library-build.worker build() — Angular", () => {
       scssErrors: [],
       scssDependencies: expect.any(Map),
       registry: expect.any(Map),
+      registryReverseIndex: expect.any(Map),
+      sideEffectScssDeps: expect.any(Map),
     });
   });
 
@@ -530,6 +532,8 @@ describe("library-build.worker startWatch() — Angular", () => {
       expect.any(Array),
       expect.any(Array),
       expect.any(Map),
+      expect.any(Set), // changedScssFiles
+      expect.any(Map), // sideEffectScssDeps
     );
   });
 

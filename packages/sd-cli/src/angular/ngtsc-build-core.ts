@@ -7,6 +7,26 @@ const logger = consola.withTag("sd:cli:ngtsc-build");
 import { compileScssFile, compileScssString } from "./scss-compiler";
 import { createOutputPathRewriter, rewriteScssImports } from "../utils/output-path-rewriter";
 
+/**
+ * 정방향 의존성 맵(소유파일→의존성 Set)에서 역방향 인덱스(의존성→소유파일 Set)를 구축한다.
+ */
+export function buildReverseDeps(
+  forwardDeps: ReadonlyMap<string, ReadonlySet<string>>,
+): Map<string, Set<string>> {
+  const reverse = new Map<string, Set<string>>();
+  for (const [ownerFile, deps] of forwardDeps) {
+    for (const dep of deps) {
+      let owners = reverse.get(dep);
+      if (owners == null) {
+        owners = new Set();
+        reverse.set(dep, owners);
+      }
+      owners.add(ownerFile);
+    }
+  }
+  return reverse;
+}
+
 export function trackDeps(
   depsMap: Map<string, Set<string>>,
   containingFile: string,
@@ -38,6 +58,10 @@ export interface SideEffectScssOptions {
   scssErrors: string[];
   scssDependencies: Map<string, Set<string>>;
   registry?: Map<string, SideEffectScssEntry>;
+  /** sourceFileName → Set<registryKey(=scssAbsPath)> 역방향 인덱스. O(1) 삭제용 */
+  registryReverseIndex?: Map<string, Set<string>>;
+  /** side-effect SCSS별 의존성 맵. compileScssFile 후 갱신. 증분 판별용 */
+  sideEffectScssDeps?: Map<string, Set<string>>;
 }
 
 //#region Library SCSS transform
@@ -89,8 +113,9 @@ export function createLibraryTransformStylesheet(
 //#region Side-effect SCSS
 
 /**
- * 레지스트리의 모든 side-effect SCSS 항목을 CSS로 컴파일한다.
- * compileGlobalScss와 동일한 패턴 — 항상 모든 항목을 재컴파일한다.
+ * 레지스트리의 side-effect SCSS 항목을 CSS로 컴파일한다.
+ * changedScssFiles가 제공되면 영향받는 항목만 재컴파일한다 (증분 모드).
+ * changedScssFiles가 미제공이면 전체 재컴파일한다 (초기 빌드).
  * 에러 발생 시 scssErrors에 추가하고 기존 CSS 파일을 보존한다.
  */
 export function compileSideEffectScss(
@@ -98,14 +123,32 @@ export function compileSideEffectScss(
   loadPaths: string[],
   scssErrors: string[],
   scssDependencies: Map<string, Set<string>>,
+  changedScssFiles?: ReadonlySet<string>,
+  sideEffectScssDeps?: Map<string, Set<string>>,
 ): void {
   logger.debug(`side-effect SCSS 컴파일 시작 (${registry.size}개)`);
   for (const entry of registry.values()) {
+    // 증분 모드: 영향받는 항목만 재컴파일
+    if (changedScssFiles != null && sideEffectScssDeps != null) {
+      const isDirectHit = changedScssFiles.has(entry.scssAbsPath);
+      let isDepsHit = false;
+      const deps = sideEffectScssDeps.get(entry.scssAbsPath);
+      if (deps != null) {
+        for (const d of deps) {
+          if (changedScssFiles.has(d)) { isDepsHit = true; break; }
+        }
+      }
+      if (!isDirectHit && !isDepsHit) continue;
+    }
     try {
       const result = compileScssFile(entry.scssAbsPath, loadPaths);
       fs.mkdirSync(path.dirname(entry.cssAbsPath), { recursive: true });
       fs.writeFileSync(entry.cssAbsPath, result.css, "utf-8");
       trackDeps(scssDependencies, entry.sourceFileName, result.dependencies);
+      // 의존성 기록 (증분 판별용)
+      if (sideEffectScssDeps != null) {
+        sideEffectScssDeps.set(entry.scssAbsPath, new Set(result.dependencies));
+      }
     } catch (err) {
       scssErrors.push(formatScssError(err, entry.scssAbsPath));
     }
@@ -176,9 +219,21 @@ export function writeEmitResults(
 
       // 새 항목 등록 전에 이 소스 파일의 기존 레지스트리 항목 제거
       if (scss.registry != null && sourceFileName != null) {
-        for (const [key, entry] of scss.registry) {
-          if (entry.sourceFileName === sourceFileName) {
-            scss.registry.delete(key);
+        if (scss.registryReverseIndex != null) {
+          // O(1) 삭제: 역방향 인덱스 활용
+          const keys = scss.registryReverseIndex.get(sourceFileName);
+          if (keys != null) {
+            for (const key of keys) {
+              scss.registry.delete(key);
+            }
+            scss.registryReverseIndex.delete(sourceFileName);
+          }
+        } else {
+          // 폴백: O(n) 순회 삭제
+          for (const [key, entry] of scss.registry) {
+            if (entry.sourceFileName === sourceFileName) {
+              scss.registry.delete(key);
+            }
           }
         }
       }
@@ -195,6 +250,15 @@ export function writeEmitResults(
           // 레지스트리가 제공된 경우 등록 (scssAbsPath를 키로 사용하여 중복 방지)
           if (scss.registry != null) {
             scss.registry.set(scssAbsPath, { scssAbsPath, cssAbsPath, sourceFileName });
+            // 역방향 인덱스 갱신
+            if (scss.registryReverseIndex != null) {
+              let keys = scss.registryReverseIndex.get(sourceFileName);
+              if (keys == null) {
+                keys = new Set();
+                scss.registryReverseIndex.set(sourceFileName, keys);
+              }
+              keys.add(scssAbsPath);
+            }
           }
 
           try {
@@ -202,6 +266,10 @@ export function writeEmitResults(
             fs.mkdirSync(path.dirname(cssAbsPath), { recursive: true });
             fs.writeFileSync(cssAbsPath, result.css, "utf-8");
             trackDeps(scss.scssDependencies, sourceFileName, result.dependencies);
+            // side-effect SCSS 의존성 기록 (증분 판별용)
+            if (scss.sideEffectScssDeps != null) {
+              scss.sideEffectScssDeps.set(scssAbsPath, new Set(result.dependencies));
+            }
           } catch (err) {
             scss.scssErrors.push(formatScssError(err, scssAbsPath));
           }

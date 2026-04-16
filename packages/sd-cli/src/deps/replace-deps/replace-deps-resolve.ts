@@ -140,6 +140,7 @@ export async function resolveAllReplaceDepEntries(
   logger: ReturnType<typeof consola.withTag>,
 ): Promise<ReplaceDepEntry[]> {
   const entries: ReplaceDepEntry[] = [];
+  const seenTargetPaths = new Set<string>();
   const searchedDirs = new Set<string>();
 
   // 초기 탐색 대상: 프로젝트 루트 + workspace 패키지들의 node_modules
@@ -162,12 +163,15 @@ export async function resolveAllReplaceDepEntries(
       continue;
     }
 
-    // replaceDeps의 각 glob 패턴으로 node_modules 디렉토리 탐색
-    const targetNames: string[] = [];
-    for (const pattern of Object.keys(replaceDeps)) {
-      const matches = await glob(pattern, { cwd: nodeModulesDir });
-      targetNames.push(...matches.map((m) => m.replaceAll("\\", "/")));
-    }
+    // replaceDeps의 각 glob 패턴으로 node_modules 디렉토리 탐색 (병렬)
+    const globResults = await Promise.all(
+      Object.keys(replaceDeps).map((pattern) =>
+        glob(pattern, { cwd: nodeModulesDir }),
+      ),
+    );
+    const targetNames = globResults.flatMap((matches) =>
+      matches.map((m) => m.replaceAll("\\", "/")),
+    );
 
     logger.debug(`[replace-deps] 탐색: ${nodeModulesDir} → ${targetNames.length}개 매칭 (${targetNames.join(", ")})`);
 
@@ -200,7 +204,8 @@ export async function resolveAllReplaceDepEntries(
       }
 
       // 동일 actualTargetPath가 이미 등록된 경우 건너뜀 (pnpm 중복 방지)
-      if (entries.some((e) => e.actualTargetPath === actualTargetPath)) continue;
+      if (seenTargetPaths.has(actualTargetPath)) continue;
+      seenTargetPaths.add(actualTargetPath);
 
       entries.push({
         targetName,

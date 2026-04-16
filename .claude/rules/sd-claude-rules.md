@@ -82,8 +82,9 @@
 # @simplysm 패키지 참조
 
 - `@simplysm/*` 패키지 사용 시, `.claude/references/sd-simplysm{메이저버전}.md`를 읽고 해당 패키지의 문서 경로를 찾아 읽는다.
+  - 해당 문서에는 지침 및 사용법이 기록되어 있다. 
   - 주의사항: 해당 패키지의 `CLAUDE.md`를 읽는것이 아니다.
-- simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다
+- simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다.
 
 # 프로젝트 경계
 

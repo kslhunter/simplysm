@@ -17,6 +17,7 @@ import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
 import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types";
 import type esbuild from "esbuild";
 import type { PartialMessage } from "esbuild";
+import { IncrementalMtimeTracker } from "./incremental-mtime-tracker";
 
 //#region Types
 
@@ -194,32 +195,19 @@ function createSourceFileCachePlugin(): esbuild.Plugin {
   return {
     name: "sd-build-start",
     setup(pluginBuild: esbuild.PluginBuild) {
-      const prevMtimes = new Map<string, number>();
+      const mtimeTracker = new IncrementalMtimeTracker();
 
       pluginBuild.onStart(() => {
         // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
         if (esbuildResult != null) {
           const { loadResultCache, typeScriptFileCache } =
             esbuildResult.sourceFileCache;
-          const changedFiles = new Set<string>();
           // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 감시
           const watchTargets = [
             ...loadResultCache.watchFiles,
             ...typeScriptFileCache.keys(),
           ];
-          for (const file of watchTargets) {
-            try {
-              const mtime = fs.statSync(file).mtimeMs;
-              const prev = prevMtimes.get(file);
-              if (prev != null && prev !== mtime) {
-                changedFiles.add(file);
-              }
-            } catch {
-              if (prevMtimes.has(file)) {
-                changedFiles.add(file);
-              }
-            }
-          }
+          const changedFiles = mtimeTracker.detectChanges(watchTargets);
           if (changedFiles.size > 0) {
             esbuildResult.sourceFileCache.invalidate(changedFiles);
           }
@@ -232,19 +220,12 @@ function createSourceFileCachePlugin(): esbuild.Plugin {
 
       pluginBuild.onEnd(() => {
         if (esbuildResult == null) return;
-        prevMtimes.clear();
         // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 기록
         const watchTargets = [
           ...esbuildResult.sourceFileCache.loadResultCache.watchFiles,
           ...esbuildResult.sourceFileCache.typeScriptFileCache.keys(),
         ];
-        for (const file of watchTargets) {
-          try {
-            prevMtimes.set(file, fs.statSync(file).mtimeMs);
-          } catch {
-            // 삭제된 파일
-          }
-        }
+        mtimeTracker.updateMtimes(watchTargets);
       });
     },
   };

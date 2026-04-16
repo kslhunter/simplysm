@@ -1,6 +1,6 @@
 # sd-simplysm14: @simplysm v14 소비앱 가이드
 
-소비앱이 `@simplysm/*` v14를 사용할 때 적용되는 규칙.
+소비앱이 `@simplysm/*` v14를 사용할 때 적용되는 지침 및 사용법.
 
 ## 중간 패키지(common) 불필요
 
