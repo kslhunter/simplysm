@@ -82,6 +82,7 @@ export interface ExcelStyleOptions {
   horizontalAlign?: ExcelHorizontalAlign;
   verticalAlign?: ExcelVerticalAlign;
   numberFormat?: ExcelNumberFormat;
+  numberFormatCode?: string;
 }
 ```
 
@@ -91,7 +92,10 @@ export interface ExcelStyleOptions {
 | `border` | `ExcelBorderPosition[] \| undefined` | 테두리 위치 배열 |
 | `horizontalAlign` | `ExcelHorizontalAlign \| undefined` | 가로 정렬 |
 | `verticalAlign` | `ExcelVerticalAlign \| undefined` | 세로 정렬 |
-| `numberFormat` | `ExcelNumberFormat \| undefined` | 숫자 형식 |
+| `numberFormat` | `ExcelNumberFormat \| undefined` | 숫자 형식 프리셋 |
+| `numberFormatCode` | `string \| undefined` | 커스텀 Excel formatCode 문자열 (예: `"0.000000"`, `"#,##0.00"`, `"0.00%"`) |
+
+**우선순위:** `numberFormatCode`가 지정되면 `numberFormat`보다 우선 적용된다. 동일한 formatCode는 `numFmts`에 중복 등록되지 않는다.
 
 ### `ExcelBorderPosition`
 

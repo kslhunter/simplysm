@@ -371,6 +371,16 @@ export class ExcelCell {
 
 셀 스타일을 설정한다. 기존 스타일이 있으면 클론 후 병합한다.
 
+커스텀 Excel formatCode를 지정하려면 `numberFormatCode`를 사용한다:
+
+```typescript
+await cell.setStyle({ numberFormatCode: "0.000000" });  // 소수점 6자리
+await cell.setStyle({ numberFormatCode: "#,##0.00" });   // 천 단위 구분 + 2자리
+await cell.setStyle({ numberFormatCode: "0.00%" });      // 퍼센트
+```
+
+`numberFormat`(프리셋)과 `numberFormatCode`(커스텀)가 동시에 지정되면 `numberFormatCode`가 우선 적용된다.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `opts` | `ExcelStyleOptions` | 스타일 옵션 (배경색, 테두리, 정렬, 숫자 형식) |

@@ -376,6 +376,9 @@ export type ExcelVerticalAlign = "center" | "top" | "bottom";
  *   verticalAlign: "center",
  *   numberFormat: "number",
  * });
+ *
+ * // 임의의 Excel formatCode 지정
+ * await cell.setStyle({ numberFormatCode: "0.000000" });
  * ```
  */
 export interface ExcelStyleOptions {
@@ -387,8 +390,13 @@ export interface ExcelStyleOptions {
   horizontalAlign?: ExcelHorizontalAlign;
   /** 세로 정렬 */
   verticalAlign?: ExcelVerticalAlign;
-  /** 숫자 형식 */
+  /** 숫자 형식 프리셋 */
   numberFormat?: ExcelNumberFormat;
+  /**
+   * 커스텀 Excel formatCode 문자열 (예: "0.000000", "#,##0.00", "0.00%").
+   * `numberFormat`과 동시 지정 시 이 필드가 우선 적용된다.
+   */
+  numberFormatCode?: string;
 }
 
 //#endregion

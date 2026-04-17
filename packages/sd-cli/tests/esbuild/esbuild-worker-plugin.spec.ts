@@ -28,6 +28,36 @@ function createMockBuild(overrides?: Partial<esbuild.BuildOptions>): esbuild.Plu
   } as unknown as esbuild.PluginBuild;
 }
 
+/**
+ * transformSync 호출을 추적할 수 있도록 esbuild 네임스페이스를 wrap한다.
+ * vi.spyOn이 ESM namespace frozen property에서 실패하므로 대안으로 사용한다.
+ */
+function createTrackedBuild(overrides?: Partial<esbuild.BuildOptions>): {
+  build: esbuild.PluginBuild;
+  transformSyncCalls: Array<Parameters<typeof esbuild.transformSync>>;
+} {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "worker-unit-"));
+  const transformSyncCalls: Array<Parameters<typeof esbuild.transformSync>> = [];
+  const trackedEsbuild = {
+    ...esbuild,
+    transformSync: (...args: Parameters<typeof esbuild.transformSync>) => {
+      transformSyncCalls.push(args);
+      return esbuild.transformSync(...args);
+    },
+  } as typeof esbuild;
+
+  const build = {
+    esbuild: trackedEsbuild,
+    initialOptions: {
+      outdir: tmpDir,
+      write: false,
+      ...overrides,
+    },
+  } as unknown as esbuild.PluginBuild;
+
+  return { build, transformSyncCalls };
+}
+
 describe("transformWorkerPatterns — 패턴 감지", () => {
   it("Worker 패턴이 없는 content에 대해 undefined를 반환한다", () => {
     const result = transformWorkerPatterns(
@@ -602,5 +632,212 @@ const w = new Worker(new URL("./worker.js", import.meta.url));`,
     expect(result).toBeDefined();
     expect(result.loader).toBe("js");
     expect(result.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+});
+
+describe("transformWorkerPatterns — skipTsTransform 옵션", () => {
+  it("skipTsTransform: true + .ts 경로 + JS content → transformSync 호출 없이 정상 치환", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    // ngtsc emit 결과를 흉내: 파일 경로는 .ts이지만 content는 이미 JS
+    const result = transformWorkerPatterns(
+      `const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+      { skipTsTransform: true },
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+    expect(result!.errors).toHaveLength(0);
+  });
+
+  it("skipTsTransform: true + .ts 경로 + 실제 TS 구문 → 계약 위반으로 undefined (조용한 누락)", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    // 호출자가 계약을 위반하여 실제 TS 구문을 넘긴 경우:
+    // transformSync가 스킵되므로 acorn이 TS 구문 파싱 실패 → 빈 matches → undefined
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+      { skipTsTransform: true },
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeUndefined();
+  });
+
+  it("옵션 생략 + .ts + import type + Worker → transformSync 호출 후 정상 감지 (후방 호환)", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+    );
+
+    expect(transformSyncCalls).toHaveLength(1);
+    expect(transformSyncCalls[0][1]).toMatchObject({ loader: "ts" });
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it("옵션 { skipTsTransform: false } → 기본 동작 (transformSync 호출)", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+      { skipTsTransform: false },
+    );
+
+    expect(transformSyncCalls).toHaveLength(1);
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it("빈 객체 {} → skipTsTransform undefined → 기본 동작 (transformSync 호출)", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+      {},
+    );
+
+    expect(transformSyncCalls).toHaveLength(1);
+    expect(result).toBeDefined();
+  });
+
+  it("skipTsTransform: true + .js 경로 → 동작 동일 (확장자 분기 진입 안 함)", () => {
+    const entryPath = path.join(fixturesDir, "entry.js");
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      build,
+      { skipTsTransform: true },
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+});
+
+describe("transformWorkerPatterns — 사전 필터 정규식 경계", () => {
+  it("타입 어노테이션만 등장한 Worker 키워드 → 사전 필터 차단", () => {
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `const x: Worker = 1 as any;`,
+      path.join(fixturesDir, "entry.ts"),
+      build,
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeUndefined();
+  });
+
+  it("interface 선언에만 등장한 Worker → 사전 필터 차단", () => {
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `interface WorkerLike { run(): void; }`,
+      path.join(fixturesDir, "entry.ts"),
+      build,
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeUndefined();
+  });
+
+  it("import type에만 등장한 Worker → 사전 필터 차단", () => {
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `import type { Worker } from "./types";`,
+      path.join(fixturesDir, "entry.ts"),
+      build,
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeUndefined();
+  });
+
+  it("new Worker 호출 → 사전 필터 통과, AST 감지", () => {
+    const entryPath = path.join(fixturesDir, "entry.js");
+    const result = transformWorkerPatterns(
+      `const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it("new SharedWorker 호출 → 사전 필터 통과, AST 감지", () => {
+    const entryPath = path.join(fixturesDir, "entry.js");
+    const result = transformWorkerPatterns(
+      `const sw = new SharedWorker(new URL("./shared-worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it("import.meta.resolve 호출 → 사전 필터 통과, AST 감지", () => {
+    const entryPath = path.join(fixturesDir, "entry.js");
+    const result = transformWorkerPatterns(
+      `const p = import.meta.resolve("./node-worker.js");`,
+      entryPath,
+      createMockBuild({ platform: "node" }),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(
+      /new URL\("worker-[a-z0-9]+\.js", import\.meta\.url\)\.href/i,
+    );
+  });
+
+  it("new  Worker (연속 공백) → 사전 필터 통과", () => {
+    const entryPath = path.join(fixturesDir, "entry.js");
+    const result = transformWorkerPatterns(
+      `const w = new   Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+  });
+
+  it("WorkerSubClass 식별자 (단어 경계 위반) → 사전 필터 차단", () => {
+    const { build, transformSyncCalls } = createTrackedBuild();
+
+    const result = transformWorkerPatterns(
+      `class WorkerSubClass {}\nconst x = new WorkerSubClass();`,
+      path.join(fixturesDir, "entry.ts"),
+      build,
+    );
+
+    expect(transformSyncCalls).toHaveLength(0);
+    expect(result).toBeUndefined();
   });
 });

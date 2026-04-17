@@ -231,7 +231,8 @@ export class ExcelCell {
    * @param opts.border 테두리 위치 배열 (예: ["left", "right", "top", "bottom"])
    * @param opts.horizontalAlign 가로 정렬 ("left", "center", "right")
    * @param opts.verticalAlign 세로 정렬 ("top", "center", "bottom")
-   * @param opts.numberFormat 숫자 형식 ("number", "DateOnly", "DateTime", "Time", "string")
+   * @param opts.numberFormat 숫자 형식 프리셋 ("number", "DateOnly", "DateTime", "Time", "string")
+   * @param opts.numberFormatCode 커스텀 Excel formatCode (예: "0.000000"). `numberFormat`과 동시 지정 시 이 필드가 우선한다.
    */
   async setStyle(opts: ExcelStyleOptions): Promise<void> {
     const style: ExcelStyle = {};
@@ -255,7 +256,9 @@ export class ExcelCell {
       style.verticalAlign = opts.verticalAlign;
     }
 
-    if (opts.numberFormat != null) {
+    if (opts.numberFormatCode != null) {
+      style.numFmtCode = opts.numberFormatCode;
+    } else if (opts.numberFormat != null) {
       style.numFmtId = ExcelUtils.convertNumFmtNameToId(opts.numberFormat).toString();
     }
 

@@ -92,3 +92,7 @@ ORM:      orm-node / orm-common
   - 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
 
 **판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).
+
+## 참조 문서 유지보수
+
+- `@simplysm/*` 패키지의 public API 변경 시 `.claude/references/sd-simplysm14.md` 및 `.claude/references/sd-simplysm14/{패키지명}/**/*.md` 파일의 수정이 필요할 수 있다.

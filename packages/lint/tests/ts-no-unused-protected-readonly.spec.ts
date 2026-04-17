@@ -355,5 +355,70 @@ class MyComponent {
         ],
       });
     });
+
+    describe("@let value 가 단순 필드 참조일 때 해당 필드는 사용된 것으로 인식", () => {
+      ruleTester.run("ts-no-unused-protected-readonly", rule, {
+        valid: [
+          {
+            code: `
+@Component({
+  template: \`@let a = someRef; {{ a }}\`
+})
+class MyComponent {
+  protected readonly someRef = "v";
+}
+            `.trim(),
+          },
+        ],
+        invalid: [],
+      });
+    });
+
+    describe("중첩 @let 에서 첫 번째 @let name 은 이후 형제에서 로컬로 인식되어 동명 필드를 가린다", () => {
+      ruleTester.run("ts-no-unused-protected-readonly", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `
+@Component({
+  template: \`@let x = 1; @let y = x + foo; {{ y }}\`
+})
+class MyComponent {
+  protected readonly x = 99;
+  protected readonly foo = 0;
+}
+            `.trim(),
+            output: `
+@Component({
+  template: \`@let x = 1; @let y = x + foo; {{ y }}\`
+})
+class MyComponent {
+  protected readonly foo = 0;
+}
+            `.trim(),
+            errors: [{ messageId: "unusedField", data: { name: "x" } }],
+          },
+        ],
+      });
+    });
+
+    describe("@let value 가 복합 표현식일 때 내부 모든 필드 참조가 수집된다", () => {
+      ruleTester.run("ts-no-unused-protected-readonly", rule, {
+        valid: [
+          {
+            code: `
+@Component({
+  template: \`@let sum = items.length + count; {{ sum }}\`
+})
+class MyComponent {
+  protected readonly items: number[] = [];
+  protected readonly count = 0;
+}
+            `.trim(),
+          },
+        ],
+        invalid: [],
+      });
+    });
   });
 });

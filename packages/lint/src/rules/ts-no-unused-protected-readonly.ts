@@ -62,7 +62,7 @@ function collectExprIdentifiers(ast: any, localVars: Set<string>, ids: Set<strin
           collectExprIdentifiers(v, localVars, ids);
         }
       }
-    } else if (val != null && typeof val === "object" && typeof val.constructor === "function") {
+    } else if (val != null && typeof val === "object") {
       collectExprIdentifiers(val, localVars, ids);
     }
   }
@@ -94,6 +94,13 @@ function collectTemplateNodeIdentifiers(
     currentLocals.add(node.name);
   }
 
+  // @let value 표현식: 타입 선언(LetDeclaration.value: AST)과 런타임 형상(ASTWithSource 유사체)이
+  // 불일치하므로, 공통 node.value?.ast 경로에 의존하지 않고 명시 분기로 추출한다.
+  if (node instanceof TmplAstLetDeclaration) {
+    const expr = (node.value as { ast?: unknown }).ast ?? node.value;
+    collectExprIdentifiers(expr, currentLocals, ids);
+  }
+
   // @if 브랜치의 expressionAlias (예: `@if (cond; as alias)`)
   if (node instanceof TmplAstIfBlockBranch && node.expressionAlias?.name != null) {
     currentLocals.add(node.expressionAlias.name);
@@ -111,8 +118,9 @@ function collectTemplateNodeIdentifiers(
     }
   }
 
-  // 보간 / BoundText
-  if (node.value?.ast != null) {
+  // 보간 / BoundText / BoundAttribute 등 ASTWithSource 노드용 공통 경로.
+  // LetDeclaration 은 위에서 명시 분기로 처리되므로 여기서 제외한다 (이중 수집 방지).
+  if (!(node instanceof TmplAstLetDeclaration) && node.value?.ast != null) {
     collectExprIdentifiers(node.value.ast, currentLocals, ids);
   }
   // @if 브랜치 조건 표현식

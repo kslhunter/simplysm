@@ -340,7 +340,11 @@ export function createAngularCompilerPlugin(
           // ── emitResults → typeScriptFileCache (Worker 패턴 처리 포함) ──
           for (const { contents, sourceFileName } of compileResult.emitResults ?? []) {
             const normalized = path.normalize(sourceFileName);
-            const workerResult = transformWorkerPatterns(contents, normalized, build);
+            // emitResults.contents는 ngtsc가 이미 JS로 방출한 결과이므로 TS 재변환 스킵.
+            // sourceFileName은 원본 .ts 경로이지만 content는 JS이다.
+            const workerResult = transformWorkerPatterns(contents, normalized, build, {
+              skipTsTransform: true,
+            });
             if (workerResult != null) {
               typeScriptFileCache.set(normalized, workerResult.contents);
               errors.push(...workerResult.errors);
@@ -541,7 +545,7 @@ export function createAngularCompilerPlugin(
             sideEffects,
           );
 
-          // Worker 패턴 처리 (D2)
+          // Worker 패턴 처리
           const textContents = new TextDecoder().decode(contents);
           const workerResult = transformWorkerPatterns(textContents, request, build);
           if (workerResult != null) {

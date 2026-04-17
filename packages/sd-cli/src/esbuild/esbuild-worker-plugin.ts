@@ -41,6 +41,8 @@ function isImportMetaUrl(node: any): boolean {
  *
  * 정규식과 달리 주석, 문자열 리터럴 내부의 패턴을 오탐하지 않는다.
  * 파싱 실패 시 빈 배열을 반환한다.
+ *
+ * @param content - JavaScript 소스 코드. TypeScript는 상위 `transformWorkerPatterns()`가 사전 변환한다.
  */
 export function findWorkerPatterns(content: string): WorkerMatch[] {
   let ast: acorn.Node;
@@ -154,6 +156,17 @@ export interface TransformWorkerResult {
 }
 
 /**
+ * transformWorkerPatterns 옵션.
+ */
+export interface TransformWorkerOptions {
+  /**
+   * true이면 .ts/.cts/.mts 확장자여도 esbuild.transformSync(loader: "ts")를 스킵한다.
+   * 호출자가 content가 이미 JS임을 보장하는 경우에만 사용한다 (예: ngtsc emit 결과).
+   */
+  skipTsTransform?: boolean;
+}
+
+/**
  * Worker 파일을 esbuild.buildSync()로 별도 ESM 번들로 빌드한다.
  * esbuild-angular-compiler-plugin.ts의 bundleWebWorker를 기반으로 작성.
  */
@@ -202,7 +215,7 @@ function bundleWorker(
  * 파일 내용에서 Worker/SharedWorker 패턴을 감지하여 Worker 파일을 번들링하고
  * URL 경로를 번들된 파일 경로로 치환한다.
  *
- * Angular 플러그인 등 외부에서 직접 호출할 수 있도록 export한다 (D2).
+ * Angular 컴파일러 플러그인 등 외부에서 직접 호출한다.
  *
  * @returns 변환 결과. 패턴이 없으면 undefined.
  */
@@ -210,9 +223,14 @@ export function transformWorkerPatterns(
   content: string,
   filePath: string,
   build: esbuild.PluginBuild,
+  options?: TransformWorkerOptions,
 ): TransformWorkerResult | undefined {
-  // 빠른 사전 필터 — AST 파싱 전에 키워드 존재 여부로 걸러냄 (원본 TS content 기준)
-  if (!content.includes("Worker") && !content.includes("import.meta.resolve")) {
+  // 빠른 사전 필터 — new Worker(), new SharedWorker(), import.meta.resolve()의 단어 경계
+  // 호출 형태만 통과시킨다. 식별자·타입·interface로만 등장하는 Worker 키워드는 차단하여
+  // TS transformSync 오버헤드를 줄인다. 정확성은 후속 AST 판별(findWorkerPatterns)이 담당한다.
+  // new 와 Worker/SharedWorker 사이에 주석이 낀 호출(예: `new /* c */ Worker`)은 의도된
+  // 트레이드오프로 탈락한다. 실발생 가능성이 희박하여 현행을 유지한다.
+  if (!/\b(new\s+Worker|new\s+SharedWorker|import\.meta\.resolve)\b/.test(content)) {
     return undefined;
   }
 
@@ -221,8 +239,10 @@ export function transformWorkerPatterns(
 
   // TS(.ts/.cts/.mts)는 JS로 변환한 후 AST 파싱. acorn은 TS 구문을 처리하지 못하므로
   // import type, 타입 어노테이션 등이 있으면 파싱 실패로 Worker 패턴이 조용히 누락된다.
+  // skipTsTransform이 true이면 호출자가 content가 이미 JS임을 보장하므로 변환을 스킵한다
+  // (예: Angular 컴파일러 플러그인이 ngtsc emit 결과를 전달하는 경로).
   let effectiveContent = content;
-  if (/\.[cm]?ts$/.test(filePath)) {
+  if (options?.skipTsTransform !== true && /\.[cm]?ts$/.test(filePath)) {
     try {
       const transformed = build.esbuild.transformSync(content, {
         loader: "ts",

@@ -374,6 +374,149 @@ describe("ExcelCell", () => {
       expect(xf.alignment[0].$.horizontal).toBe("center");
       expect(xf.alignment[0].$.vertical).toBe("top");
     });
+
+    it("numberFormatCode로 커스텀 숫자 형식 적용", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1.23456789);
+      await ws.cell(0, 0).setStyle({ numberFormatCode: "0.000000" });
+
+      const styleId = await ws.cell(0, 0).getStyleId();
+      expect(styleId).toBeDefined();
+
+      const styleData = await (wb as any).zipCache.get("xl/styles.xml");
+      const xf = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId!, 10)];
+      expect(xf.$.numFmtId).toBeDefined();
+      expect(xf.$.applyNumberFormat).toBe("1");
+      expect(styleData.getNumFmtCode(xf.$.numFmtId)).toBe("0.000000");
+    });
+
+    it("numberFormat과 numberFormatCode 동시 지정 시 numberFormatCode가 우선", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1.23456789);
+      await ws.cell(0, 0).setStyle({
+        numberFormat: "number",
+        numberFormatCode: "0.000000",
+      });
+
+      await ws.cell(1, 0).setValue(2);
+      await ws.cell(1, 0).setStyle({
+        numberFormat: "DateOnly",
+        numberFormatCode: "yyyy-mm-dd hh:mm",
+      });
+
+      const styleId0 = await ws.cell(0, 0).getStyleId();
+      const styleId1 = await ws.cell(1, 0).getStyleId();
+      expect(styleId0).toBeDefined();
+      expect(styleId1).toBeDefined();
+
+      const styleData = await (wb as any).zipCache.get("xl/styles.xml");
+      const xf0 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId0!, 10)];
+      const xf1 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId1!, 10)];
+      expect(styleData.getNumFmtCode(xf0.$.numFmtId)).toBe("0.000000");
+      expect(styleData.getNumFmtCode(xf1.$.numFmtId)).toBe("yyyy-mm-dd hh:mm");
+    });
+
+    it("동일 formatCode는 numFmts에 중복 등록되지 않음", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1.1);
+      await ws.cell(1, 0).setValue(2.2);
+      await ws.cell(0, 0).setStyle({ numberFormatCode: "0.000000" });
+      await ws.cell(1, 0).setStyle({ numberFormatCode: "0.000000" });
+
+      const styleId0 = await ws.cell(0, 0).getStyleId();
+      const styleId1 = await ws.cell(1, 0).getStyleId();
+      expect(styleId0).toBeDefined();
+      expect(styleId1).toBeDefined();
+
+      const styleData = await (wb as any).zipCache.get("xl/styles.xml");
+      const xf0 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId0!, 10)];
+      const xf1 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId1!, 10)];
+
+      expect(xf0.$.numFmtId).toBe(xf1.$.numFmtId);
+
+      const numFmts = styleData.data.styleSheet.numFmts[0].numFmt;
+      const matches = numFmts.filter((item: any) => item.$.formatCode === "0.000000");
+      expect(matches.length).toBe(1);
+    });
+
+    it("서로 다른 formatCode는 독립된 numFmtId로 등록", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1);
+      await ws.cell(1, 0).setValue(2);
+      await ws.cell(2, 0).setValue(0.5);
+      await ws.cell(0, 0).setStyle({ numberFormatCode: "0.000000" });
+      await ws.cell(1, 0).setStyle({ numberFormatCode: "#,##0.00" });
+      await ws.cell(2, 0).setStyle({ numberFormatCode: "0.00%" });
+
+      const styleId0 = await ws.cell(0, 0).getStyleId();
+      const styleId1 = await ws.cell(1, 0).getStyleId();
+      const styleId2 = await ws.cell(2, 0).getStyleId();
+      expect(styleId0).toBeDefined();
+      expect(styleId1).toBeDefined();
+      expect(styleId2).toBeDefined();
+
+      const styleData = await (wb as any).zipCache.get("xl/styles.xml");
+      const xf0 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId0!, 10)];
+      const xf1 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId1!, 10)];
+      const xf2 = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId2!, 10)];
+
+      expect(xf0.$.numFmtId).not.toBe(xf1.$.numFmtId);
+      expect(xf1.$.numFmtId).not.toBe(xf2.$.numFmtId);
+      expect(xf0.$.numFmtId).not.toBe(xf2.$.numFmtId);
+
+      expect(styleData.getNumFmtCode(xf0.$.numFmtId)).toBe("0.000000");
+      expect(styleData.getNumFmtCode(xf1.$.numFmtId)).toBe("#,##0.00");
+      expect(styleData.getNumFmtCode(xf2.$.numFmtId)).toBe("0.00%");
+    });
+
+    it("왕복 변환 후 커스텀 formatCode 보존", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1.23456789);
+      await ws.cell(0, 0).setStyle({ numberFormatCode: "0.000000" });
+
+      const bytes = await wb.toBytes();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      const ws2 = await wb2.getWorksheet("Test");
+      const styleId = await ws2.cell(0, 0).getStyleId();
+      expect(styleId).toBeDefined();
+
+      const styleData2 = await (wb2 as any).zipCache.get("xl/styles.xml");
+      const xf = styleData2.data.styleSheet.cellXfs[0].xf[parseInt(styleId!, 10)];
+      expect(styleData2.getNumFmtCode(xf.$.numFmtId)).toBe("0.000000");
+    });
+
+    it("기존 스타일에 커스텀 formatCode 추가 시 기존 속성 보존", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.cell(0, 0).setValue(1.23456789);
+      await ws.cell(0, 0).setStyle({ background: "00FF0000" });
+      await ws.cell(0, 0).setStyle({ numberFormatCode: "0.000000" });
+
+      const styleId = await ws.cell(0, 0).getStyleId();
+      expect(styleId).toBeDefined();
+
+      const styleData = await (wb as any).zipCache.get("xl/styles.xml");
+      const xf = styleData.data.styleSheet.cellXfs[0].xf[parseInt(styleId!, 10)];
+
+      expect(xf.$.fillId).toBeDefined();
+      const fill = styleData.data.styleSheet.fills[0].fill[parseInt(xf.$.fillId, 10)];
+      expect(fill.patternFill[0].fgColor[0].$.rgb).toBe("00FF0000");
+
+      expect(xf.$.applyNumberFormat).toBe("1");
+      expect(styleData.getNumFmtCode(xf.$.numFmtId)).toBe("0.000000");
+    });
   });
 });
 
