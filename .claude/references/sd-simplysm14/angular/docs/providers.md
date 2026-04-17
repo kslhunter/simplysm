@@ -219,6 +219,15 @@ abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<stri
 | `emitAsync(name, changeKeys?)` | 변경 이벤트 발행. 내부에서 `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange").emit(...)` 호출 |
 | `wait()` | 모든 로딩 완료까지 대기 |
 
+### 로딩 전략 (Lazy Loading)
+
+**`register()`는 메타정보만 등록하고 실제 데이터를 가져오지 않는다.** 타입별 데이터는 해당 타입의 `getHandle(name)`이 **처음 호출되는 시점**에 `info.getter()`를 실행하여 로딩된다. 즉 `initialize()`에서 여러 타입을 `register()` 해도 앱 시작 시 전체가 일괄 로딩되지 않으며, 실제로 사용되는 타입만 온디맨드로 로딩된다.
+
+- 첫 `getHandle()` 호출 → `getter()` 실행 + `SdSharedDataChange` 리스너 등록
+- 이후 같은 타입의 `getHandle()` 호출은 캐시된 `itemsSignal`을 재사용
+- 이후 갱신은 서버에서 `emitAsync()`로 발행된 `SdSharedDataChange` 이벤트 수신 시에만 발생 (`changeKeys`가 있으면 부분 업데이트, 없으면 전체 리로드)
+- `register()`를 동일 `name`으로 재호출하면 `generation`이 증가하고 `needsReload=true`로 표시되어, 다음 `getHandle()` 호출 시 재로딩된다
+
 ## `SdSharedDataChangeEvent`
 
 공유 데이터 변경 이벤트 정의. `defineEvent`로 생성되며, 이벤트 이름 문자열 `"SdSharedDataChange"`를 인자로 받는다.

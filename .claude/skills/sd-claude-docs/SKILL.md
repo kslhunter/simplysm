@@ -1,8 +1,7 @@
 ---
 name: sd-claude-docs
 description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "usage 문서 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
-model: sonnet[1m]
-effort: low
+model: claude-sonnet-4-5
 ---
 
 # sd-claude-docs: CLAUDE.md + usage 문서 통합 생성
@@ -91,7 +90,7 @@ root 문서는 생성·변경하지 않는다.
 
 ## Step 3: 패키지별 문서 생성 (모노레포)
 
-각 패키지에 대해 **Agent 도구로 subagent(model: `sonnet`, effort: `low`)를 병렬 실행**한다.
+각 패키지에 대해 **Agent 도구로 subagent(model: `claude-sonnet-4-5`)를 병렬 실행**한다.
 하나의 메시지에서 모든 패키지의 Agent 호출을 동시에 보낸다.
 
 ### subagent 프롬프트

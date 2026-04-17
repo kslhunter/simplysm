@@ -27,7 +27,7 @@ export async function ensureCleanWorkingTree(
         "/sd-commit",
         "--dangerously-skip-permissions",
         "--model",
-        "haiku",
+        "claude-haiku-4-5",
         "--no-session-persistence",
         "--strict-mcp-config",
       ],

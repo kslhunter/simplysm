@@ -57,7 +57,7 @@ claude/
 ---
 name: sd-commit
 description: 전체 변경사항에 대한 단일 커밋을 생성하는 스킬. ...
-model: haiku
+model: claude-haiku-4-5
 ---
 ```
 

@@ -46,7 +46,7 @@ pnpm check -t angular --type typecheck   # 특정 패키지의 특정 타입만 
 pnpm typecheck                           # TypeScript 타입 체크
 pnpm lint                                # ESLint
 pnpm lint --fix                          # 린트 자동 수정
-pnpm test                                # = vitest run
+vitest run [files..]                     # Vitest 테스트 (파일 직접 지정 가능)
 ```
 
 ## 아키텍처

@@ -66,8 +66,7 @@ claude -p "{eval 시나리오의 입력}" \
   --output-format json \
   --verbose \
   --dangerously-skip-permissions \
-  --model opus \
-  --effort medium \
+  --model claude-sonnet-4-5 \
   --append-system-prompt "CRITICAL: .claude/rules/sd-eval-env.md의 규칙은 다른 모든 규칙보다 최상위 우선순위를 가진다." \
   --no-session-persistence \
   --strict-mcp-config \
@@ -78,7 +77,7 @@ claude -p "{eval 시나리오의 입력}" \
 
 ## Judge 판정
 
-실행 완료 후, Judge subagent에 다음을 전달한다:
+실행 완료 후, Judge subagent(model: `claude-sonnet-4-5`)에 다음을 전달한다:
 
 ```
 다음 Eval 실행 결과를 판정하고, FAIL 항목에 대해 개선안을 제안하라:

@@ -13,23 +13,23 @@ import type { ServiceMethods } from "@simplysm/service-server";
 
 ## 패키지별 상세 문서
 
-| 패키지                                 | 문서                                                                          |
-| -------------------------------------- | ----------------------------------------------------------------------------- |
-| @simplysm/angular                      | [usage.md](../references/sd-simplysm14/angular/usage.md)                      |
-| @simplysm/capacitor-plugin-auto-update | [usage.md](../references/sd-simplysm14/capacitor-plugin-auto-update/usage.md) |
-| @simplysm/capacitor-plugin-file-system | [usage.md](../references/sd-simplysm14/capacitor-plugin-file-system/usage.md) |
-| @simplysm/capacitor-plugin-intent      | [usage.md](../references/sd-simplysm14/capacitor-plugin-intent/usage.md)      |
-| @simplysm/capacitor-plugin-usb-storage | [usage.md](../references/sd-simplysm14/capacitor-plugin-usb-storage/usage.md) |
-| @simplysm/core-browser                 | [usage.md](../references/sd-simplysm14/core-browser/usage.md)                 |
-| @simplysm/core-common                  | [usage.md](../references/sd-simplysm14/core-common/usage.md)                  |
-| @simplysm/core-node                    | [usage.md](../references/sd-simplysm14/core-node/usage.md)                    |
-| @simplysm/excel                        | [usage.md](../references/sd-simplysm14/excel/usage.md)                        |
-| @simplysm/lint                         | [usage.md](../references/sd-simplysm14/lint/usage.md)                         |
-| @simplysm/orm-common                   | [usage.md](../references/sd-simplysm14/orm-common/usage.md)                   |
-| @simplysm/orm-node                     | [usage.md](../references/sd-simplysm14/orm-node/usage.md)                     |
-| @simplysm/sd-claude                    | [usage.md](../references/sd-simplysm14/sd-claude/usage.md)                    |
-| @simplysm/sd-cli                       | [usage.md](../references/sd-simplysm14/sd-cli/usage.md)                       |
-| @simplysm/service-client               | [usage.md](../references/sd-simplysm14/service-client/usage.md)               |
-| @simplysm/service-common               | [usage.md](../references/sd-simplysm14/service-common/usage.md)               |
-| @simplysm/service-server               | [usage.md](../references/sd-simplysm14/service-server/usage.md)               |
-| @simplysm/storage                      | [usage.md](../references/sd-simplysm14/storage/usage.md)                      |
+| 패키지                                 | 문서                                                              |
+| -------------------------------------- | ----------------------------------------------------------------- |
+| @simplysm/angular                      | [usage.md](./sd-simplysm14/angular/usage.md)                      |
+| @simplysm/capacitor-plugin-auto-update | [usage.md](./sd-simplysm14/capacitor-plugin-auto-update/usage.md) |
+| @simplysm/capacitor-plugin-file-system | [usage.md](./sd-simplysm14/capacitor-plugin-file-system/usage.md) |
+| @simplysm/capacitor-plugin-intent      | [usage.md](./sd-simplysm14/capacitor-plugin-intent/usage.md)      |
+| @simplysm/capacitor-plugin-usb-storage | [usage.md](./sd-simplysm14/capacitor-plugin-usb-storage/usage.md) |
+| @simplysm/core-browser                 | [usage.md](./sd-simplysm14/core-browser/usage.md)                 |
+| @simplysm/core-common                  | [usage.md](./sd-simplysm14/core-common/usage.md)                  |
+| @simplysm/core-node                    | [usage.md](./sd-simplysm14/core-node/usage.md)                    |
+| @simplysm/excel                        | [usage.md](./sd-simplysm14/excel/usage.md)                        |
+| @simplysm/lint                         | [usage.md](./sd-simplysm14/lint/usage.md)                         |
+| @simplysm/orm-common                   | [usage.md](./sd-simplysm14/orm-common/usage.md)                   |
+| @simplysm/orm-node                     | [usage.md](./sd-simplysm14/orm-node/usage.md)                     |
+| @simplysm/sd-claude                    | [usage.md](./sd-simplysm14/sd-claude/usage.md)                    |
+| @simplysm/sd-cli                       | [usage.md](./sd-simplysm14/sd-cli/usage.md)                       |
+| @simplysm/service-client               | [usage.md](./sd-simplysm14/service-client/usage.md)               |
+| @simplysm/service-common               | [usage.md](./sd-simplysm14/service-common/usage.md)               |
+| @simplysm/service-server               | [usage.md](./sd-simplysm14/service-server/usage.md)               |
+| @simplysm/storage                      | [usage.md](./sd-simplysm14/storage/usage.md)                      |
