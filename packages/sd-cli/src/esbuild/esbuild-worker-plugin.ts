@@ -1,27 +1,144 @@
 import path from "path";
 import fs from "fs";
 import type esbuild from "esbuild";
+import * as acorn from "acorn";
+import * as walk from "acorn-walk";
+
+//#region AST 기반 Worker 패턴 탐지
 
 /**
- * Worker/SharedWorker + new URL + import.meta.url 패턴을 감지하는 정규식.
- *
- * 캡처 그룹:
- * - Group 1: `Worker` 또는 `SharedWorker`
- * - Group 2: URL 경로 (예: `"./worker.ts"`)
- * - Group 3: 옵션 객체 (예: `{ type: "module" }`) — 없으면 undefined
+ * AST에서 탐지된 Worker 패턴 하나를 나타낸다.
  */
-const WORKER_PATTERN =
-  /\bnew\s+(Worker|SharedWorker)\s*\(\s*new\s+URL\s*\(\s*["']([^"']+)["']\s*,\s*import\.meta\.url\s*\)\s*(?:,\s*(\{[^}]*\}))?\s*\)/g;
+export interface WorkerMatch {
+  type: "browser" | "node";
+  /** 전체 표현식의 start/end (치환 범위) */
+  start: number;
+  end: number;
+  /** Worker/SharedWorker 이름 (browser만) */
+  workerType?: string;
+  /** URL 경로 문자열 값 */
+  urlPath: string;
+  /** 옵션 객체의 원본 소스 텍스트 (browser만, 없으면 undefined) */
+  existingOpts?: string;
+}
 
 /**
- * Node.js import.meta.resolve 패턴을 감지하는 정규식.
- * 상대 경로(./ 또는 ../)만 감지 — 절대 모듈 경로("some-package")는 무시.
- *
- * 캡처 그룹:
- * - Group 1: 상대 경로 (예: `"../workers/service-protocol.worker"`)
+ * MemberExpression이 import.meta.url인지 확인한다.
  */
-const NODE_WORKER_PATTERN =
-  /\bimport\.meta\.resolve\s*\(\s*["'](\.\.?\/[^"']+)["']\s*\)/g;
+function isImportMetaUrl(node: any): boolean {
+  return (
+    node.type === "MemberExpression" &&
+    node.object.type === "MetaProperty" &&
+    node.object.meta.name === "import" &&
+    node.object.property.name === "meta" &&
+    node.property.type === "Identifier" &&
+    node.property.name === "url"
+  );
+}
+
+/**
+ * acorn AST를 사용하여 소스 코드에서 Worker/SharedWorker 및 import.meta.resolve 패턴을 탐지한다.
+ *
+ * 정규식과 달리 주석, 문자열 리터럴 내부의 패턴을 오탐하지 않는다.
+ * 파싱 실패 시 빈 배열을 반환한다.
+ */
+export function findWorkerPatterns(content: string): WorkerMatch[] {
+  let ast: acorn.Node;
+  try {
+    ast = acorn.parse(content, {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    });
+  } catch {
+    return [];
+  }
+
+  const matches: WorkerMatch[] = [];
+
+  walk.simple(ast, {
+    NewExpression(node: any) {
+      // new Worker(new URL("path", import.meta.url), opts?)
+      // new SharedWorker(new URL("path", import.meta.url), opts?)
+      if (
+        node.callee.type !== "Identifier" ||
+        (node.callee.name !== "Worker" && node.callee.name !== "SharedWorker")
+      ) {
+        return;
+      }
+
+      const args = node.arguments;
+      if (args.length < 1) return;
+
+      const urlArg = args[0];
+      if (
+        urlArg.type !== "NewExpression" ||
+        urlArg.callee.type !== "Identifier" ||
+        urlArg.callee.name !== "URL"
+      ) {
+        return;
+      }
+
+      const urlArgs = urlArg.arguments;
+      if (urlArgs.length < 2) return;
+
+      // 첫 번째 인자: 문자열 리터럴 (경로)
+      if (urlArgs[0].type !== "Literal" || typeof urlArgs[0].value !== "string") return;
+
+      // 두 번째 인자: import.meta.url
+      if (!isImportMetaUrl(urlArgs[1])) return;
+
+      const match: WorkerMatch = {
+        type: "browser",
+        start: node.start,
+        end: node.end,
+        workerType: node.callee.name,
+        urlPath: urlArgs[0].value,
+      };
+
+      // 옵션 객체 (두 번째 인자)
+      if (args.length >= 2) {
+        match.existingOpts = content.slice(args[1].start, args[1].end);
+      }
+
+      matches.push(match);
+    },
+
+    CallExpression(node: any) {
+      // import.meta.resolve("./relative-path")
+      const callee = node.callee;
+      if (
+        callee.type !== "MemberExpression" ||
+        callee.object.type !== "MetaProperty" ||
+        callee.object.meta.name !== "import" ||
+        callee.object.property.name !== "meta" ||
+        callee.property.type !== "Identifier" ||
+        callee.property.name !== "resolve"
+      ) {
+        return;
+      }
+
+      const args = node.arguments;
+      if (args.length < 1) return;
+
+      if (args[0].type !== "Literal" || typeof args[0].value !== "string") return;
+
+      const urlPath = args[0].value as string;
+      // 상대 경로만 처리
+      if (!urlPath.startsWith("./") && !urlPath.startsWith("../")) return;
+
+      matches.push({
+        type: "node",
+        start: node.start,
+        end: node.end,
+        urlPath,
+      });
+    },
+  });
+
+  return matches.sort((a, b) => a.start - b.start);
+}
+
+//#endregion
 
 /**
  * Worker 번들 빌드 결과를 포함하는 transform 결과.
@@ -94,20 +211,46 @@ export function transformWorkerPatterns(
   filePath: string,
   build: esbuild.PluginBuild,
 ): TransformWorkerResult | undefined {
-  // 빠른 사전 필터
-  const hasBrowserWorker = content.includes("Worker") && WORKER_PATTERN.test(content);
-  if (hasBrowserWorker) WORKER_PATTERN.lastIndex = 0;
-
-  const hasNodeWorker =
-    content.includes("import.meta.resolve") && NODE_WORKER_PATTERN.test(content);
-  if (hasNodeWorker) NODE_WORKER_PATTERN.lastIndex = 0;
-
-  if (!hasBrowserWorker && !hasNodeWorker) {
+  // 빠른 사전 필터 — AST 파싱 전에 키워드 존재 여부로 걸러냄 (원본 TS content 기준)
+  if (!content.includes("Worker") && !content.includes("import.meta.resolve")) {
     return undefined;
   }
 
   const errors: esbuild.PartialMessage[] = [];
   const warnings: esbuild.PartialMessage[] = [];
+
+  // TS(.ts/.cts/.mts)는 JS로 변환한 후 AST 파싱. acorn은 TS 구문을 처리하지 못하므로
+  // import type, 타입 어노테이션 등이 있으면 파싱 실패로 Worker 패턴이 조용히 누락된다.
+  let effectiveContent = content;
+  if (/\.[cm]?ts$/.test(filePath)) {
+    try {
+      const transformed = build.esbuild.transformSync(content, {
+        loader: "ts",
+        sourcemap: false,
+      });
+      effectiveContent = transformed.code;
+      warnings.push(...transformed.warnings);
+    } catch (e) {
+      const failure = e as {
+        errors?: esbuild.PartialMessage[];
+        warnings?: esbuild.PartialMessage[];
+      };
+      return {
+        contents: content,
+        errors: failure.errors ?? [
+          { text: `TS transform failed: ${String(e)}`, location: null },
+        ],
+        warnings: failure.warnings ?? [],
+      };
+    }
+  }
+
+  // AST 기반 패턴 탐지 (변환된 JS 기준)
+  const matches = findWorkerPatterns(effectiveContent);
+  if (matches.length === 0) {
+    return undefined;
+  }
+
   const allOutputFiles: esbuild.OutputFile[] = [];
   let mergedMetafile: esbuild.Metafile | undefined;
 
@@ -170,42 +313,49 @@ export function transformWorkerPatterns(
     return path.relative(outdir, workerCodeFile.path).replaceAll("\\", "/");
   }
 
-  let transformed = content;
+  // 정방향 chunks 패턴으로 치환 (esbuild-postcss-plugin.ts 동일 패턴)
+  const replacements: Array<{ start: number; end: number; text: string }> = [];
 
-  // 1. 브라우저 Worker 패턴 처리 (new Worker(new URL("path", import.meta.url)))
-  if (hasBrowserWorker) {
-    transformed = transformed.replace(
-      WORKER_PATTERN,
-      (match, workerType: string, urlPath: string, existingOpts?: string) => {
-        const fullWorkerPath = path.resolve(containingDir, urlPath);
-        const workerCodePath = processWorkerBundle(fullWorkerPath, "browser");
-        if (workerCodePath == null) return match;
+  for (const match of matches) {
+    if (match.type === "browser") {
+      const fullWorkerPath = path.resolve(containingDir, match.urlPath);
+      const workerCodePath = processWorkerBundle(fullWorkerPath, "browser");
+      if (workerCodePath == null) continue;
 
-        const optsStr = existingOpts != null ? existingOpts : '{ type: "module" }';
-        return `new ${workerType}(new URL("${workerCodePath}", import.meta.url), ${optsStr})`;
-      },
-    );
+      const optsStr = match.existingOpts ?? '{ type: "module" }';
+      replacements.push({
+        start: match.start,
+        end: match.end,
+        text: `new ${match.workerType}(new URL("${workerCodePath}", import.meta.url), ${optsStr})`,
+      });
+    } else {
+      const fullWorkerPath = path.resolve(containingDir, match.urlPath);
+      const workerCodePath = processWorkerBundle(
+        fullWorkerPath,
+        build.initialOptions.platform ?? "browser",
+      );
+      if (workerCodePath == null) continue;
+
+      replacements.push({
+        start: match.start,
+        end: match.end,
+        text: `new URL("${workerCodePath}", import.meta.url).href`,
+      });
+    }
   }
 
-  // 2. Node.js import.meta.resolve 패턴 처리
-  if (hasNodeWorker) {
-    transformed = transformed.replace(
-      NODE_WORKER_PATTERN,
-      (match, resolvePath: string) => {
-        const fullWorkerPath = path.resolve(containingDir, resolvePath);
-        const workerCodePath = processWorkerBundle(
-          fullWorkerPath,
-          build.initialOptions.platform ?? "browser",
-        );
-        if (workerCodePath == null) return match;
-
-        return `new URL("${workerCodePath}", import.meta.url).href`;
-      },
-    );
+  // chunks 조립 (변환된 JS 기준 — 매치의 start/end는 effectiveContent 오프셋)
+  const chunks: string[] = [];
+  let cursor = 0;
+  for (const rep of replacements) {
+    chunks.push(effectiveContent.slice(cursor, rep.start));
+    chunks.push(rep.text);
+    cursor = rep.end;
   }
+  chunks.push(effectiveContent.slice(cursor));
 
   return {
-    contents: transformed,
+    contents: chunks.join(""),
     errors,
     warnings,
     workerOutputFiles: allOutputFiles.length > 0 ? allOutputFiles : undefined,
@@ -241,9 +391,12 @@ export function createWorkerBundlePlugin(): esbuild.Plugin {
           });
         }
 
+        // TS(.ts/.cts/.mts)는 transformWorkerPatterns 내부에서 JS로 변환되어 반환되므로
+        // loader는 "js". .tsx/.jsx는 변환하지 않으므로 esbuild가 JSX를 처리하도록 "tsx".
+        const isJsx = /\.[cm]?tsx$/.test(args.path) || args.path.endsWith(".jsx");
         return {
           contents: result.contents,
-          loader: /\.[cm]?tsx?$/.test(args.path) ? ("ts" as const) : ("js" as const),
+          loader: isJsx ? ("tsx" as const) : ("js" as const),
           errors: result.errors.length > 0 ? result.errors : undefined,
           warnings: result.warnings.length > 0 ? result.warnings : undefined,
         };

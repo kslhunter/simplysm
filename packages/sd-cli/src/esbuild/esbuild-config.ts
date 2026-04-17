@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import { createRequire } from "module";
 import type esbuild from "esbuild";
 import { consola } from "consola";
+import { addJsExtensionToImports } from "../utils/output-path-rewriter";
 
 const logger = consola.withTag("sd:cli:esbuild-config");
 
@@ -19,13 +20,7 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
   await Promise.all(
     outputFiles.map(async (file) => {
       const finalText = file.path.endsWith(".js")
-        ? file.text.replace(
-            /((?:from|import)\s*["'])(\.\.?\/[^"']*?)(["'])/g,
-            (_match, prefix: string, importPath: string, suffix: string) => {
-              if (/\.(js|mjs|cjs|json|css|wasm|node)$/i.test(importPath)) return _match;
-              return `${prefix}${importPath}.js${suffix}`;
-            },
-          )
+        ? addJsExtensionToImports(file.text)
         : file.text;
 
       try {

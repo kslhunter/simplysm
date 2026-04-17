@@ -2,6 +2,7 @@ import type { ServerBuildInfo } from "../../workers/server-build.worker";
 import path from "path";
 import fs from "fs";
 import YAML from "yaml";
+import TOML from "smol-toml";
 import { cpx } from "@simplysm/core-node";
 import { consola } from "consola";
 import { collectAllDependencyExternals } from "../../esbuild/esbuild-config";
@@ -110,9 +111,10 @@ export function generateProductionFiles(
     let nodeVersion = "20";
     if (fs.existsSync(rootMiseTomlPath)) {
       const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
-      const match = /node\s*=\s*"([^"]+)"/.exec(miseContent);
-      if (match != null) {
-        nodeVersion = match[1];
+      // mise.toml은 저장소에서 관리되는 설정 파일이므로, 파싱 실패 시 폴백하지 않고 예외를 전파하여 설정 오류를 즉시 드러낸다.
+      const miseConfig = TOML.parse(miseContent) as { tools?: { node?: string } };
+      if (miseConfig.tools?.node != null) {
+        nodeVersion = miseConfig.tools.node;
       }
     }
     fs.writeFileSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);

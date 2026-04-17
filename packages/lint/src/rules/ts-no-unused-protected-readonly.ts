@@ -1,4 +1,19 @@
 import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils";
+import {
+  ImplicitReceiver,
+  parseTemplate,
+  PropertyRead,
+  ThisReceiver,
+  TmplAstBoundDeferredTrigger,
+  TmplAstDeferredBlock,
+  TmplAstForLoopBlock,
+  TmplAstIfBlock,
+  TmplAstIfBlockBranch,
+  TmplAstLetDeclaration,
+  TmplAstSwitchBlock,
+  TmplAstSwitchBlockCase,
+  TmplAstSwitchBlockCaseGroup,
+} from "@angular/compiler";
 import { createRule } from "../utils/create-rule";
 
 function traverseNode(
@@ -21,8 +36,204 @@ function traverseNode(
   }
 }
 
-function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * Angular 표현식 AST를 재귀 순회하여 ImplicitReceiver/ThisReceiver 위의
+ * PropertyRead 이름(클래스 필드 참조)을 수집한다.
+ * 로컬 변수(localVars)에 포함된 이름은 제외한다.
+ */
+function collectExprIdentifiers(ast: any, localVars: Set<string>, ids: Set<string>): void {
+  if (ast == null || typeof ast !== "object") return;
+
+  if (
+    ast instanceof PropertyRead &&
+    (ast.receiver instanceof ImplicitReceiver || ast.receiver instanceof ThisReceiver) &&
+    typeof ast.name === "string" &&
+    !localVars.has(ast.name)
+  ) {
+    ids.add(ast.name);
+  }
+
+  for (const key of Object.keys(ast)) {
+    if (key === "span" || key === "sourceSpan" || key === "nameSpan") continue;
+    const val = ast[key];
+    if (Array.isArray(val)) {
+      for (const v of val) {
+        if (v != null && typeof v === "object") {
+          collectExprIdentifiers(v, localVars, ids);
+        }
+      }
+    } else if (val != null && typeof val === "object" && typeof val.constructor === "function") {
+      collectExprIdentifiers(val, localVars, ids);
+    }
+  }
+}
+
+/**
+ * Angular 템플릿 AST 노드를 재귀 순회하여 바인딩 표현식 내 식별자를 수집한다.
+ * 구조 디렉티브(*ngFor 등)의 로컬 변수와 @let 선언은 스코프에서 제외한다.
+ */
+function collectTemplateNodeIdentifiers(
+  node: any,
+  localVars: Set<string>,
+  ids: Set<string>,
+): void {
+  const currentLocals = new Set(localVars);
+
+  // 구조 디렉티브의 로컬 변수 (*ngFor="let item of items")
+  if (Array.isArray(node.variables)) {
+    for (const v of node.variables) {
+      if (typeof v.name === "string") {
+        currentLocals.add(v.name);
+      }
+    }
+  }
+
+  // @let 선언: 자기 자신의 value 표현식 스캔 시 자기 이름은 로컬이 아님
+  // (@let foo = foo + 1 같은 self-reference는 Angular가 금지하므로 고려 불필요)
+  if (node instanceof TmplAstLetDeclaration && typeof node.name === "string") {
+    currentLocals.add(node.name);
+  }
+
+  // @if 브랜치의 expressionAlias (예: `@if (cond; as alias)`)
+  if (node instanceof TmplAstIfBlockBranch && node.expressionAlias?.name != null) {
+    currentLocals.add(node.expressionAlias.name);
+  }
+
+  // @for 로컬 변수: `item` 및 사용자 별칭 contextVariables (예: `let idx = $index`)
+  if (node instanceof TmplAstForLoopBlock) {
+    if (typeof node.item.name === "string") {
+      currentLocals.add(node.item.name);
+    }
+    for (const ctxVar of node.contextVariables) {
+      if (typeof ctxVar.name === "string") {
+        currentLocals.add(ctxVar.name);
+      }
+    }
+  }
+
+  // 보간 / BoundText
+  if (node.value?.ast != null) {
+    collectExprIdentifiers(node.value.ast, currentLocals, ids);
+  }
+  // @if 브랜치 조건 표현식
+  if (node instanceof TmplAstIfBlockBranch && node.expression != null) {
+    collectExprIdentifiers(node.expression, currentLocals, ids);
+  }
+  // @switch 표현식
+  if (node instanceof TmplAstSwitchBlock) {
+    collectExprIdentifiers(node.expression, currentLocals, ids);
+  }
+  // @case 표현식 (@default는 null)
+  if (node instanceof TmplAstSwitchBlockCase && node.expression != null) {
+    collectExprIdentifiers(node.expression, currentLocals, ids);
+  }
+  // @for iterable/trackBy 표현식 (item/contextVariables는 이미 currentLocals에 반영됨)
+  if (node instanceof TmplAstForLoopBlock) {
+    collectExprIdentifiers(node.expression, currentLocals, ids);
+    collectExprIdentifiers(node.trackBy, currentLocals, ids);
+  }
+  // @defer 트리거의 value 표현식 (BoundDeferredTrigger만 value를 가진다)
+  if (node instanceof TmplAstDeferredBlock) {
+    for (const bucket of [node.triggers, node.prefetchTriggers, node.hydrateTriggers]) {
+      for (const trigger of Object.values(bucket)) {
+        if (trigger instanceof TmplAstBoundDeferredTrigger) {
+          collectExprIdentifiers(trigger.value, currentLocals, ids);
+        }
+      }
+    }
+  }
+  // BoundAttribute (입력 바인딩)
+  if (Array.isArray(node.inputs)) {
+    for (const input of node.inputs) {
+      if (input.value?.ast != null) {
+        collectExprIdentifiers(input.value.ast, currentLocals, ids);
+      }
+    }
+  }
+  // BoundEvent (이벤트 바인딩)
+  if (Array.isArray(node.outputs)) {
+    for (const output of node.outputs) {
+      if (output.handler?.ast != null) {
+        collectExprIdentifiers(output.handler.ast, currentLocals, ids);
+      }
+    }
+  }
+  // 구조 디렉티브 속성 (templateAttrs)
+  if (Array.isArray(node.templateAttrs)) {
+    for (const attr of node.templateAttrs) {
+      if (attr.value?.ast != null) {
+        collectExprIdentifiers(attr.value.ast, currentLocals, ids);
+      }
+    }
+  }
+  // 자식 노드 재귀: @let 선언은 이후 형제에게 스코프를 전파한다
+  if (Array.isArray(node.children)) {
+    collectSiblingNodes(node.children, currentLocals, ids);
+  }
+
+  // @if의 분기 — IfBlock에는 children이 없고 branches로 노출된다
+  if (node instanceof TmplAstIfBlock) {
+    for (const branch of node.branches) {
+      collectTemplateNodeIdentifiers(branch, currentLocals, ids);
+    }
+  }
+
+  // @switch의 그룹 — SwitchBlock에는 children이 없고 groups로 노출된다
+  if (node instanceof TmplAstSwitchBlock) {
+    for (const group of node.groups) {
+      collectTemplateNodeIdentifiers(group, currentLocals, ids);
+    }
+  }
+
+  // @switch 그룹 내 @case 노드들 — children은 일반 경로로 처리된다
+  if (node instanceof TmplAstSwitchBlockCaseGroup) {
+    for (const c of node.cases) {
+      collectTemplateNodeIdentifiers(c, currentLocals, ids);
+    }
+  }
+
+  // @for의 @empty 블록 — ForLoopBlock.empty는 별도 BlockNode이며 children을 가진다
+  if (node instanceof TmplAstForLoopBlock && node.empty != null) {
+    collectSiblingNodes(node.empty.children, currentLocals, ids);
+  }
+
+  // @defer 분기 블록 (@placeholder, @loading, @error) — children은 별도 분기에 존재
+  if (node instanceof TmplAstDeferredBlock) {
+    for (const sub of [node.placeholder, node.loading, node.error]) {
+      if (sub != null) {
+        collectSiblingNodes(sub.children, currentLocals, ids);
+      }
+    }
+  }
+}
+
+/**
+ * 형제 노드 배열을 순회하며 식별자를 수집한다.
+ * @let 선언이 나오면 이후 형제 노드의 localVars에 이름을 추가해 스코프를 전파한다.
+ */
+function collectSiblingNodes(
+  nodes: readonly any[],
+  localVars: Set<string>,
+  ids: Set<string>,
+): void {
+  const scopedLocals = new Set(localVars);
+  for (const node of nodes) {
+    collectTemplateNodeIdentifiers(node, scopedLocals, ids);
+    if (node instanceof TmplAstLetDeclaration && typeof node.name === "string") {
+      scopedLocals.add(node.name);
+    }
+  }
+}
+
+/**
+ * Angular 인라인 템플릿 문자열에서 바인딩 표현식이 참조하는 식별자를 수집한다.
+ * @angular/compiler의 parseTemplate을 사용하여 AST 기반으로 정확히 추출한다.
+ */
+function collectTemplateIdentifiers(templateText: string): Set<string> {
+  const ids = new Set<string>();
+  const result = parseTemplate(templateText, "");
+  collectSiblingNodes(result.nodes, new Set(), ids);
+  return ids;
 }
 
 /**
@@ -100,13 +311,12 @@ export default createRule({
             node.key.type === AST_NODE_TYPES.Identifier,
         );
 
+        const templateIdentifiers = collectTemplateIdentifiers(templateText);
+
         for (const field of protectedReadonlyFields) {
           const fieldName = (field.key as TSESTree.Identifier).name;
 
-          const identifierPattern = new RegExp(
-            `(?<![a-zA-Z0-9_$])${escapeRegExp(fieldName)}(?![a-zA-Z0-9_$])`,
-          );
-          const usedInTemplate = identifierPattern.test(templateText);
+          const usedInTemplate = templateIdentifiers.has(fieldName);
 
           const usedInClass = classNode.body.body.some((member) => {
             if (member === field) return false;

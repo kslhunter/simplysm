@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesDir = path.join(__dirname, "fixtures", "worker-plugin");
 
-const { transformWorkerPatterns, createWorkerBundlePlugin } = await import(
+const { transformWorkerPatterns, createWorkerBundlePlugin, findWorkerPatterns } = await import(
   "../../src/esbuild/esbuild-worker-plugin.js"
 );
 
@@ -52,6 +52,27 @@ describe("transformWorkerPatterns — 패턴 감지", () => {
   it("import.meta.url이 아닌 URL 생성은 undefined를 반환한다", () => {
     const result = transformWorkerPatterns(
       'const w = new Worker(new URL("./worker.js", location.href));',
+      "/test/entry.js",
+      createMockBuild(),
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("주석 내 Worker 패턴은 무시한다", () => {
+    const result = transformWorkerPatterns(
+      `// new Worker(new URL("./worker.js", import.meta.url))
+const x = 1;`,
+      "/test/entry.js",
+      createMockBuild(),
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("문자열 리터럴 내 Worker 패턴은 무시한다", () => {
+    const result = transformWorkerPatterns(
+      `const s = "new Worker(new URL(\\"./worker.js\\", import.meta.url))";`,
       "/test/entry.js",
       createMockBuild(),
     );
@@ -293,5 +314,293 @@ describe("createWorkerBundlePlugin — 플러그인 구조", () => {
 
     expect(hasOnLoad).toBe(true);
     expect(hasOnEnd).toBe(true);
+  });
+});
+
+describe("findWorkerPatterns — AST 기반 패턴 탐지", () => {
+  it("Worker + new URL + import.meta.url 패턴을 탐지한다", () => {
+    const matches = findWorkerPatterns(
+      `const w = new Worker(new URL("./worker.js", import.meta.url));`,
+    );
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0].type).toBe("browser");
+    expect(matches[0].urlPath).toBe("./worker.js");
+    expect(matches[0].workerType).toBe("Worker");
+    expect(matches[0].existingOpts).toBeUndefined();
+  });
+
+  it("SharedWorker 패턴을 탐지한다", () => {
+    const matches = findWorkerPatterns(
+      `const sw = new SharedWorker(new URL("./sw.js", import.meta.url));`,
+    );
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0].workerType).toBe("SharedWorker");
+    expect(matches[0].urlPath).toBe("./sw.js");
+  });
+
+  it("옵션 객체가 있는 Worker 패턴을 탐지하고 원본 텍스트를 보존한다", () => {
+    const content = `const w = new Worker(new URL("./w.js", import.meta.url), { type: "module" });`;
+    const matches = findWorkerPatterns(content);
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0].existingOpts).toBe('{ type: "module" }');
+  });
+
+  it("import.meta.resolve 상대 경로 패턴을 탐지한다", () => {
+    const matches = findWorkerPatterns(
+      `const p = import.meta.resolve("./node-worker.js");`,
+    );
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0].type).toBe("node");
+    expect(matches[0].urlPath).toBe("./node-worker.js");
+  });
+
+  it("import.meta.resolve 절대 모듈 경로는 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `const p = import.meta.resolve("some-package");`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("new URL 없는 Worker는 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `const w = new Worker("./worker.js");`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("import.meta.url이 아닌 URL 생성은 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `const w = new Worker(new URL("./w.js", location.href));`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("복수 패턴을 모두 탐지한다", () => {
+    const matches = findWorkerPatterns(
+      [
+        `const w1 = new Worker(new URL("./w1.js", import.meta.url));`,
+        `const w2 = new Worker(new URL("./w2.js", import.meta.url));`,
+      ].join("\n"),
+    );
+
+    expect(matches).toHaveLength(2);
+    expect(matches[0].urlPath).toBe("./w1.js");
+    expect(matches[1].urlPath).toBe("./w2.js");
+  });
+
+  it("start/end 위치가 정확하다", () => {
+    const content = `const w = new Worker(new URL("./w.js", import.meta.url));`;
+    const matches = findWorkerPatterns(content);
+
+    expect(matches).toHaveLength(1);
+    const matched = content.slice(matches[0].start, matches[0].end);
+    expect(matched).toBe(`new Worker(new URL("./w.js", import.meta.url))`);
+  });
+
+  it("주석 내 Worker 패턴은 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `// new Worker(new URL("./w.js", import.meta.url))
+const x = 1;`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("문자열 리터럴 내 Worker 패턴은 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `const s = "new Worker(new URL(\\"./w.js\\", import.meta.url))";`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("블록 주석 내 Worker 패턴은 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `/* new Worker(new URL("./w.js", import.meta.url)) */
+const x = 1;`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("주석 내 import.meta.resolve는 무시한다", () => {
+    const matches = findWorkerPatterns(
+      `// import.meta.resolve("./w.js")
+const x = 1;`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it("파싱 불가능한 코드는 빈 배열을 반환한다", () => {
+    const matches = findWorkerPatterns(
+      `this is not valid javascript }{][`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
+});
+
+describe("transformWorkerPatterns — TypeScript 파일 처리", () => {
+  it("import type이 포함된 .ts 파일에서 Worker 패턴을 탐지하여 치환한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).not.toContain("./worker.js");
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+    expect(result!.errors).toHaveLength(0);
+  });
+
+  it("import type이 포함된 .ts 파일에서 import.meta.resolve 패턴을 탐지하여 치환한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const p = import.meta.resolve("./node-worker.js");`,
+      entryPath,
+      createMockBuild({ platform: "node" }),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).not.toContain("./node-worker.js");
+    expect(result!.contents).toMatch(
+      /new URL\("worker-[a-z0-9]+\.js", import\.meta\.url\)\.href/i,
+    );
+    expect(result!.errors).toHaveLength(0);
+  });
+
+  it("타입 어노테이션이 있는 변수 선언(const w: Worker = ...)에서 Worker를 탐지한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `const w: Worker = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it(".mts 확장자의 TS 파일도 변환 후 처리한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.mts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it(".cts 확장자의 TS 파일도 변환 후 처리한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.cts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.contents).toMatch(/worker-[a-z0-9]+\.js/i);
+  });
+
+  it("TS 파일의 주석 내 Worker 패턴은 무시한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+// new Worker(new URL("./worker.js", import.meta.url))
+const x: number = 1;`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("TS 파일의 문자열 리터럴 내 Worker 패턴은 무시한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const s: string = "new Worker(new URL(\\"./worker.js\\", import.meta.url))";`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("사전 필터를 통과하지 못하는 TS 파일(Worker 키워드 없음)은 undefined를 반환한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `import type { T } from "pkg";
+const x: number = 1;`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeUndefined();
+  });
+
+  it("TS 변환 실패(문법 오류) 시 errors에 에러를 포함하여 반환한다", () => {
+    const entryPath = path.join(fixturesDir, "entry.ts");
+    const result = transformWorkerPatterns(
+      `const w = new Worker(new URL("./worker.js", import.meta.url)); const x: =`,
+      entryPath,
+      createMockBuild(),
+    );
+
+    expect(result).toBeDefined();
+    expect(result!.errors.length).toBeGreaterThan(0);
+  });
+});
+
+describe("createWorkerBundlePlugin — TS 파일 onLoad 반환", () => {
+  it("TS 파일에서 Worker 감지 시 loader로 'js'를 반환한다", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "worker-onload-"));
+    const tsFile = path.join(tmpDir, "entry.ts");
+    fs.copyFileSync(
+      path.join(fixturesDir, "worker.js"),
+      path.join(tmpDir, "worker.js"),
+    );
+    fs.writeFileSync(
+      tsFile,
+      `import type { T } from "pkg";
+const w = new Worker(new URL("./worker.js", import.meta.url));`,
+    );
+
+    const plugin = createWorkerBundlePlugin();
+
+    let onLoadCallback: ((args: { path: string }) => Promise<any> | any) | null = null;
+    const mockBuild = {
+      esbuild,
+      initialOptions: { outdir: tmpDir, write: false },
+      onLoad: (_filter: unknown, cb: (args: { path: string }) => Promise<any> | any) => {
+        onLoadCallback = cb;
+      },
+      onEnd: () => { /* noop */ },
+    } as unknown as esbuild.PluginBuild;
+
+    await plugin.setup(mockBuild);
+    expect(onLoadCallback).not.toBeNull();
+
+    const result = await onLoadCallback!({ path: tsFile });
+    expect(result).toBeDefined();
+    expect(result.loader).toBe("js");
+    expect(result.contents).toMatch(/worker-[a-z0-9]+\.js/i);
   });
 });
