@@ -2,8 +2,6 @@
 
 소비 화면이 `<sd-busy-container>` · `<sd-topbar-container>` · `<sd-topbar>` 표준 컴포넌트를 **직접 조립**하여 "하나의 컴포넌트를 페이지·모달·제어(control) 뷰에서 모두 재사용"하는 구조를 만든다. 과거 `<sd-base-container>`가 감추고 있던 분기·타이틀 계산·권한 제한·초기화 숨김을 화면 내부에 인라인으로 풀어쓴다.
 
-> **선행 조건 주의**: 이 레시피는 Feature 6.1 완료 후의 `injectViewTypeSignal()` 신 시그니처(인자 없음)를 전제로 작성되었다. Feature 6.1 완료 전에 레시피를 그대로 따라 쓰면 `injectViewTypeSignal()` 호출부에서 TS 에러가 발생한다(구 시그니처는 `getComp: () => object` 인자를 요구).
-
 ## 1. Overview
 
 - 제거된 추상화: `SdBaseContainer`(`<sd-base-container>`)
@@ -177,6 +175,4 @@ protected readonly viewType = computed(() => this.override() ?? this._autoViewTy
 ## 7. 주의사항
 
 - **신규 유틸 함수를 추출하지 말 것.** `useBaseContainer()`, `computeModalOrPageTitle()` 같은 공통 헬퍼를 도입하면 이 레시피가 제거한 추상화가 다시 생긴다. 세 줄짜리 `computed`를 화면마다 반복하는 편이 낫다.
-- **`injectParent`를 사용하지 말 것.** Angular internal `_lView[8]`(CONTEXT slot) 트릭을 사용하는 이 유틸은 Feature 6.1에서 삭제된다. 부모 컨텍스트에 의존하지 않고, 각 화면이 `injectViewTypeSignal()`로 자기 뷰 타입을 직접 판정한다.
-- **`<sd-base-container>`는 Feature 6.1 완료 시점에 완전히 제거된다.** 신규 화면은 이 레시피 기준으로 작성하고, 기존 `<sd-base-container>` 사용처는 본 레시피 구조로 인라인 치환한다.
 - **본문 채우기는 화면의 책임이다.** 위 예제의 `<!-- 본문: ... -->` 주석 자리에 `<sd-sheet>`(리스트), `<sd-form>`(상세), 임의 HTML 등 화면별 콘텐츠를 삽입한다. 리스트·상세 화면 조립은 `crud-list.md`·`crud-detail.md` 레시피 참조.

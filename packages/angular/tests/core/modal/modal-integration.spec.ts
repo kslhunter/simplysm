@@ -18,10 +18,10 @@ function mockUrlRoute(path: string) {
   };
 }
 
-// reflectComponentType가 읽는 cmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
+// reflectComponentType가 읽는 ɵcmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
 function createTestComponent(selector: string) {
   const comp = class {} as unknown as Record<string, unknown>;
-  comp["\u0275cmp"] = { selectors: [[selector]] };
+  comp["ɵcmp"] = { selectors: [[selector]] };
   return comp;
 }
 
@@ -30,7 +30,6 @@ const TestComp = createTestComponent("test-comp");
 describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합", () => {
   describe("Rule: injectViewTypeSignal이 모달 컨텍스트에서 'modal'을 반환한다", () => {
     it("Unit: SdActivatedModalProvider + ActivatedRoute 모두 있어도 'modal' 우선", () => {
-      class MockComponent {}
       const activatedModal = new SdActivatedModalProvider();
 
       TestBed.configureTestingModule({
@@ -43,17 +42,20 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
           {
             provide: ActivatedRoute,
             useValue: {
-              component: MockComponent,
+              component: TestComp,
               pathFromRoot: [mockUrlRoute(""), mockUrlRoute(""), mockUrlRoute("main")],
             },
+          },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
           },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       // 모달이 우선이므로 page가 아닌 modal이어야 한다
@@ -70,22 +72,22 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
             provide: Router,
             useValue: { events: new Subject(), url: "/app/main" },
           },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
+          },
         ],
       });
 
-      class MockComponent {}
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("modal");
     });
 
     it("Scenario: 페이지 컴포넌트에서 호출 -> 기존 동작 유지 ('page')", () => {
-      class MockComponent {}
-
       TestBed.configureTestingModule({
         providers: [
           {
@@ -95,17 +97,20 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
           {
             provide: ActivatedRoute,
             useValue: {
-              component: MockComponent,
+              component: TestComp,
               pathFromRoot: [mockUrlRoute(""), mockUrlRoute(""), mockUrlRoute("main")],
             },
+          },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
           },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("page");
@@ -118,14 +123,16 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
             provide: Router,
             useValue: { events: new Subject(), url: "/app/main" },
           },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
+          },
         ],
       });
 
-      class MockComponent {}
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("control");

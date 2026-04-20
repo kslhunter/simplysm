@@ -14,32 +14,6 @@ function mark(sig: WritableSignal<any>): void
 |-----------|------|-------------|
 | `sig` | `WritableSignal<any>` | 대상 signal. 배열이면 `[...v]`, 객체이면 `{...v}`로 shallow copy하여 update |
 
-### `withBusy`
-
-busy count를 증감시키면서 비동기 작업을 실행한다. finally에서 감소하므로 에러 시에도 안전.
-
-```typescript
-async function withBusy(
-  busyCount: WritableSignal<number>,
-  fn: () => Promise<void>,
-): Promise<void>
-```
-
-### `injectParent`
-
-ViewContainerRef injector chain을 순회하여 가장 가까운 부모 컴포넌트 인스턴스를 반환한다. Angular 내부 `_lView[8]` (CONTEXT slot) 사용.
-
-```typescript
-function injectParent<T = object>(): T;
-function injectParent<T = object>(type: AbstractType<T>): T;
-function injectParent<T = object>(type: AbstractType<T>, options: { optional: true }): T | undefined;
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `type` | `AbstractType<T>` | 필터링할 부모 타입. 생략 시 가장 가까운 부모 반환 |
-| `options.optional` | `true` | 부모를 찾지 못해도 에러 대신 undefined 반환 |
-
 ### `setSafeStyle`
 
 Renderer2를 사용하여 여러 CSS 스타일을 일괄 적용한다.
@@ -105,14 +79,13 @@ function injectViewTitleSignal(): Signal<string>
 현재 뷰의 타입 signal. 모달/페이지/컨트롤 중 하나를 반환한다.
 
 ```typescript
-function injectViewTypeSignal(getComp: () => object): Signal<SdViewType>
+function injectViewTypeSignal(): Signal<SdViewType>
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `getComp` | `() => object` | 현재 컴포넌트 인스턴스 반환 함수 (보통 `() => this`) |
-
-반환값: `"modal"` (SdActivatedModalProvider 존재), `"page"` (라우트 컴포넌트이고 fullPageCode === currPageCode), `"control"` (그 외)
+내부 판정 로직:
+- `SdActivatedModalProvider`가 inject되면 `"modal"`
+- `ActivatedRoute.component`의 `reflectComponentType().selector`가 호스트 `ElementRef.nativeElement.tagName.toLowerCase()`와 일치하고 `fullPageCode() === currPageCode?.()`이면 `"page"`
+- 그 외 `"control"`
 
 ## Manager Functions
 
@@ -268,29 +241,4 @@ function setupCanDeactivate(fn: () => boolean): void
 
 모달 내부이면 `SdActivatedModalProvider.canDeactivateFn`에 설정, 라우트 내부이면 `routeConfig.canDeactivate`에 추가.
 
-### `setupCumulateSelectedKeys`
 
-items 변경 시 selectedItems 동기화, selectedItems 변경 시 selectedItemKeys 갱신.
-
-```typescript
-function setupCumulateSelectedKeys<TItem, TKey>(options: {
-  items: Signal<TItem[]>;
-  selectedItems: WritableSignal<TItem[]>;
-  selectedItemKeys: WritableSignal<TKey[]>;
-  selectMode: () => "single" | "multi" | undefined;
-  keySelectorFn: (item: TItem) => TKey | undefined;
-}): void
-```
-
-### `setupCloserWhenSingleSelectionChange`
-
-단일 선택 모드에서 선택이 변경되면 모달을 자동으로 닫는다.
-
-```typescript
-function setupCloserWhenSingleSelectionChange<TItem, TKey>(options: {
-  selectedItemKeys: Signal<TKey[]>;
-  selectedItems: Signal<TItem[]>;
-  selectMode: () => "single" | "multi" | undefined;
-  close: OutputEmitterRef<SelectModalOutputResult<TItem>>;
-}): void
-```

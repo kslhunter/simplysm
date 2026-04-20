@@ -62,11 +62,11 @@
 
 ### Epic 1. 데이터 리스트 CRUD 추상화 제거
 
-#### [ ] Feature 1.1 SdDataSheet 추상화 전면 제거 및 리스트 화면 조립 레시피 확립
+#### [x] Feature 1.1 SdDataSheet 추상화 전면 제거 및 리스트 화면 조립 레시피 확립
 
 **의존성:** 4.1, 5.1
 
-**범위:**
+**범위:** (세부 계획: [1.1-sd-data-sheet-removal.md](./1.1-sd-data-sheet-removal.md), 2026-04-20 plan 확정)
 
 - `packages/angular/src/data/data-sheet/sd-data-sheet.base.ts` 삭제 (253줄, `SdDataSheetBase` 추상 클래스)
 - `packages/angular/src/data/data-sheet/sd-data-sheet.ts` 삭제 (`SdDataSheet` 컴포넌트, `injectParent<SdDataSheetBase<any>>()` 역참조 포함)
@@ -88,7 +88,7 @@
 - `packages/angular/docs/recipes/crud-list.md` 신설 — `<sd-sheet>` + `<sd-form>` + 필터 signal + `useSortingManager`/`useSelectionManager` + `withBusy` + `setupCanDeactivate` + 페이지네이션 + 인라인/모달 편집 + 엑셀 업로드/다운로드 + 삭제·복구 토글을 화면 코드 안에서 직접 조립하는 완성 코드 스니펫. 삭제된 `SdDataSheetBase`가 제공하던 기능 목록(초기 refresh, canDeactivate, `ArrayOneWayDiffResult` 기반 diff 제출, `setupCumulateSelectedKeys`, `setupCloserWhenSingleSelectionChange`, ORM 에러 토스트, busy 카운트 관리, `summaryData` 계산)을 빠짐없이 재현 가능한 레퍼런스 코드
   - **레시피 작성 관용 규칙 1 (셀 내부 컨트롤 `inset`/`size`)**: 시트 셀(`<sd-sheet-column>`의 `[cell]` 템플릿) 내부에 삽입되는 컨트롤(`sd-textfield`/`sd-select`/`sd-checkbox`/`sd-numpad`/`sd-date-range-picker`/`sd-textarea` 등)은 `[inset]="true" [size]="'sm'"`를 명시한다. 예외: 복합 구조(텍스트+컨트롤)는 `[inset]="false"`, 큰 시트 행은 `[size]` 생략. 누락 시 컴파일 에러 없이 스타일만 깨지므로 레시피의 "자주 하는 실수" 섹션에 명시
   - **레시피 작성 관용 규칙 2 (`mark(sig)` 역할 정확한 서술)**: `mark(sig)`는 "저장 감지"가 아니라 **UI 동기화**용이다. `obj.equal`(`packages/core-common/src/utils/obj.ts:172`)이 deep equal로 값 차이를 감지하므로 signal mutation은 `mark` 없이도 `submit`에서 감지된다. mark의 실제 역할은 signal 참조 갱신 → OnPush 템플릿 재렌더링 + 다른 computed/effect 의존성 갱신. Chrome 61 호환성(Proxy 폴리필 불가)으로 자동 notify 불가하여 명시적 호출이 필요하다는 점을 설명. ❌ "mark 없으면 저장이 안 된다" 식 서술 금지
-  - **레시피 작성 관용 규칙 3 (`sortingDefs` + `orderBy` 체인 경로)**: `.tasks/260420165650_orm-common-orderby-string-overload/plan.md`에서 `Queryable.orderBy`에 string overload가 추가되면 `qr.orderBy(s.key, s.desc ? "DESC" : "ASC")`로 간결하게 쓴다. overload 추가 전 시점이면 `qr.orderBy((item) => obj.getChainValue(item, s.key, true) as any, ...)` 형태로 작성 후 overload 완료 시 레시피 업데이트
+  - **레시피 작성 관용 규칙 3 (`sortingDefs` + `orderBy` 체인 경로)**: `Queryable.orderBy` string overload는 **완료**됨(`packages/orm-common/src/exec/queryable.ts:420`, 2026-04-20 plan 단계 확인). 레시피는 `qr.orderBy(s.key, s.desc ? "DESC" : "ASC")` 형태로 작성
 - `packages/angular/docs/ui-data.md` 내 `SdDataSheet`/`SdDataSheetBase` 관련 섹션 제거 및 레시피 경로로 링크 교체
 - `packages/angular/README.md` 내 API 표에서 `SdDataSheet`/`SdDataSheetBase`/`SdDataSheetColumn` 행 제거, 레시피 링크 추가
 - Feature 완료 시 `pnpm check -t angular` 및 관련 vitest 통과 확인
@@ -120,11 +120,11 @@
 
 ### Epic 2. 데이터 상세폼 CRUD 추상화 제거
 
-#### [ ] Feature 2.1 SdDataDetail 추상화 전면 제거 및 상세폼 화면 조립 레시피 확립
+#### [x] Feature 2.1 SdDataDetail 추상화 전면 제거 및 상세폼 화면 조립 레시피 확립
 
 **의존성:** 1.1, 4.1
 
-**범위:**
+**범위:** (세부 계획: [2.1-sd-data-detail-removal.md](./2.1-sd-data-detail-removal.md), 2026-04-20 plan 확정 — 부수 문서 `CLAUDE.md`·`features.md`·`naming-convention.verify.md`의 SdDataDetail 언급 정리까지 Feature 2.1 범위로 확장(D4))
 
 - `packages/angular/src/data/data-detail/sd-data-detail.base.ts` 삭제 (158줄, `SdDataDetailBase` 추상 클래스 + `SdDataDetailDataInfo` 인터페이스)
 - `packages/angular/src/data/data-detail/sd-data-detail.ts` 삭제 (`SdDataDetail` 컴포넌트, `injectParent<SdDataDetailBase<any>>()` 역참조 포함)
@@ -135,8 +135,12 @@
 - `packages/angular/docs/features-data-detail.md` 삭제
 - `packages/angular/docs/recipes/crud-detail.md` 신설 — `<sd-form>` + load/save/delete 라이프사이클 + `obj.equal` snapshot 기반 변경 감지 + `setupCanDeactivate`를 이용한 이탈 방지 + busy 카운트 + `SdToastProvider.try`를 이용한 ORM 에러 메시지 변환 + Ctrl+S/Ctrl+Alt+L 단축키 처리(`SdCommandDirective`)를 화면 파일에 직접 조립하는 완성 코드 스니펫. 페이지 뷰와 모달 뷰 모두 커버
   - **레시피 작성 관용 규칙 (`mark(data)` 역할 정확한 서술)**: `mark(data)`는 "저장 감지"가 아니라 **UI 동기화**용이다. `obj.equal`(`packages/core-common/src/utils/obj.ts:172`)이 deep equal로 snapshot과 값 차이를 감지하므로 `data().field = value` mutation은 `mark` 없이도 `submit`에서 감지된다. mark의 실제 역할은 signal 참조 갱신 → OnPush 템플릿 재렌더링 + 다른 computed/effect 의존성 갱신. Chrome 61 호환성(Proxy 폴리필 불가)으로 자동 notify 불가하여 명시적 호출이 필요하다는 점을 설명. ❌ "mark 없으면 저장이 안 된다" 식 서술 금지
-- `packages/angular/docs/ui-data.md` 내 `SdDataDetail`/`SdDataDetailBase` 섹션 제거
-- `packages/angular/README.md` API 표에서 해당 행 제거
+- `packages/angular/docs/ui-data.md` 내 `SdDataDetail`/`SdDataDetailBase` 섹션 제거 (plan 단계 확인: `ui-data.md`에 해당 심볼 언급 없음 — Grep 결과 2026-04-20. 실제 정리 대상 파일은 아래 확장 문서들)
+- `packages/angular/README.md` API 표에서 해당 행 제거 (`:163-164` SdDataDetailBase/SdDataDetail, `:179` SdDataDetailDataInfo, `:343`·`:362` 상속 설명)
+- **부수 문서 정리 확장(Feature 2.1 범위 — D4, AskUserQuestion 2026-04-20):**
+  - `packages/angular/CLAUDE.md:58, 93, 199-200` SdDataDetail 언급 제거 (SdDataSelectButton 관련은 Feature 3.1까지 유지)
+  - `packages/angular/docs/features.md:50-78` "Data View Abstractions" 섹션 내 SdDataDetail 행·Cross-ref·`SdDataDetailDataInfo` 공통 타입 블록만 제거 (SdDataSelectButton 행·섹션 제목은 유지 — Feature 3.1에서 최종 정리)
+  - `packages/angular/tests/naming-convention.verify.md:21` SdDataDetailBase 체크리스트 항목 삭제
 - Feature 완료 시 `pnpm check -t angular` 통과 확인
 
 **경계:**
@@ -157,11 +161,11 @@
 
 ### Epic 3. 모달 선택 버튼 추상화 제거
 
-#### [ ] Feature 3.1 SdDataSelectButton 추상화 제거 및 SdSharedDataSelectButton 재구현
+#### [x] Feature 3.1 SdDataSelectButton 추상화 제거 및 SdSharedDataSelectButton 재구현
 
 **의존성:** 1.1, 4.1, 5.1
 
-**범위:**
+**범위:** (세부 계획: [3.1-sd-data-select-button-removal.md](./3.1-sd-data-select-button-removal.md), 2026-04-20 plan 확정)
 
 - `packages/angular/src/data/data-select-button/sd-data-select-button.base.ts` 삭제 (`SdDataSelectButtonBase` 추상 클래스)
 - `packages/angular/src/data/data-select-button/sd-data-select-button.ts` 삭제 (`SdDataSelectButton` 컴포넌트)
@@ -295,11 +299,11 @@
 
 ### Epic 6. core 유틸 정리 및 수정
 
-#### [ ] Feature 6.1 고아화된 core 유틸 삭제·수정 + index.ts export 정리 + SdBaseContainer 파일/export 삭제(4.1 이관분)
+#### [x] Feature 6.1 고아화된 core 유틸 삭제·수정 + index.ts export 정리 + SdBaseContainer 파일/export 삭제(4.1 이관분)
 
-**의존성:** 1.1, 2.1, 3.1, 4.1 (모두 완료 후 — 비삭제 사용처가 0이 된 상태에서 안전하게 제거 가능)
+**의존성:** 1.1, 2.1, 3.1, 4.1, 5.1 (모두 완료 후 — 비삭제 사용처가 0이 된 상태에서 안전하게 제거 가능). 5.1 포함 사유: `setupCumulateSelectedKeys` 삭제의 대체 기능이 5.1에서 `<sd-sheet [cumulativeSelection]>`로 제공되어야 소비자가 마이그레이션 가능
 
-**범위:**
+**범위:** (세부 계획: [6.1-core-utils-cleanup.md](./6.1-core-utils-cleanup.md), 2026-04-20 plan 확정)
 
 삭제 대상 4종 (파일 전체 삭제):
 - `packages/angular/src/core/commons.ts` — `TXT_CHANGE_IGNORE_CONFIRM` 상수 (공개 API로 export 중이나 앱별 커스터마이즈가 더 적합)

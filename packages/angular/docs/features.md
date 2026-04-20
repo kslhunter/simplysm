@@ -47,53 +47,14 @@ class SdPermissionTable<TModule = unknown> {
 | `items` | `SdPermission<TModule>[]` | `[]` | 권한 트리 |
 | `disabled` | `boolean` | `false` | 비활성화 |
 
-## Data View Abstractions
+## Data View Composition (Recipes)
 
-CRUD·선택 워크플로의 보일러플레이트를 제거하는 추상 클래스 3종. 소비 프로젝트는 Base 클래스를 상속하고 컴포넌트 템플릿 루트에 presentation 컴포넌트(`<sd-data-sheet>` / `<sd-data-detail>` / `<sd-data-select-button>`)를 배치한다. presentation 컴포넌트는 `injectParent<…Base<…>>()`로 부모 상속자를 자동 감지하여 렌더링한다.
+CRUD 리스트(시트) · 상세 폼 · 모달 선택 버튼은 추상 클래스 대신 **레시피 기반 직접 조립** 방식을 사용한다. `<sd-sheet>` + `<sd-form>` · `<sd-modal-select-button>` 등 표준 컴포넌트를 화면 코드가 직접 결합한다. 조립 레시피:
 
-각 추상화의 상세 스펙(override 체크리스트, Base 노출 signal/메서드, 템플릿 슬롯, 단축키, 합성 패턴, 실전 예시)은 전용 문서를 참조한다.
-
-| 추상화 | Base 클래스 | Presentation | 용도 |
-|---|---|---|---|
-| 시트 | `SdDataSheetBase<TFilter, TItem, TKey>` | `<sd-data-sheet>` + `<sd-data-sheet-column>` | 목록 + 필터 + 페이지네이션 + 정렬 + CRUD + 엑셀 업·다운로드 + 모달 선택 |
-| 상세 | `SdDataSheetBase<T, R>` | `<sd-data-detail>` | 단일 레코드 로딩/저장/삭제 폼 (페이지·모달·컨트롤 뷰) |
-| 선택 버튼 | `SdDataSelectButtonBase<TItem, TKey, TMode>` | `<sd-data-select-button>` | 모달 기반 선택 버튼 (키 저장 + 비동기 load로 표시) |
-
-### Cross-reference
-
-- 시트: [features-data-sheet.md](./features-data-sheet.md)
-- 상세: [features-data-detail.md](./features-data-detail.md)
-- 선택 버튼: [features-data-select-button.md](./features-data-select-button.md)
-
-### 공통 타입
-
-```typescript
-interface SdDataSheetItemPropInfo<I> {
-  isDeleted: (keyof I & string) | undefined;
-  lastModifiedAt: (keyof I & string) | undefined;
-  lastModifiedBy: (keyof I & string) | undefined;
-}
-
-interface SdDataSheetItemInfo<K> {
-  key: K;
-  canSelect: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}
-
-interface SdDataSheetSearchResult<I> {
-  items: I[];
-  pageLength?: number;
-  summary?: Partial<I>;
-}
-
-interface SdDataDetailDataInfo {
-  isNew: boolean;
-  isDeleted: boolean;
-  lastModifiedAt: DateTime | undefined;
-  lastModifiedBy: string | undefined;
-}
-```
+- 리스트(시트): [recipes/crud-list.md](./recipes/crud-list.md)
+- 상세: [recipes/crud-detail.md](./recipes/crud-detail.md)
+- 선택 버튼: [recipes/data-select-button.md](./recipes/data-select-button.md)
+- 페이지/모달 컨테이너: [recipes/page-modal-container.md](./recipes/page-modal-container.md)
 
 ## Shared Data Controls
 
@@ -127,15 +88,23 @@ class SdSharedDataSelect<TItem extends SharedDataBase<string | number>, TMode ex
 
 ### `SdSharedDataSelectButton`
 
-공유 데이터 모달 선택 버튼. `SdDataSelectButton`을 래핑하여 공유 데이터 항목을 표시한다.
+공유 데이터 모달 선택 버튼. `<sd-modal-select-button>`을 컴포지션하여 공유 데이터 항목을 표시한다. `value` 또는 `items` 변경 시 내부에서 `items.filter(by __valueKey)`로 표시 항목이 자동 동기화된다.
 
 ```typescript
 @Component({ selector: "sd-shared-data-select-button" })
-class SdSharedDataSelectButton<TItem extends SharedDataBase<...>, TMode extends keyof SelectModeValue<...>, TModal extends SdSelectModal<any>> {
+class SdSharedDataSelectButton<TItem extends SharedDataBase<string | number>, TMode extends keyof SelectModeValue<string | number>, TModal extends SdSelectModal<any>> {
+  value = model<SelectModeValue<string | number>[TMode]>();
   items = input<TItem[]>([]);
   modal = input.required<SdSelectModalInfo<TModal>>();
+  selectMode = input<TMode>("single" as TMode);
+  disabled = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  inset = input(false, { transform: booleanAttribute });
+  size = input<"sm" | "lg">();
 }
 ```
+
+상세 사용 예시: [recipes/data-select-button.md](./recipes/data-select-button.md) "패턴 2" 섹션.
 
 ### `SdSharedDataSelectList`
 
@@ -197,4 +166,4 @@ function getOrmDataEditToastErrorMessage(err: unknown): string
 | FK 제약 위반 (`a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE`) | `"경고! 연결된 작업에 의한 처리 거부. 후속작업 확인 요망"` |
 | 그 외 | `err.message` (또는 `String(err)`) |
 
-`SdDataSheetBase`, `SdDataDetailBase` 내부에서 사용되며, 소비 코드에서 직접 사용할 수도 있다.
+`recipes/crud-list.md` · `recipes/crud-detail.md` 레시피에서 `sdToast.try(fn, getOrmDataEditToastErrorMessage)` 패턴으로 사용된다. 소비 코드에서도 직접 호출 가능.

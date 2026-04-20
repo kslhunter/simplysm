@@ -109,6 +109,11 @@ class SdSheet<T> {
 - `viewType()` = `'modal'` + `selectMode()` = `'multi'`일 때만 누적
 - 그 외(page 뷰 또는 single 선택)는 기본 모드로 동작
 
+#### 주의사항
+
+- **초기 마운트 시 `selectedItems` 보존**: `cumulativeSelection=false`라도 **최초 `items` 구독 시점**의 `selectedItems`는 초기화되지 않는다. 이후 `items`가 교체될 때부터 초기화 규칙이 적용된다. 따라서 소비자가 컴포넌트 마운트 직후 초기 선택을 주입하는 시나리오는 안전하다.
+- **`trackByFn`은 index에 의존하지 않아야 한다**: 누적 모드에서 `selectedItems`는 현재 `displayItems`에 없는 다른 페이지 항목을 포함할 수 있다. 내부 key 비교는 이 항목에 대해 index를 `0`으로 fallback하여 `trackByFn(item, 0)`을 호출한다. `trackByFn`을 `(item, index) => \`${item.category}_${index}\`` 같이 **index에 의존하는 형태로 쓰면 동일 item에 대해 다른 key가 계산되어 `isSelected` 판정이 틀어진다**. 항상 item 속성만으로 key를 만든다: `(item) => item.id` 형태를 사용.
+
 ### `SdSheetColumn`
 
 시트 컬럼 정의 디렉티브. 컬럼의 헤더, 너비, 고정, 정렬 등을 설정한다. 셀 내용은 `SdSheetColumnCellTemplate`으로 정의한다.
@@ -178,7 +183,7 @@ class SdSheetColumnCellTemplate<T> {
 </sd-sheet-column>
 ```
 
-**셀 내용 작성 지침** (`sd-sheet-column` / `sd-data-sheet-column` 공통):
+**셀 내용 작성 지침**:
 
 - **일반 텍스트/값 표시**: 바깥에 `<div class="p-xs-sm">`로 감싸 기본 패딩을 적용한다. 정렬이 필요하면 `tx-right`, `tx-center` 등을 함께 사용한다.
 - **컨트롤(textfield/select/checkbox 등) 삽입**: 반드시 `[inset]="true"`와 `[size]="'sm'"`을 지정한다. `inset`은 컨트롤의 테두리·배경을 제거해 셀에 자연스럽게 녹아들게 하고, `sm` 사이즈는 시트 행 높이에 맞춘다. 이 경우 별도 `p-xs-sm` 래퍼는 사용하지 않는다.
@@ -186,14 +191,14 @@ class SdSheetColumnCellTemplate<T> {
 예시:
 ```html
 <!-- 일반 값 표시 -->
-<sd-data-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
+<sd-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
   <ng-template [cell]="items()" let-item>
     <div class="p-xs-sm tx-right">{{ item.id }}</div>
   </ng-template>
-</sd-data-sheet-column>
+</sd-sheet-column>
 
 <!-- 컨트롤 삽입 -->
-<sd-data-sheet-column [header]="'코드'" [key]="'code'">
+<sd-sheet-column [header]="'코드'" [key]="'code'">
   <ng-template [cell]="items()" let-item let-edit="edit">
     <sd-textfield
       [type]="'text'"
@@ -206,7 +211,7 @@ class SdSheetColumnCellTemplate<T> {
       (valueChange)="mark(items)"
     />
   </ng-template>
-</sd-data-sheet-column>
+</sd-sheet-column>
 ```
 
 ### `SdSheetCellContext`
@@ -229,7 +234,7 @@ interface SdSheetCellContext<T = unknown> {
 | `item` | `T` | 현재 항목 (명시적 접근) |
 | `index` | `number` | 행 인덱스 |
 | `depth` | `number` | 트리 깊이 |
-| `edit` | `boolean` | 편집 모드 여부 (SdDataSheetColumn의 edit input에 의해 설정) |
+| `edit` | `boolean` | 편집 모드 여부 (인라인 편집 지원 시 셀에서 참조) |
 
 ### `SdSheetConfigModal`
 

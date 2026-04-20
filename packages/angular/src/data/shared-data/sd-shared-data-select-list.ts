@@ -65,6 +65,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
           <div class="flex-fill">
             @if (headerTplRef()) {
               <ng-template [ngTemplateOutlet]="headerTplRef()!"></ng-template>
+            }
           </div>
           @if (modal()) {
             <sd-anchor (click)="onModalButtonClick()">

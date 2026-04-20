@@ -3,8 +3,6 @@ import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import { SDSBTestHost, testItem } from "./sd-shared-data-select-button-test.fixture";
-import { SdSharedDataSelectButton } from "../../../src/data/shared-data/sd-shared-data-select-button";
-import type { SdSelectModal } from "../../../src/controls/button/sd-modal-select-button";
 
 function createMockModalProvider() {
   return {
@@ -23,10 +21,17 @@ function setupTestBed() {
   });
 }
 
-async function createFixture(opts?: { value?: number | number[]; selectMode?: "single" | "multi" }) {
+async function createFixture(opts?: {
+  value?: number | number[];
+  selectMode?: "single" | "multi";
+  items?: ReturnType<typeof testItem>[];
+}) {
   const fixture = TestBed.createComponent(SDSBTestHost);
   const host = fixture.componentInstance;
 
+  if (opts?.items != null) {
+    host.items.set(opts.items);
+  }
   if (opts?.selectMode != null) {
     host.selectMode.set(opts.selectMode);
   }
@@ -42,65 +47,148 @@ async function createFixture(opts?: { value?: number | number[]; selectMode?: "s
   return { fixture, host };
 }
 
+function getItemNameTexts(fixture: { nativeElement: HTMLElement }): string[] {
+  const els = fixture.nativeElement.querySelectorAll<HTMLElement>(".item-name");
+  return Array.from(els).map((el) => el.textContent.trim());
+}
+
 describe("SdSharedDataSelectButton", () => {
   beforeEach(() => {
     setupTestBed();
   });
 
-  //#region Unit Tests — load
+  //#region value+items 자동 동기화
 
-  describe("load", () => {
-    it("keys에 해당하는 항목만 반환한다", async () => {
-      const { fixture } = await createFixture();
+  describe("value+items 자동 동기화", () => {
+    it("single 모드: value 설정 시 items에서 해당 항목이 selectedItems로 자동 추출되어 표시된다", async () => {
       const items = [testItem(1, "A"), testItem(2, "B"), testItem(3, "C")];
-      fixture.componentInstance.items.set(items);
-      fixture.detectChanges();
+      const { fixture } = await createFixture({ items, value: 2 });
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
-      expect(ctrl.load([1, 3])).toEqual([items[0], items[2]]);
+      expect(getItemNameTexts(fixture)).toEqual(["B"]);
     });
 
-    it("일치하는 항목이 없으면 빈 배열을 반환한다", async () => {
-      const { fixture } = await createFixture();
-      fixture.componentInstance.items.set([testItem(1, "A")]);
-      fixture.detectChanges();
+    it("multi 모드: value 배열 설정 시 items에서 해당 항목들이 자동 추출된다", async () => {
+      const items = [testItem(1, "A"), testItem(2, "B"), testItem(3, "C")];
+      const { fixture } = await createFixture({
+        items,
+        selectMode: "multi",
+        value: [1, 3],
+      });
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
-      expect(ctrl.load([999])).toEqual([]);
+      expect(getItemNameTexts(fixture)).toEqual(["A", "C"]);
+    });
+
+    it("value가 null이면 표시 항목이 없다", async () => {
+      const items = [testItem(1, "A"), testItem(2, "B")];
+      const { fixture } = await createFixture({ items });
+
+      expect(getItemNameTexts(fixture)).toEqual([]);
+    });
+
+    it("multi 모드에서 value가 빈 배열이면 표시 항목이 없다", async () => {
+      const items = [testItem(1, "A"), testItem(2, "B")];
+      const { fixture } = await createFixture({
+        items,
+        selectMode: "multi",
+        value: [],
+      });
+
+      expect(getItemNameTexts(fixture)).toEqual([]);
+    });
+
+    it("multi 모드에서 value에 일치하지 않는 키가 있으면 무시된다", async () => {
+      const items = [testItem(1, "A")];
+      const { fixture } = await createFixture({
+        items,
+        selectMode: "multi",
+        value: [1, 999],
+      });
+
+      expect(getItemNameTexts(fixture)).toEqual(["A"]);
     });
   });
 
   //#endregion
 
-  //#region Acceptance — 모달 선택 흐름
+  //#region items 변경 시 재계산
 
-  describe("모달 선택 흐름 (SdDataSelectButtonBase 위임)", () => {
-    it("value 설정 시 load로 selectedItems가 채워진다", async () => {
-      const items = [testItem(1, "A"), testItem(2, "B")];
-      const { fixture, host } = await createFixture();
-      host.items.set(items);
-      host.value.set(1);
+  describe("items 변경 시 selectedItems 재계산", () => {
+    it("value는 그대로이고 items만 변경되면 표시가 갱신된다", async () => {
+      const { fixture, host } = await createFixture({
+        items: [testItem(1, "A_old")],
+        value: 1,
+      });
+      expect(getItemNameTexts(fixture)).toEqual(["A_old"]);
+
+      host.items.set([testItem(1, "A_new")]);
       fixture.detectChanges();
       TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(getItemNameTexts(fixture)).toEqual(["A_new"]);
+    });
+
+    it("items에서 value에 해당하는 항목이 사라지면 표시 항목이 비워진다", async () => {
+      const { fixture, host } = await createFixture({
+        items: [testItem(1, "A")],
+        value: 1,
+      });
+      expect(getItemNameTexts(fixture)).toEqual(["A"]);
+
+      host.items.set([testItem(2, "B")]);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(getItemNameTexts(fixture)).toEqual([]);
+    });
+  });
+
+  //#endregion
+
+  //#region 모달 선택 흐름 (SdModalSelectButton 위임)
+
+  describe("모달 선택 흐름", () => {
+    it("검색 버튼 클릭 시 SdModalProvider.showAsync가 호출되고 결과 selectedItemKeys가 value로 반영된다", async () => {
+      const items = [testItem(1, "A"), testItem(2, "B")];
+      mockModal.showAsync.mockResolvedValue({
+        selectedItemKeys: [2],
+        selectedItems: [items[1]],
+      });
+
+      const { fixture, host } = await createFixture({ items });
+
+      const el = fixture.nativeElement as HTMLElement;
+      const searchBtn = el.querySelector<HTMLElement>(
+        "sd-modal-select-button ._button sd-button button",
+      );
+      expect(searchBtn).not.toBeNull();
+      searchBtn!.click();
+      await new Promise<void>((r) => setTimeout(r, 0));
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(mockModal.showAsync).toHaveBeenCalled();
+      expect(host.value()).toBe(2);
+      expect(getItemNameTexts(fixture)).toEqual(["B"]);
+    });
+
+    it("모달 취소(undefined 반환) 시 value가 변경되지 않는다", async () => {
+      const items = [testItem(1, "A")];
+      mockModal.showAsync.mockResolvedValue(undefined);
+
+      const { fixture, host } = await createFixture({ items, value: 1 });
+
+      const el = fixture.nativeElement as HTMLElement;
+      const searchBtn = el.querySelector<HTMLElement>(
+        "sd-modal-select-button ._button sd-button button",
+      );
+      searchBtn!.click();
       await new Promise<void>((r) => setTimeout(r, 0));
       fixture.detectChanges();
 
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
-      expect(ctrl.selectedItems()).toEqual([items[0]]);
-    });
-
-    it("doShowModal 호출 후 결과가 value에 반영된다", async () => {
-      const items = [testItem(1, "A"), testItem(2, "B")];
-      const { fixture, host } = await createFixture();
-      host.items.set(items);
-      fixture.detectChanges();
-
-      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelectButton<any, any, SdSelectModal<any>>;
-      mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [2], selectedItems: [] });
-
-      await ctrl.doShowModal();
-
-      expect(host.value()).toBe(2);
+      expect(host.value()).toBe(1);
     });
   });
 

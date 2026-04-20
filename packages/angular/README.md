@@ -18,7 +18,6 @@ npm install @simplysm/angular
 |-----|------|-------------|
 | `provideSdAngular` | function | 모든 기반 설정을 제공하는 환경 프로바이더 팩토리 |
 | `SdAngularConfigProvider` | class | `clientName` 설정을 보유하는 프로바이더 |
-| `TXT_CHANGE_IGNORE_CONFIRM` | const | 변경사항 무시 확인 메시지 문자열 |
 
 -> See [docs/bootstrap.md](./docs/bootstrap.md) for details.
 
@@ -113,8 +112,6 @@ npm install @simplysm/angular
 | API | Type | Description |
 |-----|------|-------------|
 | `mark` | function | WritableSignal 변경 알림 트리거 (shallow copy) |
-| `withBusy` | function | busy count 증감과 함께 비동기 작업 실행 |
-| `injectParent` | function | 가장 가까운 부모 컴포넌트 인스턴스 주입 |
 | `setSafeStyle` | function | Renderer2로 여러 CSS 스타일 일괄 적용 |
 | `injectSdSystemConfigResource` | function | 시스템 설정 resource 래퍼 |
 | `injectCurrentPageCodeSignal` | function | 현재 페이지 코드 signal |
@@ -130,8 +127,6 @@ npm install @simplysm/angular
 | `setupInvalid` | function | 유효성 검증 표시기 설정 |
 | `setupModelHook` | function | model signal의 set을 가드 함수로 래핑 |
 | `setupCanDeactivate` | function | 모달/라우트 canDeactivate 설정 |
-| `setupCumulateSelectedKeys` | function | 선택된 항목의 키 누적 동기화 |
-| `setupCloserWhenSingleSelectionChange` | function | 단일 선택 변경 시 모달 자동 닫기 |
 
 -> See [docs/utils.md](./docs/utils.md) for details.
 
@@ -160,29 +155,14 @@ npm install @simplysm/angular
 | `SdAddressSearchModal` | component | Daum Postcode 주소 검색 모달 |
 | `Address` | interface | 주소 검색 결과 |
 | `SdPermissionTable` | component | 권한 매트릭스 테이블 (items, value) |
-| `SdDataSheetBase` | class | 데이터 시트 CRUD 추상 클래스 (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataSheet` | component | 데이터 시트 presentation 컴포넌트 (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataSheetColumn` | directive | 데이터 시트 컬럼 (edit 추가) (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataDetailBase` | class | 상세 폼 추상 클래스 (→ [features-data-detail.md](./docs/features-data-detail.md)) |
-| `SdDataDetail` | component | 상세 폼 presentation 컴포넌트 (→ [features-data-detail.md](./docs/features-data-detail.md)) |
-| `SdDataSelectButtonBase` | class | 모달 기반 선택 버튼 추상 클래스 (→ [features-data-select-button.md](./docs/features-data-select-button.md)) |
-| `SdDataSelectButton` | component | 선택 버튼 presentation 컴포넌트 (→ [features-data-select-button.md](./docs/features-data-select-button.md)) |
+| 데이터 시트 CRUD 화면 조립 | recipe | → [recipes/crud-list.md](./docs/recipes/crud-list.md) (`<sd-sheet>`+`<sd-form>`+필터+페이지네이션+편집 직접 조립) |
+| 상세폼 CRUD 화면 조립 | recipe | → [recipes/crud-detail.md](./docs/recipes/crud-detail.md) (`<sd-form>`+load/save/delete+snapshot 변경감지+setupCanDeactivate+Ctrl+S 직접 조립) |
+| 모달 선택 버튼 화면 조립 | recipe | → [recipes/data-select-button.md](./docs/recipes/data-select-button.md) (`<sd-modal-select-button>` 직접 / `<sd-shared-data-select-button>` / 사용자 정의 wrapper) |
 | `SdSharedDataSelect` | component | 공유 데이터 드롭다운 선택 |
-| `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 |
+| `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 (→ [recipes/data-select-button.md](./docs/recipes/data-select-button.md)) |
 | `SdSharedDataSelectList` | component | 공유 데이터 목록형 선택 (selectedItem model) |
 | `matchesSearchText` | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
 | `getOrmDataEditToastErrorMessage` | function | ORM 편집 에러 메시지 변환 (FK 위반 등 DB 에러를 한국어 메시지로) |
-
--> See [docs/features.md](./docs/features.md) for details.
-
-### Feature Types
-
-| API | Type | Description |
-|-----|------|-------------|
-| `SdDataSheetItemPropInfo` | interface | 데이터 시트 항목 속성 정보 (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataSheetItemInfo` | interface | 데이터 시트 항목 정보 (key, canSelect 등) (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataSheetSearchResult` | interface | 데이터 시트 검색 결과 (→ [features-data-sheet.md](./docs/features-data-sheet.md)) |
-| `SdDataDetailDataInfo` | interface | 상세 폼 데이터 정보 (→ [features-data-detail.md](./docs/features-data-detail.md)) |
 
 -> See [docs/features.md](./docs/features.md) for details.
 
@@ -345,8 +325,8 @@ export class SomePage implements OnInit {
 
 | 접미어 | 조건 | 파일명 예시 | 클래스명 예시 |
 |--------|------|-------------|---------------|
-| `.sheet.ts` / `*Sheet` | `SdDataSheetBase` 상속 | `outbound-instruction.sheet.ts` | `OutboundInstructionSheet` |
-| `.detail.ts` / `*Detail` | `SdDataDetailBase` 상속 | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` |
+| `.sheet.ts` / `*Sheet` | `<sd-sheet>` 기반 CRUD 리스트 화면 ([recipes/crud-list.md](./docs/recipes/crud-list.md)) | `outbound-instruction.sheet.ts` | `OutboundInstructionSheet` |
+| `.detail.ts` / `*Detail` | `<sd-form>` 기반 상세 폼 화면 ([recipes/crud-detail.md](./docs/recipes/crud-detail.md)) | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` |
 | `.view.ts` / `*View` | sheet/detail 아닌 병합 컴포넌트 + route 연결 | `dashboard.view.ts` | `DashboardView` |
 | `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 | `item-select.modal.ts` | `ItemSelectModal` |
 | `.provider.ts` / `*Provider` | `@Injectable` 클래스 (**`*Service` 금지**) | `app-service.provider.ts` | `AppServiceProvider` |
@@ -364,8 +344,8 @@ src/
 │       ├── {메뉴-그룹}/                  # 사이드바 메뉴 그룹
 │       │   └── {도메인}/                 # 개별 도메인 (트리 깊이 제한 없음)
 │       │       ├── {도메인}.view.ts      # route 연결 병합 컴포넌트
-│       │       ├── {도메인}.sheet.ts     # SdDataSheetBase 상속
-│       │       ├── {도메인}.detail.ts    # SdDataDetailBase 상속
+│       │       ├── {도메인}.sheet.ts     # <sd-sheet> 기반 CRUD 리스트 (recipes/crud-list.md)
+│       │       ├── {도메인}.detail.ts    # <sd-form> 기반 상세 폼 (recipes/crud-detail.md)
 │       │       ├── {이름}.modal.ts       # 도메인 전용 모달
 │       │       └── {이름}.ts            # 일반 컨트롤 (route 미연결)
 │       └── main/

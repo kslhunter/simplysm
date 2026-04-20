@@ -13,7 +13,6 @@ import { SdOptionEventPlugin } from "../src/core/events/sd-option-event.plugin";
 import { SdThemeProvider } from "../src/features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "../src/core/config/sd-local-storage.provider";
 import { SdBusyProvider } from "../src/core/busy/sd-busy.provider";
-import { TXT_CHANGE_IGNORE_CONFIRM } from "../src/core/commons";
 
 describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
   afterEach(() => {
@@ -240,13 +239,6 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     });
   });
 
-  // ── commons.ts ──
-
-  describe("commons.ts", () => {
-    it("TXT_CHANGE_IGNORE_CONFIRM 상수가 export된다", () => {
-      expect(TXT_CHANGE_IGNORE_CONFIRM).toContain("변경사항이 있습니다");
-    });
-  });
 });
 
 describe("FIX-1 Slice 3: provideSdAngular 수정", () => {

@@ -18,6 +18,4 @@
 
 ### Slice 2: Abstract class inject → protected
 
-- [x] `SdDataDetailBase`: `_sdToast`, `_sdSharedData`, `_errorHandler` 모두 protected (sd-data-detail.base.ts:50-52)
-- [x] `SdDataSelectButtonBase`: `_sdModal` protected (sd-data-select-button.base.ts:35)
 - [x] `SdSharedDataProvider`: `_sdClientFactory`, `_errorHandler` 모두 protected (sd-shared-data.provider.ts:43-44)

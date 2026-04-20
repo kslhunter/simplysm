@@ -22,7 +22,7 @@ function getTriggerText(fixture: any): string {
   const contentEl = fixture.nativeElement.querySelector(
     "sd-select ._sd-select-control-content",
   ) as HTMLElement | null;
-  return contentEl?.textContent?.trim() ?? "";
+  return (contentEl?.textContent ?? "").trim();
 }
 
 describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
@@ -60,7 +60,6 @@ describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const selectCtrl = getSelectControl(fixture);
     await vi.waitFor(() => {
       fixture.detectChanges();
       TestBed.flushEffects();

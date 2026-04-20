@@ -29,14 +29,14 @@ src/
 │   ├── print/            SdPrintProvider
 │   ├── ripple/           sd-ripple, setupRipple
 │   ├── routing/          sd-router-link, sd-navigate-window.provider, inject*PageCode, injectViewType/Title, setupCanDeactivate, menu-utils
-│   ├── selection/        useSelectionManager, useSortingManager, useExpandingManager, setupCumulateSelectedKeys
+│   ├── selection/        useSelectionManager, useSortingManager, useExpandingManager
 │   ├── service-client/   SdServiceClientFactoryProvider
 │   ├── shared-data/      SdSharedDataProvider
 │   ├── show-effect/      sd-show-effect, setupRevealOnShow
 │   ├── template/         sd-typed-template, sd-item-of-template
 │   ├── toast/            SdToast, SdToastContainer, SdToastProvider
 │   ├── validation/       sd-invalid, setupInvalid
-│   └── (root)            mark, setSafeStyle, withBusy, setupModelHook, setupBgTheme, injectParent, directive-input-signals, select-modal-output-result, format.pipe, commons, provideSdAngular
+│   └── (root)            mark, setSafeStyle, setupModelHook, setupBgTheme, directive-input-signals, select-modal-output-result, format.pipe, provideSdAngular
 ├── controls/             <- UI 기본요소 (core/ 의존)
 │   ├── button/           SdButton, SdAnchor, SdAdditionalButton, SdModalSelectButton
 │   ├── checkbox/         SdCheckbox, SdSwitch, SdCheckboxGroup, SdCheckboxGroupItem
@@ -50,14 +50,10 @@ src/
 │   ├── select/           SdSelect, SdSelectItem, SdSelectButton
 │   └── tab/              SdTab, SdTabItem
 ├── layout/               <- 페이지 구조 (core/ + controls/ 의존)
-│   ├── base-container/   SdBaseContainer
 │   ├── dock/             SdDockContainer, SdDock
 │   ├── sidebar/          SdSidebarContainer, SdSidebar, SdSidebarMenu, SdSidebarUser
 │   └── topbar/           SdTopbarContainer, SdTopbar, SdTopbarMenu, SdTopbarUser
-├── data/                 <- 비즈니스 CRUD 추상화 (core/ + controls/ + layout/ 의존)
-│   ├── data-detail/      SdDataDetail, SdDataDetailBase
-│   ├── data-select-button/  SdDataSelectButton, SdDataSelectButtonBase
-│   ├── data-sheet/       SdDataSheet, SdDataSheetBase, SdDataSheetColumn, setupCloserWhenSingleSelectionChange
+├── data/                 <- 비즈니스 CRUD 컴포넌트 (core/ + controls/ + layout/ 의존)
 │   ├── kanban/           SdKanbanBoard, SdKanban, SdKanbanLane
 │   ├── permission-table/ SdPermissionTable
 │   ├── shared-data/      SdSharedDataSelect/SelectButton/SelectList, matchesSearchText
@@ -91,7 +87,6 @@ src/
 | 컴포넌트 | `Sd{Name}` | `sd-{name}.ts` | `SdButton`, `SdSelect`, `SdModal` |
 | 디렉티브 | `Sd{Name}` | `sd-{name}.ts` | `SdRipple`, `SdInvalid`, `SdRouterLink` |
 | Provider | `Sd{Name}Provider` | `sd-{name}.provider.ts` | `SdToastProvider`, `SdModalProvider` |
-| 추상 클래스 | `Sd{Name}Base` | `sd-{name}.base.ts` | `SdDataSheetBase`, `SdDataDetailBase` |
 | 파이프 | `{Name}Pipe` | `{name}.pipe.ts` | `FormatPipe` |
 | 플러그인 | `Sd{Name}EventPlugin` | `sd-{name}.plugin.ts` | `SdResizeEventPlugin` |
 
@@ -150,18 +145,16 @@ src/
 
 - **inject 함수** (DI 의존성 기반 상태/API 제공)
   - `injectSdSystemConfigResource(options: { key: Signal<string | undefined> })`: `SdSystemConfigProvider`를 통해 컴포넌트 태그명 기반 키로 시스템 설정을 읽고 쓰는 `ResourceRef` 래퍼. `value`, `isLoading`, `set()`, `update()` 반환
-  - `injectCurrentPageCodeSignal()`, `injectFullPageCodeSignal()`, `injectViewTitleSignal()`, `injectViewTypeSignal(getComp)`: 라우터 기반 현재 페이지 코드/타이틀/뷰 타입 signal
+  - `injectCurrentPageCodeSignal()`, `injectFullPageCodeSignal()`, `injectViewTitleSignal()`, `injectViewTypeSignal()`: 라우터 기반 현재 페이지 코드/타이틀/뷰 타입 signal. `injectViewTypeSignal()`은 `inject(ElementRef)` + `reflectComponentType(activatedRoute.component)?.selector` vs 호스트 `tagName.toLowerCase()` 비교로 page 판정 (`SdActivatedModalProvider` 존재 시 modal 우선)
   - `injectPermsSignal(viewCodes, keys)`: 앱 구조 기반 권한 signal
-  - `injectParent(type?, options?)`: ViewContainerRef injector chain을 순회하여 가장 가까운 부모 컴포넌트 인스턴스를 반환. Angular 내부 `_lView[8]` (CONTEXT slot) 사용. 3 overloads: no args, type filter, type + `{ optional: true }`
-- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()`, `setupCumulateSelectedKeys()` 등 (core/utils/setups/). `setupCloserWhenSingleSelectionChange()`은 data-sheet/에 위치
+- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()` 등 (core/utils/setups/)
   - `inject()`, `effect()`, `DestroyRef.onDestroy()` 사용하여 생성자에서 실행
 - **use 함수** (순수 Signal 유틸리티, DI 미사용) - `useSelectionManager()`, `useSortingManager()`, `useExpandingManager()`
   - Signal과 메서드를 포함한 객체 반환 (클래스가 아님)
-  - `useSelectionManager`: `displayItems`, `selectedItems`, `selectMode`, `getItemSelectableFn` signal을 받아 `hasSelectable`, `isAllSelected`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환
+  - `useSelectionManager`: `displayItems`, `selectedItems`, `selectMode`, `getItemSelectableFn`, `trackByFn` signal을 받아 `hasSelectable`, `isAllSelected`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환. `trackByFn`이 반환하는 key를 기준으로 `obj.equal`(deep equal) 비교를 수행하므로 같은 key의 다른 reference item도 `isSelected` true로 복원된다
   - `useSortingManager`: `sorts` WritableSignal을 받아 `defMap` (computed), `toggle()`, `sort()` 반환
   - `useExpandingManager`: `items`, `expandedItems`, `getChildrenFn`, `sort` 바인딩으로 `displayItems`, `hasExpandable`, `isAllExpanded`, `toggle()`, `toggleAll()`, `isVisible()`, `def()` 반환
 - **단독 유틸**
-  - `withBusy(busyCount, fn)`: `WritableSignal<number>`를 증감시켜 비동기 작업 중 busy 표시. finally에서 감소
   - `setSafeStyle(renderer, el, styles)`: Renderer2를 사용하여 여러 CSS 스타일을 안전하게 적용
   - `mark(sig)`: WritableSignal의 값을 shallow copy하여 새 참조를 생성, consumer에게 변경을 알린다. 배열은 `[...v]`, 객체는 `{...v}`로 복사
 
@@ -195,20 +188,9 @@ Angular `EventManagerPlugin` 확장:
 - `SdResizeDirective` (`[sdResize]`): ResizeObserver 기반 `sdResize` output 이벤트
 - `SdIntersectionDirective` (`[sdIntersection]`): IntersectionObserver 기반 `sdIntersection` output 이벤트
 
-### Feature Abstractions
+### Feature Composition (Recipes)
 
-`src/data-sheet/`, `src/data-detail/`, `src/data-select-button/`의 추상 클래스가 CRUD 패턴을 정의:
-- `SdDataSheetBase` - 데이터 시트 (페이지네이션, 정렬, CRUD)
-- `SdDataDetailBase` - 상세 폼 (load, save, delete)
-- `SdDataSelectButtonBase` - 모달 기반 선택 버튼
-
-소비 프로젝트에서 이 추상 클래스를 상속하여 `load()`, `submit()` 등을 구현.
-
-`SdBaseContainer`은 페이지/모달/뷰 공통 레이아웃 컨테이너:
-- `currViewType()`에 따라 page(topbar 포함) / modal(bottom 슬롯 포함) / 기타(raw content) 중 하나를 렌더링
-- `initialized` input이 `false`이면 콘텐츠를 숨김 (undefined이면 표시)
-- `restricted` input이 `true`이면 권한 없음 메시지를 표시
-- `injectParent()`를 통해 부모 컴포넌트의 뷰 타입을 자동으로 상속
+데이터 시트(CRUD 리스트), 상세 폼, 모달 선택 버튼, 페이지/모달 공통 컨테이너는 추상 클래스 대신 **레시피 기반 직접 조립** 방식을 사용한다. `<sd-sheet>`/`<sd-form>`/`<sd-modal-select-button>`/`<sd-busy-container>`/`<sd-topbar-container>`/`<sd-topbar>` 등 표준 컴포넌트를 화면 코드가 직접 결합한다. 조립 레시피: [`docs/recipes/crud-list.md`](./docs/recipes/crud-list.md), [`docs/recipes/crud-detail.md`](./docs/recipes/crud-detail.md), [`docs/recipes/data-select-button.md`](./docs/recipes/data-select-button.md), [`docs/recipes/page-modal-container.md`](./docs/recipes/page-modal-container.md).
 
 ### Type Utilities
 

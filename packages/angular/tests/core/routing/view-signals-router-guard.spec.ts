@@ -123,8 +123,6 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
   });
 
   describe("Rule: 뷰 타입 시그널을 이관한다", () => {
-    class MockComponent {}
-
     it("page 타입을 반환한다", () => {
       TestBed.configureTestingModule({
         providers: [
@@ -135,24 +133,27 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
           {
             provide: ActivatedRoute,
             useValue: {
-              component: MockComponent,
+              component: TestComp,
               pathFromRoot: [mockUrlRoute(""), mockUrlRoute(""), mockUrlRoute("main")],
             },
+          },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
           },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("page");
     });
 
-    it("control 타입을 반환한다 (컴포넌트 불일치)", () => {
-      class OtherComponent {}
+    it("control 타입을 반환한다 (컴포넌트 셀렉터 불일치)", () => {
+      const OtherComp = createTestComponent("other-comp");
 
       TestBed.configureTestingModule({
         providers: [
@@ -163,17 +164,20 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
           {
             provide: ActivatedRoute,
             useValue: {
-              component: OtherComponent,
+              component: OtherComp,
               pathFromRoot: [mockUrlRoute(""), mockUrlRoute(""), mockUrlRoute("main")],
             },
+          },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
           },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("control");
@@ -189,17 +193,20 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
           {
             provide: ActivatedRoute,
             useValue: {
-              component: MockComponent,
+              component: TestComp,
               pathFromRoot: [mockUrlRoute(""), mockUrlRoute(""), mockUrlRoute("main")],
             },
+          },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
           },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       // fullPageCode = "main.sub", currPageCode = "main" → not equal → control
@@ -213,13 +220,16 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
             provide: Router,
             useValue: { events: new Subject(), url: "/app/main" },
           },
+          {
+            provide: ElementRef,
+            useValue: { nativeElement: { tagName: "TEST-COMP" } },
+          },
         ],
       });
 
-      const comp = new MockComponent();
       let signal: Signal<SdViewType> | undefined;
       TestBed.runInInjectionContext(() => {
-        signal = injectViewTypeSignal(() => comp);
+        signal = injectViewTypeSignal();
       });
 
       expect(signal!()).toBe("control");

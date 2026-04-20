@@ -1,9 +1,13 @@
 import { NgTemplateOutlet } from "@angular/common";
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  effect,
   input,
+  model,
+  signal,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
@@ -12,11 +16,10 @@ import {
   SdItemOfTemplate,
   type SdItemOfTemplateContext,
 } from "../../core/template/sd-item-of-template";
-import { SdDataSelectButton } from "../data-select-button/sd-data-select-button";
-import { SdDataSelectButtonBase } from "../data-select-button/sd-data-select-button.base";
-import type {
-  SdSelectModal,
-  SdSelectModalInfo,
+import {
+  SdModalSelectButton,
+  type SdSelectModal,
+  type SdSelectModalInfo,
 } from "../../controls/button/sd-modal-select-button";
 import type { SelectModeValue } from "../../controls/select/sd-select";
 
@@ -25,10 +28,22 @@ import type { SelectModeValue } from "../../controls/select/sd-select";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDataSelectButton, NgTemplateOutlet, SdItemOfTemplate],
+  imports: [SdModalSelectButton, NgTemplateOutlet],
   template: `
-    <sd-data-select-button>
-      <ng-template [itemOf]="items()" let-item let-index="index">
+    <sd-modal-select-button
+      [(value)]="value"
+      [(selectedItems)]="_selectedItems"
+      [modal]="modal()"
+      [disabled]="disabled()"
+      [required]="required()"
+      [inset]="inset()"
+      [size]="size()"
+      [selectMode]="selectMode()"
+    >
+      @for (item of _selectedItems(); track item; let index = $index) {
+        @if (index !== 0) {
+          <span>,&nbsp;</span>
+        }
         <ng-template
           [ngTemplateOutlet]="itemTplRef()"
           [ngTemplateOutletContext]="{
@@ -38,25 +53,45 @@ import type { SelectModeValue } from "../../controls/select/sd-select";
             depth: 0,
           }"
         />
-      </ng-template>
-      <ng-content />
-    </sd-data-select-button>
+      }
+    </sd-modal-select-button>
   `,
 })
 export class SdSharedDataSelectButton<
   TItem extends SharedDataBase<string | number>,
   TMode extends keyof SelectModeValue<string | number>,
   TModal extends SdSelectModal<any>,
-> extends SdDataSelectButtonBase<TItem, string | number, TMode> {
+> {
+  value = model<SelectModeValue<string | number>[TMode]>();
   items = input<TItem[]>([]);
   modal = input.required<SdSelectModalInfo<TModal>>();
+  selectMode = input<TMode>("single" as TMode);
+  disabled = input(false, { transform: booleanAttribute });
+  required = input(false, { transform: booleanAttribute });
+  inset = input(false, { transform: booleanAttribute });
+  size = input<"sm" | "lg">();
 
   itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplate,
     { read: TemplateRef },
   );
 
-  override load(keys: (string | number)[]): TItem[] {
-    return this.items().filter((item) => keys.includes(item.__valueKey));
+  protected readonly _selectedItems = signal<TItem[]>([]);
+
+  constructor() {
+    effect(() => {
+      const v = this.value();
+      const items = this.items();
+      const mode = this.selectMode();
+
+      if (mode === "multi" && Array.isArray(v) && v.filterExists().length > 0) {
+        const keys = v.filterExists() as (string | number)[];
+        this._selectedItems.set(items.filter((it) => keys.includes(it.__valueKey)));
+      } else if (mode === "single" && !Array.isArray(v) && v != null) {
+        this._selectedItems.set(items.filter((it) => it.__valueKey === v));
+      } else {
+        this._selectedItems.set([]);
+      }
+    });
   }
 }
