@@ -158,15 +158,15 @@ export const selectSubstringNoLength: ExpectedSql = {
 
 export const selectIndexOf: ExpectedSql = {
   mysql: mysql`
-    SELECT LOCATE('@', \`T1\`.\`email\`) AS \`atPos\`
+    SELECT (LOCATE('@', \`T1\`.\`email\`) - 1) AS \`atPos\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`
-    SELECT CHARINDEX(N'@', [T1].[email]) AS [atPos]
+    SELECT (CHARINDEX(N'@', [T1].[email]) - 1) AS [atPos]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT POSITION('@' IN "T1"."email") AS "atPos"
+    SELECT (POSITION('@' IN "T1"."email") - 1) AS "atPos"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

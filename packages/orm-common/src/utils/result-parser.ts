@@ -17,9 +17,9 @@ declare function setImmediate(callback: () => void): void;
  * @throws 파싱 실패 시 Error
  */
 function parseValue(value: unknown, type: ColumnPrimitiveStr): unknown {
-  // null/undefined는 그대로 반환 (key 제거는 호출자가 처리)
+  // undefined는 key 제거 대상으로 남기고, null은 SQL 결과값으로 보존한다.
   if (value == null) {
-    return undefined;
+    return value;
   }
 
   switch (type) {
@@ -94,10 +94,8 @@ function flatToNested(
 
   for (const { key, type, parts } of columnInfos) {
     const rawValue = record[key];
+    if (typeof rawValue === "undefined") continue;
     const parsedValue = parseValue(rawValue, type);
-
-    // undefined 값은 key로 추가하지 않음
-    if (parsedValue == null) continue;
 
     if (parts != null) {
       // 중첩 key: "posts.id" → { posts: { id: ... } }
@@ -124,6 +122,42 @@ function flatToNested(
  */
 function isEmptyObject(record: Record<string, unknown>): boolean {
   return Object.keys(record).length === 0;
+}
+
+/**
+ * JOIN 결과 객체가 실질적으로 비어있는지 확인
+ *
+ * 모든 값이 null/undefined 이거나, 중첩 객체도 재귀적으로 비어있으면 비어있는 JOIN으로 간주한다.
+ */
+function isEmptyJoinObject(record: Record<string, unknown>): boolean {
+  const entries = Object.entries(record);
+  if (entries.length === 0) {
+    return true;
+  }
+
+  for (const [, value] of entries) {
+    if (value == null) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      if (value.length > 0) {
+        return false;
+      }
+      continue;
+    }
+
+    if (typeof value === "object") {
+      if (!isEmptyJoinObject(value as Record<string, unknown>)) {
+        return false;
+      }
+      continue;
+    }
+
+    return false;
+  }
+
+  return true;
 }
 
 // ============================================
@@ -367,7 +401,7 @@ function groupRecordsRecursively(
         const localKey = currentPath === "" ? joinKey : joinKey.slice(currentPath.length + 1);
         const joinData = newGroup[localKey] as Record<string, unknown> | undefined;
 
-        if (joinData != null && !isEmptyObject(joinData)) {
+        if (joinData != null && !isEmptyJoinObject(joinData)) {
           if (!joinsConfig[joinKey].isSingle) {
             // 배열로 변환 (hashSet은 첫 merge 시 초기화)
             newGroup[localKey] = [joinData];
@@ -466,7 +500,7 @@ function mergeJoinData(
 ): void {
   const newJoinData = newRecord[localKey] as Record<string, unknown> | undefined;
 
-  if (newJoinData == null || isEmptyObject(newJoinData)) {
+  if (newJoinData == null || isEmptyJoinObject(newJoinData)) {
     return; // 병합할 데이터 없음
   }
 

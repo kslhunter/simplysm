@@ -3,8 +3,8 @@ import { vi } from "vitest";
 import { SdDataSheet } from "../../../src/data/data-sheet/sd-data-sheet";
 import {
   SdDataSheetBase,
-  type SdDataSheetItemPropInfo,
   type SdDataSheetItemInfo,
+  type SdDataSheetItemPropInfo,
   type SdDataSheetSearchResult,
 } from "../../../src/data/data-sheet/sd-data-sheet.base";
 import { SdDataSheetColumn } from "../../../src/data/data-sheet/sd-data-sheet-column";
@@ -31,7 +31,7 @@ export interface TestItem {
 export class DSTestHost extends SdDataSheetBase<Record<string, any>, TestItem, number | undefined> {
   canUse = signal(true);
   canEdit = signal(true);
-  override editMode: "inline" | "modal" | undefined = "inline";
+  override editMode: "inline" | "modal" = "inline";
   selectMode = input<"single" | "multi" | undefined>(undefined);
 
   itemPropInfo: SdDataSheetItemPropInfo<TestItem> = {
@@ -47,9 +47,7 @@ export class DSTestHost extends SdDataSheetBase<Record<string, any>, TestItem, n
     canDelete: true,
   });
 
-  searchFn = vi.fn<
-    (usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>
-  >();
+  searchFn = vi.fn<(usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>>();
 
   bindFilter() {
     return {};
@@ -74,16 +72,33 @@ export class DSTestHost extends SdDataSheetBase<Record<string, any>, TestItem, n
     </sd-data-sheet>
   `,
 })
-export class DSHeaderStyleTest extends SdDataSheetBase<Record<string, any>, TestItem, number | undefined> {
+export class DSHeaderStyleTest extends SdDataSheetBase<
+  Record<string, any>,
+  TestItem,
+  number | undefined
+> {
   canUse = signal(true);
   canEdit = signal(true);
-  override editMode: "inline" | "modal" | undefined = "inline";
+  override editMode: "inline" | "modal" = "inline";
   selectMode = input<"single" | "multi" | undefined>(undefined);
-  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = { isDeleted: "isDeleted", lastModifiedAt: undefined, lastModifiedBy: undefined };
-  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({ key: item.id, canSelect: true, canEdit: true, canDelete: true });
+  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = {
+    isDeleted: "isDeleted",
+    lastModifiedAt: undefined,
+    lastModifiedBy: undefined,
+  };
+  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({
+    key: item.id,
+    canSelect: true,
+    canEdit: true,
+    canDelete: true,
+  });
   searchFn = vi.fn<(usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>>();
-  bindFilter() { return {}; }
-  async search(usePagination: boolean) { return this.searchFn(usePagination); }
+  bindFilter() {
+    return {};
+  }
+  async search(usePagination: boolean) {
+    return this.searchFn(usePagination);
+  }
 }
 
 @Component({
@@ -98,16 +113,33 @@ export class DSHeaderStyleTest extends SdDataSheetBase<Record<string, any>, Test
     </sd-data-sheet>
   `,
 })
-export class DSTooltipTest extends SdDataSheetBase<Record<string, any>, TestItem, number | undefined> {
+export class DSTooltipTest extends SdDataSheetBase<
+  Record<string, any>,
+  TestItem,
+  number | undefined
+> {
   canUse = signal(true);
   canEdit = signal(true);
-  override editMode: "inline" | "modal" | undefined = "inline";
+  override editMode: "inline" | "modal" = "inline";
   selectMode = input<"single" | "multi" | undefined>(undefined);
-  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = { isDeleted: "isDeleted", lastModifiedAt: undefined, lastModifiedBy: undefined };
-  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({ key: item.id, canSelect: true, canEdit: true, canDelete: true });
+  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = {
+    isDeleted: "isDeleted",
+    lastModifiedAt: undefined,
+    lastModifiedBy: undefined,
+  };
+  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({
+    key: item.id,
+    canSelect: true,
+    canEdit: true,
+    canDelete: true,
+  });
   searchFn = vi.fn<(usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>>();
-  bindFilter() { return {}; }
-  async search(usePagination: boolean) { return this.searchFn(usePagination); }
+  bindFilter() {
+    return {};
+  }
+  async search(usePagination: boolean) {
+    return this.searchFn(usePagination);
+  }
 }
 
 @Component({
@@ -123,14 +155,31 @@ export class DSTooltipTest extends SdDataSheetBase<Record<string, any>, TestItem
     </sd-data-sheet>
   `,
 })
-export class DSHeaderTplTest extends SdDataSheetBase<Record<string, any>, TestItem, number | undefined> {
+export class DSHeaderTplTest extends SdDataSheetBase<
+  Record<string, any>,
+  TestItem,
+  number | undefined
+> {
   canUse = signal(true);
   canEdit = signal(true);
-  override editMode: "inline" | "modal" | undefined = "inline";
+  override editMode: "inline" | "modal" = "inline";
   selectMode = input<"single" | "multi" | undefined>(undefined);
-  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = { isDeleted: "isDeleted", lastModifiedAt: undefined, lastModifiedBy: undefined };
-  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({ key: item.id, canSelect: true, canEdit: true, canDelete: true });
+  itemPropInfo: SdDataSheetItemPropInfo<TestItem> = {
+    isDeleted: "isDeleted",
+    lastModifiedAt: undefined,
+    lastModifiedBy: undefined,
+  };
+  getItemInfoFn = (item: TestItem): SdDataSheetItemInfo<number | undefined> => ({
+    key: item.id,
+    canSelect: true,
+    canEdit: true,
+    canDelete: true,
+  });
   searchFn = vi.fn<(usePagination: boolean) => Promise<SdDataSheetSearchResult<TestItem>>>();
-  bindFilter() { return {}; }
-  async search(usePagination: boolean) { return this.searchFn(usePagination); }
+  bindFilter() {
+    return {};
+  }
+  async search(usePagination: boolean) {
+    return this.searchFn(usePagination);
+  }
 }

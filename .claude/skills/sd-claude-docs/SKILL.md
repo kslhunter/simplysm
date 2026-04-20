@@ -1,16 +1,18 @@
 ---
 name: sd-claude-docs
-description: 프로젝트 분석을 통해 CLAUDE.md와 LLM용 usage 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "usage 문서 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
-model: claude-sonnet-4-5
+description: 프로젝트 분석을 통해 CLAUDE.md(개발자용)와 README.md/docs(소비자용) 문서를 동시 생성하는 스킬. "init", "CLAUDE.md 생성", "README 생성", "LLM 문서 만들어줘", "패키지 문서 생성" 등을 요청할 때 사용한다.
+effort: low
 ---
 
-# sd-claude-docs: CLAUDE.md + usage 문서 통합 생성
+# sd-claude-docs: CLAUDE.md + README.md/docs 통합 생성
 
-프로젝트를 분석하여 CLAUDE.md(LLM 컨텍스트)와 usage 문서(LLM용 API 문서)를 한 번에 생성한다.
+프로젝트를 분석하여 CLAUDE.md(내부 개발 컨텍스트)와 README.md/docs/(소비자용 API 문서)를 한 번에 생성한다.
 설정 파일, 스크립트, 소스 코드에서 검증 가능한 사실만 추출한다. 기존 문서가 있으면 섹션 단위로 병합한다.
 
-- **라이브러리 프로젝트** (`private: true`가 아닌 패키지가 1개 이상): CLAUDE.md + `.claude/references/sd-{name}{ver}/` usage 문서 생성
+- **라이브러리 프로젝트** (`private: true`가 아닌 패키지가 1개 이상): CLAUDE.md + 각 패키지 내 `README.md`(+ 필요 시 `docs/`)
 - **소비앱** (모든 패키지가 `private: true`): CLAUDE.md만 생성
+
+CLAUDE.md는 모노레포 **내부 개발자(LLM 포함)** 용 컨텍스트이고, README.md + docs/는 **패키지 소비자** 용 API/사용 지침 문서다. 두 문서는 독립적으로 유지한다. 패키지 CLAUDE.md 최상단에는 README.md를 참조하도록 안내 문구를 삽입한다(Step 3에서 규정).
 
 ## 사용법
 
@@ -64,11 +66,12 @@ model: claude-sonnet-4-5
 - **라이브러리 프로젝트**: `private: true`가 아닌 패키지가 1개 이상 존재
 - **소비앱**: 모든 패키지가 `private: true`
 
-라이브러리 프로젝트인 경우 usage 문서 경로를 결정한다:
-1. 루트 `package.json`의 `name`에서 라이브러리명을 추출한다
-2. 루트 `package.json`의 `version`에서 메이저 버전을 추출한다
-3. usage 문서 경로: `.claude/references/sd-{name}{majorVersion}/` (예: `sd-simplysm14/`)
-4. 인덱스 파일 경로: `.claude/references/sd-{name}{majorVersion}.md` (예: `sd-simplysm14.md`)
+라이브러리 프로젝트인 경우 소비자용 문서의 출력 경로는 **해당 패키지 루트**다:
+- `README.md` → `{패키지 경로}/README.md`
+- 분량이 많은 경우 `{패키지 경로}/docs/*.md`
+- 단일 패키지 프로젝트면 루트가 곧 패키지 경로다 (`./README.md`, `./docs/`)
+
+`private: true` 패키지는 README.md / docs/를 생성하지 않는다 (CLAUDE.md만).
 
 ## Step 2: 분기
 
@@ -82,7 +85,7 @@ root 문서는 생성·변경하지 않는다.
 
 `workspaces` 필드가 없고 `pnpm-workspace.yaml`도 없으면 단일 패키지다.
 패키지별 CLAUDE.md는 생성하지 않는다. 바로 4단계로 진행하여 root 문서를 생성한다.
-라이브러리 프로젝트인 경우 `package-doc-gen.md`의 Step 2~4를 root에 직접 적용하여 `.claude/references/sd-{name}{ver}/usage.md` + `docs/`를 생성한다.
+라이브러리 프로젝트인 경우 `package-doc-gen.md`의 Step 2~4를 root에 직접 적용하여 루트의 `README.md` (+ 분량이 많으면 `docs/*.md`)를 생성한다.
 
 ### 전체 실행 — 모노레포
 
@@ -90,34 +93,33 @@ root 문서는 생성·변경하지 않는다.
 
 ## Step 3: 패키지별 문서 생성 (모노레포)
 
-각 패키지에 대해 **Agent 도구로 subagent(model: `claude-sonnet-4-5`)를 병렬 실행**한다.
+각 패키지에 대해 **Agent 도구로 subagent(effort: `low`)를 병렬 실행**한다.
 하나의 메시지에서 모든 패키지의 Agent 호출을 동시에 보낸다.
 
 ### subagent 프롬프트
 
 ```
-{패키지 경로}의 CLAUDE.md와 usage 문서를 생성한다.
+{패키지 경로}의 CLAUDE.md와 README.md/docs를 생성한다.
 
-## CLAUDE.md 생성
+## CLAUDE.md 생성 (`{패키지 경로}/CLAUDE.md`)
 
 `.claude/skills/sd-claude-docs/references/package-claudemd.md`를 읽고 그 지침을 따른다.
 
 루트 수준 설정 (이 내용과 동일한 정보는 패키지 CLAUDE.md에 반복하지 않는다):
 {1단계에서 추출한 코딩 규칙 및 컴파일러 설정 목록}
 
-## usage 문서 생성 {소비앱이면 이 섹션 생략}
+## README.md / docs/ 생성 {`private: true` 패키지이면 이 섹션 전체 생략}
 
 `.claude/skills/sd-claude-docs/references/package-doc-gen.md`를 읽고 그 지침을 따른다.
-출력 경로: `.claude/references/sd-{name}{ver}/{패키지명}/`
-{private: true인 경우} 이 패키지는 private이므로 usage 문서는 생성하지 않는다.
+출력 경로: `{패키지 경로}/` (README.md는 항상, docs/는 분량 분기 조건에 해당될 때)
 ```
 
-각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 usage 문서(API 문서) 모두에 활용한다.
+각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 README.md/docs(API 문서) 모두에 활용한다.
 
 ### subagent 반환 정보
 
 - CLAUDE.md 생성 여부
-- usage 문서 생성 여부 + 문서 구조 (usage 단독 / usage + docs/)
+- README.md 생성 여부 + 문서 구조 (README 단독 / README + docs/)
 - API 항목 수
 - 생성된 파일 목록
 
@@ -194,55 +196,25 @@ UI:       angular (Angular)
 - `console.*` 금지, `Buffer` 금지 → `Uint8Array`
 ````
 
-### sd-{name}{ver}.md (라이브러리 프로젝트만)
-
-라이브러리 프로젝트인 경우 `.claude/references/sd-{name}{ver}.md` 인덱스 파일을 생성/갱신한다.
-소비앱인 경우 이 단계를 건너뛴다.
-
-#### 포함할 내용
-
-- 패키지 목록 테이블 (`private: true`인 패키지는 제외)
-- 각 패키지의 usage 문서 경로 링크
-- 라이브러리 사용 시 주요 가이드 (기존 내용이 있으면 병합)
-
-#### 참고 예시
-
-```markdown
-# sd-simplysm14: @simplysm v14 소비앱 가이드
-
-{기존 가이드 내용 보존}
-
-## 패키지별 상세 문서
-
-| 패키지 | 문서 |
-|--------|------|
-| @simplysm/angular | [usage.md](./sd-simplysm14/angular/usage.md) |
-| @simplysm/core-common | [usage.md](./sd-simplysm14/core-common/usage.md) |
-```
-
-#### 병합
-
-기존 `sd-{name}{ver}.md`가 있으면 root CLAUDE.md와 동일한 병합 규칙을 적용한다.
-
 ## Step 5: 결과 보고
 
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | CLAUDE.md | usage 문서 | 구조 | API 항목 수 |
-|--------|-----------|------------|------|-------------|
+| 패키지 | CLAUDE.md | README.md | 구조 | API 항목 수 |
+|--------|-----------|-----------|------|-------------|
 | root | 생성 | — | — | — |
-| sd-simplysm14.md | — | 갱신 | 인덱스 | — |
-| @simplysm/core-common | 갱신 | 갱신 | usage 단독 | 35 |
-| @simplysm/angular | 갱신 | 갱신 | usage + docs/ | 126 |
-| @simplysm/storage | 생성 | 생성 | usage 단독 | 8 |
+| @simplysm/core-common | 갱신 | 갱신 | README 단독 | 35 |
+| @simplysm/angular | 갱신 | 갱신 | README + docs/ | 126 |
+| @simplysm/storage | 생성 | 생성 | README 단독 | 8 |
 | @simplysm/internal | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)
-- .claude/references/sd-simplysm14.md
 - packages/core-common/CLAUDE.md
-- .claude/references/sd-simplysm14/core-common/usage.md
-- .claude/references/sd-simplysm14/core-common/docs/types.md
+- packages/core-common/README.md
+- packages/angular/CLAUDE.md
+- packages/angular/README.md
+- packages/angular/docs/types.md
 - ...
 ```

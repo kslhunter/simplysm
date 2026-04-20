@@ -160,8 +160,30 @@ describe("result-parser", () => {
   //#region ========= null/undefined processing ==========
 
   describe("null/undefined processing", () => {
-    it("null value removes the key", async () => {
+    it("null value is preserved", async () => {
       const raw = [{ id: 1, name: null }];
+      const meta: ResultMeta = {
+        columns: { id: "number", name: "string" },
+        joins: {},
+      };
+
+      const result = await parseQueryResult(raw, meta);
+      expect(result).toEqual([{ id: 1, name: null }]);
+    });
+
+    it("record with all null values is preserved", async () => {
+      const raw = [{ id: null, name: null }];
+      const meta: ResultMeta = {
+        columns: { id: "number", name: "string" },
+        joins: {},
+      };
+
+      const result = await parseQueryResult(raw, meta);
+      expect(result).toEqual([{ id: null, name: null }]);
+    });
+
+    it("undefined value removes the key", async () => {
+      const raw = [{ id: 1, name: undefined }];
       const meta: ResultMeta = {
         columns: { id: "number", name: "string" },
         joins: {},
@@ -170,17 +192,6 @@ describe("result-parser", () => {
       const result = await parseQueryResult(raw, meta);
       expect(result).toEqual([{ id: 1 }]);
       expect(result![0]).not.toHaveProperty("name");
-    });
-
-    it("record with all null values is excluded", async () => {
-      const raw = [{ id: null, name: null }];
-      const meta: ResultMeta = {
-        columns: { id: "number", name: "string" },
-        joins: {},
-      };
-
-      const result = await parseQueryResult(raw, meta);
-      expect(result).toBeUndefined();
     });
 
     it("empty array returns undefined", async () => {

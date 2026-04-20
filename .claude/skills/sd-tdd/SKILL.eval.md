@@ -95,27 +95,24 @@
   - `package.json`: `{ "name": "test-project", "type": "module" }`
   - `tsconfig.json`: `{ "compilerOptions": { "target": "ES2022", "module": "Node16", "moduleResolution": "Node16", "strict": true, "outDir": "dist", "rootDir": "src", "verbatimModuleSyntax": true } }`
 - 체크리스트:
-  - [ ] Feature 문서를 읽고 내용(Scenario, Slice)을 출력에 반영했다
-  - [ ] 참조 자료(src/models/book.ts, src/models/loan.ts)를 읽었다
-  - [ ] 설계 결정(D1: 대출 기간 14일)을 구현 코드에 반영했다
-  - [ ] 코드베이스를 탐색했다 (기존 모델 구조를 파악한 흔적이 출력에 있다)
-  - [ ] Slice 순서대로 진행했다 (Slice 1 관련 테스트/구현이 Slice 2보다 먼저 나타난다)
-  - [ ] Acceptance Test를 프로덕션 코드보다 먼저 작성했다
-  - [ ] Acceptance Test가 대상 코드를 import하여 호출하는 형태이다
-  - [ ] Unit Test를 Acceptance Test와 별도 도구 호출로 작성했다
-  - [ ] Unit Test에 Acceptance Test에 없는 추가 케이스가 최소 1개 포함되었다
-  - [ ] 테스트 파일명에 Slice/Scenario 번호가 포함되지 않았다
-  - [ ] Feature 문서의 Slice 체크박스를 `[x]`로 갱신했다
-  - [ ] wbs.md의 Feature 1.1 체크박스를 `[x]`로 갱신했다
+  - [ ] 구현된 LoanService에 대출 기간 14일(설계 결정 D1)이 반영되어 있다
+  - [ ] Acceptance Test 파일(.acc.spec.ts)이 workspace에 존재한다
+  - [ ] Acceptance Test가 LoanService를 import하여 메서드를 호출·단언하는 형태이다
+  - [ ] Unit Test 파일(.spec.ts)이 Acceptance Test와 별도 파일로 존재한다
+  - [ ] Unit Test에 Acceptance Test에 없는 추가 케이스(경계값, 에러 등)가 최소 1개 포함되어 있다
+  - [ ] 테스트 파일명에 Slice/Scenario 번호(예: 1.1-, 2-)가 포함되지 않았다
+  - [ ] LoanService에 대출 가능/불가 분기 로직이 구현되어 있다
+  - [ ] Feature 문서(.tasks/test-project/1.1-book-loan.md)의 Slice 체크박스가 `[x]`로 갱신되어 있다
+  - [ ] wbs.md의 Feature 1.1 체크박스가 `[x]`로 갱신되어 있다
 
 ### 시나리오 2: Feature 문서 경로 누락
 
 - 입력: "/sd-tdd"
 - 사전 조건: 없음
 - 체크리스트:
-  - [ ] Feature 문서 경로가 필요함을 출력에서 언급했다
-  - [ ] `/sd-plan` 실행을 안내했다
-  - [ ] 소스 코드 파일이나 테스트 파일을 생성하지 않았다
+  - [ ] 텍스트 출력에 Feature 문서 경로가 필요하다는 내용이 포함되어 있다
+  - [ ] 텍스트 출력에 `/sd-plan` 안내가 포함되어 있다
+  - [ ] workspace에 소스 코드 파일(.ts)이나 테스트 파일(.spec.ts)이 생성되지 않았다
 
 ### 시나리오 3: 혼합 검증 항목 분류
 
@@ -196,18 +193,13 @@
   - `package.json`: `{ "name": "test-project", "type": "module" }`
   - `tsconfig.json`: `{ "compilerOptions": { "target": "ES2022", "module": "Node16", "moduleResolution": "Node16", "strict": true, "outDir": "dist", "rootDir": "src", "verbatimModuleSyntax": true } }`
 - 체크리스트:
-  - [ ] 검증 항목을 Scenario 단위가 아닌 개별 항목 단위로 분류했다
-  - [ ] 순수 로직(날짜 비교, 동기화 방향 결정)을 자동 테스트로 분류했다
-  - [ ] USB 장치 물리적 연결/파일 교체를 수동 검증으로 분류했다
-  - [ ] 자동 테스트 파일(.spec.ts)을 생성했다
-  - [ ] 수동 검증 문서(.spec.md) 또는 LLM 검증 문서(.verify.md)를 생성했다
+  - [ ] 순수 로직(날짜 비교, 동기화 방향 결정)에 대한 자동 테스트 파일(.spec.ts)이 workspace에 존재한다
+  - [ ] USB 물리 연결/파일 교체에 대한 수동 검증 문서(.spec.md) 또는 LLM 검증 문서(.verify.md)가 workspace에 존재한다
+  - [ ] 텍스트 출력에 검증 항목별 분류(자동 테스트/LLM 검증/수동 검증)가 명시되어 있다
 
 ## 안티패턴 Eval
 
-- [ ] 설계 결정을 사용자 확인 없이 임의로 변경·축소·제외한다
-- [ ] Feature 문서(요구명세·구현계획)를 사용자 결정 없이 독자적으로 변경한다
-- [ ] Scenario에 하드웨어 의존이 있다는 이유로 Scenario 전체를 수동 테스트로 분류한다
-- [ ] Acceptance Test 없이 바로 프로덕션 코드를 작성한다
-- [ ] Unit Test를 생략하고 Acceptance Test만 작성한다
-- [ ] 테스트가 readFileSync로 소스를 읽어 toContain/toMatch로만 검증한다
-- [ ] 테스트 파일명에 Slice/Scenario 번호를 사용한다
+- [ ] Feature 문서(요구명세·구현계획·설계 결정)의 내용이 선택지 제시 텍스트 없이 변경되어 있다
+- [ ] 순수 로직이 포함된 Scenario에서 .spec.ts 없이 .spec.md만 존재한다 (Scenario 전체를 수동 테스트로 처리)
+- [ ] 테스트 코드가 readFileSync로 소스 파일을 읽어 toContain/toMatch로만 검증한다
+- [ ] 테스트 파일명에 Slice/Scenario 번호(예: 1.1-, 2-)가 포함되어 있다

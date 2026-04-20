@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { consola } from "consola";
 import { watchReplaceDeps } from "../../src/deps/replace-deps/replace-deps";
 import type { WatchReplaceDepResult } from "../../src/deps/replace-deps/replace-deps";
 
@@ -12,9 +13,27 @@ import type { WatchReplaceDepResult } from "../../src/deps/replace-deps/replace-
 describe("watchReplaceDeps onChanged", () => {
   let tmpDir: string;
   let watchResult: WatchReplaceDepResult | undefined;
+  let mockLogger: {
+    warn: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
+    info: ReturnType<typeof vi.fn>;
+    start: ReturnType<typeof vi.fn>;
+    success: ReturnType<typeof vi.fn>;
+    debug: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-replace-deps-unit-"));
+
+    mockLogger = {
+      warn: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      start: vi.fn(),
+      success: vi.fn(),
+      debug: vi.fn(),
+    };
+    vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
 
     // 소스 패키지 생성
     const sourcePkg = path.join(tmpDir, "source-pkg");
@@ -43,6 +62,7 @@ describe("watchReplaceDeps onChanged", () => {
     watchResult?.dispose();
     watchResult = undefined;
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
+    vi.restoreAllMocks();
   });
 
   it("복수 파일 변경 시 300ms 배칭 후 onChanged가 한 번 호출된다", async () => {
@@ -131,6 +151,58 @@ describe("watchReplaceDeps onChanged", () => {
     await changedPromise;
   }, 10_000);
 
+  it("nested source 경로는 longest-prefix로 소속이 결정된다", async () => {
+    // sourceOuter: tmpDir/outer-pkg
+    // sourceInner: tmpDir/outer-pkg/inner-pkg (outer의 하위)
+    const outerPkg = path.join(tmpDir, "outer-pkg");
+    await fs.promises.mkdir(path.join(outerPkg, "src"), { recursive: true });
+    await fs.promises.writeFile(
+      path.join(outerPkg, "package.json"),
+      JSON.stringify({ name: "@test/outer", files: ["src"] }),
+    );
+    await fs.promises.writeFile(path.join(outerPkg, "src", "o.ts"), "o");
+
+    const innerPkg = path.join(outerPkg, "inner-pkg");
+    await fs.promises.mkdir(path.join(innerPkg, "src"), { recursive: true });
+    await fs.promises.writeFile(
+      path.join(innerPkg, "package.json"),
+      JSON.stringify({ name: "@test/inner", files: ["src"] }),
+    );
+    await fs.promises.writeFile(path.join(innerPkg, "src", "i.ts"), "i");
+
+    // target들
+    const outerTarget = path.join(
+      tmpDir, "project", "node_modules", "@test", "outer", "src",
+    );
+    const innerTarget = path.join(
+      tmpDir, "project", "node_modules", "@test", "inner", "src",
+    );
+    await fs.promises.mkdir(outerTarget, { recursive: true });
+    await fs.promises.mkdir(innerTarget, { recursive: true });
+    await fs.promises.writeFile(path.join(outerTarget, "o.ts"), "o");
+    await fs.promises.writeFile(path.join(innerTarget, "i.ts"), "i");
+
+    const projectRoot = path.join(tmpDir, "project");
+
+    watchResult = await watchReplaceDeps(
+      projectRoot,
+      { "@test/outer": outerPkg, "@test/inner": innerPkg },
+    );
+
+    // inner 파일 변경 — longest-prefix로 inner source에만 매칭되어야 함
+    await fs.promises.writeFile(path.join(innerPkg, "src", "i.ts"), "i2");
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const innerCopied = await fs.promises.readFile(path.join(innerTarget, "i.ts"), "utf-8");
+    expect(innerCopied).toBe("i2");
+
+    // outer target에는 i.ts가 복사되지 않아야 함 (잘못된 매칭 방지)
+    const outerHasI = await fs.promises
+      .access(path.join(outerTarget, "inner-pkg", "src", "i.ts"))
+      .then(() => true, () => false);
+    expect(outerHasI).toBe(false);
+  }, 10_000);
+
   it("options 파라미터가 undefined일 때 에러가 발생하지 않는다", async () => {
     const projectRoot = path.join(tmpDir, "project");
     const sourcePath = path.join(tmpDir, "source-pkg");
@@ -143,5 +215,130 @@ describe("watchReplaceDeps onChanged", () => {
 
     await new Promise((r) => setTimeout(r, 1500));
     // 에러 없이 완료됨
+  }, 10_000);
+
+  it("source의 files 필드가 없으면 경고를 출력하고 감시에서 제외한다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // files 필드 제거
+    await fs.promises.writeFile(
+      path.join(sourcePath, "package.json"),
+      JSON.stringify({ name: "@test/pkg" }),
+    );
+
+    let callCount = 0;
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath }, {
+      onChanged: () => {
+        callCount++;
+      },
+    });
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("package.json에 files 필드가 없어 감시 건너뜀"),
+    );
+
+    // 파일을 변경해도 감지되지 않음
+    await fs.promises.writeFile(
+      path.join(sourcePath, "src", "index.ts"),
+      "export const v = 2;",
+    );
+    await new Promise((r) => setTimeout(r, 1500));
+
+    expect(callCount).toBe(0);
+  }, 10_000);
+
+  it("동일 내용 재저장 시 isFileContentSame 스킵으로 onChanged가 호출되지 않는다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // beforeEach에서 source와 target 모두 "export const v = 1;"로 설정된 상태
+    let callCount = 0;
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath }, {
+      onChanged: () => {
+        callCount++;
+      },
+    });
+
+    // 동일 내용으로 재저장 (mtime은 변경되지만 내용은 같음)
+    await fs.promises.writeFile(
+      path.join(sourcePath, "src", "index.ts"),
+      "export const v = 1;",
+    );
+
+    await new Promise((r) => setTimeout(r, 1500));
+
+    // isFileContentSame이 true를 반환하여 복사 스킵 → hasActualCopy=false → onChanged 미호출
+    expect(callCount).toBe(0);
+  }, 10_000);
+
+  it("dispose 이후의 파일 변경은 감지되지 않는다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    let callCount = 0;
+    const result = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath }, {
+      onChanged: () => {
+        callCount++;
+      },
+    });
+
+    result.dispose();
+    // afterEach에서 중복 dispose 방지
+    watchResult = undefined;
+
+    // close 완료 대기
+    await new Promise((r) => setTimeout(r, 500));
+
+    await fs.promises.writeFile(
+      path.join(sourcePath, "src", "index.ts"),
+      "export const v = 99;",
+    );
+
+    await new Promise((r) => setTimeout(r, 1500));
+
+    expect(callCount).toBe(0);
+  }, 10_000);
+
+  it("모든 source의 files 필드가 없으면 감시 대상이 없음 경고를 출력한다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // files 필드 제거
+    await fs.promises.writeFile(
+      path.join(sourcePath, "package.json"),
+      JSON.stringify({ name: "@test/pkg" }),
+    );
+
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath });
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("감시 대상이 없어 워치가 시작되지 않음"),
+    );
+  }, 10_000);
+
+  it("files 필드가 없으면 해당 source에 대한 readdir이 호출되지 않는다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // files 필드 제거
+    await fs.promises.writeFile(
+      path.join(sourcePath, "package.json"),
+      JSON.stringify({ name: "@test/pkg" }),
+    );
+
+    const readdirSpy = vi.spyOn(fs.promises, "readdir");
+
+    watchResult = await watchReplaceDeps(projectRoot, { "@test/pkg": sourcePath });
+
+    // sourcePath에 대한 readdir 호출이 없어야 함 (files null이면 생략되어야 함)
+    const sourcePathPosix = path.resolve(sourcePath).replace(/\\/g, "/");
+    const calledWithSource = readdirSpy.mock.calls.some((args) => {
+      const arg = args[0];
+      if (typeof arg !== "string") return false;
+      return arg.replace(/\\/g, "/") === sourcePathPosix;
+    });
+
+    expect(calledWithSource).toBe(false);
   }, 10_000);
 });

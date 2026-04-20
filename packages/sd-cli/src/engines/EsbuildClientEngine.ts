@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import path from "path";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
-import { consola } from "consola";
 import type * as ClientWorkerModule from "../workers/client.worker";
 import type { ResultCollector } from "../runtime/ResultCollector";
 import { stopEngineWorker } from "../runtime/engine-stop";
 import { setupWatchEvents, type NormalizedBuildInfo } from "../runtime/engine-watch-events";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildEngine, BuildOutput, ClientPackageInfo, EngineResult } from "./types";
 
-const logger = consola.withTag("sd:cli:engine:esbuild-client");
+const logger = createLazyLogger("sd:cli:engine:esbuild-client");
 
 /**
  * EsbuildClientEngine 옵션

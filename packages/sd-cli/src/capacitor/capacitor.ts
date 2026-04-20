@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 import { configureAndroid, findAndroidSdk, findJava21 } from "./capacitor-android.js";
 import { buildAndroid, configureSigningConfig, copyBuildOutput } from "./capacitor-build.js";
@@ -26,7 +27,7 @@ class CapacitorConfigError extends Error {
  */
 export class Capacitor {
   private static readonly _LOCK_FILE_NAME = ".capacitor.lock";
-  private static readonly _logger = consola.withTag("sd:cli:capacitor");
+  private static readonly _logger = createLazyLogger("sd:cli:capacitor");
 
   private readonly _capPath: string;
   private readonly _platforms: string[];

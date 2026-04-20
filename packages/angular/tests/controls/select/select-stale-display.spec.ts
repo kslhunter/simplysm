@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdSelectPreselectedTest } from "./sd-select-test.fixture";
 import { SdSelect } from "../../../src/controls/select/sd-select";
@@ -18,6 +18,13 @@ function getSelectControl(fixture: any): SdSelect<"single", string> {
   ).componentInstance as SdSelect<"single", string>;
 }
 
+function getTriggerText(fixture: any): string {
+  const contentEl = fixture.nativeElement.querySelector(
+    "sd-select ._sd-select-control-content",
+  ) as HTMLElement | null;
+  return contentEl?.textContent?.trim() ?? "";
+}
+
 describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
   it("Scenario: contentHTML이 빈 문자열일 때 이전 표시가 초기화된다", async () => {
     setupTestBed(SdSelectPreselectedTest);
@@ -25,15 +32,12 @@ describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // afterNextRender 완료 대기
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
     const selectCtrl = getSelectControl(fixture);
-
-    // A가 선택되어 있고 HTML이 설정됨
-    expect(selectCtrl._selectedItemContentHTML()).toContain("Item A");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(getTriggerText(fixture)).toContain("Item A");
+    });
 
     // B의 contentHTML을 빈 문자열로 설정 (미렌더 상태 시뮬레이션)
     const itemB = selectCtrl._itemControls().find(
@@ -56,23 +60,22 @@ describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
     const selectCtrl = getSelectControl(fixture);
-    expect(selectCtrl._selectedItemContentHTML()).toContain("Item A");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(getTriggerText(fixture)).toContain("Item A");
+    });
 
     // 값을 B로 변경 (B의 contentHTML은 정상)
     fixture.componentInstance.value.set("B");
     fixture.detectChanges();
     TestBed.flushEffects();
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
-    expect(selectCtrl._selectedItemContentHTML()).toContain("Item B");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(getTriggerText(fixture)).toContain("Item B");
+    });
   });
 
   it("값이 undefined로 변경되면 표시가 초기화된다", async () => {
@@ -81,12 +84,12 @@ describe("Feature 3.4 Slice 1: sd-select single mode stale 방지", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    fixture.detectChanges();
-    TestBed.flushEffects();
-
     const selectCtrl = getSelectControl(fixture);
-    expect(selectCtrl._selectedItemContentHTML()).toContain("Item A");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(getTriggerText(fixture)).toContain("Item A");
+    });
 
     fixture.componentInstance.value.set(undefined);
     fixture.detectChanges();

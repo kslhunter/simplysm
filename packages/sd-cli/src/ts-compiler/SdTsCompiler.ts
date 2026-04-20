@@ -1,7 +1,7 @@
 import path from "path";
 import { createHash } from "crypto";
 import ts from "typescript";
-import { consola } from "consola";
+import { consola, type ConsolaInstance } from "consola";
 import { pathx } from "@simplysm/core-node";
 import type { ISdTsCompilerOptions, ISdTsCompilerEmitOptions } from "./sd-ts-compiler-options";
 import type { ISdTsCompilerResult } from "./sd-ts-compiler-result";
@@ -27,8 +27,6 @@ import {
   type SideEffectScssEntry,
 } from "../angular/ngtsc-build-core";
 import { LintWithProgramRunner, type LintWithProgramResult } from "../lint/lint-with-program";
-
-const logger = consola.withTag("sd:cli:SdTsCompiler");
 
 type NgCompiler = NgtscProgram["compiler"];
 
@@ -80,8 +78,30 @@ export class SdTsCompiler {
   // ── Lint (lazy init, 인스턴스 재사용) ──
   private _lintRunner?: LintWithProgramRunner;
 
+  // ── 크래시 디버깅용 컨텍스트 (compileAsync 내 단계/파일 진입 시 갱신) ──
+  private _crashContext?: { stage: string; file?: string };
+
+  // ── Logger ──
+  // NOTE: 모듈 레벨이 아닌 인스턴스 레벨에서 생성해야 한다.
+  // consola.withTag는 호출 시점의 consola.level/reporters를 스냅샷 복사하므로,
+  // setupConsola 이전(모듈 import 시점)에 만들면 debug 레벨이 반영되지 않는다.
+  private readonly _logger: ConsolaInstance = consola.withTag("sd:cli:SdTsCompiler");
+
   constructor(options: ISdTsCompilerOptions) {
     this._options = options;
+  }
+
+  private _setCrashContext(stage: string, file?: string): void {
+    this._crashContext = { stage, file };
+  }
+
+  private _formatCrashContext(): string {
+    const ctx = this._crashContext;
+    if (ctx == null) return "unknown";
+    if (ctx.file != null) {
+      return `${ctx.stage} [${path.relative(this._options.cwd, ctx.file)}]`;
+    }
+    return ctx.stage;
   }
 
   private _getScssLoadPaths(): string[] {
@@ -121,11 +141,20 @@ export class SdTsCompiler {
     modifiedFiles?: ReadonlySet<string>,
     emitOptions?: ISdTsCompilerEmitOptions,
   ): Promise<ISdTsCompilerResult> {
-    const { pkgDir } = this._options;
+    const { pkgDir, cwd } = this._options;
     const pkgName = path.basename(pkgDir);
+    this._crashContext = undefined;
 
     // 1. 증분: sourceFileCache 무효화 + packageJsonCache 클리어
     if (modifiedFiles != null && modifiedFiles.size > 0) {
+      const sampleFiles = [...modifiedFiles]
+        .slice(0, 10)
+        .map((f) => path.relative(cwd, f))
+        .join(", ");
+      this._logger.debug(
+        `[${pkgName}] modifiedFiles (${modifiedFiles.size}개)${modifiedFiles.size > 10 ? " [상위 10개]" : ""}: ${sampleFiles}`,
+      );
+
       if (this._sourceFileCache != null) {
         this._sourceFileCache.invalidate(modifiedFiles);
       }
@@ -149,12 +178,12 @@ export class SdTsCompiler {
       ? (parsed.raw.angularCompilerOptions as Record<string, unknown>)
       : undefined;
 
-    logger.debug(`[${pkgName}] isForAngular: ${isForAngular}`);
+    this._logger.debug(`[${pkgName}] isForAngular: ${isForAngular}`);
 
     // 3. rootNames 필터링
     const rootNames = this._filterRootNames(parsed);
 
-    logger.debug(`[${pkgName}] rootNames: ${rootNames.length}개`);
+    this._logger.debug(`[${pkgName}] rootNames: ${rootNames.length}개`);
 
     // 4. compilerOptions 구성
     const compilerOptions = this._buildCompilerOptions(
@@ -181,9 +210,10 @@ export class SdTsCompiler {
     // 7. compiler host 생성
     const host = this._createHost(compilerOptions, isForAngular, effectiveTransformStylesheet);
 
-    // 8. program 생성
+    // 8. program 생성 (체커 미진입 구간 — try 밖)
     let program: ts.Program;
     let builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram;
+    let angularProgram: NgtscProgram | undefined;
 
     if (isForAngular) {
       // Angular: sourceFileCache 확보
@@ -193,8 +223,8 @@ export class SdTsCompiler {
       augmentHostWithCaching(host, this._sourceFileCache);
 
       // NgtscProgram 생성
-      logger.debug(`[${pkgName}] NgtscProgram 생성 중...`);
-      const angularProgram = new NgtscProgram(
+      this._logger.debug(`[${pkgName}] NgtscProgram 생성 중...`);
+      angularProgram = new NgtscProgram(
         rootNames,
         compilerOptions,
         host,
@@ -210,13 +240,6 @@ export class SdTsCompiler {
         this._builderProgram,
       );
       program = tsProgram;
-
-      // 7. Angular analyzeAsync
-      logger.debug(`[${pkgName}] AOT analyzeAsync 시작`);
-      await angularProgram.compiler.analyzeAsync();
-      logger.debug(`[${pkgName}] AOT analyzeAsync 완료`);
-
-      this._ngtscProgram = angularProgram;
     } else {
       // Non-Angular: BuilderProgram 직접 생성
       builderProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
@@ -228,84 +251,218 @@ export class SdTsCompiler {
       program = builderProgram.getProgram();
     }
 
-    // 8. affected files 추적
-    let affectedFiles: ReadonlySet<string> | undefined;
-    if (isForAngular) {
-      const result = this._findAffectedFilesForAngular(
+    // 9. 위험 구간 (체커 진입 — TsCompiler 내부 크래시 단일 catch)
+    try {
+      if (isForAngular) {
+        this._setCrashContext("analyzeAsync");
+        this._logger.debug(`[${pkgName}] AOT analyzeAsync 시작`);
+        await angularProgram!.compiler.analyzeAsync();
+        this._logger.debug(`[${pkgName}] AOT analyzeAsync 완료`);
+        this._ngtscProgram = angularProgram;
+      }
+
+      // 9-1. affected files 추적
+      this._setCrashContext("findAffectedFiles");
+      let affectedFiles: ReadonlySet<string> | undefined;
+      if (isForAngular) {
+        const result = this._findAffectedFilesForAngular(
+          builderProgram,
+          this._ngtscProgram!.compiler,
+          this._sourceFileCache,
+        );
+        this._affectedSourceFiles = result.affectedSourceFiles;
+        affectedFiles = result.affectedPaths;
+      } else {
+        affectedFiles = this._findAffectedFilesForTsc(builderProgram);
+      }
+
+      if (affectedFiles != null) {
+        const sample = [...affectedFiles]
+          .slice(0, 10)
+          .map((f) => path.relative(cwd, f))
+          .join(", ");
+        this._logger.debug(
+          `[${pkgName}] affected files (${affectedFiles.size}개)${affectedFiles.size > 10 ? " [상위 10개]" : ""}: ${sample}`,
+        );
+      } else {
+        this._logger.debug(`[${pkgName}] affected files: 전체 (global change)`);
+      }
+
+      // 9-2. emit 처리
+      this._setCrashContext("emit");
+      let emitResults: EmitResult[] | undefined;
+      if (isForAngular) {
+        emitResults = this._emitAngular(
+          this._ngtscProgram!,
+          builderProgram,
+          this._affectedSourceFiles,
+          emitOptions,
+        );
+      } else {
+        this._emitTsc(builderProgram);
+      }
+
+      // 9-3. 진단 수집
+      this._setCrashContext("collectDiagnostics");
+      const rawDiagnostics = isForAngular
+        ? this._collectDiagnosticsForAngular(
+            this._ngtscProgram!,
+            builderProgram,
+            this._affectedSourceFiles,
+          )
+        : this._collectDiagnosticsForTsc(builderProgram);
+      const diagResult = this._finalizeDiagnostics(rawDiagnostics);
+
+      // 9-4. 글로벌 SCSS + lint 병렬 실행
+      this._setCrashContext("lintAndGlobalScss");
+      const [, lintResult] = await Promise.all([
+        // globalScss
+        this._options.globalScss === true
+          ? Promise.resolve().then(() => {
+              const loadPaths = this._getScssLoadPaths();
+              const globalScssErrors = compileGlobalScss(pkgDir, loadPaths);
+              this._scssErrors.push(...globalScssErrors);
+            })
+          : Promise.resolve(),
+        // lint
+        this._options.lint === true
+          ? this._runLint(program, affectedFiles)
+          : Promise.resolve(undefined),
+      ]);
+
+      // 9-5. 상태 저장
+      this._builderProgram = builderProgram;
+      this._crashContext = undefined;
+
+      this._logger.debug(`[${pkgName}] compileAsync 완료`);
+
+      return {
+        program,
         builderProgram,
-        this._ngtscProgram!.compiler,
-        this._sourceFileCache,
-      );
-      this._affectedSourceFiles = result.affectedSourceFiles;
-      affectedFiles = result.affectedPaths;
-    } else {
-      affectedFiles = this._findAffectedFilesForTsc(builderProgram);
-    }
+        isForAngular,
+        affectedFiles,
+        diagnostics: diagResult.diagnostics,
+        errorCount: diagResult.errorCount,
+        warningCount: diagResult.warningCount,
+        errors: diagResult.errors,
+        ngtscProgram: this._ngtscProgram,
+        emitResults,
+        lint: lintResult,
+        scssErrors: [...this._scssErrors],
+        scssDependencies: new Map(this._scssDependencies),
+      };
+    } catch (e) {
+      // TsCompiler 내부 크래시 (TS 5.9 overload 버그 등) — 단일 에러 진단으로 degrade
+      const contextLabel = this._formatCrashContext();
+      const rawMsg = e instanceof Error ? (e.stack ?? e.message) : String(e);
+      this._logger.debug(`[${pkgName}] crash @${contextLabel}: ${rawMsg}`);
 
-    logger.debug(`[${pkgName}] affected files: ${affectedFiles != null ? `${affectedFiles.size}개` : "전체 (global change)"}`);
+      // per-file 프로브: affected 파일 각각을 개별 try-catch로 재체크하여 재현 파일 특정
+      const probeReport = isForAngular
+        ? this._probeCrashPerFileAngular(
+            this._ngtscProgram,
+            builderProgram,
+            this._affectedSourceFiles,
+          )
+        : this._probeCrashPerFileTsc(builderProgram, this._affectedSourceFiles);
 
-    // 9. emit 처리
-    let emitResults: EmitResult[] | undefined;
-    if (isForAngular) {
-      emitResults = this._emitAngular(
-        this._ngtscProgram!,
+      const parts: string[] = [
+        `TsCompiler 내부 크래시 @${contextLabel}`,
+        "",
+        rawMsg,
+      ];
+      if (probeReport.length > 0) {
+        parts.push("", "크래시 재현 파일 (per-file 프로브):", ...probeReport);
+      }
+      const message = parts.join("\n");
+
+      const crashDiag: SerializedDiagnostic = {
+        category: ts.DiagnosticCategory.Error,
+        code: 0,
+        messageText: message,
+      };
+      return {
+        program,
         builderProgram,
-        this._affectedSourceFiles,
-        emitOptions,
-      );
-    } else {
-      this._emitTsc(builderProgram);
+        isForAngular,
+        affectedFiles: undefined,
+        diagnostics: [crashDiag],
+        errorCount: 1,
+        warningCount: 0,
+        errors: [message],
+        ngtscProgram: this._ngtscProgram,
+        emitResults: undefined,
+        lint: undefined,
+        scssErrors: [...this._scssErrors],
+        scssDependencies: new Map(this._scssDependencies),
+      };
     }
+  }
 
-    // 10. 진단 수집
-    let rawDiagnostics: ts.Diagnostic[];
-    if (isForAngular) {
-      rawDiagnostics = this._collectDiagnosticsForAngular(
-        this._ngtscProgram!,
-        builderProgram,
-        this._affectedSourceFiles,
-      );
-    } else {
-      rawDiagnostics = this._collectDiagnosticsForTsc(builderProgram);
+  /**
+   * 크래시 발생 후, affected sourceFile을 개별 try-catch로 재검사하여 원인 파일을 특정한다.
+   * Angular: `getDiagnosticsForFile(sf, SingleFile)` + `builderProgram.getSemanticDiagnostics(sf)` 개별 호출.
+   * 각 파일별로 크래시 재현 여부를 기록. 프로브 자체 크래시는 흡수한다.
+   */
+  private _probeCrashPerFileAngular(
+    ngtscProgram: NgtscProgram | undefined,
+    builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+    affectedSourceFiles: ReadonlySet<ts.SourceFile>,
+  ): string[] {
+    const report: string[] = [];
+    const angularCompiler = ngtscProgram?.compiler;
+    const { cwd } = this._options;
+
+    for (const sf of affectedSourceFiles) {
+      if (angularCompiler?.ignoreForDiagnostics.has(sf) === true) continue;
+
+      const rel = path.relative(cwd, sf.fileName);
+
+      try {
+        builderProgram.getSemanticDiagnostics(sf);
+      } catch (e) {
+        report.push(
+          `  - ${rel} [getSemanticDiagnostics]: ${e instanceof Error ? e.message : String(e)}`,
+        );
+        continue;
+      }
+
+      if (angularCompiler != null && !sf.isDeclarationFile) {
+        try {
+          angularCompiler.getDiagnosticsForFile(sf, OptimizeFor.SingleFile);
+        } catch (e) {
+          report.push(
+            `  - ${rel} [getDiagnosticsForFile]: ${e instanceof Error ? e.message : String(e)}`,
+          );
+        }
+      }
     }
-    const diagResult = this._finalizeDiagnostics(rawDiagnostics);
+    return report;
+  }
 
-    // 11. 글로벌 SCSS + lint 병렬 실행
-    const [, lintResult] = await Promise.all([
-      // globalScss
-      this._options.globalScss === true
-        ? Promise.resolve().then(() => {
-            const loadPaths = this._getScssLoadPaths();
-            const globalScssErrors = compileGlobalScss(pkgDir, loadPaths);
-            this._scssErrors.push(...globalScssErrors);
-          })
-        : Promise.resolve(),
-      // lint
-      this._options.lint === true
-        ? this._runLint(program, affectedFiles)
-        : Promise.resolve(undefined),
-    ]);
+  private _probeCrashPerFileTsc(
+    builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+    affectedSourceFiles: ReadonlySet<ts.SourceFile>,
+  ): string[] {
+    const report: string[] = [];
+    const { cwd } = this._options;
 
-    // 12. 상태 저장
-    this._builderProgram = builderProgram;
+    const targets =
+      affectedSourceFiles.size > 0
+        ? affectedSourceFiles
+        : new Set(builderProgram.getSourceFiles());
 
-    logger.debug(`[${pkgName}] compileAsync 완료`);
-
-    return {
-      program,
-      builderProgram,
-      isForAngular,
-      affectedFiles,
-      diagnostics: diagResult.diagnostics,
-      errorCount: diagResult.errorCount,
-      warningCount: diagResult.warningCount,
-      errors: diagResult.errors,
-      ngtscProgram: this._ngtscProgram,
-      emitResults,
-      lint: lintResult,
-      scssErrors: [...this._scssErrors],
-      scssDependencies: new Map(this._scssDependencies),
-    };
+    for (const sf of targets) {
+      try {
+        builderProgram.getSemanticDiagnostics(sf);
+      } catch (e) {
+        const rel = path.relative(cwd, sf.fileName);
+        report.push(
+          `  - ${rel} [getSemanticDiagnostics]: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+    }
+    return report;
   }
 
   private async _runLint(
@@ -322,12 +479,12 @@ export class SdTsCompiler {
       });
     }
 
-    logger.debug(`[${pkgName}] lint 시작`);
+    this._logger.debug(`[${pkgName}] lint 시작`);
     const result = await this._lintRunner.lint({
       program,
       affectedFiles,
     });
-    logger.debug(`[${pkgName}] lint 완료 (에러: ${result.errorCount}, 경고: ${result.warningCount})`);
+    this._logger.debug(`[${pkgName}] lint 완료 (에러: ${result.errorCount}, 경고: ${result.warningCount})`);
 
     return result;
   }
@@ -456,14 +613,17 @@ export class SdTsCompiler {
   private _collectDiagnosticsForTsc(
     builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
   ): ts.Diagnostic[] {
-    return [
+    const diagnostics: ts.Diagnostic[] = [
       ...builderProgram.getConfigFileParsingDiagnostics(),
       ...builderProgram.getSyntacticDiagnostics(),
       ...builderProgram.getOptionsDiagnostics(),
       ...builderProgram.getGlobalDiagnostics(),
       ...builderProgram.getSemanticDiagnostics(),
-      ...(!this._options.output.dts ? builderProgram.getProgram().getDeclarationDiagnostics() : []),
     ];
+    if (!this._options.output.dts) {
+      diagnostics.push(...builderProgram.getProgram().getDeclarationDiagnostics());
+    }
+    return diagnostics;
   }
 
   private _collectDiagnosticsForAngular(
@@ -490,17 +650,9 @@ export class SdTsCompiler {
         continue;
       }
 
+      this._setCrashContext("collectDiagnostics.getSemanticDiagnostics", sourceFile.fileName);
       diagnostics.push(...builderProgram.getSyntacticDiagnostics(sourceFile));
-
-      // TypeScript 5.9 + NgtscProgram: getSemanticDiagnostics 크래시 방어
-      let semanticDiags: readonly ts.Diagnostic[];
-      try {
-        semanticDiags = builderProgram.getSemanticDiagnostics(sourceFile);
-      } catch {
-        logger.debug(`getSemanticDiagnostics 크래시 (무시): ${sourceFile.fileName}`);
-        semanticDiags = [];
-      }
-      diagnostics.push(...semanticDiags);
+      diagnostics.push(...builderProgram.getSemanticDiagnostics(sourceFile));
 
       // Declaration files는 Angular 진단 없음
       if (sourceFile.isDeclarationFile) {
@@ -509,6 +661,7 @@ export class SdTsCompiler {
 
       // Angular 템플릿 진단 (diagnosticCache 활용)
       if (affectedSourceFiles.has(sourceFile)) {
+        this._setCrashContext("collectDiagnostics.getDiagnosticsForFile", sourceFile.fileName);
         const angularDiagnostics = angularCompiler.getDiagnosticsForFile(
           sourceFile,
           optimization,
@@ -572,6 +725,7 @@ export class SdTsCompiler {
     const tsProgram = ngtscProgram.getTsProgram();
 
     // prepareEmit() → Angular transformers 획득
+    this._setCrashContext("emit.prepareEmit");
     const transformers = angularCompiler.prepareEmit().transformers;
     transformers.before ??= [];
     transformers.after ??= [];
@@ -622,6 +776,7 @@ export class SdTsCompiler {
       ) {
         continue;
       }
+      this._setCrashContext("emit.tsProgram.emit", sourceFile.fileName);
       tsProgram.emit(
         sourceFile,
         writeFileCallback,
@@ -631,15 +786,11 @@ export class SdTsCompiler {
       );
     }
 
-    // .tsbuildinfo 영속화 (try-catch: TS 5.9 + NgtscProgram 크래시 방어)
-    try {
-      builderProgram.emit(undefined, () => {});
-    } catch {
-      logger.debug("builderProgram.emit 크래시 (무시) — tsbuildinfo 영속화 생략");
-    }
+    this._setCrashContext("emit.builderProgram.emit");
+    builderProgram.emit(undefined, () => {});
 
     // sourceFilter 적용
-    logger.debug(`emitAffectedFiles 완료 (${emitResults.length}개 파일)`);
+    this._logger.debug(`emitAffectedFiles 완료 (${emitResults.length}개 파일)`);
     if (emitOptions?.sourceFilter != null) {
       return emitResults.filter((r) => emitOptions.sourceFilter!(r.sourceFileName));
     }
@@ -656,7 +807,6 @@ export class SdTsCompiler {
       if ("fileName" in result.affected) {
         affectedFiles.add(pathx.posix(result.affected.fileName));
       } else {
-        // ts.Program 반환 — 전역 변경, 전체 리빌드로 처리
         return undefined;
       }
     }
@@ -667,40 +817,32 @@ export class SdTsCompiler {
     builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram,
     angularCompiler: NgCompiler,
     sourceFileCache?: AngularSourceFileCache,
-  ): { affectedSourceFiles: Set<ts.SourceFile>; affectedPaths: ReadonlySet<string> | undefined } {
-    logger.debug("Angular affected 파일 탐색 시작");
+  ): {
+    affectedSourceFiles: Set<ts.SourceFile>;
+    affectedPaths: ReadonlySet<string> | undefined;
+  } {
+    this._logger.debug("Angular affected 파일 탐색 시작");
     const affectedSourceFiles = new Set<ts.SourceFile>();
     let isGlobalChange = false;
 
     while (true) {
-      let result: ReturnType<typeof builderProgram.getSemanticDiagnosticsOfNextAffectedFile>;
-      try {
-        result = builderProgram.getSemanticDiagnosticsOfNextAffectedFile(
-          undefined,
-          (sourceFile) => {
-            if (
-              angularCompiler.ignoreForDiagnostics.has(sourceFile) &&
-              sourceFile.fileName.endsWith(".ngtypecheck.ts")
-            ) {
-              const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
-              const originalSourceFile = builderProgram.getSourceFile(originalFilename);
-              if (originalSourceFile) {
-                affectedSourceFiles.add(originalSourceFile);
-              }
-              return true;
+      const result = builderProgram.getSemanticDiagnosticsOfNextAffectedFile(
+        undefined,
+        (sourceFile) => {
+          if (
+            angularCompiler.ignoreForDiagnostics.has(sourceFile) &&
+            sourceFile.fileName.endsWith(".ngtypecheck.ts")
+          ) {
+            const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
+            const originalSourceFile = builderProgram.getSourceFile(originalFilename);
+            if (originalSourceFile) {
+              affectedSourceFiles.add(originalSourceFile);
             }
-            return false;
-          },
-        );
-      } catch {
-        logger.debug("getSemanticDiagnosticsOfNextAffectedFile 크래시 (무시) — 모든 소스를 affected로 처리");
-        for (const sourceFile of builderProgram.getSourceFiles()) {
-          if (!angularCompiler.ignoreForDiagnostics.has(sourceFile)) {
-            affectedSourceFiles.add(sourceFile);
+            return true;
           }
-        }
-        break;
-      }
+          return false;
+        },
+      );
       if (!result) break;
       if ("fileName" in result.affected) {
         affectedSourceFiles.add(result.affected);
@@ -748,7 +890,7 @@ export class SdTsCompiler {
       affectedPaths = paths;
     }
 
-    logger.debug(`Angular affected 파일 탐색 완료 (${affectedSourceFiles.size}개)`);
+    this._logger.debug(`Angular affected 파일 탐색 완료 (${affectedSourceFiles.size}개)`);
     return { affectedSourceFiles, affectedPaths };
   }
 

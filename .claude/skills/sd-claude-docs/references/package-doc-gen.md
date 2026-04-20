@@ -1,7 +1,7 @@
 # 패키지 문서 생성 프로세스
 
-이 문서는 단일 패키지에 대한 usage.md 및 docs/ 문서 생성 프로세스를 기술한다.
-subagent가 패키지 경로와 출력 경로(`.claude/references/sd-{name}{ver}/{패키지명}/`)를 전달받아 아래 순서대로 수행한다.
+이 문서는 단일 패키지에 대한 소비자용 `README.md` 및 `docs/` 문서 생성 프로세스를 기술한다.
+subagent가 패키지 경로를 전달받아 아래 순서대로 수행한다. 출력 경로는 항상 해당 **패키지 루트**(`{패키지 경로}/README.md`, `{패키지 경로}/docs/*.md`)이다.
 
 ## Step 2: 엔트리포인트 & Export 체인 추적
 
@@ -74,8 +74,8 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 
 | 조건 | 문서 구조 |
 |------|-----------|
-| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | usage 단독 |
-| 위 조건에 해당하지 않음 | usage.md (개요+목차) + docs/ (카테고리별 분할) |
+| 카테고리 3개 이하 **그리고** API 항목 30개 이하 | README.md 단독 |
+| 위 조건에 해당하지 않음 | README.md (개요+목차) + docs/ (카테고리별 분할) |
 
 ## Step 4: 문서 생성
 
@@ -83,29 +83,29 @@ region 주석이 없으면, re-export되는 파일의 디렉토리 구조를 카
 
 - **대화언어로 작성**한다
 - **소스에서 읽은 내용만** 문서화한다 — 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다
-- **기존 문서의 시그니처를 신뢰하지 않는다** — 기존 docs/*.md의 코드블록(시그니처·멤버 이름·타입·required 여부 등)을 그대로 재사용하지 않는다. 반드시 소스 파일을 Read하여 확인한 내용만 작성한다. 단, 소스 코드와 무관한 내용(사용 가이드, 주의사항, 규칙 등)은 그대로 보존한다
+- **기존 문서의 시그니처를 신뢰하지 않는다** — 기존 README.md/docs/*.md의 코드블록(시그니처·멤버 이름·타입·required 여부 등)을 그대로 재사용하지 않는다. 반드시 소스 파일을 Read하여 확인한 내용만 작성한다. 단, 소스 코드와 무관한 내용(사용 가이드, 주의사항, 규칙 등)은 그대로 보존한다
 - **모든 export를 빠짐없이 문서화한다** — Step 2에서 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다
 - **interface/type은 필드별 설명 테이블을 포함한다** — 시그니처만 나열하지 않고, 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다 — 필드가 많더라도 모든 필드를 테이블로 나열한다
 - **union type은 discriminant와 각 variant를 설명한다** — discriminated union인 경우, 어떤 필드로 분기되는지와 각 variant를 나열한다
 
-### Step 4-1: usage.md 생성
+### Step 4-1: README.md 생성
 
-출력 경로: `.claude/references/sd-{name}{ver}/{패키지명}/usage.md`
+출력 경로: `{패키지 경로}/README.md`
 
 ```markdown
-# @simplysm/{package-name}
+# {package-name}
 
 {package.json의 description. 없으면 엔트리포인트의 export 구조에서 추론하여 한 줄 요약}
 
 ## Installation
 
 \`\`\`bash
-npm install @simplysm/{package-name}
+npm install {package-name}
 \`\`\`
 
 ## API Overview
 
-{usage 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
+{README.md 단독인 경우: 카테고리별로 API 전체 나열 — 4-2 형식과 동일}
 {docs/ 분할인 경우: 카테고리별 요약 테이블 + docs/ 링크}
 
 ### {Category Name}
@@ -138,7 +138,7 @@ npm install @simplysm/{package-name}
 
 ### Step 4-2: docs/*.md 생성 (분할 대상 패키지만)
 
-카테고리별로 `.claude/references/sd-{name}{ver}/{패키지명}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 영어 kebab-case로 변환한다.
+카테고리별로 `{패키지 경로}/docs/{category}.md`를 생성한다. 파일명은 카테고리를 영어 kebab-case로 변환한다.
 
 ```markdown
 # {Category Name}
@@ -201,7 +201,7 @@ Step 2B에서 스타일 항목이 수집된 경우, `{출력 경로}/docs/stylin
 
 #### 완전성 검증
 
-1. export 목록의 각 항목이 usage.md 또는 docs/*.md에 존재하는지 확인한다
+1. export 목록의 각 항목이 README.md 또는 docs/*.md에 존재하는지 확인한다
 2. 누락된 항목이 있으면 해당 API를 문서에 추가한다
 
 #### 정확성 검증
@@ -236,4 +236,14 @@ Step 2B에서 스타일 항목이 수집된 경우, `{출력 경로}/docs/stylin
 불일치: SdPermissionTable (items→permissions, value→permRecord), SdBarcode (value: required→optional)
 → 소스 기준으로 문서를 수정합니다.
 ```
+
+### Step 4-5: package.json `files` 배열 동기화
+
+생성된 `docs/`가 npm publish에 포함되도록 `{패키지 경로}/package.json`의 `files` 배열을 점검한다.
+
+1. `package.json`에 `files` 필드가 없으면 이 단계를 건너뛴다 (npm이 기본으로 전체 파일을 포함).
+2. `files` 필드가 있으면 아래 규칙으로 동기화한다:
+   - 이번 실행 후 `{패키지 경로}/docs/`가 존재하면, `files` 배열에 `"docs"`가 **없을 때 추가**한다.
+   - 이번 실행 후 `{패키지 경로}/docs/`가 존재하지 않으면(분량 축소로 단독 구조로 전환되었거나 Step 3 판단으로 `docs/`를 생성하지 않은 경우), `files` 배열에 `"docs"`가 **있을 때 제거**한다.
+3. `README.md`는 npm이 `files` 선언과 무관하게 항상 포함하므로 `files`에 추가할 필요가 없다.
 

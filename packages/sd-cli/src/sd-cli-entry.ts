@@ -15,10 +15,10 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
-import { consola } from "consola";
 import { setupConsola } from "@simplysm/core-node";
+import { createLazyLogger } from "./runtime/lazy-logger";
 
-const logger = consola.withTag("sd:cli:entry");
+const logger = createLazyLogger("sd:cli:entry");
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;

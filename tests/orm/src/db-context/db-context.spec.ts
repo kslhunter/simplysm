@@ -1,28 +1,19 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import type { DbConn } from "@simplysm/orm-node";
 import {
-  MssqlDbConn,
-  MysqlDbConn,
-  PostgresqlDbConn,
-  NodeDbContextExecutor,
+  createDbConn,
+  createOrm,
 } from "@simplysm/orm-node";
+import type { DbConn, DbConnConfig } from "@simplysm/orm-node";
+import type { Orm } from "@simplysm/orm-node";
 import { Table, DbContext } from "@simplysm/orm-common";
 import { mssqlConfig, mysqlConfig, postgresqlConfig } from "../test-configs";
-import * as tedious from "tedious";
-import * as mysql2 from "mysql2/promise";
-import * as pg from "pg";
-import * as pgCopyStreams from "pg-copy-streams";
 
 const dbCases = [
   {
     label: "MSSQL",
-    config: mssqlConfig,
-    schema: "dbo" as const,
+    config: mssqlConfig as DbConnConfig,
     createTable: Table("User").database("TestDb").schema("dbo"),
-    dbContextOpts: { database: "TestDb", schema: "dbo" } as const,
-    createConn(): DbConn {
-      return new MssqlDbConn(tedious, mssqlConfig);
-    },
+    ormOptions: { database: "TestDb", schema: "dbo" } as const,
     setupSql: [
       `IF OBJECT_ID('[TestDb].[dbo].[User]', 'U') IS NOT NULL DROP TABLE [TestDb].[dbo].[User]`,
       `CREATE TABLE [TestDb].[dbo].[User] (
@@ -36,13 +27,9 @@ const dbCases = [
   },
   {
     label: "MySQL",
-    config: mysqlConfig,
-    schema: undefined,
+    config: mysqlConfig as DbConnConfig,
     createTable: Table("User").database("TestDb"),
-    dbContextOpts: { database: "TestDb" } as const,
-    createConn(): DbConn {
-      return new MysqlDbConn(mysql2, mysqlConfig);
-    },
+    ormOptions: { database: "TestDb" } as const,
     setupSql: [
       "DROP TABLE IF EXISTS `TestDb`.`User`",
       `CREATE TABLE \`TestDb\`.\`User\` (
@@ -54,25 +41,21 @@ const dbCases = [
   },
   {
     label: "PostgreSQL",
-    config: postgresqlConfig,
-    schema: "public" as const,
+    config: postgresqlConfig as DbConnConfig,
     createTable: Table("User").database("TestDb").schema("public"),
-    dbContextOpts: { database: "TestDb", schema: "public" } as const,
-    createConn(): DbConn {
-      return new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig);
-    },
+    ormOptions: { database: "TestDb", schema: "public" } as const,
     setupSql: [
-      `DROP TABLE IF EXISTS "TestDb"."public"."User"`,
-      `CREATE TABLE "TestDb"."public"."User" (
+      `DROP TABLE IF EXISTS "User"`,
+      `CREATE TABLE "User" (
         id INT PRIMARY KEY,
         name VARCHAR(100)
       )`,
     ],
-    cleanupSql: [`DROP TABLE IF EXISTS "TestDb"."public"."User"`],
+    cleanupSql: [`DROP TABLE IF EXISTS "User"`],
   },
 ];
 
-describe.each(dbCases)("$label DbContext - transaction", (dbCase) => {
+describe.each(dbCases)("$label DbContext - createOrm", (dbCase) => {
   const User = dbCase.createTable
     .columns((c) => ({
       id: c.int(),
@@ -84,47 +67,76 @@ describe.each(dbCases)("$label DbContext - transaction", (dbCase) => {
     user = this.queryable(User);
   }
 
-  let db: TestDb;
+  let orm: Orm<TestDb>;
+  let setupConn: DbConn;
 
   beforeAll(async () => {
-    // 직접 연결하여 원시 SQL 실행
-    const conn = dbCase.createConn();
-    await conn.connect();
-    await conn.execute(dbCase.setupSql);
-    await conn.close();
+    setupConn = await createDbConn(dbCase.config);
+    await setupConn.connect();
+    await setupConn.execute(dbCase.setupSql);
+    await setupConn.close();
 
-    // DbContext 실행기 생성
-    const executor = new NodeDbContextExecutor(dbCase.config);
-    db = new TestDb(executor, dbCase.dbContextOpts);
+    orm = createOrm(TestDb, dbCase.config, dbCase.ormOptions);
   });
 
   afterAll(async () => {
-    // 테이블 정리
-    const cleanupConn = dbCase.createConn();
+    const cleanupConn = await createDbConn(dbCase.config);
     await cleanupConn.connect();
     await cleanupConn.execute(dbCase.cleanupSql);
     await cleanupConn.close();
   });
 
-  it("오류 발생 시 자동 롤백", async () => {
-    await db.connectWithoutTransaction(async () => {
-      // 초기 데이터 삽입 (트랜잭션 내)
+  it("connect()로 트랜잭션 내 INSERT/SELECT", async () => {
+    await orm.connect(async (db) => {
+      await db.user().insert([{ id: 100, name: "orm-test" }]);
+      const result = await db.user().execute();
+      expect(result.some((r) => r.id === 100 && r.name === "orm-test")).toBe(true);
+    });
+  });
+
+  it("connectWithoutTransaction()로 트랜잭션 없이 실행", async () => {
+    await orm.connectWithoutTransaction(async (db) => {
+      const result = await db.user().execute();
+      expect(result.some((r) => r.id === 100)).toBe(true);
+    });
+  });
+
+  it("connect() 오류 발생 시 자동 롤백", async () => {
+    await expect(
+      orm.connect(async (db) => {
+        await db.user().insert([{ id: 200, name: "should-rollback" }]);
+        throw new Error("Intentional error");
+      }),
+    ).rejects.toThrow("Intentional error");
+
+    await orm.connectWithoutTransaction(async (db) => {
+      const result = await db.user().execute();
+      expect(result.some((r) => r.id === 200)).toBe(false);
+    });
+  });
+
+  it("connectWithoutTransaction() 내부 transaction()으로 부분 트랜잭션", async () => {
+    await orm.connectWithoutTransaction(async (db) => {
       await db.transaction(async () => {
-        await db.user().insert([{ id: 1, name: "initial" }]);
+        await db.user().insert([{ id: 300, name: "partial-tx" }]);
       });
 
-      // 트랜잭션 내 오류 발생 시 롤백이 트리거되어야 함
+      const result = await db.user().execute();
+      expect(result.some((r) => r.id === 300 && r.name === "partial-tx")).toBe(true);
+    });
+  });
+
+  it("connectWithoutTransaction() 내부 transaction() 오류 시 부분 롤백", async () => {
+    await orm.connectWithoutTransaction(async (db) => {
       await expect(
         db.transaction(async () => {
-          await db.user().insert([{ id: 2, name: "should-rollback" }]);
+          await db.user().insert([{ id: 400, name: "should-rollback" }]);
           throw new Error("Intentional error");
         }),
       ).rejects.toThrow("Intentional error");
 
-      // 롤백되어 1개의 레코드만 존재해야 함
       const result = await db.user().execute();
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({ id: 1, name: "initial" });
+      expect(result.some((r) => r.id === 400)).toBe(false);
     });
   });
 });

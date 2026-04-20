@@ -168,15 +168,15 @@ export const substring: ExpectedSql = {
 
 export const indexOf: ExpectedSql = {
   mysql: mysql`
-    SELECT LOCATE('test', \`T1\`.\`name\`) AS \`pos\`
+    SELECT (LOCATE('test', \`T1\`.\`name\`) - 1) AS \`pos\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`
-    SELECT CHARINDEX(N'test', [T1].[name]) AS [pos]
+    SELECT (CHARINDEX(N'test', [T1].[name]) - 1) AS [pos]
     FROM [TestDb].[TestSchema].[User] AS [T1]
   `,
   postgresql: pgsql`
-    SELECT POSITION('test' IN "T1"."name") AS "pos"
+    SELECT (POSITION('test' IN "T1"."name") - 1) AS "pos"
     FROM "TestSchema"."User" AS "T1"
   `,
 };

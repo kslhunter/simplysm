@@ -656,3 +656,64 @@ export class SdSheetPaginationTest {
 export class SdSheetNoPaginationTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
 }
+
+// --- Feature 5.1: cumulativeSelection fixtures ---
+
+export interface TestItemWithId {
+  id: number;
+  name: string;
+}
+
+@Component({
+  selector: "sd-sheet-cumulative-selection-test",
+  template: `
+    <sd-sheet
+      [items]="items()"
+      [selectMode]="'multi'"
+      [(selectedItems)]="selectedItems"
+      [trackByFn]="trackByFn"
+      [cumulativeSelection]="cumulativeSelection()"
+    >
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()">name</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetCumulativeSelectionTest {
+  items = signal<TestItemWithId[]>([
+    { id: 1, name: "A" },
+    { id: 2, name: "B" },
+  ]);
+  selectedItems = signal<TestItemWithId[]>([]);
+  trackByFn = (item: TestItemWithId) => item.id;
+  cumulativeSelection = signal(true);
+}
+
+@Component({
+  selector: "sd-sheet-non-cumulative-test",
+  template: `
+    <sd-sheet
+      [items]="items()"
+      [selectMode]="'multi'"
+      [(selectedItems)]="selectedItems"
+      [trackByFn]="trackByFn"
+    >
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()">name</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetNonCumulativeTest {
+  items = signal<TestItemWithId[]>([
+    { id: 1, name: "A" },
+    { id: 2, name: "B" },
+  ]);
+  selectedItems = signal<TestItemWithId[]>([]);
+  trackByFn = (item: TestItemWithId) => item.id;
+}

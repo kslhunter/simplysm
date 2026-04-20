@@ -3,10 +3,13 @@ import fs from "fs";
 import os from "os";
 import ts from "typescript";
 import type esbuild from "esbuild";
-import { consola } from "consola";
 import { JavaScriptTransformer, Cache as AngularCache } from "@angular/build/private";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { AngularSourceFileCache } from "../angular/angular-compiler";
-import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
+import type {
+  SerializedDiagnostic,
+  SerializedMessageChain,
+} from "../typecheck/typecheck-serialization";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result";
 import { FileReferenceTracker } from "./file-reference-tracker";
@@ -15,7 +18,7 @@ import { createCachedLoad, type LoadResultCache } from "./load-result-cache";
 import { collectHmrCandidates, HMR_MODIFIED_FILE_LIMIT } from "../angular/hmr-candidates";
 import { transformWorkerPatterns } from "./esbuild-worker-plugin";
 
-const logger = consola.withTag("sd:cli:angular-plugin");
+const logger = createLazyLogger("sd:cli:angular-plugin");
 
 //#region Types
 
@@ -125,29 +128,67 @@ export function convertDiagnostic(
   return { text, location };
 }
 
+function flattenSerializedMessage(
+  messageText: string | SerializedMessageChain,
+  indent = 0,
+): string {
+  if (typeof messageText === "string") return messageText;
+  const prefix = "  ".repeat(indent);
+  let text = prefix + messageText.messageText;
+  if (messageText.next != null) {
+    for (const n of messageText.next) {
+      text += "\n" + flattenSerializedMessage(n, indent + 1);
+    }
+  }
+  return text;
+}
+
+function locationOf(
+  fileInfo: { fileName: string } | undefined,
+  start: number | undefined,
+  length: number | undefined,
+  program: ts.Program,
+  cwd: string,
+): esbuild.PartialMessage["location"] {
+  if (fileInfo == null || start == null) return null;
+  const sf = program.getSourceFile(fileInfo.fileName);
+  if (sf == null) return null;
+  const pos = sf.getLineAndCharacterOfPosition(start);
+  const lineStart = sf.getLineStarts()[pos.line];
+  const lineEnd = sf.getLineStarts()[pos.line + 1] ?? sf.text.length;
+  const lineText = sf.text.slice(lineStart, lineEnd).replace(/\r?\n$/, "");
+  return {
+    file: path.relative(cwd, fileInfo.fileName),
+    line: pos.line + 1,
+    column: pos.character,
+    lineText,
+    length: length ?? 0,
+  };
+}
+
 export function convertSerializedDiagnosticToEsbuild(
   d: SerializedDiagnostic,
   program: ts.Program,
   cwd: string,
 ): esbuild.PartialMessage {
-  let location: esbuild.PartialMessage["location"] = null;
-  if (d.file != null && d.start != null) {
-    const sf = program.getSourceFile(d.file.fileName);
-    if (sf != null) {
-      const pos = sf.getLineAndCharacterOfPosition(d.start);
-      const lineStart = sf.getLineStarts()[pos.line];
-      const lineEnd = sf.getLineStarts()[pos.line + 1] ?? sf.text.length;
-      const lineText = sf.text.slice(lineStart, lineEnd).replace(/\r?\n$/, "");
-      location = {
-        file: path.relative(cwd, d.file.fileName),
-        line: pos.line + 1,
-        column: pos.character,
-        lineText,
-        length: d.length ?? 0,
-      };
+  const location = locationOf(d.file, d.start, d.length, program, cwd);
+  const text = flattenSerializedMessage(d.messageText);
+
+  const notes: esbuild.PartialNote[] = [];
+  if (d.relatedInformation != null) {
+    for (const ri of d.relatedInformation) {
+      notes.push({
+        text: flattenSerializedMessage(ri.messageText),
+        location: locationOf(ri.file, ri.start, ri.length, program, cwd),
+      });
     }
   }
-  return { text: d.messageText, location };
+
+  return {
+    text,
+    location,
+    notes: notes.length > 0 ? notes : undefined,
+  };
 }
 
 //#endregion

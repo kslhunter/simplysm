@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
@@ -39,7 +41,7 @@ sd-claude/
 │   ├── sd-check-bash.py              ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
 │   ├── sd-check-forbidden-files.py   ← Write/Edit 도구 사전 검사 훅 (tsconfig.json, eslint.config.ts 수정 차단)
 │   ├── sd-check-write.py             ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
-│   ├── sd-session-start.sh           ← SessionStart 훅 (rules/*.md 및 CLAUDE.md 경로 출력)
+│   ├── sd-subagent-start.sh          ← SubagentStart 훅 (CLAUDE.md를 읽어 출력)
 │   └── sd-statusline.py              ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
 └── scripts/
     ├── cli.mjs             ← CLI 엔트리포인트 (bin: sd-claude)

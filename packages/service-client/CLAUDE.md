@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
@@ -26,7 +28,7 @@ src/
 │       ├── orm-client-db-context-executor.ts ← DbContextExecutor 구현체 (원격 호출)
 │       └── orm-connect-options.ts          ← ORM 연결 옵션 타입
 └── types/
-    ├── browser-compat.ts   ← DOM 전용 타입 대체 (BlobInput, FileCollection, WorkerLike)
+    ├── browser-compat.ts   ← DOM 전용 타입 대체 (BlobInput, FileCollection, isWorkerSupported)
     ├── connection-options.ts ← ServiceConnectionOptions
     └── progress.types.ts    ← ServiceProgress, ServiceProgressState
 ```
@@ -174,7 +176,7 @@ if (typeof globalThis.WebSocket === "undefined") {
 ```typescript
 // BlobInput: Blob | Uint8Array | ArrayBuffer | string (DOM BlobPart 대체)
 // FileCollection: { length, item(index), [index], [Symbol.iterator] } (FileList 대체)
-// WorkerLike: { onmessage, postMessage, terminate } (Worker 대체)
+// isWorkerSupported(): boolean — globalThis.Worker 존재 여부 확인
 ```
 
 ## Compiler Options (패키지 고유)

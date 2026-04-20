@@ -44,6 +44,13 @@ def extract_recursive(file_path: Path, out_dir: Path):
             "context": img.get("context", ""),
         })
 
+    # Save pre-named slide images (PPTX screenshots)
+    saved_slides = []
+    for s in result.get("slide_images", []):
+        slide_path = out_dir / s["filename"]
+        slide_path.write_bytes(s["data"])
+        saved_slides.append({"filename": s["filename"], "size": len(s["data"])})
+
     # Save embedded/attached files and recurse
     prefix = "attachment" if result.get("metadata", {}).get("email_headers") else "embedded"
     saved_embedded = []
@@ -68,12 +75,13 @@ def extract_recursive(file_path: Path, out_dir: Path):
         saved_embedded.append(entry)
 
     # Generate {stem}.md index in parent of out_dir
-    _generate_index_md(out_dir, file_path, result, saved_images, saved_embedded)
+    _generate_index_md(out_dir, file_path, result, saved_images, saved_embedded, saved_slides)
 
 
 
 def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
-                       saved_images: list, saved_embedded: list):
+                       saved_images: list, saved_embedded: list,
+                       saved_slides: list | None = None):
     """Generate {stem}.md in parent of out_dir, summarizing extraction results.
 
     Images and embedded files are placed inline via [IMG:N]/[EMB:N] placeholders
@@ -120,7 +128,8 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
             referenced_imgs.add(idx)
             if 1 <= idx <= len(saved_images):
                 img = saved_images[idx - 1]
-                return f"![{img['filename']}]({rel_prefix}/{img['filename']})"
+                alt = img.get('context', '') or img['filename']
+                return f"![{alt}]({rel_prefix}/{img['filename']})"
             return m.group(0)
 
         def replace_emb(m):
@@ -136,8 +145,18 @@ def _generate_index_md(out_dir: Path, file_path: Path, result: dict,
                     return f"> embedded: [{name}]({rel_prefix}/{name})"
             return m.group(0)
 
+        slides_list = saved_slides or []
+
+        def replace_slide(m):
+            idx = int(m.group(1))
+            if 1 <= idx <= len(slides_list):
+                fname = slides_list[idx - 1]["filename"]
+                return f"![{fname}]({rel_prefix}/{fname})"
+            return m.group(0)
+
         text = re.sub(r'\[IMG:(\d+)\]', replace_img, text)
         text = re.sub(r'\[EMB:(\d+)\]', replace_emb, text)
+        text = re.sub(r'\[SLIDE:(\d+)\]', replace_slide, text)
 
         if len(text) > 10000:
             body_path = out_dir / "body.txt"

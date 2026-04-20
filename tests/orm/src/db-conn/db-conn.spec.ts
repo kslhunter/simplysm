@@ -1,15 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import {
-  MssqlDbConn,
-  MysqlDbConn,
-  PostgresqlDbConn,
+  createDbConn,
   DB_CONN_ERRORS,
 } from "@simplysm/orm-node";
+import type { DbConn } from "@simplysm/orm-node";
 import { mssqlConfig, mysqlConfig, postgresqlConfig } from "../test-configs";
-import * as tedious from "tedious";
-import * as mysql2 from "mysql2/promise";
-import * as pg from "pg";
-import * as pgCopyStreams from "pg-copy-streams";
 import {
   bulkColumnMetas,
   bulkRecords,
@@ -27,7 +22,7 @@ import { Uuid } from "@simplysm/core-common";
 
 interface DbDialectDef {
   name: string;
-  createConn: () => MssqlDbConn | MysqlDbConn | PostgresqlDbConn;
+  createConn: () => Promise<DbConn>;
 
   sql: {
     /** Quote identifier (e.g. [x], `db`.`x`, "x") */
@@ -82,7 +77,7 @@ interface DbDialectDef {
 
 const mssqlDef: DbDialectDef = {
   name: "MssqlDbConn",
-  createConn: () => new MssqlDbConn(tedious, mssqlConfig),
+  createConn: () => createDbConn(mssqlConfig),
   sql: {
     qi: (name) => `[${name}]`,
     table: (name) => `[${name}]`,
@@ -129,7 +124,7 @@ const mssqlDef: DbDialectDef = {
 
 const mysqlDef: DbDialectDef = {
   name: "MysqlDbConn",
-  createConn: () => new MysqlDbConn(mysql2, mysqlConfig),
+  createConn: () => createDbConn(mysqlConfig),
   sql: {
     qi: (name) => `\`${name}\``,
     table: (name) => `\`TestDb\`.\`${name}\``,
@@ -177,7 +172,7 @@ const mysqlDef: DbDialectDef = {
 
 const postgresqlDef: DbDialectDef = {
   name: "PostgresqlDbConn",
-  createConn: () => new PostgresqlDbConn(pg, pgCopyStreams, postgresqlConfig),
+  createConn: () => createDbConn(postgresqlConfig),
   sql: {
     qi: (name) => `"${name}"`,
     table: (name) => `"${name}"`,
@@ -228,28 +223,18 @@ const dialects: DbDialectDef[] = [mssqlDef, mysqlDef, postgresqlDef];
 
 for (const d of dialects) {
   describe(d.name, () => {
-    let conn: MssqlDbConn | MysqlDbConn | PostgresqlDbConn;
-
-    beforeAll(() => {
-      conn = d.createConn();
-    });
-
-    afterAll(async () => {
-      if (conn.isConnected) {
-        await conn.close();
-      }
-    });
+    let conn: DbConn;
 
     describe("연결", () => {
       it("연결 성공", async () => {
-        const testConn = d.createConn();
+        const testConn = await d.createConn();
         await testConn.connect();
         expect(testConn.isConnected).toBe(true);
         await testConn.close();
       });
 
       it("중복 연결 시 오류 발생", async () => {
-        const testConn = d.createConn();
+        const testConn = await d.createConn();
         await testConn.connect();
         try {
           await expect(testConn.connect()).rejects.toThrow(DB_CONN_ERRORS.ALREADY_CONNECTED);
@@ -259,7 +244,7 @@ for (const d of dialects) {
       });
 
       it("연결 종료", async () => {
-        const testConn = d.createConn();
+        const testConn = await d.createConn();
         await testConn.connect();
         await testConn.close();
         expect(testConn.isConnected).toBe(false);
@@ -268,7 +253,7 @@ for (const d of dialects) {
 
     describe("쿼리 실행", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -333,14 +318,14 @@ for (const d of dialects) {
 
     describe("연결 오류 처리", () => {
       it("연결 해제된 커넥션에서 쿼리 실행 시 오류 발생", async () => {
-        const disconnectedConn = d.createConn();
+        const disconnectedConn = await d.createConn();
         await expect(disconnectedConn.execute(["SELECT 1"])).rejects.toThrow(
           DB_CONN_ERRORS.NOT_CONNECTED,
         );
       });
 
       it("잘못된 쿼리 실행 시 오류 발생", async () => {
-        const tempConn = d.createConn();
+        const tempConn = await d.createConn();
         await tempConn.connect();
 
         try {
@@ -355,7 +340,7 @@ for (const d of dialects) {
 
     describe("트랜잭션", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -406,7 +391,7 @@ for (const d of dialects) {
 
     describe("bulkInsert", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -465,7 +450,7 @@ for (const d of dialects) {
 
     describe("다양한 타입 테스트", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -504,7 +489,7 @@ for (const d of dialects) {
 
     describe("bulkInsert NULL 및 특수 타입 테스트", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -547,7 +532,7 @@ for (const d of dialects) {
 
     describe("bulkInsert UUID 및 바이너리 타입 테스트", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -586,7 +571,7 @@ for (const d of dialects) {
 
     describe("트랜잭션 격리 수준 테스트", () => {
       beforeAll(async () => {
-        conn = d.createConn();
+        conn = await d.createConn();
         await conn.connect();
 
         await conn.execute([
@@ -660,10 +645,10 @@ for (const d of dialects) {
 // ============================================
 
 describe("MysqlDbConn multi-statement 결과 분리", () => {
-  let conn: MysqlDbConn;
+  let conn: DbConn;
 
   beforeAll(async () => {
-    conn = new MysqlDbConn(mysql2, mysqlConfig);
+    conn = await createDbConn(mysqlConfig);
     await conn.connect();
 
     await conn.execute([

@@ -81,6 +81,9 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
 
     // 일반 JOIN
     const from = this.renderFrom(join.from);
+    if (this.isRecursiveSelfJoin(join)) {
+      return ` CROSS JOIN ${from} AS ${alias}`;
+    }
     const where =
       join.where != null && join.where.length > 0
         ? ` ON ${this.expr.renderWhere(join.where)}`

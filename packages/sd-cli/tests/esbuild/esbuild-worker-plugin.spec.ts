@@ -476,6 +476,14 @@ const x = 1;`,
 
     expect(matches).toHaveLength(0);
   });
+
+  it("래퍼 함수를 통한 Worker 생성은 탐지하지 않는다", () => {
+    const matches = findWorkerPatterns(
+      `const w = createBrowserWorker(new URL("./worker.js", import.meta.url), { type: "module" });`,
+    );
+
+    expect(matches).toHaveLength(0);
+  });
 });
 
 describe("transformWorkerPatterns — TypeScript 파일 처리", () => {

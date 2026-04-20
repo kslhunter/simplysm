@@ -1,7 +1,7 @@
 ---
 name: sd-use
 description: 자연어 요청을 적절한 sd-* 스킬로 라우팅하는 스킬. "sd-use 커밋해줘", "sd-use --help" 등을 요청할 때 사용한다.
-model: claude-haiku-4-5
+model: haiku
 ---
 
 # sd-use: SD 스킬 라우터
@@ -50,6 +50,7 @@ SKILLS
   품질
     sd-check            typecheck / lint / test 실행 및 에러 수정
     sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰
+    sd-refactor         구조·설계·아키텍처 리팩토링 분석 리포트
     sd-debug            버그/에러 근본 원인 분석
 
   Git
@@ -57,14 +58,17 @@ SKILLS
     sd-issue            GitHub 이슈 생성
 
   문서
-    sd-claude-docs      CLAUDE.md + README.md 생성
+    sd-claude-docs      CLAUDE.md + usage 문서 생성
     sd-doc-extract      문서에서 텍스트/이미지 추출
     sd-deliverable      매뉴얼 & SIT 문서 생성
 
   도구
     sd-prompt           스킬/프롬프트 파일 생성·개선
     sd-outlook          Outlook 메일 검색/다운로드
-    sd-apk-decompile    APK 디컴파일
+
+  기타
+    my-apk-decompile    APK 디컴파일 및 소스 분석
+    playwright-cli      브라우저 자동화 및 Playwright 테스트
 ````
 
 ## Step 3: 스킬 실행

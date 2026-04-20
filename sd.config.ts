@@ -19,7 +19,7 @@ const config: SdConfigFn = () => ({
       target: "scripts",
       publish: { type: "npm" },
       watch: {
-        target: ["../../.claude/**/sd-*", "../../.claude/**/sd-*/**"],
+        target: ["../../.claude/**/sd-*", "../../.claude/**/sd-*/**", "../../.claude/settings.json"],
         cmd: "node",
         args: ["scripts/sync.mjs"],
       },

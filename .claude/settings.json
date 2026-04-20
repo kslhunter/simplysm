@@ -1,16 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear|compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/sd-session-start.sh"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -45,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/sd-session-start.sh"
+            "command": "bash .claude/sd-subagent-start.sh"
           }
         ]
       }

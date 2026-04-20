@@ -324,7 +324,7 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected indexOf(expr: ExprIndexOf): string {
-    return `LOCATE(${this.render(expr.search)}, ${this.render(expr.source)})`;
+    return `(LOCATE(${this.render(expr.search)}, ${this.render(expr.source)}) - 1)`;
   }
 
   //#endregion

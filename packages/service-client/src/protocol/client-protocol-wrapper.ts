@@ -5,7 +5,18 @@ import type {
   ServiceMessage,
   ServiceProtocol,
 } from "@simplysm/service-common";
-import { isWorkerSupported } from "../types/browser-compat";
+import type { BrowserWorker } from "../types/browser-compat";
+import {
+  isBrowserWorkerSupported,
+  isNodeWorkerSupported,
+  isWorkerSupported,
+} from "../types/browser-compat";
+
+// node env typecheck에서 DOM Worker 생성자가 없으므로 모듈 스코프 선언으로 보완
+// browser env에서는 global Worker를 shadow (구조적 호환). 컴파일 시 제거됨.
+declare const Worker: {
+  new (scriptURL: string | URL, options?: { type?: string }): BrowserWorker;
+};
 
 export interface ClientProtocolWrapper {
   encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
@@ -13,16 +24,13 @@ export interface ClientProtocolWrapper {
   dispose(): void;
 }
 
-// 공유 worker 상태 (싱글턴 패턴)
-let worker: Worker | undefined;
 const workerResolvers = new LazyGcMap<
   string,
   { resolve: (res: unknown) => void; reject: (err: Error) => void }
 >({
-  gcInterval: 5 * 1000, // 5초마다 만료된 항목 확인
-  expireTime: 60 * 1000, // 60초 후 만료 (타임아웃)
+  gcInterval: 5 * 1000,
+  expireTime: 60 * 1000,
   onExpire: (key, item) => {
-    // 만료 시 reject (메모리 누수 방지에 필수)
     item.reject(new Error(`Worker 작업 시간 초과 (uuid: ${key})`));
   },
 });
@@ -36,72 +44,124 @@ function isWorkerAvailable(): boolean {
   return workerAvailable;
 }
 
-function getWorker(): Worker | undefined {
+function setupWorkerHandlers(w: BrowserWorker): void {
+  w.onmessage = (event: MessageEvent) => {
+    const { id, type, result, error } = event.data as {
+      id: string;
+      type: "success" | "error";
+      result?: unknown;
+      error?: { message: string; stack?: string };
+    };
+
+    const resolver = workerResolvers.get(id);
+    if (resolver != null) {
+      if (type === "success") {
+        resolver.resolve(result);
+      } else {
+        const err = new Error(error?.message ?? "알 수 없는 worker 에러");
+        err.stack = error?.stack;
+        resolver.reject(err);
+      }
+      workerResolvers.delete(id);
+    }
+  };
+
+  w.onerror = () => {
+    const workerErr = new Error("Worker 초기화 실패");
+    for (const resolver of workerResolvers.values()) {
+      resolver.reject(workerErr);
+    }
+    workerResolvers.clear();
+
+    workerInitPromise = undefined;
+    workerAvailable = false;
+  };
+}
+
+function createNodeWorkerAdapter(nodeWorker: import("worker_threads").Worker): BrowserWorker {
+  const adapter: BrowserWorker = {
+    onmessage: null,
+    onerror: null,
+    postMessage(message: unknown, transferItems?: unknown[]) {
+      nodeWorker.postMessage(message, transferItems as import("worker_threads").TransferListItem[]);
+    },
+    terminate() {
+      void nodeWorker.terminate();
+    },
+  };
+
+  nodeWorker.on("message", (data: unknown) => {
+    adapter.onmessage?.({ data } as MessageEvent);
+  });
+  nodeWorker.on("error", (err: Error) => {
+    adapter.onerror?.(err as unknown as Event);
+  });
+
+  return adapter;
+}
+
+let workerInitPromise: Promise<BrowserWorker | undefined> | undefined;
+
+async function initWorker(): Promise<BrowserWorker | undefined> {
+  try {
+    if (isBrowserWorkerSupported()) {
+      // esbuild Worker 번들링 플러그인(sd-worker-bundle)이 이 패턴을 AST에서 인식
+      const w: BrowserWorker = new Worker(
+        new URL("../workers/client-protocol.worker.js", import.meta.url),
+        { type: "module" },
+      );
+      setupWorkerHandlers(w);
+      return w;
+    }
+
+    if (isNodeWorkerSupported()) {
+      // esbuild Worker 번들링 플러그인이 import.meta.resolve 패턴을 인식
+      const workerUrl = import.meta.resolve("../workers/client-protocol.worker.js");
+      const workerThreadsId = "worker_threads";
+      const { Worker: NodeWorker } = await import(/* @vite-ignore */ workerThreadsId);
+      const nodeWorker = new NodeWorker(new URL(workerUrl)) as import("worker_threads").Worker;
+      const adapter = createNodeWorkerAdapter(nodeWorker);
+      setupWorkerHandlers(adapter);
+      return adapter;
+    }
+  } catch {
+    workerAvailable = false;
+  }
+
+  return undefined;
+}
+
+async function getWorker(): Promise<BrowserWorker | undefined> {
   if (!isWorkerAvailable()) {
     return undefined;
   }
 
-  if (!worker) {
-    // 모던 번들러 (Vite/Esbuild/Webpack)가 이 구문을 사용하여 Worker를 별도 파일로 분리/로드함
-    // 참고: import.meta.resolve 대신 상대 경로 사용 (Vite 호환성)
-    worker = new Worker(
-      new URL("../workers/client-protocol.worker.js", import.meta.url),
-      { type: "module" },
-    );
-
-    worker.onmessage = (event: MessageEvent) => {
-      const { id, type, result, error } = event.data as {
-        id: string;
-        type: "success" | "error";
-        result?: unknown;
-        error?: { message: string; stack?: string };
-      };
-
-      const resolver = workerResolvers.get(id);
-      if (resolver != null) {
-        if (type === "success") {
-          resolver.resolve(result);
-        } else {
-          const err = new Error(error?.message ?? "알 수 없는 worker 에러");
-          err.stack = error?.stack;
-          resolver.reject(err);
-        }
-        workerResolvers.delete(id);
+  if (workerInitPromise == null) {
+    workerInitPromise = initWorker().then((w) => {
+      if (w == null) {
+        workerAvailable = false;
       }
-    };
-
-    worker.onerror = () => {
-      // Worker 로드 실패 또는 초기화 에러 시
-      // 대기 중인 모든 요청 즉시 reject
-      const workerErr = new Error("Worker 초기화 실패");
-      for (const resolver of workerResolvers.values()) {
-        resolver.reject(workerErr);
-      }
-      workerResolvers.clear();
-
-      // 이후 메인 스레드로 fallback
-      worker = undefined;
-      workerAvailable = false;
-    };
+      return w;
+    });
   }
-  return worker;
+
+  return workerInitPromise;
 }
 
-/**
- * Worker에 작업을 위임하고 결과를 대기
- * 참고: workerAvailable이 true일 때만 호출할 것
- */
 async function runWorker(
   type: "encode" | "decode",
   data: unknown,
   transferables: ArrayBuffer[] = [],
-): Promise<unknown> {
+): Promise<unknown | undefined> {
+  const w = await getWorker();
+  if (w == null) {
+    return undefined;
+  }
+
   return new Promise((resolve, reject) => {
     const id = Uuid.generate().toString();
-
     workerResolvers.set(id, { resolve, reject });
-    // workerAvailable 확인 후 호출되므로 worker는 항상 존재
-    getWorker()!.postMessage({ id, type, data }, transferables);
+    w.postMessage({ id, type, data }, transferables);
   });
 }
 
@@ -132,13 +192,11 @@ export function createClientProtocolWrapper(protocol: ServiceProtocol): ClientPr
       return protocol.encode(uuid, message);
     }
 
-    // [Worker]
-    // 인코딩은 객체 전송이 필요하므로 Structured Clone이 발생함.
-    // 하지만 메인 스레드에서 JSON.stringify 비용을 오프로드하는 이점이 더 큼.
-    return (await runWorker("encode", { uuid, message })) as {
-      chunks: Bytes[];
-      totalSize: number;
-    };
+    const workerResult = await runWorker("encode", { uuid, message });
+    if (workerResult == null) {
+      return protocol.encode(uuid, message);
+    }
+    return workerResult as { chunks: Bytes[]; totalSize: number };
   }
 
   async function decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
@@ -149,11 +207,10 @@ export function createClientProtocolWrapper(protocol: ServiceProtocol): ClientPr
       return protocol.decode(bytes);
     }
 
-    // [Worker]
-    // Zero-copy 전송 (버퍼 소유권이 Worker로 이동)
     const rawResult = await runWorker("decode", bytes, [bytes.buffer as ArrayBuffer]);
-
-    // Worker의 plain object 결과에서 클래스 인스턴스 복원 (DateTime 등)
+    if (rawResult == null) {
+      return protocol.decode(bytes);
+    }
     return transfer.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
   }
 

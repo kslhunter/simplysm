@@ -62,7 +62,7 @@ description: (내부 전용) 근본 원인 분석(ACH) 로직. sd-debug, sd-chec
 - **위치** — 에러 발생 파일:라인 또는 관련 기능/화면
 - **재현 절차** — 문제가 발생하는 구체적 조작 순서
 
-@.claude/rules/sd-clarify.md 지침에 따라 명확화한다.
+`/sd-inner-clarify` 스킬을 호출하여 명확화한다.
 
 ## Step 2: 근본 원인 추적 (ACH)
 

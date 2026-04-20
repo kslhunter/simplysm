@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
@@ -60,13 +62,15 @@ src/
 │   ├── ngtsc-build-core.ts           ← Angular SCSS 유틸 (createLibraryTransformStylesheet, compileSideEffectScss, compileGlobalScss, writeEmitResults)
 │   └── scss-compiler.ts              ← sass 컴파일 (compileScssString, compileScssFile)
 ├── esbuild/               ← esbuild 설정 및 플러그인
-│   ├── esbuild-config.ts             ← esbuild 설정 생성
-│   ├── esbuild-client-config.ts      ← 클라이언트용 esbuild 설정
-│   ├── esbuild-tsc-plugin.ts         ← 서버 빌드용 tsc 플러그인 (타입체크 + DTS)
-│   ├── esbuild-scss-plugin.ts        ← esbuild SCSS 플러그인
-│   ├── esbuild-postcss-plugin.ts     ← esbuild PostCSS 플러그인 (빌드 후 CSS에 PostCSS 적용)
-│   ├── esbuild-index-html.ts         ← index.html 생성
-│   └── esbuild-pwa.ts                ← PWA 설정 적용
+│   ├── esbuild-config.ts                  ← esbuild 공통 설정 생성
+│   ├── esbuild-client-config.ts           ← 클라이언트용 esbuild 설정
+│   ├── esbuild-tsc-plugin.ts              ← 서버 빌드용 tsc 플러그인 (타입체크 + DTS)
+│   ├── esbuild-angular-compiler-plugin.ts ← 클라이언트 빌드용 Angular 컴파일러 플러그인
+│   ├── esbuild-worker-plugin.ts           ← Worker 번들 플러그인 (new Worker() 패턴 탐지 및 번들)
+│   ├── esbuild-scss-plugin.ts             ← esbuild SCSS 플러그인
+│   ├── esbuild-postcss-plugin.ts          ← esbuild PostCSS 플러그인 (빌드 후 CSS에 PostCSS 적용)
+│   ├── esbuild-index-html.ts              ← index.html 생성
+│   └── esbuild-pwa.ts                     ← PWA 설정 적용
 ├── dev-server/            ← HMR 및 개발 서버
 │   ├── dev-http-server.ts            ← 개발용 HTTP 서버
 │   ├── hmr-service.ts                ← HMR 서비스

@@ -405,7 +405,10 @@ export class Queryable<
   /**
    * 정렬 조건 추가. 여러 번 호출 시 순서대로 적용됨.
    *
-   * @param fn - 정렬할 column을 반환하는 함수
+   * 문자열 overload는 체인 경로를 받아 `obj.getChainValue`로 컬럼을 찾는다.
+   * 동적 정렬(sortingDefs 루프 등)에서 보일러플레이트를 줄이는 용도.
+   *
+   * @param fnOrKey - 정렬할 column을 반환하는 함수 또는 체인 경로 문자열
    * @param orderBy - 정렬 방향 (ASC/DESC). 기본값: ASC
    * @returns 정렬 조건이 추가된 Queryable
    *
@@ -414,12 +417,20 @@ export class Queryable<
    * db.user
    *   .orderBy((u) => u.name)           // name ASC
    *   .orderBy((u) => u.age, "DESC")    // age DESC
+   *   .orderBy("id", "DESC")            // string overload
+   *   .orderBy("user.name")             // chain path
    * ```
    */
   orderBy(
-    fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>,
+    fnOrKey: string | ((columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>),
     orderBy?: "ASC" | "DESC",
   ): Queryable<TData, TFrom> {
+    const fn =
+      typeof fnOrKey === "string"
+        ? (columns: QueryableRecord<TData>) =>
+            obj.getChainValue(columns, fnOrKey, true) as ExprUnit<ColumnPrimitive>
+        : fnOrKey;
+
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.orderBy(fn, orderBy));
       return new Queryable({

@@ -91,6 +91,7 @@ export class SdDropdownPopup {
     forwardRef(() => SdDropdown),
   );
   private readonly _elRef = inject(ElementRef<HTMLElement>);
+  private _capped = false;
 
   onKeydown(event: KeyboardEvent): void {
     this._parentControl.onPopupKeydown(event);
@@ -98,8 +99,11 @@ export class SdDropdownPopup {
 
   onResize(): void {
     const el = this._elRef.nativeElement;
-    const divEl = el.firstElementChild!;
-    if (divEl.clientHeight > 300) {
+    const divEl = el.firstElementChild as HTMLElement;
+    const shouldCap = divEl.scrollHeight > 300;
+    if (shouldCap === this._capped) return;
+    this._capped = shouldCap;
+    if (shouldCap) {
       el.style.height = "300px";
     } else {
       el.style.removeProperty("height");

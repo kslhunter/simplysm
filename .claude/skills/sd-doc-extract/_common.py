@@ -65,7 +65,14 @@ def ext_from_content_type(content_type: str) -> str:
 def normalize_cell(text) -> str:
     if text is None:
         return ""
-    return str(text).strip().replace("\n", " ")
+    return (
+        str(text).strip()
+        .replace("\\", "\\\\")
+        .replace("|", "\\|")
+        .replace("\r\n", "<br>")
+        .replace("\n", "<br>")
+        .replace("\r", "<br>")
+    )
 
 
 def parse_heading_level(style_name: str) -> int | None:

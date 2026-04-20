@@ -86,6 +86,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
 
     // 일반 JOIN
     const from = this.renderFrom(join.from);
+    if (this.isRecursiveSelfJoin(join)) {
+      return ` CROSS JOIN ${from} AS ${alias}`;
+    }
     const where =
       join.where != null && join.where.length > 0
         ? ` ON ${this.expr.renderWhere(join.where)}`
@@ -102,7 +105,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     let sql = "";
     if (def.with != null) {
       const { name, base, recursive } = def.with;
-      sql += `WITH ${this.expr.wrap(name)} AS (${this.select(base).sql} UNION ALL ${this.select(recursive).sql}) `;
+      sql += `WITH RECURSIVE ${this.expr.wrap(name)} AS (${this.select(base).sql} UNION ALL ${this.select(recursive).sql}) `;
     }
 
     // SELECT
@@ -121,10 +124,21 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       sql += " *";
     }
 
+    const recursiveSelfJoin = def.joins?.find((join) => this.isRecursiveSelfJoin(join));
+    const remainingJoins =
+      recursiveSelfJoin != null ? def.joins?.filter((join) => join !== recursiveSelfJoin) : def.joins;
+
     // FROM
     if (def.from != null) {
-      const from = this.renderFrom(def.from);
-      sql += ` FROM ${from} AS ${this.expr.wrap(def.as)}`;
+      if (recursiveSelfJoin != null) {
+        const selfFrom = this.renderFrom(recursiveSelfJoin.from);
+        const baseFrom = this.renderFrom(def.from);
+        sql += ` FROM ${selfFrom} AS ${this.expr.wrap(recursiveSelfJoin.as)}`;
+        sql += ` CROSS JOIN ${baseFrom} AS ${this.expr.wrap(def.as)}`;
+      } else {
+        const from = this.renderFrom(def.from);
+        sql += ` FROM ${from} AS ${this.expr.wrap(def.as)}`;
+      }
     }
 
     // LOCK
@@ -133,7 +147,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     }
 
     // JOINs
-    sql += this.renderJoins(def.joins);
+    sql += this.renderJoins(remainingJoins);
 
     // WHERE
     sql += this.renderWhere(def.where);
@@ -469,6 +483,10 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     // INSERT (NOT EXISTS 패턴)
     const insertSql = `INSERT INTO ${table} (${insertColList}) SELECT ${insertValues} WHERE NOT EXISTS (${existsQuerySql})`;
 
+    // MySQL은 같은 문장에서 TEMPORARY TABLE을 두 번 참조할 수 없으므로
+    // row count를 변수에 저장하여 두 번째 참조를 대체
+    const setCntSql = `SET @sd_tmp_cnt = (SELECT COUNT(*) FROM ${tempTableName})`;
+
     // SELECT: UPDATE 결과 또는 INSERT 결과 조회 (UNION ALL로 병합)
     // UPDATE 경우: 임시 테이블의 PK로 조회
     const output = def.output;
@@ -487,15 +505,15 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       const pkExpr = def.insertRecord[pk];
       return `${wrappedPk} = ${this.expr.render(pkExpr)}`;
     });
-    const selectInsertSql = `SELECT ${outputCols} FROM ${table} WHERE ${insertPkConditions.join(" AND ")} AND NOT EXISTS (SELECT 1 FROM ${tempTableName})`;
+    const selectInsertSql = `SELECT ${outputCols} FROM ${table} WHERE ${insertPkConditions.join(" AND ")} AND @sd_tmp_cnt = 0`;
 
     const selectSql = `${selectUpdateSql} UNION ALL ${selectInsertSql}`;
 
     // 임시 테이블 삭제
     const dropSql = `DROP TEMPORARY TABLE ${tempTableName}`;
 
-    const statements = [createTempSql, updateSql, insertSql, selectSql, dropSql];
-    return { sql: statements.join(";\n"), resultSetIndex: 3 };
+    const statements = [createTempSql, updateSql, insertSql, setCntSql, selectSql, dropSql];
+    return { sql: statements.join(";\n"), resultSetIndex: 4 };
   }
 
   //#endregion

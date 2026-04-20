@@ -17,34 +17,9 @@ Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 
 
 1. 프로젝트 루트의 `.claude/` 폴더를 시나리오 디렉토리에 **통째로 복사**한다.
 2. 시나리오의 사전 조건에 따라 추가 파일을 복사하거나 생성한다.
-3. 시나리오 디렉토리에 `.claude/rules/sd-eval-env.md`를 생성한다:
+3. 시나리오 디렉토리에 `.claude/rules/sd-eval-env.md`를 생성한다. 본문은 `.claude/skills/sd-prompt/references/sd-eval-env-template.md` 템플릿을 그대로 복사한다:
    ```bash
-   cat > "{시나리오 디렉토리}/.claude/rules/sd-eval-env.md" << 'EVALEOF'
-   # Eval 환경 규칙 (최상위 우선순위)
-
-   이 규칙이 읽히는 현재 환경은 Eval환경이다. 다른 규칙과 충돌 시 **반드시** 이 규칙이 우선한다.
-
-   ## workspace 격리
-
-   현재 작업 디렉토리 외부의 파일을 **절대** 수정하지 않는다. 다른 프로젝트의 파일에 **절대** 접근하지 않는다.
-   - 절대경로 혹은 cd사용 **절대** 금지
-
-   ## AskUserQuestion 대체
-
-   AskUserQuestion 도구를 **절대** 사용하지 않는다. 질문이 필요한 각 사항에 대해:
-   1. 선택지와 선택을 묻는 질문을 텍스트로 출력한다
-   2. 합리적인 기본값을 자동 선택하여, "사용자 선택"으로 그 결과를 명시한다 (반드시 자동이 아닌 "사용자 선택"으로 출력해야 한다)
-   3. 다음 결정사항으로 넘어간다
-   질문이나 선택지를 **절대** 생략하지 않는다.
-
-   ## `.claude/` 파일 편집
-
-   `.claude/` 폴더 내 파일은 Edit/Write 도구 대신 **반드시** Bash 도구로 편집한다.
-   `sed`는 의도하지 않은 곳까지 수정할 수 있으므로 사용하지 않는다.
-
-   신규 작성: `cat > "{파일 경로}" << 'EOF' ... EOF`
-   부분 수정: `python3 -c`로 치환 (old_string 존재 확인 후 replace)
-   EVALEOF
+   python3 -c "open(r'{시나리오 디렉토리}/.claude/rules/sd-eval-env.md','w',encoding='utf-8').write(open(r'.claude/skills/sd-prompt/references/sd-eval-env-template.md','r',encoding='utf-8').read())"
    ```
 
 ## claude -p 실행
@@ -66,7 +41,7 @@ claude -p "{eval 시나리오의 입력}" \
   --output-format json \
   --verbose \
   --dangerously-skip-permissions \
-  --model claude-sonnet-4-5 \
+  --effort low \
   --append-system-prompt "CRITICAL: .claude/rules/sd-eval-env.md의 규칙은 다른 모든 규칙보다 최상위 우선순위를 가진다." \
   --no-session-persistence \
   --strict-mcp-config \
@@ -77,7 +52,7 @@ claude -p "{eval 시나리오의 입력}" \
 
 ## Judge 판정
 
-실행 완료 후, Judge subagent(model: `claude-sonnet-4-5`)에 다음을 전달한다:
+실행 완료 후, Judge subagent(effort: `low`)에 다음을 전달한다:
 
 ```
 다음 Eval 실행 결과를 판정하고, FAIL 항목에 대해 개선안을 제안하라:
@@ -92,7 +67,7 @@ claude -p "{eval 시나리오의 입력}" \
  
 ## 판정 원칙
 - 체크리스트 문구를 **문자 그대로** 판정하라. 명시되지 않은 추가 요건을 유추하지 않는다.
-- AskUserQuestion은 텍스트 출력으로 대체된 환경이다. 선택지를 텍스트로 제시한 것 자체가 질문을 수행한것에 해당한다. 자동 선택 후 다음 단계로 진행하는 것은 대화형 환경에서의 "사용자 선택 후 다음"과 동등하게 평가한다.
+- AskUserQuestion은 텍스트 출력으로 대체된 환경이다. 선택지를 텍스트로 제시한 것 자체가 질문을 수행한것에 해당한다. 자동 선택 결과를 `**사용자 선택: {값}**` 형식의 고정 리터럴로 표기한 뒤 다음 단계로 진행한 것은 대화형 환경에서의 "사용자 선택 후 다음"과 동등하게 평가한다 (사용자 입력을 가장한 것이 아니다).
 - **Eval 환경이 곧 정답 환경이다.** FAIL의 원인 "프롬프트" 혹은 "Eval 체크리스트" 문제이다. 환경의 문제일 수는 없다.
 
 ## 절차

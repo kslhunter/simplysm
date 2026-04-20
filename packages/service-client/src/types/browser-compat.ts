@@ -18,7 +18,29 @@ export interface FileCollection {
   [Symbol.iterator](): IterableIterator<File>;
 }
 
-/** Web Worker API 지원 여부 확인 */
-export function isWorkerSupported(): boolean {
+/** Web Worker 최소 인터페이스 (DOM lib 없이도 타입체크 통과용) */
+export interface BrowserWorker {
+  onmessage: ((event: MessageEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  postMessage(message: unknown, transfer?: unknown[]): void;
+  terminate(): void;
+}
+
+/** DOM Worker API 지원 여부 확인 (browser 환경) */
+export function isBrowserWorkerSupported(): boolean {
   return "Worker" in globalThis;
 }
+
+/** Node.js worker_threads 지원 여부 확인 */
+export function isNodeWorkerSupported(): boolean {
+  const proc = (globalThis as Record<string, unknown>)["process"] as
+    | { versions?: { node?: string } }
+    | undefined;
+  return proc?.versions?.node != null;
+}
+
+/** Worker 오프로딩 지원 여부 (browser DOM Worker 또는 Node.js worker_threads) */
+export function isWorkerSupported(): boolean {
+  return isBrowserWorkerSupported() || isNodeWorkerSupported();
+}
+

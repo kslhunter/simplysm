@@ -1,5 +1,5 @@
-import { consola } from "consola";
 import type { ResultCollector } from "../runtime/ResultCollector";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import { hasAngularCoreDependency } from "../utils/package-utils";
 import { NgtscEngine } from "./NgtscEngine";
@@ -8,7 +8,7 @@ import { TscEngine } from "./TscEngine";
 import { EsbuildClientEngine } from "./EsbuildClientEngine";
 import type { BuildEngine, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "./types";
 
-const logger = consola.withTag("sd:cli:engine");
+const logger = createLazyLogger("sd:cli:engine");
 
 
 /**

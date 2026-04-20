@@ -137,6 +137,16 @@ export abstract class QueryBuilderBase {
     return Object.keys(join).some((key) => !BASIC_JOIN_PROPS.has(key));
   }
 
+  /**
+   * recursive() 내부에서 생성되는 self 참조 JOIN 감지
+   *
+   * RecursiveQueryable이 현재 CTE를 `...self` 별칭으로 다시 붙일 때만 사용된다.
+   * 이 경우 OUTER JOIN이 아니라 CROSS JOIN이어야 DB별 재귀 CTE 제약을 피할 수 있다.
+   */
+  protected isRecursiveSelfJoin(join: SelectQueryDefJoin): boolean {
+    return typeof join.from === "string" && join.as.endsWith(".self");
+  }
+
   /** FROM 절 소스 렌더링 */
   protected renderFrom(from: SelectQueryDef["from"]): string {
     if (from == null) {

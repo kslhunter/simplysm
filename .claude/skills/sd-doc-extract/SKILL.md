@@ -1,7 +1,7 @@
 ---
 name: sd-doc-extract
 description: 문서 파일(docx, xlsx, xlsb, pptx, pdf, eml, msg)에서 텍스트, 이미지, 임베디드 파일을 추출하는 스킬. "문서 추출", "문서 분해", "docx 분석", "PDF 내용 뽑아줘", "eml 파일 추출" 등을 요청할 때 사용한다.
-model: claude-haiku-4-5
+model: haiku
 ---
 
 # sd-doc-extract: 문서 분해/추출
@@ -15,7 +15,7 @@ model: claude-haiku-4-5
 | `.docx` | Word |
 | `.xlsx` | Excel |
 | `.xlsb` | Excel (Binary) |
-| `.pptx` | PowerPoint |
+| `.pptx` | PowerPoint (Windows + PowerPoint 설치 필요) |
 | `.pdf` | PDF |
 | `.eml` | Email |
 | `.msg` | Email (Outlook) |
@@ -57,29 +57,27 @@ python .claude/skills/sd-doc-extract/extract.py "<file_path>"
 
 | 포맷 | 이미지 배치 | Embedded 배치 |
 |------|-----------|--------------|
-| PPTX | shape 순회 중 PICTURE를 만나면 그 자리에 `[IMG:N]` 삽입 | OLE 객체를 만난 슬라이드 내에 `[EMB:N]` 삽입 |
+| PPTX | 슬라이드당 PNG 렌더링(PowerPoint COM) + `[SLIDE:N]` 삽입, 개별 이미지 분해 없음 | OLE 객체를 만난 슬라이드 내에 `[EMB:N]` 삽입 |
 | DOCX | run 순회 중 drawing/blip을 만나면 그 문단에 `[IMG:N]` 삽입 | OLE 객체를 만난 위치에 `[EMB:N]` 삽입 |
 | PDF | 페이지별 이미지를 해당 페이지 텍스트 내에 `[IMG:N]` 삽입 | 첨부파일은 문서 끝에 `[EMB:N]` 배치 (PDF 첨부는 페이지 귀속이 아님) |
-| XLSX | 이미지의 anchor 셀 좌표 근처에 `[IMG:N]` 삽입 | 시트의 embeddings 디렉토리에서 추출한 객체를 해당 시트 끝에 `[EMB:N]` 배치 |
-| XLSB | (이미지 없음) | (embedded 없음) |
+| XLSX | 시트 데이터는 마크다운 테이블(열 헤더=Excel 열 문자 A/B/C…, 첫 열=원본 행 번호)로 렌더링. 이미지 앵커 행에서 테이블을 분리하고 `[IMG:N]` 삽입 후 새 테이블 재개 | 시트의 embeddings 디렉토리에서 추출한 객체를 문서 끝에 `[EMB:N]` 배치 |
+| XLSB | 시트 데이터는 XLSX와 동일한 마크다운 테이블 포맷 (이미지 없음). VBA 매크로가 있으면 모듈별 소스코드를 fenced code block으로 추출하고, 의심 패턴(AutoExec/Suspicious/IOC) 분석 테이블을 첨부 | (embedded 없음) |
 | EMAIL | HTML 본문의 `cid:` 참조 위치에 `[IMG:N]` 삽입, data URI 이미지도 등장 위치에 삽입 | 첨부파일은 본문 뒤에 `[EMB:N]` 배치 |
 
 ### 치환 결과 예시
 
 ```markdown
 [Slide 1]
+![slide_001.png](scheduling-1/slide_001.png)
 [TXT] (left=0.4", top=0.4") 1. 일정 및 정보 변경
 [TXT] (left=0.6", top=0.8") - Case1~5번 공통 적용 사항
-
-![img_001](scheduling-1/img_001.png)
-
 [TXT] (left=0.5", top=1.4") 1) 구성
 [TXT] (left=0.8", top=2.8") 프로세스: BOA 선택 ...
 
-![img_002](scheduling-1/img_002.png)
-
 > embedded: [embedded_001_worksheet.xlsb](scheduling-1/embedded_001_worksheet.md)
 ```
+
+PPTX는 슬라이드별 PNG 렌더링(PowerPoint COM)으로 오버레이 도형·주석 박스의 공간 관계를 보존한다. 개별 이미지 추출은 하지 않는다(스크린샷에 포함되므로 중복). 텍스트 shape는 `[TXT]`로 병행 수록하여 원문 인용 정확도를 확보한다.
 
 ## 주의사항
 

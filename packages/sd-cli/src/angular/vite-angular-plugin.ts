@@ -1,13 +1,13 @@
 import type { Plugin } from "vite";
 import path from "path";
 import ts from "typescript";
-import { consola } from "consola";
 import { pathx } from "@simplysm/core-node";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler.js";
 import { AngularSourceFileCache } from "./angular-compiler.js";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization.js";
 
-const logger = consola.withTag("sd:cli:angular");
+const logger = createLazyLogger("sd:cli:angular");
 
 /** sdAngularPlugin 옵션 */
 export interface SdAngularPluginOptions {
@@ -69,6 +69,7 @@ export function sdAngularPlugin(options: SdAngularPluginOptions): Plugin {
           pkgDir: resolvedPkgDir,
           cwd: process.cwd(),
           output: { js: true, dts: false },
+          includeTests: true,
           sourceFileCache,
           compilerOptionsTransformer: (opts) => ({
             ...opts,

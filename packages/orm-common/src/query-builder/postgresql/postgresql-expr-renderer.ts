@@ -321,7 +321,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   protected indexOf(expr: ExprIndexOf): string {
-    return `POSITION(${this.render(expr.search)} IN ${this.render(expr.source)})`;
+    return `(POSITION(${this.render(expr.search)} IN ${this.render(expr.source)}) - 1)`;
   }
 
   //#endregion

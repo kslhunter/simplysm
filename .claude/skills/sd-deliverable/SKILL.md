@@ -1,7 +1,7 @@
 ---
 name: sd-deliverable
 description: 코드 분석 기반으로 사용자 매뉴얼(md)과 SIT 문서(md)를 생성·업데이트하는 스킬. "매뉴얼 만들어줘", "SIT 문서 만들어줘", "산출물 생성", "매뉴얼 업데이트" 등을 요청할 때 사용한다.
-model: claude-sonnet-4-5
+effort: low
 ---
 
 # sd-deliverable: 매뉴얼 & SIT 생성

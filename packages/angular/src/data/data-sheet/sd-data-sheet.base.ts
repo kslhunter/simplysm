@@ -49,7 +49,7 @@ export abstract class SdDataSheetBase<
   abstract canEdit: Signal<boolean>;
   hideTool?: Signal<boolean>;
 
-  abstract editMode: "inline" | "modal" | undefined;
+  abstract editMode: "inline" | "modal";
   abstract selectMode: InputSignal<"single" | "multi" | undefined>;
 
   diffsExcludes?: string[];

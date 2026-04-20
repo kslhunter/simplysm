@@ -1,8 +1,8 @@
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import { loadSdConfig } from "../utils/sd-config";
 import { setupReplaceDeps } from "../deps/replace-deps/replace-deps";
 
-const logger = consola.withTag("sd:cli:replace-deps");
+const logger = createLazyLogger("sd:cli:replace-deps");
 
 /**
  * replace-deps 명령어 옵션

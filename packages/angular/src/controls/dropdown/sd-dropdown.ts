@@ -37,10 +37,9 @@ export class SdDropdown {
   open = model(false);
   disabled = input(false, { transform: booleanAttribute });
 
-  popupElRef = contentChild.required<SdDropdownPopup, ElementRef<HTMLElement>>(
-    SdDropdownPopup,
-    { read: ElementRef },
-  );
+  popupElRef = contentChild.required<SdDropdownPopup, ElementRef<HTMLElement>>(SdDropdownPopup, {
+    read: ElementRef,
+  });
 
   private _popupEl?: HTMLElement;
   private _mouseoverEl?: HTMLElement;

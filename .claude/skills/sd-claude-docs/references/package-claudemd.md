@@ -11,6 +11,16 @@
 
 기존 파일이 없으면 병합을 건너뛴다.
 
+## 최상단 안내 문구 (필수)
+
+CLAUDE.md의 **제목(`# CLAUDE.md`) 바로 아래**, 모든 본문 섹션보다 앞에 아래 인용 블록을 삽입한다. 이미 존재하면 갱신하지 않고 그대로 둔다.
+
+```markdown
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+```
+
+예외: 해당 패키지가 `private: true`여서 README.md / docs/가 생성되지 않는 경우 이 문구를 삽입하지 않는다.
+
 ## 분석 대상
 
 1. `package.json` — 이름, 설명, dependencies
@@ -45,6 +55,8 @@ CLAUDE.md는 반드시 대화언어로 작성한다. 모호한 표현("적절히
 
 ````markdown
 # CLAUDE.md
+
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

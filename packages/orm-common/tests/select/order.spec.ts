@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
+import { Queryable } from "../../src/exec/queryable";
 import { createQueryBuilder } from "../../src/query-builder/query-builder";
 import { dialects } from "../setup/test-utils";
+import "../setup/test-utils"; // toMatchSql matcher
 import * as expected from "./order.expected";
 
 describe("SELECT - ORDER BY", () => {
@@ -84,6 +86,93 @@ describe("SELECT - ORDER BY", () => {
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.orderLimitCombo[dialect]);
+    });
+  });
+
+  //#endregion
+
+  //#region ========== String overload ==========
+
+  describe("string overload - 단순 키 (ASC 기본값)", () => {
+    const db = createTestDb();
+    const def = db.user().orderBy("id").getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.orderAscDefault[dialect]);
+    });
+  });
+
+  describe("string overload - 단순 키 (DESC)", () => {
+    const db = createTestDb();
+    const def = db.user().orderBy("id", "DESC").getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.orderDesc[dialect]);
+    });
+  });
+
+  describe("string overload - lambda와 동일한 SQL 생성", () => {
+    it.each(dialects)("[%s] string과 lambda가 동일한 SQL", (dialect) => {
+      const dbStr = createTestDb();
+      const dbFn = createTestDb();
+      const defFromString = dbStr.user().orderBy("id", "DESC").getSelectQueryDef();
+      const defFromLambda = dbFn
+        .user()
+        .orderBy((item) => item.id, "DESC")
+        .getSelectQueryDef();
+
+      const builder = createQueryBuilder(dialect);
+      const sqlFromString = builder.build(defFromString).sql;
+      const sqlFromLambda = builder.build(defFromLambda).sql;
+      expect(sqlFromString).toMatchSql(sqlFromLambda);
+    });
+  });
+
+  describe("string overload - 체인 키 (include 후 'user.name')", () => {
+    it.each(dialects)("[%s] string과 lambda가 동일한 SQL", (dialect) => {
+      const dbStr = createTestDb();
+      const dbFn = createTestDb();
+      const defFromString = dbStr
+        .post()
+        .include((item) => item.user)
+        .orderBy("user.name", "DESC")
+        .getSelectQueryDef();
+      const defFromLambda = dbFn
+        .post()
+        .include((item) => item.user)
+        .orderBy((item) => item.user!.name, "DESC")
+        .getSelectQueryDef();
+
+      const builder = createQueryBuilder(dialect);
+      const sqlFromString = builder.build(defFromString).sql;
+      const sqlFromLambda = builder.build(defFromLambda).sql;
+      expect(sqlFromString).toMatchSql(sqlFromLambda);
+    });
+  });
+
+  describe("string overload - UNION의 Array from 분기", () => {
+    it.each(dialects)("[%s] string과 lambda가 동일한 SQL", (dialect) => {
+      const dbStr = createTestDb();
+      const dbFn = createTestDb();
+
+      const strQr1 = dbStr.user().where((item) => [expr.eq(item.isActive, true)]);
+      const strQr2 = dbStr.user().where((item) => [expr.gt(item.age, 30)]);
+      const defFromString = Queryable.union(strQr1, strQr2)
+        .orderBy("id", "DESC")
+        .getSelectQueryDef();
+
+      const fnQr1 = dbFn.user().where((item) => [expr.eq(item.isActive, true)]);
+      const fnQr2 = dbFn.user().where((item) => [expr.gt(item.age, 30)]);
+      const defFromLambda = Queryable.union(fnQr1, fnQr2)
+        .orderBy((item) => item.id, "DESC")
+        .getSelectQueryDef();
+
+      const builder = createQueryBuilder(dialect);
+      const sqlFromString = builder.build(defFromString).sql;
+      const sqlFromLambda = builder.build(defFromLambda).sql;
+      expect(sqlFromString).toMatchSql(sqlFromLambda);
     });
   });
 

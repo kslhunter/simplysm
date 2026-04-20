@@ -63,6 +63,7 @@ export * from "./types/db";
 
 // 결과 파싱
 export * from "./utils/result-parser";
+export * from "./utils/pick-result-sets";
 
 // column 타입
 export * from "./types/column";

@@ -250,7 +250,12 @@ export function decode(obj: unknown): unknown {
     return obj.map((item) => decode(item));
   }
 
-  // 3. Map 재귀
+  // 3. Uint8Array (encode에서 그대로 반환하므로 decode에서도 그대로 반환)
+  if (obj instanceof Uint8Array) {
+    return obj;
+  }
+
+  // 4. Map 재귀
   if (obj instanceof Map) {
     const newMap = new Map<unknown, unknown>();
     for (const [k, v] of obj) {
@@ -259,7 +264,7 @@ export function decode(obj: unknown): unknown {
     return newMap;
   }
 
-  // 4. Set 재귀
+  // 5. Set 재귀
   if (obj instanceof Set) {
     const newSet = new Set<unknown>();
     for (const v of obj) {
@@ -268,7 +273,7 @@ export function decode(obj: unknown): unknown {
     return newSet;
   }
 
-  // 5. 객체 재귀
+  // 6. 객체 재귀
   if (typeof obj === "object") {
     const record = obj as Record<string, unknown>;
     const result: Record<string, unknown> = {};

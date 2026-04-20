@@ -102,8 +102,10 @@ import { SdCommandDirective } from "../../core/commands/sd-command";
               </sd-button>
               <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
             </div>
-          } @else {
-            <ng-template [ngTemplateOutlet]="prevTplRef() ?? null" />
+          } @else if (prevTplRef()) {
+            <div class="flex-row gap-sm p-default bdb bdb-theme-gray-lightest">
+              <ng-template [ngTemplateOutlet]="prevTplRef()!" />
+            </div>
           }
 
           @if (filterTplRef()) {
@@ -123,7 +125,7 @@ import { SdCommandDirective } from "../../core/commands/sd-command";
           }
 
           @if (!parent.hideTool || !parent.hideTool()) {
-            @if (parent.canEdit() || beforeToolTplRef() || parent.downloadExcel) {
+            @if (parent.canEdit() || beforeToolTplRef() || toolTplRef() || parent.downloadExcel) {
               <div class="flex-row gap-sm p-xs-default">
                 @if (parent.canEdit()) {
                   @if (parent.editMode === "modal" && parent.editItem) {

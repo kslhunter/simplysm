@@ -44,6 +44,16 @@
   - [ ] xlsx 인덱스 .md에서 이미지가 있는 시트의 경우, 해당 이미지의 anchor(셀 좌표) 근처에 이미지가 인라인 배치되어 있다
   - [ ] embedded가 있는 시트의 경우, 해당 시트 섹션 내에 embedded 링크가 인라인 배치되어 있다
 
+### 시나리오 6: XLSB VBA 매크로 추출
+- 사전조건: `.claude/skills/sd-doc-extract/eval_assets/embedded_002_Microsoft_Excel_Binary_Worksheet1.xlsb` 파일을 workspace 루트에 복사
+- 입력: "/sd-doc-extract embedded_002_Microsoft_Excel_Binary_Worksheet1.xlsb"
+- 체크리스트:
+  - [ ] 인덱스 .md 파일이 생성되었다
+  - [ ] 인덱스 .md 또는 본문 참조 파일(body.txt)에 `[VBA Macros]` 섹션이 존재한다
+  - [ ] VBA 모듈별(ThisWorkbook, Sheet1, Module2 등) 소스코드가 fenced code block으로 포함되어 있다 (인덱스 .md 또는 body.txt)
+  - [ ] Analysis 테이블이 존재하며, AutoExec 또는 Suspicious 항목이 1개 이상 포함되어 있다 (인덱스 .md 또는 body.txt)
+  - [ ] 셀 데이터(마크다운 테이블)도 함께 추출되어 있다 (VBA만 추출된 것이 아니다)
+
 ## 안티패턴 Eval
 
 - [ ] extract.py를 사용하지 않고 문서 내용을 직접 읽으려 시도하지 않았는가

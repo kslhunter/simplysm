@@ -93,11 +93,12 @@ export const upsertWithOutput: ExpectedSql = {
     INSERT INTO \`TestDb\`.\`Employee\` (\`name\`)
     SELECT 'New Name'
     WHERE NOT EXISTS (SELECT * FROM \`TestDb\`.\`Employee\` AS \`T1\` WHERE \`T1\`.\`id\` <=> 1);
+    SET @sd_tmp_cnt = (SELECT COUNT(*) FROM \`SD_TEMP\`);
     SELECT \`id\`, \`name\` FROM \`TestDb\`.\`Employee\`
     WHERE \`TestDb\`.\`Employee\`.\`id\` IN (SELECT \`id\` FROM \`SD_TEMP\`)
     UNION ALL
     SELECT \`id\`, \`name\` FROM \`TestDb\`.\`Employee\`
-    WHERE \`id\` = LAST_INSERT_ID() AND NOT EXISTS (SELECT 1 FROM \`SD_TEMP\`);
+    WHERE \`id\` = LAST_INSERT_ID() AND @sd_tmp_cnt = 0;
     DROP TEMPORARY TABLE \`SD_TEMP\`
   `,
   mssql: tsql`

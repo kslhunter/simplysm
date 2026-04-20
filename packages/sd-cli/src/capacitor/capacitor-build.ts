@@ -1,8 +1,9 @@
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { SdCapacitorSignConfig } from "../sd-config.types.js";
 
-const _logger = consola.withTag("sd:cli:capacitor");
+const _logger = createLazyLogger("sd:cli:capacitor");
 
 /**
  * 서명 설정을 build.gradle에 추가하고 keystore 파일을 복사

@@ -15,7 +15,8 @@
   },
   "files": [
     "scripts",
-    "claude"
+    "claude",
+    "docs"
   ],
   "scripts": {
     "postinstall": "node scripts/postinstall.mjs",

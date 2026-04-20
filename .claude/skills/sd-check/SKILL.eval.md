@@ -2,79 +2,65 @@
 
 ## 행동 Eval
 
-### 시나리오 1: pnpm 프로젝트 전체 스크립트 탐지
+### 시나리오 1: 스크립트 탐지 및 정상 실행
 
 - 사전 조건:
-  - `pnpm-lock.yaml`: 빈 파일
   - `package.json`:
     ```json
     {
       "name": "eval-project",
       "scripts": {
-        "typecheck": "echo typecheck-pass",
-        "lint": "echo lint-pass",
-        "test": "echo test-pass",
-        "build": "echo build",
-        "dev": "echo dev"
+        "typecheck": "echo Done",
+        "lint": "echo Done",
+        "test": "echo Done"
       }
     }
     ```
+  - `pnpm-lock.yaml`: (빈 파일)
 - 입력: "/sd-check"
 - 체크리스트:
-  - [ ] lock 파일을 확인하여 패키지 매니저를 pnpm으로 결정했다
-  - [ ] package.json의 scripts를 읽었다
-  - [ ] typecheck, lint, test 3개를 탐지 결과로 표시했다
-  - [ ] build, dev를 check 대상에 포함하지 않았다
-  - [ ] typecheck → lint → test 순서로 실행을 시도했다
-  - [ ] `.tmp/check` 디렉토리를 생성했다
-  - [ ] 명령어 출력을 `.tmp/check/` 하위 파일로 리다이렉트했다
-  - [ ] 결과 파일을 읽어서 성공/실패를 판단했다
+  - [ ] 텍스트 출력에 탐지된 스크립트 목록이 표시되며, typecheck·lint·test 3개 카테고리가 모두 포함되어 있다
+  - [ ] pnpm-lock.yaml을 기반으로 패키지 매니저를 pnpm으로 감지했다 (텍스트 출력에 "pnpm" 언급)
+  - [ ] .tmp/check/ 디렉토리에 출력 캡처 파일이 1개 이상 존재한다
+  - [ ] 모든 검사가 통과하여 완료 메시지가 텍스트 출력에 포함되어 있다
 
-### 시나리오 2: npm 프로젝트 + 대체 스크립트명
+### 시나리오 2: 타입체크 에러 감지 및 수정
 
 - 사전 조건:
-  - `package-lock.json`: 빈 파일
   - `package.json`:
     ```json
     {
       "name": "eval-project",
       "scripts": {
-        "tsc": "echo tsc-pass",
-        "eslint": "echo eslint-pass",
-        "vitest": "echo vitest-pass"
+        "typecheck": "node check-type.js",
+        "lint": "echo Done",
+        "test": "echo Done"
       }
     }
     ```
-- 입력: "/sd-check"
-- 체크리스트:
-  - [ ] lock 파일을 확인하여 패키지 매니저를 npm으로 결정했다
-  - [ ] tsc를 타입 체크, eslint을 린트, vitest를 테스트 카테고리에 매칭했다
-  - [ ] `npm run`으로 실행을 시도했다
-
-### 시나리오 3: 스크립트 없는 프로젝트
-
-- 사전 조건:
-  - `yarn.lock`: 빈 파일
-  - `package.json`:
-    ```json
-    {
-      "name": "eval-project",
-      "scripts": {
-        "build": "echo build",
-        "start": "echo start"
-      }
+  - `check-type.js`:
+    ```javascript
+    const fs = require("fs");
+    const content = fs.readFileSync("src/app.ts", "utf8");
+    if (content.includes('number = "hello"')) {
+      console.log("src/app.ts(1,7): error TS2322: Type 'string' is not assignable to type 'number'.");
+      process.exit(1);
     }
+    console.log("Done in 0.5s");
+    ```
+  - `src/app.ts`:
+    ```typescript
+    const x: number = "hello";
     ```
 - 입력: "/sd-check"
 - 체크리스트:
-  - [ ] lock 파일을 확인하여 패키지 매니저를 yarn으로 결정했다
-  - [ ] 매칭되는 check 스크립트가 없음을 인지했다
-  - [ ] 매칭되는 스크립트가 없다는 오류 메시지를 출력하고 종료했다
+  - [ ] .tmp/check/ 디렉토리의 출력 파일에 TS2322 에러 메시지가 기록되어 있다
+  - [ ] src/app.ts가 수정되어 `number = "hello"` 패턴이 제거되었다
+  - [ ] 텍스트 출력에 에러의 원인 분석 결과가 포함되어 있다 (살아남은 원인과 근거 요약 — sd-inner-debug 산출물)
+  - [ ] 텍스트 출력에 해결 방안이 점수와 함께 제시되어 있다 (sd-options.md 형식의 선택지)
+  - [ ] 수정 후 typecheck가 재실행되었다 (.tmp/check/에 typecheck 관련 출력 파일이 2개 이상 존재)
 
 ## 안티패턴 Eval
 
-- [ ] lock 파일 확인 없이 패키지 매니저를 가정했다
-- [ ] package.json의 scripts를 읽지 않고 명령어를 실행했다
-- [ ] 탐지 결과를 표시하지 않고 바로 명령어를 실행했다
-- [ ] typecheck보다 lint 또는 test를 먼저 실행했다
-- [ ] 명령어 출력을 파일로 리다이렉트하지 않고 Bash에서 직접 확인했다
+- [ ] check 명령어 결과가 .tmp/check/ 파일로 캡처되지 않았다 (파일 리다이렉트 없이 stdout으로만 처리)
+- [ ] 에러 원인 분석 없이 코드를 수정했다 (텍스트 출력에서 원인 설명 없이 바로 수정 완료만 보고)

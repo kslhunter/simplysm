@@ -4,6 +4,8 @@ import { TestBed } from "@angular/core/testing";
 import { useSelectionManager } from "../../../src/core/selection/useSelectionManager";
 
 interface Item {
+  id?: number;
+  tenant?: string;
   name: string;
   selectable?: boolean;
   reason?: string;
@@ -13,6 +15,7 @@ function createManager(
   items: Item[],
   mode: "single" | "multi" | undefined,
   getItemSelectableFn?: (item: Item) => boolean | string,
+  trackByFn?: (item: Item, index: number) => unknown,
 ) {
   TestBed.configureTestingModule({});
   const displayItems = signal(items);
@@ -21,15 +24,19 @@ function createManager(
   const selectableFn = signal<((item: Item) => boolean | string) | undefined>(
     getItemSelectableFn,
   );
+  const trackBy = signal<(item: Item, index: number) => unknown>(
+    trackByFn ?? ((item: Item) => item),
+  );
 
   const manager = useSelectionManager({
     displayItems,
     selectedItems,
     selectMode,
     getItemSelectableFn: selectableFn,
+    trackByFn: trackBy,
   });
 
-  return { manager, selectedItems, selectMode };
+  return { manager, selectedItems, selectMode, displayItems };
 }
 
 describe("FIX-1 Slice 5: useSelectionManager Set 기반 비교", () => {
@@ -179,5 +186,127 @@ describe("useSelectionManager", () => {
     manager.select(A);
     manager.select(A);
     expect(selectedItems()).toEqual([A]);
+  });
+});
+
+describe("Feature 5.1 Slice 1: useSelectionManager key+obj.equal 기반 비교", () => {
+  it("같은 key의 다른 reference item도 isSelected=true로 복원된다", () => {
+    const A1: Item = { id: 1, name: "A" };
+    const { manager, selectedItems, displayItems } = createManager(
+      [A1],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.select(A1);
+    expect(selectedItems().length).toBe(1);
+
+    const A2: Item = { id: 1, name: "A-updated" };
+    displayItems.set([A2]);
+
+    expect(manager.isSelected(A2)).toBe(true);
+  });
+
+  it("같은 key의 다른 reference를 select하면 중복 추가되지 않는다", () => {
+    const A1: Item = { id: 1, name: "A" };
+    const A2: Item = { id: 1, name: "A-copy" };
+    const { manager, selectedItems } = createManager(
+      [A1, A2],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.select(A1);
+    manager.select(A2);
+    expect(selectedItems().length).toBe(1);
+    expect(selectedItems()[0]).toBe(A1);
+  });
+
+  it("같은 key의 다른 reference를 deselect하면 selectedItems에서 제거된다", () => {
+    const A1: Item = { id: 1, name: "A" };
+    const A2: Item = { id: 1, name: "A-copy" };
+    const { manager, selectedItems } = createManager(
+      [A1, A2],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.select(A1);
+    expect(selectedItems()).toEqual([A1]);
+    manager.deselect(A2);
+    expect(selectedItems()).toEqual([]);
+  });
+
+  it("복합(object) key도 obj.equal deep 비교로 매칭된다", () => {
+    const A1: Item = { id: 1, tenant: "a", name: "A" };
+    const { manager, displayItems } = createManager(
+      [A1],
+      "multi",
+      undefined,
+      (item) => ({ id: item.id, tenant: item.tenant }),
+    );
+    manager.select(A1);
+
+    const A2: Item = { id: 1, tenant: "a", name: "A-updated" };
+    displayItems.set([A2]);
+    expect(manager.isSelected(A2)).toBe(true);
+  });
+
+  it("isAllSelected: selectedItems의 key가 displayItems 전체를 커버하면 true", () => {
+    const A: Item = { id: 1, name: "A" };
+    const B: Item = { id: 2, name: "B" };
+    const { manager, displayItems } = createManager(
+      [A, B],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.toggleAll();
+    expect(manager.isAllSelected()).toBe(true);
+
+    const A2: Item = { id: 1, name: "A-updated" };
+    const B2: Item = { id: 2, name: "B-updated" };
+    displayItems.set([A2, B2]);
+    expect(manager.isAllSelected()).toBe(true);
+  });
+
+  it("toggleAll(누적 모드 의미): 현재 displayItems selectable만 추가하고 기존 선택 유지", () => {
+    const A: Item = { id: 1, name: "A" };
+    const B: Item = { id: 2, name: "B" };
+    const { manager, selectedItems, displayItems } = createManager(
+      [A],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.select(A);
+    expect(selectedItems().length).toBe(1);
+
+    // displayItems 교체(누적 상황 재현): selectedItems는 건드리지 않고 B만 displayItems에
+    displayItems.set([B]);
+    manager.toggleAll();
+    expect(selectedItems().length).toBe(2);
+    expect(selectedItems().some((item) => item.id === 1)).toBe(true);
+    expect(selectedItems().some((item) => item.id === 2)).toBe(true);
+  });
+
+  it("toggleAll(누적 모드 의미): isAllSelected 상태에서 현재 displayItems만 해제하고 기존은 유지", () => {
+    const A: Item = { id: 1, name: "A" };
+    const B: Item = { id: 2, name: "B" };
+    const { manager, selectedItems, displayItems } = createManager(
+      [A],
+      "multi",
+      undefined,
+      (item) => item.id,
+    );
+    manager.select(A);
+    displayItems.set([B]);
+    manager.select(B);
+    expect(selectedItems().length).toBe(2);
+
+    // 현재 displayItems는 [B]. toggleAll → B만 해제, A 유지
+    manager.toggleAll();
+    expect(selectedItems().length).toBe(1);
+    expect(selectedItems()[0].id).toBe(1);
   });
 });

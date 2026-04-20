@@ -65,9 +65,10 @@ describe("OrmService.executeDefs", () => {
   it("executes queries individually when options is undefined", async () => {
     const result = await methods.executeDefs(connId, twoDefs);
 
-    // Should pass 2 separate queries, not 1 combined string
-    expect(mockExecute).toHaveBeenCalledTimes(1);
-    expect(mockExecute.mock.calls[0][0]).toHaveLength(2);
+    // 각 def별 개별 execute 호출 — multi-statement 결과 경계 보존을 위해 필수
+    expect(mockExecute).toHaveBeenCalledTimes(2);
+    expect(mockExecute.mock.calls[0][0]).toHaveLength(1);
+    expect(mockExecute.mock.calls[1][0]).toHaveLength(1);
 
     // Should return one result per def
     expect(result).toHaveLength(2);

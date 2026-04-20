@@ -1,8 +1,8 @@
 import { formatMessagesSync, type PartialMessage } from "esbuild";
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { BuildResult } from "../runtime/ResultCollector";
 
-const logger = consola.withTag("sd:cli:output");
+const logger = createLazyLogger("sd:cli:output");
 
 /**
  * esbuild Message 배열을 포맷된 문자열 배열로 변환한다.

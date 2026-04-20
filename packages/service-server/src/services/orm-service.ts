@@ -5,6 +5,7 @@ import {
   type Dialect,
   type IsolationLevel,
   parseQueryResult,
+  pickResultSets,
   type QueryDef,
   type ResultMeta,
 } from "@simplysm/orm-common";
@@ -149,20 +150,22 @@ export const OrmService = defineService(
         const queryBuilder = createQueryBuilder(dialect);
 
         if (options != null && options.every((item) => item == null)) {
-          return conn.execute([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
+          await conn.execute([defs.map((def) => queryBuilder.build(def).sql).join("\n")]);
+          return defs.map(() => []);
         }
 
-        const queries = defs.map((def) => queryBuilder.build(def).sql);
-        const result = await conn.execute(queries);
-
         const parsed: unknown[][] = [];
-        for (let i = 0; i < result.length; i++) {
+        for (let i = 0; i < defs.length; i++) {
+          const buildResult = queryBuilder.build(defs[i]);
+          const rawResults = await conn.execute([buildResult.sql]);
+          const targetResultSet = pickResultSets(rawResults, buildResult);
+
           const opt = options?.[i];
           if (opt != null) {
-            const parsedResult = await parseQueryResult(result[i], opt);
+            const parsedResult = await parseQueryResult(targetResultSet, opt);
             parsed.push(parsedResult ?? []);
           } else {
-            parsed.push(result[i]);
+            parsed.push(targetResultSet);
           }
         }
         return parsed;

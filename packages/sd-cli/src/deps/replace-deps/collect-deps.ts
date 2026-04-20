@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs";
-import { consola } from "consola";
 import { pathx } from "@simplysm/core-node";
+import { createLazyLogger } from "../../runtime/lazy-logger";
 import { discoverWorkspacePackages } from "../../utils/package-utils";
 
-const logger = consola.withTag("sd:cli:collect-deps");
+const logger = createLazyLogger("sd:cli:collect-deps");
 
 export interface DepsResult {
   workspaceDeps: string[];

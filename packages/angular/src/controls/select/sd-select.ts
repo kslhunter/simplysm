@@ -52,7 +52,12 @@ export type SelectModeValue<T> = {
   ],
   template: `
     <sd-dropdown [disabled]="disabled()" [(open)]="dropdownOpen">
-      <div class="_sd-select-control" [sdRipple]="!disabled()">
+      <div
+        class="_sd-select-control"
+        [class]="contentClass()"
+        [style]="contentStyle()"
+        [sdRipple]="!disabled()"
+      >
         <div class="_sd-select-control-content" #contentEl>
           @if (_selectedItemContentHTML() != null) {
             <div [innerHTML]="_selectedItemContentHTML()"></div>
@@ -321,30 +326,9 @@ export class SdSelect<M extends "single" | "multi", T> {
       return "";
     });
 
-    // D3: contentClass/contentStyle via effect() on popup element
-    // + D4: keyboard navigation via tabbable()
     effect((onCleanup) => {
       if (this.dropdownOpen()) {
         const popupEl = this._dropdownControl().popupElRef().nativeElement;
-        const cls = this.contentClass();
-        const addedClasses: string[] = [];
-        if (cls != null) {
-          for (const c of cls.split(" ").filter(Boolean)) {
-            popupEl.classList.add(c);
-            addedClasses.push(c);
-          }
-        }
-        const style = this.contentStyle();
-        const addedStyleProps: string[] = [];
-        if (style != null) {
-          const tempEl = document.createElement("div");
-          tempEl.style.cssText = style;
-          for (let i = 0; i < tempEl.style.length; i++) {
-            const prop = tempEl.style[i];
-            addedStyleProps.push(prop);
-            popupEl.style.setProperty(prop, tempEl.style.getPropertyValue(prop));
-          }
-        }
 
         const onKeydown = (event: KeyboardEvent) => {
           if (event.ctrlKey || event.altKey) return;
@@ -364,9 +348,7 @@ export class SdSelect<M extends "single" | "multi", T> {
                 tabbableEls[nextIndex].focus();
               }
             } else {
-              // ArrowUp
               if (currIndex <= 0) {
-                // Return focus to dropdown trigger
                 this._dropdownElRef().nativeElement.focus();
               } else {
                 tabbableEls[currIndex - 1].focus();
@@ -378,12 +360,6 @@ export class SdSelect<M extends "single" | "multi", T> {
         popupEl.addEventListener("keydown", onKeydown);
         onCleanup(() => {
           popupEl.removeEventListener("keydown", onKeydown);
-          for (const c of addedClasses) {
-            popupEl.classList.remove(c);
-          }
-          for (const prop of addedStyleProps) {
-            popupEl.style.removeProperty(prop);
-          }
         });
       }
     });

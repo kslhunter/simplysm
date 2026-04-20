@@ -30,7 +30,6 @@ const logger = consola.withTag("mysql-db-conn");
  * mysql2/promise 라이브러리를 사용하여 MySQL 연결을 관리한다.
  */
 export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
-  private static readonly _ROOT_USER = "root";
   private readonly _timeout = DB_CONN_DEFAULT_TIMEOUT;
 
   private _conn?: Connection;
@@ -56,9 +55,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
-      // root 사용자는 특정 데이터베이스에 바인딩하지 않고 연결
-      // 모든 데이터베이스에 접근할 수 있도록 (관리 작업용)
-      database: this.config.username === MysqlDbConn._ROOT_USER ? undefined : this.config.database,
+      database: this.config.database,
       multipleStatements: true,
       charset: "utf8mb4",
       infileStreamFactory: (filePath: string) => fs.createReadStream(filePath), // LOAD DATA LOCAL INFILE 지원

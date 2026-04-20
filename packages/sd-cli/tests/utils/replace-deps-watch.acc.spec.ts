@@ -134,4 +134,89 @@ describe("watchReplaceDeps onChanged 콜백", () => {
     // 콜백 호출 대기
     await changedPromise;
   }, 10_000);
+
+  it("동일 source를 참조하는 복수 entry가 있으면 모든 target에 복사된다", async () => {
+    // 추가 target 디렉토리 생성 (@test/pkgB)
+    const targetDirB = path.join(tmpDir, "project", "node_modules", "@test", "pkgB", "src");
+    await fs.promises.mkdir(targetDirB, { recursive: true });
+    await fs.promises.writeFile(path.join(targetDirB, "index.ts"), "export const a = 1;");
+
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+
+    // 두 패턴이 동일 sourcePath를 참조
+    const replaceDeps = {
+      "@test/pkg": sourcePath,
+      "@test/pkgB": sourcePath,
+    };
+
+    let callCount = 0;
+    watchResult = await watchReplaceDeps(projectRoot, replaceDeps, {
+      onChanged: () => {
+        callCount++;
+      },
+    });
+
+    // 소스 파일 변경
+    await fs.promises.writeFile(
+      path.join(sourcePath, "src", "index.ts"),
+      "export const a = 9;",
+    );
+
+    // 배칭 + 복사 완료 대기
+    await new Promise((r) => setTimeout(r, 1500));
+
+    // 두 target 모두 업데이트
+    const targetAContent = await fs.promises.readFile(
+      path.join(tmpDir, "project", "node_modules", "@test", "pkg", "src", "index.ts"),
+      "utf-8",
+    );
+    const targetBContent = await fs.promises.readFile(
+      path.join(targetDirB, "index.ts"),
+      "utf-8",
+    );
+    expect(targetAContent).toBe("export const a = 9;");
+    expect(targetBContent).toBe("export const a = 9;");
+
+    // 동일 source의 중복 watchPath는 하나로 통합되므로 이벤트가 1회만 배칭됨 → onChanged 1회
+    expect(callCount).toBe(1);
+  }, 10_000);
+
+  it("소스 파일이 삭제되면 대상 파일도 삭제된다", async () => {
+    const projectRoot = path.join(tmpDir, "project");
+    const sourcePath = path.join(tmpDir, "source-pkg");
+    const replaceDeps = { "@test/pkg": sourcePath };
+
+    let resolveChanged: () => void;
+    const changedPromise = new Promise<void>((resolve) => {
+      resolveChanged = resolve;
+    });
+
+    watchResult = await watchReplaceDeps(projectRoot, replaceDeps, {
+      onChanged: () => {
+        resolveChanged();
+      },
+    });
+
+    const destPath = path.join(
+      tmpDir, "project", "node_modules", "@test", "pkg", "src", "index.ts",
+    );
+
+    // 삭제 전 target 파일 존재 확인
+    await expect(fs.promises.access(destPath)).resolves.toBeUndefined();
+
+    // 소스 삭제
+    await fs.promises.unlink(path.join(sourcePath, "src", "index.ts"));
+
+    await changedPromise;
+
+    // 삭제 반영까지 여유 대기
+    await new Promise((r) => setTimeout(r, 500));
+
+    // target도 삭제됨
+    const targetExists = await fs.promises
+      .access(destPath)
+      .then(() => true, () => false);
+    expect(targetExists).toBe(false);
+  }, 10_000);
 });

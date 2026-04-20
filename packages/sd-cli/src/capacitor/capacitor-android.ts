@@ -1,9 +1,9 @@
 import { fsx, pathx } from "@simplysm/core-node";
 import { env, xml } from "@simplysm/core-common";
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { NpmConfig, SdCapacitorAndroidConfig, SdCapacitorConfig } from "../sd-config.types.js";
 
-const _logger = consola.withTag("sd:cli:capacitor");
+const _logger = createLazyLogger("sd:cli:capacitor");
 
 /**
  * Android 네이티브 설정 구성

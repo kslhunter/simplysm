@@ -3,11 +3,12 @@ import fs from "fs";
 import module from "module";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type { NpmConfig, SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../esbuild/esbuild-config.js";
 
 export class Electron {
-  private static readonly _logger = consola.withTag("sd:cli:electron");
+  private static readonly _logger = createLazyLogger("sd:cli:electron");
 
   private readonly _electronPath: string;
   private readonly _srcPath: string;

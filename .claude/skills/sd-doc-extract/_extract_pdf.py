@@ -37,11 +37,22 @@ def extract(file_path):
                 if w <= 4 or h <= 4:
                     continue
 
+            # Get image position on page
+            try:
+                rects = page.get_image_rects(xref)
+                if rects:
+                    r = rects[0]
+                    bbox_str = f" bbox:({r.x0:.0f},{r.y0:.0f},{r.x1:.0f},{r.y1:.0f})"
+                else:
+                    bbox_str = ""
+            except Exception:
+                bbox_str = ""
+
             img_idx += 1
             images.append({
                 "data": data,
                 "ext": ext,
-                "context": f"Page {page_num}",
+                "context": f"Page {page_num}{bbox_str}",
             })
             page_img_indices[page_num].append(img_idx)
 

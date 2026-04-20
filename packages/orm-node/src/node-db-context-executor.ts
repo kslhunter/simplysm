@@ -8,7 +8,7 @@ import type {
   ColumnMeta,
   DataRecord,
 } from "@simplysm/orm-common";
-import { createQueryBuilder, parseQueryResult } from "@simplysm/orm-common";
+import { createQueryBuilder, parseQueryResult, pickResultSets } from "@simplysm/orm-common";
 import type { DbConn, DbConnConfig } from "./types/db-conn";
 import { DB_CONN_ERRORS, getDialectFromConfig } from "./types/db-conn";
 import { createDbConn } from "./create-db-conn";
@@ -144,9 +144,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
 
       const rawResults = await conn.execute([buildResult.sql]);
 
-      // resultSetIndex가 지정된 경우 해당 인덱스의 결과 집합을 사용
-      const targetResultSet =
-        buildResult.resultSetIndex != null ? rawResults[buildResult.resultSetIndex] : rawResults[0];
+      const targetResultSet = pickResultSets(rawResults, buildResult);
 
       if (meta != null) {
         const parsed = await parseQueryResult<T>(targetResultSet, meta);

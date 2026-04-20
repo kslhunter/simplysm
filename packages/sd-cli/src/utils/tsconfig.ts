@@ -2,9 +2,9 @@ import path from "path";
 import fs from "fs";
 import ts from "typescript";
 import { pathx } from "@simplysm/core-node";
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 
-const logger = consola.withTag("sd:cli:tsconfig");
+const logger = createLazyLogger("sd:cli:tsconfig");
 
 //#region TypecheckEnv
 
@@ -110,10 +110,9 @@ export function getPackageSourceFiles(
   const srcDir = path.join(pkgDir, "src");
   const files = parsedConfig.fileNames.filter((f) => {
     if (pathx.isChildPath(f, srcDir)) return true;
-    if (f.endsWith(".fixture.ts")) return true;
     return false;
   });
-  logger.debug(`소스 파일 필터링: ${parsedConfig.fileNames.length}개 중 ${files.length}개 (src/ + fixtures)`);
+  logger.debug(`소스 파일 필터링: ${parsedConfig.fileNames.length}개 중 ${files.length}개 (src/ only)`);
   return files;
 }
 

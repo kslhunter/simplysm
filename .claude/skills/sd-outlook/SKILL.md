@@ -1,7 +1,7 @@
 ---
 name: sd-outlook
 description: Microsoft Graph API를 통해 Outlook 메일을 검색·다운로드하는 스킬. "메일 조회", "메일 검색", "특정 업체 메일 수집", "outlook" 등을 요청할 때 사용한다.
-model: claude-haiku-4-5
+model: haiku
 ---
 
 # sd-outlook: Outlook 메일 검색/다운로드

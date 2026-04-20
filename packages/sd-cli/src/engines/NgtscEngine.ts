@@ -3,9 +3,9 @@ import type { ResultCollector } from "../runtime/ResultCollector";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, BuildPackageInfo, EngineResult } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 
-const logger = consola.withTag("sd:cli:engine:ngtsc");
+const logger = createLazyLogger("sd:cli:engine:ngtsc");
 
 /**
  * NgtscEngine 옵션

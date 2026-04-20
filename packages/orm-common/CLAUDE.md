@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
@@ -54,7 +56,8 @@ src/
 ├── models/
 │   └── system-migration.ts     ← _Migration 시스템 테이블 정의
 └── utils/
-    └── result-parser.ts        ← SELECT 결과 → 중첩 객체 변환
+    ├── result-parser.ts        ← SELECT 결과 → 중첩 객체 변환
+    └── pick-result-sets.ts     ← 다중 결과 셋에서 필요한 셋만 추출
 ```
 
 ## Key Patterns

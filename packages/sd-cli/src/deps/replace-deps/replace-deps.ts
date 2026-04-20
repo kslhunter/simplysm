@@ -50,14 +50,27 @@ async function copyWithUnlink(
   if (stats.isDirectory()) {
     await fsx.mkdir(targetPath);
     const names = await fs.promises.readdir(sourcePath);
+    const allowedChildren = names
+      .map((name) => path.resolve(sourcePath, name))
+      .filter((child) => filter == null || filter(child));
+    const allowedBasenames = new Set(allowedChildren.map((c) => path.basename(c)));
+
+    // 고아 엔트리 정리: filter 범위 내이면서 소스에 없는 타겟 엔트리 삭제
+    const targetNames = await fs.promises.readdir(targetPath).catch(() => [] as string[]);
     await Promise.all(
-      names
-        .map((name) => path.resolve(sourcePath, name))
-        .filter((child) => filter == null || filter(child))
-        .map((child) => copyWithUnlink(
-          child,
-          path.join(targetPath, path.basename(child)),
-        )),
+      targetNames.map(async (name) => {
+        const targetChild = path.join(targetPath, name);
+        if (filter != null && !filter(targetChild)) return;
+        if (allowedBasenames.has(name)) return;
+        await fs.promises.rm(targetChild, { recursive: true, force: true });
+      }),
+    );
+
+    await Promise.all(
+      allowedChildren.map((child) => copyWithUnlink(
+        child,
+        path.join(targetPath, path.basename(child)),
+      )),
     );
   } else {
     if (await isFileContentSame(sourcePath, targetPath)) return;
@@ -201,115 +214,136 @@ export async function watchReplaceDeps(
 
   const entries = await resolveAllReplaceDepEntries(projectRoot, replaceDeps, logger);
 
-  // 소스 디렉토리 감시자 설정
-  const watchers: FsWatcher[] = [];
-  const watchedSources = new Set<string>();
-
   logger.start(`replace-deps 워치 시작 중... (${entries.length}개 대상)`);
 
+  // resolvedSourcePath(posix) → entries 그룹화
+  // resolvedSourcePath는 replace-deps-resolve의 pathx.posixResolve 결과로 이미 POSIX이다.
+  const sourceMap = new Map<string, ReplaceDepEntry[]>();
   for (const entry of entries) {
-    if (watchedSources.has(entry.resolvedSourcePath)) continue;
-    watchedSources.add(entry.resolvedSourcePath);
+    const key = entry.resolvedSourcePath;
+    const arr = sourceMap.get(key) ?? [];
+    arr.push(entry);
+    sourceMap.set(key, arr);
+  }
 
-    try {
-      // 소스 패키지의 files 필드를 읽어 감시 대상 경로 구성
-      const files = await loadFilesField(entry.resolvedSourcePath);
-      if (files == null) {
-        logger.warn(`[${entry.targetName}] package.json에 files 필드가 없어 감시 건너뜀`);
-        continue;
-      }
-
-      // files 항목 경로 + npm 기본 파일 경로
-      const watchPaths = files.map((f) =>
-        pathx.posix(path.join(entry.resolvedSourcePath, f)),
-      );
-
-      // 소스 루트에서 npm 기본 파일 패턴에 매칭되는 파일 추가
+  // 각 source의 watchPaths 수집 (files 필드 없는 source는 경고 후 제외). source 단위 병렬.
+  const allWatchPaths = new Set<string>();
+  await Promise.all(
+    [...sourceMap].map(async ([sourcePath, sourceEntries]) => {
       try {
-        const rootEntries = await fs.promises.readdir(entry.resolvedSourcePath);
+        const files = await loadFilesField(sourcePath);
+
+        if (files == null) {
+          logger.warn(
+            `[${sourceEntries[0].targetName}] package.json에 files 필드가 없어 감시 건너뜀`,
+          );
+          sourceMap.delete(sourcePath);
+          return;
+        }
+
+        for (const f of files) {
+          allWatchPaths.add(pathx.posix(path.join(sourcePath, f)));
+        }
+
+        const rootEntries = await fs.promises
+          .readdir(sourcePath)
+          .catch(() => [] as string[]);
         for (const name of rootEntries) {
           if (NPM_DEFAULT_FILE_PATTERN.test(name)) {
-            watchPaths.push(pathx.posix(path.join(entry.resolvedSourcePath, name)));
+            allWatchPaths.add(pathx.posix(path.join(sourcePath, name)));
           }
         }
-      } catch {
-        // readdir 실패 시 npm 기본 파일 감시 생략
+      } catch (err) {
+        logger.error(
+          `[${sourceEntries[0].targetName}] 감시 설정 실패: ${err instanceof Error ? err.message : err}`,
+        );
+        sourceMap.delete(sourcePath);
       }
+    }),
+  );
 
-      // 이 소스 경로에 해당하는 entries만 사전 필터링하여 캡처
-      const sourceEntries = entries.filter(
-        (e) => e.resolvedSourcePath === entry.resolvedSourcePath,
-      );
+  if (allWatchPaths.size === 0) {
+    if (entries.length > 0) {
+      logger.warn("감시 대상이 없어 워치가 시작되지 않음");
+    } else {
+      logger.success("replace-deps 워치 준비 완료");
+    }
+    return { entries, dispose: () => {} };
+  }
 
-      const watcher = await FsWatcher.watch(watchPaths, {
-        followSymlinks: false,
-      });
-      watcher.onChange({ delay: 300 }, async (changeInfos) => {
-        let hasActualCopy = false;
+  // longest-prefix 매칭을 위해 긴 경로 우선 정렬
+  const sortedSources = [...sourceMap.keys()].sort((a, b) => b.length - a.length);
 
-        for (const { path: changedPath } of changeInfos) {
-          // 사전 필터링된 항목만 순회
-          for (const e of sourceEntries) {
-            // 소스로부터의 상대 경로 계산
-            const relativePath = pathx.posix(path.relative(e.resolvedSourcePath, changedPath));
-            const destPath = pathx.posix(path.join(e.actualTargetPath, relativePath));
+  const findSource = (changedPath: string): string | undefined => {
+    for (const src of sortedSources) {
+      if (changedPath === src || changedPath.startsWith(src + "/")) return src;
+    }
+    return undefined;
+  };
 
+  const watcher = await FsWatcher.watch([...allWatchPaths], {
+    followSymlinks: false,
+  });
+
+  watcher.onChange({ delay: 300 }, async (changeInfos) => {
+    const flags = await Promise.all(
+      changeInfos.map(async ({ path: changedPath }) => {
+        const src = findSource(changedPath);
+        if (src == null) return false;
+        const sourceEntries = sourceMap.get(src)!;
+
+        let localActualCopy = false;
+
+        // 동일 source의 복수 target 복사는 순차로 유지한다 (destination 중복 시 race 방지).
+        for (const e of sourceEntries) {
+          const relativePath = pathx.posix(path.relative(e.resolvedSourcePath, changedPath));
+          const destPath = pathx.posix(path.join(e.actualTargetPath, relativePath));
+
+          try {
+            let sourceExists = false;
             try {
-              // 소스 존재 여부 확인
-              let sourceExists = false;
-              try {
-                await fs.promises.access(changedPath);
-                sourceExists = true;
-              } catch {
-                // 소스가 삭제됨
-              }
-
-              if (sourceExists) {
-                // 소스가 디렉토리인지 파일인지 확인
-                const stat = await fs.promises.stat(changedPath);
-                if (stat.isDirectory()) {
-                  await fsx.mkdir(destPath);
-                } else {
-                  // 파일 내용이 동일하면 복사 건너뜀 (불필요한 리빌드 방지)
-                  if (await isFileContentSame(changedPath, destPath)) continue;
-                  await fsx.mkdir(pathx.posix(path.dirname(destPath)));
-                  await fsx.copy(changedPath, destPath);
-                  hasActualCopy = true;
-                }
-              } else {
-                // 소스가 삭제됨 → 대상도 삭제
-                await fsx.rm(destPath);
-                hasActualCopy = true;
-              }
-            } catch (err) {
-              logger.error(
-                `[${e.targetName}] 복사 실패 (${relativePath}): ${err instanceof Error ? err.message : err}`,
-              );
+              await fs.promises.access(changedPath);
+              sourceExists = true;
+            } catch {
+              // 소스가 삭제됨
             }
+
+            if (sourceExists) {
+              const stat = await fs.promises.stat(changedPath);
+              if (stat.isDirectory()) {
+                await fsx.mkdir(destPath);
+              } else {
+                if (await isFileContentSame(changedPath, destPath)) continue;
+                await fsx.mkdir(pathx.posix(path.dirname(destPath)));
+                await fsx.copy(changedPath, destPath);
+                localActualCopy = true;
+              }
+            } else {
+              await fsx.rm(destPath);
+              localActualCopy = true;
+            }
+          } catch (err) {
+            logger.error(
+              `[${e.targetName}] 복사 실패 (${relativePath}): ${err instanceof Error ? err.message : err}`,
+            );
           }
         }
 
-        if (hasActualCopy) {
-          options?.onChanged?.();
-        }
-      });
+        return localActualCopy;
+      }),
+    );
 
-      watchers.push(watcher);
-    } catch (err) {
-      logger.error(
-        `[${entry.targetName}] 감시 설정 실패: ${err instanceof Error ? err.message : err}`,
-      );
+    if (flags.some((f) => f)) {
+      options?.onChanged?.();
     }
-  }
+  });
 
   logger.success("replace-deps 워치 준비 완료");
 
   return {
     entries,
     dispose: () => {
-      for (const watcher of watchers) {
-        void watcher.close();
-      }
+      void watcher.close();
     },
   };
 }

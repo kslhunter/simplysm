@@ -1,14 +1,14 @@
 import path from "path";
 import fs from "fs";
-import { consola } from "consola";
 import { SdError } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import type {
   SdBuildPackageConfig,
   SdPackageConfig,
 } from "../sd-config.types";
 
-const logger = consola.withTag("sd:cli:package-utils");
+const logger = createLazyLogger("sd:cli:package-utils");
 
 /**
  * import.meta.dirname에서 위로 탐색하여 package.json을 찾고 패키지 루트를 반환한다.

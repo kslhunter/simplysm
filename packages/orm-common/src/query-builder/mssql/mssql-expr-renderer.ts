@@ -326,7 +326,7 @@ export class MssqlExprRenderer extends ExprRendererBase {
   }
 
   protected indexOf(expr: ExprIndexOf): string {
-    return `CHARINDEX(${this.render(expr.search)}, ${this.render(expr.source)})`;
+    return `(CHARINDEX(${this.render(expr.search)}, ${this.render(expr.source)}) - 1)`;
   }
 
   //#endregion

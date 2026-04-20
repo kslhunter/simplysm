@@ -39,7 +39,7 @@ pnpm device -t my-client-app             # 네이티브 앱 디바이스/데스�
 
 ```bash
 pnpm check                               # 전체 검사 (typecheck + lint 병렬)
-pnpm check --fix                         # 전체 검사 + 린트 자동 수정
+pnpm check --fix                         # 전체 검사 + 린트 자동 수정 (되도록 이것으로 수행)
 pnpm check -t core-common                # 특정 패키지만 검사
 pnpm check --type lint                   # 특정 타입만 검사
 pnpm check -t angular --type typecheck   # 특정 패키지의 특정 타입만 검사
@@ -95,4 +95,4 @@ ORM:      orm-node / orm-common
 
 ## 참조 문서 유지보수
 
-- `@simplysm/*` 패키지의 public API 변경 시 `.claude/references/sd-simplysm14.md` 및 `.claude/references/sd-simplysm14/{패키지명}/**/*.md` 파일의 수정이 필요할 수 있다.
+- `@simplysm/*` 패키지의 public API 변경 시 `packages/{패키지명}/README.md` 및 `packages/{패키지명}/docs/**/*.md` 파일의 수정이 필요할 수 있다.

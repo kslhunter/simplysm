@@ -4,11 +4,13 @@ import {
   Component,
   computed,
   contentChildren,
+  effect,
   inject,
   input,
   model,
   output,
   signal,
+  untracked,
   ViewEncapsulation,
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
@@ -578,6 +580,7 @@ export class SdSheet<T> {
   getItemCellClassFn = input<(item: T, colKey: string) => string>();
   getItemCellStyleFn = input<(item: T, colKey: string) => string | undefined>();
   hideConfigBar = input(false, { transform: booleanAttribute });
+  cumulativeSelection = input(false, { transform: booleanAttribute });
 
   // Outputs
   itemKeydown = output<SdSheetItemKeydownEventParam<T>>();
@@ -696,6 +699,24 @@ export class SdSheet<T> {
     selectedItems: this.selectedItems,
     selectMode: this.selectMode,
     getItemSelectableFn: this.getItemSelectableFn,
+    trackByFn: this.trackByFn,
+  });
+
+  // cumulativeSelection=false면 items 변경 시 selectedItems를 초기화한다.
+  // 첫 실행(초기 마운트)은 skip하여 소비자가 넘긴 초기 selectedItems 값을 보존한다.
+  private _resetOnItemsChangeSkipFirst = true;
+  private readonly _resetOnItemsChange = effect(() => {
+    this.items(); // track only items
+    if (this._resetOnItemsChangeSkipFirst) {
+      this._resetOnItemsChangeSkipFirst = false;
+      return;
+    }
+    untracked(() => {
+      if (this.cumulativeSelection()) return;
+      if (this.selectedItems().length > 0) {
+        this.selectedItems.set([]);
+      }
+    });
   });
 
   // Icons

@@ -8,14 +8,14 @@ import type { ExpectedSql } from "../setup/test-utils";
 
 export const basicSubordinates: ExpectedSql = {
   mysql: mysql`
-    WITH \`T2\` AS (
+    WITH RECURSIVE \`T2\` AS (
       SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`managerId\` AS \`managerId\`, 1 AS \`depth\`
       FROM \`TestDb\`.\`Employee\` AS \`T1\`
       WHERE \`T1\`.\`managerId\` <=> 1
       UNION ALL
       SELECT \`T2\`.\`id\` AS \`id\`, \`T2\`.\`name\` AS \`name\`, \`T2\`.\`managerId\` AS \`managerId\`, \`T2.self\`.\`depth\` + 1 AS \`depth\`
-      FROM \`TestDb\`.\`Employee\` AS \`T2\`
-      LEFT OUTER JOIN \`T2\` AS \`T2.self\` ON TRUE
+      FROM \`T2\` AS \`T2.self\`
+      CROSS JOIN \`TestDb\`.\`Employee\` AS \`T2\`
       WHERE \`T2\`.\`managerId\` <=> \`T2.self\`.\`id\`
     )
     SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`managerId\` AS \`managerId\`, \`T1\`.\`depth\` AS \`depth\`
@@ -29,7 +29,7 @@ export const basicSubordinates: ExpectedSql = {
       UNION ALL
       SELECT [T2].[id] AS [id], [T2].[name] AS [name], [T2].[managerId] AS [managerId], [T2.self].[depth] + 1 AS [depth]
       FROM [TestDb].[TestSchema].[Employee] AS [T2]
-      LEFT OUTER JOIN [T2] AS [T2.self] ON 1 = 1
+      CROSS JOIN [T2] AS [T2.self]
       WHERE (([T2].[managerId] IS NULL AND [T2.self].[id] IS NULL) OR [T2].[managerId] = [T2.self].[id])
     )
     SELECT [T1].[id] AS [id], [T1].[name] AS [name], [T1].[managerId] AS [managerId], [T1].[depth] AS [depth]
@@ -43,7 +43,7 @@ export const basicSubordinates: ExpectedSql = {
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2"."managerId" AS "managerId", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
-      LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
+      CROSS JOIN "T2" AS "T2.self"
       WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."managerId" AS "managerId", "T1"."depth" AS "depth"
@@ -53,14 +53,14 @@ export const basicSubordinates: ExpectedSql = {
 
 export const depthLimit: ExpectedSql = {
   mysql: mysql`
-    WITH \`T2\` AS (
+    WITH RECURSIVE \`T2\` AS (
       SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, 1 AS \`depth\`
       FROM \`TestDb\`.\`Employee\` AS \`T1\`
       WHERE \`T1\`.\`managerId\` <=> 1
       UNION ALL
       SELECT \`T2\`.\`id\` AS \`id\`, \`T2\`.\`name\` AS \`name\`, \`T2.self\`.\`depth\` + 1 AS \`depth\`
-      FROM \`TestDb\`.\`Employee\` AS \`T2\`
-      LEFT OUTER JOIN \`T2\` AS \`T2.self\` ON TRUE
+      FROM \`T2\` AS \`T2.self\`
+      CROSS JOIN \`TestDb\`.\`Employee\` AS \`T2\`
       WHERE \`T2\`.\`managerId\` <=> \`T2.self\`.\`id\` AND \`T2.self\`.\`depth\` < 3
     )
     SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`depth\` AS \`depth\`
@@ -74,7 +74,7 @@ export const depthLimit: ExpectedSql = {
       UNION ALL
       SELECT [T2].[id] AS [id], [T2].[name] AS [name], [T2.self].[depth] + 1 AS [depth]
       FROM [TestDb].[TestSchema].[Employee] AS [T2]
-      LEFT OUTER JOIN [T2] AS [T2.self] ON 1 = 1
+      CROSS JOIN [T2] AS [T2.self]
       WHERE (([T2].[managerId] IS NULL AND [T2.self].[id] IS NULL) OR [T2].[managerId] = [T2.self].[id]) AND [T2.self].[depth] < 3
     )
     SELECT [T1].[id] AS [id], [T1].[name] AS [name], [T1].[depth] AS [depth]
@@ -88,7 +88,7 @@ export const depthLimit: ExpectedSql = {
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
-      LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
+      CROSS JOIN "T2" AS "T2.self"
       WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id" AND "T2.self"."depth" < 3
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"
@@ -98,14 +98,14 @@ export const depthLimit: ExpectedSql = {
 
 export const upwardManagers: ExpectedSql = {
   mysql: mysql`
-    WITH \`T2\` AS (
+    WITH RECURSIVE \`T2\` AS (
       SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`managerId\` AS \`managerId\`, 0 AS \`level\`
       FROM \`TestDb\`.\`Employee\` AS \`T1\`
       WHERE \`T1\`.\`id\` <=> 100
       UNION ALL
       SELECT \`T2\`.\`id\` AS \`id\`, \`T2\`.\`name\` AS \`name\`, \`T2\`.\`managerId\` AS \`managerId\`, \`T2.self\`.\`level\` - 1 AS \`level\`
-      FROM \`TestDb\`.\`Employee\` AS \`T2\`
-      LEFT OUTER JOIN \`T2\` AS \`T2.self\` ON TRUE
+      FROM \`T2\` AS \`T2.self\`
+      CROSS JOIN \`TestDb\`.\`Employee\` AS \`T2\`
       WHERE \`T2\`.\`id\` <=> \`T2.self\`.\`managerId\`
     )
     SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`level\` AS \`level\`
@@ -119,7 +119,7 @@ export const upwardManagers: ExpectedSql = {
       UNION ALL
       SELECT [T2].[id] AS [id], [T2].[name] AS [name], [T2].[managerId] AS [managerId], [T2.self].[level] - 1 AS [level]
       FROM [TestDb].[TestSchema].[Employee] AS [T2]
-      LEFT OUTER JOIN [T2] AS [T2.self] ON 1 = 1
+      CROSS JOIN [T2] AS [T2.self]
       WHERE (([T2].[id] IS NULL AND [T2.self].[managerId] IS NULL) OR [T2].[id] = [T2.self].[managerId])
     )
     SELECT [T1].[id] AS [id], [T1].[name] AS [name], [T1].[level] AS [level]
@@ -133,7 +133,7 @@ export const upwardManagers: ExpectedSql = {
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2"."managerId" AS "managerId", "T2.self"."level" - 1 AS "level"
       FROM "TestSchema"."Employee" AS "T2"
-      LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
+      CROSS JOIN "T2" AS "T2.self"
       WHERE "T2"."id" IS NOT DISTINCT FROM "T2.self"."managerId"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."level" AS "level"
@@ -147,14 +147,14 @@ export const upwardManagers: ExpectedSql = {
 
 export const cteWithOrderBy: ExpectedSql = {
   mysql: mysql`
-    WITH \`T2\` AS (
+    WITH RECURSIVE \`T2\` AS (
       SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, 1 AS \`depth\`
       FROM \`TestDb\`.\`Employee\` AS \`T1\`
       WHERE \`T1\`.\`managerId\` <=> 1
       UNION ALL
       SELECT \`T2\`.\`id\` AS \`id\`, \`T2\`.\`name\` AS \`name\`, \`T2.self\`.\`depth\` + 1 AS \`depth\`
-      FROM \`TestDb\`.\`Employee\` AS \`T2\`
-      LEFT OUTER JOIN \`T2\` AS \`T2.self\` ON TRUE
+      FROM \`T2\` AS \`T2.self\`
+      CROSS JOIN \`TestDb\`.\`Employee\` AS \`T2\`
       WHERE \`T2\`.\`managerId\` <=> \`T2.self\`.\`id\`
     )
     SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`depth\` AS \`depth\`
@@ -169,7 +169,7 @@ export const cteWithOrderBy: ExpectedSql = {
       UNION ALL
       SELECT [T2].[id] AS [id], [T2].[name] AS [name], [T2.self].[depth] + 1 AS [depth]
       FROM [TestDb].[TestSchema].[Employee] AS [T2]
-      LEFT OUTER JOIN [T2] AS [T2.self] ON 1 = 1
+      CROSS JOIN [T2] AS [T2.self]
       WHERE (([T2].[managerId] IS NULL AND [T2.self].[id] IS NULL) OR [T2].[managerId] = [T2.self].[id])
     )
     SELECT [T1].[id] AS [id], [T1].[name] AS [name], [T1].[depth] AS [depth]
@@ -184,7 +184,7 @@ export const cteWithOrderBy: ExpectedSql = {
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
-      LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
+      CROSS JOIN "T2" AS "T2.self"
       WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"
@@ -195,14 +195,14 @@ export const cteWithOrderBy: ExpectedSql = {
 
 export const cteWithWhere: ExpectedSql = {
   mysql: mysql`
-    WITH \`T2\` AS (
+    WITH RECURSIVE \`T2\` AS (
       SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, 1 AS \`depth\`
       FROM \`TestDb\`.\`Employee\` AS \`T1\`
       WHERE \`T1\`.\`managerId\` <=> 1
       UNION ALL
       SELECT \`T2\`.\`id\` AS \`id\`, \`T2\`.\`name\` AS \`name\`, \`T2.self\`.\`depth\` + 1 AS \`depth\`
-      FROM \`TestDb\`.\`Employee\` AS \`T2\`
-      LEFT OUTER JOIN \`T2\` AS \`T2.self\` ON TRUE
+      FROM \`T2\` AS \`T2.self\`
+      CROSS JOIN \`TestDb\`.\`Employee\` AS \`T2\`
       WHERE \`T2\`.\`managerId\` <=> \`T2.self\`.\`id\`
     )
     SELECT \`T1\`.\`id\` AS \`id\`, \`T1\`.\`name\` AS \`name\`, \`T1\`.\`depth\` AS \`depth\`
@@ -217,7 +217,7 @@ export const cteWithWhere: ExpectedSql = {
       UNION ALL
       SELECT [T2].[id] AS [id], [T2].[name] AS [name], [T2.self].[depth] + 1 AS [depth]
       FROM [TestDb].[TestSchema].[Employee] AS [T2]
-      LEFT OUTER JOIN [T2] AS [T2.self] ON 1 = 1
+      CROSS JOIN [T2] AS [T2.self]
       WHERE (([T2].[managerId] IS NULL AND [T2.self].[id] IS NULL) OR [T2].[managerId] = [T2.self].[id])
     )
     SELECT [T1].[id] AS [id], [T1].[name] AS [name], [T1].[depth] AS [depth]
@@ -232,7 +232,7 @@ export const cteWithWhere: ExpectedSql = {
       UNION ALL
       SELECT "T2"."id" AS "id", "T2"."name" AS "name", "T2.self"."depth" + 1 AS "depth"
       FROM "TestSchema"."Employee" AS "T2"
-      LEFT OUTER JOIN "T2" AS "T2.self" ON TRUE
+      CROSS JOIN "T2" AS "T2.self"
       WHERE "T2"."managerId" IS NOT DISTINCT FROM "T2.self"."id"
     )
     SELECT "T1"."id" AS "id", "T1"."name" AS "name", "T1"."depth" AS "depth"

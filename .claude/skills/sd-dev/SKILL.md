@@ -5,7 +5,8 @@ description: 요구명세 → 구현계획 → TDD 개발 → 체크 → 리뷰�
 
 # sd-dev: 통합 개발 프로세스
 
-sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 오케스트레이터
+sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 오케스트레이터.
+**CRITICAL**: Step간 진행은 사용자 확인없이 즉시 다음 Step으로 진행한다.
 
 ## 공통 규칙
 
@@ -30,7 +31,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 3: sd-plan
 
-`/sd-plan` 스킬을 즉시 수행한다. 완료 후 즉시 Step 4로 진행한다.
+`/sd-plan` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 4로 진행한다.
 
 ## Step 4: sd-tdd
 
@@ -42,7 +43,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 6: sd-review
 
-`/sd-inner-review` 스킬을 호출하고, 발견사항에 대해 수정한다.
+`/sd-inner-review` 스킬을 호출하고, **모든** 발견사항에 대해 수정한다.
 
 - wbs/feature 문서를 읽고 잘 구현되었는지 함께 검토한다.
 - 수정사항이 있는 경우, `/sd-check` 스킬을 재 수행한다.
@@ -68,12 +69,16 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ### 변경 파일
 - {파일 경로 목록}
+
+<!-- 아래 두 섹션 중 조건에 맞는 정확히 하나만 출력한다 -->
+
+### 남은 Feature  <!-- 미완료(`[ ]`) Feature가 1개 이상일 때만 출력 -->
+- {번호} {제목} (의존성: {있으면 명시})
+
+### 최종 리뷰 안내  <!-- 모든 Feature가 완료(`[x]`)일 때만 출력 -->
+`/sd-review {wbs디렉토리경로}/*.md 가 잘 구현되었는지, 문제는 없는지 최종 심층 리뷰`
 ```
 
-### 최종 리뷰 안내
+**MUST:** 완료 보고 출력 직전에 **반드시(MUST) wbs.md의 현재 상태를 다시 읽어** Feature 체크박스(`[x]`/`[ ]`)를 확인한 뒤, 위 두 섹션 중 조건에 맞는 정확히 하나만 출력한다.
 
-wbs.md를 **다시 읽어서** Feature 체크박스를 확인:
-
-- 모든 Feature가 완료(`[x]`)된 경우, `/sd-review`를 사용한 최종 심층 리뷰를 안내한다.
-  (예: `/sd-review {wbs디렉토리경로}/*.md 가 잘 구현되었는지, 문제는 없는지 최종 심층 리뷰`)
-- 그 외의 경우에는 남은 Feature목록 및 각 Feature의 의존성을 안내한다.
+**NEVER:** 미완료(`[ ]`) Feature가 1개라도 남아 있으면 `/sd-review`를 어떤 형태로도(조건부·제안·예시 포함) 언급하지 않는다. "모든 Feature가 끝난 뒤 /sd-review를 권장" 같은 조건부 안내도 금지한다.

@@ -3,10 +3,10 @@ import { readFileSync, existsSync } from "fs";
 import fs from "fs/promises";
 import { createRequire } from "module";
 import type esbuild from "esbuild";
-import { consola } from "consola";
+import { createLazyLogger } from "../runtime/lazy-logger";
 import { addJsExtensionToImports } from "../utils/output-path-rewriter";
 
-const logger = consola.withTag("sd:cli:esbuild-config");
+const logger = createLazyLogger("sd:cli:esbuild-config");
 
 /**
  * esbuild outputFiles에서 변경된 파일만 디스크에 쓴다.
