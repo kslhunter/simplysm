@@ -27,7 +27,7 @@
     "@angular/build": "^21.2.7",
     "@angular/compiler-cli": "^21.2.9",
     "@fastify/http-proxy": "^11.4.4",
-    "@inquirer/prompts": "^8.4.1",
+    "@inquirer/prompts": "^8.4.2",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",
