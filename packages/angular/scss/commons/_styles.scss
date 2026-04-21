@@ -111,6 +111,18 @@
 } // @layer base
 
 @layer utilities {
+  .block {
+    display: block;
+  }
+
+  .inline-block {
+    display: inline-block;
+  }
+
+  .inline {
+    display: inline;
+  }
+
   //-- FONT SIZE
 
   @each $h in (h1, h2, h3, h4, h5, h6) {

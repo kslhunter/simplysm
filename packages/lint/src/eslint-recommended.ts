@@ -226,6 +226,7 @@ export default tseslint.config(
       "@typescript-eslint/only-throw-error": "error",
       "@typescript-eslint/no-array-delete": "error",
 
+      "@simplysm/ng-no-async-effect": "error",
       "@simplysm/no-hard-private": "error",
       "@simplysm/no-subpath-imports-from-simplysm": "error",
       "@simplysm/ts-no-throw-not-implemented-error": "warn",

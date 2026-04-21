@@ -254,18 +254,17 @@ export class LotSelectButton {
         this._selectedItems.set([]);
         return;
       }
-      void this._loadAsync([v]);
-    });
-  }
 
-  private async _loadAsync(keys: number[]): Promise<void> {
-    const items = await this._appOrm.connectAsync(async (db) =>
-      db.lot()
-        .where((it) => [expr.in(it.id, keys)])
-        .select((it) => ({ id: it.id, code: it.code }))
-        .execute(),
-    );
-    this._selectedItems.set(items);
+      void (async () => {
+        const items = await this._appOrm.connectAsync(async (db) =>
+          db.lot()
+            .where((it) => [expr.in(it.id, [v])])
+            .select((it) => ({ id: it.id, code: it.code }))
+            .execute(),
+        );
+        this._selectedItems.set(items);
+      })();
+    });
   }
 }
 ```
@@ -283,8 +282,8 @@ export class LotSelectButton {
 **핵심:**
 - `<sd-modal-select-button>`이 모달 호출/erase/invalid 로직 담당 → wrapper는 비동기 load만 추가
 - `_selectedItems`는 내부 signal. 외부에서는 `value`만 set
-- `effect()` 내부에서 비동기 작업은 `void this._loadAsync(...)` 패턴 (effect 콜백은 동기여야 함)
-- multi 모드를 지원하려면 `value = model<number[] | undefined>()`로 변경 + `selectMode = input<"single"|"multi">("single")` 추가 + effect에서 배열 처리 분기
+- effect 콜백은 동기여야 하므로 비동기 작업은 `void (async () => { ... })()` IIFE로 감싼다. 로드 함수가 한 곳에서만 호출되므로 별도 private 메서드로 분리하지 않고 effect 내부에 직접 인라인한다
+- multi 모드를 지원하려면 `value = model<number[] | undefined>()`로 변경 + `selectMode = input<"single"|"multi">("single")` 추가 + effect의 `expr.in(it.id, [v])`를 배열 전체로 바꾸고 배열 길이 분기 추가
 
 ### 5.1 시트 셀 안에 삽입
 

@@ -120,7 +120,7 @@ export class ExcelXmlWorkbook implements ExcelXml {
   }
 
   private _getReplacedName(name: string): string {
-    //-- 잘못된 시트 이름 문자를 "_"로 대체
-    return name.replace(/[:\\/?*\[\]']/g, "_");
+    //-- 잘못된 시트 이름 문자 제거. 전부 제거되어 빈 문자열이 되면 "Sheet" 사용.
+    return name.replace(/[:\\/?*\[\]']/g, "") || "Sheet";
   }
 }

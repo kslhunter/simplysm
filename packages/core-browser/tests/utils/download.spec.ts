@@ -63,4 +63,20 @@ describe("downloadBlob", () => {
     vi.runAllTimers();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
   });
+
+  it("removes filesystem-reserved characters from fileName", () => {
+    const blob = new Blob(["test"], { type: "text/plain" });
+
+    downloadBlob(blob, '보고서/2026:v1*?.xlsx');
+
+    expect(mockLink.download).toBe("보고서2026v1.xlsx");
+  });
+
+  it("falls back to 'download' when sanitized fileName is empty", () => {
+    const blob = new Blob(["test"], { type: "text/plain" });
+
+    downloadBlob(blob, "CON.txt");
+
+    expect(mockLink.download).toBe("download");
+  });
 });

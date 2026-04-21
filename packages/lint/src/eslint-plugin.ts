@@ -1,3 +1,4 @@
+import ngNoAsyncEffect from "./rules/ng-no-async-effect";
 import ngTemplateNoStrictNullCheck from "./rules/ng-template-no-strict-null-check";
 import ngTemplateNoTodoComments from "./rules/ng-template-no-todo-comments";
 import ngTemplateSdRequireBindingAttrs from "./rules/ng-template-sd-require-binding-attrs";
@@ -9,6 +10,7 @@ import tsNoUnusedProtectedReadonly from "./rules/ts-no-unused-protected-readonly
 
 export default {
   rules: {
+    "ng-no-async-effect": ngNoAsyncEffect,
     "ng-template-no-strict-null-check": ngTemplateNoStrictNullCheck,
     "ng-template-no-todo-comments": ngTemplateNoTodoComments,
     "ng-template-sd-require-binding-attrs": ngTemplateSdRequireBindingAttrs,

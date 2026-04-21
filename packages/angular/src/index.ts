@@ -226,9 +226,6 @@ export type {
   SdSheetCellKeydownEventParam,
 } from "./data/sheet/types";
 
-// data/utils
-export { getOrmDataEditToastErrorMessage } from "./data/getOrmDataEditToastErrorMessage";
-
 // data/shared-data
 export { SdSharedDataSelect } from "./data/shared-data/sd-shared-data-select";
 export { SdSharedDataSelectButton } from "./data/shared-data/sd-shared-data-select-button";

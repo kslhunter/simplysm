@@ -222,8 +222,8 @@ QueryableRecord에서 실제 데이터 타입을 추출한다.
 
 ```typescript
 export type UnwrapQueryableRecord<R> = {
-  [K in keyof R as K extends symbol ? never : K]: R[K] extends ExprUnit<infer T>
-    ? T
+  [K in keyof R as K extends symbol ? never : K]: NonNullable<R[K]> extends ExprUnit<infer T>
+    ? T | Extract<R[K], undefined>
     : NonNullable<R[K]> extends (infer U)[]
       ? U extends Record<string, any>
         ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>

@@ -22,6 +22,22 @@ describe("ExcelWorkbook", () => {
       const names = await wb.getWorksheetNames();
       expect(names).toEqual(["Sheet1", "Sheet2", "Sheet3"]);
     });
+
+    it("시트명의 금지 문자는 제거된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("보고서/2026:v1*?");
+
+      const name = await ws.getName();
+      expect(name).toBe("보고서2026v1");
+    });
+
+    it("시트명이 전부 금지 문자이면 'Sheet'로 대체된다", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("[*?]");
+
+      const name = await ws.getName();
+      expect(name).toBe("Sheet");
+    });
   });
 
   describe("워크시트 접근", () => {

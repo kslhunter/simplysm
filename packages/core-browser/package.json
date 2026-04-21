@@ -26,6 +26,7 @@
   ],
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
+    "sanitize-filename": "^1.6.4",
     "tabbable": "^6.4.0"
   }
 }

@@ -1,6 +1,6 @@
 # @simplysm/lint
 
-Simplysm 모노레포 전용 ESLint 플러그인 및 공유 Flat Config 설정. 커스텀 규칙 8개와 권장 설정을 제공한다.
+Simplysm 모노레포 전용 ESLint 플러그인 및 공유 Flat Config 설정. 커스텀 규칙 9개와 권장 설정을 제공한다.
 
 ## Installation
 
@@ -14,7 +14,7 @@ npm install @simplysm/lint
 
 | API | Type | Description |
 |-----|------|-------------|
-| `default` | object | `{ rules: {...} }` 형태의 ESLint 플러그인 객체. 8개의 커스텀 규칙을 포함한다 |
+| `default` | object | `{ rules: {...} }` 형태의 ESLint 플러그인 객체. 9개의 커스텀 규칙을 포함한다 |
 
 #### Rules
 
@@ -25,6 +25,7 @@ npm install @simplysm/lint
 | `ts-no-throw-not-implemented-error` | suggestion | - | `@simplysm/core-common`의 `NotImplementedError` 사용을 경고한다. named import, aliased import, namespace import 모두 감지. 동적 import는 미감지 |
 | `ts-no-unused-injects` | problem | autofix | 미사용 Angular `inject()` 필드를 감지하여 제거한다. 클래스 내 `inject()` 호출로 초기화된 프로퍼티 중 다른 곳에서 참조되지 않는 필드를 보고 |
 | `ts-no-unused-protected-readonly` | problem | autofix | Angular `@Component` 클래스의 미사용 `protected readonly` 필드를 감지하여 제거한다. 인라인 템플릿과 클래스 본문 모두에서 참조 여부를 확인 |
+| `ng-no-async-effect` | problem | - | `@angular/core`의 `effect()`에 async 함수를 직접 전달하는 것을 금지한다. `await` 이후의 signal read가 의존성으로 추적되지 않는 함정을 방지. named/aliased/namespace import 모두 감지. 비동기 작업은 `void untracked(async () => { ... })` 내부에서 수행하도록 유도 |
 | `ng-template-no-todo-comments` | problem | - | HTML 템플릿 내 `<!-- TODO: ... -->` 주석을 경고한다. raw text regex 방식으로 동작 |
 | `ng-template-no-strict-null-check` | problem | - | Angular 템플릿에서 `=== null`, `!== null`, `=== undefined`, `!== undefined` 사용을 금지한다. `== null` / `!= null`로 통일하도록 강제. autofix 미제공(인라인 템플릿 offset 매핑 문제) |
 | `ng-template-sd-require-binding-attrs` | problem | autofix | `sd-*` 컴포넌트에서 허용 목록 외 plain attribute 사용을 금지하고 Angular property binding(`[attr]="..."`)을 강제한다 |

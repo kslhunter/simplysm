@@ -149,7 +149,7 @@ htmlElement.scrollIntoViewIfNeeded(
 export function downloadBlob(blob: Blob, fileName: string): void
 ```
 
-Blob을 파일로 다운로드한다. `<a>` 태그를 생성하여 클릭하는 방식이다. Object URL은 1초 후 자동 해제된다.
+Blob을 파일로 다운로드한다. `<a>` 태그를 생성하여 클릭하는 방식이다. Object URL은 1초 후 자동 해제된다. `fileName`의 파일시스템 금지 문자(`/ \ : * ? " < > |`), 제어문자, Windows 예약어(CON, PRN 등)는 자동 제거되며, 제거 후 빈 문자열이 되면 `download`로 대체된다.
 
 #### `DownloadProgress`
 

@@ -128,4 +128,29 @@ describe("QueryableRecord 타입 추론", () => {
 
     expect(q).toBeDefined();
   });
+
+  it("optional join + select 결과 타입 — `?.` vs `!` 모두 정상", () => {
+    // User.name: NOT NULL, User.email: nullable
+    // joinSingle → user relation은 optional (LEFT JOIN 의미)
+    const db = createTestDb();
+    const q = db
+      .post()
+      .joinSingle("user", (qr, c) => qr.from(User).where((u) => [expr.eq(u.id, c.userId)]))
+      .select((item) => ({
+        userNameOpt: item.user?.name, // optional chaining → string | undefined
+        userEmailOpt: item.user?.email, // optional chaining + nullable 컬럼 → string | undefined
+        userNameBang: item.user!.name, // non-null assertion → string
+        userEmailBang: item.user!.email, // non-null assertion + nullable 컬럼 → string | undefined
+      }));
+
+    type ExecResult = Awaited<ReturnType<typeof q.execute>>;
+    type Row = ExecResult[number];
+
+    expectTypeOf<Row["userNameOpt"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<Row["userEmailOpt"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<Row["userNameBang"]>().toEqualTypeOf<string>();
+    expectTypeOf<Row["userEmailBang"]>().toEqualTypeOf<string | undefined>();
+
+    expect(q).toBeDefined();
+  });
 });

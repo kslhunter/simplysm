@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 11개 (`src/rules/` 8개, `src/utils/` 1개, 진입점 2개).
+`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 12개 (`src/rules/` 9개, `src/utils/` 1개, 진입점 2개).
 
 두 가지 진입점을 exports한다:
-- `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 8개를 `{ rules: {...} }` 형태로 내보냄
+- `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 9개를 `{ rules: {...} }` 형태로 내보냄
 - `./eslint-recommended` -- 위 플러그인과 외부 플러그인(`typescript-eslint`, `angular-eslint`, `eslint-plugin-import`, `eslint-plugin-unused-imports`)을 조합한 Flat Config 배열
 
 ## Architecture
@@ -24,6 +24,7 @@ src/
 │   ├── ts-no-throw-not-implemented-error.ts  ← TS:    NotImplementedError 사용 경고 (suggestion)
 │   ├── ts-no-unused-injects.ts               ← TS:    미사용 inject() 필드 제거, autofix
 │   ├── ts-no-unused-protected-readonly.ts    ← TS:    미사용 protected readonly 필드 제거, autofix
+│   ├── ng-no-async-effect.ts                 ← TS:    @angular/core의 effect()에 async 함수 전달 금지
 │   ├── ng-template-no-strict-null-check.ts   ← HTML:  템플릿에서 `===`/`!==` null/undefined 비교 금지
 │   ├── ng-template-no-todo-comments.ts       ← HTML:  템플릿 내 TODO 주석 경고
 │   └── ng-template-sd-require-binding-attrs.ts ← HTML: sd-* 컴포넌트 plain attr 금지, autofix
@@ -64,6 +65,7 @@ export default createRule({
 
 - `no-*` 접두사 -- JS/TS 파일 모두에 적용 (`**/*.js`, `**/*.ts`)
 - `ts-*` 접두사 -- TypeScript 파일에만 적용 (`**/*.ts`), `@typescript-eslint/utils`의 AST 타입 사용
+- `ng-*` 접두사 (`ng-template-*` 제외) -- TypeScript 파일에만 적용 (`**/*.ts`), Angular 런타임 API(예: `effect()`) 사용 패턴을 스코프 체인으로 추적하여 검사
 - `ng-template-*` 접두사 -- Angular HTML 템플릿에만 적용 (`**/*.html`), `@angular-eslint/utils`의 `getTemplateParserServices` 사용
 
 ### Recommended Config 구조
@@ -130,7 +132,7 @@ describe("my-rule", () => {
 });
 ```
 
-테스트 파일 8개: 각 규칙 7개에 대한 개별 spec 파일 + `recommended.spec.ts` (Flat Config 배열 구조 검증, `RuleTester` 미사용).
+테스트 파일 10개: 각 규칙 9개에 대한 개별 spec 파일 + `recommended.spec.ts` (Flat Config 배열 구조 검증, `RuleTester` 미사용).
 
 ## 컴파일러 설정
 

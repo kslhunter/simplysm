@@ -1919,8 +1919,8 @@ export type QueryableWriteRecord<TData> = {
  * ExprUnit<T>를 T로 언래핑, 중첩 객체/배열을 재귀적으로 언래핑
  */
 export type UnwrapQueryableRecord<R> = {
-  [K in keyof R as K extends symbol ? never : K]: R[K] extends ExprUnit<infer T>
-    ? T
+  [K in keyof R as K extends symbol ? never : K]: NonNullable<R[K]> extends ExprUnit<infer T>
+    ? T | Extract<R[K], undefined>
     : NonNullable<R[K]> extends (infer U)[]
       ? U extends Record<string, any>
         ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>

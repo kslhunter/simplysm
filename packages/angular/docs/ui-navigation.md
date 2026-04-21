@@ -180,6 +180,36 @@ interface SdSidebarUserMenu {
 
 ## Topbar
 
+### 기본 사용 예제
+
+topbar만 있는 단순 페이지(홈·메인 등) 스캐폴드. 본문 영역이 비어 있으면 topbar 아래에 별도 컨테이너 div를 두지 않는다.
+
+```typescript
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { injectViewTitleSignal, SdTopbar, SdTopbarContainer } from "@simplysm/angular";
+
+@Component({
+  selector: "app-main",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdTopbarContainer, SdTopbar],
+  template: `
+    <sd-topbar-container>
+      <sd-topbar>
+        <h4>{{ viewTitle() }}</h4>
+      </sd-topbar>
+    </sd-topbar-container>
+  `,
+})
+export class MainPage {
+  viewTitle = injectViewTitleSignal();
+}
+```
+
+- 제목은 [`injectViewTitleSignal`](./utils.md#injectviewtitlesignal)이 `SdAppStructureProvider`에서 자동 조회한다.
+- 페이지/모달/control 뷰에서 **재사용**되는 화면은 뷰 분기가 필요하므로 [`recipes/page-modal-container.md`](./recipes/page-modal-container.md)를 사용한다.
+
 ### `SdTopbarContainer`
 
 탑바 컨테이너.
