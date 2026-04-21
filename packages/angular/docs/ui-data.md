@@ -114,6 +114,14 @@ class SdSheet<T> {
 - **초기 마운트 시 `selectedItems` 보존**: `cumulativeSelection=false`라도 **최초 `items` 구독 시점**의 `selectedItems`는 초기화되지 않는다. 이후 `items`가 교체될 때부터 초기화 규칙이 적용된다. 따라서 소비자가 컴포넌트 마운트 직후 초기 선택을 주입하는 시나리오는 안전하다.
 - **`trackByFn`은 index에 의존하지 않아야 한다**: 누적 모드에서 `selectedItems`는 현재 `displayItems`에 없는 다른 페이지 항목을 포함할 수 있다. 내부 key 비교는 이 항목에 대해 index를 `0`으로 fallback하여 `trackByFn(item, 0)`을 호출한다. `trackByFn`을 `(item, index) => \`${item.category}_${index}\`` 같이 **index에 의존하는 형태로 쓰면 동일 item에 대해 다른 key가 계산되어 `isSelected` 판정이 틀어진다**. 항상 item 속성만으로 key를 만든다: `(item) => item.id` 형태를 사용.
 
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 기본 시트 바인딩 (items/currentPage/totalPageCount/sorts/trackByFn)
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — inline 편집 셀, getItemCellStyleFn
+- [crud-list.md §6 확장 B: 선택 기능](./recipes/crud-list.md#6-확장-b-선택-기능--선택-삭제복구) — selectMode, selectedItems
+- [crud-list.md §8 확장 D: 선택 모달 전환](./recipes/crud-list.md#8-확장-d-선택-모달-전환) — cumulativeSelection 동적 바인딩
+- [crud-detail.md §10 확장 F: 복합 상세](./recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 상세 폼 내 하위 컬렉션 시트
+
 ### `SdSheetColumn`
 
 시트 컬럼 정의 디렉티브. 컬럼의 헤더, 너비, 고정, 정렬 등을 설정한다. 셀 내용은 `SdSheetColumnCellTemplate`으로 정의한다.
@@ -157,6 +165,12 @@ Content children:
 - `SdSheetColumnCellTemplate` (required): 셀 렌더링 템플릿
 - `#headerTpl`: 커스텀 헤더 템플릿
 - `#summaryTpl`: 요약 행 템플릿
+
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 기본 컬럼 구성 (key/header/fixed/hidden)
+- [crud-list.md §7 확장 C: inline 삭제 열](./recipes/crud-list.md#7-확장-c-inline-삭제-열) — `[fixed]="true"` 컬럼 + `#headerTpl` 커스텀 헤더
+- [crud-detail.md §10 확장 F: 복합 상세](./recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 하위 컬렉션 컬럼 + `#headerTpl` 삭제 아이콘 헤더
 
 ### `SdSheetColumnCellTemplate`
 
@@ -235,6 +249,12 @@ interface SdSheetCellContext<T = unknown> {
 | `index` | `number` | 행 인덱스 |
 | `depth` | `number` | 트리 깊이 |
 | `edit` | `boolean` | 편집 모드 여부 (인라인 편집 지원 시 셀에서 참조) |
+
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — `let-item` 읽기 전용 셀
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — `let-edit` 편집 모드 분기
+- [crud-detail.md §10 확장 F: 복합 상세](./recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 하위 컬렉션 셀
 
 ### `SdSheetConfigModal`
 

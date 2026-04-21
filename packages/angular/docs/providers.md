@@ -109,6 +109,36 @@ function injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Si
 
 반환: 활성화된 권한 키 배열의 signal
 
+### 권한 signal 사용 패턴
+
+`injectPermsSignal`은 생성자/필드 이니셜라이저에서 호출하여 권한 signal을 얻고, 이를 기반으로 조건부 렌더링과 `canEdit` computed를 구성한다:
+
+```typescript
+export class CustomerListPage {
+  // 권한 signal (viewCodes: 도메인 코드, keys: 확인할 권한)
+  protected readonly perms = injectPermsSignal(["{도메인 viewCode}"], ["use", "edit"]);
+  protected readonly canEdit = computed(() => this.perms().includes("edit") && this.viewType() === "page");
+}
+```
+
+템플릿에서 권한 경고 블록:
+
+```html
+@if (!perms().includes("use")) {
+  <div class="p-xxl flex-column cross-align-center gap-lg">
+    <ng-icon [svg]="tablerAlertTriangle" style="font-size: 4em;" />
+    <h4>'{{ viewTitle() }}'에 대한 사용권한이 없습니다.</h4>
+  </div>
+} @else {
+  <!-- 본문 -->
+}
+```
+
+**실사용 예:**
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 권한 기반 조건부 렌더
+- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](./recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 권한 기반 조건부 렌더
+
 ## `SdAppStructureUtils`
 
 앱 구조 유틸리티. 정적 메서드로 메뉴/권한 조회 로직을 제공한다.
@@ -141,6 +171,26 @@ class SdFileDialogProvider {
 |-----------|------|-------------|
 | `multiple` | `boolean` | 다중 선택 여부 |
 | `accept` | `string` | 허용 파일 타입 (예: `"image/*"`) |
+
+### 파일 선택 사용 패턴
+
+엑셀 파일 업로드 시 단일 파일을 선택받는 패턴:
+
+```typescript
+private readonly _sdFileDialog = inject(SdFileDialogProvider);
+
+async onUploadExcelButtonClick(): Promise<void> {
+  const file = await this._sdFileDialog.showAsync(false, ".xlsx");
+  if (file == null) return;
+  if (Array.isArray(file)) return;
+
+  // file: File 객체 — 이후 ExcelWrapper 등으로 처리
+}
+```
+
+**실사용 예:**
+
+- [crud-list.md §11 확장 G: 엑셀 업로드/다운로드](./recipes/crud-list.md#11-확장-g-엑셀-업로드다운로드) — 엑셀 파일 선택
 
 ## `SdLocalStorageProvider`
 
@@ -275,6 +325,35 @@ class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContent
 | `contentComponent` | `WritableSignal<T \| undefined>` | 컨텐츠 컴포넌트 인스턴스 |
 | `canDeactivateFn` | `() => boolean` | 모달 닫기 가능 여부 판별 함수 (기본: `() => true`) |
 
+### 모달 컨텍스트 사용 패턴
+
+모달 내부 컴포넌트에서 `optional: true`로 inject하여, 모달 타이틀 계산 등에 활용한다:
+
+```typescript
+private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+
+// modal 뷰의 타이틀은 SdModal 인스턴스의 title()을 사용
+protected readonly modalOrPageTitle = computed(() => {
+  try {
+    return (
+      this._sdActivatedModal?.modalComponent()?.title() ??
+      this._sdAppStructure.getTitleByFullCode(
+        this._currPageCode?.() ?? this._fullPageCode(),
+      )
+    );
+  } catch (err) {
+    void this._sdSystemLog.writeAsync("warn", `title 계산 실패: ${String(err)}`);
+    return "";
+  }
+});
+```
+
+`optional: true`를 사용하는 이유: 동일 컴포넌트가 page 뷰로도 사용될 수 있으며, page 뷰에서는 `SdActivatedModalProvider`가 제공되지 않는다.
+
+**실사용 예:**
+
+- [crud-detail.md §7 확장 C: modal 뷰](./recipes/crud-detail.md#7-확장-c-modal-뷰) — 모달 타이틀 계산 + 이탈 방지
+
 ## `SdToastProvider`
 
 토스트 알림 프로바이더. 4가지 심각도(info/success/warning/danger) 메시지, 프로그래스 모드, 커스텀 토스트를 지원한다.
@@ -312,6 +391,41 @@ class SdToastProvider {
 | `info/success/warning/danger(message, useProgress?)` | 토스트 표시. `useProgress=true`면 progress signal 반환 |
 | `notify(input)` | 커스텀 토스트 컴포넌트 표시 |
 | `try(fn, messageFn?)` | 에러 catch 시 danger 토스트 표시 후 undefined 반환 |
+
+### `try` 사용 패턴
+
+비동기 작업을 `try`로 감싸면 에러 발생 시 자동으로 danger 토스트를 표시하고 `undefined`를 반환한다. 일반적으로 `busyCount` 증감과 함께 사용한다:
+
+```typescript
+private readonly _sdToast = inject(SdToastProvider);
+busyCount = signal(0);
+
+// 초기 로드 / 새로고침
+async _refresh(): Promise<void> {
+  this.busyCount.update((v) => v + 1);
+  await this._sdToast.try(async () => {
+    // ORM 조회 등 비동기 작업
+    const result = await this._search(true);
+    this.items.set(result.items);
+    this.pageLength.set(result.pageLength);
+  });
+  this.busyCount.update((v) => v - 1);
+}
+```
+
+`messageFn`을 전달하면 에러 메시지를 커스텀할 수 있다:
+
+```typescript
+await this._sdToast.try(
+  async () => { /* ... */ },
+  (err) => `저장 실패: ${err.message}`,
+);
+```
+
+**실사용 예:**
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — `_refresh` 래핑
+- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](./recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — `_load` 래핑
 
 ## `SdBusyProvider`
 
@@ -377,3 +491,63 @@ class SdModalProvider {
 | Method | Description |
 |--------|-------------|
 | `showAsync(modal, options?)` | 모달 생성 후 close 결과를 Promise로 반환 |
+
+### 모달 호출 패턴
+
+#### 선택 모달 호출
+
+`SdSelectModal<T>`을 구현한 리스트 컴포넌트를 선택 모달로 띄운다. `selectMode`와 `selectedItemKeys`를 inputs으로 전달하고, 반환값은 `SelectModalOutputResult<T>`:
+
+```typescript
+private readonly _sdModal = inject(SdModalProvider);
+
+const result = await this._sdModal.showAsync({
+  title: "고객 선택",
+  type: CustomerListPage,
+  inputs: {
+    selectMode: "multi",
+    selectedItemKeys: this.selectedCustomerIds(),
+  },
+});
+if (result != null) {
+  // result.selectedItemKeys: any[]
+  // result.selectedItems: ICustomer[]
+}
+```
+
+#### 조회 전용 modal 호출
+
+부모 레코드의 자식 목록·이력을 보여주는 modal. `SdSelectModal<T>` 계약 없이 부모 식별자만 전달하고, 반환값은 사용하지 않는다:
+
+```typescript
+await this._sdModal.showAsync({
+  title: "고객 주문 이력",
+  type: CustomerOrderHistoryModal,
+  inputs: { customerId: 123 },
+});
+// 반환값 미사용 — 닫기는 SdModal 기본 "X" 버튼
+```
+
+#### 편집 모달 호출
+
+`SdModalContentDef<boolean | undefined>`를 구현한 상세 폼을 편집 모달로 띄운다. `close.emit(true)` 시 저장 성공 신호를 반환:
+
+```typescript
+private readonly _sdModal = inject(SdModalProvider);
+
+private async _editItem(item?: ICustomer): Promise<void> {
+  const r = await this._sdModal.showAsync({
+    title: item == null ? "고객 등록" : "고객 수정",
+    type: CustomerEditModal,
+    inputs: { itemId: item?.id },
+  });
+  if (r != null) await this._refresh();
+}
+```
+
+**실사용 예:**
+
+- [crud-list.md §8 확장 D: 선택 모달 전환](./recipes/crud-list.md#8-확장-d-선택-모달-전환) — 선택 모달 피호출 측
+- [crud-list.md §9 확장 E: 조회 전용 modal](./recipes/crud-list.md#9-확장-e-조회-전용-modal) — 조회 전용 modal 호출 예
+- [crud-list.md §10 확장 F: 모달 편집 모드](./recipes/crud-list.md#10-확장-f-모달-편집-모드) — 편집 모달 호출 측
+- [crud-detail.md §7 확장 C: modal 뷰](./recipes/crud-detail.md#7-확장-c-modal-뷰) — 편집 모달 피호출 측

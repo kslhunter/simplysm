@@ -28,6 +28,32 @@ class SdDock {
 | `position` | `"top" \| "bottom" \| "right" \| "left"` | `"top"` | 도킹 위치 |
 | `resizable` | `boolean` | `false` | 크기 조절 가능 여부 |
 
+### 사용 패턴
+
+필터·도구 바는 `[position]="'top'"` (기본값이므로 생략 가능), 하단 액션 바는 `[position]="'bottom'"`으로 배치한다.
+
+```html
+<sd-dock-container>
+  <sd-dock>
+    <!-- 상단 필터/도구 바 (기본 position="top") -->
+  </sd-dock>
+  <!-- 메인 콘텐츠 (시트, 폼 등) -->
+  <sd-dock [position]="'bottom'">
+    <!-- 하단 액션 바 (확인/취소 버튼 등) -->
+  </sd-dock>
+</sd-dock-container>
+```
+
+> **CRITICAL — modal 하단 바에 `[position]="'bottom'"` 반드시 명시**
+> 기본값은 `"top"`이다. modal 하단 액션 바(선택 해제·확인, 삭제·복구 등)에 `[position]`을 누락하면 상단에 렌더링되어 레이아웃이 깨진다. modal 뷰에서 `<sd-dock>`을 사용할 때는 **항상 `[position]="'bottom'"`을 명시**한다.
+
+### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 상단 필터 dock
+- [crud-list.md §8 확장 D: 선택 모달 전환](./recipes/crud-list.md#8-확장-d-선택-모달-전환) — modal 하단 바 `[position]="'bottom'"`
+- [crud-detail.md §7 확장 C: modal 뷰](./recipes/crud-detail.md#7-확장-c-modal-뷰) — modal 하단 액션 바
+- [crud-detail.md §8 확장 D: control 뷰](./recipes/crud-detail.md#8-확장-d-control-뷰) — control 상단 도구 바
+
 ## `SdGap`
 
 간격(gap) 컴포넌트. 요소 사이에 공간을 추가한다.

@@ -18,9 +18,10 @@
 
 | 상황 | 적용 여부 |
 |---|---|
-| 하나의 화면 컴포넌트를 페이지와 모달 양쪽에서 재사용 | 레시피 전체 적용 |
+| 하나의 화면 컴포넌트를 페이지와 모달 양쪽에서 재사용 | 레시피 전체 적용 (modal 용도는 아래 두 행 중 하나 확정) |
 | 페이지 뷰만 필요 (topbar 있는 라우트 화면) | 페이지 블록만 사용, 모달·control 분기 생략 가능 |
-| 모달 뷰만 필요 (프로그래밍 방식 `SdModalProvider.showAsync()` 전용) | 모달 블록만 사용 |
+| 다른 화면에서 항목을 고르는 **선택 모달** (`SdSelectModal<T>` 구현, `SdModalProvider.showAsync()`로 열림) | 모달 블록 + 하단 액션 바(선택 해제·확인) + `close.emit`. 상세 → [crud-list.md §8 확장 D](./crud-list.md#8-확장-d-선택-모달-전환) |
+| 부모 레코드의 자식 목록·이력을 input으로 받아 **조회만** 하는 modal | 모달 블록만 사용, `SdSelectModal<T>` 계약 없음, SdModal 기본 "X"로 닫기. 상세 → [crud-list.md §9 확장 E](./crud-list.md#9-확장-e-조회-전용-modal) |
 | 다른 화면의 영역 일부로 삽입되는 컨트롤 | control 분기(`@else` 블록)만 사용. topbar·모달 분기 생략 |
 | 커스텀 단축키·이탈 확인이 필요 | `SdCommandDirective` + `setupCanDeactivate`를 본문에 직접 부착 (본 레시피 범위 외, `features-data-detail.md`류 레시피 참조) |
 
@@ -80,6 +81,13 @@ import {
             </div>
           </sd-topbar-container>
         } @else if (viewType() === "modal") {
+          <!--
+            modal 용도 2종 — 반드시 사전에 확정한다 (추측으로 "modal = 선택 모달"로 단정 금지).
+            (a) 선택 모달: 다른 화면에서 항목을 골라 close.emit으로 돌려줌. `implements SdSelectModal<T>`
+                + selectMode/selectedItemKeys input + close output + 하단 액션 바. → ./crud-list.md §8 확장 D
+            (b) 조회 전용 modal: 부모 레코드의 자식 목록·이력을 input으로 받아 읽기 전용으로 보여줌.
+                SdSelectModal<T> 계약 부착 금지, SdModal 기본 "X"로 닫음. → ./crud-list.md §9 확장 E
+          -->
           <div class="flex-column fill">
             <div class="flex-fill">
               <!-- 본문: 모달 내부 컨텐츠 -->
@@ -176,3 +184,4 @@ protected readonly viewType = computed(() => this.override() ?? this._autoViewTy
 
 - **신규 유틸 함수를 추출하지 말 것.** `useBaseContainer()`, `computeModalOrPageTitle()` 같은 공통 헬퍼를 도입하면 이 레시피가 제거한 추상화가 다시 생긴다. 세 줄짜리 `computed`를 화면마다 반복하는 편이 낫다.
 - **본문 채우기는 화면의 책임이다.** 위 예제의 `<!-- 본문: ... -->` 주석 자리에 `<sd-sheet>`(리스트), `<sd-form>`(상세), 임의 HTML 등 화면별 콘텐츠를 삽입한다. 리스트·상세 화면 조립은 `crud-list.md`·`crud-detail.md` 레시피 참조.
+- **modal 뷰 = 반드시 선택 모달인 것은 아니다.** `viewType() === "modal"`만으로 `SdSelectModal<T>` 계약을 반사적으로 부착하지 않는다. modal 용도는 (a) 선택 모달(`close.emit` + 하단 액션 바, [§8 확장 D](./crud-list.md#8-확장-d-선택-모달-전환)) / (b) 조회 전용 modal(계약 없음, SdModal 기본 "X"로 닫기, [§9 확장 E](./crud-list.md#9-확장-e-조회-전용-modal))로 갈린다. 실수 패턴·상세 워딩은 [`crud-list.md` §13.1](./crud-list.md#modal-뷰--반드시-선택-모달인-것은-아니다) 참조.

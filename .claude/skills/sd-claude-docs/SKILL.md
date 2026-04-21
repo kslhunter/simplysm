@@ -6,13 +6,12 @@ effort: low
 
 # sd-claude-docs: CLAUDE.md + README.md/docs 통합 생성
 
-프로젝트를 분석하여 CLAUDE.md(내부 개발 컨텍스트)와 README.md/docs/(소비자용 API 문서)를 한 번에 생성한다.
-설정 파일, 스크립트, 소스 코드에서 검증 가능한 사실만 추출한다. 기존 문서가 있으면 섹션 단위로 병합한다.
+프로젝트를 분석하여 **CLAUDE.md**(모노레포 내부 개발자용 컨텍스트)와 **README.md + docs/**(패키지 소비자용 API 문서)를 한 번에 생성·갱신한다. 설정 파일·스크립트·소스 코드에서 검증 가능한 사실만 추출하며, 기존 문서는 섹션 단위로 병합한다.
 
-- **라이브러리 프로젝트** (`private: true`가 아닌 패키지가 1개 이상): CLAUDE.md + 각 패키지 내 `README.md`(+ 필요 시 `docs/`)
+- **라이브러리 프로젝트** (`private: true`가 아닌 패키지 1개 이상 존재): CLAUDE.md + 각 패키지 `README.md` (+ 분량 조건에 해당 시 `docs/{category}/{entry}.md` 트리)
 - **소비앱** (모든 패키지가 `private: true`): CLAUDE.md만 생성
 
-CLAUDE.md는 모노레포 **내부 개발자(LLM 포함)** 용 컨텍스트이고, README.md + docs/는 **패키지 소비자** 용 API/사용 지침 문서다. 두 문서는 독립적으로 유지한다. 패키지 CLAUDE.md 최상단에는 README.md를 참조하도록 안내 문구를 삽입한다(Step 3에서 규정).
+**두 문서의 독립성.** CLAUDE.md는 **모노레포 내부 개발자(LLM 포함)**용, README.md + docs/는 **패키지 소비자**용이다. 대상·관점이 달라 중복되지 않는다. README.md + docs/는 **wiki 스타일**로 구성한다 — 각 export된 class/component(Entry)는 자체 md 파일로 분리되어, 소비자(특히 LLM)가 필요한 Entry 하나만 조회할 수 있게 한다. README.md는 인덱스, 상세는 각 Entry 파일에 둔다.
 
 ## 사용법
 
@@ -21,7 +20,33 @@ CLAUDE.md는 모노레포 **내부 개발자(LLM 포함)** 용 컨텍스트이�
 /sd-claude-docs angular      ← packages/angular 만
 ```
 
-## Step 1: 프로젝트 설정 분석
+## 공통 규칙
+
+### 작성 언어
+
+모든 문서는 **대화언어**로 작성한다. "적절히", "필요에 따라", "상황에 따라" 같은 모호한 표현을 사용하지 않는다.
+
+### 문서 병합 규칙
+
+기존 문서가 있으면 섹션(`##` 제목) 단위로 비교한다.
+
+1. 동일 주제의 기존 섹션 → 새 콘텐츠로 **대체**
+2. 대응 섹션이 없는 기존 섹션 → 그대로 **보존**
+3. 기존 섹션 위치를 유지하고, 새로 생성된 섹션은 마지막 기존 섹션 **뒤에** 추가
+
+### 출력 경로 규칙
+
+라이브러리 프로젝트에서 패키지 소비자용 문서는 **해당 패키지 루트**에 위치한다.
+
+| 구분 | CLAUDE.md | README.md | docs/ |
+|------|-----------|-----------|-------|
+| 모노레포 (각 패키지) | `{패키지 경로}/CLAUDE.md` | `{패키지 경로}/README.md` | `{패키지 경로}/docs/{category}/{entry}.md` |
+| 모노레포 루트 | `./CLAUDE.md` | — | — |
+| 단일 패키지 (루트=패키지) | `./CLAUDE.md` | `./README.md` | `./docs/{category}/{entry}.md` |
+
+`private: true` 패키지는 README.md / docs/를 생성하지 않는다 (CLAUDE.md만).
+
+## Step 1: 사전 분석
 
 ### 1-1. 패키지 매니저 감지
 
@@ -37,11 +62,11 @@ CLAUDE.md는 모노레포 **내부 개발자(LLM 포함)** 용 컨텍스트이�
 루트 `package.json`의 `scripts` 섹션을 읽고 각 스크립트의 CLI 도구를 분석한다.
 
 - **잘 알려진 도구** (`tsc`, `vitest`, `eslint`, `prettier`, `playwright` 등): 명령어를 그대로 기록
-- **커스텀 CLI 또는 프로젝트 내부 스크립트** (예: `tsx packages/.../cli.ts`): Bash에서 `--help`를 먼저 실행한다(5초 타임아웃). `--help`로 하위 명령어와 주요 옵션을 파악할 수 있으면 그 결과를 사용한다. `--help`가 실패하거나 유용한 정보가 없을 때에만 소스 코드를 Read로 분석한다
+- **커스텀 CLI** (예: `tsx packages/.../cli.ts`): Bash에서 `--help`를 먼저 실행한다 (5초 타임아웃). 유용한 정보가 있으면 그 결과를 사용한다. `--help`가 실패하거나 정보가 부족할 때만 소스 코드를 Read로 분석한다.
 
 ### 1-3. 코딩 규칙 추출
 
-프로젝트 루트에서 아래 설정 파일을 찾아 읽는다 (없는 파일은 건너뛴다):
+아래 설정 파일을 찾아 읽는다 (없는 파일은 건너뛴다):
 
 - ESLint: `eslint.config.*`, `.eslintrc.*`
 - Prettier: `.prettierrc*`, `prettier.config.*`
@@ -49,113 +74,86 @@ CLAUDE.md는 모노레포 **내부 개발자(LLM 포함)** 용 컨텍스트이�
 - TypeScript: `tsconfig.json` → `compilerOptions`
 - Stylelint: `.stylelintrc*`, `stylelint.config.*`
 
-아래 기준으로 규칙을 선별한다:
+선별 기준:
 
-- 도구의 기본값과 다른 설정 (예: TypeScript `verbatimModuleSyntax: true`, Prettier `printWidth: 100`)
+- 도구 기본값과 다른 설정 (예: TypeScript `verbatimModuleSyntax: true`, Prettier `printWidth: 100`)
 - error 수준의 비표준 규칙 (예: `no-console: error`)
 - 특정 API를 금지하거나 요구하는 규칙 (예: `Buffer` 금지 → `Uint8Array` 사용)
 
-### 1-4. .claude/rules/ 스캔
+### 1-4. `.claude/rules/` 스캔
 
-`.claude/rules/` 디렉토리가 존재하면 모든 `.md` 파일을 읽는다. 이미 다루고 있는 주제를 목록화한다. 해당 주제는 **CLAUDE.md에서 제외**한다 — 파일 간 규칙 중복은 LLM이 고유한 지침 대신 중복 컨텍스트를 처리하게 되어 지침의 효과를 약화시킨다.
+디렉토리가 존재하면 모든 `.md` 파일을 읽어 이미 다루고 있는 주제를 목록화한다. 해당 주제는 **CLAUDE.md에서 제외**한다 — 파일 간 규칙 중복은 LLM이 고유 지침 대신 중복 컨텍스트를 처리하게 되어 지침의 효과를 약화시킨다.
 
 ### 1-5. 프로젝트 유형 감지
 
-모노레포인 경우 모든 패키지의 `package.json`을, 단일 패키지인 경우 루트 `package.json`을 확인한다.
+모노레포면 모든 패키지의 `package.json`을, 단일 패키지면 루트 `package.json`을 확인한다.
 
-- **라이브러리 프로젝트**: `private: true`가 아닌 패키지가 1개 이상 존재
+- **라이브러리 프로젝트**: `private: true`가 아닌 패키지가 1개 이상
 - **소비앱**: 모든 패키지가 `private: true`
 
-라이브러리 프로젝트인 경우 소비자용 문서의 출력 경로는 **해당 패키지 루트**다:
-- `README.md` → `{패키지 경로}/README.md`
-- 분량이 많은 경우 `{패키지 경로}/docs/*.md`
-- 단일 패키지 프로젝트면 루트가 곧 패키지 경로다 (`./README.md`, `./docs/`)
+## Step 2: 처리 대상 결정
 
-`private: true` 패키지는 README.md / docs/를 생성하지 않는다 (CLAUDE.md만).
+인자 유무와 워크스페이스 구성으로 **처리 대상 패키지 경로 목록**을 확정한다. 단일 패키지 프로젝트는 루트를 "가상 패키지"로 취급하여 동일 프로세스를 적용한다 (자기참조 없음).
 
-## Step 2: 분기
+| 경우 | 처리 대상 | Step 4 수행 |
+|------|-----------|-------------|
+| 인자 있음 | `packages/{인자}/package.json`이 존재하면 해당 1개 경로. 없으면 사용자에게 알리고 종료. | 건너뜀 |
+| 인자 없음 + 모노레포 | `packages/` 하위 모든 패키지 경로 | 수행 |
+| 인자 없음 + 단일 패키지 | 루트 경로 1개 (루트 = 패키지) | 건너뜀 |
 
-### 패키지명 지정 시
+## Step 3: 각 패키지 처리 (subagent 병렬)
 
-`packages/{패키지명}/package.json`이 존재하는지 확인한다. 없으면 사용자에게 알린다.
-존재하면 해당 패키지에 대해 subagent 1개를 실행한다 (3단계의 subagent 프롬프트와 동일).
-root 문서는 생성·변경하지 않는다.
-
-### 전체 실행 — 단일 패키지 프로젝트
-
-`workspaces` 필드가 없고 `pnpm-workspace.yaml`도 없으면 단일 패키지다.
-패키지별 CLAUDE.md는 생성하지 않는다. 바로 4단계로 진행하여 root 문서를 생성한다.
-라이브러리 프로젝트인 경우 `package-doc-gen.md`의 Step 2~4를 root에 직접 적용하여 루트의 `README.md` (+ 분량이 많으면 `docs/*.md`)를 생성한다.
-
-### 전체 실행 — 모노레포
-
-`packages/` 하위의 모든 패키지를 탐색하여 전체를 처리 대상으로 한다. 3단계로 진행한다.
-
-## Step 3: 패키지별 문서 생성 (모노레포)
-
-각 패키지에 대해 **Agent 도구로 subagent(effort: `low`)를 병렬 실행**한다.
-하나의 메시지에서 모든 패키지의 Agent 호출을 동시에 보낸다.
+처리 대상 목록의 각 경로에 대해 **Agent 도구로 subagent(effort: `low`)를 병렬 실행**한다. 하나의 메시지에서 모든 Agent 호출을 동시에 보낸다.
 
 ### subagent 프롬프트
 
 ```
-{패키지 경로}의 CLAUDE.md와 README.md/docs를 생성한다.
+{패키지 경로}의 CLAUDE.md와 README.md/docs를 생성·갱신한다.
 
-## CLAUDE.md 생성 (`{패키지 경로}/CLAUDE.md`)
+`.claude/skills/sd-claude-docs/references/package-docs.md`를 읽고 그 지침을 따른다.
 
-`.claude/skills/sd-claude-docs/references/package-claudemd.md`를 읽고 그 지침을 따른다.
-
-루트 수준 설정 (이 내용과 동일한 정보는 패키지 CLAUDE.md에 반복하지 않는다):
-{1단계에서 추출한 코딩 규칙 및 컴파일러 설정 목록}
-
-## README.md / docs/ 생성 {`private: true` 패키지이면 이 섹션 전체 생략}
-
-`.claude/skills/sd-claude-docs/references/package-doc-gen.md`를 읽고 그 지침을 따른다.
-출력 경로: `{패키지 경로}/` (README.md는 항상, docs/는 분량 분기 조건에 해당될 때)
+전달 사항:
+- 패키지 경로: {패키지 경로}
+- 루트 수준 설정 (이 내용과 중복되는 정보는 패키지 CLAUDE.md에 반복하지 않는다):
+  {Step 1에서 추출한 코딩 규칙·컴파일러 설정 목록}
 ```
 
 각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 README.md/docs(API 문서) 모두에 활용한다.
 
 ### subagent 반환 정보
 
-- CLAUDE.md 생성 여부
-- README.md 생성 여부 + 문서 구조 (README 단독 / README + docs/)
-- API 항목 수
+- 패키지 경로
+- CLAUDE.md 생성/갱신/건너뜀 여부
+- README.md 생성/갱신/건너뜀 여부 + 구조 (README 단독 / README + docs 트리)
+- Entry 수 / 총 API 항목 수
 - 생성된 파일 목록
 
-## Step 4: root 문서 생성
+## Step 4: 루트 CLAUDE.md 생성
 
-### root CLAUDE.md
+Step 2의 "Step 4 수행" 열이 "수행"인 경우에만 진행한다.
 
-1단계의 정보를 조합하여 루트 CLAUDE.md 콘텐츠를 생성한다. `.claude/rules/`에서 이미 다루고 있는 주제(1-4단계에서 감지)는 제외한다.
+### 4-1. 콘텐츠 구성
 
-**모노레포인 경우**: 3단계에서 생성된 각 패키지의 `CLAUDE.md`를 Read하여 참고한다. 패키지별 CLAUDE.md에 이미 기술된 상세 내용(아키텍처, 패턴 등)은 루트에 중복 기술하지 않고, 아키텍처 섹션에서 패키지 간 의존 관계와 역할 요약만 포함한다.
+Step 1 결과와 Step 3의 각 패키지 CLAUDE.md를 조합하여 루트 CLAUDE.md를 생성한다. `.claude/rules/`에서 이미 다루는 주제(1-4에서 감지)는 **제외**한다. 패키지 CLAUDE.md에 기술된 상세(아키텍처, 패턴 등)는 루트에 중복하지 않고, 아키텍처 섹션에서 패키지 간 의존 관계와 역할 요약만 포함한다.
 
 #### 포함할 섹션
 
-- **프로젝트 정보**: `package.json`의 `name`과 `description`, 패키지 매니저
-- **모노레포 구조**: `workspaces` 필드 또는 `pnpm-workspace.yaml`이 있으면 워크스페이스 경로를 나열하고 각 패키지를 간략히 설명 (패키지당 10단어 이내)
-- **기술 스택**: `dependencies`/`devDependencies`의 주요 라이브러리 — 프레임워크, 번들러, 테스트 도구 (최대 10개)
-- **명령어**: 1-2단계의 스크립트를 bash 코드 블록으로 포매팅하고 인라인 주석 추가, 카테고리별 그룹화
-- **아키텍처**: 모노레포인 경우 패키지별 CLAUDE.md에서 역할을 읽어 패키지 간 의존 관계를 요약한다
-- **코딩 규칙**: 1-3단계에서 선별한 규칙을 불릿 리스트로 포매팅
+- **프로젝트 정보**: 루트 `package.json`의 `name`/`description`, 패키지 매니저
+- **모노레포 구조**: 워크스페이스 경로 나열, 각 패키지 10단어 이내 요약
+- **기술 스택**: 주요 프레임워크·번들러·테스트 도구 (최대 10개)
+- **명령어**: 1-2의 스크립트를 카테고리별 bash 코드 블록으로 포매팅, 인라인 주석 추가
+- **아키텍처**: 패키지 간 의존 관계 및 역할 요약
+- **코딩 규칙**: 1-3에서 선별한 규칙을 불릿 리스트로 포매팅
 
-실질적 내용이 없는 섹션은 생략한다. 프로젝트에 필요하면 위 목록에 없는 섹션도 추가한다 (예: 통합 테스트).
+실질적 내용이 없는 섹션은 생략한다. 필요 시 위 외 섹션도 추가한다 (예: 통합 테스트).
 
-#### 병합
+### 4-2. 병합
 
-- **기존 파일이 없는 경우**: 바로 저장
-- **기존 파일이 있는 경우**:
-  1. 기존 파일을 읽는다
-  2. 새 콘텐츠와 기존 콘텐츠를 섹션(`##` 제목) 단위로 비교한다
-  3. 병합 규칙:
-     - 생성된 섹션과 동일한 주제의 기존 섹션 → 새 콘텐츠로 **대체**
-     - 생성된 대응 섹션이 없는 기존 섹션 → 그대로 **보존**
-     - 기존 섹션의 위치를 보존한다. 새로 생성된 섹션은 반드시 마지막 기존 섹션 뒤에 추가한다
+공통 규칙의 "문서 병합 규칙"을 적용한다.
 
-#### 참고 예시
+### 참고 예시
 
-아래의 **섹션 구조와 포매팅 스타일**을 따른다. **CLAUDE.md는 반드시 대화언어로 작성한다.**
+아래 **섹션 구조와 포매팅 스타일**을 따른다.
 
 ````markdown
 # Simplysm
@@ -163,8 +161,6 @@ root 문서는 생성·변경하지 않는다.
 pnpm 모노레포. 패키지 경로: `packages/*`, 테스트: `tests/*`
 
 ## 명령어
-
-모든 명령어는 내부적으로 `pnpm sd-cli <command>`를 실행한다.
 
 ### 개발
 
@@ -176,7 +172,7 @@ pnpm watch [targets..]                   # 라이브러리 패키지를 watch �
 ### 코드 품질
 
 ```bash
-pnpm check [targets..]                   # 전체 검사 (typecheck + lint 병렬)
+pnpm check [targets..]                   # 전체 검사
 pnpm typecheck [targets..]               # TypeScript 타입 체크
 ```
 
@@ -186,7 +182,7 @@ pnpm typecheck [targets..]               # TypeScript 타입 체크
 
 ```
 UI:       angular (Angular)
-서비스:   service-server (Fastify) / service-client / service-common
+서비스:   service-server / service-client / service-common
 코어:     core-common (중립) / core-browser / core-node
 ```
 
@@ -201,20 +197,20 @@ UI:       angular (Angular)
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | CLAUDE.md | README.md | 구조 | API 항목 수 |
+| 패키지 | CLAUDE.md | README.md | 구조 | Entry / API |
 |--------|-----------|-----------|------|-------------|
 | root | 생성 | — | — | — |
-| @simplysm/core-common | 갱신 | 갱신 | README 단독 | 35 |
-| @simplysm/angular | 갱신 | 갱신 | README + docs/ | 126 |
-| @simplysm/storage | 생성 | 생성 | README 단독 | 8 |
+| @simplysm/core-common | 갱신 | 갱신 | README 단독 | 8 / 35 |
+| @simplysm/angular | 갱신 | 갱신 | README + docs 트리 | 72 / 126 |
 | @simplysm/internal | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)
 - packages/core-common/CLAUDE.md
 - packages/core-common/README.md
+- packages/core-common/docs/utils/string-utils.md
 - packages/angular/CLAUDE.md
 - packages/angular/README.md
-- packages/angular/docs/types.md
+- packages/angular/docs/{category}/{entry}.md …
 - ...
 ```

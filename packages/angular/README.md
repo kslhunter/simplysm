@@ -155,8 +155,8 @@ npm install @simplysm/angular
 | `SdAddressSearchModal` | component | Daum Postcode 주소 검색 모달 |
 | `Address` | interface | 주소 검색 결과 |
 | `SdPermissionTable` | component | 권한 매트릭스 테이블 (items, value) |
-| 데이터 시트 CRUD 화면 조립 | recipe | → [recipes/crud-list.md](./docs/recipes/crud-list.md) (`<sd-sheet>`+`<sd-form>`+필터+페이지네이션+편집 직접 조립) |
-| 상세폼 CRUD 화면 조립 | recipe | → [recipes/crud-detail.md](./docs/recipes/crud-detail.md) (`<sd-form>`+load/save/delete+snapshot 변경감지+setupCanDeactivate+Ctrl+S 직접 조립) |
+| 데이터 시트 CRUD 화면 조립 | recipe | → [recipes/crud-list.md](./docs/recipes/crud-list.md) (조회 전용 page부터 풀 CRUD 리스트까지 누적 확장 조립) |
+| 상세폼 CRUD 화면 조립 | recipe | → [recipes/crud-detail.md](./docs/recipes/crud-detail.md) (읽기 전용 상세 폼부터 편집/삭제/modal/control 뷰까지 누적 확장 조립) |
 | 모달 선택 버튼 화면 조립 | recipe | → [recipes/data-select-button.md](./docs/recipes/data-select-button.md) (`<sd-modal-select-button>` 직접 / `<sd-shared-data-select-button>` / 사용자 정의 wrapper) |
 | `SdSharedDataSelect` | component | 공유 데이터 드롭다운 선택 |
 | `SdSharedDataSelectButton` | component | 공유 데이터 모달 선택 버튼 (→ [recipes/data-select-button.md](./docs/recipes/data-select-button.md)) |

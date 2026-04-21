@@ -35,6 +35,16 @@ class SdButton {
 
 **스타일 적용**: 배경/색상/테두리/패딩 등 시각적 스타일은 내부 `<button>`에 적용되므로 `buttonClass`/`buttonStyle`을 사용한다. 호스트(`<sd-button>`)에 직접 `class`/`style`을 줘도 버튼 외형은 변경되지 않는다.
 
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — `[type]="'submit'"` 검색 버튼, `[theme]="'link-info'"` 새로고침 버튼
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — 저장/등�� 버튼
+- [crud-list.md §11 확장 G: 엑셀 업로드/다운로드](./recipes/crud-list.md#11-확장-g-엑셀-업로드다운로드) — 엑셀 업로드/다운로드 버튼
+- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](./recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 새로고침 버튼
+- [crud-detail.md §5 확장 A: 편집/저장](./recipes/crud-detail.md#5-확장-a-편집저장) — 저장 버튼
+- [crud-detail.md §6 확장 B: 삭제/복구 토글](./recipes/crud-detail.md#6-확장-b-삭제복구-토글) — 삭제/복구 버튼
+- [crud-detail.md §7 확장 C: modal 뷰](./recipes/crud-detail.md#7-확장-c-modal-뷰) — modal 하단 확인/취소/삭제/복구 버튼
+
 ### `SdAnchor`
 
 앵커(인라인 버튼) 컴포넌트. 텍스트 내 클릭 가능 요소.
@@ -51,6 +61,14 @@ class SdAnchor {
 |-------|------|---------|-------------|
 | `disabled` | `boolean` | `false` | 비활성화 |
 | `theme` | `string` | `"primary"` | 테마 색상 |
+
+#### 실사용 예
+
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — 인라인 버튼 (행 수정 링크)
+- [crud-list.md §7 확장 C: inline 삭제 열](./recipes/crud-list.md#7-확장-c-inline-삭제-열) — `[theme]="'danger'"` 삭제 토글
+- [crud-list.md §10 확장 F: 모달 편집 모드](./recipes/crud-list.md#10-확장-f-모달-편집-모드) — 행 클릭 편집 모달 열기
+- [crud-detail.md §7 확장 C: modal 뷰](./recipes/crud-detail.md#7-확장-c-modal-뷰) — modal 우측 상단 액션
+- [crud-detail.md §10 확장 F: 복합 상세](./recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 행 삭제 아이콘
 
 ### `SdAdditionalButton`
 
@@ -161,6 +179,14 @@ class SdTextfield<K extends keyof SdTextfieldTypes> {
 | `theme` | `string \| undefined` | `undefined` | 테마 |
 
 **스타일 적용**: 배경/테두리/패딩/텍스트 정렬 등 입력 영역 스타일은 내부 `<input>`(및 readonly/disabled 시 표시되는 `._contents`)에 적용되므로 `inputClass`/`inputStyle`을 사용한다. 호스트(`<sd-textfield>`)에 직접 `class`/`style`을 줘도 입력 영역 외형은 변경되지 않는다. 미리 정의된 테마 색상은 `theme` input으로 지정한다.
+
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 필터 텍스트 입력
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — 시트 셀 내 사용 (`[inset]="true" [size]="'sm'" [readonly]="!edit"`)
+- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](./recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — form 내 `[readonly]="true"` 필드
+- [crud-detail.md §5 확장 A: 편집/저장](./recipes/crud-detail.md#5-확장-a-편집저장) — form 내 편집 가능 필드
+- [crud-detail.md §10 확장 F: 복합 상세](./recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 하위 컬렉션 시트 셀 내 사용
 
 ### `SdTextarea`
 
@@ -329,6 +355,10 @@ class SdCheckbox {
 | `contentStyle` | `string \| undefined` | `undefined` | 컨텐츠 인라인 스타일 |
 
 **스타일 적용**: `contentStyle`은 체크박스 옆 라벨 텍스트(`._contents`) 영역에만 적용된다. 인디케이터 박스의 배경/색상은 `theme` input으로 변경한다(별도 class/style input 없음). 호스트(`<sd-checkbox>`)에 직접 `class`/`style`을 주면 전체 영역 layout/여백 정도만 영향을 주며 인디케이터 외형은 바뀌지 않는다.
+
+#### 실사용 예
+
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — 필터의 "삭제항목 포함" 체크박스
 
 ### `SdSwitch`
 
@@ -500,3 +530,61 @@ class SdForm {
 | Method | Description |
 |--------|-------------|
 | `requestSubmit()` | 프로그래밍 방식으로 submit 트리거 |
+
+#### 실사용 예
+
+- [crud-list.md §3 최소 뼈대: 조회 전용 page](./recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 필터 폼 `(formSubmit)` + `<sd-button [type]="'submit'">` 검색 트리거
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — `#formCtrl` 템플릿 변수 + `formCtrl.requestSubmit()` 프로그래밍 방식 저장
+- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](./recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 읽기 전용 필드 배치 컨테이너
+- [crud-detail.md §5 확장 A: 편집/저장](./recipes/crud-detail.md#5-확장-a-편집저장) — `(formSubmit)` + `requestSubmit()` 저장 트리거
+
+### `SdSharedDataSelect`
+
+공유 데이터 드롭다운 선택 컴포넌트. 검색 기능 포함. 전체 API는 [`features.md`](./features.md#sdshareddata select)를 참조한다.
+
+시트 셀 내 사용:
+
+```html
+<sd-sheet-column [header]="'거래처'" [key]="'vendorId'">
+  <ng-template [cell]="items()" let-item let-edit="edit">
+    <sd-shared-data-select
+      [items]="sharedVendors()"
+      [inset]="true"
+      [size]="'sm'"
+      [disabled]="!canEdit()"
+      [readonly]="!edit"
+      [(value)]="item.vendorId"
+      (valueChange)="mark(items)"
+    >
+      <ng-template [itemOf]="sharedVendors()">
+        <div class="flex-row gap-sm">
+          <div>{{ item.__searchText }}</div>
+        </div>
+      </ng-template>
+    </sd-shared-data-select>
+  </ng-template>
+</sd-sheet-column>
+```
+
+일반 form 내 사용:
+
+```html
+<sd-shared-data-select
+  [items]="sharedUsers()"
+  [(value)]="data().permCopySourceId"
+  (valueChange)="mark(data)"
+>
+  <ng-template [itemOf]="sharedUsers()">
+    <div>{{ item.__searchText }}</div>
+  </ng-template>
+</sd-shared-data-select>
+```
+
+- `items`에는 앱 공용 `useSharedSignal`(또는 `SdSharedDataProvider.getHandle()`)이 반환하는 공유 데이터 배열을 바인딩한다.
+- `<ng-template [itemOf]>` 내부에서 드롭다운 항목의 표시 형태를 정의한다. `item.__searchText`가 기본 검색 대상이다.
+- 시트 셀 내 사용 시 `[inset]="true" [size]="'sm'"`를 반드시 지정한다 ([셀 내용 작성 지침](./ui-data.md#sdsheetcolumncelltemplate) 참조).
+
+#### 실사용 예
+
+- [crud-list.md §5 확장 A: inline 편집/저장](./recipes/crud-list.md#5-확장-a-inline-편집저장) — 시트 셀 내 공유 데이터 드롭다운
+- [crud-detail.md §9 확장 E: 보조 기능 영역](./recipes/crud-detail.md#9-확장-e-보조-기능-영역) — 보조 form 셀렉터
