@@ -509,7 +509,7 @@ function mergeJoinData(
   if (isSingle) {
     // isSingle: true - 데이터가 존재하고 값이 다르면 에러
     if (existingJoinData != null) {
-      if (!obj.equal(existingJoinData as Record<string, unknown>, newJoinData)) {
+      if (!obj.equal(existingJoinData, newJoinData)) {
         throw new Error(`isSingle 관계 '${localKey}'에 여러 개의 다른 결과가 있습니다.`);
       }
     } else {

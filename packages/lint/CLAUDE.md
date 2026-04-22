@@ -80,7 +80,7 @@ export default createRule({
 | `**/tests/**/*.ts` | -- | `no-console`, `import/no-extraneous-dependencies`, `ts-no-throw-not-implemented-error` 비활성화 |
 | `**/vitest.config.ts` | -- | `no-restricted-properties` 비활성화 (`process.env` 접근 허용) |
 
-공유 규칙 변수: `commonRules` (eqeqeq, no-warning-comments 등), `noNodeBuiltinsRules` (Buffer/events/eventemitter3 금지), `noDirectEnvAccessRules` (process.env/import.meta.env 직접 접근 금지, NODE_ENV 사용 금지), `unusedImportsRules` (미사용 import 자동 제거).
+공유 규칙 변수: `commonRules` (eqeqeq, no-warning-comments 등), `noNodeBuiltinsRules` (Buffer/events/eventemitter3 금지), `noDirectEnvAccessRules` (process.env/import.meta.env 직접 접근 금지, NODE_ENV 사용 금지, `=== undefined`/`!== undefined` 비교 금지), `unusedImportsRules` (미사용 import 자동 제거).
 
 ### AST 순회 헬퍼
 

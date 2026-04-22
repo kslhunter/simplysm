@@ -37,7 +37,7 @@ export const OrmService = defineService(
       if (config == null) {
         throw new Error(`ORM 설정을 찾을 수 없습니다: ${opt.configName}`);
       }
-      return { ...config, ...opt.config } as DbConnConfig;
+      return { ...config, ...opt.config };
     };
 
     const getConn = (connId: number): DbConn => {

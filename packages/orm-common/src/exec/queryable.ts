@@ -128,7 +128,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
           columns: transformColumnsAlias(this._baseQr.meta.columns, selfAlias, ""),
           isCustomColumns: false,
         }),
-    ) as any;
+    );
   }
 
   /**
@@ -675,7 +675,7 @@ export class Queryable<
       columns: {
         ...this.meta.columns,
         [as]: [joinColumns],
-      } as QueryableRecord<any>,
+      },
       isCustomColumns: true,
       joins: [...(this.meta.joins ?? []), { queryable: resultQr, isSingle: false }],
     }) as any;
@@ -731,7 +731,7 @@ export class Queryable<
       columns: {
         ...this.meta.columns,
         [as]: joinColumns,
-      } as QueryableRecord<any>,
+      },
       isCustomColumns: true,
       joins: [...(this.meta.joins ?? []), { queryable: resultQr, isSingle: true }],
     }) as any;

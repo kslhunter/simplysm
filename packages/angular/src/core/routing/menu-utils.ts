@@ -15,7 +15,7 @@ export function getMenuRouterLinkOption(
   const qp =
     q == null
       ? undefined
-      : (Object.fromEntries(new URLSearchParams(q)) as Record<string, string>);
+      : Object.fromEntries(new URLSearchParams(q));
 
   return {
     link: "/home/" + n,

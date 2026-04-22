@@ -24,7 +24,7 @@ export default createRule({
   },
   defaultOptions: [],
   create(context) {
-    const parserServices = getTemplateParserServices(context as never);
+    const parserServices = getTemplateParserServices(context);
     const sourceCode = context.sourceCode;
 
     return {
@@ -59,7 +59,7 @@ export default createRule({
           },
         });
       },
-    } as never;
+    };
   },
 });
 

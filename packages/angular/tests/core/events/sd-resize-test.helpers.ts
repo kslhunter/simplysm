@@ -25,12 +25,12 @@ export function makeEntry(width: number, height: number, target: Element): Resiz
     contentRect: {
       width, height, x: 0, y: 0, top: 0, left: 0, right: width, bottom: height,
       toJSON: () => ({}),
-    } as DOMRectReadOnly,
+    },
     target,
     borderBoxSize: [],
     contentBoxSize: [],
     devicePixelContentBoxSize: [],
-  } as ResizeObserverEntry;
+  };
 }
 
 export function waitForRaf(): Promise<void> {

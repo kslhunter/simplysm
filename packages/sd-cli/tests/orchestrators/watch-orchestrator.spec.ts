@@ -156,7 +156,7 @@ describe("WatchOrchestrator", () => {
         _pkgName: pkg.name,
       };
       mockBuildEngines.push(engine);
-      return engine as any;
+      return engine;
     });
   });
 
@@ -494,7 +494,7 @@ describe("WatchOrchestrator", () => {
 
   it("disposes replaceDepWatcher even when initialize fails after watchReplaceDeps", async () => {
     const mockDispose = vi.fn();
-    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose } as any);
+    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose });
 
     // loadSdConfig succeeds but we'll make classifyWatchPackages fail
     // by having watchReplaceDeps succeed first, then causing a later failure

@@ -86,7 +86,7 @@ describe("createPostcssPlugin — metafile 가드", () => {
       metafile: undefined,
       outputFiles: [],
       mangleCache: {},
-    } as unknown as esbuild.BuildResult);
+    });
 
     expect(fs.readFileSync(cssFile, "utf-8")).toBe(original);
   });

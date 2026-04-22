@@ -347,7 +347,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef {
-    return tableDdl.getCreateViewQueryDef(this as any, view);
+    return tableDdl.getCreateViewQueryDef(this, view);
   }
 
   getCreateProcQueryDef(procedure: ProcedureBuilder<any, any>): QueryDef {
@@ -357,7 +357,7 @@ export abstract class DbContext implements DbContextBase {
   getCreateObjectQueryDef(
     builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef {
-    return tableDdl.getCreateObjectQueryDef(this as any, builder);
+    return tableDdl.getCreateObjectQueryDef(this, builder);
   }
 
   getDropTableQueryDef(table: QueryDefObjectName): QueryDef {

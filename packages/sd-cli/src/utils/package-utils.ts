@@ -4,7 +4,6 @@ import { SdError } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
 import { createLazyLogger } from "../runtime/lazy-logger";
 import type {
-  SdBuildPackageConfig,
   SdPackageConfig,
 } from "../sd-config.types";
 
@@ -90,7 +89,7 @@ export function mergeTestsPackagesIntoConfig(
       );
     }
 
-    merged[name] = { target: "node" } as SdBuildPackageConfig;
+    merged[name] = { target: "node" };
     pathMap.set(name, relPath);
   }
 

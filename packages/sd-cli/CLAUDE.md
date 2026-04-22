@@ -2,11 +2,9 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Package Overview
 
-`@simplysm/sd-cli` -- Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 106개 TypeScript 소스 파일.
+`@simplysm/sd-cli` — Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 107개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -96,7 +94,8 @@ src/
 │   ├── worker-utils.ts               ← Worker 관련 유틸리티
 │   ├── worker-events.ts              ← Worker 이벤트 타입 정의
 │   ├── engine-stop.ts                ← 엔진 중지 유틸리티
-│   └── engine-watch-events.ts        ← watch 이벤트 공통 처리 (setupWatchEvents)
+│   ├── engine-watch-events.ts        ← watch 이벤트 공통 처리 (setupWatchEvents)
+│   └── lazy-logger.ts                ← createLazyLogger (setupConsola 이후 설정이 반영된 consola proxy)
 ├── capacitor/             ← Capacitor Android 빌드 유틸
 │   ├── capacitor.ts       ← Capacitor 프로젝트 관리 클래스 (초기화 + 실행 오케스트레이션)
 │   ├── capacitor-android.ts ← Android SDK/Java 설정 유틸

@@ -129,7 +129,7 @@ function createMockWorkerProxy(overrides: Partial<MockWorkerProxy> = {}): MockWo
 }
 
 function setupDefaults(config: Partial<SdConfig> = {}): void {
-  vi.mocked(loadSdConfig).mockResolvedValue({ packages: {}, ...config } as SdConfig);
+  vi.mocked(loadSdConfig).mockResolvedValue({ packages: {}, ...config });
   vi.mocked(getVersion).mockResolvedValue("1.0.0");
 }
 
@@ -372,7 +372,7 @@ describe("BuildOrchestrator.start", () => {
       run: vi.fn().mockRejectedValue(new Error("build failed")),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -413,7 +413,7 @@ describe("BuildOrchestrator.start", () => {
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -466,7 +466,7 @@ describe("BuildOrchestrator.start", () => {
         stop: vi.fn().mockResolvedValue(undefined),
       };
       mockEngines.push(engine);
-      return engine as any;
+      return engine;
     });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
@@ -496,7 +496,7 @@ describe("BuildOrchestrator.start", () => {
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -602,7 +602,7 @@ describe("BuildOrchestrator client build", () => {
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -635,7 +635,7 @@ describe("BuildOrchestrator client build", () => {
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -720,7 +720,7 @@ describe("BuildOrchestrator client build", () => {
       run: vi.fn().mockRejectedValue(new Error("build crashed")),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 
@@ -954,7 +954,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
       }),
       startWatch: vi.fn(),
       stop: vi.fn().mockResolvedValue(undefined),
-    } as any);
+    });
     const mockProxy = createMockWorkerProxy();
     vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
 

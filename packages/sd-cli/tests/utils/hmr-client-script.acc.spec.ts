@@ -64,7 +64,7 @@ describe("HMR 클라이언트 스크립트 통합", () => {
         globalThis: {} as Record<string, unknown>,
         JSON,
       };
-      sandbox.globalThis = sandbox as Record<string, unknown>;
+      sandbox.globalThis = sandbox;
 
       return {
         sandbox,

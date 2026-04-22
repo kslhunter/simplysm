@@ -187,7 +187,7 @@ function setupEngineWithResult(status: "success" | "error" = "success"): void {
       _pkgName: pkg.name,
     };
     mockBuildEngines.push(engine);
-    return engine as any;
+    return engine;
   });
 }
 
@@ -275,7 +275,7 @@ describe("DevOrchestrator", () => {
         _pkgName: pkg.name,
       };
       mockBuildEngines.push(engine);
-      return engine as any;
+      return engine;
     });
   });
 
@@ -471,13 +471,13 @@ describe("DevOrchestrator", () => {
   // --- Unit: disposes replaceDeps on shutdown ---
   it("disposes replaceDeps watcher on dev shutdown", async () => {
     const mockDispose = vi.fn();
-    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose } as any);
+    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose });
 
     setupDefaults(createConfig({
       packages: { "service-server": { target: "server" } },
       replaceDeps: { "@simplysm/*": "packages/*/src" },
     }));
-    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose } as any);
+    vi.mocked(watchReplaceDeps).mockResolvedValue({ entries: [], dispose: mockDispose });
     setupEngineWithResult("success");
 
     const orchestrator = new DevOrchestrator({ targets: [], options: [] });

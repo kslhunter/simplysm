@@ -2,7 +2,6 @@ import type { ConsolaInstance } from "consola";
 import { Worker, type WorkerProxy } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import type * as ServerRuntimeWorkerModule from "../workers/server-runtime.worker";
-import type { ServerReadyEventData, ErrorEventData } from "../runtime/worker-events";
 import type { ResultCollector } from "../runtime/ResultCollector";
 
 /**
@@ -42,25 +41,23 @@ export class ServerRuntimeManager {
 
     // 런타임 이벤트 핸들러
     runtimeWorker.on("serverReady", (readyData) => {
-      const readyEvent = readyData as ServerReadyEventData;
       params.resultCollector.add({
         name: params.serverName,
         target: "server",
         type: "server",
         status: "running",
-        port: readyEvent.port,
+        port: readyData.port,
       });
       params.onServerReady();
     });
 
     runtimeWorker.on("error", (errorData) => {
-      const errorEvent = errorData as ErrorEventData;
       params.resultCollector.add({
         name: params.serverName,
         target: "server",
         type: "server",
         status: "error",
-        message: errorEvent.message,
+        message: errorData.message,
       });
     });
 

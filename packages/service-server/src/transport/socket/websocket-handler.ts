@@ -80,21 +80,21 @@ export function createWebSocketHandler(
 
         return await serviceSocket.send(uuid, { name: "response", body: result });
       } else if (message.name === "evt:add") {
-        const { key, name, info } = message.body as { key: string; name: string; info: unknown };
+        const { key, name, info } = message.body;
         serviceSocket.addListener(key, name, info);
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:remove") {
-        const { key } = message.body as { key: string };
+        const { key } = message.body;
         serviceSocket.removeListener(key);
         return await serviceSocket.send(uuid, { name: "response" });
       } else if (message.name === "evt:gets") {
-        const { name } = message.body as { name: string };
+        const { name } = message.body;
         const infos = Array.from(socketMap.values()).flatMap((subSock) =>
           subSock.getEventListeners(name),
         );
         return await serviceSocket.send(uuid, { name: "response", body: infos });
       } else if (message.name === "evt:emit") {
-        const { keys, data } = message.body as { keys: string[]; data: unknown };
+        const { keys, data } = message.body;
 
         await Promise.allSettled(
           Array.from(socketMap.values()).map(async (subSock) => {

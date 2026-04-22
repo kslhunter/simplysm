@@ -48,10 +48,7 @@ export class SdError extends Error {
 
     // captureStackTrace는 V8 엔진(Node.js, Chrome)에서만 사용 가능
     if ("captureStackTrace" in Error) {
-      (Error.captureStackTrace as (targetObject: object, constructorOpt?: Function) => void)(
-        this,
-        new.target,
-      );
+      (Error as unknown as Record<string, Function>)["captureStackTrace"](this, new.target);
     }
 
     // 원인 체인 stack을 현재 stack에 추가

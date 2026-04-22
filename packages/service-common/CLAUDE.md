@@ -2,7 +2,6 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
 

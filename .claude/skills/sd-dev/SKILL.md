@@ -39,6 +39,8 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 5: sd-check
 
+수정된 소스코드(`src/`, `tests/`)가 하나도 없으면(예: 문서만 수정) 이 단계를 스킵한다.
+
 변경 패키지에 대한 `/sd-check` 스킬을 즉시 수행한다.
 
 ## Step 6: sd-review

@@ -36,5 +36,5 @@ export function makeEntry(
     intersectionRect: {} as DOMRectReadOnly,
     rootBounds: null,
     time: performance.now(),
-  } as IntersectionObserverEntry;
+  };
 }

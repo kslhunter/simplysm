@@ -20,7 +20,7 @@ subagent가 한 패키지 경로를 받아 해당 패키지의 **CLAUDE.md**와 
 
 ### 소스 분석 공유
 
-CLAUDE.md의 "Key Patterns"와 README/docs의 "API 문서"는 동일한 소스 코드 분석에서 파생된다. 소스 파일 Read는 **1회만 수행**하고 두 산출물에 모두 활용한다.
+CLAUDE.md의 "Key Patterns"와 README/docs의 "API 문서"는 동일한 소스 코드 분석에서 파생된다. 전달받은 **소스 병합 파일**을 Read하여 전체 소스를 한번에 파악하고, 두 산출물에 모두 활용한다. 추가 정보가 필요한 경우(다른 패키지의 타입 정의 등)에만 개별 Read를 수행한다.
 
 ## CLAUDE.md 생성
 
@@ -38,11 +38,11 @@ CLAUDE.md의 "Key Patterns"와 README/docs의 "API 문서"는 동일한 소스 �
 
 ### 분석 대상
 
-1. `package.json` — 이름, 설명, dependencies
-2. `tsconfig.json` — 패키지 고유 컴파일러 옵션
-3. `src/` 디렉토리 구조 (Glob으로 파일 목록 확인 후 트리 구조 파악)
-4. 소스 코드 — 주요 파일을 Read하여 반복되는 패턴(클래스 구조, 함수 시그니처, 데코레이터 사용 등) 식별
-5. 테스트 디렉토리 (존재 시)
+1. `package.json` — 이름, 설명, dependencies (Read)
+2. `tsconfig.json` — 패키지 고유 컴파일러 옵션 (Read)
+3. **소스 병합 파일** — 전달받은 경로를 Read하여 전체 소스를 한번에 분석. `=== 파일경로 ===` 구분자로 파일 경계를 식별하며, 디렉토리 구조·반복 패턴·export 체인·API 정보를 모두 이 파일에서 파악한다
+4. 테스트 디렉토리 (존재 시) — Glob으로 구조 확인 후 대표 파일 1~2개만 Read
+5. 추가 정보 필요 시 (다른 패키지의 타입 정의 등) — 개별 Read
 
 ### 포함할 섹션
 
@@ -150,17 +150,17 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 
 ### Export 체인 재귀 추적
 
-엔트리포인트 파일을 Read로 읽고, 아래 패턴을 추적한다:
+소스 병합 파일 내에서 엔트리포인트 파일(`=== {경로} ===` 구분자로 식별)을 찾고, 아래 패턴을 추적한다:
 
 | 패턴 | 처리 |
 |------|------|
-| `export * from "./path"` | 해당 파일을 재귀적으로 읽어 모든 export 수집 |
+| `export * from "./path"` | 병합 파일 내 해당 파일 섹션에서 모든 export 수집 |
 | `export * as name from "./path"` | namespace export로 기록하고, 해당 파일의 export 수집 |
 | `export { A, B } from "./path"` | 명시된 항목만 수집 |
 | `export class/function/type/interface/const/enum` | 직접 export로 기록 |
 | `import "./path"` (side-effect import) | 부수효과 모듈로 기록 (prototype extension 등) |
 
-상대 경로를 실제 파일 경로로 변환한다. 확장자 생략 시 `.ts`, `.tsx`, `/index.ts`, `/index.tsx` 순서로 탐색한다.
+상대 경로를 병합 파일 내 파일 경로와 매칭한다. 확장자 생략 시 `.ts`, `.tsx`, `/index.ts`, `/index.tsx` 순서로 탐색한다.
 
 ### 카테고리 수집
 
@@ -168,15 +168,13 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 
 ### API 정보 수집
 
-추적된 각 소스 파일을 Read로 읽어 export된 항목의 정보를 수집한다:
+소스 병합 파일에서 추적된 각 파일의 export 항목 정보를 수집한다:
 
 - **이름**: export 식별자
 - **종류**: class, function, type, interface, const, enum
 - **시그니처**: 타입 파라미터, 매개변수, 반환 타입
 - **JSDoc**: `/** ... */` 주석이 있으면 설명으로 활용
 - **카테고리**: 위에서 수집한 region 또는 디렉토리 기반
-
-파일 수가 많으면(20개 이상) Agent 도구로 파일 그룹별 병렬 분석을 수행한다.
 
 ### Entry 그룹핑 (wiki 페이지 단위)
 
@@ -203,9 +201,11 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 
 `package.json`에 `style` 필드가 있거나 `files` 배열에 `"scss"`가 포함된 경우에만 수행한다. 둘 다 아니면 건너뛴다.
 
-**SCSS 파일 탐색**: `scss/` 디렉토리의 엔트리포인트(`scss/styles.scss` 등)부터 `@use`/`@forward` 체인을 따라 모든 SCSS 파일을 수집한다.
+소스 병합 파일에 `scss/**/*.scss` 파일이 포함되어 있으므로, 병합 파일 내에서 분석한다.
 
-**스타일 API 수집** (수집된 SCSS 파일을 Read):
+**SCSS 파일 탐색**: 병합 파일 내 `scss/` 경로의 엔트리포인트(`scss/styles.scss` 등)부터 `@use`/`@forward` 체인을 따라 모든 SCSS 파일을 수집한다.
+
+**스타일 API 수집** (병합 파일 내 SCSS 파일에서):
 
 | 항목 | 추출 대상 | 예시 |
 |------|-----------|------|
@@ -230,7 +230,7 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 ### 문서 작성 원칙
 
 - **기존 문서가 없으면** 분석 결과로 신규 작성. **있으면** `docs/` 하위 모든 파일(서브디렉토리 포함)을 읽어 분석 결과 기준으로 정합성을 맞춘다.
-- **소스와 무관한 내용(사용 가이드, 주의사항, 규칙 등)은 보존**이 원칙이되, 현재 소스와 상충하면(없어진 API 언급, 옛 동작 기준 설명, 더 이상 유효하지 않은 규칙 등) 소스 기준으로 수정한다.
+- **소스와 무관한 내용(사용 가이드, 주의사항, 규칙 등)은 보존**이 원칙이되, 현재 소스 및 산출물과 상충하면(없어진 API 언급, 옛 동작 기준 설명, 더 이상 유효하지 않은 규칙, 산출물 문서 링크 등) 소스 및 산출물 기준으로 수정한다.
 - **모든 export를 빠짐없이 문서화**한다 — 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다.
 - **interface/type은 필드별 설명 테이블을 포함**한다 — 시그니처만 나열하지 않고 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다.
 - **union type은 discriminant와 각 variant를 설명**한다 — discriminated union인 경우 어떤 필드로 분기되는지와 각 variant를 나열한다.
@@ -421,7 +421,7 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 
 #### 정확성
 
-문서의 각 API 항목에 대해, 해당 소스 파일을 Read로 다시 읽어 아래 항목을 대조한다:
+문서의 각 API 항목에 대해, 소스 병합 파일 내 해당 소스를 다시 확인하여 아래 항목을 대조한다:
 
 | 검증 항목 | 확인 내용 |
 |-----------|-----------|
@@ -433,8 +433,6 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 | 기본값 | 기본값이 있는 경우 정확한 값 |
 
 불일치가 발견되면 **소스 코드를 기준으로** 문서를 수정한다.
-
-파일 수가 많으면(20개 이상) Agent 도구로 파일 그룹별 병렬 검증을 수행한다.
 
 #### 검증 결과 표시
 

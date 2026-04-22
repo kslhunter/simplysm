@@ -313,6 +313,6 @@ export class LotSelectButton {
 ## 7. Cross-reference
 
 - 선택 모달이 CRUD 리스트와 동일한 컴포넌트일 때 — [crud-list.md §8 확장 D: 선택 모달 전환](./crud-list.md#8-확장-d-선택-모달-전환) 참조
-- 공유 데이터 드롭다운(`SdSharedDataSelect`) / 목록형 선택(`SdSharedDataSelectList`) — [features.md](../features.md) 참조
+- 공유 데이터 드롭다운(`SdSharedDataSelect`) / 목록형 선택(`SdSharedDataSelectList`) — [sd-shared-data-components.md](../features/sd-shared-data-components.md) 참조
 - `SdModalSelectButton` 자체 API — `packages/angular/src/controls/button/sd-modal-select-button.ts:148`
-- `SharedDataBase` / `SdSharedDataProvider` — [features.md](../features.md), `packages/angular/src/core/shared-data/sd-shared-data.provider.ts`
+- `SharedDataBase` / `SdSharedDataProvider` — [sd-shared-data-components.md](../features/sd-shared-data-components.md), `packages/angular/src/core/shared-data/sd-shared-data.provider.ts`

@@ -131,7 +131,7 @@ export function stringify(
       // toJSON 메서드가 있으면 호출 (Date, DateTime 같은 커스텀 타입은 위에서 이미 처리됨)
       if (
         "toJSON" in currValue &&
-        typeof (currValue as { toJSON: unknown }).toJSON === "function"
+        typeof currValue.toJSON === "function"
       ) {
         const toJsonResult = (currValue as { toJSON: (key?: string) => unknown }).toJSON(key);
         seen.delete(currValue);

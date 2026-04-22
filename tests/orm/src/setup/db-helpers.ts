@@ -129,7 +129,7 @@ function createDbTestCase(dialect: "mssql" | "mysql" | "postgresql"): DbTestCase
 
   return {
     label: labels[dialect],
-    config: configs[dialect] as DbConnConfig,
+    config: configs[dialect],
     ormOptions,
     models,
     TestDb: testDbClass,

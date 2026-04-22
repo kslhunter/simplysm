@@ -96,7 +96,7 @@ export function createCompilerOptionsTransformer(
       _enableHmr: !!options.templateUpdates,
       supportTestBed: !!options.includeTestMetadata,
       supportJitMode: !!options.includeTestMetadata,
-    } as ts.CompilerOptions;
+    };
   };
 }
 

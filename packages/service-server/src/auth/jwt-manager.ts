@@ -32,5 +32,5 @@ export async function verifyJwt<TAuthInfo = unknown>(
 }
 
 export function decodeJwt<TAuthInfo = unknown>(token: string): AuthTokenPayload<TAuthInfo> {
-  return jose.decodeJwt(token) as AuthTokenPayload<TAuthInfo>;
+  return jose.decodeJwt(token);
 }

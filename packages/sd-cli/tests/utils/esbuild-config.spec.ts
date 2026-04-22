@@ -123,7 +123,7 @@ describe("createEnvBanner", () => {
 describe("writeChangedOutputFiles", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined as any);
+    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined);
     vi.mocked(mockFs.writeFile).mockResolvedValue();
   });
 
@@ -160,7 +160,7 @@ describe("writeChangedOutputFiles", () => {
   });
 
   it("skips writing when transformed content matches existing file", async () => {
-    vi.mocked(mockFs.readFile).mockResolvedValue('import { bar } from "./bar.js";' as any);
+    vi.mocked(mockFs.readFile).mockResolvedValue('import { bar } from "./bar.js";');
 
     await writeChangedOutputFiles([
       {
@@ -173,7 +173,7 @@ describe("writeChangedOutputFiles", () => {
   });
 
   it("writes file when content changed", async () => {
-    vi.mocked(mockFs.readFile).mockResolvedValue('import { old } from "./old.js";' as any);
+    vi.mocked(mockFs.readFile).mockResolvedValue('import { old } from "./old.js";');
 
     await writeChangedOutputFiles([
       {

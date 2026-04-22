@@ -97,8 +97,8 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Acceptance: targets 없이 watch 실행 시 tests 패키지가 포함된다
   it("merges tests packages into config packages with target node", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "core-common": { target: "neutral" } as SdBuildPackageConfig,
-      "core-node": { target: "node" } as SdBuildPackageConfig,
+      "core-common": { target: "neutral" },
+      "core-node": { target: "node" },
     };
     const workspacePackages = new Map([
       ["core-common", "packages/core-common"],
@@ -124,7 +124,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Acceptance: tests 패키지를 target으로 지정하여 watch 실행 (validateTargets에서 통합 맵 사용)
   it("makes tests packages available for validateTargets", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "core-common": { target: "neutral" } as SdBuildPackageConfig,
+      "core-common": { target: "neutral" },
     };
     const workspacePackages = new Map([
       ["core-common", "packages/core-common"],
@@ -140,7 +140,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Unit: packages/ entries in workspacePackages are not added to merged (already in config)
   it("does not duplicate packages/ entries from workspacePackages", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "core-common": { target: "neutral" } as SdBuildPackageConfig,
+      "core-common": { target: "neutral" },
     };
     const workspacePackages = new Map([
       ["core-common", "packages/core-common"],
@@ -156,7 +156,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Unit: empty workspacePackages returns config as-is
   it("returns config unchanged when no workspace packages", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "core-common": { target: "neutral" } as SdBuildPackageConfig,
+      "core-common": { target: "neutral" },
     };
     const workspacePackages = new Map<string, string>();
 
@@ -169,7 +169,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Acceptance: 이름 충돌 시 에러 발생
   it("throws when config package name collides with tests package name", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "orm": { target: "node" } as SdBuildPackageConfig,
+      "orm": { target: "node" },
     };
     const workspacePackages = new Map([
       ["orm", "tests/orm"],

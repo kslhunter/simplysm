@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Package Overview
 
 `@simplysm/orm-common` - DBMS 독립적인 ORM 코어 라이브러리. TypeScript Fluent API로 스키마를 정의하고,
-SQL AST(QueryDef)를 경유하여 MySQL/MSSQL/PostgreSQL 세 방언(dialect)의 SQL을 생성한다. 34개의 TypeScript 소스 파일로 구성된다.
+SQL AST(QueryDef)를 경유하여 MySQL/MSSQL/PostgreSQL 세 방언(dialect)의 SQL을 생성한다. 36개의 TypeScript 소스 파일로 구성된다.
 
 의존성: `@simplysm/core-common` 전용. Node.js나 브라우저 런타임에 무관하게 동작하며,
 실제 DB 연결은 `DbContextExecutor` 인터페이스로 위임한다.
@@ -145,8 +145,8 @@ const result = await db.user()
   .where((u) => [expr.eq(u.isActive, true), expr.gt(u.age, 18)])
   .select((u) => ({ id: u.id, fullName: expr.concat(u.name, " (", u.email, ")") }))
   .include((i) => i.company)
-  .join("latestPost", (j) => j.from(Post).where((p) => [...]))
-  .orderBy((u) => [u.name])
+  .join("latestPost", (j, u) => j.from(Post).where((p) => [expr.eq(p.userId, u.id)]))
+  .orderBy((u) => u.name)
   .limit(0, 20)
   .execute();
 
@@ -156,7 +156,7 @@ await db.user().insert([{ name: "Alice", createdAt: DateTime.now() }]);
 // UPDATE
 await db.user()
   .where((u) => [expr.eq(u.id, 1n)])
-  .update({ isActive: false });
+  .update(() => ({ isActive: expr.val("boolean", false) }));
 
 // DELETE
 await db.user()

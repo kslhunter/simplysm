@@ -35,8 +35,8 @@ const distDir = toPosix(path.join(pkgDir, "dist"));
 describe("copySrcFiles", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(fsx.mkdir).mockResolvedValue(undefined as any);
-    vi.mocked(fsx.copy).mockResolvedValue(undefined as any);
+    vi.mocked(fsx.mkdir).mockResolvedValue(undefined);
+    vi.mocked(fsx.copy).mockResolvedValue(undefined);
   });
 
   it("copies files matching glob patterns preserving relative paths", async () => {
@@ -84,9 +84,9 @@ describe("watchCopySrcFiles", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fsx.glob).mockResolvedValue([]);
-    vi.mocked(fsx.mkdir).mockResolvedValue(undefined as any);
-    vi.mocked(fsx.copy).mockResolvedValue(undefined as any);
-    vi.mocked(fsx.rm).mockResolvedValue(undefined as any);
+    vi.mocked(fsx.mkdir).mockResolvedValue(undefined);
+    vi.mocked(fsx.copy).mockResolvedValue(undefined);
+    vi.mocked(fsx.rm).mockResolvedValue(undefined);
   });
 
   it("performs initial copy then starts watch", async () => {

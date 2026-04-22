@@ -44,7 +44,7 @@ function createTrackedBuild(overrides?: Partial<esbuild.BuildOptions>): {
       transformSyncCalls.push(args);
       return esbuild.transformSync(...args);
     },
-  } as typeof esbuild;
+  };
 
   const build = {
     esbuild: trackedEsbuild,

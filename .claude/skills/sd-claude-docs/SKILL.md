@@ -101,11 +101,23 @@ effort: low
 | 인자 없음 + 모노레포 | `packages/` 하위 모든 패키지 경로 | 수행 |
 | 인자 없음 + 단일 패키지 | 루트 경로 1개 (루트 = 패키지) | 건너뜀 |
 
-## Step 3: 각 패키지 처리 (subagent 병렬)
+## Step 3: 각 패키지 처리
+
+### 3-1. 소스 병합
+
+subagent가 개별 파일을 하나씩 Read하는 대신 병합 파일 1회 Read로 전체 소스를 파악할 수 있게 한다. 컨텍스트 소비를 대폭 줄이는 핵심 단계이다.
+
+각 패키지에 대해 Bash로 실행 (여러 패키지면 병렬):
+
+```bash
+bash .claude/skills/sd-claude-docs/merge-source.sh {패키지경로} ./tmp/{패키지명}-source.txt
+```
+
+### 3-2. subagent 병렬 실행
 
 처리 대상 목록의 각 경로에 대해 **Agent 도구로 subagent(effort: `low`)를 병렬 실행**한다. 하나의 메시지에서 모든 Agent 호출을 동시에 보낸다.
 
-### subagent 프롬프트
+#### subagent 프롬프트
 
 ```
 {패키지 경로}의 CLAUDE.md와 README.md/docs를 생성·갱신한다.
@@ -114,11 +126,12 @@ effort: low
 
 전달 사항:
 - 패키지 경로: {패키지 경로}
+- 소스 병합 파일: {./tmp/{패키지명}-source.txt의 절대 경로}
 - 루트 수준 설정 (이 내용과 중복되는 정보는 패키지 CLAUDE.md에 반복하지 않는다):
   {Step 1에서 추출한 코딩 규칙·컴파일러 설정 목록}
 ```
 
-각 subagent는 소스 코드를 한 번 분석하여 CLAUDE.md(Key Patterns)와 README.md/docs(API 문서) 모두에 활용한다.
+각 subagent는 소스 병합 파일을 한 번 Read하여 CLAUDE.md(Key Patterns)와 README.md/docs(API 문서) 모두에 활용한다.
 
 ### subagent 반환 정보
 

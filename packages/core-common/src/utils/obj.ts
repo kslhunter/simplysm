@@ -866,8 +866,8 @@ function nullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): TObj
   }
 
   if (typeof obj === "object") {
-    if (seen.has(obj as object)) return obj;
-    seen.add(obj as object);
+    if (seen.has(obj)) return obj;
+    seen.add(obj);
     const objRec = obj as Record<string, unknown>;
     for (const key of Object.keys(obj)) {
       objRec[key] = nullToUndefinedImpl(objRec[key], seen);

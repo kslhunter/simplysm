@@ -372,12 +372,12 @@ export class SdSelect<M extends "single" | "multi", T> {
       const currentValue = this.value();
 
       if (this.selectMode() === "multi") {
-        const arr = currentValue as T[] | undefined;
-        if (arr == null || arr.length === 0) {
+        if (!Array.isArray(currentValue) || currentValue.length === 0) {
           this._selectedItemContentHTML.set(undefined);
           return;
         }
 
+        const arr: T[] = currentValue;
         const selectedItems = untracked(() => items.filter((item) => arr.includes(item.value())));
 
         const isVertical = this.multiSelectionDisplayDirection() === "vertical";
@@ -429,7 +429,7 @@ export class SdSelect<M extends "single" | "multi", T> {
       this.value.set(itemValue);
     } else {
       this.value.update((v) => {
-        const arr = (v as T[] | undefined) ?? [];
+        const arr: T[] = Array.isArray(v) ? v : [];
         if (arr.includes(itemValue as T)) {
           return arr.filter((item) => item !== itemValue);
         } else {

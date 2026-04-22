@@ -15,11 +15,9 @@ TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고,
 ```
 sd-claude/
 ├── claude/                 ← 배포 에셋 (postinstall로 소비 프로젝트 .claude/에 복사됨)
-│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서 및 패키지 문서
+│   ├── references/         ← 스킬/규칙에서 참조하는 공유 문서
 │   ├── rules/              ← Claude Code 규칙 파일 (sd-claude-rules.md, sd-options.md, 2개)
 │   ├── skills/             ← 스킬 파일 디렉토리
-│   │   ├── my-apk-decompile/  ← APK 파일 디컴파일 및 소스코드 분석
-│   │   ├── playwright-cli/    ← 브라우저 자동화 및 Playwright 테스트
 │   │   ├── sd-check/          ← typecheck/lint/test 실행
 │   │   ├── sd-claude-docs/    ← CLAUDE.md + usage 문서 동시 생성
 │   │   ├── sd-commit/         ← 그룹별 커밋 생성
@@ -27,6 +25,7 @@ sd-claude/
 │   │   ├── sd-deliverable/    ← 매뉴얼·SIT 문서 생성
 │   │   ├── sd-dev/            ← 통합 개발 오케스트레이터
 │   │   ├── sd-doc-extract/    ← 문서 파일 텍스트/이미지 추출 (Python)
+│   │   ├── sd-inner-clarify/  ← (내부 전용) 명확성 분류·근거 탐색·명확화 질문
 │   │   ├── sd-inner-debug/    ← (내부 전용) 근본 원인 분석(ACH) 로직
 │   │   ├── sd-inner-review/   ← (내부 전용) 코드 리뷰 분석 로직
 │   │   ├── sd-issue/          ← GitHub 이슈 생성
@@ -55,7 +54,7 @@ sd-claude/
 
 ### 에셋 탐색 규칙 (sd-entries.mjs)
 
-`sd-*` 접두어를 가진 파일/디렉토리만 복사·관리 대상이다. `my-apk-decompile/`, `playwright-cli/` 같이 `sd-*`로 시작하지 않는 스킬은 postinstall 및 sync 대상에서 제외된다 (모노레포 로컬 전용). 탐색 깊이는 2단계 고정:
+`sd-*` 접두어를 가진 파일/디렉토리만 복사·관리 대상이다. `sd-*`로 시작하지 않는 스킬(예: `my-apk-decompile/`, `playwright-cli/`)은 postinstall 및 sync 대상에서 제외되어 모노레포 루트 `.claude/`에만 존재하고 배포 에셋(`claude/`)에는 포함되지 않는다. 탐색 깊이는 2단계 고정:
 - 루트 레벨의 `sd-*` 항목
 - 하위 디렉토리 내 `sd-*` 항목 (예: `skills/sd-commit/`, `rules/sd-claude-rules.md`)
 

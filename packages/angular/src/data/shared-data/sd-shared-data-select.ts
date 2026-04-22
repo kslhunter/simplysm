@@ -247,7 +247,7 @@ export class SdSharedDataSelect<
       }
 
       if (hasParent && parentMap != null) {
-        const children = parentMap.get(key as TItem["__valueKey"]) ?? [];
+        const children = parentMap.get(key) ?? [];
         for (let i = 0; i < children.length; i++) {
           if (check(children[i], i)) {
             cache.set(key, true);
@@ -331,7 +331,7 @@ export class SdSharedDataSelect<
 
   getChildren = (item: SharedDataBase<string | number>): TItem[] => {
     return (
-      this._sortedChildrenMap()?.get(item.__valueKey as TItem["__valueKey"]) ??
+      this._sortedChildrenMap()?.get(item.__valueKey) ??
       []
     );
   };

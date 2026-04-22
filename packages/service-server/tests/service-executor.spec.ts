@@ -94,7 +94,7 @@ describe("executeServiceMethod with ServiceDefinition", () => {
       serviceName: "Admin",
       methodName: "manage",
       params: [],
-      http: { clientName: "test", authTokenPayload: { roles: ["admin"], data: {} } as any },
+      http: { clientName: "test", authTokenPayload: { roles: ["admin"], data: {} } },
     });
 
     expect(result).toBe("managed");

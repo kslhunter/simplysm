@@ -96,8 +96,7 @@ export class EsbuildClientEngine implements BuildEngine {
 
     // serverReady를 감지하여 포트 캡처 (EsbuildClientEngine 전용)
     this._worker!.on("serverReady", (data) => {
-      const event = data as { port: number };
-      this.port = event.port;
+      this.port = data.port;
     });
 
     // 공통 이벤트 처리 (buildStart/build/error)

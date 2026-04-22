@@ -8,7 +8,7 @@ import type {
 import { filterPackagesByTargets, classifyDevPackages } from "../utils/package-classify";
 import { printDiagnostics, printServers } from "../utils/output-utils";
 import { createBuildEngine } from "../engines/engine-factory";
-import type { BuildEngine, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
+import type { BuildEngine } from "../engines/types";
 import { Capacitor } from "../capacitor/capacitor";
 import { BaseOrchestrator } from "./BaseOrchestrator";
 import { ServerRuntimeManager } from "./ServerRuntimeManager";
@@ -85,7 +85,7 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
       const engineConfig = { ...config, env: { ...this._baseEnv, ...config.env } };
 
       const engine = createBuildEngine(
-        { name, dir, config: engineConfig } as ServerPackageInfo,
+        { name, dir, config: engineConfig },
         {
           cwd: this._cwd,
           replaceDeps: this._replaceDeps,
@@ -100,7 +100,7 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
     for (const { name, dir, config } of this._clientPackages) {
       const engineConfig = { ...config, env: { ...this._baseEnv, ...config.env } };
       const engine = createBuildEngine(
-        { name, dir, config: engineConfig } as ClientPackageInfo,
+        { name, dir, config: engineConfig },
         {
           cwd: this._cwd,
           replaceDeps: this._replaceDeps,

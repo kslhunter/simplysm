@@ -15,7 +15,7 @@ async function createTestToken(authInfo: TestAuthInfo): Promise<string> {
     roles: authInfo.roles,
     data: authInfo,
   };
-  return new jose.SignJWT(payload as unknown as jose.JWTPayload)
+  return new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .sign(JWT_SECRET);
 }

@@ -52,7 +52,7 @@ function isGlobalIgnoresConfig(item: unknown): item is { ignores: string[] } {
   if (item == null || typeof item !== "object") return false;
   if (!("ignores" in item)) return false;
   if ("files" in item) return false; // files가 있으면 globalIgnores가 아님
-  const ignores = (item as { ignores: unknown }).ignores;
+  const ignores = item.ignores;
   if (!Array.isArray(ignores)) return false;
   return ignores.every((i) => typeof i === "string");
 }

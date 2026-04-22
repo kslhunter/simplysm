@@ -514,7 +514,7 @@ export class SdModal {
   private async _restoreConfig(k: string): Promise<void> {
     if (this._sdSystemConfig == null) return;
 
-    const config = (await this._sdSystemConfig.getAsync(`sd-modal.${k}` as any)) as
+    const config = (await this._sdSystemConfig.getAsync(`sd-modal.${k}`)) as
       | Record<string, string | undefined>
       | undefined;
     if (config == null) return;

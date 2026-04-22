@@ -2,8 +2,6 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Package Overview
 
 `@simplysm/storage` — FTP/FTPS/SFTP 파일 저장소 클라이언트 라이브러리 (Node.js 전용). 소스 파일 7개.
@@ -70,7 +68,7 @@ export interface StorageClient {
 
 - 생성자의 `_secure` 매개변수로 FTPS 여부를 결정한다 (기본값: `false` = FTP)
 - `exists()` 메서드는 먼저 `size()` 명령으로 파일을 O(1) 확인하고, 실패 시 부모 디렉토리 목록을 조회하여 디렉토리 존재 여부를 확인한다
-- 모든 메서드에서 예외가 발생해도 `close()`는 이미 종료된 상태에서 호출되면 안전하게 처리된다
+- `close()`는 동기적으로 내부 클라이언트를 정리하고 `Promise.resolve()`를 반환한다 (이미 종료된 상태에서 호출해도 안전)
 
 ### SftpStorageClient 구현 세부사항
 
@@ -78,10 +76,17 @@ export interface StorageClient {
 - `password`가 없으면 SSH agent(`SSH_AUTH_SOCK` 환경변수) + `~/.ssh/id_ed25519` 키 파일 인증을 순서대로 시도
 - privateKey 파싱 실패 시 (암호화된 키 등) agent만으로 재시도
 - `exists()` 메서드는 `ssh2-sftp-client`의 `exists()` 반환값을 검사한다 (`false | 'd' | '-' | 'l'` 중 문자열 반환 시 존재)
+- `put()`에서 `Bytes` 전달 시 내부적으로 `Buffer.from()` 변환이 필요하다 (`ssh2-sftp-client` 라이브러리 요구사항)
 
 ### `_requireClient()` 패턴
 
 두 클라이언트 모두 내부 클라이언트 인스턴스 접근 시 `_requireClient()`를 통해 미연결 상태를 검사하고 `SdError`를 던진다. 연결 전 호출된 메서드는 예외를 발생시킨다.
+
+## Compiler Options (패키지 고유)
+
+`tsconfig.json`에서 루트와 다른 고유 설정:
+
+- `typeRoots: ["./node_modules/@types"]` — 루트는 `[]`이지만 이 패키지는 `@types/ssh2-sftp-client` devDependency가 필요하므로 지역 `node_modules/@types`를 명시
 
 ## Testing
 

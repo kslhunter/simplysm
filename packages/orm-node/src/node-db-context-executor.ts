@@ -132,7 +132,7 @@ export class NodeDbContextExecutor implements DbContextExecutor {
     if (resultMetas != null && resultMetas.every((item) => item == null)) {
       const combinedSql = defs.map((def) => builder.build(def).sql).join("\n");
       await conn.execute([combinedSql]);
-      return defs.map(() => []) as T[][];
+      return defs.map(() => []);
     }
 
     // 각 def를 개별적으로 실행

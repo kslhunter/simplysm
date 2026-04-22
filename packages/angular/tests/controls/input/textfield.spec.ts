@@ -139,7 +139,7 @@ describe("textfieldTypeHandlers unit tests", () => {
     });
 
     it("validate — 숫자가 아닌 값", () => {
-      const errors = textfieldTypeHandlers.number.validate("abc" as unknown, {});
+      const errors = textfieldTypeHandlers.number.validate("abc", {});
       expect(errors).toContain("숫자를 입력하세요");
     });
   });
@@ -597,7 +597,7 @@ describe("textfieldTypeHandlers date/datetime/time unit tests", () => {
     });
 
     it("date validate — DateOnly가 아닌 값은 에러", () => {
-      const errors = textfieldTypeHandlers.date.validate("not-a-date" as unknown, {});
+      const errors = textfieldTypeHandlers.date.validate("not-a-date", {});
       expect(errors).toContain("날짜를 입력하세요");
     });
 
@@ -654,7 +654,7 @@ describe("textfieldTypeHandlers date/datetime/time unit tests", () => {
     });
 
     it("datetime validate — DateTime이 아닌 값은 에러", () => {
-      const errors = textfieldTypeHandlers.datetime.validate("not-a-datetime" as unknown, {});
+      const errors = textfieldTypeHandlers.datetime.validate("not-a-datetime", {});
       expect(errors).toContain("날짜 및 시간을 입력하세요");
     });
 
@@ -709,7 +709,7 @@ describe("textfieldTypeHandlers date/datetime/time unit tests", () => {
     });
 
     it("time validate — Time이 아닌 값은 에러", () => {
-      const errors = textfieldTypeHandlers.time.validate("not-a-time" as unknown, {});
+      const errors = textfieldTypeHandlers.time.validate("not-a-time", {});
       expect(errors).toContain("시간을 입력하세요");
     });
 

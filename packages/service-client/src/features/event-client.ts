@@ -62,7 +62,7 @@ export function createEventClient(transport: ServiceTransport): EventClient {
     listenerMap.set(key, {
       eventName,
       info,
-      cb: cb as (data: unknown) => PromiseLike<void>,
+      cb,
     });
 
     return key;

@@ -13,7 +13,7 @@ const ruleTester = new RuleTester({
 describe("ng-template-no-todo-comments rule", () => {
   describe("Scenario: HTML 주석에서 TODO를 감지한다", () => {
     describe("TODO 주석이 없으면 허용", () => {
-      ruleTester.run("ng-template-no-todo-comments", rule as never, {
+      ruleTester.run("ng-template-no-todo-comments", rule, {
         valid: [
           {
             code: `<!-- This is a normal comment -->`,
@@ -27,7 +27,7 @@ describe("ng-template-no-todo-comments rule", () => {
     });
 
     describe("TODO 주석이 있으면 경고", () => {
-      ruleTester.run("ng-template-no-todo-comments", rule as never, {
+      ruleTester.run("ng-template-no-todo-comments", rule, {
         valid: [],
         invalid: [
           {
@@ -39,7 +39,7 @@ describe("ng-template-no-todo-comments rule", () => {
     });
 
     describe("여러 TODO 주석을 각각 감지", () => {
-      ruleTester.run("ng-template-no-todo-comments", rule as never, {
+      ruleTester.run("ng-template-no-todo-comments", rule, {
         valid: [],
         invalid: [
           {

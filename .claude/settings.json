@@ -29,6 +29,17 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/sd-cache-read-hash.py"
+          }
+        ]
+      }
+    ],
     "SubagentStart": [
       {
         "hooks": [

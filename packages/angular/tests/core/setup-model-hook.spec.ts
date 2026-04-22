@@ -47,7 +47,7 @@ describe("FIX-1 Slice 1: setupModelHook Promise 결과 존중", () => {
 describe("Feature 1.3: model.update도 canFn 검증을 거친다", () => {
   it("update 호출 시 canFn이 false를 반환하면 값이 변경되지 않는다", () => {
     const model = signal(0);
-    const canFn = signal((_value: number) => false as boolean | Promise<boolean>);
+    const canFn = signal((_value: number) => false);
     TestBed.runInInjectionContext(() => {
       setupModelHook(model, canFn);
     });
@@ -58,7 +58,7 @@ describe("Feature 1.3: model.update도 canFn 검증을 거친다", () => {
 
   it("update 호출 시 canFn이 true를 반환하면 값이 정상 변경된다", () => {
     const model = signal(0);
-    const canFn = signal((_value: number) => true as boolean | Promise<boolean>);
+    const canFn = signal((_value: number) => true);
     TestBed.runInInjectionContext(() => {
       setupModelHook(model, canFn);
     });
@@ -108,7 +108,7 @@ describe("Feature 1.2: model.update async canFn stale value 방지 (LOGIC-005)",
           resolveCanFn = resolve;
         });
       }
-      return true as boolean | Promise<boolean>;
+      return true;
     });
     TestBed.runInInjectionContext(() => {
       setupModelHook(model, canFn);
@@ -155,7 +155,7 @@ describe("Feature 1.2: model.update async canFn stale value 방지 (LOGIC-005)",
 
   it("동기 canFn은 기존과 동일하게 model.set에 위임하여 즉시 set한다", () => {
     const model = signal(0);
-    const canFn = signal((_value: number) => true as boolean | Promise<boolean>);
+    const canFn = signal((_value: number) => true);
     TestBed.runInInjectionContext(() => {
       setupModelHook(model, canFn);
     });
@@ -169,7 +169,7 @@ describe("Feature 1.7 Slice 1: 독립 유틸리티", () => {
   describe("Rule: setupModelHook이 모델 업데이트 전 검증을 수행한다", () => {
     it("검증 함수가 true 반환 시 즉시 업데이트", () => {
       const model = signal(0);
-      const canFn = signal((_value: number) => true as boolean | Promise<boolean>);
+      const canFn = signal((_value: number) => true);
       TestBed.runInInjectionContext(() => {
         setupModelHook(model, canFn);
       });
@@ -180,7 +180,7 @@ describe("Feature 1.7 Slice 1: 독립 유틸리티", () => {
 
     it("검증 함수가 false 반환 시 차단", () => {
       const model = signal(0);
-      const canFn = signal((_value: number) => false as boolean | Promise<boolean>);
+      const canFn = signal((_value: number) => false);
       TestBed.runInInjectionContext(() => {
         setupModelHook(model, canFn);
       });

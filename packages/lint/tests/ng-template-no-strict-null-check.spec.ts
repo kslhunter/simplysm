@@ -12,7 +12,7 @@ const ruleTester = new RuleTester({
 
 describe("ng-template-no-strict-null-check rule", () => {
   describe("== null / != null은 허용", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [
         { code: `{{ value == null ? 'empty' : value }}` },
         { code: `{{ value != null ? value : 'empty' }}` },
@@ -22,7 +22,7 @@ describe("ng-template-no-strict-null-check rule", () => {
   });
 
   describe("=== / !== 비교 중 null/undefined가 아닌 경우는 허용", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [
         { code: `{{ value === 'hello' ? 'yes' : 'no' }}` },
         { code: `{{ value !== 0 ? 'yes' : 'no' }}` },
@@ -33,7 +33,7 @@ describe("ng-template-no-strict-null-check rule", () => {
   });
 
   describe("=== null을 감지", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [],
       invalid: [
         {
@@ -45,7 +45,7 @@ describe("ng-template-no-strict-null-check rule", () => {
   });
 
   describe("!== null을 감지", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [],
       invalid: [
         {
@@ -57,7 +57,7 @@ describe("ng-template-no-strict-null-check rule", () => {
   });
 
   describe("=== undefined를 감지", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [],
       invalid: [
         {
@@ -69,7 +69,7 @@ describe("ng-template-no-strict-null-check rule", () => {
   });
 
   describe("!== undefined를 감지", () => {
-    ruleTester.run("ng-template-no-strict-null-check", rule as never, {
+    ruleTester.run("ng-template-no-strict-null-check", rule, {
       valid: [],
       invalid: [
         {

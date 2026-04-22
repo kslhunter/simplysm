@@ -48,7 +48,7 @@ export default createRule({
   },
   defaultOptions: [{}] as [RuleOptions],
   create(context) {
-    const parserServices = getTemplateParserServices(context as never);
+    const parserServices = getTemplateParserServices(context);
     const userOptions = context.options.at(0) ?? {};
     const selectorPrefixes = userOptions.selectorPrefixes ?? DEFAULT_OPTIONS.selectorPrefixes;
     const allowAttributes = userOptions.allowAttributes ?? DEFAULT_OPTIONS.allowAttributes;
@@ -106,6 +106,6 @@ export default createRule({
           });
         }
       },
-    } as never;
+    };
   },
 });

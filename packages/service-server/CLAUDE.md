@@ -2,8 +2,6 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Package Overview
 
 `@simplysm/service-server` - Fastify 기반 서비스 서버. WebSocket/HTTP 이중 전송, JWT 인증, ORM 브리지, 자동 업데이트를 제공한다. 19개의 TypeScript 소스 파일.

@@ -16,6 +16,21 @@ description: (내부 전용) 코드 리뷰 분석 로직. sd-review, sd-dev 등�
 
 프로젝트의 기술 스택, 컨벤션등의 규칙을 파악한다.
 
+### 소스 수집
+
+대상 경로 유형에 따라 소스를 수집한다.
+
+- **패키지 디렉토리** (경로 내 `src/` 존재): `merge-source.sh`로 병합하여 단일 파일로 읽는다.
+  ```bash
+  bash .claude/skills/sd-inner-review/merge-source.sh ./tmp/review-source.txt --dir <패키지경로>
+  ```
+- **개별 파일 목록**:
+  - **5개 미만**: 각 파일을 개별 Read로 읽는다.
+  - **5개 이상**: `merge-source.sh`로 병합하여 단일 파일로 읽는다.
+    ```bash
+    bash .claude/skills/sd-inner-review/merge-source.sh ./tmp/review-source.txt --files <파일1> <파일2> ...
+    ```
+
 ## Step 3: 분석
 
 대상 파일을 읽고, 4가지 관점으로 이슈를 탐지한다.

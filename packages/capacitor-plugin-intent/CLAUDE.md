@@ -86,10 +86,12 @@ await unsub();
 
 `IntentWeb`은 모든 메서드에서 no-op 또는 스텁 값을 반환한다. Android 전용 기능이므로 브라우저 폴백은 실제 동작을 에뮬레이션하지 않는다.
 
-- `subscribe()` — `{ id: "web-stub" }` 반환
+- `subscribe()` — 경고 로그 후 `{ id: "web-stub" }` 반환
 - `getLaunchIntent()` — `{}` 반환
-- `startActivityForResult()` — `{ resultCode: 0 }` 반환
-- `send()`, `unsubscribe()`, `unsubscribeAll()` — 경고 로그 또는 no-op
+- `startActivityForResult()` — 경고 로그 후 `{ resultCode: 0 }` 반환
+- `send()` — 경고 로그 후 no-op
+- `unsubscribe()`, `unsubscribeAll()` — no-op (경고 없음)
+- `addListener()`, `removeAllListeners()` — `WebPlugin` 부모 클래스에서 상속 (직접 구현 없음)
 
 ## Android 네이티브
 

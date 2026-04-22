@@ -28,7 +28,7 @@ src/
 │       ├── orm-client-db-context-executor.ts ← DbContextExecutor 구현체 (원격 호출)
 │       └── orm-connect-options.ts          ← ORM 연결 옵션 타입
 └── types/
-    ├── browser-compat.ts   ← DOM 전용 타입 대체 (BlobInput, FileCollection, isWorkerSupported)
+    ├── browser-compat.ts   ← DOM 전용 타입 대체 (BlobInput, FileCollection, BrowserWorker, isBrowserWorkerSupported, isNodeWorkerSupported, isWorkerSupported)
     ├── connection-options.ts ← ServiceConnectionOptions
     └── progress.types.ts    ← ServiceProgress, ServiceProgressState
 ```
@@ -54,6 +54,7 @@ ServiceClient (facade)
 
 ```typescript
 export interface SocketProvider {
+  readonly clientName: string;
   readonly connected: boolean;
   on<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
   off<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
@@ -67,7 +68,7 @@ export function createSocketProvider(url: string, clientName: string, maxReconne
   let isManualClose = false;
   let reconnectCount = 0;
   // ... 클로저로 상태 관리
-  return { connect, close, send, on, off };
+  return { clientName, connect, close, send, on, off };
 }
 ```
 
@@ -176,7 +177,10 @@ if (typeof globalThis.WebSocket === "undefined") {
 ```typescript
 // BlobInput: Blob | Uint8Array | ArrayBuffer | string (DOM BlobPart 대체)
 // FileCollection: { length, item(index), [index], [Symbol.iterator] } (FileList 대체)
-// isWorkerSupported(): boolean — globalThis.Worker 존재 여부 확인
+// BrowserWorker: { onmessage, onerror, postMessage, terminate } (DOM Worker 최소 인터페이스)
+// isBrowserWorkerSupported(): boolean — "Worker" in globalThis 확인
+// isNodeWorkerSupported(): boolean — process.versions.node 존재 확인
+// isWorkerSupported(): boolean — isBrowserWorkerSupported() || isNodeWorkerSupported()
 ```
 
 ## Compiler Options (패키지 고유)

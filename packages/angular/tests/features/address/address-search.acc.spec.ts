@@ -70,7 +70,7 @@ describe("SdAddressSearchModal (Acceptance)", () => {
           void Promise.resolve().then(() => {
             (node as any).onerror?.(new Event("error"));
           });
-          return node as any;
+          return node;
         }
         return origAppendChild(node);
       });
@@ -113,13 +113,13 @@ describe("SdAddressSearchModal (Acceptance)", () => {
             void Promise.resolve().then(() => {
               (node as any).onerror?.(new Event("error"));
             });
-            return node as any;
+            return node;
           }
           // 두 번째 시도: 성공
           void Promise.resolve().then(() => {
             (node as any).onload?.(new Event("load"));
           });
-          return node as any;
+          return node;
         }
         return origAppendChild(node);
       });

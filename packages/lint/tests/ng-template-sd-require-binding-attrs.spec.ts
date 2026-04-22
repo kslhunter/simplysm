@@ -13,7 +13,7 @@ const ruleTester = new RuleTester({
 describe("ng-template-sd-require-binding-attrs rule", () => {
   describe("Scenario: sd-* 컴포넌트의 plain attribute를 감지하고 autofix한다", () => {
     describe("비 sd-* 요소의 plain attribute는 허용", () => {
-      ruleTester.run("ng-template-sd-require-binding-attrs", rule as never, {
+      ruleTester.run("ng-template-sd-require-binding-attrs", rule, {
         valid: [
           {
             code: `<div myattr="val"></div>`,
@@ -24,7 +24,7 @@ describe("ng-template-sd-require-binding-attrs rule", () => {
     });
 
     describe("sd-* 요소의 허용된 attribute는 허용", () => {
-      ruleTester.run("ng-template-sd-require-binding-attrs", rule as never, {
+      ruleTester.run("ng-template-sd-require-binding-attrs", rule, {
         valid: [
           {
             code: `<sd-button id="btn1" class="primary" style="color:red" title="hi" tabindex="0" role="button"></sd-button>`,
@@ -35,7 +35,7 @@ describe("ng-template-sd-require-binding-attrs rule", () => {
     });
 
     describe("sd-* 접두사 attribute는 허용", () => {
-      ruleTester.run("ng-template-sd-require-binding-attrs", rule as never, {
+      ruleTester.run("ng-template-sd-require-binding-attrs", rule, {
         valid: [
           {
             code: `<sd-button aria-label="test" data-id="1" sd-custom="val"></sd-button>`,
@@ -46,7 +46,7 @@ describe("ng-template-sd-require-binding-attrs rule", () => {
     });
 
     describe("sd-* 요소의 비허용 plain attribute를 감지하고 autofix", () => {
-      ruleTester.run("ng-template-sd-require-binding-attrs", rule as never, {
+      ruleTester.run("ng-template-sd-require-binding-attrs", rule, {
         valid: [],
         invalid: [
           {
@@ -64,7 +64,7 @@ describe("ng-template-sd-require-binding-attrs rule", () => {
     });
 
     describe("값 없는 plain attribute는 [attr]=\"true\"로 autofix", () => {
-      ruleTester.run("ng-template-sd-require-binding-attrs", rule as never, {
+      ruleTester.run("ng-template-sd-require-binding-attrs", rule, {
         valid: [],
         invalid: [
           {

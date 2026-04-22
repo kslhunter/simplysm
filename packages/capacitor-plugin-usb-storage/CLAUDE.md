@@ -2,8 +2,6 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Package Overview
 
 `@simplysm/capacitor-plugin-usb-storage` -- Android USB Mass Storage 접근 플러그인. libaums 라이브러리를 통해 USB 장치를 열거하고 파일을 읽는다. 브라우저 환경에서는 IndexedDB 기반 가상 USB 저장소로 에뮬레이션한다. TypeScript 소스 5개 파일.

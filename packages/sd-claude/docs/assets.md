@@ -18,7 +18,7 @@ claude/
 
 ## `claude/skills/`
 
-다수의 스킬 디렉토리. `sd-*` 접두어 스킬은 postinstall로 소비 프로젝트에 배포되고, `my-apk-decompile/`·`playwright-cli/` 같이 `sd-*`로 시작하지 않는 스킬은 모노레포 로컬 전용이다. 각 스킬은 아래 파일을 포함한다:
+다수의 스킬 디렉토리. `sd-*` 접두어 스킬은 postinstall로 소비 프로젝트에 배포된다. `sd-*`로 시작하지 않는 스킬(예: `my-apk-decompile/`, `playwright-cli/`)은 모노레포 루트 `.claude/`에만 존재하고 배포 에셋에는 포함되지 않는 로컬 전용 스킬이다. 각 스킬은 아래 파일을 포함한다:
 
 | 파일            | 필수 | Description                                                  |
 | --------------- | ---- | ------------------------------------------------------------ |
@@ -30,8 +30,6 @@ claude/
 
 | 디렉토리              | 스킬 이름          | Description                                        |
 | --------------------- | ------------------ | -------------------------------------------------- |
-| `my-apk-decompile/`   | my-apk-decompile   | APK 파일 디컴파일 및 소스코드 분석                 |
-| `playwright-cli/`     | playwright-cli     | 브라우저 자동화 및 Playwright 테스트               |
 | `sd-check/`           | sd-check           | typecheck/lint/test 실행 및 에러 해결              |
 | `sd-claude-docs/`     | sd-claude-docs     | CLAUDE.md + usage 문서 동시 생성                   |
 | `sd-commit/`          | sd-commit          | 전체 변경사항에 대한 단일 커밋 생성                |
@@ -39,6 +37,7 @@ claude/
 | `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
 | `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
 | `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |
+| `sd-inner-clarify/`   | sd-inner-clarify   | (내부 전용) 명확성 분류·근거 탐색·명확화 질문      |
 | `sd-inner-debug/`     | sd-inner-debug     | (내부 전용) 근본 원인 분석(ACH) 로직               |
 | `sd-inner-review/`    | sd-inner-review    | (내부 전용) 코드 리뷰 분석 로직                    |
 | `sd-issue/`           | sd-issue           | GitHub 이슈 생성                                   |
@@ -77,21 +76,14 @@ Claude Code 규칙 파일. 2개 파일.
 
 ## `claude/references/`
 
-스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다. 공유 문서(md파일)와 패키지별 사용 설명서 디렉토리.
+스킬과 규칙에서 참조하는 공유 문서. 규칙 파일에서 `Read tool로 읽으라`는 지시로 참조된다.
 
 ### 공유 문서
 
 | 파일 | Description |
 |------|-------------|
 | `sd-frontend-design.md` | 프론트엔드 UI 코드 작성 지침 |
-| `sd-simplysm14.md` | simplysm 패키지 문서 진입점 |
 | `sd-testing.md` | 테스트 작성 지침 |
-
-### 패키지 문서 디렉토리
-
-| 디렉토리 | Description |
-|----------|-------------|
-| `sd-simplysm14/` | simplysm v14 패키지별 CLAUDE.md와 usage.md |
 
 ## 소스 오브 트루스
 

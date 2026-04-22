@@ -32,5 +32,5 @@ export function createTestDb(
 ): typeof TestDb {
   return class extends TestDb {
     static override models = models;
-  } as typeof TestDb;
+  };
 }

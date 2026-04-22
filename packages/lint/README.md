@@ -62,7 +62,7 @@ npm install @simplysm/lint
 |----------|-------------|
 | `commonRules` | `eqeqeq` (`null` 비교만 `==` 허용), `no-warning-comments`, `no-self-compare`, `array-callback-return` |
 | `noNodeBuiltinsRules` | `Buffer` 전역 사용 금지, `buffer`/`events`/`eventemitter3` import 금지 |
-| `noDirectEnvAccessRules` | `process.env` 및 `import.meta.env` 직접 접근 금지 (`env("...")` 사용 강제), `NODE_ENV` 환경변수 사용 금지 |
+| `noDirectEnvAccessRules` | `process.env` 및 `import.meta.env` 직접 접근 금지 (`env("...")` 사용 강제), `NODE_ENV` 환경변수 사용 금지, `=== undefined` / `!== undefined` 비교 금지 (`== null` / `!= null` 사용 강제) |
 | `unusedImportsRules` | 미사용 import 자동 제거 (`_` 접두사 변수 무시) |
 
 #### Ignores

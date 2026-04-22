@@ -112,7 +112,7 @@ export class SdModalProvider {
       }
 
       // 4. setInput으로 inputs 바인딩
-      for (const [key, value] of Object.entries(modal.inputs as Record<string, unknown>)) {
+      for (const [key, value] of Object.entries(modal.inputs)) {
         contentRef.setInput(key, value);
       }
 

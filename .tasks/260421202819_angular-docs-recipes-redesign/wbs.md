@@ -11,7 +11,7 @@
   - `crud-detail.md` 최소 뼈대 = **읽기 전용 상세 폼** (busy + topbar + perms(use) + initialized + id input + 데이터 로드 + form 읽기 전용 필드)
   - 확장 표현 = **하이브리드** (각 확장 섹션 = 추가/교체 스니펫 + 포인트 요약; 파일 말미 부록 A = 풀 스택 합본 완성본 1개, 부록 B = 확장 매트릭스 표)
   - 이관 표식 = 해당 블록 직상단 HTML 주석 `<!-- MOVE: docs/{파일}.md#{앵커} -->` + 파일 말미 `## 이관 후보 목록` 체크리스트 섹션 (2차 Feature에서 `[x]` 체크하며 진행)
-  - 2차 이관 대상 파일(`docs/ui-*.md`·`docs/utils.md`·`docs/provider-types.md`·`docs/providers.md`)의 선정은 본 WBS 작성 시점의 예측이며, 각 Feature의 **실제 이관 API 목록**은 1차(Feature 1.1·1.2) 완료 후 생성된 `## 이관 후보 목록` 체크리스트로 최종 확정된다.
+  - 2차 이관 대상 파일(`docs/ui-*/*.md`·`docs/utils/*.md`·`docs/provider-types/*.md`·`docs/providers/*.md`)의 선정은 본 WBS 작성 시점의 예측이며, 각 Feature의 **실제 이관 API 목록**은 1차(Feature 1.1·1.2) 완료 후 생성된 `## 이관 후보 목록` 체크리스트로 최종 확정된다.
 - **기술적 제약:**
   - 문서는 Markdown(CommonMark) 기반. 코드블록(TypeScript/HTML)은 `packages/angular/CLAUDE.md`의 Component Structure(OnPush + Encapsulation.None + standalone + `input()`/`model()`/`host: data-sd-*`) · Naming Conventions · Key Patterns를 준수.
   - 런타임 API 호환성: Chrome 61+ (esbuild 문법 변환만, 런타임 API 폴리필 불가). `WeakRef`/`FinalizationRegistry`/`Proxy` 등 금지. `mark(sig)` 사용 이유가 바로 Proxy 폴리필 불가로 인한 수동 notify.
@@ -24,14 +24,14 @@
   - `packages/angular/docs/recipes/crud-detail.md:1-871` — 현행 CRUD 상세 폼 레시피 (Feature 1.2 재설계 대상)
   - `packages/angular/docs/recipes/page-modal-container.md:1-178` — 페이지/모달 분기 레시피 (Feature 1.3 보강 대상)
   - `packages/angular/docs/recipes/data-select-button.md:1-318` — 선택 버튼 레시피 (Feature 2.1 크로스 참조 갱신 대상, 내용 재설계 없음)
-  - `packages/angular/docs/ui-data.md:1-333` — Feature 3.1 이관 대상 (`<sd-sheet>` 계열)
-  - `packages/angular/docs/ui-form.md:1-502` — Feature 3.1 이관 대상 (`<sd-form>`·폼 컨트롤)
-  - `packages/angular/docs/ui-layout.md:1-140` — Feature 3.1 이관 대상 (`<sd-dock>` 계열)
-  - `packages/angular/docs/ui-overlay.md:1-157` — Feature 3.1 이관 대상 (`<sd-busy-container>`)
-  - `packages/angular/docs/ui-navigation.md:1-303` — Feature 3.1 이관 대상 (`<sd-topbar>` 계열)
-  - `packages/angular/docs/utils.md:1-244` — Feature 3.2 이관 대상 (`inject*`·`setup*`·`mark`)
-  - `packages/angular/docs/provider-types.md:1-283` — Feature 3.3 이관 대상 (`SdSelectModal<T>`·`SelectModalOutputResult`·`SdModalContentDef<R>`)
-  - `packages/angular/docs/providers.md:1-379` — Feature 3.3 이관 대상 (`SdToastProvider.try`·`SdModalProvider.showAsync`·`SdFileDialogProvider.showAsync`)
+  - `packages/angular/docs/ui-data/sd-sheet.md` — Feature 3.1 이관 대상 (`<sd-sheet>` 계열)
+  - `packages/angular/docs/ui-form/` (`sd-form.md`, `sd-textfield.md`, `sd-button.md`, `sd-anchor.md`, `sd-checkbox.md`, `sd-modal-select-button.md` 등) — Feature 3.1 이관 대상 (폼 컨트롤)
+  - `packages/angular/docs/ui-layout/` (`sd-dock.md`, `sd-dock-container.md`) — Feature 3.1 이관 대상 (`<sd-dock>` 계열)
+  - `packages/angular/docs/ui-overlay/sd-busy-container.md` — Feature 3.1 이관 대상 (`<sd-busy-container>`)
+  - `packages/angular/docs/ui-navigation/` (`sd-topbar.md`, `sd-topbar-container.md`) — Feature 3.1 이관 대상 (`<sd-topbar>` 계열)
+  - `packages/angular/docs/utils/` (`mark.md`, `inject-routing-signals.md`, `setup-functions.md`, `selection-managers.md`) — Feature 3.2 이관 대상 (`inject*`·`setup*`·`mark`)
+  - `packages/angular/docs/provider-types/sd-modal-content-def.md` — Feature 3.3 이관 대상 (`SdSelectModal<T>`·`SelectModalOutputResult`·`SdModalContentDef<R>`)
+  - `packages/angular/docs/providers/` (`sd-toast-provider.md`, `sd-modal-provider.md`, `sd-file-dialog-provider.md`) — Feature 3.3 이관 대상
   - `.claude/rules/sd-claude-rules.md` — 프로젝트 룰
   - `.claude/rules/sd-options.md` — 선택지 제시 규칙
 
@@ -84,14 +84,14 @@
 - 주의사항 섹션을 확장 레이어별로 재배치 — 예: "`cumulativeSelection` 의도" 주의는 확장 D 내부에, "`oneWayDiffs`는 delete를 다루지 않음" 주의는 확장 A 내부에
 - 레시피 관용 규칙 3개 유지 (시트 셀 `[inset]`·`[size]` / `mark`는 UI 동기화 / `sortingDefs.orderBy` string overload)
 - MOVE 표식 적용:
-  - `<sd-sheet>`/`<sd-sheet-column>`/`[cell]`/`let-edit`/`[cumulativeSelection]`/`getItemCellStyleFn` → `<!-- MOVE: docs/ui-data.md#sd-sheet -->`
-  - `<sd-dock>`/`<sd-dock-container>`/position → `<!-- MOVE: docs/ui-layout.md#sd-dock -->`
-  - `<sd-form>`/`(formSubmit)`/`requestSubmit`/`<sd-textfield>`/`<sd-anchor>`/`<sd-button>`/`<sd-checkbox>`/`<sd-shared-data-select>` → `<!-- MOVE: docs/ui-form.md#... -->`
-  - `<sd-busy-container>` → `<!-- MOVE: docs/ui-overlay.md#sd-busy-container -->`
-  - `<sd-topbar>`/`<sd-topbar-container>` → `<!-- MOVE: docs/ui-navigation.md#sd-topbar -->`
-  - `injectViewTypeSignal`/`injectPermsSignal`/`injectViewTitleSignal`/`setupCanDeactivate`/`mark` → `<!-- MOVE: docs/utils.md#... -->`
-  - `SdSelectModal<T>`/`SelectModalOutputResult` → `<!-- MOVE: docs/provider-types.md#sd-select-modal -->`
-  - `SdToastProvider.try`/`SdModalProvider.showAsync`/`SdFileDialogProvider.showAsync` → `<!-- MOVE: docs/providers.md#... -->`
+  - `<sd-sheet>`/`<sd-sheet-column>`/`[cell]`/`let-edit`/`[cumulativeSelection]`/`getItemCellStyleFn` → `<!-- MOVE: docs/ui-data/sd-sheet.md -->`
+  - `<sd-dock>`/`<sd-dock-container>`/position → `<!-- MOVE: docs/ui-layout/sd-dock.md -->`
+  - `<sd-form>`/`(formSubmit)`/`requestSubmit`/`<sd-textfield>`/`<sd-anchor>`/`<sd-button>`/`<sd-checkbox>`/`<sd-shared-data-select>` → `<!-- MOVE: docs/ui-form/{컴포넌트}.md -->`
+  - `<sd-busy-container>` → `<!-- MOVE: docs/ui-overlay/sd-busy-container.md -->`
+  - `<sd-topbar>`/`<sd-topbar-container>` → `<!-- MOVE: docs/ui-navigation/sd-topbar.md -->`
+  - `injectViewTypeSignal`/`injectPermsSignal`/`injectViewTitleSignal`/`setupCanDeactivate`/`mark` → `<!-- MOVE: docs/utils/{함수}.md -->`
+  - `SdSelectModal<T>`/`SelectModalOutputResult` → `<!-- MOVE: docs/provider-types/sd-modal-content-def.md -->`
+  - `SdToastProvider.try`/`SdModalProvider.showAsync`/`SdFileDialogProvider.showAsync` → `<!-- MOVE: docs/providers/{프로바이더}.md -->`
 - 파일 말미 `## 이관 후보 목록` 섹션 — 위 MOVE 표식을 대상 파일별로 그룹화한 체크리스트 (2차 Feature 3.x에서 `[x]` 체크)
 - 상단 "뷰 범위 + modal 용도 확인 선행" CRITICAL 블록을 유지(현행 톤 유지)하되, 용도 분류가 확장 D·E에서 각각 다뤄진다는 안내 보강
 
@@ -277,31 +277,31 @@
 
 **범위:** (1차 MOVE 표식에 따라 최종 확정)
 
-- `docs/ui-data.md` 확장 — `<sd-sheet>` 계열:
+- `docs/ui-data/sd-sheet.md` 확장 — `<sd-sheet>` 계열:
   - `<sd-sheet>` 주요 input 사용법: `items`, `selectMode`, `selectedItems`, `cumulativeSelection`, `sorts`, `currentPage`, `totalPageCount`, `trackByFn`, `getItemCellStyleFn`
   - `<sd-sheet-column>` 속성: `key`, `header`, `fixed`, `hidden`, `width` 등
   - `<sd-sheet-column>` `[cell]` template context (`let-item`, `let-edit`, `let-index`, `let-depth`) 사용법
   - `<sd-sheet-column>` `#headerTpl` 커스텀 헤더 템플릿 사용법
   - `SdSheetCellContext` 타입 활용
   - **시트 셀 내부 컨트롤의 `[inset]="true" [size]="'sm'"` 규칙** (현행 crud-list §10 "레시피 작성 관용 규칙 #1" 내용을 `<sd-sheet>` 주의사항으로 이관)
-- `docs/ui-form.md` 확장 — `<sd-form>`·폼 컨트롤:
-  - `<sd-form>` `(formSubmit)` 이벤트, `requestSubmit()` 메서드, `#formCtrl` 템플릿 변수 사용 패턴
-  - `<sd-textfield>`: form 내 사용 (타입별 `[type]="'text'"`·`'number'`·`'date'` 등) / 시트 셀 내 사용 (`[inset]="true"`, `[size]="'sm'"`, `[readonly]="!edit"`, `[disabled]`)
-  - `<sd-anchor>` 인라인 버튼 + theme(`danger`/`info`/기본)
-  - `<sd-button>` theme (`link-*`/`primary`/`danger`/`warning`/`success`/`info`) + `[type]="'submit'"`
-  - `<sd-checkbox>` form 내 + 시트 셀 내 사용
-  - `<sd-shared-data-select>` + `<ng-template [itemOf]="...">` 패턴 (시트 셀·일반 form 둘 다)
-  - 그 외 MOVE 표식이 지시하는 폼 컨트롤 (예: `<sd-numpad>`, `<sd-date-range-picker>` 등)
-- `docs/ui-layout.md` 확장 — `<sd-dock>` 계열:
-  - `<sd-dock-container>` + `<sd-dock>` 기본 사용 패턴 (상단 필터·도구 바·하단 확인 바의 배치)
-  - `<sd-dock>` `[position]` input 값 (`"top"` 기본, `"bottom"`, `"left"`, `"right"`)
+- `docs/ui-form/` 확장 — `<sd-form>`·폼 컨트롤 (각 컴포넌트별 개별 파일):
+  - `sd-form.md`: `(formSubmit)` 이벤트, `requestSubmit()` 메서드, `#formCtrl` 템플릿 변수 사용 패턴
+  - `sd-textfield.md`: form 내 사용 (타입별 `[type]="'text'"`·`'number'`·`'date'` 등) / 시트 셀 내 사용 (`[inset]="true"`, `[size]="'sm'"`, `[readonly]="!edit"`, `[disabled]`)
+  - `sd-anchor.md`: 인라인 버튼 + theme(`danger`/`info`/기본)
+  - `sd-button.md`: theme (`link-*`/`primary`/`danger`/`warning`/`success`/`info`) + `[type]="'submit'"`
+  - `sd-checkbox.md`: form 내 + 시트 셀 내 사용
+  - 신규 `sd-shared-data-select` 섹션 (features.md 참조) + `<ng-template [itemOf]="...">` 패턴 (시트 셀·일반 form 둘 다)
+  - 그 외 MOVE 표식이 지시하는 폼 컨트롤 (`sd-numpad.md`, `sd-date-range-picker.md` 등)
+- `docs/ui-layout/` 확장 — `<sd-dock>` 계열:
+  - `sd-dock-container.md` + `sd-dock.md` 기본 사용 패턴 (상단 필터·도구 바·하단 확인 바의 배치)
+  - `sd-dock.md` `[position]` input 값 (`"top"` 기본, `"bottom"`, `"left"`, `"right"`)
   - **"modal 하단 바에 `[position]="'bottom'"` 반드시 명시"** 주의사항 (현행 crud-list §10 "`<sd-dock>` position 누락" 내용 이관)
-- `docs/ui-overlay.md` 확장 — `<sd-busy-container>`:
+- `docs/ui-overlay/sd-busy-container.md` 확장:
   - `<sd-busy-container>` input: `[busy]`, `[message]`, `[type]` 사용법
   - `busyCount` 카운트 패턴 (호출부에서 `busyCount.update((v) => v + 1)` / `- 1`, `busyCount() > 0`로 busy 표시)
   - `busyMessage` 선택적 사용 패턴 (긴 작업 시)
   - `SdBusyProvider.globalBusyCount` signal과의 관계 (있다면 보강)
-- `docs/ui-navigation.md` 확장 — `<sd-topbar>`·`<sd-topbar-container>`:
+- `docs/ui-navigation/` 확장 — `sd-topbar.md`·`sd-topbar-container.md`:
   - 기본 패턴 (page 뷰에서만 조건부 렌더, modal/control에서 생략)
   - topbar 내부 슬롯 활용 (`<h4>` 제목, 버튼 배치, `<small>` 단축키 표시)
 - 각 API 섹션 끝 **"실사용 예" 역링크** (crud-list·crud-detail 기본 예제 및 확장)
@@ -317,7 +317,7 @@
 
 - Impact Mapping Deliverable: D4
 - 1차 MOVE 표식 (Feature 1.1·1.2 완료 시 확정)
-- 현행 파일: `packages/angular/docs/ui-data.md:1-334`, `ui-form.md:1-502`, `ui-layout.md:1-140`, `ui-overlay.md:1-157`, `ui-navigation.md:1-303`
+- 현행 파일: `packages/angular/docs/ui-data/sd-sheet.md`, `docs/ui-form/` (sd-form.md, sd-textfield.md 등), `docs/ui-layout/` (sd-dock.md, sd-dock-container.md), `docs/ui-overlay/sd-busy-container.md`, `docs/ui-navigation/` (sd-topbar.md, sd-topbar-container.md)
 
 **Feature 3.1 설계 결정 (2026-04-22, sd-plan 세션):**
 
@@ -338,7 +338,7 @@
 
 **범위:** (MOVE 표식 기반 최종 확정 완료)
 
-- `docs/utils.md` 확장:
+- `docs/utils/` 확장 (개별 파일: `mark.md`, `inject-routing-signals.md`, `setup-functions.md`):
   - `injectViewTypeSignal()`: 호출 시점 제약(NG0203), 자동 판정 규칙, 수동 오버라이드 패턴
   - `injectPermsSignal(viewCodes, keys)`: 시그니처·표·사용 패턴 (신규 섹션)
   - `injectViewTitleSignal()`: 사용 패턴
@@ -361,7 +361,7 @@
 
 - Impact Mapping Deliverable: D4
 - 1차 MOVE 표식 (Feature 1.1·1.2 완료 시 확정)
-- 현행 파일: `packages/angular/docs/utils.md:1-244`
+- 현행 파일: `packages/angular/docs/utils/` (`mark.md`, `inject-routing-signals.md`, `setup-functions.md`, `selection-managers.md`)
 
 **Feature 3.2 설계 결정 (2026-04-22, sd-plan 세션):**
 
@@ -381,7 +381,7 @@
 
 **범위:** (MOVE 표식에 따라 최종 확정)
 
-- `docs/provider-types.md` 확장 — 모달 계약 타입:
+- `docs/provider-types/sd-modal-content-def.md` 확장 — 모달 계약 타입:
   - `SdSelectModal<T>` 인터페이스 구현 방법:
     - `selectMode = input<"single" | "multi" | undefined>()`
     - `selectedItemKeys = input<(keyType)[]>([])`
@@ -391,7 +391,7 @@
   - `SelectModalOutputResult<T>` 구조 (`selectedItemKeys`, `selectedItems`, `filterExists()`로 `undefined` 제거 — index fallback 금지)
   - `SdModalContentDef<R>` 인터페이스 구현 방법 (modal 하단 액션 slot, `close.emit(result)`)
   - **선택 모달 vs 조회 전용 modal 용도 구분** 서술 (recipes와 일관된 워딩)
-- `docs/providers.md` 확장 — Provider 메서드:
+- `docs/providers/` 확장 — Provider 메서드 (개별 파일: `sd-toast-provider.md`, `sd-modal-provider.md`, `sd-file-dialog-provider.md`):
   - `SdToastProvider.try(fn, messageFn?)` 에러 래퍼 사용법 (반환 타입, 에러 시 자동 토스트)
   - `SdModalProvider.showAsync({ type, inputs, title, ... }, options?)` 호출 패턴:
     - 선택 모달 호출 예 (`inputs: { selectMode, selectedItemKeys }`, 반환값으로 `SelectModalOutputResult<T>` 처리)
@@ -410,7 +410,7 @@
 
 - Impact Mapping Deliverable: D4
 - 1차 MOVE 표식 (Feature 1.1·1.2 완료 시 확정)
-- 현행 파일: `packages/angular/docs/provider-types.md:1-283`, `providers.md:1-379`
+- 현행 파일: `packages/angular/docs/provider-types/sd-modal-content-def.md`, `packages/angular/docs/providers/` (`sd-toast-provider.md`, `sd-modal-provider.md`, `sd-file-dialog-provider.md`)
 
 ---
 

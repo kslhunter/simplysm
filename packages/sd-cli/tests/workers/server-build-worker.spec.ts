@@ -317,7 +317,7 @@ describe("server-build.worker build()", () => {
       builderProgram: {},
       isForAngular: false,
       affectedFiles: undefined,
-      diagnostics: [{ code: 2345, category: 1 }] as any,
+      diagnostics: [{ code: 2345, category: 1 }],
       errorCount: 1,
       warningCount: 0,
       errors: ["TS2345: type error"],

@@ -215,7 +215,7 @@ describe("createClientEsbuildContext — PostCSS 플러그인 통합", () => {
     await createClientEsbuildContext({
       ...baseBuild,
       postcssPlugins: [["autoprefixer"]],
-      plugins: [customPlugin as any],
+      plugins: [customPlugin],
       legacyModule: true,
       onEnd: vi.fn(),
     });
@@ -294,7 +294,7 @@ describe("createClientEsbuildContext — 추가 옵션", () => {
     const customPlugin = { name: "custom", setup: vi.fn() };
     await createClientEsbuildContext({
       ...baseDev,
-      plugins: [customPlugin as any],
+      plugins: [customPlugin],
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     expect(opts.plugins).toContainEqual(customPlugin);
@@ -460,7 +460,7 @@ describe("createClientEsbuildContext — onEnd 플러그인", () => {
   it("customPlugins가 angularPlugin 이전에 위치 (onStart에서 sourceFileCache 무효화 선행)", async () => {
     await createClientEsbuildContext({
       ...baseDev,
-      plugins: [{ name: "custom", setup: vi.fn() } as any],
+      plugins: [{ name: "custom", setup: vi.fn() }],
       onEnd: vi.fn(),
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
@@ -506,7 +506,7 @@ describe("createClientEsbuildContext — SCSS 플러그인 통합", () => {
     const customPlugin = { name: "custom", setup: vi.fn() };
     await createClientEsbuildContext({
       ...baseDev,
-      plugins: [customPlugin as any],
+      plugins: [customPlugin],
     });
     const opts = vi.mocked(esbuild.context).mock.calls[0][0];
     const pluginNames = opts.plugins!.map((p: any) => p.name);

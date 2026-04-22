@@ -21,71 +21,50 @@ npm install @simplysm/service-common
 
 ### Protocol
 
-| API | Type | Description |
-|-----|------|-------------|
-| `PROTOCOL_CONFIG` | const | 프로토콜 설정 상수 (최대 크기, 청킹 임계값, 청크 크기, GC 주기, 만료 시간) |
-| `ServiceMessage` | type | 양방향 메시지의 유니언 타입 |
-| `ServiceClientMessage` | type | 클라이언트 → 서버 메시지 유니언 |
-| `ServiceServerMessage` | type | 서버 → 클라이언트 메시지 유니언 |
-| `ServiceServerRawMessage` | type | 진행 상태를 포함한 서버 메시지 유니언 |
-| `ServiceProgressMessage` | interface | 청크 수신 진행 상태 알림 |
-| `ServiceErrorMessage` | interface | 서버 에러 알림 |
-| `ServiceAuthMessage` | interface | 클라이언트 인증 메시지 (토큰) |
-| `ServiceRequestMessage` | interface | 서비스 메서드 요청 |
-| `ServiceResponseMessage` | interface | 서비스 메서드 응답 |
-| `ServiceAddEventListenerMessage` | interface | 이벤트 리스너 추가 요청 |
-| `ServiceRemoveEventListenerMessage` | interface | 이벤트 리스너 제거 요청 |
-| `ServiceGetEventListenerInfosMessage` | interface | 이벤트 리스너 정보 목록 요청 |
-| `ServiceEmitEventMessage` | interface | 이벤트 발생 요청 |
-| `ServiceEventMessage` | interface | 서버 이벤트 알림 |
-| `ServiceProtocol` | interface | 바이너리 프로토콜 인코더/디코더 |
-| `ServiceMessageDecodeResult` | type | 디코딩 결과 유니언 (complete \| progress) |
-| `createServiceProtocol` | function | ServiceProtocol 인스턴스 생성 팩토리 |
-
-→ See [docs/protocol.md](./docs/protocol.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`PROTOCOL_CONFIG`](./docs/protocol/protocol-config.md) | const | 프로토콜 설정 상수 (최대 크기, 청킹 임계값, 청크 크기, GC 주기, 만료 시간) |
+| [`ServiceMessage`](./docs/protocol/service-message.md) | type | 양방향 메시지 유니언 (`ServiceClientMessage`, `ServiceServerMessage`, `ServiceServerRawMessage` 포함) |
+| [`ServiceProgressMessage`](./docs/protocol/service-progress-message.md) | interface | 청크 수신 진행 상태 알림 |
+| [`ServiceErrorMessage`](./docs/protocol/service-error-message.md) | interface | 서버 에러 알림 |
+| [`ServiceAuthMessage`](./docs/protocol/service-auth-message.md) | interface | 클라이언트 인증 메시지 (토큰) |
+| [`ServiceRequestMessage`](./docs/protocol/service-request-message.md) | interface | 서비스 메서드 요청 |
+| [`ServiceResponseMessage`](./docs/protocol/service-response-message.md) | interface | 서비스 메서드 응답 |
+| [`ServiceAddEventListenerMessage`](./docs/protocol/service-add-event-listener-message.md) | interface | 이벤트 리스너 추가 요청 |
+| [`ServiceRemoveEventListenerMessage`](./docs/protocol/service-remove-event-listener-message.md) | interface | 이벤트 리스너 제거 요청 |
+| [`ServiceGetEventListenerInfosMessage`](./docs/protocol/service-get-event-listener-infos-message.md) | interface | 이벤트 리스너 정보 목록 요청 |
+| [`ServiceEmitEventMessage`](./docs/protocol/service-emit-event-message.md) | interface | 이벤트 발생 요청 |
+| [`ServiceEventMessage`](./docs/protocol/service-event-message.md) | interface | 서버 이벤트 알림 |
+| [`createServiceProtocol`](./docs/protocol/create-service-protocol.md) | function | ServiceProtocol 인스턴스 생성 팩토리 (`ServiceProtocol`, `ServiceMessageDecodeResult` 포함) |
 
 ### Service Types
 
-| API | Type | Description |
-|-----|------|-------------|
-| `OrmService` | interface | DB 연결, 트랜잭션, 쿼리 실행 서비스 인터페이스 |
-| `DbConnOptions` | type | DB 연결 옵션 타입 |
-| `AutoUpdateService` | interface | 클라이언트 최신 버전 조회 서비스 인터페이스 |
-| `AppStructureService` | interface | 앱 구조 항목 조회 서비스 인터페이스 |
-
-→ See [docs/service-types.md](./docs/service-types.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`OrmService`](./docs/service-types/orm-service.md) | interface | DB 연결, 트랜잭션, 쿼리 실행 서비스 인터페이스 (`DbConnOptions` 포함) |
+| [`AutoUpdateService`](./docs/service-types/auto-update-service.md) | interface | 클라이언트 최신 버전 조회 서비스 인터페이스 |
+| [`AppStructureService`](./docs/service-types/app-structure-service.md) | interface | 앱 구조 항목 조회 서비스 인터페이스 |
 
 ### Types
 
-| API | Type | Description |
-|-----|------|-------------|
-| `ServiceUploadResult` | interface | 파일 업로드 결과 |
-
-→ See [docs/types.md](./docs/types.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`ServiceUploadResult`](./docs/types/service-upload-result.md) | interface | 파일 업로드 결과 |
 
 ### App Structure
 
-| API | Type | Description |
-|-----|------|-------------|
-| `AppStructureItem` | type | 앱 구조 항목 (그룹 또는 리프) |
-| `AppStructureGroupItem` | interface | 자식을 가진 그룹 메뉴 항목 |
-| `AppStructureLeafItem` | interface | 말단 메뉴 항목 (권한, URL 포함) |
-| `AppStructureSubPermission` | interface | 리프 항목의 하위 권한 정의 |
-| `FlatPermission` | interface | 플래트닝된 권한 결과 |
-| `isUsableModules` | function | 개별 항목의 모듈 접근 가능 여부 판단 |
-| `isUsableModulesChain` | function | 모듈 체인 전체의 접근 가능 여부 판단 |
-| `getFlatPermissions` | function | 앱 구조 트리를 플래트닝하여 권한 배열 반환 |
-
-→ See [docs/app-structure.md](./docs/app-structure.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`AppStructureItem`](./docs/app-structure/app-structure-item.md) | type | 앱 구조 항목 유니언 (`AppStructureGroupItem`, `AppStructureLeafItem`, `AppStructureSubPermission`, `FlatPermission` 포함) |
+| [`isUsableModules`](./docs/app-structure/is-usable-modules.md) | function | 단일 항목의 모듈 접근 가능 여부 판단 |
+| [`isUsableModulesChain`](./docs/app-structure/is-usable-modules-chain.md) | function | 모듈 체인 전체의 접근 가능 여부 판단 |
+| [`getFlatPermissions`](./docs/app-structure/get-flat-permissions.md) | function | 앱 구조 트리를 플래트닝하여 권한 배열 반환 |
 
 ### Events
 
-| API | Type | Description |
-|-----|------|-------------|
-| `ServiceEventDef` | interface | 타입 안전 이벤트 정의 인터페이스 |
-| `defineEvent` | function | 타입 안전 이벤트를 정의하는 팩토리 함수 |
-
-→ See [docs/events.md](./docs/events.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`defineEvent`](./docs/events/define-event.md) | function | 타입 안전 이벤트를 정의하는 팩토리 함수 (`ServiceEventDef` 포함) |
 
 ## Usage Examples
 

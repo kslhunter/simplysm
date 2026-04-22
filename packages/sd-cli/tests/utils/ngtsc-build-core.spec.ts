@@ -8,7 +8,7 @@ const mockCollectDiagnostics = vi.fn().mockReturnValue([]);
 const mockEmitAffectedFiles = vi.fn().mockReturnValue([]);
 const mockGetTsProgram = vi.fn().mockReturnValue({
   getSourceFiles: () => [],
-} as unknown as ts.Program);
+});
 
 const angularCompilerConstructorSpy = vi.fn();
 

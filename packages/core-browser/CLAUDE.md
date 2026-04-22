@@ -30,7 +30,8 @@ src/
 ```json
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "typeRoots": ["./node_modules/@types"]
   }
 }
 ```

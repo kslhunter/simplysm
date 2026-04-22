@@ -130,7 +130,7 @@ describe("Feature 3.3 Slice 3: 커스텀 토스트 + 에러 래핑", () => {
     const provider = TestBed.inject(SdToastProvider);
 
     await expect(
-      provider.try(() => Promise.reject("string-error" as unknown)),
+      provider.try(() => Promise.reject("string-error")),
     ).rejects.toBe("string-error");
 
     expect(getToastsInBody().length).toBe(0);

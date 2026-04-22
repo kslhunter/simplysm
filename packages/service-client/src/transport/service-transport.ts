@@ -120,7 +120,7 @@ export function createServiceTransport(
         });
       } else {
         if (decoded.message.name === "progress") {
-          const body = decoded.message.body as { totalSize: number; completedSize: number };
+          const body = decoded.message.body;
           listenerInfo?.progress?.server?.({
             uuid: decoded.uuid,
             totalSize: body.totalSize,
@@ -151,7 +151,7 @@ export function createServiceTransport(
 
           listenerInfo?.reject(toError(decoded.message.body));
         } else if (decoded.message.name === "evt:on") {
-          const body = decoded.message.body as { keys: string[]; data: unknown };
+          const body = decoded.message.body;
           emitter.emit("event", { keys: body.keys, data: body.data });
         } else {
           throw new Error("서버로부터 잘못된 메시지를 수신했습니다.");

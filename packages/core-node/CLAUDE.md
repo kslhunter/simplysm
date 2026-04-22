@@ -2,11 +2,9 @@
 
 > 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Package Overview
 
-`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작(fsx), 자식 프로세스 실행(cpx), 경로 처리(pathx), 파일 감시(FsWatcher), Worker thread 래퍼, consola 로깅 설정을 제공한다. 11개 TypeScript 소스 파일.
+`@simplysm/core-node` — Node.js 전용 코어 유틸리티 패키지. 파일 시스템 조작(`fsx`), 자식 프로세스 실행(`cpx`), 경로 처리(`pathx`), 파일 감시(`FsWatcher`), Worker thread 래퍼, consola 로깅 설정을 제공한다. 11개 TypeScript 소스 파일.
 
 ## Architecture
 
@@ -38,7 +36,6 @@ src/
 `fsx`, `cpx`, `pathx`는 각각 `utils/fs.ts`, `utils/cp.ts`, `utils/path.ts`의 모든 함수를 묶은 네임스페이스다. 새로운 함수를 추가할 때는 해당 유틸리티 파일에만 추가하면 자동으로 네임스페이스에 포함된다.
 
 ```typescript
-// 소비 코드에서의 사용법
 import { fsx, cpx, pathx } from "@simplysm/core-node";
 
 await fsx.write("/path/to/file.txt", "content");
@@ -62,7 +59,7 @@ const posixPath = pathx.posixResolve("/base", "sub");
 ```typescript
 import { pathx } from "@simplysm/core-node";
 
-const p: pathx.PosixPath = pathx.posix("C:\Users\test"); // "C:/Users/test"
+const p: pathx.PosixPath = pathx.posix("C:\\Users\\test"); // "C:/Users/test"
 const abs: pathx.PosixPath = pathx.posixResolve("./relative"); // 절대 경로 + POSIX
 ```
 
@@ -73,18 +70,14 @@ const abs: pathx.PosixPath = pathx.posixResolve("./relative"); // 절대 경로 
 ```typescript
 import { cpx } from "@simplysm/core-node";
 
-// await로 결과 획득
 const result = await cpx.spawn("git", ["status"], { cwd: "/project" });
 // result: { stdout: string, stderr: string, exitCode: number }
 
-// 실행 중 종료
 const proc = cpx.spawn("long-running-cmd", []);
 proc.kill();
 
-// stdio: "inherit"로 출력 직접 표시, reject: false로 오류 무시
 await cpx.spawn("make", ["build"], { stdio: "inherit", reject: false });
 
-// 동기 실행
 const syncResult = cpx.spawnSync("node", ["--version"]);
 ```
 
@@ -92,7 +85,7 @@ const syncResult = cpx.spawnSync("node", ["--version"]);
 
 ### FsWatcher 패턴
 
-`FsWatcher.watch()`로 감시를 시작하고 `onChange()`로 핸들러를 등록한다. 짧은 시간 내 연속 이벤트는 내부에서 병합된다 (예: `add` + `change` -> `add`). EPERM 에러 발생 시 최대 3회까지 watcher를 자동 재시작한다.
+`FsWatcher.watch()`로 감시를 시작하고 `onChange()`로 핸들러를 등록한다. 짧은 시간 내 연속 이벤트는 내부에서 병합된다 (예: `add` + `change` → `add`). EPERM 에러 발생 시 최대 3회까지 watcher를 자동 재시작한다.
 
 ```typescript
 import { FsWatcher } from "@simplysm/core-node";
@@ -116,22 +109,18 @@ glob 패턴이 포함된 경로는 glob base 디렉토리를 감시하고, Minim
 `setupConsola()`는 환경에 따라 consola reporter를 자동 구성한다. 프로젝트 루트의 `console.*` 금지 규칙을 대체하여 `consola`를 표준 로깅 수단으로 사용한다.
 
 환경별 동작:
-- **프로덕션** (`env.DEV` 아님, `cli` 아님): `FileReporter`만 사용, debug 레벨까지 파일 기록
+- **프로덕션** (`DEV` 아님, `cli` 아님): `FileReporter`만 사용, debug 레벨까지 파일 기록
 - **개발 또는 `cli: true` + `SD_DEBUG`**: `PrettyReporter`만 사용, debug 레벨까지 터미널 출력
 - **개발 또는 `cli: true` (일반)**: `FileReporter` + `PrettyReporter`(info 이하만), debug는 파일에만 기록
 
 ```typescript
 import { setupConsola, PrettyReporter, createFileReporter, withMaxLevel } from "@simplysm/core-node";
 
-// 환경별 자동 구성
 setupConsola();
-
-// CLI 모드 (프로덕션에서도 dev 경로 사용)
 setupConsola({ cli: true });
 
-// 개별 reporter 직접 사용
 const fileReporter = createFileReporter({ maxSize: 10 * 1024 * 1024, maxDays: 7 });
-const limitedReporter = withMaxLevel(new PrettyReporter(), 3); // info 이하만
+const limitedReporter = withMaxLevel(new PrettyReporter(), 3);
 ```
 
 `FileReporter`는 `.logs/` 디렉토리에 `app.YYYY-MM-DD.log` 형식으로 JSON 라인을 기록하며, 날짜별 로테이션과 크기 제한(기본 20MB)을 지원한다. `maxDays`(기본 14일) 이전의 로그 파일은 자동 삭제된다.

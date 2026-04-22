@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 152 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 131 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -147,13 +147,15 @@ src/
   - `injectSdSystemConfigResource(options: { key: Signal<string | undefined> })`: `SdSystemConfigProvider`를 통해 컴포넌트 태그명 기반 키로 시스템 설정을 읽고 쓰는 `ResourceRef` 래퍼. `value`, `isLoading`, `set()`, `update()` 반환
   - `injectCurrentPageCodeSignal()`, `injectFullPageCodeSignal()`, `injectViewTitleSignal()`, `injectViewTypeSignal()`: 라우터 기반 현재 페이지 코드/타이틀/뷰 타입 signal. `injectViewTypeSignal()`은 `inject(ElementRef)` + `reflectComponentType(activatedRoute.component)?.selector` vs 호스트 `tagName.toLowerCase()` 비교로 page 판정 (`SdActivatedModalProvider` 존재 시 modal 우선)
   - `injectPermsSignal(viewCodes, keys)`: 앱 구조 기반 권한 signal
-- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()` 등 (core/utils/setups/)
+- **setup 함수** (부수효과 설치) - `setupRipple()`, `setupInvalid()`, `setupModelHook()`, `setupCanDeactivate()`, `setupRevealOnShow()`, `setupBgTheme()` 등
   - `inject()`, `effect()`, `DestroyRef.onDestroy()` 사용하여 생성자에서 실행
+  - `setupModelHook<T, S extends WritableSignal<T>>(model: S, canFn: Signal<(item: T) => boolean | Promise<boolean>>): void` — model의 `set`/`update`를 canFn 가드로 래핑. 동기 `false` 반환 시 즉시 차단, `Promise` 반환 시 비동기 대기
+  - `setupBgTheme(options?: { theme?: "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"; lightness?: "lightest"|"lighter" }): void` — body의 `--background-color` CSS 변수를 설정하고, cleanup 시 초기화
 - **use 함수** (순수 Signal 유틸리티, DI 미사용) - `useSelectionManager()`, `useSortingManager()`, `useExpandingManager()`
   - Signal과 메서드를 포함한 객체 반환 (클래스가 아님)
-  - `useSelectionManager`: `displayItems`, `selectedItems`, `selectMode`, `getItemSelectableFn`, `trackByFn` signal을 받아 `hasSelectable`, `isAllSelected`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환. `trackByFn`이 반환하는 key를 기준으로 `obj.equal`(deep equal) 비교를 수행하므로 같은 key의 다른 reference item도 `isSelected` true로 복원된다
-  - `useSortingManager`: `sorts` WritableSignal을 받아 `defMap` (computed), `toggle()`, `sort()` 반환
-  - `useExpandingManager`: `items`, `expandedItems`, `getChildrenFn`, `sort` 바인딩으로 `displayItems`, `hasExpandable`, `isAllExpanded`, `toggle()`, `toggleAll()`, `isVisible()`, `def()` 반환
+  - `useSelectionManager`: `{ displayItems, selectedItems, selectMode, getItemSelectableFn, trackByFn }` 받아 `hasSelectable`, `isAllSelected`, `getSelectable(item)`, `getCanChangeFn(item)`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환. `trackByFn`이 반환하는 key를 기준으로 `obj.equal`(deep equal) 비교를 수행하므로 같은 key의 다른 reference item도 `isSelected` true로 복원된다
+  - `useSortingManager`: `{ sorts: WritableSignal<SortingDef[]> }` 받아 `defMap` (computed), `toggle(key, multiple)`, `sort(items)` 반환
+  - `useExpandingManager`: `{ items, expandedItems, getChildrenFn, sort }` 받아 `displayItems`, `hasExpandable`, `isAllExpanded`, `toggle()`, `toggleAll()`, `isVisible()`, `def()` 반환
 - **단독 유틸**
   - `setSafeStyle(renderer, el, styles)`: Renderer2를 사용하여 여러 CSS 스타일을 안전하게 적용
   - `mark(sig)`: WritableSignal의 값을 shallow copy하여 새 참조를 생성, consumer에게 변경을 알린다. 배열은 `[...v]`, 객체는 `{...v}`로 복사
@@ -166,10 +168,10 @@ src/
 - `SdSystemLogProvider` - `writeFn?` 콜백, `writeAsync(severity, ...data)` 메서드
 - `SdServiceClientFactoryProvider` - ServiceClient 인스턴스 팩토리/관리
 - `SdSharedDataProvider` (abstract, `@Injectable()`) - 이벤트 기반 공유 데이터 캐시. `register()`, `getHandle()`, `emitAsync()`, `wait()` 메서드. 이벤트 API 호출 시 `client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange")` 프록시 패턴 사용
-- `SdModalProvider` - `showAsync<T>(modal, options): Promise<OutputType>` 프로그래밍 방식 모달. 내부적으로 `createComponent` + `projectableNodes` 사용
-- `SdActivatedModalProvider` - 모달 내부에서 inject하여 모달 컴포넌트/컨텐츠 컴포넌트 참조
-- `SdToastProvider` - `info/success/warning/danger(message, useProgress?)`, `notify<T>()` 커스텀 토스트, `try(fn, messageFn?)` 에러 래퍼
-- `SdBusyProvider` - `globalBusyCount: WritableSignal<number>`, `type: WritableSignal<SdBusyType>`
+- `SdModalProvider` - `modalCount: WritableSignal<number>`, `showAsync<T>(modal, options?): Promise<OutputType>` 프로그래밍 방식 모달. 내부적으로 `createComponent` + `projectableNodes` 사용
+- `SdActivatedModalProvider` - 모달 내부에서 inject하여 `modalComponent`, `contentComponent` 참조. `canDeactivateFn: () => boolean` 제공
+- `SdToastProvider` - `alertThemes: WritableSignal<SdToastSeverity[]>`, `overlap: WritableSignal<boolean>`, `beforeShowFn?`, `info/success/warning/danger(message, useProgress?)`, `notify<T>()` 커스텀 토스트, `try(fn, messageFn?)` 에러 래퍼
+- `SdBusyProvider` - `globalBusyCount: WritableSignal<number>`, `type: WritableSignal<SdBusyType>`, `containerRef: ComponentRef<SdBusyContainer>` (지연 생성 getter)
 - `SdPrintProvider` - `printAsync(template, options?)`, `getPdfBufferAsync(template, options?)`. jsPDF + html-to-image 사용
 - `SdLocalStorageProvider` - `clientName` 스코프 타입 localStorage 래퍼
 - `SdFileDialogProvider` - 네이티브 파일 선택 대화상자
@@ -241,7 +243,7 @@ type WithOptional<T, K extends keyof T>
 
 테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/busy/`, `tests/modal/`, `tests/sheet/` 등 기능 단위 플랫 구조. `tests/scss/`는 SCSS 컴파일 결과 검증.
 
-163개의 spec 파일.
+155개의 spec 파일.
 
 ### Test Pattern
 

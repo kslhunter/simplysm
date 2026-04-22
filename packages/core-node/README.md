@@ -10,118 +10,34 @@ npm install @simplysm/core-node
 
 ## API Overview
 
-### File System (fsx)
+### Utils
 
-파일 시스템 작업을 위한 유틸리티 네임스페이스. 모든 함수는 동기/비동기 쌍으로 제공된다.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`fsx`](./docs/utils/fsx.md) | namespace | 파일 시스템 유틸리티. 존재 확인, 읽기/쓰기, 복사, 삭제, glob 등. 모든 연산은 동기/비동기 쌍으로 제공 |
+| [`cpx`](./docs/utils/cpx.md) | namespace | 자식 프로세스 실행 및 인코딩 감지. `spawn`, `spawnSync`, `SpawnProcess`, `SpawnResult` 포함 |
+| [`pathx`](./docs/utils/pathx.md) | namespace | 경로 처리. `PosixPath` 브랜드 타입, `posix`, `posixResolve`, `isChildPath`, `filterByTargets` 등 |
 
-| API | Type | Description |
-|-----|------|-------------|
-| `exists` | function | 파일 또는 디렉토리가 존재하는지 확인 (비동기) |
-| `existsSync` | function | 파일 또는 디렉토리가 존재하는지 확인 (동기) |
-| `mkdir` | function | 디렉토리를 생성 (재귀적, 비동기) |
-| `mkdirSync` | function | 디렉토리를 생성 (재귀적, 동기) |
-| `rm` | function | 파일/디렉토리 삭제, 파일 잠금 시 최대 6회 재시도 (비동기) |
-| `rmSync` | function | 파일/디렉토리 삭제 (동기, 재시도 없음) |
-| `copy` | function | 파일/디렉토리 복사, 필터 옵션 지원 (비동기) |
-| `copySync` | function | 파일/디렉토리 복사, 필터 옵션 지원 (동기) |
-| `read` | function | 파일을 UTF-8 문자열로 읽음 (비동기) |
-| `readSync` | function | 파일을 UTF-8 문자열로 읽음 (동기) |
-| `readBytes` | function | 파일을 Uint8Array로 읽음 (비동기) |
-| `readBytesSync` | function | 파일을 Uint8Array로 읽음 (동기) |
-| `readJson` | function | JSON 파일 읽음 (비동기) |
-| `readJsonSync` | function | JSON 파일 읽음 (동기) |
-| `write` | function | 파일에 데이터 쓰기, 상위 디렉토리 자동 생성 (비동기) |
-| `writeSync` | function | 파일에 데이터 쓰기, 상위 디렉토리 자동 생성 (동기) |
-| `writeJson` | function | JSON 파일에 데이터 쓰기 (비동기) |
-| `writeJsonSync` | function | JSON 파일에 데이터 쓰기 (동기) |
-| `readdir` | function | 디렉토리 내용 읽기 (비동기) |
-| `readdirSync` | function | 디렉토리 내용 읽기 (동기) |
-| `stat` | function | 파일/디렉토리 정보 조회, 심볼릭 링크 따라감 (비동기) |
-| `statSync` | function | 파일/디렉토리 정보 조회, 심볼릭 링크 따라감 (동기) |
-| `lstat` | function | 파일/디렉토리 정보 조회, 심볼릭 링크 따라가지 않음 (비동기) |
-| `lstatSync` | function | 파일/디렉토리 정보 조회, 심볼릭 링크 따라가지 않음 (동기) |
-| `glob` | function | Glob 패턴으로 파일 검색 (비동기) |
-| `globSync` | function | Glob 패턴으로 파일 검색 (동기) |
-| `clearEmptyDirectory` | function | 빈 디렉토리 재귀적 삭제 |
-| `findAllParentChildPathsSync` | function | 부모 디렉토리에서 특정 파일 검색 (동기) |
-| `findAllParentChildPaths` | function | 부모 디렉토리에서 특정 파일 검색 (비동기) |
+### Features
 
-→ See [docs/file-system.md](./docs/file-system.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`FsWatcher`](./docs/features/fs-watcher.md) | class | Chokidar 기반 파일 시스템 감시. 이벤트 병합, EPERM 자동 복구 |
 
-### Child Process (cpx)
+### Logging
 
-자식 프로세스 실행 및 인코딩 감지.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`PrettyReporter`](./docs/logging/pretty-reporter.md) | class | 터미널 출력용 consola reporter. 아이콘, 색상, 에러 스택 포맷팅 |
+| [`createFileReporter`](./docs/logging/create-file-reporter.md) | function | 파일 기반 consola reporter 생성. JSON 라인, 날짜별 로테이션, 크기 제한 |
+| [`setupConsola`](./docs/logging/setup-consola.md) | function | 환경별 자동 consola 구성. `withMaxLevel`도 같은 파일에 포함 |
 
-| API | Type | Description |
-|-----|------|-------------|
-| `spawn` | function | 자식 프로세스 실행, Promise 기반, 실시간 제어 가능 |
-| `spawnSync` | function | 자식 프로세스 동기 실행 |
-| `getSystemEncoding` | function | 시스템 기본 인코딩 감지 |
-| `codePageToEncoding` | function | Windows 코드 페이지를 인코딩명으로 변환 |
-| `decodeBytes` | function | Uint8Array를 문자열로 디코딩 |
-| `resolveStdioPipe` | function | stdio 옵션에서 pipe 여부 판단 |
-| `resetEncodingCache` | function | 인코딩 캐시 초기화 |
-| `SpawnProcess` | class | spawn() 반환 타입, PromiseLike 구현 |
-| `SpawnResult` | interface | spawn/spawnSync 결과 타입 |
+### Worker
 
-→ See [docs/child-process.md](./docs/child-process.md) for details.
-
-### Path (pathx)
-
-경로 처리 및 PosixPath 브랜드 타입.
-
-| API | Type | Description |
-|-----|------|-------------|
-| `posix` | function | 경로를 POSIX 스타일(슬래시)로 변환 |
-| `posixResolve` | function | 경로를 절대 경로로 resolve한 후 POSIX 스타일로 변환 |
-| `changeFileDirectory` | function | 파일의 디렉토리를 변경 |
-| `basenameWithoutExt` | function | 확장자를 제외한 파일명 반환 |
-| `isChildPath` | function | 자식 경로 여부 확인 |
-| `filterByTargets` | function | 대상 경로 목록에 기반한 파일 필터링 |
-| `PosixPath` | type | POSIX 스타일 경로 브랜드 타입 |
-
-→ See [docs/path.md](./docs/path.md) for details.
-
-### File Watching (FsWatcher)
-
-Chokidar 기반 파일 시스템 감시 클래스.
-
-| API | Type | Description |
-|-----|------|-------------|
-| `FsWatcher` | class | 파일 시스템 감시, 이벤트 병합, 자동 복구 |
-| `FsWatcherEvent` | type | 감시 이벤트 타입: "add" \| "addDir" \| "change" \| "unlink" \| "unlinkDir" |
-| `FsWatcherChangeInfo` | interface | 파일 변경 정보 (event + path) |
-
-→ See [docs/file-watching.md](./docs/file-watching.md) for details.
-
-### Logging (consola)
-
-Consola 로깅 설정 및 reporter.
-
-| API | Type | Description |
-|-----|------|-------------|
-| `setupConsola` | function | 환경별 자동 consola 구성 |
-| `withMaxLevel` | function | 로그 레벨 상한선을 설정한 reporter 래퍼 |
-| `PrettyReporter` | class | 터미널 출력용 consola reporter |
-| `createFileReporter` | function | 파일 기반 consola reporter 생성 |
-
-→ See [docs/logging.md](./docs/logging.md) for details.
-
-### Worker Threads
-
-타입 안전한 Worker thread 래퍼.
-
-| API | Type | Description |
-|-----|------|-------------|
-| `Worker` | class | Worker thread 프록시 생성 및 메서드 호출 |
-| `createWorker` | function | 워커 측에서 호출하는 워커 모듈 생성 함수 |
-| `WorkerModule` | interface | 워커 모듈의 타입 구조 |
-| `WorkerProxy` | type | Worker.create() 반환 프록시 타입 |
-| `WorkerRequest` | interface | 워커 요청 메시지 타입 |
-| `WorkerResponse` | type | 워커 응답 메시지 타입 |
-| `PromisifyMethods` | type | 메서드를 Promise 버전으로 변환하는 매핑 타입 |
-
-→ See [docs/worker-threads.md](./docs/worker-threads.md) for details.
+| Entry | Kind | Description |
+|-------|------|-------------|
+| [`Worker`](./docs/worker/worker.md) | const | 타입 안전한 Worker thread 프록시 생성. `WorkerProxy`, `WorkerModule`, `WorkerRequest`, `WorkerResponse`, `PromisifyMethods` 포함 |
+| [`createWorker`](./docs/worker/create-worker.md) | function | 워커 파일에서 메서드와 이벤트를 등록하는 팩토리 함수 |
 
 ## Usage Examples
 
@@ -157,42 +73,15 @@ import { cpx } from "@simplysm/core-node";
 
 // 기본 실행
 const result = await cpx.spawn("npm", ["list"], { cwd: "/project" });
-console.log(result.stdout);
 
 // 실시간 출력
 await cpx.spawn("npm", ["run", "build"], { stdio: "inherit" });
 
 // 오류 무시
-const result = await cpx.spawn("cmd", ["nonexistent"], { reject: false });
-// result.exitCode가 0이 아니어도 throw되지 않음
+const r = await cpx.spawn("cmd", ["nonexistent"], { reject: false });
 
 // 동기 실행
 const syncResult = cpx.spawnSync("node", ["--version"]);
-console.log(syncResult.stdout);
-```
-
-### Path Utilities
-
-```typescript
-import { pathx } from "@simplysm/core-node";
-
-// POSIX 경로 변환
-const posixPath = pathx.posix("C:\\Users\\test");
-console.log(posixPath); // "C:/Users/test"
-
-// 절대 경로 resolve + POSIX
-const absPath = pathx.posixResolve("./relative", "path");
-
-// 자식 경로 확인
-const isChild = pathx.isChildPath("/a/b/c", "/a/b"); // true
-
-// 경로 필터링
-const filtered = pathx.filterByTargets(
-  ["/proj/src/a.ts", "/proj/tests/b.ts"],
-  ["src"],
-  "/proj"
-);
-// ["/proj/src/a.ts"]
 ```
 
 ### File Watching
@@ -204,11 +93,11 @@ const watcher = await FsWatcher.watch(["src/**/*.ts"]);
 
 watcher.onChange({ delay: 300 }, (changes) => {
   for (const { event, path } of changes) {
-    console.log(`${event}: ${path}`);
+    // event: "add" | "addDir" | "change" | "unlink" | "unlinkDir"
+    // path: PosixPath
   }
 });
 
-// 파일 감시 종료
 await watcher.close();
 ```
 
@@ -220,40 +109,32 @@ import { setupConsola } from "@simplysm/core-node";
 // 환경별 자동 구성
 setupConsola();
 
-// CLI 모드 (프로덕션에서도 file + pretty reporter 사용)
+// CLI 모드 (프로덕션에서도 터미널 출력 포함)
 setupConsola({ cli: true });
 ```
 
 ### Worker Threads
 
 ```typescript
-// worker.ts (워커 파일)
+// worker.ts
 import { createWorker } from "@simplysm/core-node";
 
-interface MyEvents {
-  progress: number;
-}
+interface MyEvents { progress: number; }
 
 const methods = {
   add: (a: number, b: number) => a + b,
-  multiply: (a: number, b: number) => a * b,
 };
 
 const sender = createWorker<typeof methods, MyEvents>(methods);
 export default sender;
 
-// main.ts (메인 파일)
+// main.ts
 import { Worker } from "@simplysm/core-node";
 import type * as MyWorker from "./worker";
 
 const worker = Worker.create<typeof MyWorker>("./worker.ts");
 
+worker.on("progress", (value) => { /* ... */ });
 const sum = await worker.add(10, 20); // 30
-const product = await worker.multiply(5, 6); // 30
-
-worker.on("progress", (value) => {
-  console.log(`Progress: ${value}%`);
-});
-
 await worker.terminate();
 ```

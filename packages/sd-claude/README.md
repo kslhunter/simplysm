@@ -50,9 +50,9 @@ npm install @simplysm/sd-claude
 
 | API | Type | Description |
 |-----|------|-------------|
-| `claude/skills/` | asset directory | 16개 sd-* 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `SKILL.eval.md`와 `references/` 포함) |
+| `claude/skills/` | asset directory | 19개 sd-* 스킬 디렉토리 (각 스킬은 `SKILL.md` + 선택적 `SKILL.eval.md`와 `references/` 포함) |
 | `claude/rules/` | asset directory | Claude Code 규칙 파일 (`sd-claude-rules.md`, `sd-options.md`) |
-| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 및 패키지 문서 디렉토리 |
+| `claude/references/` | asset directory | 스킬/규칙에서 참조하는 공유 문서 (`sd-frontend-design.md`, `sd-testing.md`) |
 
 → See [docs/assets.md](./docs/assets.md) for details.
 

@@ -68,7 +68,7 @@ export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn
         requestTimeout: this._timeout,
         trustServerCertificate: true,
         connectTimeout: DB_CONN_CONNECT_TIMEOUT,
-      } as tediousType.ConnectionOptions,
+      },
     });
 
     conn.on("infoMessage", (info) => {

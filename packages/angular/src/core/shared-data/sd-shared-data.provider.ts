@@ -50,7 +50,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
   abstract initialize(): void;
 
   register<K extends string & keyof T>(name: K, info: SharedDataInfo<T[K]>): void {
-    const existing = this._entries.get(name as string);
+    const existing = this._entries.get(name);
     if (existing != null) {
       // 기존 리스너 키 초기화 + generation 증가로 이전 이벤트 무시
       if (existing.listenerKey != null) {
@@ -75,7 +75,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
         },
       };
 
-      this._entries.set(name as string, {
+      this._entries.set(name, {
         info,
         itemsSignal,
         handle,
@@ -87,14 +87,14 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
   }
 
   getHandle<K extends string & keyof T>(name: K): SharedDataHandle<T[K]> {
-    const entry = this._entries.get(name as string);
+    const entry = this._entries.get(name);
     if (entry == null) {
-      throw new Error(`등록되지 않은 공유 데이터: ${name as string}`);
+      throw new Error(`등록되지 않은 공유 데이터: ${name}`);
     }
 
     if (entry.needsReload && !entry.isLoading) {
       entry.needsReload = false;
-      this._loadAndListen(name as string, entry);
+      this._loadAndListen(name, entry);
     }
 
     return entry.handle;
@@ -104,9 +104,9 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
     name: K,
     changeKeys?: (string | number)[],
   ): Promise<void> {
-    const entry = this._entries.get(name as string);
+    const entry = this._entries.get(name);
     if (entry == null) {
-      throw new Error(`등록되지 않은 공유 데이터: ${name as string}`);
+      throw new Error(`등록되지 않은 공유 데이터: ${name}`);
     }
 
     const client = this._sdServiceClientFactory.get(entry.info.serviceKey);

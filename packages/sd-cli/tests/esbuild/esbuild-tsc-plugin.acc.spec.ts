@@ -41,7 +41,7 @@ function setupPlugin(plugin: esbuild.Plugin) {
         outputFiles: [],
         metafile: { inputs: {}, outputs: {} },
         ...result,
-      } as esbuild.BuildResult)) ?? null;
+      })) ?? null;
     },
   };
 }
@@ -73,7 +73,7 @@ function createErrorCompileResult(): ISdTsCompilerResult {
   return {
     ...createSuccessCompileResult(),
     errors: ["TS2322: Type 'string' is not assignable to type 'number'"],
-    diagnostics: [{ category: 1, code: 2322, messageText: "Type mismatch" }] as any,
+    diagnostics: [{ category: 1, code: 2322, messageText: "Type mismatch" }],
     errorCount: 1,
   };
 }

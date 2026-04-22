@@ -423,7 +423,7 @@ describe("createClientEsbuildContext — Acceptance", () => {
       pkgDir: "/workspace/packages/my-app",
       cwd: "/workspace",
       mode: "dev",
-      plugins: [customPlugin as any],
+      plugins: [customPlugin],
       onEnd: vi.fn(),
     });
 

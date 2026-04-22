@@ -41,7 +41,7 @@ function setupPlugin(plugin: esbuild.Plugin) {
         outputFiles: [],
         metafile: { inputs: {}, outputs: {} },
         ...result,
-      } as esbuild.BuildResult)) ?? null;
+      })) ?? null;
     },
   };
 }
@@ -147,7 +147,7 @@ describe("createTscPlugin — Unit Tests", () => {
     it("env, includeTests 옵션을 SdTsCompiler에 전달한다", async () => {
       const result = createTscPlugin({
         ...baseOptions,
-        env: "node" as any,
+        env: "node",
         includeTests: true,
       });
       const lifecycle = setupPlugin(result.plugin);
@@ -172,7 +172,7 @@ describe("createTscPlugin — Unit Tests", () => {
       ];
       mockCompileAsync.mockResolvedValue({
         ...createSuccessCompileResult(),
-        diagnostics: diagnostics as any,
+        diagnostics: diagnostics,
       });
 
       const result = createTscPlugin(baseOptions);

@@ -48,7 +48,7 @@ function setupPlugin(plugin: esbuild.Plugin) {
         outputFiles: [],
         metafile: { inputs: {}, outputs: {} },
         ...result,
-      } as esbuild.BuildResult);
+      });
     },
     invokeOnDispose() { onDisposeCb?.(); },
     get onStartCb() { return onStartCb; },

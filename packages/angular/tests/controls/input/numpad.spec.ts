@@ -381,7 +381,7 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
     let entBtn: HTMLButtonElement | null = null;
     for (const btn of Array.from(buttons)) {
       if (btn.textContent.trim() === "ENT") {
-        entBtn = btn.querySelector("button") as HTMLButtonElement;
+        entBtn = btn.querySelector("button");
         break;
       }
     }
