@@ -12,20 +12,7 @@ function injectCurrentPageCodeSignal(): Signal<string> | undefined
 
 ### 사용 패턴
 
-`injectViewTypeSignal()`과 `injectViewTitleSignal()` 내부에서 사용된다. 직접 사용하는 경우는 modal 뷰에서 `modalOrPageTitle` 계산 시:
-
-```typescript
-const currPageCode = injectCurrentPageCodeSignal();
-const fullPageCode = injectFullPageCodeSignal();
-const sdAppStructure = inject(SdAppStructureProvider);
-
-protected readonly modalOrPageTitle = computed(() =>
-  sdAppStructure.getTitleByFullCode(currPageCode?.() ?? fullPageCode()),
-);
-```
-
-**실사용 예:**
-- [crud-detail.md §7 확장 C: modal 뷰](../recipes/crud-detail.md#7-확장-c-modal-뷰) — modalOrPageTitle 계산
+`injectViewTypeSignal()`과 `injectViewTitleSignal()` 내부에서 사용된다. 일반적으로 직접 사용할 필요 없이 `injectViewTitleSignal()`을 사용하면 된다.
 
 ## `injectFullPageCodeSignal`
 
@@ -37,19 +24,7 @@ function injectFullPageCodeSignal(): Signal<string>
 
 ### 사용 패턴
 
-`injectViewTypeSignal()`과 `injectViewTitleSignal()` 내부에서 사용된다. 직접 사용하는 경우는 modal 뷰에서 `modalOrPageTitle` 계산 시:
-
-```typescript
-const fullPageCode = injectFullPageCodeSignal();
-const sdAppStructure = inject(SdAppStructureProvider);
-
-protected readonly pageTitle = computed(() =>
-  sdAppStructure.getTitleByFullCode(fullPageCode()),
-);
-```
-
-**실사용 예:**
-- [crud-detail.md §7 확장 C: modal 뷰](../recipes/crud-detail.md#7-확장-c-modal-뷰) — modalOrPageTitle 계산
+`injectViewTypeSignal()`과 `injectViewTitleSignal()` 내부에서 사용된다. 일반적으로 직접 사용할 필요 없이 `injectViewTitleSignal()`을 사용하면 된다.
 
 ## `injectViewTitleSignal`
 

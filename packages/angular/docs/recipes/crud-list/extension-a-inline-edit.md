@@ -4,31 +4,36 @@
 
 > **선행:** 없음 (최소 뼈대 §3에 직접 얹음)
 
-시트 셀을 **직접 편집**하고 상단 저장 버튼(또는 Ctrl+S)으로 **일괄 저장**한다. 최소 뼈대(§3)의 읽기 전용 셀을 `<sd-textfield [inset]="true" [size]="'sm'" [readonly]="!edit">`로 교체하고, `oneWayDiffs` 기반 변경 감지 + `_upsertItem` 일괄 실행을 추가한다. `crud-detail.md` 레시피로 편집 모달을 쓰려면 [확장 F. 모달 편집 모드](./extension-f-modal-edit.md)를 대신 얹는다.
+시트 셀을 **직접 편집**하고 상단 저장 버튼(또는 Ctrl+S)으로 **일괄 저장**한다. 최소 뼈대(§3)의 읽기 전용 셀을 `<sd-textfield [inset]="true" [size]="'sm'" [readonly]="!edit">`로 교체하고, `oneWayDiffs` 기반 변경 감지 + `_upsertItem` 일괄 실행을 추가한다.
+
+> **적용 조건:** 시트 셀을 **직접 편집**할 때 이 확장을 사용한다. 행 클릭 → 편집 모달로 수정하는 방식은 [확장 F: 모달 편집 모드](./extension-f-modal-edit.md)를 대신 얹는다. 두 확장은 **상호 배타**이며 동시에 적용하지 않는다.
 
 **이 확장이 도입하는 요소:**
 
-- **imports:** `computed`, `oneWayDiffs`(side-effect import), `obj`, `ArgumentError`, `expr`, `FormatPipe`, `SdSharedDataSelect`, `SdItemOfTemplate`, `SdAnchor`(신규 행 삭제 아이콘), `SdCheckbox`(삭제 포함 필터), `SdCommandDirective` 출력에 `sdSaveCommand` 추가, `setupCanDeactivate`, `viewChild`, `DateTime` 등
+- **imports:** `computed`, `viewChild`, `oneWayDiffs`(side-effect import), `obj`, `ArgumentError`, `expr`, `FormatPipe`, `SdSharedDataSelect`, `SdItemOfTemplate`, `SdAnchor`(신규 행 삭제 아이콘), `setupCanDeactivate`, `type DateTime`, `tablerCirclePlus` / `tablerDeviceFloppy` / `tablerX` 아이콘
 - **DI:** `AppAuthProvider`, `AppSharedDataProvider`
-- **상태:** `_itemsSnapshot: ICustomer[]`, `diffs = computed(...)` (`oneWayDiffs`)
-- **파생:** `canEdit = computed(() => perms().includes("edit") && viewType() === "page")` — `perms()` 외에 `viewType()` 조건도 함께 확인하므로 computed로 wrapping한다. 단일 `perms().includes("...")` 검사만 필요한 곳에서는 인라인이 기본 패턴이다
-- **hostDirectives·host:** `outputs`에 `sdSaveCommand` 추가, `host`에 `(sdSaveCommand)="onSaveButtonClick()"` 추가
-- **viewChild:** `formCtrl = viewChild<SdForm>("formCtrl")`
+- **타입 확장:** `ICustomer`에 `id?`(신규 행용) / `categoryId?` / `lastModifiedAt?` / `lastModifiedBy?` 필드 추가
+- **권한 키 확장:** `injectPermsSignal` 두 번째 인자 `["use"]` → `["use", "edit"]`
+- **상태:** `_itemsSnapshot: ICustomer[]` (직전 `_refresh()` 시점의 items 깊은 복제), `sharedCategories = useSharedSignal("카테고리")`
+- **파생:** `diffs = computed(() => items().oneWayDiffs(_itemsSnapshot, "id"))`, `canEdit = computed(() => perms().includes("edit") && viewType() === "page")` — `perms()` 외에 `viewType()` 조건도 함께 확인하므로 computed로 wrapping한다. 단일 `perms().includes("...")` 검사만 필요한 곳에서는 인라인이 기본 패턴이다
+- **hostDirectives·host:** outputs에 `sdSaveCommand` 추가, host에 `(sdSaveCommand)="onSaveButtonClick()"` 바인딩 추가
+- **viewChild:** `formCtrl = viewChild<SdForm>("formCtrl")` (Ctrl+S → form submit 경로 공유용)
 - **메서드:** `onSaveButtonClick`, `onSubmit`, `onAddItemButtonClick`, `onRemoveNewItemButtonClick`, `_upsertItem`, `_checkIgnoreChanges`, `getIsItemChanged`
-- **생성자:** `setupCanDeactivate(() => this._checkIgnoreChanges())`
-- **템플릿:** topbar에 "저장" 버튼, 필터에 "삭제항목 포함" 체크박스, 시트 셀을 inline 편집 컨트롤(`<sd-textfield>` / `<sd-shared-data-select>`)로 교체, 시트를 `<sd-form #formCtrl (formSubmit)="onSubmit()">`로 감쌈
-- **_refresh 변경:** `_itemsSnapshot = obj.clone(r.items)` 추가
+- **생성자:** `setupCanDeactivate(() => this._checkIgnoreChanges())` 추가
+- **템플릿:** topbar `@if (canEdit())` 블록으로 "저장" 버튼 추가, 필터 dock 아래 inline 도구 dock("등록" 버튼) 추가, 시트 셀을 inline 편집 컨트롤(`<sd-textfield>` / `<sd-shared-data-select>`)로 교체, 시트를 `<sd-form #formCtrl (formSubmit)="onSubmit()">`로 감쌈, id 컬럼 신규 행용 `<sd-anchor>` 제거 버튼 추가
+- **_refresh 변경:** 말미에 `_itemsSnapshot = obj.clone(r.items)` 한 줄 추가
+- **onRefreshButtonClick 변경:** 선두에 `if (!this._checkIgnoreChanges()) return;` 추가
 
-> 상세: [`setupCanDeactivate`](../../utils/setup-functions.md#setupcandeactivate) · [`<sd-form>`](../../ui-form/sd-form.md) · [`<sd-textfield>`](../../ui-form/sd-textfield.md) · [`<sd-checkbox>`](../../ui-form/sd-checkbox.md) · [`<sd-anchor>`](../../ui-form/sd-anchor.md) · [`[cell] let-edit`](../../ui-data/sd-sheet.md#sdsheetcolumncelltemplate)
+> **아래 코드 블록은 diff 조각이다.** 독립 실행 가능한 완성 클래스가 아니며, 최소 뼈대 위에 번호(1)·2)·3)…) 순서대로 삽입·교체할 지점을 나타낸다. 그대로 컴파일되지 않는다.
 
 ```typescript
-// 1) imports 교체 — @simplysm/angular에 {SdAnchor, SdCheckbox, setupCanDeactivate, SdSharedDataSelect, SdItemOfTemplate, FormatPipe, viewChild 등}을 추가.
+// 1) imports 교체 — @simplysm/angular에 {SdAnchor, setupCanDeactivate, SdSharedDataSelect, SdItemOfTemplate, FormatPipe, viewChild 등}을 추가.
 //    @simplysm/core-common에 {ArgumentError, type DateTime, obj}를 추가. @simplysm/orm-common에서 {expr}를 가져온다.
 //    oneWayDiffs는 @simplysm/core-common의 side-effect import로 Array.prototype을 확장하므로 `import "@simplysm/core-common";` 한 줄만으로 활성화된다.
 import { NgIcon } from "@ng-icons/core";
 import {
-  tablerAlertTriangle, tablerCirclePlus, tablerDeviceFloppy, tablerEraser,
-  tablerRefresh, tablerRestore, tablerSearch, tablerX,
+  tablerAlertTriangle, tablerCirclePlus, tablerDeviceFloppy,
+  tablerRefresh, tablerSearch, tablerX,
 } from "@ng-icons/tabler-icons";
 import {
   ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked,
@@ -38,7 +43,7 @@ import { ArgumentError, type DateTime, obj, str } from "@simplysm/core-common";
 import { expr } from "@simplysm/orm-common";
 import {
   FormatPipe, injectPermsSignal, injectViewTitleSignal, injectViewTypeSignal, mark,
-  SdAnchor, SdBusyContainer, SdButton, SdCheckbox, SdCommandDirective, SdDock, SdDockContainer,
+  SdAnchor, SdBusyContainer, SdButton, SdCommandDirective, SdDock, SdDockContainer,
   SdForm, SdItemOfTemplate, SdSharedDataSelect, SdSheet, SdSheetColumn, SdSheetColumnCellTemplate,
   SdTextfield, SdToastProvider, SdTopbar, SdTopbarContainer,
   setupCanDeactivate, type SortingDef,
@@ -48,23 +53,21 @@ import { AppOrmProvider, AppSharedDataProvider, useSharedSignal } from "@adtek/c
 import type { MainDbContext } from "@adtek/db-main";
 import { AppAuthProvider } from "../../../providers/AppAuthProvider";
 
-// 2) ICustomer 확장 — 편집 가능한 필드(선택적 신규 id 포함 / 카테고리 / 삭제 플래그 / 감사 필드)
+// 2) ICustomer 확장 — 편집 가능한 필드(선택적 신규 id 포함 / 카테고리 / 감사 필드)
 interface IFilter {
   searchText?: string;
-  isIncludeDeleted: boolean;
 }
 
 interface ICustomer {
-  id?: number;                  // 신규 행은 undefined
-  name?: string;
+  id?: number;                  // 신규 행은 undefined (diff의 "create" 타입 판정 근거)
+  name: string;                 // 필수 — upsert 시 non-null 단정이 불필요해진다
   phone?: string;
   categoryId?: number;
-  isDeleted: boolean;
-  lastModifiedAt?: DateTime;
+  lastModifiedAt?: DateTime;    // 서버 감사 필드 — 신규 행엔 없음
   lastModifiedBy?: string;
 }
 
-// 3) @Component — imports 배열에 SdAnchor/SdCheckbox/SdSharedDataSelect/SdItemOfTemplate/FormatPipe 추가.
+// 3) @Component — imports 배열에 SdAnchor/SdSharedDataSelect/SdItemOfTemplate/FormatPipe 추가.
 //    hostDirectives outputs에 "sdSaveCommand" 추가. host에 (sdSaveCommand) 바인딩 추가.
 @Component({
   // ...selector/cd/encapsulation/standalone 동일
@@ -72,7 +75,7 @@ interface ICustomer {
     SdBusyContainer, SdTopbarContainer, SdTopbar,
     SdDockContainer, SdDock,
     SdForm, SdSheet, SdSheetColumn, SdSheetColumnCellTemplate,
-    SdButton, SdAnchor, SdCheckbox, SdTextfield,
+    SdButton, SdAnchor, SdTextfield,
     SdSharedDataSelect, SdItemOfTemplate,
     NgIcon, FormatPipe,
   ],
@@ -100,16 +103,11 @@ sharedCategories = useSharedSignal("카테고리");
 private _itemsSnapshot: ICustomer[] = [];
 diffs = computed(() => this.items().oneWayDiffs(this._itemsSnapshot, "id"));
 
-// filter 기본값에 isIncludeDeleted 포함
-filter = signal<IFilter>({ isIncludeDeleted: false });
-lastFilter = signal<IFilter>({ isIncludeDeleted: false });
+filter = signal<IFilter>({});
+lastFilter = signal<IFilter>({});
 
 // viewChild (Ctrl+S → form submit 경로 공유)
 formCtrl = viewChild<SdForm>("formCtrl");
-
-// 시트 셀 스타일 — 삭제된 행 취소선
-getItemCellStyleFn = (item: ICustomer): string | undefined =>
-  item.isDeleted ? "text-decoration: line-through;" : undefined;
 
 // 6) 생성자에 setupCanDeactivate 추가 + _refresh에 snapshot 갱신
 constructor() {
@@ -122,8 +120,8 @@ getIsItemChanged(item: ICustomer): boolean {
   return this.diffs().some((diff) => diff.item.id === item.id);
 }
 
-// 7) template — topbar에 "저장" 버튼, 필터에 "삭제항목 포함" 체크박스, 시트 셀을 inline 편집으로 교체,
-//    시트를 <sd-form #formCtrl (formSubmit)="onSubmit()">로 감싼다. `[getItemCellStyleFn]` 바인딩 추가.
+// 7) template — topbar에 "저장" 버튼, 시트 셀을 inline 편집으로 교체,
+//    시트를 <sd-form #formCtrl (formSubmit)="onSubmit()">로 감싼다.
 template: `
   <sd-busy-container [busy]="busyCount() > 0">
     @if (initialized()) {
@@ -145,7 +143,6 @@ template: `
           }
 
           <sd-dock-container>
-            <!-- 필터: "삭제항목 포함" 체크박스 추가 -->
             <sd-dock class="p-default">
               <sd-form (formSubmit)="onFilterSubmit()">
                 <div class="form-box-inline">
@@ -157,14 +154,18 @@ template: `
                     <sd-textfield [type]="'text'" [placeholder]="'이름/전화번호'"
                       [(value)]="filter().searchText" (valueChange)="mark(filter)" />
                   </div>
-                  <div class="form-box-item">
-                    <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
-                      삭제항목 포함
-                    </sd-checkbox>
-                  </div>
                 </div>
               </sd-form>
             </sd-dock>
+
+            <!-- 도구 (page 뷰에서만) — 확장 B/G 등이 이 dock에 버튼을 추가한다 -->
+            @if (canEdit() && viewType() === "page") {
+              <sd-dock class="flex-row gap-sm p-xs-default">
+                <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onAddItemButtonClick()">
+                  <ng-icon [svg]="tablerCirclePlus" /> 등록
+                </sd-button>
+              </sd-dock>
+            }
 
             <!-- 시트를 일괄 저장용 <sd-form>으로 감싼다. #formCtrl는 Ctrl+S 경로 공유 -->
             <sd-form #formCtrl (formSubmit)="onSubmit()" class="block fill p-default pt-0">
@@ -175,7 +176,6 @@ template: `
                 [totalPageCount]="pageLength()"
                 [(sorts)]="sortingDefs"
                 [trackByFn]="trackByFn"
-                [getItemCellStyleFn]="getItemCellStyleFn"
               >
                 <!-- id 컬럼: 신규 행이면 <sd-anchor>로 제거 버튼 -->
                 <sd-sheet-column [fixed]="true" [key]="'id'" [header]="'#'">
@@ -279,7 +279,7 @@ async onSubmit(): Promise<void> {
 }
 
 onAddItemButtonClick(): void {
-  this.items.update((list) => [{ isDeleted: false }, ...list]);
+  this.items.update((list) => [{}, ...list]);
 }
 
 onRemoveNewItemButtonClick(item: ICustomer): void {
@@ -305,7 +305,7 @@ private async _refresh(): Promise<void> {
   this._itemsSnapshot = obj.clone(r.items);    // ← snapshot 갱신
 }
 
-// 10) _search의 where절·select에 isDeleted/카테고리/감사 필드 반영 + _upsertItem 추가
+// 10) _search의 where절·select에 카테고리/감사 필드 반영 + _upsertItem 추가
 private async _search(usePagination: boolean): Promise<{ items: ICustomer[]; pageLength: number }> {
   const filter = this.lastFilter();
   const sortingDefs = this.sortingDefs();
@@ -316,15 +316,11 @@ private async _search(usePagination: boolean): Promise<{ items: ICustomer[]; pag
     if (!str.isNullOrEmpty(filter.searchText)) {
       qr1 = qr1.search((item) => [item.name, item.phone], filter.searchText);
     }
-    if (!filter.isIncludeDeleted) {
-      qr1 = qr1.where((item) => [expr.eq(item.isDeleted, false)]);
-    }
 
     const pageLength = usePagination ? Math.ceil((await qr1.count()) / 50) : 0;
 
     let qr2 = qr1.joinLastDataLog().select((item) => ({
       id: item.id, name: item.name, phone: item.phone, categoryId: item.categoryId,
-      isDeleted: item.isDeleted,
       lastModifiedAt: item.lastDataLog?.dateTime,
       lastModifiedBy: item.lastDataLog?.userName,
     }));
@@ -341,18 +337,17 @@ private async _search(usePagination: boolean): Promise<{ items: ICustomer[]; pag
 private async _upsertItem(
   db: MainDbContext, item: ICustomer, logType: string,
 ): Promise<number> {
-  if (!item.isDeleted && (await db.customer().where((c) => [
+  if (await db.customer().where((c) => [
     expr.eq(c.name, item.name),
     expr.not(expr.eq(c.id, item.id)),
-    expr.eq(c.isDeleted, false),
-  ]).exists())) {
+  ]).exists()) {
     throw new ArgumentError("동일한 명칭이 이미 등록되어 있습니다.", { 명칭: item.name });
   }
 
   const upsertResult = await db.customer()
     .where((c) => [expr.eq(c.id, item.id)])
     .upsert(() => ({
-      name: item.name!, phone: item.phone, categoryId: item.categoryId, isDeleted: item.isDeleted,
+      name: item.name, phone: item.phone, categoryId: item.categoryId,
     }), ["id"]);
   const upsertId = upsertResult[0].id;
 
@@ -367,16 +362,46 @@ private async _upsertItem(
 
 **포인트:**
 
-- **`diffs = computed(() => items.oneWayDiffs(_itemsSnapshot, "id"))`는 변경 감지 signal**. 템플릿(`getIsItemChanged`) / 호출부(`onSubmit` / `_checkIgnoreChanges`) 모두에서 `this.diffs()`로 참조한다. `_itemsSnapshot`은 `obj.clone(r.items)`로 `_refresh()` 시점마다 deep 복제.
-- **`oneWayDiffs`는 delete를 다루지 않는다.** `type: "create" | "update" | "same"`만 반환한다. 삭제 의사는 `item.isDeleted = true` 플래그로 표현하여 `"update"` diff로 전송된다(서버가 soft-delete 처리). `items` 배열에서 row를 물리 제거하면 diff에서 누락되어 서버가 변경을 감지할 수 없다 — 신규 행(id == null)이 "저장하지 않겠다"일 때만 `onRemoveNewItemButtonClick`로 제거한다.
-- **시트 셀 내부 컨트롤은 `[inset]="true" [size]="'sm'"` 명시 필수** — `<sd-textfield>` / `<sd-shared-data-select>` / `<sd-checkbox>` 모두. 누락 시 컴파일 에러 없이 스타일만 깨진다. 예외: 복합 구조는 `[inset]="false"`, 큰 시트 행은 `[size]` 생략 가능.
+- **`diffs = computed(() => items.oneWayDiffs(_itemsSnapshot, "id"))`는 변경 감지 signal**. 템플릿(`getIsItemChanged`)·호출부(`onSubmit` / `_checkIgnoreChanges`) 모두에서 `this.diffs()`로 참조한다. `_itemsSnapshot`은 `obj.clone(r.items)`로 `_refresh()` 시점마다 깊은 복제로 갱신한다 (얕은 참조 대입은 cell mutation이 snapshot까지 오염시켜 비교가 실패한다).
+- **`oneWayDiffs`는 delete를 다루지 않는다.** 반환 `type`은 `"create" | "update" | "same"`만 있다(`packages/core-common/src/extensions/arr-ext.types.ts:206`). 상세 처리 경로는 아래 [🚫 흔한 실수](#items-배열에서-기존-row를-물리-제거한다) 참조.
+- **시트 셀 내부 컨트롤은 `[inset]="true" [size]="'sm'"` 명시 필수.** 본 확장에서 inline 편집으로 교체되는 `<sd-textfield>` / `<sd-shared-data-select>`에 모두 적용한다. 상세·예외 케이스는 [공통 규칙: 시트 셀 `[inset]/[size]`](../_common-rules.md#시트-셀-내부-컨트롤에-insettrue-sizesm을-명시한다) 참조.
 - **`let-edit="edit"` + `[readonly]="!edit"` + `[disabled]="!canEdit()"` 3종 바인딩**으로 (a) 전체 권한 / (b) 개별 행 편집 모드 분리 제어. 시트가 제공하는 편집 모드 토글을 사용하지 않는다면 `[readonly]="!canEdit()"`만 써도 된다.
-- **`canEdit = computed(() => perms().includes("edit") && viewType() === "page")`**: edit 권한이 있어도 modal(선택 모달, 조회 전용 modal) 뷰에서는 항상 false. 확장 D/E 적용 시 자동으로 inline 편집이 꺼진다.
-- **`setupCanDeactivate(() => this._checkIgnoreChanges())`**: 라우트 이탈 시 `diffs().length > 0`이면 `confirm`으로 사용자 확인. 이탈을 허용할지 true/false를 리턴한다.
-- **Ctrl+S 경로 통일:** `hostDirectives` → `(sdSaveCommand)="onSaveButtonClick()"` → `formCtrl()?.requestSubmit()` → `<sd-form (formSubmit)="onSubmit()">`. 상단 "저장" 버튼 클릭과 완전히 동일한 경로로 통합.
-- **신규 행 삽입:** `this.items.update((list) => [{ isDeleted: false }, ...list])`. id=undefined이면 snapshot에 존재하지 않으므로 `diffs`에서 `type: "create"`로 잡힌다. `getIsItemChanged(item)`은 `item.id == null`일 때 true를 반환 — 노란 배경 하이라이트.
-- **`_upsertItem`의 중복 명칭 검사**: `expr.not(expr.eq(c.id, item.id))`로 자기 자신 제외. `expr.eq(c.isDeleted, false)`로 soft-delete된 동일 명칭은 허용.
-- **`insertDataLogAsync`로 감사 로그 기록**: `type` 필드에 "등록" / "수정" / "엑셀업로드"(확장 G) 등 맥락 구분 문자열. `_refresh` 이후 `joinLastDataLog()`로 `lastModifiedAt`/`lastModifiedBy` 표시.
+- **`canEdit = computed(() => perms().includes("edit") && viewType() === "page")`**: edit 권한이 있어도 modal(선택 모달·조회 전용 modal) 뷰에서는 항상 false. 확장 D/E 적용 시 inline 편집이 자동으로 꺼진다.
+- **`setupCanDeactivate(() => this._checkIgnoreChanges())`**: 라우트 이탈 시 `diffs().length > 0`이면 `confirm`으로 사용자 확인 후 true/false를 리턴한다. 내부에서 `inject()`를 사용하므로 호출 위치는 생성자·필드 이니셜라이저로 제한된다 — 동일 제약을 다루는 [공통 규칙: `inject()` 의존 함수 호출 시점](../_common-rules.md#injectviewtypesignal은-생성자-또는-필드-이니셜라이저에서만-호출한다) 참조.
+- **Ctrl+S 경로 통일:** `hostDirectives` → `(sdSaveCommand)="onSaveButtonClick()"` → `formCtrl()?.requestSubmit()` → `<sd-form (formSubmit)="onSubmit()">`. 상단 "저장" 버튼 클릭과 완전히 동일한 경로로 수렴한다.
+- **신규 행 삽입:** `this.items.update((list) => [{}, ...list])`. id=undefined이면 snapshot에 존재하지 않으므로 `diffs`에서 `type: "create"`로 잡힌다. `getIsItemChanged(item)`은 `item.id == null`일 때 true를 반환 — 노란 배경 하이라이트.
+- **`(valueChange)="mark(items)"`는 OnPush 통지 용도.** 저장 여부를 `mark` 호출로 판정하지 않는다 (변경 감지는 `diffs().length`가 담당). 상세는 [공통 규칙: `mark(sig)`를 '저장 감지' 수단으로 사용하지 않는다](../_common-rules.md#marksig를-저장-감지-수단으로-사용하지-않는다) 참조.
+- **`_upsertItem`의 중복 명칭 검사**: `expr.not(expr.eq(c.id, item.id))`로 자기 자신 제외. `isDeleted` 컬럼이 있는 테이블에서는 `expr.eq(c.isDeleted, false)` 조건을 추가하여 soft-delete된 동일 명칭은 허용할 수 있다.
+- **`insertDataLogAsync`로 감사 로그 기록**: `type` 필드에 "등록" / "수정" / "엑셀업로드"(확장 G) 등 맥락 구분 문자열. `_refresh` 이후 `joinLastDataLog()`로 `lastModifiedAt` / `lastModifiedBy` 표시.
+
+**🚫 흔한 실수**
+
+> 공통 규칙(`mark` 저장 감지 오해, `setupCanDeactivate` 호출 위치, 시트 셀 `[inset]/[size]` 등)은 [레시피 공통 규칙](../_common-rules.md)을 참조한다. 본 섹션은 **inline 편집 확장 고유 실수**만 다룬다.
+
+### `items` 배열에서 기존 row를 물리 제거한다
+
+```typescript
+// ❌ 기존 row를 배열에서 제거 — oneWayDiffs는 delete를 반환하지 않으므로
+//    저장 시 서버는 이 row가 사라진 사실을 감지하지 못한다.
+onDeleteRow(item: ICustomer): void {
+  this.items.update((list) => list.filter((it) => it !== item));
+}
+
+// ✅ 삭제 의사는 isDeleted 플래그로 표현 → diff의 type: "update"로 전송
+onDeleteRow(item: ICustomer): void {
+  this.items.update((list) => list.map(
+    (it) => it.id === item.id ? { ...it, isDeleted: true } : it,
+  ));
+}
+
+// ✅ 예외: 신규 행(id == null)은 저장 포기 시 물리 제거해도 된다
+//   — snapshot에 존재하지 않으므로 diff 자체가 발생하지 않는다.
+onRemoveNewItemButtonClick(item: ICustomer): void {
+  this.items.update((list) => list.filter((it) => it !== item));
+}
+```
+
+**근거**: `oneWayDiffs`의 반환 `type`은 `"create" | "update" | "same"` 3종뿐이며 delete를 다루지 않는다(`packages/core-common/src/extensions/arr-ext.types.ts:206`). 기존 row를 화면에서 제거하면 diff가 발생하지 않아 서버 저장 경로를 우회한다. soft-delete 경로는 [확장 B: 선택 기능 + 선택 삭제/복구](./extension-b-selection.md) / [확장 C: inline 삭제/복구](./extension-c-inline-delete.md)가 전담한다. `isDeleted` 컬럼이 없는 테이블은 이 확장을 사용하지 않는다 — [공통 규칙: 삭제 방식](../_common-rules.md#삭제-방식은-db-스키마에-따라-결정한다) 참조.
 
 ## Cross-reference
 

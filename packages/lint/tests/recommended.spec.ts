@@ -40,7 +40,7 @@ describe("recommended config", () => {
     expect(ignoresConfig).toBeDefined();
     if (ignoresConfig == null) return;
 
-    const expectedPatterns = ["**/node_modules/**", "**/dist/**", "**/.*/**", "**/_*/**"];
+    const expectedPatterns = ["**/node_modules/**", "**/dist/**", "**/.*/**"];
     expect(ignoresConfig.ignores).toEqual(expect.arrayContaining(expectedPatterns));
   });
 

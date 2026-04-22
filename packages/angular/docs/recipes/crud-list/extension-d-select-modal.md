@@ -4,38 +4,59 @@
 
 > **선행:** [확장 A: inline 편집/저장](./extension-a-inline-edit.md) + [확장 B: 선택 기능](./extension-b-selection.md)
 
-같은 리스트 화면이 **다른 화면에서 항목을 골라주는 "선택 모달"로도 재사용**되도록 한다. 라우트로 진입하면 page 뷰(CRUD 리스트), `SdModalProvider.showAsync()`로 열리면 modal 뷰(selectMode에 따라 single/multi)로 자동 전환되며, 선택 결과를 `close.emit`으로 돌려준다. 조회 전용 modal(부모 레코드의 자식 목록·이력)은 [확장 E](./extension-e-readonly-modal.md)이며 계약이 다르다.
+같은 리스트 화면이 **다른 화면에서 항목을 골라주는 "선택 모달"로도 재사용**되도록 한다. 라우트로 진입하면 page 뷰(CRUD 리스트), `SdModalProvider.showAsync()`로 열리면 modal 뷰(selectMode에 따라 single/multi)로 자동 전환되며, 선택 결과를 `close.emit`으로 돌려준다.
 
-**이 확장이 도입하는 요소:**
+## When to use / When NOT to use
 
-- **imports:** `input`, `output`, `type SdSelectModal`, `type SelectModalOutputResult`
-- **계약:** `implements SdSelectModal<ICustomer>` + `selectMode = input<"single" | "multi" | undefined>()` + `selectedItemKeys = input<(number | undefined)[]>([])` + `close = output<SelectModalOutputResult<ICustomer> | undefined>()`
-- **생성자 effect:** modal 뷰일 때 `selectedItemKeys` → `selectedItems` 복원
-- **메서드:** `onModalConfirmClick`, `onModalCancelClick`
-- **`setupCanDeactivate` 변경:** modal 뷰에서는 변경사항 체크 스킵
-- **템플릿:** `<sd-sheet>`에 `[selectMode]="selectMode() ?? 'multi'"` + `[cumulativeSelection]="viewType() === 'modal' && selectMode() === 'multi'"`. 시트 아래에 modal 전용 하단 dock(`[position]="'bottom'"`) — 선택 해제·확인 버튼.
+- ✅ 같은 리스트를 라우트 페이지와 "선택 모달" 두 용도로 겸용
+- ✅ 항목을 골라 호출 측에 `SelectModalOutputResult<T>`로 돌려주는 selector 화면
+- ✅ multi 선택에서 페이지 이동 후에도 선택을 누적 유지해야 하는 경우
+- ❌ 부모 레코드의 자식 목록·이력을 **읽기 전용으로** 표시(닫기는 SdModal 기본 "X") → [확장 E](./extension-e-readonly-modal.md)
+- ❌ 리스트 **자체는 page** 이고 행 클릭 시 **편집 모달**만 띄우는 경우 → [확장 F](./extension-f-modal-edit.md). 확장 A(inline 편집)와 상호 배타
+- ❌ 리스트가 아닌 단일 값 셀렉트 버튼 → [`data-select-button.md`](../data-select-button.md)
 
-<!-- MOVE: docs/provider-types.md#sdselectmodal --> → [`SdSelectModal<T>` 구현 패턴](../../provider-types/sd-modal-content-def.md#구현-패턴) 참조
-<!-- MOVE: docs/provider-types.md#selectmodaloutputresult --> → [`SelectModalOutputResult<T>`](../../provider-types/sd-modal-content-def.md#selectmodaloutputresult) 참조
-> 상세: [`<sd-dock> position="bottom"`](../../ui-layout/sd-dock.md) · [`cumulativeSelection 사용 패턴`](../../ui-data/sd-sheet.md#cumulativeselection-사용-패턴)
+## 전제조건
+
+- 선행: 확장 A(inline 편집/저장) + 확장 B(선택 기능). 본 확장의 코드는 A의 `canEdit` / `_checkIgnoreChanges` 와 B의 `selectedItems` / `isDeleted` / `getItemCellStyleFn` / `selectMode="multi"` 를 그대로 재사용한다
+- 횡단 규칙: [`_common-rules.md`](../_common-rules.md) — 특히 [`injectViewTypeSignal()` 호출 시점](../_common-rules.md#injectviewtypesignal은-생성자-또는-필드-이니셜라이저에서만-호출한다), [signal 필드 초기값에서 다른 signal 읽기 금지](../_common-rules.md#signal-필드-초기값에서-다른-signal을-읽지-않는다)
+- 호출 측: `SdModalProvider.showAsync(CustomerList, { inputs: { selectMode: "multi", selectedItemKeys: [...] } })` 형태로 연다
+
+## 이 확장이 도입하는 요소
+
+| 영역 | 추가 |
+|------|------|
+| imports | `input`, `output` (`@angular/core`), `type SdSelectModal`, `type SelectModalOutputResult` (`@simplysm/angular`) |
+| 계약 | `implements SdSelectModal<ICustomer>` + `selectMode` input + `selectedItemKeys` input + `close` output |
+| 생성자 effect | modal 뷰일 때 `selectedItemKeys` → `selectedItems` 복원 (items 로드 후) |
+| `setupCanDeactivate` | modal 뷰에서 변경사항 체크 스킵 |
+| 메서드 | `onModalConfirmClick`, `onModalCancelClick` |
+| 파생 | `canEdit = computed(() => perms().includes("edit") && viewType() === "page")` — modal에서는 inline 편집 자동 비활성화 |
+| 템플릿 | `<sd-sheet>`에 `[selectMode]` / `[cumulativeSelection]` 조건부 바인딩 + modal 전용 하단 dock (확인/선택 해제) |
+
+## 코드 (확장 A + B 위에 얹는 diff)
+
+> **아래 코드 블록은 diff 조각이다.** 독립 실행 가능한 완성 클래스가 아니며, 선행 확장(A+B) 위에 번호 순서대로 삽입·교체할 지점을 나타낸다. 그대로 컴파일되지 않는다.
 
 ```typescript
-// 1) imports 추가 — @angular/core의 {input, output}, @simplysm/angular의 {type SdSelectModal, type SelectModalOutputResult}
+// 1) imports 추가
 import { input, output } from "@angular/core";
 import { type SdSelectModal, type SelectModalOutputResult } from "@simplysm/angular";
 
 // 2) 클래스에 SdSelectModal<ICustomer> 계약 구현
 export class CustomerList implements SdSelectModal<ICustomer> {
-  // ...
+  // ... 기존 확장 A + B 멤버 ...
 
   //== SdSelectModal<ICustomer> 계약 ==
   selectMode = input<"single" | "multi" | undefined>();
   selectedItemKeys = input<(number | undefined)[]>([]);
   close = output<SelectModalOutputResult<ICustomer> | undefined>();
 
-  // 3) 생성자에 복원 effect + setupCanDeactivate 조건 완화
+  //== 파생 재정의 — modal 뷰에서는 inline 편집 자동 비활성화 ==
+  // canEdit을 viewType=="page" 조건으로 묶어, modal 뷰에서는 편집 셀·저장·등록 버튼이 자동으로 숨겨진다
+  canEdit = computed(() => this.perms().includes("edit") && this.viewType() === "page");
+
   constructor() {
-    // ... 기존 초기 effect
+    // ... 기존 초기 effect (필터/페이지/정렬 재조회) ...
 
     // modal 뷰: selectedItemKeys → selectedItems 복원 (items 로드 후)
     effect(() => {
@@ -53,13 +74,15 @@ export class CustomerList implements SdSelectModal<ICustomer> {
       });
     });
 
+    // modal 뷰는 라우트 이탈 개념이 없으므로 변경사항 체크 스킵
     setupCanDeactivate(() => this.viewType() === "modal" || this._checkIgnoreChanges());
   }
 
-  // 4) 메서드 추가
+  // 3) 메서드 추가
   onModalConfirmClick(): void {
     const sel = this.selectedItems();
     this.close.emit({
+      // id=undefined 신규 행 제거 — index fallback 금지(아래 Anti-patterns 참조)
       selectedItemKeys: sel.map((it) => this.trackByFn(it)).filterExists(),
       selectedItems: sel,
     });
@@ -68,15 +91,16 @@ export class CustomerList implements SdSelectModal<ICustomer> {
   onModalCancelClick(): void {
     this.selectedItems.set([]);
 
-    // single 모드에서만 즉시 close (multi는 "확인" 버튼 필요)
+    // single 모드에서만 즉시 close (multi는 "확인" 버튼 필요 — 아래 Anti-patterns 참조)
     if (this.selectMode() === "single") {
       this.close.emit({ selectedItemKeys: [], selectedItems: [] });
     }
   }
 }
+```
 
-// 5) template — <sd-sheet>에 selectMode·cumulativeSelection 추가, 시트 뒤에 modal 하단 dock 배치
-`
+```html
+<!-- 4) template — <sd-sheet>에 selectMode·cumulativeSelection 추가, 시트 뒤에 modal 하단 dock 배치 -->
 <sd-sheet
   ...(기존)
   [selectMode]="selectMode() ?? 'multi'"
@@ -104,21 +128,80 @@ export class CustomerList implements SdSelectModal<ICustomer> {
     }
   </sd-dock>
 }
-`
 ```
 
-**포인트:**
+## 포인트
 
-- **`<sd-dock>` 하단 바는 `[position]="'bottom'"` 반드시 명시.** 생략 시 기본값 `"top"`이 적용되어 필터 위에 쌓이며 레이아웃이 깨진다(`sd-dock.ts:97`).
-- **`cumulativeSelection` 의도**: 페이지를 넘어 선택을 **누적**한다. 기본값(`false`)이면 페이지 이동 시 선택 초기화. 선택 모달에서는 multi 모드일 때만 누적 의미가 있으므로 `viewType() === 'modal' && selectMode() === 'multi'`로 조건부 활성화. page 뷰의 "선택 삭제/복구"는 현재 페이지 행만 다루므로 누적하지 않는다.
-- **모달 "선택 해제"는 single 모드에서만 즉시 close.** multi 모드에서 `close.emit`을 무조건 호출하면 "선택 해제 = 취소 + 닫기"가 되어 다시 선택하려면 모달을 재오픈해야 한다. multi에서는 `selectedItems.set([])`만 하고 close는 호출하지 않는다(사용자가 "확인" 버튼으로 최종 emit).
-- **`selectedItemKeys`는 `filterExists()`로 undefined 제거.** `<sd-sheet>`는 key 기반이 아니라 item 기반이므로 `SelectModalOutputResult<T>.selectedItemKeys`는 수동 변환: `selectedItems().map((it) => trackByFn(it)).filterExists()`. **index fallback(`trackByFn(it, i) ?? i`) 금지** — id=undefined인 신규 행이 있을 때 0, 1, 2 같은 index 값이 가짜 key로 들어가 호출 측이 잘못된 selection을 돌려받는다.
-- **`canEdit = computed(() => perms().includes("edit") && viewType() === "page")`**: modal 뷰에서는 항상 false가 되어 inline 편집 셀이 자동으로 읽기 전용으로 전환되고, 상단 "저장" 버튼과 inline 도구 dock(등록/선택 삭제·복구)이 숨겨진다. 선택 모달에서는 편집이 필요 없기 때문.
-- **`setupCanDeactivate` 조건 완화:** modal 뷰에서는 라우트 이탈 개념이 없으므로 `viewType() === "modal"`이면 무조건 true 리턴. 변경사항 확인은 page 뷰에서만.
-- **selectedItemKeys 복원 effect는 items 로드 후에만 동작** — 두 번째 effect가 `items()`와 `selectedItemKeys()` 둘 다 의존. `untracked()`로 감싸 set 호출이 effect 자기 자신을 재실행하지 않도록.
+- **`cumulativeSelection` 의도 — multi + modal에서만 활성화.** `<sd-sheet>`의 기본값은 `false`(`packages/angular/src/data/sheet/sd-sheet.ts:583`)이며, 켜지면 페이지를 넘어 선택을 **누적**한다. page 뷰의 "선택 삭제/복구"는 현재 페이지 행만 다루므로 누적하지 않는다. single 모드는 누적 개념이 없다.
+- **`canEdit`에 `viewType() === "page"` 조건 추가.** modal 뷰에서 자동으로 inline 편집 셀이 읽기 전용이 되고, 상단 "저장" 버튼과 inline 도구 dock(등록/선택 삭제·복구)이 숨겨진다. 선택 모달은 편집 목적이 아니다.
+- **`setupCanDeactivate`는 modal 뷰에서 무조건 true.** modal은 라우트 이탈 개념이 없으므로 변경사항 확인은 page 뷰에서만 수행한다.
+- **복원 effect는 items 로드 후에만 동작.** `items()`와 `selectedItemKeys()` 두 signal에 의존하고, set 호출이 자기 자신을 재실행하지 않도록 `untracked()`로 감싼다.
 
-## Cross-reference
+## 🚫 Anti-patterns
+
+### modal = 선택 모달로 반사 단정
+
+진입점 [crud-list.md 의 "modal = 선택 모달로 반사적 부착"](../crud-list.md#modal--선택-모달로-반사적-부착)을 먼저 확인한다. 조회 전용 modal은 [확장 E](./extension-e-readonly-modal.md)로 분기하며 `SdSelectModal<T>` 계약을 부착하지 않는다.
+
+### multi 모드에서 "선택 해제"가 close까지 호출
+
+```typescript
+// ❌ multi에서도 close.emit — "선택 해제" 한 번으로 모달이 닫혀 다시 선택하려면 재오픈 필요
+onModalCancelClick(): void {
+  this.selectedItems.set([]);
+  this.close.emit({ selectedItemKeys: [], selectedItems: [] });
+}
+
+// ✅ single에서만 즉시 close. multi는 set([])만 수행 후 "확인" 버튼으로 최종 emit
+onModalCancelClick(): void {
+  this.selectedItems.set([]);
+  if (this.selectMode() === "single") {
+    this.close.emit({ selectedItemKeys: [], selectedItems: [] });
+  }
+}
+```
+
+**근거**: multi에서 "선택 해제" = "취소 + 닫기"가 되면 사용자가 다시 선택을 시작하려고 모달을 재오픈해야 한다. multi는 여러 행을 점진적으로 누적하는 UX이므로 닫는 트리거는 "확인" 버튼에만 둔다.
+
+### `selectedItemKeys` 반환에 index fallback
+
+```typescript
+// ❌ id=undefined 신규 행이 있을 때 index(0, 1, 2…)가 가짜 key로 들어가 호출 측이 잘못된 selection을 돌려받음
+this.close.emit({
+  selectedItemKeys: sel.map((it, i) => this.trackByFn(it) ?? i),
+  selectedItems: sel,
+});
+
+// ✅ undefined를 제거하여 확정된 key만 전달
+this.close.emit({
+  selectedItemKeys: sel.map((it) => this.trackByFn(it)).filterExists(),
+  selectedItems: sel,
+});
+```
+
+**근거**: `SelectModalOutputResult<T>.selectedItemKeys`는 호출 측이 DB 식별자로 사용한다(`packages/angular/src/core/select-modal-output-result.ts:4`). 신규 행 index를 섞으면 `[0, 1, 12345]` 같은 값이 호출 측의 "이미 저장된 id" 집합과 충돌한다. 신규 행은 모달에서 선택 대상이 아니며(DB에 없음), `filterExists`로 제거하는 것이 의미도 맞다.
+
+### `<sd-dock>`의 `[position]="'bottom'"` 생략
+
+```html
+<!-- ❌ position 생략 — 기본값이 top이 아니더라도 명시하지 않으면 레이아웃 의도가 깨질 수 있음 -->
+@if (viewType() === "modal") {
+  <sd-dock class="p-sm-default flex-row ..."> ... </sd-dock>
+}
+
+<!-- ✅ 하단 바는 반드시 [position]="'bottom'" 명시 -->
+@if (viewType() === "modal") {
+  <sd-dock [position]="'bottom'" class="..."> ... </sd-dock>
+}
+```
+
+**근거**: `<sd-dock>`은 부모 `<sd-dock-container>` 내부에서 position에 따라 top/right/bottom/left 중 한 곳에 배치된다. 확인 바는 시트 **아래**에 놓여야 하는 뷰별 고유 조각이므로 position을 누락하면 시트 위나 필터 옆으로 쌓이며 버튼이 본문 스크롤 안에 묻힌다.
+
+## 관련 Entry
 
 - 진입점: [crud-list.md](../crud-list.md)
-- 선행: [확장 A](./extension-a-inline-edit.md) + [확장 B](./extension-b-selection.md)
-- 관련: [확장 E: 조회 전용 modal](./extension-e-readonly-modal.md) (계약이 다른 modal 변형)
+- 선행: [확장 A: inline 편집/저장](./extension-a-inline-edit.md) — `canEdit` / `_checkIgnoreChanges` 제공
+- 선행: [확장 B: 선택 기능](./extension-b-selection.md) — `selectedItems` / multi 선택 / `getItemCellStyleFn` 제공
+- 대안: [확장 E: 조회 전용 modal](./extension-e-readonly-modal.md) — 부모 레코드의 자식 목록·이력을 input으로 받아 읽기 전용 표시. `SdSelectModal<T>` 계약을 부착하지 않는다
+- 대안: [확장 F: 모달 편집 모드](./extension-f-modal-edit.md) — page 상에서 행 클릭 시 편집 모달. inline 편집(확장 A)과 상호 배타
+- 계약 타입: `SdSelectModal<T>` (`packages/angular/src/controls/button/sd-modal-select-button.ts:30`), `SelectModalOutputResult<T>` (`packages/angular/src/core/select-modal-output-result.ts:4`)

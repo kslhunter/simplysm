@@ -10,7 +10,8 @@
 - **확장 파일 간 상호 참조**: extension-a↔f(crud-list), extension-b→c/d, extension-d→e, extension-e→d/f, extension-a→c/d(crud-detail), extension-b→c/d, extension-c→d, extension-d→c 등 → 같은 디렉토리 내 상대 경로 대상 파일 존재 확인
 - **확장 → docs 앵커 참조**: `../../ui-data/sd-sheet.md#sdsheetcolumn`, `#sdsheetcolumncelltemplate`, `#cumulativeselection-사용-패턴`, `../../providers/sd-modal-provider.md#편집-모달-호출`, `../../provider-types/sd-modal-content-def.md#구현-패턴`, `#selectmodaloutputresult`, `../../utils/setup-functions.md#setupcandeactivate`, `../../utils/inject-routing-signals.md#injectviewtypesignal` 등 → 대상 파일 존재 + 헤딩 slug 매칭 확인
 - **page-modal-container.md → crud-list (6건)**: `./crud-list.md#8-확장-d-선택-모달-전환`, `#9-확장-e-조회-전용-modal`, `#modal-뷰--반드시-선택-모달인-것은-아니다` 등 → 진입점 앵커 존재 확인
-- **data-select-button.md → crud-list (1건)**: `./crud-list.md#8-확장-d-선택-모달-전환` → 진입점 앵커 존재 확인
+- **data-select-button.md → crud-list/extension-d (1건)**: `./crud-list/extension-d-select-modal.md` → 확장 파일 존재 확인
+- **data-select-button.md → _common-rules (2건)**: `./_common-rules.md#시트-셀-내부-컨트롤에-insettrue-sizesm을-명시한다`, `./_common-rules.md#input-의존-데이터-로딩에-void-this_initasync를-사용하지-않는다` → 공통 규칙 앵커 존재 확인
 
 ### Slice 2: docs → recipes 역링크 앵커 (약 46건)
 

@@ -16,6 +16,8 @@
 
 > 상세: [`<sd-dock> position 기본 "top"`](../../ui-layout/sd-dock.md)
 
+> **아래 코드 블록은 diff 조각이다.** 독립 실행 가능한 완성 클래스가 아니며, 선행 확장(A+B) 위에 번호 순서대로 삽입할 지점을 나타낸다. 그대로 컴파일되지 않는다.
+
 ```typescript
 // 1) imports 추가 (확장 D를 확장 C 없이 단독 적용하는 경우)
 import { injectViewTypeSignal, SdDock, SdDockContainer } from "@simplysm/angular";
@@ -62,5 +64,40 @@ template: `
 
 - **control 뷰 = 마스터-디테일의 디테일 영역**. 마스터 화면이 `<app-customer-detail [itemId]="selectedId()" class="flex-fill">`처럼 직접 삽입하여 좌측 리스트 선택에 따라 우측에 상세 폼을 표시한다. `injectViewTypeSignal()`은 `ActivatedRoute.component`의 selector와 호스트 `tagName`이 **다를 때** control로 판정한다(page는 일치, modal은 `SdActivatedModalProvider` 주입 시 우선).
 - **상단 바는 `[position]` 생략** — `<sd-dock>`의 `[position]` 기본값이 `"top"`이므로 명시하지 않는다. modal 하단 바와 달리 기본 동작을 그대로 쓴다.
-- **[확장 C](./extension-c-modal-view.md)(modal 뷰)와 병행 가능** — 두 분기 블록(`@if (viewType() === "control")` / `@if (viewType() === "modal")`)이 상호 배타이므로 같은 `<sd-dock-container>` 내부에 나란히 둬도 안전하다. [부록 B 확장 매트릭스 표](../crud-detail.md#부록-b-확장-매트릭스-표)가 이 조합이다.
-- **control 뷰에서는 `setupCanDeactivate`가 아무 동작 하지 않는다** — 라우트 guard도 모달 canDeactivateFn도 연결되지 않는다(`packages/angular/src/core/utils/setups/setupCanDeactivate.ts:5`). 마스터 화면이 이동할 때의 이탈 확인은 마스터 화면이 자체적으로 처리한다.
+- **[확장 C](./extension-c-modal-view.md)(modal 뷰)와 병행 가능** — 두 분기 블록(`@if (viewType() === "control")` / `@if (viewType() === "modal")`)이 상호 배타이므로 같은 `<sd-dock-container>` 내부에 나란히 둬도 안전하다. [변형 확장 A~F 인덱스](../crud-detail.md#변형-확장-a-f-인덱스)가 이 조합을 수용한다.
+- **control 뷰에서는 `setupCanDeactivate`가 아무 동작 하지 않는다** — 라우트 guard도 모달 canDeactivateFn도 연결되지 않는다(`packages/angular/src/core/routing/setupCanDeactivate.ts:10-26`). 마스터 화면이 이동할 때의 이탈 확인은 마스터 화면이 자체적으로 처리한다.
+
+## 🚫 흔한 실수 (Anti-patterns)
+
+> 공통 규칙(topbar 소유권, `mark` 오용, `setupCanDeactivate` 호출 위치 등)은 [레시피 공통 규칙](../_common-rules.md)을 참조한다. 이 섹션은 **control 뷰 확장 고유 실수**만 다룬다.
+
+### control 뷰 분기에 자체 `<sd-topbar>`를 추가한다
+
+```typescript
+// ❌ control 분기용으로 별도 <sd-topbar> 추가 — 마스터 화면이 이 컴포넌트를
+//    <app-customer-detail />로 포함할 때, 마스터 화면이 이미 소유한
+//    <sd-topbar-container> + <sd-topbar>와 중첩되어 레이아웃이 깨진다.
+@if (viewType() === "control" && canEdit()) {
+  <sd-topbar>
+    <h4>{{ viewTitle() }}</h4>
+    <sd-button [theme]="'link-primary'" (click)="onSaveButtonClick()"> 저장 </sd-button>
+    <!-- ... -->
+  </sd-topbar>
+}
+
+// ✅ control 분기에는 <sd-dock> 상단 바만 둔다. page가 소유한 topbar와
+//    중첩되지 않으며, 저장/새로고침/삭제/복구 버튼을 가로로 배치한다.
+@if (viewType() === "control" && canEdit()) {
+  <sd-dock class="p-default flex-row gap-default bdb bdb-theme-gray-lightest">
+    <sd-button [theme]="'primary'" (click)="onSaveButtonClick()">
+      <ng-icon [svg]="tablerDeviceFloppy" /> 저장 <small>(CTRL+S)</small>
+    </sd-button>
+    <sd-button [theme]="'info'" (click)="onRefreshButtonClick()">
+      <ng-icon [svg]="tablerRefresh" /> 새로고침 <small>(CTRL+ALT+L)</small>
+    </sd-button>
+    <!-- 삭제/복구는 @if (!isNew() && canEdit()) 블록으로 (확장 B 조건 재사용) -->
+  </sd-dock>
+}
+```
+
+**근거**: control 뷰는 마스터 화면이 `<app-customer-detail [itemId]="..." />`처럼 디테일 영역으로 직접 삽입하는 구조다. 마스터 화면은 이미 `<sd-topbar-container>`와 `<sd-topbar>`를 소유하므로, 내부 컴포넌트가 동일 구조를 중첩하면 타이틀·액션 영역이 이중으로 렌더링되어 레이아웃이 깨진다. control 분기의 상단 액션 영역은 `<sd-dock-container>` 내부 `<sd-dock>`으로 구성한다. → [공통 규칙: page 컴포넌트가 `<sd-topbar-container>`와 `<sd-topbar>`를 소유한다](../_common-rules.md#page-컴포넌트가-sd-topbar-container와-sd-topbar를-소유한다)

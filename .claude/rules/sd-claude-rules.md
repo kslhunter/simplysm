@@ -1,123 +1,44 @@
-# CRITICAL: 무단 진행·추측 금지
-
-- 어떠한 경우에도 지침을 무시하고 건너뛰지 않는다. 혼자만의 판단으로 무단 진행 절대(NEVER) 금지
-- 지침이 충돌등의 이유로 애매하면 사용자에게 질문한다.
-- 코드를 수정할 때, 왜 그 코드가 문제인지 근거를 먼저 확인하고 수정한다. "일단 바꿔보고 되면 넘어가자" 식의 추측성 시행착오를 절대(NEVER) 금지한다.
-
-# CRITICAL: 사실·지침 날조 금지
-
-**존재하지 않는 것을 지어내지 않는다(NEVER).**
-
-- 인용하는 파일·함수·API·라이브러리 시그니처는 반드시 Read/Grep으로 **직접 확인한 것**만 쓴다. 기억·일반 지식·추측 금지.
-- 사용자가 명시한 적 없는 지침/규칙을 "있는 것처럼" 만들어 따르지 않는다. 룰은 `.claude/rules/`, `CLAUDE.md`, 사용자 발화에만 존재한다. 본인이 추론한 베스트 프랙티스를 "규칙"으로 격상시키지 않는다.
-- 불확실하면 "확인 필요" 또는 "추측"이라 명시하고, 가능하면 도구로 검증한다. 모르면 모른다고 말한다.
-- 답변·코드·계획에 들어가는 모든 사실 주장은 **출처(파일경로:라인 / 도구 결과 / 사용자 발화)** 를 응답에 인라인으로 인용한다. 특히 조회로 얻은 존재·부재 단정은 조회 도구·대상·결과를 응답에 함께 표기한다 (예: "Grep `reverseBits` in `packages/core-common` → 결과 없음"). 출처를 댈 수 없는 주장은 하지 않는다.
-
-# CRITICAL: 변경사항 되돌리기 금지
-
-**git diff에 나타나는 변경사항을 임의로 되돌리지 않는다(NEVER).**
-
-- `git diff`에 보이는 변경은 사용자가 직접 수정한 것일 수 있다. subagent가 만든 변경인지, 사용자가 직접 한 변경인지 구분할 수 없으므로, 어떤 변경이든 되돌리기 전에 반드시 사용자에게 확인한다.
-- 특히 현재 작업 범위 밖의 파일 변경을 발견해도, "의도하지 않은 변경"이라고 단정짓지 않는다. 사용자가 별도로 수정한 코드일 수 있다.
-- 되돌려야 할 명확한 근거(사용자의 명시적 요청, 빌드/테스트 실패 등)가 없으면 절대 되돌리지 않는다.
-
-# Compaction Rules
-
-`/compact`수행 시, 항상 보존할 것:
-
-- 수정된 파일의 전체 경로 목록
-- 에러 메시지 원문
-
-# Python 인코딩
-
-- `python3 -c`로 유니코드 텍스트를 출력할 때, 반드시 `sys.stdout.reconfigure(encoding='utf-8')`을 사용한다. (Windows cp949 인코딩 에러 방지)
-
 # 금지 명령어
 
-- **GIT**: `git stash`, `git checkout`, `git restore`, `git reset`, `git clean` 사용 금지.
-- **CRITICAL: 폴더이동 금지**: `cd` 명령을 통한 타 폴더로의 이동 금지. 폴더이동시 hook 오류남!!
-- **타입체크 명령어**: `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]`등의 스크립트 사용
-- **Lint 명령어**: `npx eslint` 사용 금지. 반드시 `pnpm lint [targets..]`등의 스크립트 사용
-
-# 도구사용 규칙
-
-- **CRITICAL: 파일을 읽으라는 지침이 있으면 Read tool로 반드시(MUST) 읽어라. 절대(NEVER) 무시하지 말것**
-- subagent 도구 사용시, 명시적으로 백그라운드 수행을 언급하지 않은경우, 굳이 백그라운드로 수행하지 않는다.
+- `git stash`, `git checkout`, `git restore`, `git reset`, `git clean` 사용 금지.
+- `cd` 명령을 통한 타 폴더로의 이동 금지.
+- `npx tsc` 사용 금지. 반드시 `pnpm typecheck [targets..]`등의 스크립트 사용
+- `npx eslint` 사용 금지. 반드시 `pnpm lint [targets..]`등의 스크립트 사용
 
 # 대화 규칙
 
-- 사용자의 질문에 답변만 하라. 절대 지침 없이 임의로 다음단계(특히, 코드변경)로 넘어가지 않는다(NEVER). 답변만 하고 사용자의 명시적 요청을 기다린다.
-- 사용자의 질문은 동의를 구하는것이 아니다. 무조건적 동의하려하지 말고, 비판적으로 사고하여 답변한다.
-- 사용자 요청의 의도가 불명확할 때는 `/sd-inner-clarify` 스킬을 호출하여 명확화한다. 단순 정보 조회처럼 의도가 명확한 질문에는 위 "답변만 하라" 규칙을 따른다. (절대 추측하지 않는다.)
-- **CRITICAL: 맥락에 맞는 언어로 말한다**. 지금 대화의 층위가 무엇인지 먼저 파악하고 그 층위의 용어로 말한다.
+- 응답 전 항상 thinking 할 것.
+- 내장 도구 적극 활용 (Read/Grep/Glob/Bash/WebFetch/WebSearch/Skill/TaskCreate 등)
+- 사용자가 명시하지 않은 사항 추측으로 행동 금지. 추측한것이 맞는지 `AskUserQuestion` tool로 물어볼 것.
+- 사용자 요청의 의도가 불명확할 때는 `/sd-inner-clarify` 스킬을 호출하여 명확화.
+- 맥락에 맞는 용어 사용
   - 업무 기능·요구사항 논의 → 업무 용어 (사용자가 화면에서 뭘 하는지)
   - DB 스키마 설계 → 테이블·컬럼명
   - 코드 구현 → 함수·클래스명
-  - 층위를 섞지 않는다. 업무 결정을 하면서 DB 컬럼명부터 던지거나, 스키마 설계를 하면서 업무 용어만 쓰지 않는다.
-- **한국 개발 현장 통용 용어 우선**: 한국 개발 현장에서 일반적으로 통용되는 용어를 우선 사용한다. 그런 용어가 없거나 불확실할 때는 한글 음차("시딩") 대신 영어 원문("seeding")을 그대로 쓰고, 처음 쓸 때 한 줄로 풀어 설명한다.
-- 사용자가 "무슨 소린지 모르겠다"는 취지로 되물으면, 같은 말을 반복하지 말고 **한 층위 위**(구현→스키마→업무)로 올라가서 다시 설명한다.
+- 한국 개발 현장 통용 용어 사용
 
 # Playwright
 
-- playwright 사용시, 사용자가 접속주소를 알려주지 않았다면, 반드시 사용자에게 접속주소를 요청할것. (절대 서버를 강제로 임의 실행하지 말것)
+- 사용자가 접속주소를 알려주지 않았다면, 반드시 사용자에게 접속주소를 요청할것. (서버 강제 실행 금지)
 - /playwright-cli 스킬을 사용할 것
+
+# 사용법 참조
+
+- 프론트엔드: `.claude/references/sd-frontend-design.md`
+- `@angular/*`: `angular-cli` mcp를 활용
+- `@simplysm/*`: 해당 패키지의 `README.md`
 
 # 코딩 룰
 
-- `@simplysm/*` 패키지를 사용할 때 아래 `# @simplysm 패키지 참조` 섹션을 따른다.
-- `@angular/*` 패키지를 사용할 때 `angular-cli` mcp를 활용하여, 표준 사용법을 확인하여 따른다.
-- 테스트 작성 시 `.claude/references/sd-testing.md`를 읽고 따른다.
-- 프론트엔드 UI 코드 작성·수정 시 `.claude/references/sd-frontend-design.md`를 읽고 따른다.
-- 디버깅 시 `/sd-inner-debug` 스킬을 호출한다.
-- **CRITICAL: 코딩·코드예제 출력 시, 반드시 Grep/Glob/Read로 코드베이스의 유사 코드를 먼저 검색·확인한 뒤 동일 패턴으로 작성한다.** "이미 알고 있다", "일반적인 패턴이다" 등의 이유로 검색을 생략하는 것은 위반이다.
-- 코드를 수정할 경우 수정에 의한 사이드이펙트를 항상 고려한다. (예, html구조가 바뀌면 css의 selector도 바뀌어야함)
-- 함수 작성 혹은 함수내 기능 추가시 단일 책임 원칙을 따른다. (함수가 이름에서 드러나지 않는 일을 몰래 해선 안됨)
-- `src/`에는 프로덕션 코드만 둔다. 테스트에서만 사용하는 파일(타입 선언, 헬퍼 등)은 `tests/`에 위치시킨다.
-- **barrel export 금지**: `src/` 루트의 `index.ts`를 제외하고, 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 패키지 루트 `index.ts`에서 개별 파일 경로를 직접 export한다.
-- 다른 패키지의 타입등 re-export 금지.
-- **dynamic import (`import()`) 사용 금지**: 조건부 peer dependency 로딩, 외부 ts 파일 읽기 등 정적 import가 불가능한 경우를 제외하고 `import()` 사용 금지. 정적 `import` 문을 사용한다.
-- **CRITICAL: 구조화된 문법 처리 시 파서 사용 필수**: TypeScript/JavaScript, HTML, CSS, JSON, YAML 등 **문법 구조가 정의된 텍스트**를 분석·변환할 때는 반드시 해당 언어의 **공식 파서/AST**(예: TypeScript Compiler API, `@angular/compiler`, `postcss`, `parse5`, `JSON.parse` 등)를 사용한다. 정규식·문자열 치환으로 **우회 금지(NEVER)**. 정규식은 주석·문자열·중첩 구조·이스케이프 등 엣지 케이스에서 반드시 깨진다. 파서 사용이 어렵거나 오버헤드가 크다고 판단되면 **사용자에게 먼저 질문**한다.
-- **null/undefined 비교 규칙**: `===`/`!==` 사용이 기본이지만 **null/undefined 비교만 예외**이다. 일반 값 비교는 `===`/`!==`, null/undefined 검사는 `== null`/`!= null`을 사용한다. `=== null`, `!== null`, `=== undefined`, `!== undefined`는 lint 에러이다.
-  - `value === "hello"` ○ (일반 값 비교 → `===`)
-  - `value == null` ○ (null/undefined 검사 → `==`)
-  - `value === null` ✕ (lint 에러)
-  - `value === undefined` ✕ (lint 에러)
+- barrel export 금지: `src/` 루트의 `index.ts`외, 하위 폴더 re-export `index.ts` 금지
+- 다른 패키지에 대한 re-export 금지
+- 정적 import가 불가능한 경우를 제외하고 `import()` 사용 금지
+- 구조화된 문법 처리 시 파서 사용 필수. 정규식·문자열 치환으로 우회 금지
+- null/undefined 비교 규칙: 일반 값 비교는 `===`/`!==`, null/undefined 검사는 `== null`/`!= null`을 사용.
+- 내부 모듈 import 시 `.js` 확장자를 붙이지 않는다. (번들러가 확장자 해석)
+- 타입 추론을 해제하는 방식의 수정 금지
+- 불필요한 `as` 캐스팅 금지
 
-## 자주 하는 실수
+## 주의사항
 
-- **import 경로에 `.js` 확장자 금지**: 내부 모듈 import 시 `.js` 확장자를 붙이지 않는다. `from "./foo"` ○, `from "./foo.js"` ✕. 이 프로젝트는 번들러(esbuild/Vite)가 확장자를 해석하므로 `.js`를 붙이면 안 된다.
-- **`as any[]` 캐스팅 후 `??` 방어**: `value as any[]`로 캐스팅하면 TypeScript는 nullable이 아니라고 판단하여 `?? []`에 lint 에러 발생. `value as any[] | undefined`로 캐스팅해야 한다
-- **타입 추론 해제 금지**: 타입 추론을 해제하는 방식의 수정은 절대 금지한다.
-- **불필요한 `as` 캐스팅**: 가드(`target !== "client"` 등)로 타입이 좁혀진 후에는 `as SdClientPackageConfig` 같은 캐스팅 불필요. lint 에러 `no-unnecessary-type-assertion` 발생
-- **타입 정의 확인 필수**: 인터페이스에 없는 프로퍼티를 추측으로 넣지 않는다. 반드시 실제 타입 정의를 읽고 작성한다
-- **클래스 필드 vs prototype**: `Object.getOwnPropertyDescriptor`로 클래스 필드를 찾을 때, TypeScript 클래스 필드는 prototype이 아닌 instance에 존재한다. prototype에서 찾으면 `undefined` 반환
-- **요청하지 않은 기능 추가 금지**: 원본 코드에 없고 사용자가 요청하지 않은 기능을 임의로 추가하지 않는다. 기존 코드의 이벤트/패턴을 그대로 유지하고, 요청된 변경만 수행한다.
-- **프로젝트 구조 이해 필수**: 코드를 배치하기 전에 해당 디렉토리가 빌드 산출물인지, 영구 소스인지 반드시 확인한다. 모르면 사용자에게 질문한다.
-- `eslint-disable @typescript-eslint/require-await` 금지
-
-# @simplysm 패키지 참조
-
-- `@simplysm/*` 패키지 사용 시, 해당 패키지의 `README.md` 및 `docs/` 문서를 읽는다.
-  - v14: `node_modules/@simplysm/{패키지명}/README.md` (분량이 많은 항목은 `node_modules/@simplysm/{패키지명}/docs/*.md`)
-  - v12: `.claude/references/sd-simplysm12.md`
-- 해당 문서에는 사용법 및 지침이 기록되어 있다.
-- 주의사항: 해당 패키지의 `CLAUDE.md`는 모노레포 **내부 개발자용 컨텍스트**이므로 소비앱에서 이를 읽지 않는다. 소비앱은 `README.md`와 `docs/`만 참조한다.
-- simplysm 패키지의 경우 context7은 구버전일 수 있으니 사용을 지양한다.
-
-# 프로젝트 경계
-
-**CRITICAL: 프로젝트 루트 외부의 파일을 절대 생성/수정/삭제하지 않는다.**
-
-- 다른 모노레포(`../simplysm/` 등)에 파일을 만드는 것은 절대 금지.
-
-# 빌드 산출물 디렉토리
-
-**CRITICAL: `.capacitor/`, `.electron/` 디렉토리는 빌드 시 삭제 후 재생성되는 산출물이다.**
-
-- 이 디렉토리 안에 직접 파일을 생성/수정하면 빌드 시 전부 사라진다.
-
-# Feature 범위 준수
-
-**CRITICAL: Feature 문서에 명시되지 않은 작업을 임의로 수행하지 않는다.**
-
-- 구현 중 추가 작업이 필요하다고 판단되면, 먼저 사용자에게 확인한다.
+- 프로젝트 루트 외부 파일 생성/수정/삭제 금지

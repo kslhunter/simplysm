@@ -21,19 +21,14 @@ class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContent
 
 ## Usage
 
-모달 내부 컴포넌트에서 `optional: true`로 inject하여, 모달 타이틀 계산 등에 활용한다:
+모달 내부 컴포넌트에서 `optional: true`로 inject하여 모달 컨텍스트를 확인한다. 타이틀 계산은 `injectViewTitleSignal()`이 내부에서 `SdActivatedModalProvider`를 자동으로 처리하므로 직접 inject할 필요가 없다:
 
 ```typescript
-private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
+// 타이틀 — injectViewTitleSignal()이 modal/page 분기를 자동 처리
+protected readonly viewTitle = injectViewTitleSignal();
 
-protected readonly modalOrPageTitle = computed(() => {
-  return (
-    this._sdActivatedModal?.modalComponent()?.title() ??
-    this._sdAppStructure.getTitleByFullCode(
-      this._currPageCode?.() ?? this._fullPageCode(),
-    )
-  );
-});
+// canDeactivateFn 등 모달 컨텍스트가 직접 필요한 경우에만 inject
+private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
 ```
 
 `optional: true`를 사용하는 이유: 동일 컴포넌트가 page 뷰로도 사용될 수 있으며, page 뷰에서는 `SdActivatedModalProvider`가 제공되지 않는다.

@@ -85,3 +85,10 @@ const UserRole = Table("UserRole")
   }))
   .primaryKey("userId", "roleId");
 ```
+
+## 권장사항
+
+### `isDeleted` 컬럼
+
+- **기초정보(마스터 데이터) 테이블**: `isDeleted: c.boolean().default(false)` 컬럼을 포함한다. 삭제 시 `isDeleted: true`로 soft-delete하고, 복구 기능을 제공한다.
+- **일반 데이터(트랜잭션 데이터 등) 테이블**: `isDeleted` 컬럼을 두지 않는다. 삭제 시 물리 삭제(row DELETE)로 처리한다.

@@ -17,7 +17,7 @@ import { SdDock } from "./sd-dock";
   standalone: true,
   imports: [],
   template: `
-    <div #content [class]="['_content', contentClass()].filter(v => v != null).join(' ')">
+    <div #content [class]="['_content', contentClass()].filter((v) => v != null).join(' ')">
       <ng-content />
     </div>
   `,

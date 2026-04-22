@@ -1,35 +1,28 @@
-# Recipe: 페이지/모달 컨테이너 직접 조립
+# 페이지/모달 컨테이너 직접 조립
 
-소비 화면이 `<sd-busy-container>` · `<sd-topbar-container>` · `<sd-topbar>` 표준 컴포넌트를 **직접 조립**하여 "하나의 컴포넌트를 페이지·모달·제어(control) 뷰에서 모두 재사용"하는 구조를 만든다. 과거 `<sd-base-container>`가 감추고 있던 분기·타이틀 계산·권한 제한·초기화 숨김을 화면 내부에 인라인으로 풀어쓴다.
+소비 화면이 `<sd-busy-container>` · `<sd-topbar-container>` · `<sd-topbar>` 표준 컴포넌트를 직접 조립해 하나의 컴포넌트를 page · modal · control 3뷰로 재사용한다. 추상 컨테이너(`<sd-base-container>` 류)가 감추던 분기·타이틀·권한·초기화 숨김을 화면 내부에 인라인으로 풀어 쓴다.
 
-## 1. Overview
+## When to use / When NOT to use
 
-- 제거된 추상화: `SdBaseContainer`(`<sd-base-container>`)
-- 대체: 소비 컴포넌트가 표준 조각을 `@if` 분기로 직접 조립
-- 조립 요소:
-  - `<sd-busy-container [busy] [message]>` — 전체 busy 오버레이 (`@simplysm/angular` → `SdBusyContainer`, `busy`·`message`·`type` input)
-  - `<sd-topbar-container>` + `<sd-topbar>` — 페이지 뷰에서 상단 헤더
-  - `@if/@else if` — 뷰 타입 분기
-  - `injectViewTypeSignal()` — 라우트·모달 컨텍스트에 따라 `"page" | "modal" | "control"` 판정
-  - `computed()` — `header ?? 모달 타이틀 ?? 앱 구조 타이틀` 우선순위 타이틀 계산
-- 유지되는 조력자: `SdActivatedModalProvider`, `SdAppStructureProvider`, `SdSystemLogProvider`, `injectCurrentPageCodeSignal`, `injectFullPageCodeSignal`
+- ✅ 한 컴포넌트를 page · modal · control 중 둘 이상으로 재사용한다.
+- ✅ page 전용 / modal 전용 / control 전용 화면도 본 레시피에서 필요한 분기만 골라 쓴다 (불필요한 분기는 삭제).
+- ✅ `injectViewTypeSignal()`로 자동 판정된 뷰에 따라 topbar·하단 액션 바·본문 레이아웃을 선택한다.
+- ❌ 단일 화면 컨테이너 추상(`<sd-base-container>`, `useBaseContainer()` 등) 재도입 — 분기·타이틀·권한이 다시 감춰져 화면별 변경이 어려워진다.
+- ❌ 리스트 본문 조립이 필요할 때 — [`crud-list.md`](./crud-list.md) (시트·필터·페이징).
+- ❌ 상세 폼 본문 조립이 필요할 때 — [`crud-detail.md`](./crud-detail.md) (폼·저장 흐름).
+- ❌ modal 뷰의 (a) 다른 화면에서 항목을 골라 돌려주는 **선택 모달** — [`crud-list/extension-d-select-modal.md`](./crud-list/extension-d-select-modal.md).
+- ❌ modal 뷰의 (b) 부모 레코드 자식 목록·이력을 input으로 받아 보여주는 **조회 전용 modal** — [`crud-list/extension-e-readonly-modal.md`](./crud-list/extension-e-readonly-modal.md).
 
-## 2. 언제 사용하는가
+## 전제조건
 
-| 상황 | 적용 여부 |
-|---|---|
-| 하나의 화면 컴포넌트를 페이지와 모달 양쪽에서 재사용 | 레시피 전체 적용 (modal 용도는 아래 두 행 중 하나 확정) |
-| 페이지 뷰만 필요 (topbar 있는 라우트 화면) | 페이지 블록만 사용, 모달·control 분기 생략 가능 |
-| 다른 화면에서 항목을 고르는 **선택 모달** (`SdSelectModal<T>` 구현, `SdModalProvider.showAsync()`로 열림) | 모달 블록 + 하단 액션 바(선택 해제·확인) + `close.emit`. 상세 → [crud-list.md §8 확장 D](./crud-list.md#8-확장-d-선택-모달-전환) |
-| 부모 레코드의 자식 목록·이력을 input으로 받아 **조회만** 하는 modal | 모달 블록만 사용, `SdSelectModal<T>` 계약 없음, SdModal 기본 "X"로 닫기. 상세 → [crud-list.md §9 확장 E](./crud-list.md#9-확장-e-조회-전용-modal) |
-| 다른 화면의 영역 일부로 삽입되는 컨트롤 | control 분기(`@else` 블록)만 사용. topbar·모달 분기 생략 |
-| 커스텀 단축키·이탈 확인이 필요 | `SdCommandDirective` + `setupCanDeactivate`를 본문에 직접 부착 (본 레시피 범위 외, `features-data-detail.md`류 레시피 참조) |
+- `provideSdAngular({ clientName })` 등록 (앱 부트스트랩) — `SdBusyProvider`·`SdAppStructureProvider` 등 의존 provider가 함께 등록된다.
+- page 뷰 사용 시: 라우트 등록 + `SdAppStructureProvider`에 페이지 코드·타이틀이 정의되어 있어야 `injectViewTitleSignal()`이 페이지 타이틀을 반환한다 (`packages/angular/src/core/routing/injectViewTitleSignal.ts:20`).
+- modal 뷰 사용 시: `SdModalProvider.showAsync(...)`로 진입한다. `SdActivatedModalProvider`가 모달 컨텍스트에 자동 주입된다 (`packages/angular/src/core/modal/sd-activated-modal.provider.ts:8`).
+- 공통 규칙: `injectViewTypeSignal()` 호출 시점, page 컴포넌트의 `<sd-topbar>` 소유 → [`_common-rules.md`](./_common-rules.md).
 
-## 3. 완성 예제
+## 기본 레시피
 
-아래는 하나의 컴포넌트가 **페이지·모달·control 뷰 모두**를 커버하는 완성 형태다. 필요 없는 분기는 삭제하여 단순화할 수 있다.
-
-> **조건부 요소 안내:** 아래 예제는 3뷰를 모두 갖춘 최대 구성이다. 각 요소의 포함 조건은 [§4 조건부 요소 포함 기준](#조건부-요소-포함-기준)에서 확인하며, 해당하지 않는 분기와 요소는 생략한다.
+3뷰를 모두 갖춘 최대 구성이다. 화면 요구에 따라 일부 분기·요소를 생략한다 (생략 기준은 [§ 변형](#변형) 참조).
 
 ```typescript
 import { NgIcon } from "@ng-icons/core";
@@ -38,19 +31,13 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
-  computed,
-  inject,
   input,
   ViewEncapsulation,
 } from "@angular/core";
 import {
-  injectCurrentPageCodeSignal,
-  injectFullPageCodeSignal,
+  injectViewTitleSignal,
   injectViewTypeSignal,
-  SdActivatedModalProvider,
-  SdAppStructureProvider,
   SdBusyContainer,
-  SdSystemLogProvider,
   SdTopbar,
   SdTopbarContainer,
 } from "@simplysm/angular";
@@ -63,6 +50,7 @@ import {
   imports: [SdBusyContainer, SdTopbarContainer, SdTopbar, NgIcon],
   template: `
     <sd-busy-container [busy]="busy()" [message]="busyMessage()">
+      <!-- initialized() == null(미사용) 또는 true 일 때만 본문 렌더 — 초기 로딩 잔상 방지 -->
       @if (initialized() == null || initialized()) {
         @if (restricted()) {
           <div class="fill tx-theme-gray-light p-xxl tx-center">
@@ -70,13 +58,13 @@ import {
             <ng-icon [svg]="tablerAlertTriangle" [size]="'5em'" />
             <br />
             <br />
-            '{{ modalOrPageTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
+            '{{ viewTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
           </div>
         } @else if (viewType() === "page") {
           <sd-topbar-container>
             <sd-topbar>
-              <h4>{{ modalOrPageTitle() }}</h4>
-              <!-- 페이지 topbar 보조 영역(버튼·메뉴 등) 필요 시 여기 -->
+              <h4>{{ viewTitle() }}</h4>
+              <!-- 페이지 topbar 보조 영역(버튼·메뉴) 필요 시 여기 -->
             </sd-topbar>
             <div class="fill">
               <!-- 본문: 페이지 레이아웃으로 채우기 -->
@@ -84,20 +72,16 @@ import {
           </sd-topbar-container>
         } @else if (viewType() === "modal") {
           <!--
-            modal 용도 2종 — 반드시 사전에 확정한다 (추측으로 "modal = 선택 모달"로 단정 금지).
-            (a) 선택 모달: 다른 화면에서 항목을 골라 close.emit으로 돌려줌. `implements SdSelectModal<T>`
-                + selectMode/selectedItemKeys input + close output + 하단 액션 바. → ./crud-list.md §8 확장 D
-            (b) 조회 전용 modal: 부모 레코드의 자식 목록·이력을 input으로 받아 읽기 전용으로 보여줌.
-                SdSelectModal<T> 계약 부착 금지, SdModal 기본 "X"로 닫음. → ./crud-list.md §9 확장 E
+            modal 용도는 사전에 (a) 선택 모달 / (b) 조회 전용 modal 중 하나로 확정한다.
+            (a) → ./crud-list/extension-d-select-modal.md
+            (b) → ./crud-list/extension-e-readonly-modal.md
           -->
           <div class="flex-column fill">
             <div class="flex-fill">
               <!-- 본문: 모달 내부 컨텐츠 -->
             </div>
-            <!-- 모달 하단 액션(확인/취소 버튼 등) 필요 시:
-            <div class="bdt bdt-theme-gray-lightest">
-              ...
-            </div>
+            <!-- 모달 하단 액션(확인/취소) 필요 시:
+            <div class="bdt bdt-theme-gray-lightest">...</div>
             -->
           </div>
         } @else {
@@ -108,98 +92,169 @@ import {
   `,
 })
 export class FooView {
-  private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
-  private readonly _sdAppStructure = inject(SdAppStructureProvider);
-  private readonly _sdSystemLog = inject(SdSystemLogProvider);
-
-  private readonly _fullPageCode = injectFullPageCodeSignal();
-  private readonly _currPageCode = injectCurrentPageCodeSignal();
-
+  // injectViewTypeSignal/injectViewTitleSignal은 inject() 내부 호출이므로
+  // 필드 이니셜라이저(=생성자 시점)에서만 호출한다 → ./_common-rules.md
   protected readonly viewType = injectViewTypeSignal();
+  protected readonly viewTitle = injectViewTitleSignal();
 
-  header = input<string>();
   initialized = input<boolean | undefined>(undefined);
   restricted = input(false, { transform: booleanAttribute });
   busy = input(false, { transform: booleanAttribute });
   busyMessage = input<string>();
 
-  protected readonly modalOrPageTitle = computed(() => {
-    try {
-      return (
-        this.header() ??
-        this._sdActivatedModal?.modalComponent()?.title() ??
-        this._sdAppStructure.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode())
-      );
-    } catch (err) {
-      void this._sdSystemLog.writeAsync("warn", `modalOrPageTitle 계산 중 에러: ${String(err)}`);
-      return "";
-    }
-  });
-
   protected readonly tablerAlertTriangle = tablerAlertTriangle;
 }
 ```
 
-## 4. 분해 설명
+뷰 타입 자동 판정 규칙 (`packages/angular/src/core/routing/injectViewTypeSignal.ts:7`):
 
-### 조건부 요소 포함 기준
+1. `SdActivatedModalProvider`가 주입 가능하면 `"modal"`
+2. 활성 라우트의 컴포넌트 selector가 호스트 `tagName`과 일치하면 `"page"`
+3. 그 외는 `"control"`
 
-위 예제는 3뷰를 모두 갖춘 최대 구성이다. 각 뷰 분기와 인프라 요소는 화면의 필요에 따라 포함/생략한다. 필요 없는 요소를 기계적으로 포함하지 않는다.
+타이틀 자동 판정 규칙 (`packages/angular/src/core/routing/injectViewTitleSignal.ts:7`):
+
+1. 모달 컨텍스트면 `SdActivatedModalProvider.modalComponent()?.title()`
+2. 페이지 컨텍스트면 `SdAppStructureProvider.getTitleByFullCode(...)`
+3. 예외 시 빈 문자열 (별도 try/catch 불필요)
+
+## 변형
+
+### 분기·요소 포함 조건 (생략 가능 기준)
+
+기계적으로 모든 분기·요소를 포함하지 않는다. 화면 요구에 따라 아래 표대로 생략한다.
 
 | 요소 | 포함 조건 | 생략하는 경우 예시 |
 |------|----------|-------------------|
-| `viewType() === "page"` 분기 + `<sd-topbar>` | routes 페이지 뷰가 필요할 때 | 모달/control 전용 컴포넌트 |
+| `viewType() === "page"` 분기 + `<sd-topbar>` | 라우트로 진입하는 페이지 뷰가 필요할 때 | 모달/control 전용 컴포넌트 |
 | `viewType() === "modal"` 분기 | 모달 뷰로도 재사용될 때 | page 전용 또는 control 전용 컴포넌트 |
 | `@else` (control) 분기 | 다른 화면의 영역으로 삽입될 때 | page/modal 전용 컴포넌트 |
 | `busy` / `busyMessage` input | 비동기 작업이 있어서 busy 표시가 필요할 때 | 동기적으로 렌더되는 화면 |
-| `initialized` input | 초기 로딩 완료 전 화면을 숨겨야 할 때 | 초기 로딩이 필요 없는 화면 |
+| `initialized` input | 초기 로딩 완료 전 본문을 숨겨야 할 때 | 초기 로딩 없이 즉시 렌더 가능한 화면 |
 | `restricted` input + 권한 없음 메시지 | 권한 제어가 있는 화면 | 권한 제어가 없는 화면 |
-| `modalOrPageTitle` computed | 뷰 타입에 따른 타이틀 계산이 필요할 때 | 타이틀 불필요, 또는 page 전용(직접 지정) |
+| `injectViewTitleSignal()` | topbar에 타이틀을 표시할 때 | 타이틀 불필요한 화면 |
 
-### 블록 역할
-
-각 블록의 역할과 원본 `SdBaseContainer` 코드 대응 지점:
-
-| 블록 | 역할 | 원본 대응 |
-|---|---|---|
-| `<sd-busy-container [busy] [message]>` | 화면 전체에 busy 오버레이를 씌운다. 자식 전체를 감싼다 | `sd-base-container.ts:42` |
-| `@if (initialized() == null || initialized())` | `undefined` 또는 `true`일 때만 자식 렌더. `false`면 콘텐츠 전부 숨김(초기화 전 잔상 방지) | `sd-base-container.ts:43` |
-| `@if (restricted())` | 권한 없음 시 경고 메시지를 표시하고 콘텐츠는 렌더링하지 않음 | `sd-base-container.ts:44-51` |
-| `@else if (viewType() === "page")` | 페이지 뷰: `<sd-topbar-container>` + `<sd-topbar>` 헤더에 계산된 제목 표시 | `sd-base-container.ts:52-63` |
-| `@else if (viewType() === "modal")` | 모달 뷰: flex-column 레이아웃, 하단 액션은 선택 | `sd-base-container.ts:64-74` |
-| `@else` | control 뷰: 본문만 raw 렌더링 | `sd-base-container.ts:75-77` |
-| `modalOrPageTitle` computed | 제목 우선순위 계산 + 예외 시 빈 문자열 + `writeAsync("warn", ...)` | `sd-base-container.ts:102-113` |
-
-## 5. 뷰 타입 결정
-
-`injectViewTypeSignal()`은 인자 없이 호출한다. 내부 판정 규칙:
-
-1. `SdActivatedModalProvider`가 주입 가능하면 **`"modal"`**
-2. 현재 활성 라우트의 컴포넌트 `selector`가 이 화면의 `<host>.tagName`과 일치하면 **`"page"`**
-3. 그 외는 **`"control"`** (다른 화면의 내부에 삽입된 영역)
-
-일반적으로 이 자동 판정으로 충분하다. 수동 오버라이드가 필요한 특수 상황(예: 특정 페이지 안에 자기 자신을 모달처럼 보이게 하고 싶은 경우)에는 아래와 같이 **`injectViewTypeSignal()`은 필드 초기화 시점에 한 번만 호출**하고 `computed`에서는 signal만 재사용한다.
+### page 전용 (modal·control 분기 생략)
 
 ```typescript
+template: `
+  <sd-busy-container [busy]="busy()">
+    @if (initialized() == null || initialized()) {
+      <sd-topbar-container>
+        <sd-topbar><h4>{{ viewTitle() }}</h4></sd-topbar>
+        <div class="fill"><!-- 본문 --></div>
+      </sd-topbar-container>
+    }
+  </sd-busy-container>
+`,
+```
+
+### modal 전용 (page·control 분기 생략)
+
+```typescript
+template: `
+  <sd-busy-container [busy]="busy()">
+    <div class="flex-column fill">
+      <div class="flex-fill"><!-- 본문 --></div>
+    </div>
+  </sd-busy-container>
+`,
+```
+
+이 분기 안에서 (a) 선택 모달 또는 (b) 조회 전용 modal을 결정한다 — 아래 "🚫 흔한 실수" 섹션의 "modal = 선택 모달 단정 금지" 참조.
+
+### control 전용 (page·modal 분기 생략)
+
+```typescript
+template: `
+  <sd-busy-container [busy]="busy()">
+    <!-- 본문: 다른 화면의 영역으로 삽입 -->
+  </sd-busy-container>
+`,
+```
+
+control 뷰에는 `<sd-topbar-container>`·`<sd-topbar>`를 두지 않는다 (page 컴포넌트가 소유) — [`_common-rules.md` "page 컴포넌트가 <sd-topbar-container>와 <sd-topbar>를 소유한다"](./_common-rules.md#page-컴포넌트가-sd-topbar-container와-sd-topbar를-소유한다).
+
+### viewType 수동 오버라이드 (권장하지 않음)
+
+자동 판정으로 충분하지 않은 특수 상황(예: 특정 페이지 안에서 자기 자신을 모달처럼 보이게 함)에서만 사용한다. 추상화 복원을 부추기므로 기본은 자동 판정을 쓴다.
+
+```typescript
+import { computed, input } from "@angular/core";
+import { injectViewTypeSignal, type SdViewType } from "@simplysm/angular";
+
 override = input<SdViewType>();
+
+// injectViewTypeSignal()은 필드 이니셜라이저에서 한 번만 호출, 이후 computed에서 signal만 읽는다.
 private readonly _autoViewType = injectViewTypeSignal();
 protected readonly viewType = computed(() => this.override() ?? this._autoViewType());
 ```
 
-`injectViewTypeSignal()` 내부는 `inject(SdActivatedModalProvider, { optional: true })` · `inject(ActivatedRoute, { optional: true })`를 호출한다. Angular `inject()`는 injection context(생성자 실행 중 또는 필드 초기화 시점) 안에서만 유효하므로, `computed` 콜백이나 effect 안에서 호출하면 `NG0203` 런타임 에러가 발생한다. 이 오버라이드는 추상화 복원을 부추기므로 **기본은 자동 판정으로 쓰기**를 권장한다.
+## 🚫 흔한 실수
 
-## 6. 타이틀 우선순위
+### `<sd-base-container>` 재도입
 
-타이틀은 **화면 내부의 `computed`로 직접 계산**한다. 우선순위:
+```typescript
+// ❌ 단일 컨테이너 추상 컴포넌트로 분기를 다시 감춘다
+template: `
+  <sd-base-container [busy]="busy()" [restricted]="restricted()">
+    <ng-content />
+  </sd-base-container>
+`,
 
-1. `header()` input이 지정되어 있으면 그 값
-2. 모달 컨텍스트면 `SdActivatedModalProvider.modalComponent()?.title()`
-3. 페이지 컨텍스트면 `SdAppStructureProvider.getTitleByFullCode(this._currPageCode?.() ?? this._fullPageCode())`
+// ✅ 표준 조각을 화면이 직접 조립한다 (분기·타이틀·권한 가시화)
+template: `
+  <sd-busy-container [busy]="busy()">
+    @if (restricted()) { ... }
+    @else if (viewType() === "page") { <sd-topbar-container>... </sd-topbar-container> }
+    @else if (viewType() === "modal") { ... }
+    @else { ... }
+  </sd-busy-container>
+`,
+```
 
-`getTitleByFullCode`는 앱 구조(`items`)에 해당 fullCode 항목이 없으면 `Error`를 던진다. 따라서 `try/catch`로 래핑하고 실패 시 빈 문자열을 반환하면서 `SdSystemLogProvider.writeAsync("warn", ...)`으로 경고를 남긴다. 이는 화면 생성 시점에 앱 구조 로딩이 지연되는 상황에서 화면 전체가 깨지지 않도록 하기 위함이다.
+**근거**: 추상 컨테이너는 page/modal/control 분기, 타이틀 계산, 권한 차단, 초기화 숨김을 한 번에 감추므로 화면별로 일부 동작만 바꾸기 어렵다. 표준 조각 직접 조립으로 분기를 인라인 노출한다.
 
-## 7. 주의사항
+### `useBaseContainer()` 같은 공통 헬퍼 추출
 
-- **신규 유틸 함수를 추출하지 말 것.** `useBaseContainer()`, `computeModalOrPageTitle()` 같은 공통 헬퍼를 도입하면 이 레시피가 제거한 추상화가 다시 생긴다. 세 줄짜리 `computed`를 화면마다 반복하는 편이 낫다.
-- **본문 채우기는 화면의 책임이다.** 위 예제의 `<!-- 본문: ... -->` 주석 자리에 `<sd-sheet>`(리스트), `<sd-form>`(상세), 임의 HTML 등 화면별 콘텐츠를 삽입한다. 리스트·상세 화면 조립은 `crud-list.md`·`crud-detail.md` 레시피 참조.
-- **modal 뷰 = 반드시 선택 모달인 것은 아니다.** `viewType() === "modal"`만으로 `SdSelectModal<T>` 계약을 반사적으로 부착하지 않는다. modal 용도는 (a) 선택 모달(`close.emit` + 하단 액션 바, [§8 확장 D](./crud-list.md#8-확장-d-선택-모달-전환)) / (b) 조회 전용 modal(계약 없음, SdModal 기본 "X"로 닫기, [§9 확장 E](./crud-list.md#9-확장-e-조회-전용-modal))로 갈린다. 실수 패턴·상세 워딩은 [`crud-list.md` §13.1](./crud-list.md#modal-뷰--반드시-선택-모달인-것은-아니다) 참조.
+```typescript
+// ❌ 공통 헬퍼로 다시 추상화한다 — 결국 <sd-base-container>와 동일한 함정
+const { template } = useBaseContainer({ busy, restricted, initialized });
+
+// ✅ 화면 코드에 인라인으로 둔다
+@Component({ template: ` <sd-busy-container [busy]="busy()"> ... </sd-busy-container> ` })
+```
+
+**근거**: 헬퍼 함수 형태로 분기·요소를 묶으면 본 레시피가 제거한 추상화가 다시 생긴다. "한 번만 쓰는 화면별 조립 코드"라는 형태가 의도적이다.
+
+### `viewType() === "modal"`만으로 선택 모달이라고 단정한다
+
+```typescript
+// ❌ modal 뷰면 무조건 SdSelectModal<T> 계약을 부착하고 close.emit으로 결과 반환을 기대한다
+export class FooView implements SdSelectModal<FooItem> {
+  selectMode = input<"single" | "multi">();
+  selectedItemKeys = input<any[]>();
+  close = output<FooItem[] | undefined>();
+  // ...
+}
+
+// ✅ modal 용도를 사전에 (a)/(b) 중 하나로 확정하고 그 레시피를 따른다
+// (a) 선택 모달: implements SdSelectModal<T> + 하단 액션 바 → ./crud-list/extension-d-select-modal.md
+// (b) 조회 전용 modal: 계약 없음, SdModal 기본 "X"로 닫음 → ./crud-list/extension-e-readonly-modal.md
+```
+
+**근거**: `viewType() === "modal"`은 "모달 컨텍스트에서 렌더 중"만 알려준다. 선택 모달 계약(`SdSelectModal<T>`)은 호출하는 쪽이 `selectMode`를 넘기고 결과를 받는 시나리오 한정이며, 조회 전용 modal과는 input·output·하단 액션 바 구성이 다르다.
+
+### `injectViewTypeSignal()` 호출 시점 위반 (NG0203)
+
+`computed`/`effect`/일반 메서드 콜백 안에서 `injectViewTypeSignal()`을 호출하면 injection context를 벗어나 `NG0203` 런타임 에러가 발생한다. 필드 이니셜라이저(=생성자 시점)에서 한 번만 호출하고 이후엔 반환된 signal만 읽는다 — 상세·코드 예시는 [`_common-rules.md` "injectViewTypeSignal()은 생성자 또는 필드 이니셜라이저에서만 호출한다"](./_common-rules.md#injectviewtypesignal은-생성자-또는-필드-이니셜라이저에서만-호출한다).
+
+## 관련 Entry
+
+- [`_common-rules.md`](./_common-rules.md) — 차이: 4계열 진입점·확장에 걸친 횡단 규칙 (본 레시피의 `injectViewTypeSignal` 호출 시점·`<sd-topbar>` 소유 규칙 정의 위치).
+- [`crud-list.md`](./crud-list.md) — 차이: 리스트 본문(시트·필터·페이징) 조립.
+- [`crud-detail.md`](./crud-detail.md) — 차이: 상세 폼 본문(폼·저장 흐름) 조립.
+- [`crud-list/extension-d-select-modal.md`](./crud-list/extension-d-select-modal.md) — 차이: modal 뷰의 (a) 선택 모달 계약·하단 액션 바.
+- [`crud-list/extension-e-readonly-modal.md`](./crud-list/extension-e-readonly-modal.md) — 차이: modal 뷰의 (b) 조회 전용 패턴.
+- [`crud-detail/extension-c-modal-view.md`](./crud-detail/extension-c-modal-view.md) — 차이: 상세 폼의 modal 분기(canDeactivate·하단 액션 템플릿).
+- [`crud-detail/extension-d-control-view.md`](./crud-detail/extension-d-control-view.md) — 차이: 상세 폼의 control 분기(마스터-디테일 디테일 영역).

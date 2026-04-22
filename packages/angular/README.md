@@ -311,6 +311,7 @@ export class SomePage {
 | `.detail.ts` / `*Detail` | 단일 레코드를 조회·편집하는 화면 ([recipes/crud-detail.md](./docs/recipes/crud-detail.md)) | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` | `app-outbound-instruction-detail` |
 | `.view.ts` / `*View` | list/detail 아닌 route 연결 화면 (대시보드, 설정 등) | `dashboard.view.ts` | `DashboardView` | `app-dashboard-view` |
 | `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 (route 없이 `SdModalProvider.showAsync`로만 열림) | `item-select.modal.ts` | `ItemSelectModal` | `app-item-select-modal` |
+| `.print-template.ts` / `*PrintTemplate` | 인쇄 전용 컴포넌트 (`SdPrintProvider`로 호출, `SdPrint` 구현) | `box-label.print-template.ts` | `BoxLabelPrintTemplate` | `app-box-label-print-template` |
 | `.provider.ts` / `*Provider` | `@Injectable` 클래스 (**`*Service` 금지**) | `app-service.provider.ts` | `AppServiceProvider` | — |
 | 접미어 없음 | route 미연결 일반 컨트롤 컴포넌트 | `instruction-item.ts` | `InstructionItem` | `app-instruction-item` |
 

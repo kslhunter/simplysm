@@ -2,13 +2,29 @@
 
 subagent가 한 패키지 경로를 받아 해당 패키지의 **CLAUDE.md**와 (private 패키지가 아니면) **README.md + docs/**를 생성·갱신한다. subagent는 이 한 파일만 읽으면 두 산출물을 모두 생성할 수 있다.
 
+## LLM 매뉴얼 원칙
+
+이 문서들은 **백과사전(wiki/API reference)이 아니라, 이 패키지를 소비하는 LLM(Claude Code)이 올바른 코드를 한 번에 쓰게 돕는 운영 매뉴얼**이다. 타겟 독자는 `Read` 툴로 md 파일을 로드해 소비자 코드를 작성하는 LLM 에이전트이며, 사람 개발자는 2차 독자다.
+
+**우선순위**:
+
+1. **언제 쓰고 언제 쓰지 말아야 하는가** (When to use / When NOT to use)
+2. **전형적 호출 형태** (복붙 가능한 최소 예제 + 실전 예제)
+3. **자주 틀리는 지점** (🚫 anti-pattern + 근거)
+4. **정확한 시그니처** (호출에 필요한 수준까지)
+
+타입 사전처럼 "모든 필드를 다 채우는 것"이 목표가 아니다. 시그니처는 LLM이 소스에서도 읽을 수 있으므로, 문서는 **소스에 없는 정보**(의도·선택 기준·함정)에 집중한다.
+
 ## 공통 규칙
 
 ### 작성 원칙
 
-- **대화언어로 작성**한다. "적절히", "필요에 따라", "상황에 따라" 같은 모호한 표현을 사용하지 않는다.
-- **소스에서 읽은 내용만** 문서화한다 — 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다 (hallucination 금지).
-- **기존 문서의 시그니처를 신뢰하지 않는다** — 기존 README.md/docs/**/*.md의 코드블록(시그니처·멤버 이름·타입·required 유무 등)을 그대로 재사용하지 않는다. 반드시 소스를 Read하여 확인한 내용만 작성한다.
+- **대화언어 + 3인칭 서술**. "You can use…", "I can help…" 금지 → "Processes X", "Returns Y" 형태. "적절히", "필요에 따라" 같은 모호한 표현 금지.
+- **소스에서 읽은 내용만** 문서화한다. 시그니처는 직접 복사하고, 존재하지 않는 파라미터·반환 타입·동작을 만들어내지 않는다 (hallucination 금지).
+- **기존 문서의 시그니처를 신뢰하지 않는다**. 기존 README.md/docs/**/*.md의 코드블록을 그대로 재사용하지 않는다. 반드시 소스를 Read하여 확인한 내용만 작성한다.
+- **일관된 용어**. 한 Entry 내에서 "Provider / Service / Module", "field / property / member" 같은 유사 용어를 혼용하지 않는다. LLM은 용어 동일성을 구조 신호로 사용한다.
+- **상수에 근거**. 예제의 매직 넘버(`timeout: 30000`, `retries: 3` 등)에는 왜 그 값인지 1줄 주석을 단다. 근거 없는 상수는 LLM이 임의 값으로 변조한다.
+- **엣지케이스까지**. 예제는 "happy path"만 보이고 에러·누락·기본값을 얼버무리지 않는다. 파일이 없을 때·네트워크 실패 시 처리까지 포함한다.
 
 ### 병합 규칙
 
@@ -20,7 +36,7 @@ subagent가 한 패키지 경로를 받아 해당 패키지의 **CLAUDE.md**와 
 
 ### 소스 분석 공유
 
-CLAUDE.md의 "Key Patterns"와 README/docs의 "API 문서"는 동일한 소스 코드 분석에서 파생된다. 전달받은 **소스 병합 파일**을 Read하여 전체 소스를 한번에 파악하고, 두 산출물에 모두 활용한다. 추가 정보가 필요한 경우(다른 패키지의 타입 정의 등)에만 개별 Read를 수행한다.
+CLAUDE.md의 "Key Patterns"와 README/docs의 Entry 문서는 동일한 소스 코드 분석에서 파생된다. 전달받은 **소스 병합 파일**을 Read하여 전체 소스를 한번에 파악하고, 두 산출물에 모두 활용한다. 추가 정보가 필요한 경우(다른 패키지의 타입 정의 등)에만 개별 Read를 수행한다.
 
 ## CLAUDE.md 생성
 
@@ -64,78 +80,15 @@ CLAUDE.md의 "Key Patterns"와 README/docs의 "API 문서"는 동일한 소스 �
 
 subagent 프롬프트에서 전달받은 "루트 수준 설정" 목록과 중복되는 내용은 반복하지 않는다.
 
-### 예시
-
-````markdown
-# CLAUDE.md
-
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
-
-## Package Overview
-
-`@scope/package-name` — 한 줄 설명. 42 TypeScript 소스 파일 (core + utilities).
-
-## Architecture
-
-```
-src/
-├── core/         ← 핵심 로직: services(5), models(3)
-├── utils/        ← 유틸리티 함수
-└── index.ts      ← public API re-exports
-```
-
-### Bootstrap
-
-`initialize()` (`core/init.ts`)이 기반을 설정:
-- 설정 로드
-- 서비스 등록
-
-## Key Patterns
-
-### Service Structure
-
-모든 서비스가 따르는 공통 패턴:
-
-```typescript
-@Injectable()
-export class FooService {
-  private readonly config = inject(ConfigProvider);
-
-  async execute(input: FooInput): Promise<FooOutput> {
-    // ...
-  }
-}
-```
-
-### Utility Functions
-
-`src/utils/`의 순수 함수들. 사이드 이펙트 없음:
-- `transformX()` — X 데이터 변환
-- `validateY()` — Y 유효성 검증
-
-## Testing
-
-**프레임워크**: Vitest
-
-테스트 디렉토리가 src 구조를 미러링: `tests/core/`, `tests/utils/`
-
-```typescript
-describe("FooService", () => {
-  it("should ...", () => {
-    const svc = new FooService(mockConfig);
-    expect(svc.execute(input)).resolves.toEqual(expected);
-  });
-});
-```
-````
-
 ## README.md + docs/ 생성
 
 **`private: true` 패키지는 이 섹션 전체를 건너뛴다.**
 
 출력 경로: `{패키지 경로}/README.md` (분할 구조면 `{패키지 경로}/docs/{category}/{entry}.md` 트리 추가).
 
-**wiki 스타일 원칙:** 각 export된 class/component/함수(Entry)는 자체 md 파일로 분리한다. README.md는 카테고리별 Entry 인덱스(링크) 역할에 집중하고, 상세 설명은 각 Entry 파일에 둔다. 소비자(특히 LLM)가 필요한 Entry 파일 하나만 조회하여 사용할 수 있게 하는 것이 목적이다.
+**구조 원칙**: 각 export된 class/component/함수(Entry)는 자체 md 파일로 분리한다. README.md는 **llms.txt 스타일 인덱스**(소비자가 어느 Entry를 열지 결정하는 길잡이) 역할에 집중하고, 상세는 각 Entry 파일에 둔다. Entry는 **self-contained**하게 작성한다 — 소비자가 필요한 Entry 파일 하나만 조회해도 올바른 코드를 작성할 수 있어야 한다.
+
+**링크 규칙 (1-level deep)**: README → Entry까지만 링크한다. Entry 파일 본문에서 다른 Entry를 참조할 때는 "간단한 차이점 언급 + 링크"만 두고, 정의·세부 사용법을 그 링크에 떠넘기지 않는다. LLM이 부분 읽기(`offset/limit`)로 잘라 읽을 때 체인이 끊기면 정보가 유실된다.
 
 ### 엔트리포인트 찾기
 
@@ -176,9 +129,9 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 - **JSDoc**: `/** ... */` 주석이 있으면 설명으로 활용
 - **카테고리**: 위에서 수집한 region 또는 디렉토리 기반
 
-### Entry 그룹핑 (wiki 페이지 단위)
+### Entry 그룹핑 (매뉴얼 페이지 단위)
 
-수집된 export를 **Entry**(= 분할 시 1개 md 파일이 되는 단위)로 그룹핑한다. Entry는 LLM이 wiki 페이지 하나처럼 조회할 수 있는 최소 응집 단위다.
+수집된 export를 **Entry**(= 분할 시 1개 md 파일이 되는 단위)로 그룹핑한다. Entry는 LLM이 매뉴얼 한 페이지로 로드하는 응집 단위다.
 
 **그룹핑 규칙 (위에서부터 순차 적용):**
 
@@ -225,24 +178,42 @@ main: "./dist/index.js" → src/index.ts (또는 src/index.tsx)
 | 카테고리 1개 **그리고** Entry 10개 이하 | README.md 단독 |
 | 그 외 | README.md (개요+카테고리 인덱스) + `docs/{category}/{entry}.md` (entry별 1 파일) |
 
-**분할 구조 원칙:** wiki 스타일을 목표로 한다. 각 Entry는 해당 anchor 1개에만 집중한 md 파일이 되며, 카테고리는 **서브디렉토리**로만 표현된다 (카테고리 파일 `docs/{category}.md`을 만들지 않는다).
+**분할 구조 원칙**: 각 Entry는 해당 anchor 1개에만 집중한 md 파일이 되며, 카테고리는 **서브디렉토리**로만 표현된다 (카테고리 파일 `docs/{category}.md`을 만들지 않는다).
 
 ### 문서 작성 원칙
 
 - **기존 문서가 없으면** 분석 결과로 신규 작성. **있으면** `docs/` 하위 모든 파일(서브디렉토리 포함)을 읽어 분석 결과 기준으로 정합성을 맞춘다.
 - **소스와 무관한 내용(사용 가이드, 주의사항, 규칙 등)은 보존**이 원칙이되, 현재 소스 및 산출물과 상충하면(없어진 API 언급, 옛 동작 기준 설명, 더 이상 유효하지 않은 규칙, 산출물 문서 링크 등) 소스 및 산출물 기준으로 수정한다.
-- **모든 export를 빠짐없이 문서화**한다 — 수집한 export 목록의 모든 항목이 문서에 포함되어야 한다. "덜 중요하다"는 이유로 생략하지 않는다.
-- **interface/type은 필드별 설명 테이블을 포함**한다 — 시그니처만 나열하지 않고 각 필드의 타입과 설명을 테이블로 작성한다. 소스에 필드가 있는 interface를 빈 `{}`로 표시하는 것은 금지한다.
-- **union type은 discriminant와 각 variant를 설명**한다 — discriminated union인 경우 어떤 필드로 분기되는지와 각 variant를 나열한다.
+- **소비자 관점 완전성**: 공개 entrypoint에서 export되어 **소비자 코드에 등장할 수 있는** 심볼은 문서화한다. 내부 재노출 유틸·타입 별칭은 주 Entry에 흡수하거나, "사용 빈도가 낮고 직접 쓰지 말아야 하는 경우" 생략할 수 있다 (생략 시 사유를 실행 로그에 남긴다). "모든 export를 기계적으로 나열"이 목표가 아니다.
+- **interface/type 필드 테이블**은 **소비자가 채워야 하는 필드**에 한정한다. 반환값으로만 소비되는 타입은 시그니처만 유지하고 필드 테이블을 생략할 수 있다. 단, 소스에 필드가 있는 interface를 빈 `{}`로 축약 표시하는 것은 금지한다.
+- **union type은 discriminant와 각 variant를 설명**한다. discriminated union인 경우 어떤 필드로 분기되는지와 각 variant를 나열한다.
+- **Negative constraints 우선**. "이렇게 해라"만 나열하지 않는다. 소스 JSDoc·테스트·기존 `_common-rules.md` 류 문서에서 확인되는 **하지 말아야 할 사용법**을 Anti-patterns로 명시한다. "하지 마라"가 LLM 실수 방지에 더 효과적이다.
 
-### README.md 형식
+### 반-기법 (피해야 할 작성 패턴)
 
-README.md는 **인덱스** 역할에 집중한다. 분할 구조에서는 각 Entry의 상세를 README에 복사하지 않고 링크만 제공한다.
+아래 패턴은 명시적으로 금지한다. 생성된 문서에서 발견되면 교정한다.
+
+1. **Members/Parameters/Returns만 채운 API reference** — 시그니처는 LLM이 소스에서 읽을 수 있다. "언제 쓰는가 / 흔한 실수" 없는 타입 덤프는 토큰 낭비.
+2. **백과사전식 긴 산문** — "이 기능은 ~를 위해 설계되었으며 역사적으로…" 같은 배경 서술. 별도 설명(Explanation) 문서가 필요하면 파일을 분리하되, Entry 본문에 섞지 않는다.
+3. **Deeply nested 링크 체인** — Entry → 다른 Entry → 또 다른 Entry. 1-level deep 원칙 위반.
+4. **"자세한 건 상위/다른 페이지 참조"** — Entry가 self-contained하지 않으면 부분 로드 시 깨진다.
+5. **1인칭·2인칭 서술** ("I can help…", "You should…") — 3인칭으로 통일.
+6. **시간 민감 정보 인라인** ("2025년 8월 이전엔…") — 금방 거짓이 된다. "Deprecated" 또는 "Legacy" 별도 섹션으로 격리한다.
+7. **동급 대안 나열** ("A, B, C 중 하나 고르세요") — LLM이 무작위 선택. **기본 1개 추천 + 예외 상황에만 대안**.
+8. **ALL CAPS / "ALWAYS"·"NEVER" 남발** — 진짜 중요한 곳에서만 써야 신호가 산다. 근거 1줄이 더 효과적이다.
+9. **Voodoo constants** — 근거 없는 매직 넘버.
+10. **일관되지 않은 용어** — 같은 개념을 여러 용어로 지칭하면 LLM이 별개 개념으로 오인.
+11. **Positive-only 지침** — 금지사항 없이 권장사항만 있으면 LLM이 훈련 데이터 디폴트 패턴으로 회귀한다.
+12. **Tutorial과 Reference 혼재** — "설치 후 첫 걸음…" 학습 서술을 API reference에 섞지 않는다.
+
+### README.md 형식 (llms.txt 스타일 인덱스 + Task 라우팅)
+
+README.md는 **인덱스 + 작업→Entry 라우팅**에 집중한다. 분할 구조에서는 Entry 상세를 복사하지 않고 링크만 제공한다.
 
 ```markdown
 # {package-name}
 
-{package.json의 description. 없으면 엔트리포인트의 export 구조에서 추론한 한 줄 요약}
+> {2~3줄 요약. 런타임·타겟·핵심 의존성 전제. 이 패키지를 왜 쓰는지 한 문장.}
 
 ## Installation
 
@@ -250,73 +221,149 @@ README.md는 **인덱스** 역할에 집중한다. 분할 구조에서는 각 En
 npm install {package-name}
 \`\`\`
 
+## 하려는 작업 → 먼저 읽을 파일
+
+{Task 라우팅 테이블 — LLM이 사용자 의도를 파일로 직역하도록}
+
+| 작업 | 먼저 읽을 파일 |
+|------|----------------|
+| 목록 화면 만들기 | [crud-list.md](./docs/recipes/crud-list.md) |
+| 모달 열기 | [sd-modal-provider.md](./docs/providers/sd-modal-provider.md) |
+| ... | ... |
+
+## 먼저 읽기 (횡단 전제)
+
+{있는 경우에만 이 섹션을 생성}
+
+- [공통 규칙](./docs/recipes/_common-rules.md) — 여러 Entry에 걸친 금지·컨벤션
+- [Bootstrap](./docs/providers/...) — 반드시 등록해야 하는 provider / 초기화
+
 ## API Overview
 
-{README 단독인 경우: 카테고리별로 모든 Entry를 Entry 형식으로 인라인 포함 (docs/는 생성하지 않음)}
-{분할 구조인 경우: 카테고리별 Entry 인덱스 테이블만, 각 row가 해당 entry md 파일로 직접 링크}
+{README 단독인 경우: 카테고리별로 모든 Entry를 인라인 포함}
+{분할 구조인 경우: 카테고리별 Entry 인덱스 테이블}
 
 ### {Category Name}
 
-| Entry | Kind | Description |
-|-------|------|-------------|
-| [`DbContext`](./docs/{category}/db-context.md) | class | {한 줄 요약} |
-| [`FtpStorage`](./docs/{category}/ftp-storage.md) | class | {한 줄 요약} |
-| [`formatNumber`](./docs/{category}/format-number.md) | function | {한 줄 요약} |
+| Entry | Kind | 언제 쓰나 |
+|-------|------|-----------|
+| [`DbContext`](./docs/{category}/db-context.md) | class | {1줄 — "어떤 작업을 할 때 이걸 쓰나"} |
+| [`FtpStorage`](./docs/{category}/ftp-storage.md) | class | {1줄} |
 
-{카테고리 끝에 별도 "See details" 링크를 두지 않는다 — 테이블 row 자체가 링크다.}
+{"Description" 대신 "언제 쓰나" 컬럼을 사용한다. 타입 요약보다 선택 기준이 LLM에게 유효하다.}
 
 {스타일 항목이 수집된 경우:}
 ### Styling
 
-| Entry | Description |
-|-------|-------------|
-| [CSS Classes](./docs/styling/classes.md) | 레이아웃·유틸리티 클래스 목록 |
-| [CSS Custom Properties](./docs/styling/variables.md) | 디자인 토큰 변수 |
-| [Themes](./docs/styling/themes.md) | 테마 전환 클래스 |
-| [Mixins / Functions](./docs/styling/mixins.md) | 공개 SCSS mixin/function |
+| Entry | 언제 쓰나 |
+|-------|-----------|
+| [CSS Classes](./docs/styling/classes.md) | 레이아웃·유틸리티 클래스가 필요할 때 |
+| [CSS Custom Properties](./docs/styling/variables.md) | 디자인 토큰을 오버라이드할 때 |
+| [Themes](./docs/styling/themes.md) | 테마 전환이 필요할 때 |
+| [Mixins / Functions](./docs/styling/mixins.md) | SCSS에서 직접 mixin 쓸 때 |
 
 {README 단독인 경우: 위 테이블 대신 스타일 전체 목록을 인라인으로 포함}
 
-## Usage Examples
+## 이 패키지를 쓰지 말아야 할 때
 
-{대표 Entry 1~3개에 대한 사용 예제. JSDoc @example이 있으면 활용. 없으면 시그니처 기반 최소 예제.
-상세 예제는 각 Entry 문서에 두고, 여기는 "패키지를 처음 접하는 사람을 위한 간단 소개" 수준만 유지한다.}
+{있는 경우에만. 예: "서버 사이드 로직 → @simplysm/service-server"}
 ```
 
 ### docs/{category}/{entry}.md 형식 (분할 대상만)
 
 각 Entry마다 `{패키지 경로}/docs/{category-kebab}/{entry.kebabName}.md`를 1개 생성한다. 카테고리는 서브디렉토리로 매핑한다.
 
-**파일 구성 원칙:**
+Entry는 **anchor의 종류에 따라 아래 세 템플릿 중 하나**를 선택한다:
 
-- Entry에 포함된 모든 export(anchor + 흡수된 interface/type/enum/const)를 한 파일에서 문서화한다
-- anchor를 파일 맨 위에 둔다. 그 다음 관련 타입/상수/예제 순으로 배치
-- 다른 Entry 심볼 언급 시 백틱 식별자 또는 상대 링크(`[\`OtherEntry\`](../{category}/other-entry.md)`)를 사용한다. 정의를 이 파일에 복사하지 않는다
+- **T1 (Recipe)**: `docs/recipes/` 하위 — 특정 화면·흐름을 만드는 방법 ("이 상황에서 어떻게 하지?")
+- **T2 (API Reference)**: class / provider / 단독 함수 / util 등 API 사용법 조회
+- **T3 (Rule / Decision)**: 여러 Entry에 걸친 횡단 규칙·금지 (예: `_common-rules.md`)
+
+**공통 조건**:
+
+- 파일이 100줄 초과 예상이면 상단에 `## Contents` TOC를 둔다.
+- 어느 anchor Entry든 **anchor가 class/provider/주요 함수**이면 "When to use" 섹션을 **반드시** 작성한다. 소스에서 용도가 확인되지 않으면 "소스에서 확인되지 않음"으로 명시.
+- **anchor가 class/provider/주요 함수**이고 Usage 예제가 필요한 경우, **최소 예제 + 전형 예제 2개 이상**을 포함한다. 단순 util/상수는 1개로 충분하며, 의미 있는 예제를 만들 수 없으면 Usage 섹션 자체를 생략한다 (형식적 예제 금지).
+
+#### T1: How-to / Recipe Entry 템플릿
 
 ```markdown
-# {EntryName}
+# {레시피 이름}
 
-{anchor JSDoc 설명. 없으면 시그니처 기반 한 줄 요약.}
+{1~2문장: 이 레시피가 해결하는 문제 / 산출하는 화면}
+
+## When to use / When NOT to use
+
+- ✅ 이런 상황: ...
+- ❌ 이런 상황엔 대신 [`OtherRecipe`](../recipes/other.md) — 이유: ...
+
+## 전제조건
+
+- 필수 Provider: `provideSdAngular` 등
+- peer dependency: ...
+- 환경: ...
+
+## 기본 레시피
 
 \`\`\`typescript
-{anchor 시그니처 — 소스에서 직접 복사}
+{복붙 가능한 최소 완성 코드. 엣지케이스 처리 포함.}
 \`\`\`
 
-{anchor가 class/component인 경우: public 멤버 목록 테이블.
-Kind 열은 패키지에 맞는 용어를 사용한다 — 일반 class는 `property`/`getter`/`method`/`static`,
-Angular 컴포넌트는 추가로 `input`/`input (required)`/`output`/`model`/`signal`/`computed` 등}
+## 변형 (Variation)
 
-## Members
+### {조건 A}
+{코드블록}
+
+### {조건 B}
+{코드블록}
+
+## 🚫 흔한 실수 (Anti-patterns)
+
+### {실수 이름}
+
+\`\`\`typescript
+// ❌ 잘못된 예
+{코드}
+
+// ✅ 올바른 예
+{코드}
+\`\`\`
+
+**근거**: {1줄 — 왜 ❌가 문제인지}
+
+## 관련 Entry
+
+- [`OtherEntry`](../other-category/other.md) — 차이: {한 줄}
+```
+
+#### T2: API Reference Entry 템플릿
+
+```markdown
+# `{EntryName}`
+
+{1문장: 무엇인지 + "언제 쓰나" 축약}
+
+## When to use
+
+- ✅ 이런 상황에 사용: ...
+- ❌ 이런 상황엔 대신 [`OtherEntry`](../{category}/other.md) — 이유: ...
+
+## Signature
+
+\`\`\`typescript
+{호출 가능 수준 시그니처 — 제네릭·public 멤버 시그니처까지. private·internal 제외.}
+\`\`\`
+
+## Members (class/component/provider인 경우)
 
 | Member | Kind | Type | Description |
 |--------|------|------|-------------|
 | `host` | property | `string` | ... |
-| `connected` | getter | `boolean` | ... |
 | `connect` | method | `(opt: Option) => Promise<void>` | ... |
 
-{anchor가 function인 경우: 파라미터 + 반환 타입 설명}
+{Kind 열은 패키지에 맞는 용어 — class는 `property`/`getter`/`method`/`static`, Angular 컴포넌트는 `input`/`input (required)`/`output`/`model`/`signal`/`computed` 등}
 
-## Parameters
+## Parameters (function인 경우)
 
 | Param | Type | Description |
 |-------|------|-------------|
@@ -326,9 +373,37 @@ Angular 컴포넌트는 추가로 `input`/`input (required)`/`output`/`model`/`s
 
 `ReturnType` — ...
 
+## Usage
+
+### 최소 예제
+
+\`\`\`typescript
+{복붙용 가장 단순한 호출. 상수에는 근거 주석.}
+\`\`\`
+
+### 전형 예제
+
+\`\`\`typescript
+{실전 컨텍스트 — 의존성 주입, 에러 처리, 엣지케이스 포함.}
+\`\`\`
+
+## 🚫 Anti-patterns
+
+### {실수 이름}
+
+\`\`\`typescript
+// ❌
+{코드}
+
+// ✅
+{코드}
+\`\`\`
+
+**근거**: {1줄}
+
 ## Related Types
 
-{Entry에 흡수된 interface/type/enum/const를 각각 섹션으로 나열}
+{Entry에 흡수된 interface/type/enum/const를 각각 섹션으로 나열. 소비자가 채우는 필드만 테이블화.}
 
 ### `FtpStorageConfig`
 
@@ -338,23 +413,66 @@ Angular 컴포넌트는 추가로 `input`/`input (required)`/`output`/`model`/`s
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `fieldName` | `type` | ... |
+| `host` | `string` | ... |
 
-### `TFtpStorageMode`
+## 관련
 
-{union type인 경우: discriminant 필드와 각 variant 나열}
-
-## Usage
-
-\`\`\`typescript
-{JSDoc @example 또는 시그니처 기반 최소 예제}
-\`\`\`
+- [`OtherEntry`](../{category}/other.md) — 차이: {한 줄}
 ```
 
-**표시 규칙:**
+#### T3: Rule / Decision Entry 템플릿
 
-- anchor와 흡수된 타입 모두 `##` 또는 `###` 섹션으로 반드시 노출한다. interface 필드가 많다고 `{}`로 축약하지 않는다
-- 비어 있는 섹션(예: 멤버 없음)은 생략한다
+```markdown
+# {규칙 모음 이름}
+
+{1~2문장: 이 규칙이 적용되는 범위와 목적}
+
+## 적용 범위
+
+{어떤 Entry / 카테고리 / 상황에 적용되는가 — 구체적으로}
+
+## ✅ Always (반드시)
+
+### {규칙 이름}
+
+\`\`\`typescript
+// ❌
+{코드}
+
+// ✅
+{코드}
+\`\`\`
+
+**근거**: {1줄}
+
+## ⚠️ Ask first (조건부)
+
+### {규칙 이름}
+
+{조건 + 판단 근거}
+
+## 🚫 Never (금지)
+
+### {규칙 이름}
+
+\`\`\`typescript
+// ❌ 금지
+{코드}
+\`\`\`
+
+**근거**: {왜 금지인지}
+**대안**: {올바른 방법 또는 링크}
+
+## 예외 케이스
+
+{규칙이 깨지는 상황과 허용 조건}
+```
+
+### 표시 규칙
+
+- anchor와 흡수된 타입 모두 `##` 또는 `###` 섹션으로 반드시 노출한다. interface 필드가 많다고 `{}`로 축약하지 않는다.
+- 비어 있는 섹션(예: 멤버 없음, 흔한 실수가 소스에서 확인되지 않음)은 생략한다.
+- anchor가 class/provider/주요 함수면 "When to use" 섹션은 **생략 불가**.
 
 ### Styling 분할 구조 (`docs/styling/*.md`)
 
@@ -371,8 +489,8 @@ Angular 컴포넌트는 추가로 `input`/`input (required)`/`output`/`model`/`s
 <!-- classes.md -->
 # CSS Classes
 
-| Class | Description |
-|-------|-------------|
+| Class | 언제 쓰나 |
+|-------|-----------|
 | `.flex-row` | {설명} |
 
 <!-- variables.md -->
@@ -392,8 +510,8 @@ Angular 컴포넌트는 추가로 `input`/`input (required)`/`output`/`model`/`s
 <!-- mixins.md -->
 # Mixins / Functions
 
-| Name | Signature | Description |
-|------|-----------|-------------|
+| Name | Signature | 언제 쓰나 |
+|------|-----------|-----------|
 | `flex-direction` | `@mixin flex-direction($dir)` | {설명} |
 ```
 
@@ -403,7 +521,7 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 
 분할 구조 전환으로 더 이상 유효하지 않은 **레이아웃 파일만** 정리한다. 이 단계는 파일 레이아웃(구조)만 다루며, 내용의 정합성은 다음 "완전성 및 정확성 검증" 단계에서 처리한다.
 
-1. 이전 구조(`docs/{category}.md` 단일 파일)에서 wiki 구조(`docs/{category}/{entry}.md` 트리)로 전환되면서 더 이상 쓰이지 않는 **카테고리 단위 단일 파일**(예: `docs/utils.md`, `docs/pipes.md`, `docs/drivers.md` 등 카테고리가 디렉토리가 아닌 단일 md로 남은 경우)이 있으면 삭제한다.
+1. 이전 구조(`docs/{category}.md` 단일 파일)에서 분할 구조(`docs/{category}/{entry}.md` 트리)로 전환되면서 더 이상 쓰이지 않는 **카테고리 단위 단일 파일**(예: `docs/utils.md`, `docs/pipes.md`, `docs/drivers.md` 등 카테고리가 디렉토리가 아닌 단일 md로 남은 경우)이 있으면 삭제한다.
 2. 이전에 styling이 단일 파일(`docs/styling.md`)이었고 이번 실행에서 분할 구조(`docs/styling/*.md`)로 전환되면 이전 `docs/styling.md`를 삭제한다. 반대로 README 단독 구조로 전환되어 `docs/styling/` 서브디렉토리가 불필요해지면 해당 서브디렉토리를 삭제한다.
 3. `docs/` 하위의 그 외 파일(현재 Entry 파일, recipe, 가이드 등)은 이 단계에서 삭제하지 않는다. 이들의 존속 여부는 다음 검증 단계 결과에 따라 결정된다.
 
@@ -414,10 +532,10 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 #### 완전성
 
 1. export 목록의 각 항목이 README.md 또는 `docs/` 하위 어느 파일(서브디렉토리 포함)에 존재하는지 확인
-2. 누락된 항목이 있으면 해당 API를 문서에 추가
+2. 누락된 항목이 있으면 해당 API를 문서에 추가 (단, "소비자 관점 완전성" 원칙에 따라 내부 유틸·재노출 타입은 흡수·생략 가능)
 3. 문서에 있는 심볼 참조 중 **현재 export에 없는 것**(제거·이름 변경된 API)은 소스 기준으로 수정하거나 제거
 4. **주제 자체가 소멸한 문서는 파일 통째로 삭제**: recipe·가이드·사용 예시처럼 특정 API 중심으로 작성된 파일의 경우, 해당 문서가 다루는 핵심 주제(제목·첫 문단·코드 예제에서 중심이 되는 anchor 심볼)가 현재 export에서 **전부 사라졌다면** 파일 내 심볼 참조를 하나씩 고치는 대신 **파일 자체를 삭제**한다. 주제가 일부만 바뀐 경우(일부 API만 사라짐)에는 내용을 수정하고 파일은 유지한다.
-5. **README의 Entry 인덱스 링크 무결성**: 모든 `[...](./docs/...)` 링크의 대상 파일이 실제로 존재하는지 확인. 깨진 링크는 수정하거나 제거 (4번에서 파일이 삭제된 경우 해당 링크도 제거)
+5. **README의 인덱스 링크 무결성**: 모든 `[...](./docs/...)` 링크의 대상 파일이 실제로 존재하는지 확인. 깨진 링크는 수정하거나 제거 (4번에서 파일이 삭제된 경우 해당 링크도 제거)
 
 #### 정확성
 
@@ -434,11 +552,25 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 
 불일치가 발견되면 **소스 코드를 기준으로** 문서를 수정한다.
 
+#### 매뉴얼 품질 검증
+
+시그니처 정합성 외에, LLM 매뉴얼로서의 품질을 아래 축으로 검증한다:
+
+| 검증 항목 | 확인 내용 |
+|-----------|-----------|
+| When to use 명시 | anchor가 class/provider/주요 함수인 Entry에 "언제 쓰나"가 1문장 이상 있는가 |
+| 계열 간 선택 기준 | 유사 역할 Entry가 ≥2개인 카테고리에 "무엇을 언제 고르는지" 한 줄 이상이 있는가 (README 테이블 또는 각 Entry 상호 링크) |
+| Anti-pattern 수집 | 소스 JSDoc·테스트·기존 recipe·`_common-rules.md` 류 문서에서 확인된 anti-pattern이 Entry에 반영되었는가 |
+| 예제 품질 | 예제에 매직 넘버가 있으면 근거 주석이 있는가. happy path만 보여주지 않는가 |
+| 3인칭 서술 | "I can…", "You should…" 류 1·2인칭 서술이 없는가 |
+| 용어 일관성 | 한 Entry 내에서 동일 개념에 대해 여러 용어가 혼용되지 않는가 |
+
 #### 검증 결과 표시
 
 ```
 완전성 검증: 52/52 API 문서화됨
 정확성 검증: 52/52 API 시그니처 일치
+매뉴얼 품질: 48/52 Entry에 When to use 명시, 12개 카테고리 중 10개에 선택 기준 있음
 ```
 
 불일치가 있는 경우:
@@ -447,7 +579,8 @@ README 단독 구조이면 위 4개 섹션을 README의 `## Styling` 하위에 �
 완전성 검증: 52/52 API 문서화됨
 정확성 검증: 50/52 API 시그니처 일치
 불일치: DbContext (tables→repositories 필드명 변경), FtpStorage (port: required→optional)
-→ 소스 기준으로 문서를 수정합니다.
+매뉴얼 품질: 누락 - FtpStorage에 When to use 없음, SdToast/SdAlert 선택 기준 없음
+→ 소스 기준으로 문서를 수정하고 매뉴얼 품질 누락 항목을 보완합니다.
 ```
 
 ### package.json `files` 배열 동기화
