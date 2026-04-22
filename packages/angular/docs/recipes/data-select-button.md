@@ -83,7 +83,7 @@ import { Component, signal } from "@angular/core";
 import { SdModalSelectButton, SdSelectModalInfo } from "@simplysm/angular";
 
 @Component({
-  selector: "app-foo",
+  selector: "app-foo-view",
   standalone: true,
   imports: [SdModalSelectButton],
   template: `
@@ -101,7 +101,7 @@ import { SdModalSelectButton, SdSelectModalInfo } from "@simplysm/angular";
     </sd-modal-select-button>
   `,
 })
-export class FooPage {
+export class FooView {
   value = signal<number | undefined>(undefined);
   selectedItems = signal<IItem[]>([]);
 
@@ -141,7 +141,7 @@ interface IShop extends SharedDataBase<number> {
 }
 
 @Component({
-  selector: "app-bar",
+  selector: "app-bar-view",
   standalone: true,
   imports: [SdSharedDataSelectButton, SdItemOfTemplate],
   template: `
@@ -157,7 +157,7 @@ interface IShop extends SharedDataBase<number> {
     </sd-shared-data-select-button>
   `,
 })
-export class BarPage {
+export class BarView {
   shopId = signal<number | undefined>(undefined);
   shops = signal<IShop[]>([]); // SdSharedDataProvider에서 로드
 

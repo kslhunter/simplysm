@@ -12,6 +12,8 @@ description: (내부 전용) 코드 리뷰 분석 로직. sd-review, sd-dev 등�
 - `/sd-inner-review src/services` → `src/services` 하위만
 - `/sd-inner-review` → 프로젝트 루트 전체
 
+**CRITICAL: git 명령 사용 금지.** `git diff`, `git status`, `git log`, `git show` 등 git 명령으로 대상 파일을 결정하지 않는다. 리뷰 대상은 오직 인자로 지정된 경로 또는 대화 맥락에서 사용자가 지정한 범위이다. "최근 변경 파일", "커밋된 파일" 등의 개념으로 대상을 좁히지 않는다.
+
 ## Step 2: 컨텍스트 수집
 
 프로젝트의 기술 스택, 컨벤션등의 규칙을 파악한다.

@@ -25,7 +25,7 @@ import { input, output } from "@angular/core";
 import { type SdSelectModal, type SelectModalOutputResult } from "@simplysm/angular";
 
 // 2) 클래스에 SdSelectModal<ICustomer> 계약 구현
-export class CustomerListPage implements SdSelectModal<ICustomer> {
+export class CustomerList implements SdSelectModal<ICustomer> {
   // ...
 
   //== SdSelectModal<ICustomer> 계약 ==

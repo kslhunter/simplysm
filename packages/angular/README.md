@@ -139,11 +139,8 @@ npm install @simplysm/angular
 | [`SdAddressSearchModal`](./docs/features/sd-address-search-modal.md) | component | Daum Postcode 주소 검색 모달 |
 | [`Address`](./docs/features/sd-address-search-modal.md) | interface | 주소 검색 결과 |
 | [`SdPermissionTable`](./docs/features/sd-permission-table.md) | component | 권한 매트릭스 테이블 (items, value) |
-| 데이터 시트 CRUD 화면 조립 | recipe | → [recipes/crud-list.md](./docs/recipes/crud-list.md) (조회 전용 page부터 풀 CRUD 리스트까지 누적 확장 조립) |
-| 상세폼 CRUD 화면 조립 | recipe | → [recipes/crud-detail.md](./docs/recipes/crud-detail.md) (읽기 전용 상세 폼부터 편집/삭제/modal/control 뷰까지 누적 확장 조립) |
-| 모달 선택 버튼 화면 조립 | recipe | → [recipes/data-select-button.md](./docs/recipes/data-select-button.md) (`<sd-modal-select-button>` 직접 / `<sd-shared-data-select-button>` / 사용자 정의 wrapper) |
 | [`SdSharedDataSelect`](./docs/features/sd-shared-data-components.md) | component | 공유 데이터 드롭다운 선택 |
-| [`SdSharedDataSelectButton`](./docs/features/sd-shared-data-components.md) | component | 공유 데이터 모달 선택 버튼 (→ [recipes/data-select-button.md](./docs/recipes/data-select-button.md)) |
+| [`SdSharedDataSelectButton`](./docs/features/sd-shared-data-components.md) | component | 공유 데이터 모달 선택 버튼 |
 | [`SdSharedDataSelectList`](./docs/features/sd-shared-data-components.md) | component | 공유 데이터 목록형 선택 (selectedItem model) |
 | [`matchesSearchText`](./docs/features/sd-shared-data-components.md) | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
 
@@ -250,6 +247,17 @@ npm install @simplysm/angular
 | [`SdToastContainer`](./docs/ui-overlay/sd-toast.md) | component | 토스트 컨테이너 |
 | [`SdBusyContainer`](./docs/ui-overlay/sd-busy-container.md) | component | busy 표시 컨테이너 |
 
+### Recipes
+
+화면 조립 레시피. "무엇을 만들고 싶은가" 기준으로 진입한다.
+
+| Recipe | Description |
+|--------|-------------|
+| [페이지/모달 컨테이너](./docs/recipes/page-modal-container.md) | `<sd-busy-container>` · `<sd-topbar-container>` · `<sd-topbar>` 직접 조립으로 page/modal/control 뷰 재사용 |
+| [CRUD 리스트](./docs/recipes/crud-list.md) | 조회 전용 page → 인라인 편집 → 선택 모달 → 엑셀 내보내기까지 누적 확장 |
+| [CRUD 상세폼](./docs/recipes/crud-detail.md) | 읽기 전용 상세 → 편집/저장 → 삭제/복원 → modal/control 뷰까지 누적 확장 |
+| [모달 선택 버튼](./docs/recipes/data-select-button.md) | `<sd-modal-select-button>` 직접 사용 / `<sd-shared-data-select-button>` / 사용자 정의 wrapper |
+
 ### Styling
 
 | Entry | Description |
@@ -261,41 +269,77 @@ npm install @simplysm/angular
 
 ## 컴포넌트 비동기 초기화 규칙
 
-컴포넌트에서 비동기 초기화가 필요한 경우 `async ngOnInit()`을 사용한다.
+컴포넌트에서 비동기 초기화가 필요한 경우 constructor `effect()` + `void untracked(async () => ...)` 패턴을 사용한다. signal 의존성을 `effect` 콜백의 동기 부분에서 읽어 등록하고, 비동기 작업은 `untracked` 안에서 수행한다. 의존 signal이 변경되면 effect가 자동 재실행된다.
 
 ```typescript
-export class SomePage implements OnInit {
+export class SomePage {
   busyCount = signal(0);
+  initialized = signal(false);
 
-  async ngOnInit() {
-    this.busyCount.update((v) => v + 1);
-    await this._sdToast.try(async () => {
-      // 비동기 초기화 로직
+  constructor() {
+    effect(() => {
+      // signal 의존성 등록 (untracked 바깥)
+      this.someInput();
+      this.lastFilter();
+
+      void untracked(async () => {
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          // 비동기 초기화 로직
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
     });
-    this.busyCount.update((v) => v - 1);
   }
 }
 ```
 
 - constructor 내 `void (async () => { ... })()` IIFE 패턴 **금지**
-- constructor 내 `void this._init()` 같은 수동 호출 패턴 **금지** — ngOnInit이 이미 같은 역할
+- constructor 내 `void this._init()` 같은 수동 호출 패턴 **금지** — effect가 이미 같은 역할
+- `async ngOnInit()` 패턴 **금지** — 1회만 실행되어 input signal 변경에 반응하지 않는다. effect는 의존 signal 변경 시 자동 재실행된다
 - `resource()` / `httpResource()`는 데이터 로딩 → signal 매핑 용도. 사이드이펙트(라우팅, toast 등) 포함 초기화에는 사용하지 않는다
 
 ## 소비 프로젝트 네이밍 규칙
 
-`@simplysm/angular`를 소비하는 앱 프로젝트에서의 파일명·클래스명 규칙이다.
+`@simplysm/angular`를 소비하는 앱 프로젝트에서의 파일명·클래스명·selector 규칙이다.
 파일명은 **kebab-case + dot-suffix**, 클래스명은 **PascalCase**를 따른다.
 
-| 접미어 | 조건 | 파일명 예시 | 클래스명 예시 |
-|--------|------|-------------|---------------|
-| `.sheet.ts` / `*Sheet` | `<sd-sheet>` 기반 CRUD 리스트 화면 ([recipes/crud-list.md](./docs/recipes/crud-list.md)) | `outbound-instruction.sheet.ts` | `OutboundInstructionSheet` |
-| `.detail.ts` / `*Detail` | `<sd-form>` 기반 상세 폼 화면 ([recipes/crud-detail.md](./docs/recipes/crud-detail.md)) | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` |
-| `.view.ts` / `*View` | sheet/detail 아닌 병합 컴포넌트 + route 연결 | `dashboard.view.ts` | `DashboardView` |
-| `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 | `item-select.modal.ts` | `ItemSelectModal` |
-| `.provider.ts` / `*Provider` | `@Injectable` 클래스 (**`*Service` 금지**) | `app-service.provider.ts` | `AppServiceProvider` |
-| 접미어 없음 | route 미연결 일반 컨트롤 컴포넌트 | `instruction-item.ts` | `InstructionItem` |
+| 접미어 | 조건 | 파일명 예시 | 클래스명 예시 | selector 예시 |
+|--------|------|-------------|---------------|---------------|
+| `.list.ts` / `*List` | 여러 레코드를 조회·관리하는 화면 ([recipes/crud-list.md](./docs/recipes/crud-list.md)) | `outbound-instruction.list.ts` | `OutboundInstructionList` | `app-outbound-instruction-list` |
+| `.detail.ts` / `*Detail` | 단일 레코드를 조회·편집하는 화면 ([recipes/crud-detail.md](./docs/recipes/crud-detail.md)) | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` | `app-outbound-instruction-detail` |
+| `.view.ts` / `*View` | list/detail 아닌 route 연결 화면 (대시보드, 설정 등) | `dashboard.view.ts` | `DashboardView` | `app-dashboard-view` |
+| `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 (route 없이 `SdModalProvider.showAsync`로만 열림) | `item-select.modal.ts` | `ItemSelectModal` | `app-item-select-modal` |
+| `.provider.ts` / `*Provider` | `@Injectable` 클래스 (**`*Service` 금지**) | `app-service.provider.ts` | `AppServiceProvider` | — |
+| 접미어 없음 | route 미연결 일반 컨트롤 컴포넌트 | `instruction-item.ts` | `InstructionItem` | `app-instruction-item` |
 
 - `pipe`, `directive` 등 기타 Angular 구성요소는 `@simplysm/angular` 패키지 자체의 네이밍 패턴(`.pipe.ts`, `.directive.ts`)을 따른다
+- route 화면이 모달로도 재사용되는 경우(예: 선택 모달 겸용 리스트) **주 용도(route)의 suffix**를 유지한다 (예: `CustomerList` + `implements SdSelectModal`)
+
+### selector 규칙
+
+selector는 `app-{도메인}-{suffix}` 형식이다. 같은 도메인에 list와 detail이 공존할 수 있으므로 suffix를 반드시 포함한다.
+
+| 클래스명 | selector |
+|----------|----------|
+| `CustomerList` | `app-customer-list` |
+| `CustomerDetail` | `app-customer-detail` |
+| `DashboardView` | `app-dashboard-view` |
+| `ItemSelectModal` | `app-item-select-modal` |
+
+### interface 네이밍
+
+소비앱 내부의 로컬 interface에는 **`I` prefix**를 사용한다. 라이브러리에서 import하는 타입(`SortingDef`, `SharedDataBase` 등)에는 붙이지 않는다.
+
+```typescript
+// 소비앱 로컬 interface — I prefix 사용
+interface IFilter { searchText?: string; }
+interface ICustomer { id: number; name: string; }
+
+// 라이브러리 타입 — 그대로 사용
+import type { SortingDef, SharedDataBase } from "@simplysm/angular";
+```
 
 ## 소비 프로젝트 디렉토리 구조
 
@@ -307,8 +351,8 @@ src/
 │       ├── {메뉴-그룹}/                  # 사이드바 메뉴 그룹
 │       │   └── {도메인}/                 # 개별 도메인 (트리 깊이 제한 없음)
 │       │       ├── {도메인}.view.ts      # route 연결 병합 컴포넌트
-│       │       ├── {도메인}.sheet.ts     # <sd-sheet> 기반 CRUD 리스트 (recipes/crud-list.md)
-│       │       ├── {도메인}.detail.ts    # <sd-form> 기반 상세 폼 (recipes/crud-detail.md)
+│       │       ├── {도메인}.list.ts      # 여러 레코드 조회·관리 (recipes/crud-list.md)
+│       │       ├── {도메인}.detail.ts    # 단일 레코드 조회·편집 (recipes/crud-detail.md)
 │       │       ├── {이름}.modal.ts       # 도메인 전용 모달
 │       │       └── {이름}.ts            # 일반 컨트롤 (route 미연결)
 │       └── main/

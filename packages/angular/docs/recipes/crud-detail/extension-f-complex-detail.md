@@ -8,18 +8,19 @@
 
 **이 확장이 도입하는 요소:**
 
-- **imports:** `SdSheet`, `SdSheetColumn`, `SdSheetColumnCellTemplate`, `SdAnchor`(신규 행 삭제 아이콘), `mark`, `Uuid`, `oneWayDiffs`(side-effect import), `tablerCirclePlus`
+- **imports:** `SdSheet`, `SdSheetColumn`, `SdSheetColumnCellTemplate`, `SdAnchor`(신규 행 삭제 아이콘), `Uuid`, `oneWayDiffs`(side-effect import), `tablerCirclePlus` (`mark`는 확장 A에서 이미 도입)
 - **데이터 타입 확장:** `ICustomer.boxes: ICustomerBox[]` + `interface ICustomerBox { id: string; seq: number; note: string; isDeleted: boolean; }`
 - **시트 함수 (클래스 필드):** `boxTrackByFn`, `getBoxCellStyleFn`
 - **메서드:** `onAddBoxButtonClick`, `onToggleDeleteBoxButtonClick`
 - **템플릿:** main 영역 `<sd-form>` 내부에 하위 컬렉션 도구 영역(`<sd-button>` "박스 추가") + `<sd-sheet>` 중첩 (§3 최소 뼈대의 `<sd-form>` 내부 단일 필드 블록 아래에 추가)
-- **onSubmit 변경:** `_sdToast.try(...)` 블록 내부를 diff 계산(`data().boxes.oneWayDiffs(_snapshot?.boxes, "id")`) + 일괄 제출로 교체
+- **onSubmit 변경:** `_sdToast.try(...)` 블록 내부를 diff 계산(`data().boxes.oneWayDiffs(_dataSnapshot?.boxes, "id")`) + 일괄 제출로 교체
 
 > 상세: [`<sd-sheet>`](../../ui-data/sd-sheet.md) · [`<sd-sheet-column>`](../../ui-data/sd-sheet.md#sdsheetcolumn) · [`[cell]`](../../ui-data/sd-sheet.md#sdsheetcolumncelltemplate) · [`<sd-anchor>`](../../ui-form/sd-anchor.md) · [`mark`](../../utils/mark.md)
 
 ```typescript
 // 1) imports 추가
-import { SdSheet, SdSheetColumn, SdSheetColumnCellTemplate, SdAnchor, mark } from "@simplysm/angular";
+import { SdSheet, SdSheetColumn, SdSheetColumnCellTemplate, SdAnchor } from "@simplysm/angular";
+// mark는 확장 A에서 이미 import됨
 import { Uuid } from "@simplysm/core-common";
 import { tablerCirclePlus } from "@ng-icons/tabler-icons";
 import "@simplysm/core-common";  // Array.prototype.oneWayDiffs 프로토타입 확장 (side-effect import)
@@ -160,7 +161,7 @@ await this._sdToast.try(async () => {
   }
 
   // 하위 컬렉션 diff 계산 — `type: "create" | "update" | "same"`
-  const snapshotBoxes = this._snapshot?.boxes ?? [];
+  const snapshotBoxes = this._dataSnapshot?.boxes ?? [];
   const boxDiffs = this.data().boxes.oneWayDiffs(snapshotBoxes, "id");
 
   // 앱별 ORM 호출:

@@ -30,7 +30,7 @@ private readonly _sdModal = inject(SdModalProvider);
 
 const result = await this._sdModal.showAsync({
   title: "고객 선택",
-  type: CustomerListPage,
+  type: CustomerList,
   inputs: {
     selectMode: "multi",
     selectedItemKeys: this.selectedCustomerIds(),

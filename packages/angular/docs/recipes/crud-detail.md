@@ -20,7 +20,7 @@
   - `SdCommandDirective`(`sdRefreshCommand`) — Ctrl+Alt+L 단축키
 - **확장이 도입하는 요소**는 각 확장 문서(A~F) 서두에서 명시한다. 각 확장이 추가/변경하는 코드 항목 요약은 [부록 B. 확장 매트릭스 표](#부록-b-확장-매트릭스-표)에서 한눈에 확인할 수 있다.
 - **제거된 추상화:** `SdDataDetail`(컴포넌트) / `SdDataDetailBase<T, R>`(추상 클래스) / `SdDataDetailDataInfo`(타입) / `#toolTpl`·`#prevTpl`·`#contentTpl`·`#nextTpl`·`#modalActionTpl` 슬롯 5종. 대체: 소비 컴포넌트가 표준 조각을 직접 조립.
-- **데이터 비교:** `obj.clone(data)` snapshot 복제 + `obj.equal(a, b)` deep equal (`@simplysm/core-common`). 확장 A에서 도입.
+- **데이터 비교:** `obj.clone(this.data())` snapshot 복제 + `obj.equal(a, b)` deep equal (`@simplysm/core-common`). 확장 A에서 도입.
 
 ## 2. 언제 사용하는가
 
@@ -40,6 +40,8 @@
 ## 3. 최소 뼈대: 읽기 전용 상세 폼
 
 아래는 **읽기 전용 상세 폼(page 뷰)** 기준의 최소 뼈대 완성 컴포넌트다. 라우트로 진입하면 `itemId`를 받아 단일 레코드를 로드하고 읽기 전용 필드로 표시한다. 편집·삭제·modal·control·보조·복합이 필요하면 [§5 확장 A ~ §10 확장 F](#5-확장-a-편집저장)를 선택적으로 얹는다.
+
+> **조건부 요소 안내:** 아래 최소 뼈대는 "routes 페이지 + DB 조회 + 권한 체크"를 갖춘 전형적 구성 기준이다. 각 요소의 포함 조건은 [§4 조건부 요소 포함 기준](#조건부-요소-포함-기준)에서 확인하며, 해당하지 않는 요소는 생략한다. 최소 뼈대는 **page 뷰 전용**이므로 `injectViewTypeSignal()`을 사용하지 않고 `<sd-topbar>`를 조건 없이 렌더한다. modal/control 뷰가 필요하면 [확장 C](./crud-detail/extension-c-modal-view.md) / [확장 D](./crud-detail/extension-d-control-view.md)에서 `injectViewTypeSignal()`과 분기를 도입한다.
 
 본 섹션에 등장하는 개별 API의 단독 사용법:
 
@@ -184,10 +186,7 @@ export class CustomerDetail {
 
   //== 타이틀 / 권한 ==
   protected readonly viewTitle = injectViewTitleSignal();
-  protected readonly perms = injectPermsSignal(
-    () => ["sales.customer"],
-    () => ["use"],
-  );
+  perms = injectPermsSignal(["sales.customer"], ["use"]);
 
   //== 상태 ==
   protected readonly busyCount = signal(0);
@@ -260,6 +259,19 @@ export class CustomerDetail {
 
 ## 4. 최소 뼈대 분해 설명
 
+### 조건부 요소 포함 기준
+
+최소 뼈대의 인프라·라이프사이클 요소는 화면의 필요에 따라 포함/생략한다. 필요 없는 요소를 기계적으로 포함하지 않는다.
+
+| 요소 | 포함 조건 | 생략하는 경우 예시 |
+|------|----------|-------------------|
+| `<sd-topbar-container>` + `<sd-topbar>` | routes로 연결된 페이지에서 헤더를 표시할 때. 최소 뼈대는 page 전용이므로 조건 없이 렌더 | route 미연결 컴포넌트(control, 래퍼 등) |
+| `injectViewTitleSignal()` | 타이틀이 필요할 때. topbar에 타이틀을 표시하는 page에는 보통 포함 | topbar가 없거나 타이틀 표시가 불필요한 화면 |
+| `injectViewTypeSignal()` + viewType 가드 | page 외에 modal 또는 control로도 **겸용**될 때. **최소 뼈대는 page 전용이므로 미포함** — [확장 C](./crud-detail/extension-c-modal-view.md)/[확장 D](./crud-detail/extension-d-control-view.md)에서 도입 | page 전용 상세폼 |
+| `injectPermsSignal()` + 권한 없음 메시지 | 권한 제어가 있는 화면. 권한 제어 자체가 있으면 필수 | 권한 제어가 없는 화면 |
+| `<sd-busy-container>` + `busyCount` | 화면에 비동기 작업(DB 조회, API 호출 등)이 있어서 busy 표시가 필요할 때 | 비동기 로딩 없이 동기적으로 렌더되는 래퍼/레이아웃 화면 |
+| `initialized` + `@if (initialized())` 가드 | 초기 데이터 로딩이 완료되기 전에는 화면을 그리면 안 되는 경우 (깜박임 방지) | 초기 로딩이 필요 없거나, 빈 상태로 보여줘도 무방한 화면 |
+
 ### 블록 역할
 
 | 블록 | 역할 |
@@ -292,14 +304,14 @@ export class CustomerDetail {
 | `onRefreshButtonClick()` | busy/권한 가드 → `busyCount` 증가 → `_sdToast.try(_refresh)` → `busyCount` 감소 |
 | `_refresh()` | `itemId() == null`이면 빈 객체로 초기화, 아니면 앱별 ORM 조회 → `data.set`. busy/try는 호출부 책임. 조회 로직은 호출처가 한 곳뿐이므로 `_refresh` 내부에 인라인 |
 
-> **확장이 도입하는 블록·상태·메서드** (예: `canEdit` / `_snapshot` / `isNew` / `onSubmit` / `_toggleDelete` / `close` output / modal 하단 바 / control 상단 바 / 보조 form / 내부 `<sd-sheet>` 등)는 [§5 확장 A ~ §10 확장 F](#5-확장-a-편집저장) 각 확장 섹션의 "이 확장이 도입하는 요소" bullet + "포인트" bullet에서 다룬다. A+B+C+D 누적된 완성본은 [부록 B. 확장 매트릭스 표](#부록-b-확장-매트릭스-표)에서 한눈에 확인 가능.
+> **확장이 도입하는 블록·상태·메서드** (예: `canEdit` / `_dataSnapshot` / `isNew` / `onSubmit` / `_toggleDelete` / `close` output / modal 하단 바 / control 상단 바 / 보조 form / 내부 `<sd-sheet>` 등)는 [§5 확장 A ~ §10 확장 F](#5-확장-a-편집저장) 각 확장 섹션의 "이 확장이 도입하는 요소" bullet + "포인트" bullet에서 다룬다. A+B+C+D 누적된 완성본은 [부록 B. 확장 매트릭스 표](#부록-b-확장-매트릭스-표)에서 한눈에 확인 가능.
 
 ## 5. 확장 A: 편집/저장
 
 최소 뼈대의 읽기 전용 필드를 편집 가능으로 바꾸고, 저장 버튼 + Ctrl+S 일괄 저장을 추가한다. snapshot 기반 변경 감지 + `setupCanDeactivate` 가드 부착.
 
 - **선행:** 없음 (최소 뼈대에 직접 얹음)
-- **도입 요소:** `canEdit`, `isNew`, `_snapshot`, `setupCanDeactivate`, `onSubmit`, `_checkIgnoreChanges` 등
+- **도입 요소:** `canEdit`, `isNew`, `_dataSnapshot`, `mark`, `setupCanDeactivate`, `onSubmit`, `_checkIgnoreChanges` 등
 - **줄 수:** 196줄
 
 → **[상세 문서](./crud-detail/extension-a-edit-save.md)**
@@ -392,9 +404,36 @@ export class CustomerDetail {
 
 - `useDataDetail()`, `useCrudDetail()`, `setupDataDetail()` 같은 공통 헬퍼를 도입하지 말 것. 이 레시피가 제거한 추상화를 다시 만드는 행위다. 세 화면이 비슷해 보여도 화면마다 필드·동작 시그니처가 조금씩 다르므로 복사·수정이 낫다.
 
-### `_sdSharedData.wait()` 선택적 호출
+### 공유 데이터 사용 시 `_sdSharedData.wait()` 필수
 
-- 과거 `SdDataDetailBase`는 `_refresh()` 직전에 `await this._sdSharedData.wait()`를 호출했다. **공유 데이터를 화면에서 실제로 사용하지 않는다면 이 호출은 불필요**. 사용한다면 `_refresh()` 맨 앞에 `await inject(SdSharedDataProvider).wait();`를 삽입한다.
+- 화면에서 공유 데이터(`useSharedSignal`, `getHandle` 등)를 사용한다면, `_refresh()` 맨 앞에 **반드시** `await this._sdSharedData.wait();`를 호출한다. 공유 데이터 로딩이 완료되기 전에 화면을 렌더하면 셀렉트 드롭다운 등이 비어있는 상태로 표시된다.
+- 공유 데이터를 사용하지 않는 화면에서는 불필요.
+
+### `input()` 의존 데이터 로딩에 `void this._initAsync()` 금지
+
+- `input()` / `input.required()` signal 값에 따라 데이터를 로드하는 컴포넌트에서, 생성자에서 `void this._initAsync()`를 호출하고 별도 메서드에서 비동기 로직을 수행하는 패턴은 **절대 사용하지 않는다.** 이 패턴은 최초 1회만 실행되어 input 변경에 반응하지 않는다.
+- 반드시 `effect`로 input 의존성을 등록하고, 비동기 작업은 `void untracked(async () => { ... })`로 감싼다:
+  ```typescript
+  // ❌ input 변경에 반응하지 않음 — 최초 1회만 실행
+  constructor() {
+    void this._initAsync();
+  }
+  private async _initAsync(): Promise<void> { ... this.itemId() ... }
+
+  // ✅ input 변경 시 자동 재실행
+  constructor() {
+    effect(() => {
+      this.itemId(); // 의존성 등록 (untracked 바깥)
+      void untracked(async () => { ... });
+    });
+  }
+  ```
+- 이 규칙은 최소 뼈대(§3)의 초기 effect, [확장 E(조회 전용 modal)](../crud-list/extension-e-readonly-modal.md)의 부모 식별자 input 등 **모든 input 의존 데이터 로딩에 공통**으로 적용된다.
+
+### signal 필드 초기값에서 다른 signal 읽기 금지 + input → filter 동기화
+
+- `signal()` 필드 이니셜라이저에서 `this.someInput()` 같은 **다른 signal을 읽어서는 안 된다.** 필드 이니셜라이저는 클래스 생성 시점에 실행되며, input signal은 아직 부모로부터 값을 전달받기 전이므로 항상 기본값만 반환한다.
+- **초기값에서 빼는 것만으로는 부족하다.** input 값을 상태에 반영하는 로직이 반드시 effect 안에 있어야 한다. 상세는 [crud-list.md 동일 섹션](./crud-list.md#signal-필드-초기값에서-다른-signal-읽기-금지--input--filter-동기화) 참조.
 
 ### `effect` 내부 `untracked`
 
@@ -407,6 +446,35 @@ export class CustomerDetail {
 ### `injectViewTypeSignal()` 호출 시점
 
 - 동일하게 `injectViewTypeSignal()`도 생성자 또는 필드 이니셜라이저에서만 호출한다.
+
+### page 컴포넌트가 `<sd-topbar>`를 소유한다
+
+- 마스터-디테일 구조(시트 + 상세를 나란히 배치하는 페이지)에서 `<sd-topbar-container>` + `<sd-topbar>`(페이지 타이틀·주요 액션)는 **page 컴포넌트가 소유**한다. 임베딩되는 sheet/detail control 컴포넌트에 `<sd-topbar-container>`나 `<sd-topbar>`를 넣지 않는다.
+  ```html
+  <!-- ❌ page에 topbar 없이, control 컴포넌트가 topbar를 소유 -->
+  <!-- Page -->
+  <div class="flex-row fill">
+    <app-sheet />
+    <app-detail />  <!-- 내부에 <sd-topbar-container> 존재 -->
+  </div>
+
+  <!-- ✅ page가 topbar를 소유, control은 sd-dock-container만 사용 -->
+  <!-- Page -->
+  <sd-topbar-container>
+    <sd-topbar><h4>{{ viewTitle() }}</h4> ...</sd-topbar>
+    <div class="flex-row fill">
+      <app-sheet />   <!-- 내부: <sd-dock-container> -->
+      <app-detail />  <!-- 내부: <sd-dock-container> -->
+    </div>
+  </sd-topbar-container>
+  ```
+- control 뷰의 도구 바(저장·삭제 등)는 `<sd-dock-container>` + `<sd-dock>`으로 배치한다 ([확장 D](./crud-detail/extension-d-control-view.md) 참조).
+
+### `SdCommandDirective` document 리스너 중복 주의
+
+- `SdCommandDirective`는 **document 레벨** keydown 리스너를 등록한다 (`sd-command.ts:40`). 같은 화면에서 여러 컴포넌트에 부착하면 **모두 발동**된다 (모달 내부 판정(`shouldProcessCommandEvent`)만 거를 뿐, 형제 컴포넌트 간 구분은 없음).
+- 따라서 **`_refresh()`/`onSubmit()`을 직접 소유하는 컴포넌��에서만** 부착한다. 자식 컴포넌트를 조합만 하는 page 래퍼, 권한 체크 + 레이아웃만 담당하는 컨테이너에는 부착하지 않는다.
+- 마스터-디테일 구조에서 sheet와 detail **양쪽**에 `sdRefreshCommand`를 부착하면 Ctrl+Alt+L 시 양쪽 `_refresh()`가 동시에 실행된다. 의도된 동작이 아니면 한쪽에만 부착한다.
 
 ### `busyMessage`는 필요할 때만 추가
 
@@ -461,12 +529,12 @@ export class CustomerDetail {
 | 확장 | imports | DI | input·output | 상태 | computed | effect | 메서드 | hostDirectives | host | 템플릿 블록 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **최소 뼈대** | NgIcon, tabler{AlertTriangle,Refresh}, Component core (effect, inject, input, signal, untracked, ViewEncapsulation), type DateTime, FormatPipe, injectPermsSignal, injectViewTitleSignal, SdBusyContainer, SdButton, SdCommandDirective, SdForm, SdTextfield, SdToastProvider, SdTopbar/SdTopbarContainer, AppOrmProvider | AppOrmProvider, SdToastProvider | itemId = input<number>() | busyCount, initialized, data, perms, viewTitle | 없음 | 초기 effect (itemId 의존성) | onRefreshButtonClick, _refresh | SdCommandDirective outputs ["sdRefreshCommand"] | (sdRefreshCommand)="onRefreshButtonClick()" | busy-container → @if (initialized) → 권한 경고 else { topbar-container > topbar(조건 없이: 새로고침) + "flex-column fill" > form(readonly 필드 2) + lastModified 조건부 } |
-| **A. 편집/저장** | +computed, +viewChild, +obj, +setupCanDeactivate, +tablerDeviceFloppy | 없음 | 없음 | +_snapshot (field) | +canEdit, +isNew | 없음 | +onSaveButtonClick, +onSubmit, +_checkIgnoreChanges, ~onRefreshButtonClick (변경사항 체크 추가), ~_refresh (snapshot 갱신) | +outputs ["sdSaveCommand"] | +(sdSaveCommand)="onSaveButtonClick()" | +viewChild #formCtrl, +topbar "저장" 버튼, ~필드 [readonly]="true" → [disabled]="!canEdit()", ~`<sd-form>` → `<sd-form #formCtrl (formSubmit)>`, +생성자 setupCanDeactivate, +권한 키 ["use", "edit"] |
+| **A. 편집/저장** | +computed, +viewChild, +obj, +setupCanDeactivate, +mark, +tablerDeviceFloppy | 없음 | 없음 | +_dataSnapshot (field) | +canEdit, +isNew | 없음 | +onSaveButtonClick, +onSubmit, +_checkIgnoreChanges, ~onRefreshButtonClick (변경사항 체크 추가), ~_refresh (snapshot 갱신) | +outputs ["sdSaveCommand"] | +(sdSaveCommand)="onSaveButtonClick()" | +viewChild #formCtrl, +topbar "저장" 버튼, ~필드 [readonly]="true" → [disabled]="!canEdit()" + (valueChange)="mark(data)", ~`<sd-form>` → `<sd-form #formCtrl (formSubmit)>`, +생성자 setupCanDeactivate, +권한 키 ["use", "edit"] |
 | **B. 삭제/복구 토글** | +tablerEraser, +tablerRestore | 없음 | 없음 | 없음 (ICustomer에 isDeleted: boolean 추가) | 없음 | 없음 | +onDeleteButtonClick, +onRestoreButtonClick, +_toggleDelete | 없음 | 없음 | +topbar에 `@if (!isNew() && canEdit())` 삭제·복구 버튼 |
 | **C. modal 뷰** | +output, +TemplateRef, +injectViewTypeSignal, +type SdModalContentDef, +SdActivatedModalProvider, +SdAppStructureProvider, +SdSystemLogProvider, +SdAnchor, +SdDockContainer, +SdDock, +injectCurrentPageCodeSignal, +injectFullPageCodeSignal | +SdActivatedModalProvider (optional), +SdAppStructureProvider, +SdSystemLogProvider, +_fullPageCode, +_currPageCode | +close = output<boolean \| undefined>() | +actionTplRef (field) | +viewType, +modalOrPageTitle | +actionTplRef 브릿지 effect | ~onSubmit·_toggleDelete에 close.emit(true) 추가, ~setupCanDeactivate 조건에 viewType()==="modal" \|\| 추가 | 없음 | 없음 | `implements SdModalContentDef<boolean \| undefined>`, ~기존 `<sd-topbar>`를 `@if (viewType()==="page")`로 래핑, ~viewTitle → modalOrPageTitle, +main 래퍼를 `<sd-dock-container>`로 감싸고 modal 하단 바 추가, +`<ng-template #modalActionTpl>` |
 | **D. control 뷰** | (확장 C가 이미 도입한 injectViewTypeSignal·SdDockContainer·SdDock·아이콘 재사용) | 없음 | 없음 | 없음 | (확장 C 없이 단독 적용 시 +viewType) | 없음 | 없음 | 없음 | 없음 | +`<sd-dock-container>` 내부에 `@if (viewType()==="control" && canEdit())` 상단 바 |
 | **E. 보조 기능 영역** | +SdSharedDataSelect, +앱 공용 useSharedSignal | 없음 | 없음 | +예시 signal (permCopySourceId 등), +sharedUsers (useSharedSignal) | 없음 | 없음 | +onImportFormSubmit | 없음 | 없음 | +control/modal 뷰 dock 또는 main 영역에 보조 `<sd-form (formSubmit)>` 블록 |
-| **F. 복합 상세** | +SdSheet, +SdSheetColumn, +SdSheetColumnCellTemplate, +SdAnchor(이미 C), +mark, +Uuid, +tablerCirclePlus, +side-effect "@simplysm/core-common" (oneWayDiffs) | 없음 | 없음 | (ICustomer에 boxes, interface ICustomerBox 추가) | 없음 | 없음 | +boxTrackByFn, +getBoxCellStyleFn, +onAddBoxButtonClick, +onToggleDeleteBoxButtonClick, ~onSubmit 내부를 diff 계산 + 일괄 제출로 교체 | 없음 | 없음 | ~main 영역 `<sd-form>` 내부에 하위 컬렉션 도구(박스 추가) + `<sd-sheet>` 중첩 |
+| **F. 복합 상세** | +SdSheet, +SdSheetColumn, +SdSheetColumnCellTemplate, +SdAnchor(이미 C), +Uuid, +tablerCirclePlus, +side-effect "@simplysm/core-common" (oneWayDiffs) | 없음 | 없음 | (ICustomer에 boxes, interface ICustomerBox 추가) | 없음 | 없음 | +boxTrackByFn, +getBoxCellStyleFn, +onAddBoxButtonClick, +onToggleDeleteBoxButtonClick, ~onSubmit 내부를 diff 계산 + 일괄 제출로 교체 | 없음 | 없음 | ~main 영역 `<sd-form>` 내부에 하위 컬렉션 도구(박스 추가) + `<sd-sheet>` 중첩 |
 
 범례:
 

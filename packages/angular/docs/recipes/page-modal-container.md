@@ -29,6 +29,8 @@
 
 아래는 하나의 컴포넌트가 **페이지·모달·control 뷰 모두**를 커버하는 완성 형태다. 필요 없는 분기는 삭제하여 단순화할 수 있다.
 
+> **조건부 요소 안내:** 아래 예제는 3뷰를 모두 갖춘 최대 구성이다. 각 요소의 포함 조건은 [§4 조건부 요소 포함 기준](#조건부-요소-포함-기준)에서 확인하며, 해당하지 않는 분기와 요소는 생략한다.
+
 ```typescript
 import { NgIcon } from "@ng-icons/core";
 import { tablerAlertTriangle } from "@ng-icons/tabler-icons";
@@ -54,7 +56,7 @@ import {
 } from "@simplysm/angular";
 
 @Component({
-  selector: "app-foo",
+  selector: "app-foo-view",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -105,7 +107,7 @@ import {
     </sd-busy-container>
   `,
 })
-export class FooPage {
+export class FooView {
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
   private readonly _sdAppStructure = inject(SdAppStructureProvider);
   private readonly _sdSystemLog = inject(SdSystemLogProvider);
@@ -139,6 +141,22 @@ export class FooPage {
 ```
 
 ## 4. 분해 설명
+
+### 조건부 요소 포함 기준
+
+위 예제는 3뷰를 모두 갖춘 최대 구성이다. 각 뷰 분기와 인프라 요소는 화면의 필요에 따라 포함/생략한다. 필요 없는 요소를 기계적으로 포함하지 않는다.
+
+| 요소 | 포함 조건 | 생략하는 경우 예시 |
+|------|----------|-------------------|
+| `viewType() === "page"` 분기 + `<sd-topbar>` | routes 페이지 뷰가 필요할 때 | 모달/control 전용 컴포넌트 |
+| `viewType() === "modal"` 분기 | 모달 뷰로도 재사용될 때 | page 전용 또는 control 전용 컴포넌트 |
+| `@else` (control) 분기 | 다른 화면의 영역으로 삽입될 때 | page/modal 전용 컴포넌트 |
+| `busy` / `busyMessage` input | 비동기 작업이 있어서 busy 표시가 필요할 때 | 동기적으로 렌더되는 화면 |
+| `initialized` input | 초기 로딩 완료 전 화면을 숨겨야 할 때 | 초기 로딩이 필요 없는 화면 |
+| `restricted` input + 권한 없음 메시지 | 권한 제어가 있는 화면 | 권한 제어가 없는 화면 |
+| `modalOrPageTitle` computed | 뷰 타입에 따른 타이틀 계산이 필요할 때 | 타이틀 불필요, 또는 page 전용(직접 지정) |
+
+### 블록 역할
 
 각 블록의 역할과 원본 `SdBaseContainer` 코드 대응 지점:
 

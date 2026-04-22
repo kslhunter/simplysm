@@ -11,7 +11,7 @@
 - **imports:** `computed`, `oneWayDiffs`(side-effect import), `obj`, `ArgumentError`, `expr`, `FormatPipe`, `SdSharedDataSelect`, `SdItemOfTemplate`, `SdAnchor`(신규 행 삭제 아이콘), `SdCheckbox`(삭제 포함 필터), `SdCommandDirective` 출력에 `sdSaveCommand` 추가, `setupCanDeactivate`, `viewChild`, `DateTime` 등
 - **DI:** `AppAuthProvider`, `AppSharedDataProvider`
 - **상태:** `_itemsSnapshot: ICustomer[]`, `diffs = computed(...)` (`oneWayDiffs`)
-- **파생:** `canEdit = computed(() => perms().includes("edit") && viewType() === "page")`
+- **파생:** `canEdit = computed(() => perms().includes("edit") && viewType() === "page")` — `perms()` 외에 `viewType()` 조건도 함께 확인하므로 computed로 wrapping한다. 단일 `perms().includes("...")` 검사만 필요한 곳에서는 인라인이 기본 패턴이다
 - **hostDirectives·host:** `outputs`에 `sdSaveCommand` 추가, `host`에 `(sdSaveCommand)="onSaveButtonClick()"` 추가
 - **viewChild:** `formCtrl = viewChild<SdForm>("formCtrl")`
 - **메서드:** `onSaveButtonClick`, `onSubmit`, `onAddItemButtonClick`, `onRemoveNewItemButtonClick`, `_upsertItem`, `_checkIgnoreChanges`, `getIsItemChanged`

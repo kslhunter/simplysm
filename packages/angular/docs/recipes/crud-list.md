@@ -40,6 +40,8 @@
 
 아래는 **조회 전용 page** 기준의 최소 뼈대 완성 컴포넌트다. 라우트로 진입하면 검색 + 페이지네이션 + 정렬이 동작하는 읽기 전용 리스트로 표시된다. 편집·선택·모달·엑셀이 필요하면 [확장 A~G](#5-확장-a-inline-편집저장) 중 필요한 확장 문서를 선택적으로 참조하여 얹는다.
 
+> **조건부 요소 안내:** 아래 최소 뼈대는 "routes 페이지 + DB 조회 + 권한 체크 + modal 겸용"을 모두 갖춘 전형적 구성 기준이다. 각 요소의 포함 조건은 [§4 조건부 요소 포함 기준](#조건부-요소-포함-기준)에서 확인하며, 해당하지 않는 요소는 생략한다.
+
 본 섹션에 등장하는 개별 API의 단독 사용법:
 
 - [`<sd-busy-container>`](../ui-overlay/sd-busy-container.md) — busy 오버레이 + [busyCount 패턴](../ui-overlay/sd-busy-container.md#busycount-카운트-패턴)
@@ -172,19 +174,19 @@ interface ICustomer {
                 [(sorts)]="sortingDefs"
                 [trackByFn]="trackByFn"
               >
-                <sd-sheet-column [fixed]="true" [key]="'id'" [header]="'#'">
+                <sd-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
                   <ng-template [cell]="items()" let-item="item">
                     <div class="p-xs-sm tx-right">{{ item.id }}</div>
                   </ng-template>
                 </sd-sheet-column>
 
-                <sd-sheet-column [key]="'name'" [header]="'이름'">
+                <sd-sheet-column [header]="'이름'" [key]="'name'">
                   <ng-template [cell]="items()" let-item="item">
                     <div class="p-xs-sm">{{ item.name }}</div>
                   </ng-template>
                 </sd-sheet-column>
 
-                <sd-sheet-column [key]="'phone'" [header]="'전화번호'">
+                <sd-sheet-column [header]="'전화번호'" [key]="'phone'">
                   <ng-template [cell]="items()" let-item="item">
                     <div class="p-xs-sm">{{ item.phone }}</div>
                   </ng-template>
@@ -197,7 +199,7 @@ interface ICustomer {
     </sd-busy-container>
   `,
 })
-export class CustomerListPage {
+export class CustomerList {
   //== DI ==
   private readonly _appOrm = inject(AppOrmProvider);
   private readonly _sdToast = inject(SdToastProvider);
@@ -315,6 +317,20 @@ export class CustomerListPage {
 
 ## 4. 최소 뼈대 분해 설명
 
+### 조건부 요소 포함 기준
+
+최소 뼈대의 인프라·라이프사이클 요소는 화면의 필요에 따라 포함/생략한다. 필요 없는 요소를 기계적으로 포함하지 않는다.
+
+| 요소 | 포함 조건 | 생략하는 경우 예시 |
+|------|----------|-------------------|
+| `<sd-topbar-container>` + `<sd-topbar>` | routes로 연결된 페이지에서 헤더를 표시할 때 | route 미연결 컴포넌트(control, 래퍼 등) |
+| `injectViewTitleSignal()` | 타이틀이 필요할 때. topbar에 타이틀을 표시하는 page에는 보통 포함 | topbar가 없거나 타이틀 표시가 불필요한 화면 |
+| `injectViewTypeSignal()` + `@if (viewType() === "page")` 가드 | 해당 컴포넌트가 page 외에 modal 또는 control로도 **겸용**될 때 | page 전용 리스트, page 전용 대시보드 |
+| `injectPermsSignal()` + 권한 없음 메시지 | 권한 제어가 있는 화면. 권한 제어 자체가 있으면 필수 | 권한 제어가 없는 화면 |
+| `<sd-busy-container>` + `busyCount` | 화면에 비동기 작업(DB 조회, API 호출 등)이 있어서 busy 표시가 필요할 때 | 비동기 로딩 없이 동기적으로 렌더되는 래퍼/레이아웃 화면 |
+| `initialized` + `@if (initialized())` 가드 | 초기 데이터 로딩이 완료되기 전에는 화면을 그리면 안 되는 경우 (깜박임 방지) | 초기 로딩이 필요 없거나, 빈 상태로 보여줘도 무방한 화면 |
+| `SHARED_DATA_KEY` + `emitAsync()` 호출 | 해당 화면에서 `SdSharedDataProvider`에 등록된 데이터를 **변경**(생성/수정/삭제)하는 경우 | 조회만 하는 화면, sharedData에 등록되지 않은 데이터를 다루는 화면 |
+
 ### 블록 역할
 
 | 블록 | 역할 |
@@ -340,7 +356,7 @@ export class CustomerListPage {
 | `page` / `pageLength` | 0-based 현재 페이지 / 전체 페이지 수. `<sd-sheet [(currentPage)]>` / `[totalPageCount]`로 바인딩 |
 | `sortingDefs` | `SortingDef[]` — `{ key: string; desc: boolean }[]`. `<sd-sheet [(sorts)]>`로 양방향 |
 | `filter` / `lastFilter` | `filter`는 입력 버퍼, `lastFilter`는 "조회" 제출 시점 스냅샷. effect 의존성은 `lastFilter` |
-| `perms` | 권한 signal. `use`는 `perms().includes("use")`로 호출처에서 직접 검사 |
+| `perms` | 권한 signal. **인라인 `perms().includes("...")`이 기본 패턴**. `perms()` 외에 다른 조건(viewType, 데이터 상태 등)도 함께 확인해야 할 때만 `computed`로 wrapping한다 (예: 확장 A의 `canEdit = computed(() => perms().includes("edit") && viewType() === "page")`) |
 
 ### 메서드 분해
 
@@ -449,6 +465,75 @@ page·modal·control 세 뷰는 **하나의 `<sd-topbar-container>` + `<sd-dock-
 - 조회 전용 modal에는 `implements SdSelectModal<T>`, `selectMode` / `selectedItemKeys` input, `close` output, 하단 "선택 해제 / 확인" 바, `cumulativeSelection`, `selectedItems` 상태·복원 effect를 **전부 부착하지 않는다.** 부착해도 호출되지 않아 죽은 코드가 된다.
 - LLM이 풀 스택 합본을 복사하면서 modal 지원이라는 이유로 선택 모달 계약을 반사적으로 이식하는 경우가 잦다. 상단 "뷰 범위 + modal 용도 확인 선행"에 따라 **용도를 먼저 확정**하고, 조회 전용이면 확장 E 스켈레톤부터 조립한다.
 
+### `input()` 의존 데이터 로딩에 `void this._initAsync()` 금지
+
+- `input()` / `input.required()` signal 값에 따라 데이터를 로드하는 컴포넌트에서, 생성자에서 `void this._initAsync()`를 호출하고 별도 메서드에서 비동기 로직을 수행하는 패턴은 **절대 사용하지 않는다.** 이 패턴은 최초 1회만 실행되어 input 변경에 반응하지 않는다.
+- 반드시 `effect`로 input 의존성을 등록하고, 비동기 작업은 `void untracked(async () => { ... })`로 감싼다:
+  ```typescript
+  // ❌ input 변경에 반응하지 않음 — 최초 1회만 실행
+  constructor() {
+    void this._initAsync();
+  }
+  private async _initAsync(): Promise<void> { ... this.someInput() ... }
+
+  // ✅ input 변경 시 자동 재실행
+  constructor() {
+    effect(() => {
+      this.someInput(); // 의존성 등록 (untracked 바깥)
+      void untracked(async () => { ... });
+    });
+  }
+  ```
+- 이 규칙은 최소 뼈대(§3)의 초기 effect, [확장 E(조회 전용 modal)](./crud-list/extension-e-readonly-modal.md)의 부모 식별자 input 등 **모든 input 의존 데이터 로딩에 공통**으로 적용된다.
+
+### signal 필드 초기값에서 다른 signal 읽기 금지 + input → filter 동기화
+
+- `signal()` 필드 이니셜라이저에서 `this.someInput()` 같은 **다른 signal을 읽어서는 안 된다.** 필드 이니셜라이저는 클래스 생성 시점에 실행되며, input signal은 아직 부모로부터 값을 전달받기 전이므로 항상 기본값만 반환한다.
+  ```typescript
+  // ❌ this.someInput()은 항상 기본값 → ?? [] 가 매번 실행되어 의미 없는 코드
+  filter = signal<IFilter>({
+    includeIds: this.includeIds() ?? [],
+    isIncludeDeleted: this.isIncludeDeleted() ?? false,
+  });
+
+  // ✅ 기본값만 사용
+  filter = signal<IFilter>({
+    includeIds: [],
+    isIncludeDeleted: false,
+  });
+  ```
+- **초기값에서 빼는 것만으로는 부족하다.** input 값을 필터에 반영하는 로직이 반드시 effect 안에 있어야 한다. input이 변경되면 `filter`/`lastFilter`를 갱신하고 `page`를 리셋해야 조회가 올바르게 재실행된다:
+  ```typescript
+  constructor() {
+    effect(() => {
+      if (!this.perms().includes("use")) { ... }
+
+      // input 변경 감지 → lastFilter 재반영
+      const ids = this.includeIds() ?? [];
+      const lf = this.lastFilter();
+      if (!obj.equal(ids, lf.includeIds)) {
+        untracked(() => {
+          this.filter.update((f) => ({ ...f, includeIds: ids }));
+          this.lastFilter.set({ ...this.filter() });
+          this.page.set(0);
+        });
+      }
+
+      this.lastFilter();
+      this.page();
+      this.sortingDefs();
+
+      void untracked(async () => { ... });
+    });
+  }
+  ```
+- `untracked(() => { ... })`로 감싸는 이유: filter/lastFilter/page를 갱신하면 effect 의존성이 즉시 재트리거될 수 있으므로, 중간 상태 갱신은 추적 없이 수행하고 이후 `this.lastFilter()` 읽기에서 최종 값이 반영되게 한다.
+
+### 공유 데이터 사용 시 `_sdSharedData.wait()` 필수
+
+- 화면에서 공유 데이터(`useSharedSignal`, `getHandle` 등)를 사용한다면, `_refresh()` 맨 앞에 **반드시** `await this._sdSharedData.wait();`를 호출한다. 공유 데이터 로딩이 완료되기 전에 화면을 렌더하면 셀렉트 드롭다운 등이 비어있는 상태로 표시된다.
+- 공유 데이터를 사용하지 않는 화면에서는 불필요.
+
 ### 공통 유틸 재도입 금지
 
 - `useCrudList()` / `useDataSheet()` / `setupCumulateSelectedKeys2()` 같은 공통 헬퍼를 도입하지 말 것. 이 레시피가 제거한 추상화를 다시 만드는 행위다. 세 화면이 비슷해 보여도 화면마다 필드·동작 시그니처가 조금씩 다르므로 복사·수정이 낫다.
@@ -460,6 +545,35 @@ page·modal·control 세 뷰는 **하나의 `<sd-topbar-container>` + `<sd-dock-
 ### `injectViewTypeSignal()` 호출 시점
 
 - `injectViewTypeSignal()`은 **생성자 실행 중 또는 필드 이니셜라이저에서만** 호출한다. `computed`·`effect` 콜백이나 일반 메서드에서 호출하면 `NG0203` 런타임 에러가 발생한다 (Angular `inject()` 제약). `canEdit = computed(() => ... && this.viewType() === "page")`처럼 생성자 시점에 필드로 선언된 signal을 **읽는** 것은 computed 안에서도 문제 없다 — 호출 자체는 클래스 초기화 시점에 이미 완료됐기 때문.
+
+### page 컴포넌트가 `<sd-topbar>`를 소유한다
+
+- 마스터-디테일 구조(시트 + 상세를 나란히 배치하는 페이지)에서 `<sd-topbar-container>` + `<sd-topbar>`(페이지 타이틀·주요 액션)는 **page 컴포넌트가 소유**한다. 임베딩되는 sheet/detail control 컴포넌트에 `<sd-topbar-container>`나 `<sd-topbar>`를 넣지 않는다.
+  ```html
+  <!-- ❌ page에 topbar 없이, control 컴포넌트가 topbar를 소유 -->
+  <!-- Page -->
+  <div class="flex-row fill">
+    <app-sheet />
+    <app-detail />  <!-- 내부에 <sd-topbar-container> 존재 -->
+  </div>
+
+  <!-- ✅ page가 topbar를 소유, control은 sd-dock-container만 사용 -->
+  <!-- Page -->
+  <sd-topbar-container>
+    <sd-topbar><h4>{{ viewTitle() }}</h4> ...</sd-topbar>
+    <div class="flex-row fill">
+      <app-sheet />   <!-- 내부: <sd-dock-container> -->
+      <app-detail />  <!-- 내부: <sd-dock-container> -->
+    </div>
+  </sd-topbar-container>
+  ```
+- control 뷰의 도구 바(필터·등록·저장 등)는 `<sd-dock-container>` + `<sd-dock>`으로 배치한다.
+
+### `SdCommandDirective` document 리스너 중복 주의
+
+- `SdCommandDirective`는 **document 레벨** keydown 리스너를 등록한다 (`sd-command.ts:40`). 같은 화면에서 여러 컴포넌트에 부착하면 **모두 발동**된다 (모달 내부 판정(`shouldProcessCommandEvent`)만 거를 뿐, 형제 컴포넌트 간 구분은 없음).
+- 따라서 **`_refresh()`/`onSubmit()`을 직접 소유하는 컴포넌트에서만** 부착한다. 자식 컴포넌트를 조합만 하는 page 래퍼, 권한 체크 + 레이아웃만 담당하는 컨테이너에는 부착하지 않는다.
+- 마스터-디테일 구조에서 sheet와 detail **양쪽**에 `sdRefreshCommand`를 부착하면 Ctrl+Alt+L 시 양쪽 `_refresh()`가 동시에 실행된다. 의도된 동작이 아니면 한쪽에만 부착한다.
 
 ### 테스트만을 위한 public API 금지
 
