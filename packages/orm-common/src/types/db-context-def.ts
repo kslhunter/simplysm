@@ -24,7 +24,7 @@ export interface DbContextBase {
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]>;
   getQueryDefObjectName(
-    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
+    tableOrView: TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName;
   switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
 }
@@ -32,7 +32,7 @@ export interface DbContextBase {
 export type DbContextStatus = "ready" | "connect" | "transact";
 
 export interface DbContextDdlMethods {
-  createTable(table: TableBuilder<any, any>): Promise<void>;
+  createTable(table: TableBuilder<any, any, any>): Promise<void>;
   dropTable(table: QueryDefObjectName): Promise<void>;
   renameTable(table: QueryDefObjectName, newName: string): Promise<void>;
   createView(view: ViewBuilder<any, any, any>): Promise<void>;
@@ -66,11 +66,11 @@ export interface DbContextDdlMethods {
   truncate(table: QueryDefObjectName): Promise<void>;
   switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
   // QueryDef 생성기
-  getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef;
+  getCreateTableQueryDef(table: TableBuilder<any, any, any>): QueryDef;
   getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef;
   getCreateProcQueryDef(procedure: ProcedureBuilder<any, any>): QueryDef;
   getCreateObjectQueryDef(
-    builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
+    builder: TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef;
   getDropTableQueryDef(table: QueryDefObjectName): QueryDef;
   getRenameTableQueryDef(table: QueryDefObjectName, newName: string): QueryDef;

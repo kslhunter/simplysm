@@ -36,8 +36,8 @@ import type { ViewBuilder } from "../view-builder";
  * @see {@link RelationKeyBuilder} DB FK 없는 관계
  */
 export class ForeignKeyBuilder<
-  TOwner extends TableBuilder<any, any>,
-  TTargetFn extends () => TableBuilder<any, any>,
+  TOwner extends TableBuilder<any, any, any>,
+  TTargetFn extends () => TableBuilder<any, any, any>,
 > {
   /**
    * @param meta - FK 메타데이터
@@ -91,7 +91,7 @@ export class ForeignKeyBuilder<
  * @see {@link ForeignKeyBuilder} FK builder
  */
 export class ForeignKeyTargetBuilder<
-  TTargetTableFn extends () => TableBuilder<any, any>,
+  TTargetTableFn extends () => TableBuilder<any, any, any>,
   TIsSingle extends boolean,
 > {
   /**
@@ -140,8 +140,8 @@ export class ForeignKeyTargetBuilder<
  * @see {@link ForeignKeyBuilder} DB FK 생성 버전
  */
 export class RelationKeyBuilder<
-  TOwner extends TableBuilder<any, any> | ViewBuilder<any, any, any>,
-  TTargetFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
+  TTargetFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
 > {
   /**
    * @param meta - 관계 메타데이터
@@ -186,7 +186,7 @@ export class RelationKeyBuilder<
  * @see {@link ForeignKeyTargetBuilder} DB FK 생성 버전
  */
 export class RelationKeyTargetBuilder<
-  TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   TIsSingle extends boolean,
 > {
   /**
@@ -212,20 +212,20 @@ export class RelationKeyTargetBuilder<
  * @template TOwner - 소유 Table builder 타입
  * @template TColumnKey - Column key 타입
  */
-type RelationFkFactory<TOwner extends TableBuilder<any, any>, TColumnKey extends string> = {
+type RelationFkFactory<TOwner extends TableBuilder<any, any, any>, TColumnKey extends string> = {
   /** N:1 FK 관계 정의 (DB FK 생성) */
-  foreignKey<TTargetFn extends () => TableBuilder<any, any>>(
+  foreignKey<TTargetFn extends () => TableBuilder<any, any, any>>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
     opts?: { description?: string },
   ): ForeignKeyBuilder<TOwner, TTargetFn>;
   /** 1:N FK 역참조 정의 (single: true → 단일 객체) */
-  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any>>(
+  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any, any>>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts: { single: true; description?: string },
   ): ForeignKeyTargetBuilder<TTargetTableFn, true>;
-  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any>>(
+  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any, any>>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts?: { single?: false; description?: string },
@@ -239,25 +239,25 @@ type RelationFkFactory<TOwner extends TableBuilder<any, any>, TColumnKey extends
  * @template TColumnKey - Column key 타입
  */
 type RelationRkFactory<
-  TOwner extends TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   TColumnKey extends string,
 > = {
   /** N:1 논리적 관계 정의 (DB FK 미생성) */
-  relationKey<TTargetFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>>(
+  relationKey<TTargetFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
     opts?: { description?: string },
   ): RelationKeyBuilder<TOwner, TTargetFn>;
   /** 1:N 논리적 역참조 정의 (single: true → 단일 객체) */
   relationKeyTarget<
-    TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
+    TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   >(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts: { single: true; description?: string },
   ): RelationKeyTargetBuilder<TTargetTableFn, true>;
   relationKeyTarget<
-    TTargetTableFn extends () => TableBuilder<any, any> | ViewBuilder<any, any, any>,
+    TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   >(
     targetTableFn: TTargetTableFn,
     relationName: string,
@@ -297,17 +297,17 @@ type RelationRkFactory<
  * ```
  */
 export function createRelationFactory<
-  TOwner extends TableBuilder<any, any> | ViewBuilder<any, any, any>,
+  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   TColumnKey extends string,
 >(
   ownerFn: () => TOwner,
-): TOwner extends TableBuilder<any, any>
+): TOwner extends TableBuilder<any, any, any>
   ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
   : RelationRkFactory<TOwner, TColumnKey> {
   return {
     foreignKey(columns, targetFn, opts?) {
       return new ForeignKeyBuilder({
-        ownerFn: ownerFn as () => TableBuilder<any, any>,
+        ownerFn: ownerFn as () => TableBuilder<any, any, any>,
         columns,
         targetFn,
         description: opts?.description,
@@ -337,7 +337,7 @@ export function createRelationFactory<
         isSingle: opts?.single,
       });
     },
-  } as TOwner extends TableBuilder<any, any>
+  } as TOwner extends TableBuilder<any, any, any>
     ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
     : RelationRkFactory<TOwner, TColumnKey>;
 }
@@ -370,13 +370,15 @@ export type RelationBuilderRecord = Record<
  *
  * @template T - FK 또는 RelationKey builder 타입
  */
-export type ExtractRelationTarget<TRelation> = TRelation extends
+export type ExtractRelationTarget<TRelation, TVisited extends string = never> = TRelation extends
   | ForeignKeyBuilder<any, infer TTargetFn>
   | RelationKeyBuilder<any, infer TTargetFn>
-  ? ReturnType<TTargetFn> extends TableBuilder<infer TCols, infer TRels>
-    ? InferColumns<TCols> & InferDeepRelations<TRels>
+  ? ReturnType<TTargetFn> extends TableBuilder<infer TName, infer TCols, infer TRels>
+    ? TName extends TVisited
+      ? InferColumns<TCols>
+      : InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>
     : ReturnType<TTargetFn> extends ViewBuilder<any, infer TData, infer TRels>
-      ? TData & InferDeepRelations<TRels>
+      ? TData & InferDeepRelations<TRels, TVisited>
       : never
   : never;
 
@@ -388,19 +390,24 @@ export type ExtractRelationTarget<TRelation> = TRelation extends
  *
  * @template T - FKTarget 또는 RelationKeyTarget builder 타입
  */
-export type ExtractRelationTargetResult<TRelation> = TRelation extends
-  | ForeignKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
-  | RelationKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
-  ? ReturnType<TTargetTableFn> extends TableBuilder<infer TCols, infer TRels>
-    ? TIsSingle extends true
-      ? InferColumns<TCols> & InferDeepRelations<TRels>
-      : (InferColumns<TCols> & InferDeepRelations<TRels>)[]
-    : ReturnType<TTargetTableFn> extends ViewBuilder<any, infer TData, infer TRels>
-      ? TIsSingle extends true
-        ? TData & InferDeepRelations<TRels>
-        : (TData & InferDeepRelations<TRels>)[]
-      : never
-  : never;
+export type ExtractRelationTargetResult<TRelation, TVisited extends string = never> =
+  TRelation extends
+    | ForeignKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
+    | RelationKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
+    ? ReturnType<TTargetTableFn> extends TableBuilder<infer TName, infer TCols, infer TRels>
+      ? TName extends TVisited
+        ? TIsSingle extends true
+          ? InferColumns<TCols>
+          : InferColumns<TCols>[]
+        : TIsSingle extends true
+          ? InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>
+          : (InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>)[]
+      : ReturnType<TTargetTableFn> extends ViewBuilder<any, infer TData, infer TRels>
+        ? TIsSingle extends true
+          ? TData & InferDeepRelations<TRels, TVisited>
+          : (TData & InferDeepRelations<TRels, TVisited>)[]
+        : never
+    : never;
 
 /**
  * 관계 정의에서 심층 관계 타입 추론
@@ -415,8 +422,8 @@ export type ExtractRelationTargetResult<TRelation> = TRelation extends
  * // { posts?: Post[]; profile?: Profile; }
  * ```
  */
-export type InferDeepRelations<TRelations extends RelationBuilderRecord> = {
+export type InferDeepRelations<TRelations extends RelationBuilderRecord, TVisited extends string = never> = {
   [K in keyof TRelations]?:
-    | ExtractRelationTarget<TRelations[K]>
-    | ExtractRelationTargetResult<TRelations[K]>;
+    | ExtractRelationTarget<TRelations[K], TVisited>
+    | ExtractRelationTargetResult<TRelations[K], TVisited>;
 };

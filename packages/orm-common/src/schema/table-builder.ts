@@ -49,6 +49,7 @@ import {
  * @see {@link queryable} Queryable 생성
  */
 export class TableBuilder<
+  TName extends string,
   TColumns extends ColumnBuilderRecord,
   TRelations extends RelationBuilderRecord,
 > {
@@ -57,7 +58,7 @@ export class TableBuilder<
   /** 관계 정의 (타입 추론용) */
   readonly $relations!: TRelations;
 
-  /** 전체 타입 추론 (column + 관계) */
+  /** 전체 타입 추론 (column + 관계) — 순환 감지: 같은 테이블 재방문 시 끊김 */
   readonly $inferSelect!: InferColumns<TColumns> & InferDeepRelations<TRelations>;
   /** Column 전용 타입 추론 */
   readonly $inferColumns!: InferColumns<TColumns>;
@@ -79,7 +80,7 @@ export class TableBuilder<
    */
   constructor(
     readonly meta: {
-      name: string;
+      name: TName;
       description?: string;
       database?: string;
       schema?: string;
@@ -97,7 +98,7 @@ export class TableBuilder<
    * @param desc - Table 설명 (DDL Comment로 사용됨)
    * @returns 새 TableBuilder 인스턴스
    */
-  description(desc: string) {
+  description(desc: string): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({ ...this.meta, description: desc });
   }
 
@@ -112,7 +113,7 @@ export class TableBuilder<
    * const User = Table("User").database("mydb");
    * ```
    */
-  database(db: string) {
+  database(db: string): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({ ...this.meta, database: db });
   }
 
@@ -131,7 +132,7 @@ export class TableBuilder<
    *   .schema("custom_schema");
    * ```
    */
-  schema(schema: string) {
+  schema(schema: string): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({ ...this.meta, schema });
   }
 
@@ -157,8 +158,8 @@ export class TableBuilder<
    */
   columns<TNewColumnDefs extends ColumnBuilderRecord>(
     fn: (c: ReturnType<typeof createColumnFactory>) => TNewColumnDefs,
-  ) {
-    return new TableBuilder<TNewColumnDefs, TRelations>({
+  ): TableBuilder<TName, TNewColumnDefs, TRelations> {
+    return new TableBuilder<TName, TNewColumnDefs, TRelations>({
       ...this.meta,
       columns: fn(createColumnFactory()),
     });
@@ -186,7 +187,7 @@ export class TableBuilder<
    *   .primaryKey("userId", "roleId");
    * ```
    */
-  primaryKey(...columns: (keyof TColumns & string)[]) {
+  primaryKey(...columns: (keyof TColumns & string)[]): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({
       ...this.meta,
       primaryKey: columns,
@@ -217,7 +218,7 @@ export class TableBuilder<
     fn: (
       i: ReturnType<typeof createIndexFactory<keyof TColumns & string>>,
     ) => IndexBuilder<string[]>[],
-  ) {
+  ): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({
       ...this.meta,
       indexes: fn(createIndexFactory<keyof TColumns & string>()),
@@ -264,7 +265,7 @@ export class TableBuilder<
    */
   relations<T extends RelationBuilderRecord>(
     fn: (r: ReturnType<typeof createRelationFactory<this, keyof TColumns & string>>) => T,
-  ): TableBuilder<TColumns, T> {
+  ): TableBuilder<TName, TColumns, T> {
     return new TableBuilder({
       ...this.meta,
       relations: fn(createRelationFactory<this, keyof TColumns & string>(() => this)),
@@ -314,6 +315,6 @@ export class TableBuilder<
  *
  * @see {@link TableBuilder} builder 클래스
  */
-export function Table(name: string) {
-  return new TableBuilder({ name });
+export function Table<TName extends string>(name: TName) {
+  return new TableBuilder<TName, ColumnBuilderRecord, RelationBuilderRecord>({ name });
 }

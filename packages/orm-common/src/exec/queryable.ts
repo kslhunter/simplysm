@@ -49,7 +49,7 @@ class JoinQueryable {
    * @param table - 조인할 table
    * @returns 조인된 Queryable
    */
-  from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$inferSelect"], T> {
+  from<T extends TableBuilder<any, any, any>>(table: T): Queryable<T["$inferSelect"], T> {
     return queryable(this._db, table, this._joinAlias)();
   }
 
@@ -113,7 +113,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
    * @param table - 재귀할 대상 table
    * @returns self 속성이 추가된 Queryable (자기 참조용)
    */
-  from<T extends TableBuilder<any, any>>(
+  from<T extends TableBuilder<any, any, any>>(
     table: T,
   ): Queryable<T["$inferSelect"] & { self?: TBaseData[] }, T> {
     const selfAlias = `${this._cteName}.self`;
@@ -227,7 +227,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  */
 export class Queryable<
   TData extends DataRecord,
-  TFrom extends TableBuilder<any, any> | never, // CUD 연산은 TableBuilder만 지원
+  TFrom extends TableBuilder<any, any, any> | never, // CUD 연산은 TableBuilder만 지원
 > {
   constructor(readonly meta: QueryableMeta<TData>) {}
 
@@ -1396,15 +1396,15 @@ export class Queryable<
    *   .insertInto(ArchivedUser);
    * ```
    */
-  async insertInto<TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>>(
+  async insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>>(
     targetTable: TTable,
   ): Promise<void>;
   async insertInto<
-    TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>,
+    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns: TOut[]): Promise<Pick<TData, TOut>[]>;
   async insertInto<
-    TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>,
+    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns?: TOut[]): Promise<Pick<TData, TOut>[] | void> {
     const results = await this.meta.db.executeDefs<Pick<TData, TOut>>(
@@ -1421,7 +1421,7 @@ export class Queryable<
     records: TFrom["$inferInsert"][],
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): InsertQueryDef {
-    const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
     // AI column에 명시적 값이 있으면 overrideIdentity 설정
@@ -1448,7 +1448,7 @@ export class Queryable<
     record: TFrom["$inferInsert"],
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): InsertIfNotExistsQueryDef {
-    const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
     const { select: _, ...existsSelectQuery } = this.getSelectQueryDef();
@@ -1468,7 +1468,7 @@ export class Queryable<
     });
   }
 
-  getInsertIntoQueryDef<TTable extends TableBuilder<DataToColumnBuilderRecord<TData>, any>>(
+  getInsertIntoQueryDef<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>>(
     targetTable: TTable,
     outputColumns?: (keyof TTable["$inferColumns"] & string)[],
   ): InsertIntoQueryDef {
@@ -1577,7 +1577,7 @@ export class Queryable<
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpdateQueryDef {
-    const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
     return obj.clearUndefined({
@@ -1600,7 +1600,7 @@ export class Queryable<
   }
 
   getDeleteQueryDef(outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): DeleteQueryDef {
-    const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
     return obj.clearUndefined({
@@ -1709,7 +1709,7 @@ export class Queryable<
     insertRecordFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpsertQueryDef {
-    const from = this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
     const outputDef = this._getCudOutputDef();
 
     const { select: _sel, ...existsSelectQuery } = this.getSelectQueryDef();
@@ -1806,7 +1806,7 @@ export class Queryable<
  */
 export function getMatchedPrimaryKeys(
   fkCols: string[],
-  targetTable: TableBuilder<any, any>,
+  targetTable: TableBuilder<any, any, any>,
 ): string[] {
   const pk = targetTable.meta.primaryKey;
   if (pk == null || fkCols.length !== pk.length) {
@@ -1866,7 +1866,7 @@ function transformColumnsAlias<TRecord extends DataRecord>(
 interface QueryableMeta<TData extends DataRecord> {
   db: DbContextBase;
   from?:
-    | TableBuilder<any, any>
+    | TableBuilder<any, any, any>
     | ViewBuilder<any, any, any>
     | Queryable<any, any>
     | Queryable<TData, any>[]
@@ -2019,11 +2019,11 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
  * }
  * ```
  */
-export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
+export function queryable<TBuilder extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
   db: DbContextBase,
   tableOrView: TBuilder,
   as?: string,
-): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any> ? TBuilder : never> {
+): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any, any> ? TBuilder : never> {
   return () => {
     // as가 미지정이면 db.getNextAlias() 사용 (카운터 증가)
     // as가 지정되면 그대로 사용 (카운터 증가 없음)

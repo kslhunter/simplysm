@@ -100,7 +100,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   getQueryDefObjectName(
-    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
+    tableOrView: TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName {
     return getQueryDefObjectNameImpl(this, tableOrView);
   }
@@ -111,9 +111,9 @@ export abstract class DbContext implements DbContextBase {
 
   // ── 등록 메서드 ──
 
-  protected queryable<T extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
+  protected queryable<T extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
     builder: T,
-  ): () => Queryable<T["$inferSelect"], T extends TableBuilder<any, any> ? T : never> {
+  ): () => Queryable<T["$inferSelect"], T extends TableBuilder<any, any, any> ? T : never> {
     const fn = createQueryable(this, builder);
     Object.defineProperty(fn, SD_BUILDER, { value: builder });
     return fn;
@@ -245,7 +245,7 @@ export abstract class DbContext implements DbContextBase {
 
   // ── DDL 실행 메서드 ──
 
-  async createTable(table: TableBuilder<any, any>): Promise<void> {
+  async createTable(table: TableBuilder<any, any, any>): Promise<void> {
     await this.executeDefs([tableDdl.getCreateTableQueryDef(this, table)]);
   }
 
@@ -342,7 +342,7 @@ export abstract class DbContext implements DbContextBase {
 
   // ── DDL QueryDef 생성기 ──
 
-  getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef {
+  getCreateTableQueryDef(table: TableBuilder<any, any, any>): QueryDef {
     return tableDdl.getCreateTableQueryDef(this, table);
   }
 
@@ -355,7 +355,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   getCreateObjectQueryDef(
-    builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
+    builder: TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef {
     return tableDdl.getCreateObjectQueryDef(this, builder);
   }
