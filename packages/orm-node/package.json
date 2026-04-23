@@ -14,8 +14,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "src",
-    "docs"
+    "src"
   ],
   "sideEffects": false,
   "dependencies": {

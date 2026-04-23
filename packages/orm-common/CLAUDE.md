@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/orm-common/README.md`를 참조한다.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+이 파일은 Claude Code가 이 패키지의 코드를 작업할 때 참고하는 가이드이다.
 
 ## Package Overview
 

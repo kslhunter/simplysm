@@ -26,6 +26,7 @@ import { SdDock } from "./sd-dock";
       sd-dock-container {
         display: block;
         height: 100%;
+        overflow: auto;
 
         > ._content {
           position: relative;

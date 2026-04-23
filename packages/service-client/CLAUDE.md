@@ -1,12 +1,10 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/service-client/README.md`를 참조한다.
 
 ## Package Overview
 
-`@simplysm/service-client` - WebSocket 기반 서비스 서버 클라이언트. 서비스 호출, 실시간 이벤트, 파일 업로드/다운로드, ORM 원격 실행을 지원한다. 14개 TypeScript 소스 파일.
+`@simplysm/service-client` — WebSocket 기반 서비스 서버 클라이언트. 서비스 호출, 실시간 이벤트, 파일 업로드/다운로드, ORM 원격 실행을 지원한다. 14개 TypeScript 소스 파일.
 
 ## Architecture
 
@@ -201,5 +199,6 @@ DOM과 WebWorker lib를 동시에 포함하면 `Blob`, `File`, `Transferable` �
 패키지 내부 단위 테스트:
 - `tests/protocol/postmessage-compat.spec.ts` — Worker 미지원 환경에서 `ClientProtocolWrapper`의 encode/decode 라운드트립 검증
 - `tests/features/event-client.spec.ts` — `EventClient`의 구독/발행 및 서버 이벤트 디스패치 동작 검증 (mock `ServiceTransport` 사용)
+- `tests/types/browser-compat.spec.ts` — `BlobInput`, `FileCollection`, `BrowserWorker` 등 cross-env 타입 호환성 검증
 
 통합 테스트는 모노레포 루트의 `tests/service/`에 위치하며 `ServiceClient`의 서버 연결, RPC 호출, 파일 전송을 검증한다.

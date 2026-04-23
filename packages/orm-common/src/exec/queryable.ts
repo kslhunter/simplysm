@@ -22,7 +22,7 @@ import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit, ExprInput } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
-import { ArgumentError, obj } from "@simplysm/core-common";
+import { ArgumentError, DateOnly, DateTime, obj, Time, Uuid } from "@simplysm/core-common";
 import {
   ForeignKeyBuilder,
   ForeignKeyTargetBuilder,
@@ -763,7 +763,7 @@ export class Queryable<
    *   .include((u) => u.posts)
    * ```
    */
-  include(fn: (item: PathProxy<TData>) => PathProxy<any>): Queryable<TData, TFrom> {
+  include(fn: (item: PathProxy<TData>) => PathProxy<unknown>): Queryable<TData, TFrom> {
     if (Array.isArray(this.meta.from)) {
       const newFroms = this.meta.from.map((from) => from.include(fn));
       return new Queryable({
@@ -1225,10 +1225,17 @@ export class Queryable<
         if (val.length > 0) {
           Object.assign(result, this._buildSelectDef(val[0], fullKey));
         }
+      } else if (
+        val instanceof DateOnly ||
+        val instanceof DateTime ||
+        val instanceof Time ||
+        val instanceof Uuid ||
+        val instanceof Uint8Array
+      ) {
+        result[fullKey] = expr.toExpr(val);
       } else if (typeof val === "object" && val != null) {
         Object.assign(result, this._buildSelectDef(val, fullKey));
       } else {
-        // 일반 값 (string, number, boolean 등) — Expr로 변환
         result[fullKey] = expr.toExpr(val);
       }
     }

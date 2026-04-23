@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/core-common/README.md`를 참조한다.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -62,7 +62,7 @@ src/
 
 ### utils 네임스페이스 임포트
 
-`utils/` 하위 함수들은 네임스페이스로 내보내진다. 직접 named import 하지 않고 네임스페이스로 사용한다. 네임스페이스는 `obj`, `str`, `num`, `bytes`, `path`, `json`, `xml`, `wait`, `transfer`, `err`, `dt`, `primitive`이며, `template-strings`, `zip`은 직접 임포트한다.
+`utils/` 하위 함수들은 네임스페이스로 내보내진다. 직접 named import 하지 않고 네임스페이스로 사용한다. 네임스페이스는 `obj`, `str`, `num`, `bytes`, `path`, `json`, `xml`, `wait`, `transfer`, `err`, `dt`, `primitive`이며, `template-strings`(`js`, `ts`, `html`, `tsql`, `mysql`, `pgsql`)와 `zip`(`ZipArchive`)은 직접 임포트한다.
 
 ```typescript
 import {
@@ -78,9 +78,13 @@ import {
   err,
   dt,
   primitive,
-  toTemplateString,
-  fromTemplateString,
-  zip,
+  js,
+  ts,
+  html,
+  tsql,
+  mysql,
+  pgsql,
+  ZipArchive,
 } from "@simplysm/core-common";
 
 const copied = obj.clone(source);

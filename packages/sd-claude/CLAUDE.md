@@ -1,12 +1,12 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/sd-claude/README.md`를 참조한다.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
 
-`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 다수의 스킬(`sd-*` 접두어 포함), 2개 rules 파일, 다수의 references 문서 및 패키지 사용 설명서, 5개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
+`@simplysm/sd-claude` - Claude Code 에셋을 소비 프로젝트의 `.claude/` 디렉토리에 자동 설치하는 패키지. 다수의 스킬(`sd-*` 접두어 포함), 2개 rules 파일, 참조 문서, 6개 훅 스크립트를 포함한다. CLI(`sd-claude`)로 멀티 계정 전환 기능도 제공한다.
 
 TypeScript 소스 없음. `scripts/`는 Node.js `.mjs` 스크립트(5개)이고, `claude/`는 배포 에셋 디렉토리다.
 
@@ -38,6 +38,7 @@ sd-claude/
 │   │   ├── sd-use/            ← 자연어 → sd-* 스킬 라우팅
 │   │   └── sd-wbs/            ← WBS Feature 분해
 │   ├── sd-check-bash.py              ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
+│   ├── sd-cache-read-hash.py          ← PostToolUse 훅 (Read 후 파일 해시 캐싱)
 │   ├── sd-check-forbidden-files.py   ← Write/Edit 도구 사전 검사 훅 (tsconfig.json, eslint.config.ts 수정 차단)
 │   ├── sd-check-write.py             ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
 │   ├── sd-subagent-start.sh          ← SubagentStart 훅 (CLAUDE.md를 읽어 출력)

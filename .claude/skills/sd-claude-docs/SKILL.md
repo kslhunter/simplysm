@@ -6,12 +6,17 @@ effort: low
 
 # sd-claude-docs: CLAUDE.md + README.md/docs 통합 생성
 
-프로젝트를 분석하여 **CLAUDE.md**(모노레포 내부 개발자용 컨텍스트)와 **README.md + docs/**(패키지 소비자용 API 문서)를 한 번에 생성·갱신한다. 설정 파일·스크립트·소스 코드에서 검증 가능한 사실만 추출하며, 기존 문서는 섹션 단위로 병합한다.
+프로젝트를 분석하여 **CLAUDE.md**(모노레포 내부 개발자용 컨텍스트)와 **소비자 문서(README.md + _api-index.md + Entry 파일)**를 한 번에 생성·갱신한다. 설정 파일·스크립트·소스 코드에서 검증 가능한 사실만 추출하며, 기존 문서는 섹션 단위로 병합한다.
 
-- **라이브러리 프로젝트** (`private: true`가 아닌 패키지 1개 이상 존재): CLAUDE.md + 각 패키지 `README.md` (+ 분량 조건에 해당 시 `docs/{category}/{entry}.md` 트리)
+- **라이브러리 프로젝트** (`private: true`가 아닌 패키지 1개 이상 존재): CLAUDE.md + 각 패키지 소비자 문서
 - **소비앱** (모든 패키지가 `private: true`): CLAUDE.md만 생성
 
-**두 문서의 독립성.** CLAUDE.md는 **모노레포 내부 개발자(LLM 포함)**용, README.md + docs/는 **패키지 소비자**용이다. 대상·관점이 달라 중복되지 않는다. README.md + docs/는 **wiki 스타일**로 구성한다 — 각 export된 class/component(Entry)는 자체 md 파일로 분리되어, 소비자(특히 LLM)가 필요한 Entry 하나만 조회할 수 있게 한다. README.md는 인덱스, 상세는 각 Entry 파일에 둔다.
+**두 문서의 독립성.** CLAUDE.md는 **모노레포 내부 개발자(LLM 포함)**용, 소비자 문서는 **패키지 소비자**용이다. 대상·관점이 달라 중복되지 않는다.
+
+**작업 기반 발견성.** 소비자 문서는 **작업 라우터 구조**로 구성한다:
+- **README.md** = 작업 라우터 ("하려는 작업 → 읽을 파일" 매핑에 전념. API 목록은 두지 않는다)
+- **_api-index.md** = API 참조 인덱스 (API 이름을 이미 알 때 문서를 찾는 보조 파일)
+- **{category}/{entry}.md** = Entry 상세 (각 Entry 상단에 "읽어야 하는 상황" 필수)
 
 ## 사용법
 
@@ -36,15 +41,23 @@ effort: low
 
 ### 출력 경로 규칙
 
-라이브러리 프로젝트에서 패키지 소비자용 문서는 **해당 패키지 루트**에 위치한다.
+| 구분 | CLAUDE.md | README.md | _api-index.md | Entry 파일 |
+|------|-----------|-----------|---------------|------------|
+| 모노레포 (각 패키지) | `{패키지 경로}/CLAUDE.md` | `{문서 루트}/{패키지명}/README.md` | `{문서 루트}/{패키지명}/_api-index.md` | `{문서 루트}/{패키지명}/{category}/{entry}.md` |
+| 모노레포 루트 | `./CLAUDE.md` | — | — | — |
+| 단일 패키지 (루트=패키지) | `./CLAUDE.md` | `./README.md` | `./_api-index.md` | `./{category}/{entry}.md` |
 
-| 구분 | CLAUDE.md | README.md | docs/ |
-|------|-----------|-----------|-------|
-| 모노레포 (각 패키지) | `{패키지 경로}/CLAUDE.md` | `{패키지 경로}/README.md` | `{패키지 경로}/docs/{category}/{entry}.md` |
-| 모노레포 루트 | `./CLAUDE.md` | — | — |
-| 단일 패키지 (루트=패키지) | `./CLAUDE.md` | `./README.md` | `./docs/{category}/{entry}.md` |
+`private: true` 패키지는 README.md / Entry 파일을 생성하지 않는다 (CLAUDE.md만).
 
-`private: true` 패키지는 README.md / docs/를 생성하지 않는다 (CLAUDE.md만).
+#### `{문서 루트}` 결정
+
+루트 `package.json`의 `version` 필드에서 메이저 버전을 추출하여 `{문서 루트}`를 결정한다.
+
+```
+version: "14.0.51" → 메이저 버전: 14 → {문서 루트}: .claude/references/sd-simplysm-v14
+```
+
+모노레포에서 `{패키지명}`은 패키지 디렉토리명이다 (예: `packages/angular` → `angular`). README.md 내부의 Entry 파일 링크는 상대 경로를 사용한다 (예: `[SdThemeProvider](./providers/sd-theme-provider.md)`).
 
 ## Step 1: 사전 분석
 
@@ -107,10 +120,11 @@ effort: low
 
 subagent가 개별 파일을 하나씩 Read하는 대신 병합 파일 1회 Read로 전체 소스를 파악할 수 있게 한다. 컨텍스트 소비를 대폭 줄이는 핵심 단계이다.
 
-각 패키지에 대해 Bash로 실행 (여러 패키지면 병렬):
+타임스탬프 변수를 생성한 뒤, 각 패키지에 대해 Bash로 실행 (여러 패키지면 병렬):
 
 ```bash
-bash .claude/skills/sd-claude-docs/merge-source.sh {패키지경로} ./tmp/{패키지명}-source.txt
+TS=$(date +%y%m%d%H%M%S)
+bash .claude/skills/sd-claude-docs/merge-source.sh {패키지경로} ./.tmp/docs/$TS/{패키지명}-source.txt
 ```
 
 ### 3-2. subagent 병렬 실행
@@ -120,26 +134,29 @@ bash .claude/skills/sd-claude-docs/merge-source.sh {패키지경로} ./tmp/{패�
 #### subagent 프롬프트
 
 ```
-{패키지 경로}의 CLAUDE.md와 README.md/docs를 생성·갱신한다.
+{패키지 경로}의 CLAUDE.md와 소비자 문서를 생성·갱신한다.
 
 `.claude/skills/sd-claude-docs/references/package-docs.md`를 읽고 그 지침을 따른다.
 
 전달 사항:
 - 패키지 경로: {패키지 경로}
-- 소스 병합 파일: {./tmp/{패키지명}-source.txt의 절대 경로}
+- 패키지명: {패키지 디렉토리명}
+- 문서 루트: {문서 루트}
+- 소비자 문서 출력 경로: `{문서 루트}/{패키지명}/`
+- 소스 병합 파일: {./.tmp/docs/$TS/{패키지명}-source.txt의 절대 경로}
 - 루트 수준 설정 (이 내용과 중복되는 정보는 패키지 CLAUDE.md에 반복하지 않는다):
   {Step 1에서 추출한 코딩 규칙·컴파일러 설정 목록}
 ```
 
-각 subagent는 소스 병합 파일을 한 번 Read하여 CLAUDE.md(Key Patterns)와 README.md/docs(API 문서) 모두에 활용한다.
+각 subagent는 소스 병합 파일을 한 번 Read하여 CLAUDE.md(Key Patterns)와 소비자 문서(API 문서) 모두에 활용한다.
 
 ### subagent 반환 정보
 
 - 패키지 경로
 - CLAUDE.md 생성/갱신/건너뜀 여부
-- README.md 생성/갱신/건너뜀 여부 + 구조 (README 단독 / README + docs 트리)
+- 소비자 문서 생성/갱신/건너뜀 여부 + 구조 (README 단독 / README + _api-index + Entry 트리)
 - Entry 수 / 총 API 항목 수
-- 생성된 파일 목록
+- 생성된 파일 목록 (_api-index.md 포함)
 
 ## Step 4: 루트 CLAUDE.md 생성
 
@@ -210,20 +227,20 @@ UI:       angular (Angular)
 ```markdown
 ## sd-claude-docs 결과
 
-| 패키지 | CLAUDE.md | README.md | 구조 | Entry / API |
-|--------|-----------|-----------|------|-------------|
+| 패키지 | CLAUDE.md | 소비자 문서 | 구조 | Entry / API |
+|--------|-----------|-------------|------|-------------|
 | root | 생성 | — | — | — |
 | @simplysm/core-common | 갱신 | 갱신 | README 단독 | 8 / 35 |
-| @simplysm/angular | 갱신 | 갱신 | README + docs 트리 | 72 / 126 |
+| @simplysm/angular | 갱신 | 갱신 | README + _api-index + Entry 트리 | 72 / 126 |
 | @simplysm/internal | 생성 | — (private) | — | — |
 
 ### 생성된 파일 목록
 - CLAUDE.md (root)
 - packages/core-common/CLAUDE.md
-- packages/core-common/README.md
-- packages/core-common/docs/utils/string-utils.md
+- {문서 루트}/core-common/README.md
 - packages/angular/CLAUDE.md
-- packages/angular/README.md
-- packages/angular/docs/{category}/{entry}.md …
+- {문서 루트}/angular/README.md
+- {문서 루트}/angular/_api-index.md
+- {문서 루트}/angular/{category}/{entry}.md …
 - ...
 ```

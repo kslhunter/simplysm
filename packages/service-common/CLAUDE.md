@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/service-common/README.md`를 참조한다.
 
 
 ## Package Overview

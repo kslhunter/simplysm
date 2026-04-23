@@ -27,7 +27,7 @@ function makeColDef(overrides: Partial<SdSheetColumnDef> = {}): SdSheetColumnDef
 
 function setup(overrides: {
   columnDefs?: SdSheetColumnDef[];
-  fixedLeftMap?: Map<string, number>;
+  fixedLeftMap?: Map<number, number>;
   getItemCellStyleFn?: (item: Item, colKey: string) => string | undefined;
   getItemCellClassFn?: (item: Item, colKey: string) => string;
   getChildrenFn?: (item: Item, index: number) => Item[] | undefined;
@@ -35,7 +35,7 @@ function setup(overrides: {
   isCellEditMode?: (addr: { r: number; c: number }) => boolean;
 } = {}) {
   const columnDefs = signal(overrides.columnDefs ?? [makeColDef()]);
-  const fixedLeftMap = signal(overrides.fixedLeftMap ?? new Map<string, number>());
+  const fixedLeftMap = signal(overrides.fixedLeftMap ?? new Map<number, number>());
   const getItemCellStyleFn = signal<((item: Item, colKey: string) => string | undefined) | undefined>(
     overrides.getItemCellStyleFn,
   );
@@ -64,7 +64,7 @@ const testItem: Item = { name: "Alice" };
 describe("useSheetCellStyling", () => {
   describe("Rule: fixed 컬럼 스타일", () => {
     it("fixed 컬럼 — left offset이 적용된다", () => {
-      const fixedMap = new Map([["name", 0]]);
+      const fixedMap = new Map([[0, 0]]);
       const { styling } = setup({
         columnDefs: [makeColDef({ key: "name", fixed: true })],
         fixedLeftMap: fixedMap,
@@ -76,23 +76,24 @@ describe("useSheetCellStyling", () => {
         rowspan: 1,
         isLastRow: true,
         colDef: makeColDef({ key: "name", fixed: true }),
+        colIndex: 0,
       });
 
       expect(style).toContain("left: 0px");
     });
 
     it("getFixedCellStyle — left offset 스타일 반환", () => {
-      const fixedMap = new Map([["name", 50]]);
+      const fixedMap = new Map([[0, 50]]);
       const { styling } = setup({ fixedLeftMap: fixedMap });
 
-      const style = styling.getFixedCellStyle(makeColDef({ key: "name" }));
+      const style = styling.getFixedCellStyle(0);
       expect(style).toContain("left: 50px");
     });
 
     it("non-fixed 컬럼 — fixed 스타일이 적용되지 않는다", () => {
       const { styling } = setup();
 
-      const style = styling.getFixedCellStyle(makeColDef());
+      const style = styling.getFixedCellStyle(0);
       expect(style).toBeNull();
     });
   });
@@ -167,6 +168,7 @@ describe("useSheetCellStyling", () => {
         rowspan: 1,
         isLastRow: true,
         colDef,
+        colIndex: 0,
       });
 
       expect(style).toContain("width: 200px");
@@ -183,6 +185,7 @@ describe("useSheetCellStyling", () => {
         rowspan: 1,
         isLastRow: true,
         colDef,
+        colIndex: 0,
       });
 
       expect(style).toContain("width: 200px");
@@ -198,6 +201,7 @@ describe("useSheetCellStyling", () => {
         rowspan: 1,
         isLastRow: false,
         colDef: undefined,
+        colIndex: 0,
       });
 
       expect(style).toBeNull();
@@ -216,6 +220,7 @@ describe("useSheetCellStyling", () => {
         rowspan: 1,
         isLastRow: true,
         colDef: makeColDef({ collapse: true }),
+        colIndex: 0,
       });
       expect(style).toContain("width: 0");
       expect(style).toContain("padding: 0");

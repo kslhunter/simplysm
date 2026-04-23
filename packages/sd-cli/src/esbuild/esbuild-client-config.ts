@@ -154,19 +154,24 @@ export async function createClientEsbuildContext(
     define["import.meta.env"] = JSON.stringify(options.env);
   }
 
-  // import.meta.hot 폴리필 banner (Angular HMR 런타임용)
+  // import.meta.hot 폴리필 (Angular HMR 런타임용)
   // Angular의 compileHmrInitializer가 import.meta.hot.on('angular:component-update', ...)을 사용.
-  // Vite 없이 동작하도록 import.meta.hot을 폴리필하고, globalThis.__hmr_dispatch로 외부 트리거 제공.
-  const hmrBanner =
-    options.templateUpdates != null && options.legacyModule !== true
-      ? [
-          'if(typeof ngHmrMode!=="undefined"&&ngHmrMode){(function(){',
-          "var _l={};",
-          "import.meta.hot={on:function(e,c){if(!_l[e])_l[e]=[];_l[e].push(c);},off:function(e,c){var a=_l[e];if(a){var i=a.indexOf(c);if(i!==-1)a.splice(i,1);}}};",
-          "globalThis.__hmr_dispatch=function(e,d){var a=_l[e];if(a)for(var i=0;i<a.length;i++)a[i](d);};",
-          "})()}",
-        ].join("")
-      : undefined;
+  // ES Module에서 import.meta는 모듈별로 고유하므로, banner가 아닌 globalThis에 hot 객체를 저장하고
+  // esbuild define으로 import.meta.hot을 globalThis.__hmr_hot으로 치환한다.
+  const useHmrPolyfill =
+    options.templateUpdates != null && options.legacyModule !== true;
+  if (useHmrPolyfill) {
+    define["import.meta.hot"] = "globalThis.__hmr_hot";
+  }
+  const hmrBanner = useHmrPolyfill
+    ? [
+        "if(!globalThis.__hmr_hot){(function(){",
+        "var _l={};",
+        "globalThis.__hmr_hot={on:function(e,c){if(!_l[e])_l[e]=[];_l[e].push(c);},off:function(e,c){var a=_l[e];if(a){var i=a.indexOf(c);if(i!==-1)a.splice(i,1);}}};",
+        "globalThis.__hmr_dispatch=function(e,d){var a=_l[e];if(a)for(var i=0;i<a.length;i++)a[i](d);};",
+        "})()}",
+      ].join("")
+    : undefined;
 
   // esbuild context 생성
   const context = await esbuild.context({

@@ -95,4 +95,4 @@ ORM:      orm-node / orm-common
 
 ## 참조 문서 유지보수
 
-- `@simplysm/*` 패키지의 public API 변경 시 `packages/{패키지명}/README.md` 및 `packages/{패키지명}/docs/**/*.md` 파일의 수정이 필요할 수 있다.
+- `@simplysm/*` 패키지의 public API 변경 시 `.claude/references/sd-simplysm-v14/{패키지명}/README.md` 및 하위 Entry 파일의 수정이 필요할 수 있다.

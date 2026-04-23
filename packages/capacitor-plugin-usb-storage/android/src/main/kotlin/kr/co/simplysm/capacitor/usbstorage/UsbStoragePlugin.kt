@@ -56,7 +56,7 @@ class UsbStoragePlugin : Plugin() {
     }
 
     @PluginMethod
-    fun requestPermissions(call: PluginCall) {
+    override fun requestPermissions(call: PluginCall) {
         val vendorId = call.getInt("vendorId")
         val productId = call.getInt("productId")
 
@@ -115,7 +115,7 @@ class UsbStoragePlugin : Plugin() {
     }
 
     @PluginMethod
-    fun checkPermissions(call: PluginCall) {
+    override fun checkPermissions(call: PluginCall) {
         val vendorId = call.getInt("vendorId")
         val productId = call.getInt("productId")
 

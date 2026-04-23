@@ -19,7 +19,10 @@ export interface EmitOptions {
 }
 
 export class AngularSourceFileCache extends Map<string, ts.SourceFile> {
+  /** 누적 — TypeScript BuilderProgram 증분 빌드가 변경 파일을 추적하는 데 사용. clear 금지. */
   readonly modifiedFiles = new Set<string>();
+  /** per-cycle — sd-build-start에서 매 빌드 사이클마다 리셋. HMR 판정에만 사용. */
+  cycleModifiedFiles = new Set<string>();
 
   invalidate(files: Iterable<string>): void {
     for (const file of files) {

@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "node:fs";
-import { createWorker, FsWatcher } from "@simplysm/core-node";
+import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import {
@@ -208,6 +208,11 @@ function createSourceFileCachePlugin(): esbuild.Plugin {
             ...typeScriptFileCache.keys(),
           ];
           const changedFiles = mtimeTracker.detectChanges(watchTargets);
+          const normalizedChangedFiles = new Set<string>();
+          for (const file of changedFiles) {
+            normalizedChangedFiles.add(pathx.posix(file));
+          }
+          esbuildResult.sourceFileCache.cycleModifiedFiles = normalizedChangedFiles;
           if (changedFiles.size > 0) {
             esbuildResult.sourceFileCache.invalidate(changedFiles);
           }

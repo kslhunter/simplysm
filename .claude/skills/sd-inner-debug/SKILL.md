@@ -1,6 +1,6 @@
 ---
 name: sd-inner-debug
-description: (내부 전용) 근본 원인 분석(ACH) 로직. sd-debug, sd-check 등에서 호출된다. 직접 호출하지 않는다.
+description: 근본 원인 분석(ACH) 로직. 문제 발생시, 원인분석 및 해결방안을 도축하기 위해 사용한다.
 ---
 
 # sd-inner-debug: 근본 원인 분석

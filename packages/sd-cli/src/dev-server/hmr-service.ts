@@ -44,9 +44,12 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
   let prevOutputs: Map<string, string> | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   let pendingMetafile: esbuild.Metafile | undefined;
+  let pendingTemplateKeys: string[] | undefined;
 
   function onBuildEnd(metafile: esbuild.Metafile): void {
     pendingMetafile = metafile;
+    pendingTemplateKeys =
+      templateUpdates.size > 0 ? [...templateUpdates.keys()] : undefined;
     if (debounceTimer != null) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       debounceTimer = undefined;
@@ -62,7 +65,7 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
         let fingerprint = String(output.bytes);
         if (outDir != null) {
           try {
-            const filePath = path.resolve(outDir, normalizedPath);
+            const filePath = path.resolve(normalizedPath);
             const content = fs.readFileSync(filePath);
             fingerprint = crypto.createHash("md5").update(content).digest("hex");
           } catch {
@@ -78,16 +81,18 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
   function dispatchHmrMessage(): void {
     if (pendingMetafile == null) return;
     const metafile = pendingMetafile;
+    const snapshotKeys = pendingTemplateKeys;
     pendingMetafile = undefined;
+    pendingTemplateKeys = undefined;
 
     const timestamp = Date.now();
     const currentOutputs = collectOutputs(metafile);
 
-    // 1. templateUpdates에 entry가 있으면 component-update
-    if (templateUpdates.size > 0) {
+    // 1. onBuildEnd 시점에 캡처된 templateUpdates가 있으면 component-update
+    if (snapshotKeys != null && snapshotKeys.length > 0) {
       broadcast({
         type: "component-update",
-        ids: [...templateUpdates.keys()],
+        ids: snapshotKeys,
         timestamp,
       });
       prevOutputs = currentOutputs;
@@ -170,7 +175,7 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
     }
 
     const componentId = parsedUrl.searchParams.get("c") ?? "";
-    const body = templateUpdates.get(componentId) ?? "";
+    const body = templateUpdates.get(encodeURIComponent(componentId)) ?? "";
 
     res.writeHead(200, {
       "Content-Type": "text/javascript",

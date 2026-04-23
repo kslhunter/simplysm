@@ -1,12 +1,10 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/orm-node/README.md`를 참조한다.
 
 ## Package Overview
 
-`@simplysm/orm-node` - Node.js 환경에서 MSSQL, MySQL, PostgreSQL에 대한 저수준 DB 연결 및 ORM 실행자를 제공하는 패키지. 8개 TypeScript 소스 파일.
+`@simplysm/orm-node` — Node.js 환경에서 MSSQL, MySQL, PostgreSQL에 대한 저수준 DB 연결 및 ORM 실행자를 제공하는 패키지. 8개 TypeScript 소스 파일.
 
 ## Architecture
 
@@ -95,7 +93,9 @@ MSSQL `bulkInsert()`에서 `Buffer` 사용은 tedious 라이브러리 요구사�
 ### createOrm() 사용법
 
 ```typescript
-const MyDb = defineDbContext({ ... }); // orm-common에서
+class MyDb extends DbContext {
+  user = this.queryable(User);
+}
 
 const orm = createOrm(MyDb, {
   dialect: "mysql",

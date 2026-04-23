@@ -16,8 +16,7 @@
   "files": [
     "dist",
     "src",
-    "scss",
-    "docs"
+    "scss"
   ],
   "sideEffects": [
     "./src/index.ts",

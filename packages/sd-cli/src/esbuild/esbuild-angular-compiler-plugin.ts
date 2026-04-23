@@ -333,10 +333,10 @@ export function createAngularCompilerPlugin(
           if (isIncremental) {
             const useHmr =
               pluginOptions.templateUpdates != null &&
-              sourceFileCache.modifiedFiles.size <= HMR_MODIFIED_FILE_LIMIT;
+              sourceFileCache.cycleModifiedFiles.size <= HMR_MODIFIED_FILE_LIMIT;
 
             if (useHmr && lastResult != null) {
-              for (const modifiedFile of sourceFileCache.modifiedFiles) {
+              for (const modifiedFile of sourceFileCache.cycleModifiedFiles) {
                 const sf = lastResult.program.getSourceFile(modifiedFile);
                 if (sf != null) {
                   staleSourceFiles ??= new Map();
@@ -345,9 +345,9 @@ export function createAngularCompilerPlugin(
               }
             }
 
-            // referencedFileTracker 확장
+            // referencedFileTracker 확장 (per-cycle 변경 파일만 전달하여 불필요한 재순회 방지)
             expandedModifiedFiles = referencedFileTracker.update(
-              sourceFileCache.modifiedFiles,
+              sourceFileCache.cycleModifiedFiles,
             );
 
             // 변경된 파일의 Worker 결과만 선택적 제거 (변경되지 않은 파일의
@@ -452,7 +452,7 @@ export function createAngularCompilerPlugin(
             pluginOptions.templateUpdates != null
           ) {
             const hmrCandidates = collectHmrCandidates(
-              sourceFileCache.modifiedFiles,
+              sourceFileCache.cycleModifiedFiles,
               compileResult.ngtscProgram,
               staleSourceFiles,
             );

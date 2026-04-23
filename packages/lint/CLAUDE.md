@@ -1,12 +1,12 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/lint/README.md`를 참조한다.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
 
-`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 설정. 소스 파일 12개 (`src/rules/` 9개, `src/utils/` 1개, 진입점 2개).
+`@simplysm/lint` -- Simplysm 모노레포 전용 ESLint 플러그인 및 공유 Flat Config 설정. 소스 파일 12개 (`src/rules/` 9개, `src/utils/` 1개, 진입점 2개).
 
 두 가지 진입점을 exports한다:
 - `./eslint-plugin` -- `@simplysm` 네임스페이스로 등록하는 커스텀 규칙 9개를 `{ rules: {...} }` 형태로 내보냄

@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/sd-cli/README.md`를 참조한다.
 
 ## Package Overview
 
-`@simplysm/sd-cli` — Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 107개 TypeScript 소스 파일.
+`@simplysm/sd-cli` — Simplysm 모노레포용 빌드/개발/배포 CLI 도구. 108개 TypeScript 소스 파일.
 
 `pnpm sd-cli <command>`로 실행되며 `sd.config.ts`를 읽어 패키지별 빌드 전략을 결정한다.
 
@@ -24,7 +24,8 @@ src/
 ├── sd-cli-entry.ts        ← yargs 커맨드 등록 진입점
 ├── sd-config.types.ts     ← sd.config.ts 타입 정의 (SdConfig, SdPackageConfig 등)
 │
-├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, publish, device, replace-deps)
+├── commands/              ← CLI 커맨드 구현 (build, dev, watch, check, lint, typecheck, device, replace-deps)
+│   └── publish/           ← publish 커맨드 (deployment, git, version, npm/local/storage publisher, post-publish)
 ├── orchestrators/         ← 커맨드-엔진 조율
 │   ├── types.ts                 ← Orchestrator 공통 타입 정의
 │   ├── BaseOrchestrator.ts      ← watch/dev 공통 기반 (추상 클래스)
@@ -51,13 +52,15 @@ src/
 │   ├── lint.worker.ts           ← ESLint 독립 실행
 │   ├── shared-worker-lifecycle.ts ← Worker 공통 초기화 (consola + cleanup + guard)
 │   ├── build-change-filter.ts   ← 파일 변경 필터링 (shouldSkipRebuild, hasFileAddOrRemove)
-│   └── build-watch-paths.ts     ← watch 대상 경로 수집 (buildWatchPaths)
+│   ├── build-watch-paths.ts     ← watch 대상 경로 수집 (buildWatchPaths)
+│   └── incremental-mtime-tracker.ts ← 증분 빌드용 파일 mtime 추적
 ├── angular/               ← Angular AOT 컴파일 + Vite 플러그인
 │   ├── vite-angular-plugin.ts        ← sdAngularPlugin (SdTsCompiler + JavaScriptTransformer)
 │   ├── client-transform-stylesheet.ts
 │   ├── angular-compiler.ts           ← AngularSourceFileCache, augmentHostWithCaching, EmitResult/EmitOptions
 │   ├── angular-build.ts              ← NgtscProgram 래퍼
 │   ├── ngtsc-build-core.ts           ← Angular SCSS 유틸 (createLibraryTransformStylesheet, compileSideEffectScss, compileGlobalScss, writeEmitResults)
+│   ├── hmr-candidates.ts             ← HMR 대상 컴포넌트 판별
 │   └── scss-compiler.ts              ← sass 컴파일 (compileScssString, compileScssFile)
 ├── esbuild/               ← esbuild 설정 및 플러그인
 │   ├── esbuild-config.ts                  ← esbuild 공통 설정 생성
@@ -68,7 +71,10 @@ src/
 │   ├── esbuild-scss-plugin.ts             ← esbuild SCSS 플러그인
 │   ├── esbuild-postcss-plugin.ts          ← esbuild PostCSS 플러그인 (빌드 후 CSS에 PostCSS 적용)
 │   ├── esbuild-index-html.ts              ← index.html 생성
-│   └── esbuild-pwa.ts                     ← PWA 설정 적용
+│   ├── esbuild-pwa.ts                     ← PWA 설정 적용
+│   ├── file-reference-tracker.ts          ← 파일 참조 추적기
+│   ├── lmdb-cache-store.ts                ← LMDB 기반 캐시 저장소
+│   └── load-result-cache.ts               ← 로드 결과 캐시
 ├── dev-server/            ← HMR 및 개발 서버
 │   ├── dev-http-server.ts            ← 개발용 HTTP 서버
 │   ├── hmr-service.ts                ← HMR 서비스

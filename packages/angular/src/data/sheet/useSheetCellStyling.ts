@@ -4,7 +4,7 @@ import type { ExpandItemDef } from "../../core/selection/useExpandingManager";
 
 export function useSheetCellStyling<T>(options: {
   columnDefs: Signal<SdSheetColumnDef[]>;
-  fixedLeftMap: Signal<Map<string, number>>;
+  fixedLeftMap: Signal<Map<number, number>>;
   getItemCellStyleFn: Signal<((item: T, colKey: string) => string | undefined) | undefined>;
   getItemCellClassFn: Signal<((item: T, colKey: string) => string) | undefined>;
   getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
@@ -21,8 +21,8 @@ export function useSheetCellStyling<T>(options: {
     return null;
   }
 
-  function getFixedStyle(colDef: SdSheetColumnDef): string | null {
-    const leftValue = options.fixedLeftMap().get(colDef.key);
+  function getFixedLeftStyle(colIdx: number): string | null {
+    const leftValue = options.fixedLeftMap().get(colIdx);
     if (leftValue == null) return null;
 
     return `left: ${leftValue}px`;
@@ -30,12 +30,16 @@ export function useSheetCellStyling<T>(options: {
 
   const headerColumnStyles = computed(() => {
     const map = new Map<string, string | null>();
-    for (const colDef of options.columnDefs()) {
+    const defs = options.columnDefs();
+    for (let i = 0; i < defs.length; i++) {
+      const colDef = defs[i];
       const parts: string[] = [];
       const colStyle = getColDefStyle(colDef);
       if (colStyle != null) parts.push(colStyle);
-      const fixedStyle = getFixedStyle(colDef);
-      if (fixedStyle != null) parts.push(fixedStyle);
+      if (colDef.fixed) {
+        const fixedStyle = getFixedLeftStyle(i);
+        if (fixedStyle != null) parts.push(fixedStyle);
+      }
       map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
     }
     return map;
@@ -43,12 +47,16 @@ export function useSheetCellStyling<T>(options: {
 
   const dataColumnBaseStyles = computed(() => {
     const map = new Map<string, string | null>();
-    for (const colDef of options.columnDefs()) {
+    const defs = options.columnDefs();
+    for (let i = 0; i < defs.length; i++) {
+      const colDef = defs[i];
       const parts: string[] = [];
       const colStyle = getColDefStyle(colDef);
       if (colStyle != null) parts.push(colStyle);
-      const fixedStyle = getFixedStyle(colDef);
-      if (fixedStyle != null) parts.push(fixedStyle);
+      if (colDef.fixed) {
+        const fixedStyle = getFixedLeftStyle(i);
+        if (fixedStyle != null) parts.push(fixedStyle);
+      }
       map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
     }
     return map;
@@ -71,8 +79,8 @@ export function useSheetCellStyling<T>(options: {
     return customStyle ?? baseStyle ?? null;
   }
 
-  function getFixedCellStyle(colDef: SdSheetColumnDef): string | null {
-    return getFixedStyle(colDef);
+  function getFixedCellStyle(colIdx: number): string | null {
+    return getFixedLeftStyle(colIdx);
   }
 
   function getCellStyleWithIndent(item: T, colDef: SdSheetColumnDef, colIdx: number): string | null {

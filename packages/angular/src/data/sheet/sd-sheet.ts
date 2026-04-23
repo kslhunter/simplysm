@@ -4,13 +4,11 @@ import {
   Component,
   computed,
   contentChildren,
-  effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
   ViewEncapsulation,
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
@@ -106,8 +104,8 @@ import { SdEvents } from "../../core/events/sd-events";
                     layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
                   "
                   [attr.data-c]="_fc"
-                  [style.left.px]="featureFixedLeftMap().get(_fc)"
-                  (sdResize)="onFeatureCellResize($event, _fc)"
+                  [style.left.px]="fixing.fixedLeftMap().get(_fc)"
+                  (sdResize)="onFixedCellResize($event, _fc)"
                 >
                   @if (selection.hasSelectable() && selectMode() === "multi") {
                     <sd-checkbox
@@ -125,8 +123,8 @@ import { SdEvents } from "../../core/events/sd-events";
                       layout.headerFeatureRowSpan() > 1 ? layout.headerFeatureRowSpan() : null
                     "
                     [attr.data-c]="-1"
-                    [style.left.px]="featureFixedLeftMap().get(-1)"
-                    (sdResize)="onFeatureCellResize($event, -1)"
+                    [style.left.px]="fixing.fixedLeftMap().get(-1)"
+                    (sdResize)="onFixedCellResize($event, -1)"
                   >
                     <ng-icon
                       [svg]="icons.tablerCaretRight"
@@ -137,16 +135,16 @@ import { SdEvents } from "../../core/events/sd-events";
                   </th>
                 }
               }
-              @for (cell of row; track $index; let c = $index) {
+              @for (cell of row; track $index) {
                 @if (!cell.isLastRow) {
                   <th
                     [class._fixed]="cell.colDef?.fixed"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
-                    [attr.data-c]="c"
+                    [attr.data-c]="cell.colIndex"
                     [attr.title]="cell.text"
                     [style.left.px]="
-                      cell.colDef?.fixed ? fixing.fixedLeftMap().get(cell.colDef!.key) : null
+                      cell.colDef?.fixed ? fixing.fixedLeftMap().get(cell.colIndex) : null
                     "
                   >
                     <div class="_p-sheet">
@@ -160,10 +158,11 @@ import { SdEvents } from "../../core/events/sd-events";
                     [class._sort]="cell.colDef && !cell.colDef.disableSorting"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
-                    [attr.data-c]="c"
+                    [attr.data-c]="cell.colIndex"
                     [attr.title]="cell.colDef?.tooltip ?? cell.text"
                     [class.help]="cell.colDef?.tooltip"
                     [style]="getHeaderCellStyle(cell)"
+                    (sdResize)="onFixedCellResize($event, cell.colIndex)"
                     (click)="onHeaderClick($event, cell)"
                   >
                     <div class="_headerContent flex-row">
@@ -206,15 +205,22 @@ import { SdEvents } from "../../core/events/sd-events";
           }
           @if (layout.hasSummary()) {
             <tr class="_summary-row">
-              <th class="_fixed _feature-cell"></th>
+              @let _sfc = expanding.hasExpandable() ? -2 : -1;
+              <th
+                class="_fixed _feature-cell"
+                [style.left.px]="fixing.fixedLeftMap().get(_sfc)"
+              ></th>
               @if (expanding.hasExpandable()) {
-                <th class="_fixed _feature-cell"></th>
+                <th
+                  class="_fixed _feature-cell"
+                  [style.left.px]="fixing.fixedLeftMap().get(-1)"
+                ></th>
               }
               @for (colDef of layout.columnDefs(); track colDef.key; let c = $index) {
                 <th
                   [class._fixed]="colDef.fixed"
                   [attr.data-c]="c"
-                  [style.left.px]="colDef.fixed ? fixing.fixedLeftMap().get(colDef.key) : null"
+                  [style.left.px]="colDef.fixed ? fixing.fixedLeftMap().get(c) : null"
                 >
                   @if (getColumnSummaryTpl(colDef.key); as tpl) {
                     <ng-template [ngTemplateOutlet]="tpl" />
@@ -236,7 +242,7 @@ import { SdEvents } from "../../core/events/sd-events";
                 class="_fixed _feature-cell"
                 [attr.data-r]="rowIdx"
                 [attr.data-c]="_fc"
-                [style.left.px]="featureFixedLeftMap().get(_fc)"
+                [style.left.px]="fixing.fixedLeftMap().get(_fc)"
               >
                 @if (selectMode() === "multi") {
                   @let _selectable = selection.getSelectable(item);
@@ -268,7 +274,7 @@ import { SdEvents } from "../../core/events/sd-events";
                   class="_fixed _feature-cell"
                   [attr.data-r]="rowIdx"
                   [attr.data-c]="-1"
-                  [style.left.px]="featureFixedLeftMap().get(-1)"
+                  [style.left.px]="fixing.fixedLeftMap().get(-1)"
                 >
                   @let itemDef = getItemDef(item);
                   @if (itemDef.depth > 0) {
@@ -580,7 +586,6 @@ export class SdSheet<T> {
   getItemCellClassFn = input<(item: T, colKey: string) => string>();
   getItemCellStyleFn = input<(item: T, colKey: string) => string | undefined>();
   hideConfigBar = input(false, { transform: booleanAttribute });
-  cumulativeSelection = input(false, { transform: booleanAttribute });
 
   // Outputs
   itemKeydown = output<SdSheetItemKeydownEventParam<T>>();
@@ -594,6 +599,10 @@ export class SdSheet<T> {
 
   // Content query
   columnControls = contentChildren(SdSheetColumn);
+  columnControlsInput = input<readonly SdSheetColumn[]>();
+  private readonly _effectiveColumnControls = computed(
+    () => this.columnControlsInput() ?? this.columnControls(),
+  );
 
   // Injected providers
   private readonly _sdModal = inject(SdModalProvider);
@@ -619,30 +628,8 @@ export class SdSheet<T> {
 
   // Layout engine
   layout = useSheetLayoutEngine({
-    columnControls: this.columnControls,
+    columnControls: this._effectiveColumnControls,
     config: computed(() => this._configResource.value()),
-  });
-
-  // Column fixing
-  fixing = useSheetColumnFixing({
-    columnDefs: this.layout.columnDefs,
-  });
-
-  // Feature cell fixing (select/expand columns)
-  private readonly _featureCellWidths = signal(new Map<number, number>());
-
-  featureFixedLeftMap = computed(() => {
-    const map = new Map<number, number>();
-    const widths = this._featureCellWidths();
-    const hasExpand = this.expanding.hasExpandable();
-
-    if (hasExpand) {
-      map.set(-2, 0);
-      map.set(-1, widths.get(-2) ?? 0);
-    } else {
-      map.set(-1, 0);
-    }
-    return map;
   });
 
   // Sorting manager
@@ -664,6 +651,15 @@ export class SdSheet<T> {
   effectivePageCount = this._pipeline.effectivePageCount;
   expanding = this._pipeline.expanding;
   displayItems = this._pipeline.displayItems;
+
+  // Column fixing (DOM 측정 기반 통합 fixedLeftMap)
+  private readonly _fixedCellWidths = signal(new Map<number, number>());
+
+  fixing = useSheetColumnFixing({
+    columnDefs: this.layout.columnDefs,
+    cellWidths: this._fixedCellWidths,
+    hasExpandable: this.expanding.hasExpandable,
+  });
 
   // Cell styling composable
   private readonly _styling = useSheetCellStyling<T>({
@@ -702,23 +698,6 @@ export class SdSheet<T> {
     trackByFn: this.trackByFn,
   });
 
-  // cumulativeSelection=false면 items 변경 시 selectedItems를 초기화한다.
-  // 첫 실행(초기 마운트)은 skip하여 소비자가 넘긴 초기 selectedItems 값을 보존한다.
-  private _resetOnItemsChangeSkipFirst = true;
-  private readonly _resetOnItemsChange = effect(() => {
-    this.items(); // track only items
-    if (this._resetOnItemsChangeSkipFirst) {
-      this._resetOnItemsChangeSkipFirst = false;
-      return;
-    }
-    untracked(() => {
-      if (this.cumulativeSelection()) return;
-      if (this.selectedItems().length > 0) {
-        this.selectedItems.set([]);
-      }
-    });
-  });
-
   // Icons
   icons = {
     tablerSettings,
@@ -731,7 +710,7 @@ export class SdSheet<T> {
 
   private readonly _columnControlMap = computed(() => {
     const map = new Map<string, SdSheetColumn>();
-    for (const col of this.columnControls()) {
+    for (const col of this._effectiveColumnControls()) {
       map.set(col.key(), col);
     }
     return map;
@@ -845,10 +824,10 @@ export class SdSheet<T> {
     this._selectRowIndicator.redraw();
   }
 
-  onFeatureCellResize(event: SdResizeEvent, key: number): void {
+  onFixedCellResize(event: SdResizeEvent, key: number): void {
     if (!event.widthChanged) return;
     const width = event.target.offsetWidth;
-    this._featureCellWidths.update((m) => {
+    this._fixedCellWidths.update((m) => {
       const newMap = new Map(m);
       newMap.set(key, width);
       return newMap;

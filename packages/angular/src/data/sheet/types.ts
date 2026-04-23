@@ -18,6 +18,7 @@ export interface SdSheetHeaderDef {
   rowspan: number;
   isLastRow: boolean;
   colDef: SdSheetColumnDef | undefined;
+  colIndex: number;
 }
 
 export interface SdSheetConfig {

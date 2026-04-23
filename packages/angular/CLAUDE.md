@@ -1,12 +1,12 @@
 # CLAUDE.md
 
-> 이 패키지의 사용법 및 지침은 [README.md](./README.md) 및 [docs/](./docs/)를 참조한다.
+> 이 패키지의 사용법 및 지침은 `.claude/references/sd-simplysm-v14/angular/README.md`를 참조한다.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 131 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 132 TypeScript source files across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -192,7 +192,7 @@ Angular `EventManagerPlugin` 확장:
 
 ### Feature Composition (Recipes)
 
-데이터 시트(CRUD 리스트), 상세 폼, 모달 선택 버튼, 페이지/모달 공통 컨테이너는 추상 클래스 대신 **레시피 기반 직접 조립** 방식을 사용한다. `<sd-sheet>`/`<sd-form>`/`<sd-modal-select-button>`/`<sd-busy-container>`/`<sd-topbar-container>`/`<sd-topbar>` 등 표준 컴포넌트를 화면 코드가 직접 결합한다. 조립 레시피: [`docs/recipes/crud-list.md`](./docs/recipes/crud-list.md), [`docs/recipes/crud-detail.md`](./docs/recipes/crud-detail.md), [`docs/recipes/data-select-button.md`](./docs/recipes/data-select-button.md), [`docs/recipes/page-modal-container.md`](./docs/recipes/page-modal-container.md).
+데이터 시트(CRUD 리스트), 상세 폼, 모달 선택 버튼, 페이지/모달 공통 컨테이너는 추상 클래스 대신 **레시피 기반 직접 조립** 방식을 사용한다. `<sd-sheet>`/`<sd-form>`/`<sd-modal-select-button>`/`<sd-busy-container>`/`<sd-topbar-container>`/`<sd-topbar>` 등 표준 컴포넌트를 화면 코드가 직접 결합한다. 조립 레시피: `.claude/references/sd-simplysm-v14/angular/recipes/crud-list.md`, `crud-detail.md`, `data-select-button.md`, `page-modal-container.md`.
 
 ### Type Utilities
 

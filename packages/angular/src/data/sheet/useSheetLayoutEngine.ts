@@ -59,7 +59,8 @@ export function useSheetLayoutEngine(options: {
     // Track the header array of the first column in each cell span per row
     const spanStartHeaders: (string[])[] = new Array(depth);
 
-    for (const colDef of cols) {
+    for (let colIdx = 0; colIdx < cols.length; colIdx++) {
+      const colDef = cols[colIdx];
       const headers: string[] = Array.isArray(colDef.header)
         ? colDef.header
         : [colDef.header];
@@ -76,6 +77,7 @@ export function useSheetLayoutEngine(options: {
             rowspan,
             isLastRow: true,
             colDef,
+            colIndex: colIdx,
           });
           spanStartHeaders[row] = headers;
           break;
@@ -122,6 +124,7 @@ export function useSheetLayoutEngine(options: {
               rowspan: 1,
               isLastRow,
               colDef: isLastRow ? colDef : undefined,
+              colIndex: colIdx,
             });
             spanStartHeaders[row] = headers;
           }
