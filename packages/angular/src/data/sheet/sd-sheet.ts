@@ -902,7 +902,7 @@ export class SdSheet<T> {
       type: SdSheetConfigModal,
       inputs: {
         sheetKey: this.key()!,
-        controls: this.columnControls(),
+        controls: this._effectiveColumnControls(),
         config: this._configResource.value(),
       },
     });

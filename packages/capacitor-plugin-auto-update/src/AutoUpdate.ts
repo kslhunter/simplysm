@@ -121,7 +121,7 @@ export abstract class AutoUpdate {
 
       // 서버에서 버전 및 다운로드 링크 조회
       const autoUpdateServiceClient =
-        opt.serviceClient.getService<AutoUpdateService>("AutoUpdateService");
+        opt.serviceClient.getService<AutoUpdateService>("AutoUpdate");
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
