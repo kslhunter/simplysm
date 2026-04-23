@@ -125,9 +125,7 @@ getIsItemChanged(item: ICustomer): boolean {
 template: `
   <sd-busy-container [busy]="busyCount() > 0">
     @if (initialized()) {
-      @if (!perms().includes("use")) { <!-- 경고 동일 --> }
-      @else {
-        <sd-topbar-container>
+      <sd-topbar-container>
           @if (viewType() === "page") {
             <sd-topbar>
               <h4>{{ viewTitle() }}</h4>
@@ -143,7 +141,7 @@ template: `
           }
 
           <sd-dock-container>
-            <sd-dock class="p-default">
+            <sd-dock class="p-default pb-0">
               <sd-form (formSubmit)="onFilterSubmit()">
                 <div class="form-box-inline">
                   <div class="form-box-item">
@@ -242,7 +240,6 @@ template: `
             </sd-form>
           </sd-dock-container>
         </sd-topbar-container>
-      }
     }
   </sd-busy-container>
 `

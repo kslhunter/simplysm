@@ -23,7 +23,7 @@
 
 ```typescript
 import { NgIcon } from "@ng-icons/core";
-import { tablerAlertTriangle, tablerRefresh } from "@ng-icons/tabler-icons";
+import { tablerRefresh } from "@ng-icons/tabler-icons";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -78,16 +78,7 @@ interface ICustomer {
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
       @if (initialized()) {
-        @if (!perms().includes("use")) {
-          <div class="fill tx-theme-gray-light p-xxl tx-center">
-            <br />
-            <ng-icon [svg]="tablerAlertTriangle" [size]="'5em'" />
-            <br />
-            <br />
-            '{{ viewTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-          </div>
-        } @else {
-          <sd-topbar-container>
+        <sd-topbar-container>
             <sd-topbar>
               <h4>{{ viewTitle() }}</h4>
 
@@ -141,7 +132,6 @@ interface ICustomer {
               }
             </div>
           </sd-topbar-container>
-        }
       }
     </sd-busy-container>
   `,
@@ -222,7 +212,6 @@ export class CustomerDetail {
   }
 
   //== for Template ==
-  protected readonly tablerAlertTriangle = tablerAlertTriangle;
   protected readonly tablerRefresh = tablerRefresh;
 }
 ```
@@ -236,7 +225,7 @@ export class CustomerDetail {
 | `<sd-topbar-container>` + `<sd-topbar>` | routes로 연결된 page에서 헤더가 필요할 때. 기본 레시피는 page 전용이라 조건 없이 렌더 | route 미연결(control·래퍼) |
 | `injectViewTitleSignal()` | topbar에 타이틀을 표시할 때 | topbar 없음·타이틀 불필요 |
 | `injectViewTypeSignal()` + 분기 | page 외에 modal/control로도 겸용될 때. 기본 레시피는 page 전용이므로 **미포함** — [확장 C](./crud-detail/extension-c-modal-view.md) / [확장 D](./crud-detail/extension-d-control-view.md)에서 도입 | page 전용 |
-| `injectPermsSignal()` + 권한 없음 블록 | 권한 제어가 있는 화면 | 권한 제어 없음 |
+| `injectPermsSignal()` + effect 내 권한 체크 | 권한 제어가 있는 화면. effect에서 `perms().includes("use")` 검사 후 미보유 시 `return` | 권한 제어 없음 |
 | `<sd-busy-container>` + `busyCount` | 비동기 작업(DB 조회 등)이 있어 busy 표시가 필요할 때 | 동기 래퍼·레이아웃 |
 | `initialized` + `@if (initialized())` | 초기 로딩 완료 전 깜박임 방지가 필요할 때 | 빈 상태 렌더가 무방 |
 

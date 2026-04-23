@@ -1,9 +1,10 @@
-.tmp
 .playwright-cli
 __pycache__
 .claude/worktrees
 
+.tmp
 .logs
+.tasks
 .coverage
 .cache
 node_modules

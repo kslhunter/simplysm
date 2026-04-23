@@ -40,7 +40,7 @@
 
 ```typescript
 import { NgIcon } from "@ng-icons/core";
-import { tablerAlertTriangle, tablerRefresh, tablerSearch } from "@ng-icons/tabler-icons";
+import { tablerRefresh, tablerSearch } from "@ng-icons/tabler-icons";
 import {
   ChangeDetectionStrategy,
   Component,
@@ -105,16 +105,7 @@ interface ICustomer {
   template: `
     <sd-busy-container [busy]="busyCount() > 0">
       @if (initialized()) {
-        @if (!perms().includes("use")) {
-          <div class="fill tx-theme-gray-light p-xxl tx-center">
-            <br />
-            <ng-icon [svg]="tablerAlertTriangle" [size]="'5em'" />
-            <br />
-            <br />
-            '{{ viewTitle() }}'에 대한 사용권한이 없습니다. 시스템 관리자에게 문의하세요.
-          </div>
-        } @else {
-          <sd-topbar-container>
+        <sd-topbar-container>
             @if (viewType() === "page") {
               <sd-topbar>
                 <h4>{{ viewTitle() }}</h4>
@@ -129,7 +120,7 @@ interface ICustomer {
 
             <sd-dock-container>
               <!-- 필터 -->
-              <sd-dock class="p-default">
+              <sd-dock class="p-default pb-0">
                 <sd-form (formSubmit)="onFilterSubmit()">
                   <div class="form-box-inline">
                     <div class="form-box-item">
@@ -152,35 +143,36 @@ interface ICustomer {
               </sd-dock>
 
               <!-- 시트 (main 영역) -->
-              <sd-sheet
-                [key]="'customer-list-sheet'"
-                [items]="items()"
-                [(currentPage)]="page"
-                [totalPageCount]="pageLength()"
-                [(sorts)]="sortingDefs"
-                [trackByFn]="trackByFn"
-              >
-                <sd-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
-                  <ng-template [cell]="items()" let-item="item">
-                    <div class="p-xs-sm tx-right">{{ item.id }}</div>
-                  </ng-template>
-                </sd-sheet-column>
+              <div class="fill p-default">
+                <sd-sheet
+                  [key]="'customer-list-sheet'"
+                  [items]="items()"
+                  [(currentPage)]="page"
+                  [totalPageCount]="pageLength()"
+                  [(sorts)]="sortingDefs"
+                  [trackByFn]="trackByFn"
+                >
+                  <sd-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
+                    <ng-template [cell]="items()" let-item="item">
+                      <div class="p-xs-sm tx-right">{{ item.id }}</div>
+                    </ng-template>
+                  </sd-sheet-column>
 
-                <sd-sheet-column [header]="'이름'" [key]="'name'">
-                  <ng-template [cell]="items()" let-item="item">
-                    <div class="p-xs-sm">{{ item.name }}</div>
-                  </ng-template>
-                </sd-sheet-column>
+                  <sd-sheet-column [header]="'이름'" [key]="'name'">
+                    <ng-template [cell]="items()" let-item="item">
+                      <div class="p-xs-sm">{{ item.name }}</div>
+                    </ng-template>
+                  </sd-sheet-column>
 
-                <sd-sheet-column [header]="'전화번호'" [key]="'phone'">
-                  <ng-template [cell]="items()" let-item="item">
-                    <div class="p-xs-sm">{{ item.phone }}</div>
-                  </ng-template>
-                </sd-sheet-column>
-              </sd-sheet>
+                  <sd-sheet-column [header]="'전화번호'" [key]="'phone'">
+                    <ng-template [cell]="items()" let-item="item">
+                      <div class="p-xs-sm">{{ item.phone }}</div>
+                    </ng-template>
+                  </sd-sheet-column>
+                </sd-sheet>
+              </div>
             </sd-dock-container>
           </sd-topbar-container>
-        }
       }
     </sd-busy-container>
   `,
@@ -295,8 +287,7 @@ export class CustomerList {
     });
   }
 
-  //== 아이콘 ==
-  protected readonly tablerAlertTriangle = tablerAlertTriangle;
+  //== for Template ==
   protected readonly tablerRefresh = tablerRefresh;
   protected readonly tablerSearch = tablerSearch;
   protected readonly mark = mark;
@@ -322,7 +313,7 @@ export class CustomerList {
 | `<sd-topbar-container>` + `<sd-topbar>` | routes로 연결된 페이지에서 헤더를 표시할 때 | route 미연결 컴포넌트(control, 래퍼 등) |
 | `injectViewTitleSignal()` | 타이틀이 필요할 때. topbar에 타이틀을 표시하는 page에는 보통 포함 | topbar가 없거나 타이틀 표시가 불필요한 화면 |
 | `injectViewTypeSignal()` + `@if (viewType() === "page")` 가드 | 해당 컴포넌트가 page 외에 modal 또는 control로도 겸용될 때 | page 전용 리스트, page 전용 대시보드 |
-| `injectPermsSignal()` + 권한 없음 메시지 | 권한 제어가 있는 화면. 권한 제어 자체가 있으면 필수 | 권한 제어가 없는 화면 |
+| `injectPermsSignal()` + effect 내 권한 체크 | 권한 제어가 있는 화면. effect에서 `perms().includes("use")` 검사 후 미보유 시 `return` | 권한 제어가 없는 화면 |
 | `<sd-busy-container>` + `busyCount` | 화면에 비동기 작업(DB 조회, API 호출 등)이 있어서 busy 표시가 필요할 때 | 비동기 로딩 없이 동기적으로 렌더되는 래퍼/레이아웃 화면 |
 | `initialized` + `@if (initialized())` 가드 | 초기 데이터 로딩이 완료되기 전에는 화면을 그리면 안 되는 경우 (깜박임 방지) | 초기 로딩이 필요 없거나, 빈 상태로 보여줘도 무방한 화면 |
 | `SHARED_DATA_KEY` + `emitAsync()` 호출 | 해당 화면에서 `SdSharedDataProvider`에 등록된 데이터를 변경(생성/수정/삭제)하는 경우 | 조회만 하는 화면, sharedData에 등록되지 않은 데이터를 다루는 화면 |
