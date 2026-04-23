@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/storage",
-  "version": "14.0.51",
+  "version": "14.0.52",
   "description": "심플리즘 패키지 - 저장소 (node)",
   "author": "심플리즘",
   "license": "Apache-2.0",
