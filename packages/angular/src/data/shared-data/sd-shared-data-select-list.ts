@@ -234,7 +234,7 @@ export class SdSharedDataSelectList<
       ...modalInfo,
       inputs: {
         selectMode: "single",
-        selectedItemKeys: [this.selectedItem()]
+        selectedKeys: [this.selectedItem()]
           .filter((v): v is NonNullable<typeof v> => v != null)
           .map((item) => item.__valueKey),
         ...modalInfo.inputs,
@@ -243,7 +243,7 @@ export class SdSharedDataSelectList<
 
     if (result != null) {
       const newSelectedItem = this.items().find(
-        (item) => item.__valueKey === result.selectedItemKeys[0],
+        (item) => item.__valueKey === result.selectedKeys[0],
       );
       this.selectedItem.set(newSelectedItem);
     }

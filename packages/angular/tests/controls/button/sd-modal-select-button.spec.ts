@@ -37,8 +37,7 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
     // SdModalProvider.showAsync를 spy
     const modalProvider = TestBed.inject(SdModalProvider);
     const showAsyncSpy = vi.spyOn(modalProvider, "showAsync").mockResolvedValue({
-      selectedItemKeys: [42],
-      selectedItems: [{ id: 42, name: "Item 42" }],
+      selectedKeys: [42],
     });
 
     searchBtn.click();
@@ -51,7 +50,6 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
 
     // value가 반영되었는지 (single → 단일값)
     expect(fixture.componentInstance.value()).toBe(42);
-    expect(fixture.componentInstance.selectedItems()).toEqual([{ id: 42, name: "Item 42" }]);
   });
 
   // Acceptance: multi 모드에서 모달로 여러 항목 선택
@@ -68,8 +66,7 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
 
     const modalProvider = TestBed.inject(SdModalProvider);
     const showAsyncSpy = vi.spyOn(modalProvider, "showAsync").mockResolvedValue({
-      selectedItemKeys: [1, 2, 3],
-      selectedItems: [{ id: 1 }, { id: 2 }, { id: 3 }],
+      selectedKeys: [1, 2, 3],
     });
 
     searchBtn.click();
@@ -77,7 +74,6 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
 
     expect(showAsyncSpy).toHaveBeenCalledTimes(1);
     expect(fixture.componentInstance.value()).toEqual([1, 2, 3]);
-    expect(fixture.componentInstance.selectedItems()).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
   });
 
   // Acceptance: 모달 취소 시 기존 값 유지

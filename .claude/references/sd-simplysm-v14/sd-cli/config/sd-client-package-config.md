@@ -1,6 +1,8 @@
-# SdClientPackageConfig
+# `SdClientPackageConfig`
 
-`client` 타겟 패키지 설정. esbuild 기반으로 빌드되며 개발 시 Vite dev server를 사용한다.
+> **읽어야 하는 상황**: 프론트엔드 클라이언트 패키지를 설정할 때 (서버 연결, Capacitor/Electron, 브라우저 호환성, PWA 등). 라이브러리 패키지는 [`SdBuildPackageConfig`](./sd-build-package-config.md) 참조.
+
+esbuild 기반으로 빌드되며 개발 시 Vite dev server를 사용한다.
 
 ```typescript
 export interface SdClientPackageConfig {

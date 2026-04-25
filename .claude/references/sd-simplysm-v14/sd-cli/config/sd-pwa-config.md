@@ -1,4 +1,6 @@
-# SdPwaConfig
+# `SdPwaConfig`
+
+> **읽어야 하는 상황**: PWA manifest(앱 이름, 아이콘, 디스플레이 모드 등)를 설정할 때.
 
 PWA(Progressive Web App) 설정. [`SdClientPackageConfig`](./sd-client-package-config.md)의 `pwa` 필드에 사용한다.
 

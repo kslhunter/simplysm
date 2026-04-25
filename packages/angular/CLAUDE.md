@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Overview
 
-`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 132 TypeScript source files across core infrastructure, feature abstractions, and UI components.
+`@simplysm/angular` - Angular 21 UI component library. Zoneless, signal-based, standalone components. 147 source files (TypeScript + SCSS) across core infrastructure, feature abstractions, and UI components.
 
 ## Architecture
 
@@ -153,7 +153,7 @@ src/
   - `setupBgTheme(options?: { theme?: "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"; lightness?: "lightest"|"lighter" }): void` — body의 `--background-color` CSS 변수를 설정하고, cleanup 시 초기화
 - **use 함수** (순수 Signal 유틸리티, DI 미사용) - `useSelectionManager()`, `useSortingManager()`, `useExpandingManager()`
   - Signal과 메서드를 포함한 객체 반환 (클래스가 아님)
-  - `useSelectionManager`: `{ displayItems, selectedItems, selectMode, getItemSelectableFn, trackByFn }` 받아 `hasSelectable`, `isAllSelected`, `getSelectable(item)`, `getCanChangeFn(item)`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환. `trackByFn`이 반환하는 key를 기준으로 `obj.equal`(deep equal) 비교를 수행하므로 같은 key의 다른 reference item도 `isSelected` true로 복원된다
+  - `useSelectionManager`: `{ displayItems, selectedKeys, selectMode, getItemSelectableFn, trackByFn }` 받아 `hasSelectable`, `isAllSelected`, `getSelectable(item)`, `getCanChangeFn(item)`, `select()`, `deselect()`, `toggle()`, `toggleAll()`, `isSelected()` 반환. `selectedKeys`는 `WritableSignal<unknown[]>`로 key 값을 직접 저장한다. `trackByFn`이 반환하는 key를 기준으로 `obj.equal`(deep equal) 비교를 수행하므로 같은 key의 다른 reference item도 `isSelected` true로 복원된다
   - `useSortingManager`: `{ sorts: WritableSignal<SortingDef[]> }` 받아 `defMap` (computed), `toggle(key, multiple)`, `sort(items)` 반환
   - `useExpandingManager`: `{ items, expandedItems, getChildrenFn, sort }` 받아 `displayItems`, `hasExpandable`, `isAllExpanded`, `toggle()`, `toggleAll()`, `isVisible()`, `def()` 반환
 - **단독 유틸**

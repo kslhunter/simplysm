@@ -1,5 +1,7 @@
 # `SdModal`
 
+> **읽어야 하는 상황**: 모달 래퍼 컴포넌트의 내부 구조를 이해할 때. 모달 생성은 [`SdModalProvider`](../providers/sd-modal-provider.md) 참조.
+
 모달 래퍼 컴포넌트. `SdModalProvider.showAsync()`에 의해 프로그래밍 방식으로 생성된다. 직접 템플릿에 배치하지 않는다.
 
 ```typescript

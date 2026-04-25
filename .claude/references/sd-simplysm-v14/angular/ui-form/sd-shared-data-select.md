@@ -1,5 +1,7 @@
 # `SdSharedDataSelect`
 
+> **읽어야 하는 상황**: 공유 데이터에서 드롭다운으로 항목을 선택할 때. 모달 선택은 [sd-shared-data-components.md](../features/sd-shared-data-components.md) 참조.
+
 공유 데이터 드롭다운 선택 컴포넌트. 검색 기능 포함. 상세 API는 [features/sd-shared-data-components.md](../features/sd-shared-data-components.md#sdshareddataselect)를 참조한다.
 
 ## 시트 셀 내 사용 패턴
@@ -46,7 +48,3 @@
 
 `<ng-template [itemOf]>` 패턴으로 드롭다운 항목의 표시 형식을 커스터마이징한다.
 
-### 실사용 예
-
-- [crud-list.md §5 확장 A: inline 편집/저장](../recipes/crud-list.md#5-확장-a-inline-편집저장) — 시트 셀 내 공유 데이터 선택
-- [crud-detail.md §9 확장 E: 보조 기능 영역](../recipes/crud-detail.md#9-확장-e-보조-기능-영역) — 보조 form 셀렉터

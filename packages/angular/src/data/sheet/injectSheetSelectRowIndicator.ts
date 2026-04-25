@@ -1,23 +1,33 @@
 import { afterEveryRender, type Signal } from "@angular/core";
+import { obj } from "@simplysm/core-common";
 import type { injectSheetDomAccessor } from "./injectSheetDomAccessor";
 
-export function injectSheetSelectRowIndicator<T>(options: {
+function isKeyEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  return obj.equal(a, b);
+}
+
+export function injectSheetSelectRowIndicator<TItem, TKey>(options: {
   domAccessor: ReturnType<typeof injectSheetDomAccessor>;
-  selectedItems: Signal<T[]>;
-  displayItems: Signal<T[]>;
+  selectedKeys: Signal<NonNullable<TKey>[]>;
+  displayItems: Signal<TItem[]>;
+  trackByFn: Signal<(item: TItem, index: number) => TKey>;
 }) {
   afterEveryRender(() => {
     const containerEl = options.domAccessor.getSelectRowIndicatorContainer();
 
-    if (options.selectedItems().length <= 0) {
+    if (options.selectedKeys().length <= 0) {
       containerEl.innerHTML = "";
       containerEl.style.display = "none";
       return;
     }
 
-    const selectedTrInfos = options.selectedItems()
-      .map((item) => {
-        const r = options.displayItems().indexOf(item);
+    const trackByFn = options.trackByFn();
+    const displayItems = options.displayItems();
+
+    const selectedTrInfos = options.selectedKeys()
+      .map((key) => {
+        const r = displayItems.findIndex((item, i) => isKeyEqual(trackByFn(item, i), key));
         return getTrInfo(r);
       })
       .filter((info): info is NonNullable<typeof info> => info != null);

@@ -13,7 +13,7 @@ export interface EditTestItem {
 @Component({
   selector: "sd-sheet-edit-test",
   template: `
-    <sd-sheet [items]="items()" (itemKeydown)="lastItemKeydown.set($event)" (cellKeydown)="lastCellKeydown.set($event)">
+    <sd-sheet [items]="items()" (itemKeydown)="lastItemKeydown.set($event)" (cellKeydown)="lastCellKeydown.set($event)" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-editing="edit">
           @if (editing) {
@@ -45,12 +45,13 @@ export class SdSheetEditTest {
   ]);
   lastItemKeydown = signal<any>(undefined);
   lastCellKeydown = signal<any>(undefined);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-edit-textarea-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-editing="edit">
           @if (editing) {
@@ -70,12 +71,13 @@ export class SdSheetEditTextareaTest {
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-edit-contenteditable-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-editing="edit">
           @if (editing) {
@@ -95,6 +97,7 @@ export class SdSheetEditContenteditableTest {
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 // --- Slice 2: 컬럼 리사이징 fixtures ---
@@ -102,7 +105,7 @@ export class SdSheetEditContenteditableTest {
 @Component({
   selector: "sd-sheet-resize-test",
   template: `
-    <sd-sheet [items]="items()" [(sorts)]="sorts">
+    <sd-sheet [items]="items()" [(sorts)]="sorts" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -117,12 +120,13 @@ export class SdSheetEditContenteditableTest {
 export class SdSheetResizeTest {
   items = signal<EditTestItem[]>([{ name: "Alice", age: 30 }]);
   sorts = signal<SortingDef[]>([]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-resize-disabled-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [disableResizing]="true">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -136,6 +140,7 @@ export class SdSheetResizeTest {
 })
 export class SdSheetResizeDisabledTest {
   items = signal<EditTestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 // --- Slice 3: config bar fixtures ---
@@ -143,7 +148,7 @@ export class SdSheetResizeDisabledTest {
 @Component({
   selector: "sd-sheet-config-bar-key-test",
   template: `
-    <sd-sheet [items]="items()" [key]="'test-sheet'">
+    <sd-sheet [items]="items()" [key]="'test-sheet'" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -154,12 +159,13 @@ export class SdSheetResizeDisabledTest {
 })
 export class SdSheetConfigBarKeyTest {
   items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-config-bar-page-test",
   template: `
-    <sd-sheet [items]="items()" [totalPageCount]="3" [(currentPage)]="currentPage">
+    <sd-sheet [items]="items()" [totalPageCount]="3" [(currentPage)]="currentPage" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -171,12 +177,13 @@ export class SdSheetConfigBarKeyTest {
 export class SdSheetConfigBarPageTest {
   items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
   currentPage = signal(0);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-no-config-bar-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -187,12 +194,30 @@ export class SdSheetConfigBarPageTest {
 })
 export class SdSheetNoConfigBarTest {
   items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: EditTestItem) => item.name;
+}
+
+@Component({
+  selector: "sd-sheet-one-page-no-config-bar-test",
+  template: `
+    <sd-sheet [items]="items()" [itemsPerPage]="10" [trackByFn]="trackByFn">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()">name</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetOnePageNoConfigBarTest {
+  items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: EditTestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-hide-config-bar-test",
   template: `
-    <sd-sheet [items]="items()" [key]="'test-sheet'" [totalPageCount]="3" [hideConfigBar]="true">
+    <sd-sheet [items]="items()" [key]="'test-sheet'" [totalPageCount]="3" [hideConfigBar]="true" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -203,4 +228,5 @@ export class SdSheetNoConfigBarTest {
 })
 export class SdSheetHideConfigBarTest {
   items = signal<EditTestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: EditTestItem) => item.name;
 }

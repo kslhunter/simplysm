@@ -1,4 +1,6 @@
-# TimeoutError
+# `TimeoutError`
+
+> **읽어야 하는 상황**: 대기 시간이 초과되었을 때. [`wait.until()`](../utils/wait.md)에서 자동 발생하거나 직접 throw할 때.
 
 타임아웃 오류. 대기 시간이 초과되었을 때 발생하는 에러. [`wait.until()`](../utils/wait.md) 같은 비동기 대기 함수에서 최대 시도 횟수를 초과하면 자동으로 발생한다. [`SdError`](./sd-error.md)를 상속한다.
 

@@ -1,5 +1,7 @@
 # `SdBusyContainer`
 
+> **읽어야 하는 상황**: 특정 영역에 busy 로딩 오버레이를 표시할 때. 글로벌 busy는 [`SdBusyProvider`](../providers/sd-busy-provider.md) 참조.
+
 busy 상태(로딩 중) 표시 컨테이너 컴포넌트. `busy` 입력이 `true`일 때 스크린 오버레이와 인디케이터를 표시한다.
 
 ```typescript
@@ -62,8 +64,3 @@ this.busyMessage.set(undefined);
 <sd-busy-container [busy]="busyCount() > 0" [message]="busyMessage()">
 ```
 
-### 실사용 예
-
-- [crud-list.md §3 최소 뼈대: 조회 전용 page](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — busyCount 기본 패턴
-- [crud-list.md §11 확장 G: 엑셀 업로드/다운로드](../recipes/crud-list.md#11-확장-g-엑셀-업로드다운로드) — busyMessage 패턴
-- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](../recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — busyCount 기본 패턴

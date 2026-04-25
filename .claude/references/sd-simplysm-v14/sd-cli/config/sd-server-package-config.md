@@ -1,6 +1,8 @@
-# SdServerPackageConfig
+# `SdServerPackageConfig`
 
-`server` 타겟 패키지 설정. esbuild로 단일 번들 빌드되며 Fastify 서버로 실행된다.
+> **읽어야 하는 상황**: Fastify 서버 패키지를 설정할 때 (externals, PM2, 패키지 매니저 등). 프론트엔드는 [`SdClientPackageConfig`](./sd-client-package-config.md) 참조.
+
+esbuild로 단일 번들 빌드되며 Fastify 서버로 실행된다.
 
 ```typescript
 export interface SdServerPackageConfig {

@@ -1,6 +1,7 @@
 # @simplysm/angular
 
-Angular 21 기반 UI 컴포넌트 라이브러리. Zoneless, signal-based, standalone 컴포넌트로 구성된다.
+> Angular 21 기반 UI 컴포넌트 라이브러리. Zoneless, signal-based, standalone 컴포넌트로 구성된다.
+> `@simplysm/core-common`, `@simplysm/core-browser`, `@simplysm/service-client` 의존.
 
 > **NOTE:** 이 문서는 `@simplysm/angular` 라이브러리의 사용법만 다룬다. Angular 프레임워크 자체의 사용법(컴포넌트 작성, DI, 라우팅, signal 등)은 `angular-cli` MCP를 활용한다.
 
@@ -10,283 +11,152 @@ Angular 21 기반 UI 컴포넌트 라이브러리. Zoneless, signal-based, stand
 npm install @simplysm/angular
 ```
 
-## 하려는 작업 → 먼저 읽을 파일
-
-| 작업 | 먼저 읽을 파일 |
-|------|----------------|
-| 앱 부트스트랩 | [provide-sd-angular.md](./bootstrap/provide-sd-angular.md) |
-| CRUD 목록 화면 만들기 | [crud-list.md](./recipes/crud-list.md) |
-| CRUD 상세 화면 만들기 | [crud-detail.md](./recipes/crud-detail.md) |
-| 페이지/모달/컨트롤 컨테이너 | [page-modal-container.md](./recipes/page-modal-container.md) |
-| 모달 선택 버튼 | [data-select-button.md](./recipes/data-select-button.md) |
-| 모달 열기 | [sd-modal-provider.md](./providers/sd-modal-provider.md) |
-| 토스트 알림 표시 | [sd-toast-provider.md](./providers/sd-toast-provider.md) |
-| 인쇄/PDF 생성 | [sd-print-provider.md](./providers/sd-print-provider.md) |
-| 공유 데이터 캐시 | [sd-shared-data-provider.md](./providers/sd-shared-data-provider.md) |
-| 다크모드/폰트 크기 | [sd-theme-provider.md](./providers/sd-theme-provider.md) |
-| 시트(스프레드시트) 사용 | [sd-sheet.md](./ui-data/sd-sheet.md) |
-
 ## 먼저 읽기 (횡단 전제)
 
-- [공통 규칙](./recipes/_common-rules.md) — 여러 Entry에 걸친 금지·컨벤션
 - [provideSdAngular](./bootstrap/provide-sd-angular.md) — 반드시 등록해야 하는 환경 프로바이더
 
-## API Overview
+## 하려는 작업 → 읽을 파일
 
-### Bootstrap
+### 시작하기
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`provideSdAngular`](./bootstrap/provide-sd-angular.md) | function | 모든 기반 설정을 제공하는 환경 프로바이더 팩토리 |
-| [`SdAngularConfigProvider`](./bootstrap/sd-angular-config-provider.md) | class | `clientName` 설정을 보유하는 프로바이더 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 앱 부트스트랩 (provideSdAngular 등록) | [provide-sd-angular.md](./bootstrap/provide-sd-angular.md) |
+| clientName 설정 조회 | [sd-angular-config-provider.md](./bootstrap/sd-angular-config-provider.md) |
 
-### Providers
+### 사용자 입력 받기
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdThemeProvider`](./providers/sd-theme-provider.md) | class | 다크모드/폰트 크기 프로바이더 (`dark`, `fontSize` signal) |
-| [`SdThemeSelector`](./providers/sd-theme-provider.md) | component | 테마 설정 드롭다운 (다크모드 토글, 폰트 크기 조절) |
-| [`SdSystemLogProvider`](./providers/sd-system-log-provider.md) | class | 시스템 로그 기록 프로바이더 |
-| [`SdAppStructureProvider`](./providers/sd-app-structure-provider.md) | class | 앱 구조(메뉴/권한) 관리 프로바이더 |
-| [`injectPermsSignal`](./providers/sd-app-structure-provider.md) | function | 현재 뷰의 권한 목록을 signal로 반환 |
-| [`SdAppStructureUtils`](./providers/sd-app-structure-provider.md) | class | 앱 구조 유틸리티 (메뉴/권한 조회 정적 메서드) |
-| [`SdFileDialogProvider`](./providers/sd-file-dialog-provider.md) | class | 네이티브 파일 선택 대화상자 프로바이더 |
-| [`SdLocalStorageProvider`](./providers/sd-local-storage-provider.md) | class | `clientName` 스코프 localStorage 래퍼 |
-| [`SdSystemConfigProvider`](./providers/sd-system-config-provider.md) | class | 비동기 설정 저장/조회 프로바이더 |
-| [`SdServiceClientFactoryProvider`](./providers/sd-service-client-factory-provider.md) | class | ServiceClient 인스턴스 팩토리/관리 |
-| [`SdSharedDataProvider`](./providers/sd-shared-data-provider.md) | class | 이벤트 기반 공유 데이터 캐시 추상 프로바이더 |
-| [`SdSharedDataChangeEvent`](./providers/sd-shared-data-provider.md) | const | 공유 데이터 변경 이벤트 정의 |
-| [`SdNavigateWindowProvider`](./providers/sd-navigate-window-provider.md) | class | 새 윈도우 네비게이션 + 자동 닫기 |
-| [`SdActivatedModalProvider`](./providers/sd-activated-modal-provider.md) | class | 모달 내부에서 inject하여 모달/컨텐츠 참조 |
-| [`SdToastProvider`](./providers/sd-toast-provider.md) | class | 토스트 알림 (info/success/warning/danger) |
-| [`SdBusyProvider`](./providers/sd-busy-provider.md) | class | 글로벌 busy 상태 관리 (spinner/bar/cube) |
-| [`SdPrintProvider`](./providers/sd-print-provider.md) | class | 인쇄 및 PDF 생성 프로바이더 |
-| [`SdModalProvider`](./providers/sd-modal-provider.md) | class | 프로그래밍 방식 모달 생성 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 텍스트/숫자/날짜/색상 등 한 줄 입력 | [sd-textfield.md](./ui-form/sd-textfield.md) |
+| 여러 줄 텍스트 입력 | [sd-textarea.md](./ui-form/sd-textarea.md) |
+| 리치 텍스트 (HTML) 편집 | [sd-tiptap-editor.md](./features/sd-tiptap-editor.md) |
+| 숫자 패드 입력 (터치 기기) | [sd-numpad.md](./ui-form/sd-numpad.md) |
+| 범위 입력 (from ~ to) | [sd-range.md](./ui-form/sd-range.md) |
+| 날짜 범위 선택 (일/월/범위 모드) | [sd-date-range-picker.md](./ui-form/sd-date-range-picker.md) |
+| 드롭다운으로 항목 선택 (single/multi) | [sd-select.md](./ui-form/sd-select.md) |
+| 공유 데이터에서 드롭다운 선택 | [sd-shared-data-select.md](./ui-form/sd-shared-data-select.md) |
+| 모달을 열어 항목 선택 | [sd-modal-select-button.md](./ui-form/sd-modal-select-button.md) |
+| 공유 데이터를 모달에서 선택 | [sd-shared-data-components.md](./features/sd-shared-data-components.md) |
+| 체크박스 토글 | [sd-checkbox.md](./ui-form/sd-checkbox.md) |
+| 스위치 토글 | [sd-switch.md](./ui-form/sd-switch.md) |
+| 체크박스 그룹 (다중 선택) | [sd-checkbox-group.md](./ui-form/sd-checkbox-group.md) |
+| 버튼 스타일 선택 | [sd-select.md](./ui-form/sd-select.md) (SdSelectButton) |
+| 폼 제출 (submit 이벤트, 유효성) | [sd-form.md](./ui-form/sd-form.md) |
+| 상태 프리셋 저장/불러오기 | [sd-state-preset.md](./ui-form/sd-state-preset.md) |
 
-### Provider Types
+### 데이터 표시하기
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdMenu`](./provider-types/sd-menu.md) | interface | 메뉴 트리 노드 |
-| [`SdFlatMenu`](./provider-types/sd-menu.md) | interface | 플랫 메뉴 항목 |
-| [`SdPermission`](./provider-types/sd-menu.md) | interface | 권한 트리 노드 |
-| [`SharedDataBase`](./provider-types/shared-data-base.md) | interface | 공유 데이터 기본 인터페이스 |
-| [`SharedDataInfo`](./provider-types/shared-data-base.md) | interface | 공유 데이터 등록 정보 |
-| [`SharedDataHandle`](./provider-types/shared-data-base.md) | interface | 공유 데이터 핸들 (items signal + get) |
-| [`SdModalContentDef`](./provider-types/sd-modal-content-def.md) | interface | 모달 컴포넌트 구현 인터페이스 |
-| [`SdModalInfo`](./provider-types/sd-modal-content-def.md) | interface | 모달 생성 시 전달하는 정보 |
-| [`SdModalOptions`](./provider-types/sd-modal-content-def.md) | interface | 모달 옵션 (크기, 위치, 동작) |
-| [`SdToastContentDef`](./provider-types/sd-toast-content-def.md) | interface | 토스트 컴포넌트 구현 인터페이스 |
-| [`SdToastInput`](./provider-types/sd-toast-content-def.md) | interface | 커스텀 토스트 생성 입력 |
-| [`SdToastSeverity`](./provider-types/sd-toast-content-def.md) | type | 토스트 심각도 (`"info" \| "success" \| "warning" \| "danger"`) |
-| [`SdToastTheme`](./provider-types/sd-toast-content-def.md) | type | 토스트 테마 (severity + `"primary" \| "secondary" \| "gray" \| "blue-gray"`) |
-| [`SdBusyType`](./provider-types/sd-toast-content-def.md) | type | busy 표시 유형 (`"spinner" \| "bar" \| "cube"`) |
-| [`SdPrint`](./provider-types/sd-toast-content-def.md) | interface | 인쇄 컴포넌트 구현 인터페이스 |
-| [`SdPrintInput`](./provider-types/sd-toast-content-def.md) | interface | 인쇄 생성 입력 |
-| [`SelectModalOutputResult`](./provider-types/sd-modal-content-def.md) | interface | 모달 선택 결과 (`selectedItemKeys`, `selectedItems`) |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 스프레드시트 형태 데이터 표시 (정렬, 고정, 리사이즈) | [sd-sheet.md](./ui-data/sd-sheet.md) |
+| 리스트 형태 데이터 표시 | [sd-list.md](./ui-data/sd-list.md) |
+| 캘린더에 항목 배치 | [sd-calendar.md](./ui-visual/sd-calendar.md) |
+| 차트 (ECharts) 표시 | [sd-echarts.md](./ui-visual/sd-echarts.md) |
+| 바코드 생성 | [sd-barcode.md](./ui-visual/sd-barcode.md) |
+| 라벨 (테마 색상) 표시 | [sd-label.md](./ui-visual/sd-label.md) |
+| 노트/알림 메시지 박스 표시 | [sd-note.md](./ui-visual/sd-note.md) |
+| 진행률 바 표시 | [sd-progress.md](./ui-visual/sd-progress.md) |
 
-### Directives
+### CRUD 스캐폴드
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdEvents`](./directives/sd-events.md) | directive | `.capture`, `.passive`, `.once` 수식어 및 커스텀 이벤트 바인딩 |
-| [`SdRipple`](./directives/sd-ripple.md) | directive | `[sdRipple]` 리플 효과 |
-| [`SdShowEffect`](./directives/sd-show-effect.md) | directive | `[sdShowEffect]` 뷰포트 진입 시 reveal 애니메이션 |
-| [`SdInvalid`](./directives/sd-invalid.md) | directive | `[sdInvalid]` 유효성 검증 표시기 |
-| [`SdTypedTemplate`](./directives/sd-typed-template.md) | directive | `ng-template[typed]` 템플릿 컨텍스트 타입 가드 |
-| [`SdItemOfTemplate`](./directives/sd-typed-template.md) | directive | `ng-template[itemOf]` 항목 반복 템플릿 타입 가드 |
-| [`SdItemOfTemplateContext`](./directives/sd-typed-template.md) | interface | itemOf 템플릿 컨텍스트 (`$implicit`, `item`, `index`, `depth`) |
-| [`SdRouterLink`](./directives/sd-router-link.md) | directive | `[sdRouterLink]` 라우터 네비게이션 (Ctrl+클릭 새 창) |
-| [`SdCommandDirective`](./directives/sd-command-directive.md) | directive | `[sdSaveCommand]`, `[sdInsertCommand]` 키보드 단축키 output 이벤트 디렉티브 |
-| [`SdResizeDirective`](./directives/sd-resize-directive.md) | directive | `[sdResize]` ResizeObserver 기반 resize output 이벤트 디렉티브 |
-| [`SdResizeEvent`](./directives/sd-resize-directive.md) | interface | resize 이벤트 데이터 (`heightChanged`, `widthChanged`, `target`, `contentRect`) |
-| [`SdIntersectionDirective`](./directives/sd-intersection-directive.md) | directive | `[sdIntersection]` IntersectionObserver 기반 intersection output 이벤트 디렉티브 |
-| [`SdIntersectionEvent`](./directives/sd-intersection-directive.md) | interface | intersection 이벤트 데이터 (`entry`) |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| CRUD 페이지/모달의 기본 컨테이너 (busy, restricted, viewType별 레이아웃) | [sd-base-container.md](./ui-data/sd-base-container.md) |
+| CRUD 상세 화면 (폼 + 저장) | [sd-crud-detail.md](./ui-data/sd-crud-detail.md) |
+| CRUD 목록 화면 (시트 + 필터 + 등록/삭제/복구) | [sd-crud-list.md](./ui-data/sd-crud-list.md) |
 
-### Plugins
+### 모달/알림/피드백
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdOptionEventPlugin`](./plugins/sd-option-event-plugin.md) | class | `.capture`, `.passive`, `.once` 이벤트 옵션 플러그인 (`provideSdAngular`에서 자동 등록) |
-| [`SdGlobalErrorHandlerPlugin`](./plugins/sd-global-error-handler.md) | class | 글로벌 에러 핸들러 (PromiseRejection, ErrorEvent 등) |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 코드에서 모달을 프로그래밍 방식으로 열기 | [sd-modal-provider.md](./providers/sd-modal-provider.md) |
+| 모달 컴포넌트 구현 (SdModalContentDef) | [sd-modal-content-def.md](./provider-types/sd-modal-content-def.md) |
+| 확인/취소 대화상자 | [sd-confirm-modal.md](./ui-overlay/sd-confirm-modal.md) |
+| 텍스트 입력 대화상자 | [sd-prompt-modal.md](./ui-overlay/sd-prompt-modal.md) |
+| 모달 내부에서 모달/컨텐츠 참조 | [sd-activated-modal-provider.md](./providers/sd-activated-modal-provider.md) |
+| 토스트 알림 표시 (info/success/warning/danger) | [sd-toast-provider.md](./providers/sd-toast-provider.md) |
+| busy 로딩 표시 (spinner/bar/cube) | [sd-busy-provider.md](./providers/sd-busy-provider.md) |
+| 인쇄 또는 PDF 생성 | [sd-print-provider.md](./providers/sd-print-provider.md) |
+| 네이티브 파일 선택 대화상자 | [sd-file-dialog-provider.md](./providers/sd-file-dialog-provider.md) |
 
-### Pipes
+### 레이아웃/내비게이션
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`FormatPipe`](./pipes/format-pipe.md) | pipe | DateTime/DateOnly/string 포매팅 파이프 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 도킹 레이아웃 (top/bottom/left/right 고정 영역) | [sd-dock-container.md](./ui-layout/sd-dock-container.md) |
+| 사이드바 + 메뉴 구성 | [sd-sidebar-container.md](./ui-navigation/sd-sidebar-container.md) |
+| 사이드바 메뉴 항목 | [sd-sidebar-menu.md](./ui-navigation/sd-sidebar-menu.md) |
+| 사이드바 사용자 영역 | [sd-sidebar-user.md](./ui-navigation/sd-sidebar-user.md) |
+| 탑바 구성 | [sd-topbar-container.md](./ui-navigation/sd-topbar-container.md) |
+| 탑바 메뉴/사용자 영역 | [sd-topbar-menu.md](./ui-navigation/sd-topbar-menu.md), [sd-topbar-user.md](./ui-navigation/sd-topbar-user.md) |
+| 탭 전환 | [sd-tab.md](./ui-navigation/sd-tab.md) |
+| 접기/펼치기 패널 | [sd-collapse.md](./ui-navigation/sd-collapse.md) |
+| 페이지네이션 | [sd-pagination.md](./ui-navigation/sd-pagination.md) |
+| 간격 (gap) 삽입 | [sd-gap.md](./ui-layout/sd-gap.md) |
+| 칸반 보드 (드래그앤드롭) | [sd-kanban-board.md](./ui-layout/sd-kanban-board.md) |
+| 드롭다운 팝업 | [sd-dropdown.md](./ui-overlay/sd-dropdown.md) |
+| 버튼/앵커 클릭 | [sd-button.md](./ui-form/sd-button.md) |
+| 추가 동작 버튼 (콘텐츠 + 버튼 영역) | [sd-additional-button.md](./ui-form/sd-additional-button.md) |
 
-### Utils & Setups
+### 스타일/테마
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`mark`](./utils/mark.md) | function | WritableSignal 변경 알림 트리거 (shallow copy) |
-| [`setSafeStyle`](./utils/set-safe-style.md) | function | Renderer2로 여러 CSS 스타일 일괄 적용 |
-| [`injectSdSystemConfigResource`](./utils/inject-sd-system-config-resource.md) | function | 시스템 설정 resource 래퍼 |
-| [`injectCurrentPageCodeSignal`](./utils/inject-routing-signals.md) | function | 현재 페이지 코드 signal |
-| [`injectFullPageCodeSignal`](./utils/inject-routing-signals.md) | function | 전체 페이지 코드 signal (NavigationEnd 기반) |
-| [`injectViewTitleSignal`](./utils/inject-routing-signals.md) | function | 현재 뷰 타이틀 signal |
-| [`injectViewTypeSignal`](./utils/inject-routing-signals.md) | function | 현재 뷰 타입 signal (`page \| modal \| control`) |
-| [`useSelectionManager`](./utils/selection-managers.md) | function | 선택 관리 composable (single/multi) |
-| [`useSortingManager`](./utils/selection-managers.md) | function | 정렬 관리 composable |
-| [`useExpandingManager`](./utils/selection-managers.md) | function | 트리 확장/축소 관리 composable |
-| [`setupBgTheme`](./utils/setup-functions.md) | function | body 배경 테마 색상 설정 |
-| [`setupRipple`](./utils/setup-functions.md) | function | 리플 효과 설정 |
-| [`setupRevealOnShow`](./utils/setup-functions.md) | function | 뷰포트 진입 시 reveal 애니메이션 설정 |
-| [`setupInvalid`](./utils/setup-functions.md) | function | 유효성 검증 표시기 설정 |
-| [`setupModelHook`](./utils/setup-functions.md) | function | model signal의 set을 가드 함수로 래핑 |
-| [`setupCanDeactivate`](./utils/setup-functions.md) | function | 모달/라우트 canDeactivate 설정 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 다크모드/폰트 크기 전환 | [sd-theme-provider.md](./providers/sd-theme-provider.md) |
+| 레이아웃/유틸리티 CSS 클래스 | [classes.md](./styling/classes.md) |
+| CSS 변수 (색상, 간격, 폰트) 오버라이드 | [variables.md](./styling/variables.md) |
+| 다크 모드 테마 | [themes.md](./styling/themes.md) |
+| SCSS mixin/function 사용 | [mixins.md](./styling/mixins.md) |
 
-### Type Utilities
+### 인프라/유틸리티
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`DirectiveInputSignals`](./type-utilities/directive-input-signals.md) | type | InputSignal 프로퍼티에서 값 타입 추출 |
-| [`UndefToOptional`](./type-utilities/directive-input-signals.md) | type | undefined 포함 프로퍼티를 optional로 변환 |
-| [`WithOptional`](./type-utilities/directive-input-signals.md) | type | 특정 키를 optional로 변환 |
-| [`SdViewType`](./type-utilities/directive-input-signals.md) | type | 뷰 타입 (`"page" \| "modal" \| "control"`) |
-| [`SortingDef`](./type-utilities/directive-input-signals.md) | interface | 정렬 정의 (`key`, `desc`) |
-| [`ExpandItemDef`](./type-utilities/directive-input-signals.md) | interface | 트리 확장 항목 정의 |
-| [`SdSelectModal`](./type-utilities/directive-input-signals.md) | interface | 모달 선택 컴포넌트 인터페이스 |
-| [`SdSelectModalInfo`](./type-utilities/directive-input-signals.md) | type | 모달 선택 정보 타입 |
-| [`SdTextfieldTypes`](./type-utilities/directive-input-signals.md) | type | 텍스트필드 타입별 값 타입 매핑 |
-| [`sdTextfieldTypes`](./type-utilities/directive-input-signals.md) | const | 텍스트필드 타입 문자열 배열 |
-| [`SelectModeValue`](./type-utilities/directive-input-signals.md) | type | select mode별 value 타입 매핑 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 시스템 설정 비동기 저장/조회 | [sd-system-config-provider.md](./providers/sd-system-config-provider.md) |
+| 시스템 설정 resource 래퍼 | [inject-sd-system-config-resource.md](./utils/inject-sd-system-config-resource.md) |
+| 시스템 로그 기록 | [sd-system-log-provider.md](./providers/sd-system-log-provider.md) |
+| 앱 구조 (메뉴/권한) 관리 | [sd-app-structure-provider.md](./providers/sd-app-structure-provider.md) |
+| 공유 데이터 캐시 (이벤트 기반) | [sd-shared-data-provider.md](./providers/sd-shared-data-provider.md) |
+| ServiceClient 팩토리 | [sd-service-client-factory-provider.md](./providers/sd-service-client-factory-provider.md) |
+| localStorage 래퍼 (clientName 스코프) | [sd-local-storage-provider.md](./providers/sd-local-storage-provider.md) |
+| 새 윈도우 네비게이션 | [sd-navigate-window-provider.md](./providers/sd-navigate-window-provider.md) |
+| 권한 매트릭스 테이블 표시 | [sd-permission-table.md](./features/sd-permission-table.md) |
+| 주소 검색 (Daum Postcode) | [sd-address-search-modal.md](./features/sd-address-search-modal.md) |
+| 선택 관리 (single/multi/expanding/sorting) | [selection-managers.md](./utils/selection-managers.md) |
+| 라우팅 signal (현재 페이지 코드, 뷰 타입) | [inject-routing-signals.md](./utils/inject-routing-signals.md) |
+| setup 함수 (리플, 유효성, canDeactivate 등) | [setup-functions.md](./utils/setup-functions.md) |
+| WritableSignal 변경 알림 트리거 | [mark.md](./utils/mark.md) |
+| CSS 스타일 일괄 적용 (Renderer2) | [set-safe-style.md](./utils/set-safe-style.md) |
+| 포매팅 파이프 (DateTime 등) | [format-pipe.md](./pipes/format-pipe.md) |
+| 타입 유틸리티 (DirectiveInputSignals 등) | [directive-input-signals.md](./type-utilities/directive-input-signals.md) |
 
-### Features
+### 디렉티브
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdAddressSearchModal`](./features/sd-address-search-modal.md) | component | Daum Postcode 주소 검색 모달 |
-| [`Address`](./features/sd-address-search-modal.md) | interface | 주소 검색 결과 |
-| [`SdPermissionTable`](./features/sd-permission-table.md) | component | 권한 매트릭스 테이블 (items, value) |
-| [`SdSharedDataSelect`](./features/sd-shared-data-components.md) | component | 공유 데이터 드롭다운 선택 |
-| [`SdSharedDataSelectButton`](./features/sd-shared-data-components.md) | component | 공유 데이터 모달 선택 버튼 |
-| [`SdSharedDataSelectList`](./features/sd-shared-data-components.md) | component | 공유 데이터 목록형 선택 (selectedItem model) |
-| [`matchesSearchText`](./features/sd-shared-data-components.md) | function | 공백 구분 AND 조건 텍스트 검색 매칭 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 리플 효과 적용 | [sd-ripple.md](./directives/sd-ripple.md) |
+| 뷰포트 진입 시 reveal 애니메이션 | [sd-show-effect.md](./directives/sd-show-effect.md) |
+| 유효성 검증 표시 | [sd-invalid.md](./directives/sd-invalid.md) |
+| 템플릿 컨텍스트 타입 가드 | [sd-typed-template.md](./directives/sd-typed-template.md) |
+| 라우터 네비게이션 (Ctrl+클릭 새 창) | [sd-router-link.md](./directives/sd-router-link.md) |
+| 키보드 단축키 (Ctrl+S 저장 등) | [sd-command-directive.md](./directives/sd-command-directive.md) |
+| ResizeObserver 이벤트 | [sd-resize-directive.md](./directives/sd-resize-directive.md) |
+| IntersectionObserver 이벤트 | [sd-intersection-directive.md](./directives/sd-intersection-directive.md) |
+| 이벤트 수식어 (.capture/.passive/.once) | [sd-events.md](./directives/sd-events.md) |
 
-### UI - Layout
+### 플러그인
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdDockContainer`](./ui-layout/sd-dock-container.md) | component | 도킹 레이아웃 컨테이너 |
-| [`SdDock`](./ui-layout/sd-dock.md) | component | 도킹 영역 (top/bottom/left/right) |
-| [`SdGap`](./ui-layout/sd-gap.md) | component | 간격 (gap) 컴포넌트 |
-| [`SdKanbanBoard`](./ui-layout/sd-kanban-board.md) | component | 칸반 보드 (드래그앤드롭, selectedValues) |
-| [`SdKanbanBoardDropInfo`](./ui-layout/sd-kanban-board.md) | interface | 칸반 보드 드롭 이벤트 정보 |
-| [`SdKanbanDragRef`](./ui-layout/sd-kanban-board.md) | interface | 칸반 드래그 참조 인터페이스 |
-| [`SdKanbanDropTarget`](./ui-layout/sd-kanban-board.md) | interface | 칸반 드롭 타겟 인터페이스 |
-| [`SdKanban`](./ui-layout/sd-kanban.md) | component | 칸반 아이템 |
-| [`SdKanbanLane`](./ui-layout/sd-kanban-lane.md) | component | 칸반 레인 |
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 이벤트 옵션 플러그인 (.capture 등) | [sd-option-event-plugin.md](./plugins/sd-option-event-plugin.md) |
+| 글로벌 에러 핸들러 | [sd-global-error-handler.md](./plugins/sd-global-error-handler.md) |
 
-### UI - Form
+## 이 패키지를 쓰지 말아야 할 때
 
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdButton`](./ui-form/sd-button.md) | component | 버튼 |
-| [`SdAnchor`](./ui-form/sd-anchor.md) | component | 앵커 (인라인 버튼) |
-| [`SdAdditionalButton`](./ui-form/sd-additional-button.md) | component | 추가 동작 버튼 (드롭다운 포함) |
-| [`SdModalSelectButton`](./ui-form/sd-modal-select-button.md) | component | 모달 선택 버튼 |
-| [`SdTextfield`](./ui-form/sd-textfield.md) | component | 텍스트 입력 (13가지 타입: number, text, password, color, email, format, date, month, year, datetime, datetime-sec, time, time-sec) |
-| [`SdTextarea`](./ui-form/sd-textarea.md) | component | 멀티라인 텍스트 입력 |
-| [`SdNumpad`](./ui-form/sd-numpad.md) | component | 숫자 패드 |
-| [`SdRange`](./ui-form/sd-range.md) | component | 범위 슬라이더 |
-| [`SdDateRangePicker`](./ui-form/sd-date-range-picker.md) | component | 날짜 범위 선택기 |
-| [`SdStatePreset`](./ui-form/sd-state-preset.md) | component | 상태 프리셋 저장/불러오기 |
-| [`SdStatePresetDef`](./ui-form/sd-state-preset.md) | interface | 상태 프리셋 데이터 (name, state) |
-| [`SdCheckbox`](./ui-form/sd-checkbox.md) | component | 체크박스 |
-| [`SdSwitch`](./ui-form/sd-switch.md) | component | 스위치 토글 |
-| [`SdCheckboxGroup`](./ui-form/sd-checkbox-group.md) | component | 체크박스 그룹 |
-| [`SdCheckboxGroupItem`](./ui-form/sd-checkbox-group.md) | component | 체크박스 그룹 항목 |
-| [`SdTiptapEditor`](./features/sd-tiptap-editor.md) | component | TipTap 리치 텍스트 에디터 |
-| [`SdSelect`](./ui-form/sd-select.md) | component | 드롭다운 선택 (single/multi) |
-| [`SdSelectItem`](./ui-form/sd-select.md) | component | 드롭다운 선택 항목 |
-| [`SdSelectButton`](./ui-form/sd-select.md) | component | 버튼 스타일 선택 |
-| [`SdForm`](./ui-form/sd-form.md) | component | 폼 래퍼 (submit 이벤트, busy 관리) |
-
-### UI - Navigation
-
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdCollapse`](./ui-navigation/sd-collapse.md) | component | 접기/펼치기 패널 |
-| [`SdCollapseIcon`](./ui-navigation/sd-collapse.md) | component | 접기/펼치기 아이콘 |
-| [`SdTab`](./ui-navigation/sd-tab.md) | component | 탭 컨테이너 |
-| [`SdTabItem`](./ui-navigation/sd-tab.md) | component | 탭 항목 |
-| [`SdPagination`](./ui-navigation/sd-pagination.md) | component | 페이지네이션 |
-| [`SdSidebarContainer`](./ui-navigation/sd-sidebar-container.md) | component | 사이드바 컨테이너 |
-| [`SdSidebar`](./ui-navigation/sd-sidebar-container.md) | component | 사이드바 |
-| [`SdSidebarMenu`](./ui-navigation/sd-sidebar-menu.md) | component | 사이드바 메뉴 |
-| [`SdSidebarUser`](./ui-navigation/sd-sidebar-user.md) | component | 사이드바 사용자 영역 |
-| [`SdSidebarUserMenu`](./ui-navigation/sd-sidebar-user.md) | interface | 사이드바 사용자 메뉴 항목 |
-| [`SdTopbarContainer`](./ui-navigation/sd-topbar-container.md) | component | 탑바 컨테이너 |
-| [`SdTopbar`](./ui-navigation/sd-topbar.md) | component | 탑바 |
-| [`SdTopbarMenu`](./ui-navigation/sd-topbar-menu.md) | component | 탑바 메뉴 |
-| [`SdTopbarUser`](./ui-navigation/sd-topbar-user.md) | component | 탑바 사용자 영역 |
-| [`SdTopbarUserMenu`](./ui-navigation/sd-topbar-user.md) | interface | 탑바 사용자 메뉴 항목 |
-| [`getMenuRouterLinkOption`](./ui-navigation/sd-sidebar-menu.md) | function | 메뉴에서 라우터 링크 옵션 추출 |
-| [`getIsMenuSelected`](./ui-navigation/sd-sidebar-menu.md) | function | 메뉴 선택 여부 확인 |
-
-### UI - Data
-
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdList`](./ui-data/sd-list.md) | component | 리스트 |
-| [`SdListItem`](./ui-data/sd-list.md) | component | 리스트 항목 |
-| [`SdSheet`](./ui-data/sd-sheet.md) | component | 스프레드시트 (정렬, 고정, 리사이즈). `key`로 설정 저장 |
-| [`SdSheetColumn`](./ui-data/sd-sheet.md) | directive | 시트 컬럼 정의 (헤더, 너비, 고정, 정렬 등) |
-| [`SdSheetColumnCellTemplate`](./ui-data/sd-sheet.md) | directive | 시트 컬럼 셀 내용 정의 (`ng-template[cell]`), `SdSheetCellContext` 타입 가드 제공 |
-| [`SdSheetCellContext`](./ui-data/sd-sheet.md) | interface | 시트 셀 템플릿 컨텍스트 (`$implicit`, `item`, `index`, `depth`, `edit`) |
-| [`SdSheetConfigModal`](./ui-data/sd-sheet.md) | component | 시트 설정 모달 |
-| [`SdSheetColumnDef`](./ui-data/sd-sheet.md) | interface | 시트 컬럼 정의 데이터 |
-| [`SdSheetConfig`](./ui-data/sd-sheet.md) | interface | 시트 설정 데이터 |
-| [`SdSheetHeaderDef`](./ui-data/sd-sheet.md) | interface | 시트 헤더 정의 |
-| [`SdSheetItemKeydownEventParam`](./ui-data/sd-sheet.md) | interface | 시트 항목 keydown 이벤트 파라미터 |
-| [`SdSheetCellKeydownEventParam`](./ui-data/sd-sheet.md) | interface | 시트 셀 keydown 이벤트 파라미터 |
-
-### UI - Visual
-
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdLabel`](./ui-visual/sd-label.md) | component | 라벨 (테마, 크기) |
-| [`SdNote`](./ui-visual/sd-note.md) | component | 노트/알림 메시지 |
-| [`SdProgress`](./ui-visual/sd-progress.md) | component | 진행률 바 |
-| [`SdCalendar`](./ui-visual/sd-calendar.md) | component | 캘린더 |
-| [`SdBarcode`](./ui-visual/sd-barcode.md) | component | 바코드 생성 (bwip-js) |
-| [`SdEcharts`](./ui-visual/sd-echarts.md) | component | ECharts 차트 래퍼 |
-| [`BarcodeType`](./ui-visual/sd-barcode.md) | type | 바코드 타입 |
-
-### UI - Overlay
-
-| API | Type | Description |
-|-----|------|-------------|
-| [`SdDropdown`](./ui-overlay/sd-dropdown.md) | component | 드롭다운 트리거 |
-| [`SdDropdownPopup`](./ui-overlay/sd-dropdown.md) | component | 드롭다운 팝업 |
-| [`SdModal`](./ui-overlay/sd-modal.md) | component | 모달 래퍼 컴포넌트 |
-| [`SdPromptModal`](./ui-overlay/sd-prompt-modal.md) | component | 프롬프트 입력 모달 |
-| [`SdConfirmModal`](./ui-overlay/sd-confirm-modal.md) | component | 확인/취소 모달 |
-| [`SdToast`](./ui-overlay/sd-toast.md) | component | 토스트 개별 항목 |
-| [`SdToastContainer`](./ui-overlay/sd-toast.md) | component | 토스트 컨테이너 |
-| [`SdBusyContainer`](./ui-overlay/sd-busy-container.md) | component | busy 표시 컨테이너 |
-
-### Recipes
-
-화면 조립 레시피. "무엇을 만들고 싶은가" 기준으로 진입한다.
-
-| Recipe | Description |
-|--------|-------------|
-| [페이지/모달 컨테이너](./recipes/page-modal-container.md) | `<sd-busy-container>` · `<sd-topbar-container>` · `<sd-topbar>` 직접 조립으로 page/modal/control 뷰 재사용 |
-| [CRUD 리스트](./recipes/crud-list.md) | 조회 전용 page → 인라인 편집 → 선택 모달 → 엑셀 내보내기까지 누적 확장 |
-| [CRUD 상세폼](./recipes/crud-detail.md) | 읽기 전용 상세 → 편집/저장 → 삭제/복원 → modal/control 뷰까지 누적 확장 |
-| [모달 선택 버튼](./recipes/data-select-button.md) | `<sd-modal-select-button>` 직접 사용 / `<sd-shared-data-select-button>` / 사용자 정의 wrapper |
-
-### Styling
-
-| Entry | Description |
-|-------|-------------|
-| [CSS Classes](./styling/classes.md) | 레이아웃, 유틸리티, 폼, 테이블 클래스 |
-| [CSS Custom Properties](./styling/variables.md) | OKLCH 색상 팔레트, 간격, 폰트, 레이아웃 변수 |
-| [Themes](./styling/themes.md) | 다크 모드 테마 클래스 |
-| [Mixins / Functions](./styling/mixins.md) | 공개 SCSS mixin/function |
+- 서버 사이드 로직 → `@simplysm/service-server`
+- Node.js 파일/프로세스 유틸리티 → `@simplysm/core-node`
+- ORM/DB 쿼리 → `@simplysm/orm-node`, `@simplysm/orm-common`
 
 ## 컴포넌트 비동기 초기화 규칙
 
@@ -328,8 +198,8 @@ export class SomePage {
 
 | 접미어 | 조건 | 파일명 예시 | 클래스명 예시 | selector 예시 |
 |--------|------|-------------|---------------|---------------|
-| `.list.ts` / `*List` | 여러 레코드를 조회·관리하는 화면 ([recipes/crud-list.md](./recipes/crud-list.md)) | `outbound-instruction.list.ts` | `OutboundInstructionList` | `app-outbound-instruction-list` |
-| `.detail.ts` / `*Detail` | 단일 레코드를 조회·편집하는 화면 ([recipes/crud-detail.md](./recipes/crud-detail.md)) | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` | `app-outbound-instruction-detail` |
+| `.list.ts` / `*List` | 여러 레코드를 조회·관리하는 화면 | `outbound-instruction.list.ts` | `OutboundInstructionList` | `app-outbound-instruction-list` |
+| `.detail.ts` / `*Detail` | 단일 레코드를 조회·편집하는 화면 | `outbound-instruction.detail.ts` | `OutboundInstructionDetail` | `app-outbound-instruction-detail` |
 | `.view.ts` / `*View` | list/detail 아닌 route 연결 화면 (대시보드, 설정 등) | `dashboard.view.ts` | `DashboardView` | `app-dashboard-view` |
 | `.modal.ts` / `*Modal` | 모달 전용 컴포넌트 (route 없이 `SdModalProvider.showAsync`로만 열림) | `item-select.modal.ts` | `ItemSelectModal` | `app-item-select-modal` |
 | `.print-template.ts` / `*PrintTemplate` | 인쇄 전용 컴포넌트 (`SdPrintProvider`로 호출, `SdPrint` 구현) | `box-label.print-template.ts` | `BoxLabelPrintTemplate` | `app-box-label-print-template` |
@@ -363,6 +233,19 @@ interface ICustomer { id: number; name: string; }
 import type { SortingDef, SharedDataBase } from "@simplysm/angular";
 ```
 
+## inject 네이밍 컨벤션
+
+`Sd*Provider`를 `inject()`할 때 변수명은 다음 규칙을 따른다:
+
+- **Sd 접두어 유지**: 클래스명에서 `Sd`를 camelCase로 변환하여 유지한다
+- **Provider 접미어 제거**: 변수명에서 `Provider`를 제거한다
+
+| inject 대상 | 클래스 필드 | 로컬 변수 |
+|-------------|-----------|----------|
+| `SdToastProvider` | `private _sdToast = inject(SdToastProvider)` | `const sdToast = inject(SdToastProvider)` |
+| `SdModalProvider` | `private _sdModal = inject(SdModalProvider)` | `const sdModal = inject(SdModalProvider)` |
+| `SdServiceClientFactoryProvider` | `private _sdServiceClientFactory = inject(SdServiceClientFactoryProvider)` | `const sdServiceClientFactory = inject(...)` |
+
 ## 소비 프로젝트 디렉토리 구조
 
 ```
@@ -373,8 +256,8 @@ src/
 │       ├── {메뉴-그룹}/                  # 사이드바 메뉴 그룹
 │       │   └── {도메인}/                 # 개별 도메인 (트리 깊이 제한 없음)
 │       │       ├── {도메인}.view.ts      # route 연결 병합 컴포넌트
-│       │       ├── {도메인}.list.ts      # 여러 레코드 조회·관리 (recipes/crud-list.md)
-│       │       ├── {도메인}.detail.ts    # 단일 레코드 조회·편집 (recipes/crud-detail.md)
+│       │       ├── {도메인}.list.ts      # 여러 레코드 조회·관리
+│       │       ├── {도메인}.detail.ts    # 단일 레코드 조회·편집
 │       │       ├── {이름}.modal.ts       # 도메인 전용 모달
 │       │       └── {이름}.ts            # 일반 컨트롤 (route 미연결)
 │       └── main/
@@ -389,19 +272,6 @@ src/
 - `app/` 하위 트리는 사이드바 메뉴 구조와 거의 대응된다
 - **배치 기준은 "어느 도메인에 소속되는가"**이다. provider, modal, directive, print-template, util 등 모든 종류의 파일이 소속 도메인 폴더 안에 배치된다 (다른 도메인에서 import하여 사용하는 것은 자유)
 - 특정 도메인에 소속되지 않는 공통 파일만 `src/` 직하의 `controls/`, `modals/`, `providers/` 등에 배치한다
-
-## inject 네이밍 컨벤션
-
-`Sd*Provider`를 `inject()`할 때 변수명은 다음 규칙을 따른다:
-
-- **Sd 접두어 유지**: 클래스명에서 `Sd`를 camelCase로 변환하여 유지한다
-- **Provider 접미어 제거**: 변수명에서 `Provider`를 제거한다
-
-| inject 대상 | 클래스 필드 | 로컬 변수 |
-|-------------|-----------|----------|
-| `SdToastProvider` | `private _sdToast = inject(SdToastProvider)` | `const sdToast = inject(SdToastProvider)` |
-| `SdModalProvider` | `private _sdModal = inject(SdModalProvider)` | `const sdModal = inject(SdModalProvider)` |
-| `SdServiceClientFactoryProvider` | `private _sdServiceClientFactory = inject(SdServiceClientFactoryProvider)` | `const sdServiceClientFactory = inject(...)` |
 
 ## Usage Examples
 
@@ -495,3 +365,6 @@ const result = await sdToast.try(async () => {
 });
 ```
 
+---
+
+> API 이름으로 검색: [_api-index.md](./_api-index.md)

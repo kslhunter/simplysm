@@ -347,7 +347,7 @@ export class SdSharedDataSelect<
       ...modalInfo,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: this.selectedKeys(),
+        selectedKeys: this.selectedKeys(),
         ...modalInfo.inputs,
       } as any,
     });
@@ -355,8 +355,8 @@ export class SdSharedDataSelect<
     if (result != null) {
       const newValue =
         this.selectMode() === "multi"
-          ? result.selectedItemKeys
-          : result.selectedItemKeys[0];
+          ? result.selectedKeys
+          : result.selectedKeys[0];
       this.value.set(newValue);
     }
   }

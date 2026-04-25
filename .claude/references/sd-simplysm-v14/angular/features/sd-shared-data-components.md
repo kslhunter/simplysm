@@ -1,5 +1,7 @@
 # Shared Data Components
 
+> **읽어야 하는 상황**: 공유 데이터에서 항목을 선택하는 UI(드롭다운, 모달 버튼, 목록)가 필요할 때.
+
 공유 데이터(`SdSharedDataProvider`)와 연동하는 UI 컴포넌트 모음.
 
 ## `SdSharedDataSelect`

@@ -32,7 +32,6 @@ import type { SelectModeValue } from "../../controls/select/sd-select";
   template: `
     <sd-modal-select-button
       [(value)]="value"
-      [(selectedItems)]="_selectedItems"
       [modal]="modal()"
       [disabled]="disabled()"
       [required]="required()"

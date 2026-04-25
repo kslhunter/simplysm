@@ -76,6 +76,7 @@ export function useSheetLayoutEngine(options: {
             colspan: 1,
             rowspan,
             isLastRow: true,
+            fixed: colDef.fixed,
             colDef,
             colIndex: colIdx,
           });
@@ -86,7 +87,7 @@ export function useSheetLayoutEngine(options: {
           const lastCell = prevCells.length > 0 ? prevCells[prevCells.length - 1] : undefined;
 
           let canMerge = false;
-          if (lastCell != null && lastCell.text === text) {
+          if (lastCell != null && lastCell.text === text && lastCell.fixed === colDef.fixed) {
             if (!lastCell.isLastRow && !isLastRow) {
               // Non-final rows: also check parent levels match
               canMerge = true;
@@ -123,6 +124,7 @@ export function useSheetLayoutEngine(options: {
               colspan: 1,
               rowspan: 1,
               isLastRow,
+              fixed: colDef.fixed,
               colDef: isLastRow ? colDef : undefined,
               colIndex: colIdx,
             });

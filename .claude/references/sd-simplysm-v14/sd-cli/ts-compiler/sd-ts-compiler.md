@@ -1,4 +1,6 @@
-# SdTsCompiler
+# `SdTsCompiler`
+
+> **읽어야 하는 상황**: Angular/TS 패키지를 프로그래매틱하게 AOT 컴파일하거나 증분 빌드 파이프라인을 구현할 때. CLI 명령어로 빌드한다면 `pnpm build`/`pnpm watch`를 사용하며 이 API는 불필요하다.
 
 TypeScript AOT 컴파일러. Angular 패키지(`angularCompilerOptions`가 `tsconfig.json`에 있는 경우)와 일반 TypeScript 패키지를 모두 지원한다. 증분 빌드, lint 통합, SCSS 컴파일을 관리한다.
 

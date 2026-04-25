@@ -1,5 +1,7 @@
 # `SdKanbanLane`
 
+> **읽어야 하는 상황**: 칸반 보드 내부에 아이템을 수직 나열하는 레인을 배치할 때.
+
 칸반 레인 컴포넌트. `SdKanbanBoard` 내부에 배치되며, `SdKanban` 아이템을 수직으로 나열한다.
 
 ```typescript

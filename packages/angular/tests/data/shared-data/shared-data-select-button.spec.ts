@@ -149,11 +149,10 @@ describe("SdSharedDataSelectButton", () => {
   //#region 모달 선택 흐름 (SdModalSelectButton 위임)
 
   describe("모달 선택 흐름", () => {
-    it("검색 버튼 클릭 시 SdModalProvider.showAsync가 호출되고 결과 selectedItemKeys가 value로 반영된다", async () => {
+    it("검색 버튼 클릭 시 SdModalProvider.showAsync가 호출되고 결과 selectedKeys가 value로 반영된다", async () => {
       const items = [testItem(1, "A"), testItem(2, "B")];
       mockModal.showAsync.mockResolvedValue({
-        selectedItemKeys: [2],
-        selectedItems: [items[1]],
+        selectedKeys: [2],
       });
 
       const { fixture, host } = await createFixture({ items });

@@ -23,7 +23,7 @@ export class TestSelectModalComponent implements SdSelectModal<TestModalItem> {
   initialized = signal(false);
   close = output<SelectModalOutputResult<TestModalItem> | undefined>();
   selectMode = input<"single" | "multi" | undefined>("single");
-  selectedItemKeys = input<any[]>([]);
+  selectedKeys = input<any[]>([]);
 }
 
 const TEST_MODAL_INFO: SdSelectModalInfo<TestSelectModalComponent> = {
@@ -43,7 +43,6 @@ const TEST_MODAL_INFO: SdSelectModalInfo<TestSelectModalComponent> = {
     <sd-modal-select-button
       [selectMode]="'single'"
       [(value)]="value"
-      [(selectedItems)]="selectedItems"
       [modal]="modalInfo"
     >
       {{ displayText() }}
@@ -52,7 +51,6 @@ const TEST_MODAL_INFO: SdSelectModalInfo<TestSelectModalComponent> = {
 })
 export class SdModalSelectButtonSingleTest {
   value = signal<number | undefined>(undefined);
-  selectedItems = signal<TestModalItem[]>([]);
   modalInfo = TEST_MODAL_INFO;
   displayText = signal("선택하세요");
 }
@@ -68,7 +66,6 @@ export class SdModalSelectButtonSingleTest {
     <sd-modal-select-button
       [selectMode]="'multi'"
       [(value)]="value"
-      [(selectedItems)]="selectedItems"
       [modal]="modalInfo"
     >
       {{ displayText() }}
@@ -77,7 +74,6 @@ export class SdModalSelectButtonSingleTest {
 })
 export class SdModalSelectButtonMultiTest {
   value = signal<number[]>([]);
-  selectedItems = signal<TestModalItem[]>([]);
   modalInfo = TEST_MODAL_INFO;
   displayText = signal("선택하세요");
 }

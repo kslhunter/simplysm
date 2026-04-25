@@ -1,5 +1,7 @@
 # `SdForm`
 
+> **읽어야 하는 상황**: 폼 제출(submit 이벤트)과 유효성 검증이 필요할 때.
+
 폼 래퍼 컴포넌트. `<form>` 태그를 렌더링하며 submit 이벤트 처리 및 유효성 검증을 수행한다.
 
 ```typescript
@@ -38,13 +40,6 @@ onSave(): void {
   this.formCtrl().requestSubmit();
 }
 ```
-
-### 실사용 예
-
-- [crud-list.md §3 최소 뼈대: 조회 전용 page](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 필터 폼 래퍼 (formSubmit으로 검색 트리거)
-- [crud-list.md §5 확장 A: inline 편집/저장](../recipes/crud-list.md#5-확장-a-inline-편집저장) — 편집 폼 래퍼 (#formCtrl + requestSubmit)
-- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](../recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 읽기 전용 필드 배치 컨테이너
-- [crud-detail.md §5 확장 A: 편집/저장](../recipes/crud-detail.md#5-확장-a-편집저장) — 편집 폼 래퍼 (formSubmit + #formCtrl + requestSubmit)
 
 ## Related Types
 

@@ -45,6 +45,10 @@ export async function configureAndroid(
   _logger.debug("styles.xml 설정 시작");
   await _configureStyles(androidPath);
   _logger.debug("styles.xml 설정 완료");
+
+  _logger.debug("MainActivity.java textZoom 설정 시작");
+  await _configureMainActivity(androidPath, config.appId);
+  _logger.debug("MainActivity.java textZoom 설정 완료");
 }
 
 /**
@@ -320,6 +324,46 @@ async function _configureBuildGradle(
   }
 
   await fsx.write(buildGradlePath, content);
+}
+
+/**
+ * MainActivity.java에 textZoom 100% 고정 설정
+ *
+ * 시스템 글꼴 크기 설정과 무관하게 WebView 텍스트 줌을 100%로 고정한다.
+ * BridgeActivity.load() 오버라이드를 사용한다 (onCreate 시점에서는 bridge가 아직 null).
+ */
+async function _configureMainActivity(androidPath: string, appId: string): Promise<void> {
+  const mainActivityPath = pathx.posixResolve(
+    androidPath,
+    `app/src/main/java/${appId.replace(/\./g, "/")}/MainActivity.java`,
+  );
+
+  if (!(await fsx.exists(mainActivityPath))) {
+    _logger.warn(`MainActivity.java 파일을 찾을 수 없습니다: ${mainActivityPath}`);
+    return;
+  }
+
+  let content = await fsx.read(mainActivityPath);
+
+  if (content.includes("setTextZoom")) {
+    return;
+  }
+
+  if (content.includes("public class MainActivity extends BridgeActivity {}")) {
+    content = content.replace(
+      "public class MainActivity extends BridgeActivity {}",
+      [
+        "public class MainActivity extends BridgeActivity {",
+        "    @Override",
+        "    protected void load() {",
+        "        super.load();",
+        "        getBridge().getWebView().getSettings().setTextZoom(100);",
+        "    }",
+        "}",
+      ].join("\n"),
+    );
+    await fsx.write(mainActivityPath, content);
+  }
 }
 
 /**

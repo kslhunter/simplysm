@@ -1,4 +1,6 @@
-# SdPackageConfig
+# `SdPackageConfig`
+
+> **읽어야 하는 상황**: 패키지의 빌드 타겟을 결정하거나 `target` 값에 따른 설정 분기를 확인할 때. 각 타겟별 상세 설정은 아래 링크 참조.
 
 `sd.config.ts`의 패키지별 설정. `target` 필드로 분기하는 discriminated union이다.
 

@@ -25,19 +25,19 @@ import { tablerSearch, tablerEraser } from "@ng-icons/tabler-icons";
 
 /**
  * 모달 선택 컴포넌트가 구현해야 하는 인터페이스
- * SdModalContentDef을 확장하여 selectMode와 selectedItemKeys를 추가한다.
+ * SdModalContentDef을 확장하여 selectMode와 selectedKeys를 추가한다.
  */
-export interface SdSelectModal<T> extends SdModalContentDef<SelectModalOutputResult<T>> {
+export interface SdSelectModal<TKey> extends SdModalContentDef<SelectModalOutputResult<TKey>> {
   selectMode: InputSignal<"single" | "multi" | undefined>;
-  selectedItemKeys: InputSignal<any[]>;
+  selectedKeys: InputSignal<TKey[]>;
 }
 
 /**
- * 모달 선택 정보 (selectMode/selectedItemKeys를 제외한 inputs)
+ * 모달 선택 정보 (selectMode/selectedKeys를 제외한 inputs)
  */
 export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
   T,
-  "selectMode" | "selectedItemKeys"
+  "selectMode" | "selectedKeys"
 >;
 
 @Component({
@@ -146,16 +146,14 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
   },
 })
 export class SdModalSelectButton<
-  T extends object,
   K,
   M extends keyof SelectModeValue<K> = keyof SelectModeValue<K>,
 > {
   private readonly _sdModal = inject(SdModalProvider);
 
-  modal = input.required<SdSelectModalInfo<SdSelectModal<T>>>();
+  modal = input.required<SdSelectModalInfo<SdSelectModal<K>>>();
 
   value = model<SelectModeValue<K>[M]>();
-  selectedItems = model<T[]>([]);
 
   disabled = input(false, { transform: booleanAttribute });
   required = input(false, { transform: booleanAttribute });
@@ -187,7 +185,6 @@ export class SdModalSelectButton<
 
   onEraseClick(): void {
     this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
-    this.selectedItems.set([]);
   }
 
   async onSearchClick(event: MouseEvent): Promise<void> {
@@ -199,7 +196,7 @@ export class SdModalSelectButton<
       ...modal,
       inputs: {
         selectMode: this.selectMode(),
-        selectedItemKeys: (this.selectMode() === "multi"
+        selectedKeys: (this.selectMode() === "multi"
           ? ((this.value() as any[] | undefined) ?? [])
           : [this.value()]
         ).filterExists(),
@@ -209,9 +206,8 @@ export class SdModalSelectButton<
 
     if (result) {
       const newValue =
-        this.selectMode() === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
-      this.value.set(newValue);
-      this.selectedItems.set(result.selectedItems);
+        this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];
+      this.value.set(newValue as SelectModeValue<K>[M]);
     }
   }
 }

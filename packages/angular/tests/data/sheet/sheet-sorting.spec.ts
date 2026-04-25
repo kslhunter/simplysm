@@ -23,6 +23,7 @@ describe("Feature 6.1 Slice 4: 정렬", () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance.sorts()).toEqual([{ key: "name", desc: false }]);
+    expect(nameTh.getAttribute("aria-sort")).toBe("ascending");
 
     // Verify sort icon is rendered
     const sortIcon = nameTh.querySelector("._sort-icon");
@@ -51,6 +52,7 @@ describe("Feature 6.1 Slice 4: 정렬", () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance.sorts()).toEqual([{ key: "name", desc: true }]);
+    expect(nameTh.getAttribute("aria-sort")).toBe("descending");
   });
 
   it("Scenario: 정렬 해제 — 내림차순 헤더를 다시 클릭하면 정렬이 해제되고 aria-sort가 제거된다", async () => {
@@ -78,6 +80,7 @@ describe("Feature 6.1 Slice 4: 정렬", () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance.sorts()).toEqual([]);
+    expect(nameTh.hasAttribute("aria-sort")).toBe(false);
   });
 
   it("Scenario: 다중 정렬 — Shift+클릭으로 다중 정렬되고 순서 번호가 표시된다", async () => {

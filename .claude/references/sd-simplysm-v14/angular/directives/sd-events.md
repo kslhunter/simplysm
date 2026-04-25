@@ -1,5 +1,7 @@
 # `SdEvents`
 
+> **읽어야 하는 상황**: 이벤트 수식어(.capture/.passive/.once)를 사용할 때.
+
 `.capture`, `.passive`, `.once` 수식어 및 커스텀 이벤트 바인딩을 지원하는 디렉티브. Angular 템플릿에서 해당 이벤트를 사용할 때 자동 매칭된다.
 
 ```typescript

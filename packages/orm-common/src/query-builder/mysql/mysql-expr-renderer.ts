@@ -532,7 +532,11 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected cast(expr: ExprCast): string {
-    return `CAST(${this.render(expr.source)} AS ${this.renderDataType(expr.targetType)})`;
+    const targetType =
+      expr.targetType.type === "varchar"
+        ? `CHAR(${expr.targetType.length})`
+        : this.renderDataType(expr.targetType);
+    return `CAST(${this.render(expr.source)} AS ${targetType})`;
   }
 
   //#endregion

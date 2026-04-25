@@ -1,5 +1,7 @@
 # `SdToast`
 
+> **읽어야 하는 상황**: 토스트 개별 항목 컴포넌트의 내부 구조를 이해할 때. 토스트 표시는 [`SdToastProvider`](../providers/sd-toast-provider.md) 참조.
+
 토스트 개별 항목 컴포넌트. `SdToastProvider`에 의해 프로그래밍 방식으로 생성된다.
 
 ```typescript

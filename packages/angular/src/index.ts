@@ -251,6 +251,11 @@ export {
   type SdStatePresetDef,
 } from "./data/state-preset/sd-state-preset";
 
+// data/crud
+export { SdBaseContainer } from "./data/crud/sd-base-container";
+export { SdCrudDetail } from "./data/crud/sd-crud-detail";
+export { SdCrudList } from "./data/crud/sd-crud-list";
+
 // features/theme
 export { SdThemeProvider } from "./features/theme/sd-theme-provider";
 export { SdThemeSelector } from "./features/theme/sd-theme-selector";

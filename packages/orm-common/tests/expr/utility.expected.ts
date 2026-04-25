@@ -81,7 +81,7 @@ export const castToVarchar: ExpectedSql = {
   mysql: mysql`
     SELECT
       \`T1\`.\`id\` AS \`id\`,
-      CAST(\`T1\`.\`age\` AS VARCHAR(50)) AS \`ageStr\`
+      CAST(\`T1\`.\`age\` AS CHAR(50)) AS \`ageStr\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`

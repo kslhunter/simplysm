@@ -75,12 +75,12 @@ describe("Feature 1.2.1 Slice 1: SCSS 크기 테마 제거 + rem 전환", () => 
   });
 
   describe("Rule: 이미 em인 값은 em을 유지한다", () => {
-    it("sidebar width는 15em이다", () => {
-      expect(getCssVar("--sidebar-width")).toBe("15em");
+    it("sidebar width는 15rem이다", () => {
+      expect(getCssVar("--sidebar-width")).toBe("15rem");
     });
 
-    it("topbar height는 3em이다", () => {
-      expect(getCssVar("--topbar-height")).toBe("3em");
+    it("topbar height는 3rem이다", () => {
+      expect(getCssVar("--topbar-height")).toBe("3rem");
     });
 
     it("line-height는 1.5em이다", () => {

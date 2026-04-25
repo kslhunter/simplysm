@@ -1,4 +1,6 @@
-# SdPostPublishScriptConfig
+# `SdPostPublishScriptConfig`
+
+> **읽어야 하는 상황**: 배포 완료 후 자동으로 실행할 스크립트를 설정할 때.
 
 배포 완료 후 실행할 스크립트 설정. [`SdConfig`](./sd-config.md)의 `postPublish` 배열 항목으로 사용한다.
 

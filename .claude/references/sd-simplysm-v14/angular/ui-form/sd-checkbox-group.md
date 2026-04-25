@@ -1,5 +1,7 @@
 # `SdCheckboxGroup`
 
+> **읽어야 하는 상황**: 체크박스 그룹으로 다중 선택을 관리할 때. 단일 체크박스는 [`SdCheckbox`](./sd-checkbox.md) 참조.
+
 체크박스 그룹 컴포넌트. `SdCheckboxGroupItem`과 함께 사용하여 다중 선택을 관리한다.
 
 ```typescript

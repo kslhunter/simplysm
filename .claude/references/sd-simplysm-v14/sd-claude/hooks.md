@@ -1,5 +1,7 @@
 # Hooks
 
+> **읽어야 하는 상황**: 금지 명령어 차단, 파일 보호, Write 검증, 상태바 등 Claude Code 훅의 동작을 파악할 때.
+
 `claude/` 디렉토리의 훅 스크립트 (총 6개). `postinstall`에 의해 `.claude/`에 설치되고, `settings.json`에 자동 등록되어 Claude Code 세션에서 실행된다.
 
 ## `sd-subagent-start.sh`
@@ -20,19 +22,21 @@ fi
 
 ## `sd-check-write.py`
 
-PreToolUse 훅 (matcher: `Write`). 기존 파일에 Write 도구를 사용하려 하면 차단하고 Edit 도구 사용을 안내한다.
+PreToolUse 훅 (matcher: `Write`). 대상 파일이 존재할 때, 이전에 Read로 캐시된 해시와 현재 파일 해시를 비교하여 파일이 Read 없이 Write되거나 Read 이후 내용이 변경된 경우 차단한다. `sd-cache-read-hash.py`와 연동하여 동작한다.
 
 ```python
-# stdin으로 tool_input JSON을 받아 file_path를 검사
-# 파일이 이미 존재하면 stderr에 메시지 출력 후 exit(2)
+# stdin으로 tool_input JSON을 받아 file_path, session_id를 사용
+# .tmp/read_hash/{session_id}/{path_hash}에 저장된 캐시 해시와 현재 파일 해시를 비교
+# 불일치 시 stderr에 메시지 출력 후 exit(2)
 ```
 
-입력: stdin JSON (`tool_input.file_path`)
+입력: stdin JSON (`tool_input.file_path`, `session_id`)
 
 | 조건 | 동작 |
 |------|------|
-| 파일이 이미 존재 | stderr에 안내 메시지 출력, exit code 2 (차단) |
-| 파일이 존재하지 않음 | exit code 0 (허용) |
+| 파일이 존재하지 않음 | exit code 0 (허용 — 신규 파일) |
+| 파일이 존재하고 캐시 해시가 현재 해시와 일치 | exit code 0 (허용) |
+| 파일이 존재하고 캐시 해시가 없거나 불일치 | stderr에 "Read first" 안내 출력, exit code 2 (차단) |
 
 ## `sd-check-bash.py`
 
@@ -118,7 +122,7 @@ statusLine 훅. Claude Code 상태바에 `폴더 | 모델 | 컨텍스트% | 5h�
 | Function | Description |
 |----------|-------------|
 | `format_model(model_id)` | 모델 ID를 `Name X.Y` 형식으로 변환 (예: `claude-opus-4-6` → `Opus 4.6`) |
-| `format_remaining(reset_epoch)` | 리셋까지 남은 시간을 `Xd Yh` / `Xh Ym` / `Xm` 형식으로 변환. 만료 시 `0m` 반환 |
+| `format_remaining(reset_epoch)` | 리셋까지 남은 시간을 `XdYh` / `XhYm` / `Xm` 형식으로 변환. 만료 시 `0m` 반환 |
 | `format_rate_limit(rate_limit)` | rate limit을 `X%(남은시간)` 형식으로 변환 |
 | `read_cache()` | 캐시 파일을 읽어 딕셔너리로 반환 |
 | `should_fetch(cache)` | 캐시가 없거나 180초 이상 경과했으면 `True` |

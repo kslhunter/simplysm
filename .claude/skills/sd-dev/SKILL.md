@@ -10,6 +10,26 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## 공통 규칙
 
+### subagent 실행 프로토콜
+
+Step 4~6은 Agent 도구로 subagent를 생성하여 수행한다. 각 단계가 fresh context를 확보하여 컨텍스트 소진을 방지한다.
+
+#### prompt 구성
+
+1. `.claude/skills/sd-dev/subagent-preamble.md`를 Read한다
+2. 그 내용 + Step별 작업 지시를 합쳐 Agent prompt를 구성한다
+
+#### NEED_INPUT 처리 루프
+
+subagent 반환값에 `---NEED_INPUT---`이 포함되면:
+
+1. 상황과 선택지를 파악한다
+2. AskUserQuestion으로 사용자에게 질문한다 (sd-options 규칙 준수)
+3. SendMessage로 사용자 결정을 subagent에 전달한다
+4. subagent 반환값을 다시 확인한다 (NEED_INPUT 반복 가능)
+
+포함되지 않으면 해당 Step 완료.
+
 ## Step 1: 입력 분기
 
 인자에 따라 시작 Step을 결정한다. (인자가 없는경우 대화에서 유추)
@@ -33,22 +53,56 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 `/sd-plan` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 4로 진행한다.
 
-## Step 4: sd-tdd
+## Step 4: sd-tdd (subagent)
 
-`/sd-tdd` 스킬을 즉시 수행한다.
+Agent 도구로 subagent를 생성하여 sd-tdd를 수행한다. (subagent 실행 프로토콜 참조)
 
-## Step 5: sd-check
+### prompt 구성
+
+preamble + 아래 작업 지시:
+
+    ## 작업
+    `.claude/skills/sd-tdd/SKILL.md`를 Read하고 지침에 따라 TDD 개발을 수행하세요.
+    - Feature 문서: {feature_doc_path}
+    - WBS 문서: {wbs_path}
+
+NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
+
+## Step 5: sd-check (subagent)
 
 수정된 소스코드(`src/`, `tests/`)가 하나도 없으면(예: 문서만 수정) 이 단계를 스킵한다.
 
-변경 패키지에 대한 `/sd-check` 스킬을 즉시 수행한다.
+Agent 도구로 subagent를 생성하여 변경 패키지에 대한 sd-check를 수행한다. (subagent 실행 프로토콜 참조)
 
-## Step 6: sd-review
+### prompt 구성
 
-`/sd-inner-review` 스킬을 호출하고, **모든** 발견사항에 대해 수정한다.
+preamble + 아래 작업 지시:
 
-- wbs/feature 문서를 읽고 잘 구현되었는지 함께 검토한다.
-- 수정사항이 있는 경우, `/sd-check` 스킬을 재 수행한다.
+    ## 작업
+    `.claude/skills/sd-check/SKILL.md`를 Read하고 지침에 따라 체크를 수행하세요.
+    - 대상 패키지: {변경된 패키지 목록}
+
+NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
+
+## Step 6: sd-review (subagent)
+
+Agent 도구로 subagent를 생성하여 코드 리뷰 + 수정을 수행한다. (subagent 실행 프로토콜 참조)
+
+### prompt 구성
+
+preamble + 아래 작업 지시:
+
+    ## 작업
+    1. `.claude/skills/sd-inner-review/SKILL.md`를 Read하고 지침에 따라 코드 리뷰를 수행하세요.
+       - 요구사항 원천: {wbs_path}, {feature_doc_path}
+    2. 발견된 **모든** 이슈를 직접 수정하세요.
+    3. 수정 내역을 요약하여 보고하세요 (파일경로, 수정 내용).
+
+NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
+
+### 수정 후 재검증
+
+subagent가 코드 수정을 보고하면, Step 5(sd-check)를 subagent로 재수행한다.
 
 ## Step 7: 완료 보고
 

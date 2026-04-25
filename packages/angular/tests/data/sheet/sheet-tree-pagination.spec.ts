@@ -26,6 +26,7 @@ describe("Feature 6.1 Slice 5: 트리 구조 + 페이지네이션", () => {
     const expandCell = featureCells[1] as HTMLElement;
     const expandIcon = expandCell.querySelector("ng-icon") as HTMLElement;
     expect(expandIcon).toBeTruthy();
+    expect(expandIcon.getAttribute("aria-expanded")).toBe("false");
 
     // Click expand
     expandIcon.click();
@@ -35,6 +36,7 @@ describe("Feature 6.1 Slice 5: 트리 구조 + 페이지네이션", () => {
     // Now children should be visible
     rows = host.querySelectorAll("tbody tr");
     expect(rows.length).toBe(4); // ParentA, Child1, Child2, ParentB
+    expect(expandIcon.getAttribute("aria-expanded")).toBe("true");
   });
 
   it("Scenario: 트리 축소 — 확장된 행의 축소 버튼 클릭 시 자식이 숨겨지고 aria-expanded=false", async () => {
@@ -53,13 +55,14 @@ describe("Feature 6.1 Slice 5: 트리 구조 + 페이지네이션", () => {
     // Click collapse on ParentA (second feature cell has the expand/collapse icon)
     const featureCells = rows[0].querySelectorAll("td._feature-cell");
     const collapseIcon = featureCells[1].querySelector("ng-icon") as HTMLElement;
+    expect(collapseIcon.getAttribute("aria-expanded")).toBe("true");
     collapseIcon.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     rows = host.querySelectorAll("tbody tr");
     expect(rows.length).toBe(2);
-    expect(rows.length).toBe(2);
+    expect(collapseIcon.getAttribute("aria-expanded")).toBe("false");
   });
 
   it("Scenario: 전체 확장과 축소 — 전체 확장/축소 버튼으로 모든 행을 확장/축소한다", async () => {

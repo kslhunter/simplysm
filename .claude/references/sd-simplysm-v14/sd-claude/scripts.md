@@ -1,5 +1,7 @@
 # Scripts (Internal)
 
+> **읽어야 하는 상황**: postinstall 에셋 설치, prepack 동기화, `sd-*` 항목 탐색 유틸리티의 동작을 파악할 때.
+
 `scripts/` 디렉토리의 Node.js `.mjs` 스크립트. CLI와 라이프사이클 훅으로 사용된다.
 
 ## `postinstall.mjs`

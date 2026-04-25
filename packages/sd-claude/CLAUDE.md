@@ -40,7 +40,7 @@ sd-claude/
 │   ├── sd-check-bash.py              ← Bash 도구 사전 검사 훅 (금지 명령어 차단: git stash/checkout/restore/reset/clean, cd, npx tsc, npx eslint)
 │   ├── sd-cache-read-hash.py          ← PostToolUse 훅 (Read 후 파일 해시 캐싱)
 │   ├── sd-check-forbidden-files.py   ← Write/Edit 도구 사전 검사 훅 (tsconfig.json, eslint.config.ts 수정 차단)
-│   ├── sd-check-write.py             ← Write 도구 사전 검사 훅 (파일 존재 여부 확인)
+│   ├── sd-check-write.py             ← Write 도구 사전 검사 훅 (Read 없이 Write 시도 또는 파일 변경 감지 후 차단)
 │   ├── sd-subagent-start.sh          ← SubagentStart 훅 (CLAUDE.md를 읽어 출력)
 │   └── sd-statusline.py              ← statusLine 훅 (폴더|모델|컨텍스트%|사용량 표시)
 └── scripts/

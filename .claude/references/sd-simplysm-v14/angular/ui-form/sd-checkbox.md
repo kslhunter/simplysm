@@ -1,5 +1,7 @@
 # `SdCheckbox`
 
+> **읽어야 하는 상황**: 체크박스로 boolean 값을 토글할 때. 스위치 형태는 [`SdSwitch`](./sd-switch.md), 다중 선택 그룹은 [`SdCheckboxGroup`](./sd-checkbox-group.md) 참조.
+
 체크박스 컴포넌트.
 
 ```typescript
@@ -32,10 +34,6 @@ class SdCheckbox {
 | `inset` | input | `boolean` | `false` | 삽입 스타일 |
 | `theme` | input | `string \| undefined` | `undefined` | 테마 색상 |
 | `contentStyle` | input | `string \| undefined` | `undefined` | 라벨 텍스트 인라인 스타일 |
-
-### 실사용 예
-
-- [crud-list.md §5 확장 A: inline 편집/저장](../recipes/crud-list.md#5-확장-a-inline-편집저장) — 필터 영역 "삭제항목 포함" 체크박스
 
 ## Related Types
 

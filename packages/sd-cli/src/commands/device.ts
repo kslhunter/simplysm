@@ -60,6 +60,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
 
   // 서버 URL 결정
   let serverUrl = options.url;
+  let extraReversePorts: number[] | undefined;
   if (serverUrl == null) {
     if (typeof clientConfig.server === "number") {
       serverUrl = `http://localhost:${clientConfig.server}/${targetName}/`;
@@ -77,6 +78,17 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       }
       const port = Number(portStr);
       serverUrl = `http://localhost:${port}/${targetName}/`;
+
+      // 클라이언트 dev server 포트 (HMR WebSocket용 adb reverse)
+      const clientPortFile = path.join(pkgDir, "dist", ".dev-port");
+      try {
+        const clientPort = Number(fs.readFileSync(clientPortFile, "utf-8").trim());
+        if (clientPort !== port) {
+          extraReversePorts = [clientPort];
+        }
+      } catch {
+        logger.warn("클라이언트 dev server 포트를 읽지 못했습니다. HMR이 동작하지 않을 수 있습니다.");
+      }
 
       // HTTP 헬스체크
       const alive = await checkDevServer(serverUrl);
@@ -97,7 +109,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   } else if (clientConfig.capacitor != null) {
     logger.start(`${targetName} (capacitor) 실행 중...`);
     const cap = await Capacitor.create(pkgDir, clientConfig.capacitor, clientConfig.exclude);
-    await cap.run(serverUrl);
+    await cap.run(serverUrl, extraReversePorts);
     logger.success(`${targetName} (capacitor) 실행 완료`);
   } else {
     throw new SdError(`${targetName}에 capacitor 또는 electron 설정이 없습니다.`);

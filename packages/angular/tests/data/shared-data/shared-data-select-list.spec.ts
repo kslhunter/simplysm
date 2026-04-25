@@ -275,7 +275,7 @@ describe("SdSharedDataSelectList", () => {
       fixture.detectChanges();
 
       const ctrl = getCtrl(fixture);
-      mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [2], selectedItems: [] });
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
 
       await ctrl.onModalButtonClick();
 

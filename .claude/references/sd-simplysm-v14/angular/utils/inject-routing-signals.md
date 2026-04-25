@@ -1,5 +1,7 @@
 # 라우팅 Signal 함수들
 
+> **읽어야 하는 상황**: 현재 페이지 코드, 뷰 타입, 뷰 타이틀 등 라우팅 상태를 signal로 조회할 때.
+
 라우터 상태를 signal로 반환하는 inject 함수 모음. 생성자/필드 이니셜라이저에서 호출한다.
 
 ## `injectCurrentPageCodeSignal`
@@ -46,10 +48,6 @@ protected readonly viewTitle = injectViewTitleSignal();
 </sd-topbar>
 ```
 
-**실사용 예:**
-- [crud-list.md §3 최소 뼈대](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — topbar 제목
-- [crud-detail.md §3 최소 뼈대](../recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — topbar 제목
-
 ## `injectViewTypeSignal`
 
 현재 뷰의 타입 signal. 모달/페이지/컨트롤 중 하나를 반환한다.
@@ -86,14 +84,7 @@ private readonly _autoViewType = injectViewTypeSignal();
 protected readonly viewType = computed(() => this.override() ?? this._autoViewType());
 ```
 
-> 이 오버라이드는 추상화 복원을 부추기므로 **기본은 자동 판정으로 쓰기**를 권장한다. 상세: [page-modal-container.md §5 뷰 타입 결정](../recipes/page-modal-container.md#5-뷰-타입-결정)
-
-**실사용 예:**
-- [crud-list.md §3 최소 뼈대](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 뷰 타입 기반 topbar 조건부 렌더
-- [crud-list.md §8 확장 D: 선택 모달 전환](../recipes/crud-list.md#8-확장-d-선택-모달-전환) — modal 뷰 분기
-- [crud-detail.md §7 확장 C: modal 뷰](../recipes/crud-detail.md#7-확장-c-modal-뷰) — modal 뷰 분기
-- [crud-detail.md §8 확장 D: control 뷰](../recipes/crud-detail.md#8-확장-d-control-뷰) — control 뷰 분기
-- [page-modal-container.md §5 뷰 타입 결정](../recipes/page-modal-container.md#5-뷰-타입-결정) — 판정 규칙 + 수동 오버라이드
+> 이 오버라이드는 추상화 복원을 부추기므로 **기본은 자동 판정으로 쓰기**를 권장한다.
 
 ## `injectPermsSignal`
 
@@ -127,10 +118,6 @@ protected readonly canEdit = computed(() => this.perms().includes("edit"));
   </div>
 }
 ```
-
-**실사용 예:**
-- [crud-list.md §3 최소 뼈대](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 권한 기반 조건부 렌더
-- [crud-detail.md §3 최소 뼈대](../recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 권한 기반 조건부 렌더
 
 ## `getMenuRouterLinkOption`
 

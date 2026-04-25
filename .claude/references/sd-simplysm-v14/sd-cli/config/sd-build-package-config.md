@@ -1,6 +1,8 @@
-# SdBuildPackageConfig
+# `SdBuildPackageConfig`
 
-`node` / `browser` / `neutral` 타겟 라이브러리 패키지 설정. esbuild + tsc로 빌드된다.
+> **읽어야 하는 상황**: `node`/`browser`/`neutral` 타겟 라이브러리 패키지를 설정할 때. 프론트엔드는 [`SdClientPackageConfig`](./sd-client-package-config.md), 서버는 [`SdServerPackageConfig`](./sd-server-package-config.md) 참조.
+
+esbuild + tsc로 빌드된다.
 
 ```typescript
 export interface SdBuildPackageConfig {

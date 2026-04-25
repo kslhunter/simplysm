@@ -348,7 +348,7 @@ describe("SdSharedDataSelect", () => {
       fixture.detectChanges();
 
       const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
-      mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [2], selectedItems: [] });
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
 
       const event = new MouseEvent("click");
       vi.spyOn(event, "preventDefault");
@@ -382,7 +382,7 @@ describe("SdSharedDataSelect", () => {
       fixture.detectChanges();
 
       const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
-      mockModal.showAsync.mockResolvedValue({ selectedItemKeys: [1, 3], selectedItems: [] });
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [1, 3] });
 
       await ctrl.onModalButtonClick(new MouseEvent("click"));
 

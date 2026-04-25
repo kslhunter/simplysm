@@ -55,7 +55,15 @@ import { SdEvents } from "../../core/events/sd-events";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [NgTemplateOutlet, SdCheckbox, NgIcon, SdPagination, SdAnchor, SdButton, SdResizeDirective],
+  imports: [
+    NgTemplateOutlet,
+    SdCheckbox,
+    NgIcon,
+    SdPagination,
+    SdAnchor,
+    SdButton,
+    SdResizeDirective,
+  ],
   hostDirectives: [
     { directive: SdEvents, outputs: ["keydown.capture", "focus.capture", "blur.capture"] },
   ],
@@ -69,7 +77,7 @@ import { SdEvents } from "../../core/events/sd-events";
     "(blur.capture)": "onBlurCapture($event)",
   },
   template: `
-    @if ((key() || effectivePageCount() > 0) && !hideConfigBar()) {
+    @if ((key() || effectivePageCount() > 1) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
           <sd-button [theme]="'link-primary'" [size]="'sm'" (click)="onConfigButtonClick()">
@@ -138,13 +146,13 @@ import { SdEvents } from "../../core/events/sd-events";
               @for (cell of row; track $index) {
                 @if (!cell.isLastRow) {
                   <th
-                    [class._fixed]="cell.colDef?.fixed"
+                    [class._fixed]="cell.fixed"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
                     [attr.data-c]="cell.colIndex"
                     [attr.title]="cell.text"
                     [style.left.px]="
-                      cell.colDef?.fixed ? fixing.fixedLeftMap().get(cell.colIndex) : null
+                      cell.fixed ? fixing.fixedLeftMap().get(cell.colIndex) : null
                     "
                   >
                     <div class="_p-sheet">
@@ -153,13 +161,14 @@ import { SdEvents } from "../../core/events/sd-events";
                   </th>
                 } @else {
                   <th
-                    [class._fixed]="cell.colDef?.fixed"
+                    [class._fixed]="cell.fixed"
                     class="_last-depth"
                     [class._sort]="cell.colDef && !cell.colDef.disableSorting"
                     [attr.colspan]="cell.colspan > 1 ? cell.colspan : null"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
                     [attr.data-c]="cell.colIndex"
                     [attr.title]="cell.colDef?.tooltip ?? cell.text"
+                    [attr.aria-sort]="getAriaSortValue(cell)"
                     [class.help]="cell.colDef?.tooltip"
                     [style]="getHeaderCellStyle(cell)"
                     (sdResize)="onFixedCellResize($event, cell.colIndex)"
@@ -231,7 +240,11 @@ import { SdEvents } from "../../core/events/sd-events";
           }
         </thead>
         <tbody>
-          @for (item of displayItems(); track trackByFn()(item, $index); let rowIdx = $index) {
+          @for (
+            item of displayItems();
+            track trackByFn()(item, $index) ?? item;
+            let rowIdx = $index
+          ) {
             <tr
               [attr.data-r]="rowIdx"
               (click)="onRowClick(item)"
@@ -254,15 +267,16 @@ import { SdEvents } from "../../core/events/sd-events";
                     [inline]="true"
                     [theme]="'white'"
                     [disabled]="_selectable !== true"
-                    [attr.title]="_selectable"
+                    [attr.title]="getSelectableTooltip(item)"
                   />
                 } @else if (selectMode() === "single") {
                   @let _selectable = selection.getSelectable(item);
                   @if (_selectable === true && selection.getCanChangeFn(item)) {
                     <sd-anchor
                       [theme]="selection.isSelected(item) ? 'primary' : 'gray'"
-                      (pointerdown)="selection.toggle(item)"
-                      [attr.title]="_selectable"
+                      (pointerdown)="$event.stopPropagation(); selection.toggle(item)"
+                      (click)="$event.stopPropagation()"
+                      [attr.title]="getSelectableTooltip(item)"
                     >
                       <ng-icon [svg]="icons.tablerArrowRight" />
                     </sd-anchor>
@@ -288,6 +302,7 @@ import { SdEvents } from "../../core/events/sd-events";
                       [svg]="icons.tablerCaretRight"
                       [style.transform]="isExpanded(item) ? 'rotate(90deg)' : undefined"
                       [class.tx-theme-primary-default]="isExpanded(item)"
+                      [attr.aria-expanded]="getAriaExpanded(item)"
                       (click)="onExpandClick($event, item)"
                     />
                   }
@@ -567,15 +582,15 @@ import { SdEvents } from "../../core/events/sd-events";
     `,
   ],
 })
-export class SdSheet<T> {
+export class SdSheet<TItem, TKey> {
   // Inputs
   key = input<string>();
-  items = input<T[]>([]);
-  trackByFn = input<(item: T, index: number) => unknown>((item) => item);
+  items = input<TItem[]>([]);
+  trackByFn = input.required<(item: TItem, index: number) => TKey>();
   selectMode = input<"single" | "multi">();
   autoSelect = input<"click" | "focus">();
-  getItemSelectableFn = input<(item: T) => boolean | string>();
-  getChildrenFn = input<(item: T, index: number) => T[] | undefined>();
+  getItemSelectableFn = input<(item: TItem) => boolean | string>();
+  getChildrenFn = input<(item: TItem, index: number) => TItem[] | undefined>();
   useAutoSort = input(false, { transform: booleanAttribute });
   visiblePageCount = input(10);
   totalPageCount = input(0);
@@ -583,26 +598,27 @@ export class SdSheet<T> {
   focusMode = input<"row" | "cell">("cell");
   inset = input(false, { transform: booleanAttribute });
   contentStyle = input<string>();
-  getItemCellClassFn = input<(item: T, colKey: string) => string>();
-  getItemCellStyleFn = input<(item: T, colKey: string) => string | undefined>();
+  getItemCellClassFn = input<(item: TItem, colKey: string) => string>();
+  getItemCellStyleFn = input<(item: TItem, colKey: string) => string | undefined>();
   hideConfigBar = input(false, { transform: booleanAttribute });
 
   // Outputs
-  itemKeydown = output<SdSheetItemKeydownEventParam<T>>();
-  cellKeydown = output<SdSheetCellKeydownEventParam<T>>();
+  itemKeydown = output<SdSheetItemKeydownEventParam<TItem>>();
+  cellKeydown = output<SdSheetCellKeydownEventParam<TItem>>();
 
   // Models
-  selectedItems = model<T[]>([]);
-  expandedItems = model<T[]>([]);
+  selectedKeys = model<NonNullable<TKey>[]>([]);
+  expandedItems = model<TItem[]>([]);
   sorts = model<SortingDef[]>([]); // Re-exported from useSortingManager
   currentPage = model(0);
 
   // Content query
   columnControls = contentChildren(SdSheetColumn);
-  columnControlsInput = input<readonly SdSheetColumn[]>();
-  private readonly _effectiveColumnControls = computed(
-    () => this.columnControlsInput() ?? this.columnControls(),
-  );
+  columnControlsInput = input<readonly SdSheetColumn[]>([]);
+  private readonly _effectiveColumnControls = computed(() => [
+    ...this.columnControls(),
+    ...this.columnControlsInput(),
+  ]);
 
   // Injected providers
   private readonly _sdModal = inject(SdModalProvider);
@@ -638,7 +654,7 @@ export class SdSheet<T> {
   });
 
   // Display pipeline (sort → page → expand → display)
-  private readonly _pipeline = useSheetDisplayPipeline<T>({
+  private readonly _pipeline = useSheetDisplayPipeline<TItem>({
     items: this.items,
     useAutoSort: this.useAutoSort,
     sortItems: (items) => this.sorting.sort(items),
@@ -662,7 +678,7 @@ export class SdSheet<T> {
   });
 
   // Cell styling composable
-  private readonly _styling = useSheetCellStyling<T>({
+  private readonly _styling = useSheetCellStyling<TItem>({
     columnDefs: this.layout.columnDefs,
     fixedLeftMap: this.fixing.fixedLeftMap,
     getItemCellStyleFn: this.getItemCellStyleFn,
@@ -683,16 +699,17 @@ export class SdSheet<T> {
   });
 
   // Select row indicator
-  private readonly _selectRowIndicator = injectSheetSelectRowIndicator<T>({
+  private readonly _selectRowIndicator = injectSheetSelectRowIndicator<TItem, TKey>({
     domAccessor: this.domAccessor,
-    selectedItems: this.selectedItems,
+    selectedKeys: this.selectedKeys,
     displayItems: this.displayItems,
+    trackByFn: this.trackByFn,
   });
 
   // Selection manager
-  selection = useSelectionManager<T>({
+  selection = useSelectionManager<TItem, TKey>({
     displayItems: this.displayItems,
-    selectedItems: this.selectedItems,
+    selectedKeys: this.selectedKeys,
     selectMode: this.selectMode,
     getItemSelectableFn: this.getItemSelectableFn,
     trackByFn: this.trackByFn,
@@ -731,25 +748,25 @@ export class SdSheet<T> {
     return col?.summaryTplRef() ?? null;
   }
 
-  getSelectableTooltip(item: T): string | null {
+  getSelectableTooltip(item: TItem): string | undefined {
     const result = this.selection.getSelectable(item);
     if (typeof result === "string") return result;
-    return null;
+    return undefined;
   }
 
-  onRowClick(item: T): void {
+  onRowClick(item: TItem): void {
     if (this.autoSelect() === "click") {
       this.selection.select(item);
     }
   }
 
-  onCellClick(event: Event, item: T): void {
+  onCellClick(event: Event, item: TItem): void {
     if (this.autoSelect() === "click") {
       this.selection.select(item);
     }
   }
 
-  onCellFocus(item: T): void {
+  onCellFocus(item: TItem): void {
     if (this.autoSelect() === "focus") {
       this.selection.select(item);
     }
@@ -766,25 +783,25 @@ export class SdSheet<T> {
     return this.sorting.defMap().get(key) ?? null;
   }
 
-  getItemDef(item: T) {
+  getItemDef(item: TItem) {
     return this.expanding.def(item);
   }
 
   // PERF-005: Set-based lookup for O(1) isExpanded check
   private readonly _expandedSet = computed(() => new Set(this.expandedItems()));
 
-  isExpanded(item: T): boolean {
+  isExpanded(item: TItem): boolean {
     return this._expandedSet().has(item);
   }
 
-  getAriaExpanded(item: T): string | null {
+  getAriaExpanded(item: TItem): string | null {
     if (this.getChildrenFn() == null) return null;
     const def = this.getItemDef(item);
     if (!def.hasChildren) return null;
     return this.isExpanded(item) ? "true" : "false";
   }
 
-  onExpandClick(event: Event, item: T): void {
+  onExpandClick(event: Event, item: TItem): void {
     event.stopPropagation();
     this.expanding.toggle(item);
   }
@@ -819,7 +836,7 @@ export class SdSheet<T> {
   }
 
   onTableResize(event: SdResizeEvent): void {
-    if (!event.widthChanged) return;
+    if (!event.widthChanged && !event.heightChanged) return;
     this._focusIndicator.redraw();
     this._selectRowIndicator.redraw();
   }
@@ -888,11 +905,11 @@ export class SdSheet<T> {
     );
   }
 
-  onItemKeydown(event: KeyboardEvent, item: T): void {
+  onItemKeydown(event: KeyboardEvent, item: TItem): void {
     this.itemKeydown.emit({ item, event });
   }
 
-  onCellKeydown(event: KeyboardEvent, item: T, colKey: string): void {
+  onCellKeydown(event: KeyboardEvent, item: TItem, colKey: string): void {
     this.cellKeydown.emit({ item, key: colKey, event });
   }
 

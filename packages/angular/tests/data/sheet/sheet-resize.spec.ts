@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdOptionEventPlugin } from "../../../src/core/events/sd-option-event.plugin";
@@ -155,5 +155,18 @@ describe("Feature 6.2 Slice 2: 컬럼 리사이징", () => {
 
     // No sort should be applied
     expect(sheetComponent.sorts()).toEqual([]);
+  });
+
+  it("Scenario: 테이블 높이만 변경되어도 포커스/선택 행 인디케이터를 다시 그린다", async () => {
+    const fixture = await stableFixture(SdSheetResizeTest);
+    const sheetComponent = fixture.debugElement.children[0].componentInstance as any;
+
+    const focusRedrawSpy = vi.spyOn(sheetComponent._focusIndicator, "redraw");
+    const selectRedrawSpy = vi.spyOn(sheetComponent._selectRowIndicator, "redraw");
+
+    sheetComponent.onTableResize({ widthChanged: false, heightChanged: true });
+
+    expect(focusRedrawSpy).toHaveBeenCalledOnce();
+    expect(selectRedrawSpy).toHaveBeenCalledOnce();
   });
 });

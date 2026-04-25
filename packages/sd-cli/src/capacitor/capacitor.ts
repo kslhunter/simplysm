@@ -278,7 +278,7 @@ export class Capacitor {
    * 2. cap copy — 웹 에셋 동기화
    * 3. cap run — 기기에서 앱 실행
    */
-  async run(url: string): Promise<void> {
+  async run(url: string, extraReversePorts?: number[]): Promise<void> {
     Capacitor._logger.start(`run 중... (url: ${url})`);
     Capacitor._logger.debug(`server.url 설정: ${url}`);
     await updateServerUrl(this._capPath, url);
@@ -290,11 +290,13 @@ export class Capacitor {
         if (urlObj.hostname === "localhost" || urlObj.hostname === "127.0.0.1") {
           const port = urlObj.port || (urlObj.protocol === "https:" ? "443" : "80");
           Capacitor._logger.debug(`[${platform}] adb reverse tcp:${port} 설정`);
-          try {
-            await this._exec("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], this._capPath);
-          } catch (err) {
-            const errMsg = err instanceof Error ? err.message : String(err);
-            Capacitor._logger.warn(`adb reverse 실패 — USB 연결을 확인하세요: ${errMsg}`);
+          await this._exec("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], this._capPath);
+
+          if (extraReversePorts != null) {
+            for (const extraPort of extraReversePorts) {
+              Capacitor._logger.debug(`[${platform}] adb reverse tcp:${extraPort} 설정`);
+              await this._exec("adb", ["reverse", `tcp:${extraPort}`, `tcp:${extraPort}`], this._capPath);
+            }
           }
         }
       }

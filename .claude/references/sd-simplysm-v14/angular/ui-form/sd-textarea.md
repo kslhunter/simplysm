@@ -1,5 +1,7 @@
 # `SdTextarea`
 
+> **읽어야 하는 상황**: 여러 줄 텍스트를 입력받을 때. 한 줄 입력은 [`SdTextfield`](./sd-textfield.md), 리치 텍스트는 [`SdTiptapEditor`](../features/sd-tiptap-editor.md) 참조.
+
 멀티라인 텍스트 입력 컴포넌트. 내용에 따라 행 수가 자동으로 늘어난다.
 
 ```typescript

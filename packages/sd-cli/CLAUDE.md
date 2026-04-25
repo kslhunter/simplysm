@@ -237,9 +237,9 @@ const orch = new DevOrchestrator(options);
 
 - `config`: `resolvedPkgDir` 초기화
 - `watchChange`: Vitest watch 모드에서 변경 파일 경로 수집 (`pendingWatchChanges`)
-- `buildStart`: `AngularBuildPipeline` 초기화 -> 전체 컴파일 -> `emit`으로 파일 캐싱. watch 재빌드 시 변경 파일 캐시 무효화 후 증분 재컴파일
+- `buildStart`: `SdTsCompiler` 초기화 -> `compileAsync()` -> emit 결과를 내부 맵에 캐싱. watch 재빌드 시 변경 파일로 증분 재컴파일
 - `transform`: `.ts` 파일 요청 시 캐싱된 JS 반환, 인라인 소스맵 분리
-- `buildEnd`: `pipeline` 참조 해제 (정리)
+- `buildEnd`: `SdTsCompiler` 참조 해제 (정리)
 
 ### typecheck-serialization
 

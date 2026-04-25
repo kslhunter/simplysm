@@ -22,7 +22,7 @@ export interface TestItem3 {
 @Component({
   selector: "sd-sheet-basic-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -36,12 +36,13 @@ export class SdSheetBasicTest {
     { name: "Alice", age: 30 },
     { name: "Bob", age: 25 },
   ]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-multi-header-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'col1'" [header]="['그룹A', '세부1']" [width]="'100px'">
         <ng-template [cell]="items()">cell1</ng-template>
       </sd-sheet-column>
@@ -55,12 +56,13 @@ export class SdSheetBasicTest {
 })
 export class SdSheetMultiHeaderTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-summary-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">cell</ng-template>
         <ng-template #summaryTpl>합계</ng-template>
@@ -72,12 +74,13 @@ export class SdSheetMultiHeaderTest {
 })
 export class SdSheetSummaryTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-hidden-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -91,12 +94,13 @@ export class SdSheetSummaryTest {
 })
 export class SdSheetHiddenTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-collapse-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -110,12 +114,13 @@ export class SdSheetHiddenTest {
 })
 export class SdSheetCollapseTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-empty-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -126,6 +131,7 @@ export class SdSheetCollapseTest {
 })
 export class SdSheetEmptyTest {
   items = signal<TestItem[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
@@ -135,6 +141,7 @@ export class SdSheetEmptyTest {
       [items]="items()"
       [getItemCellClassFn]="getClassFn"
       [getItemCellStyleFn]="getStyleFn"
+      [trackByFn]="trackByFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">cell</ng-template>
@@ -146,6 +153,7 @@ export class SdSheetEmptyTest {
 })
 export class SdSheetCellStyleTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
   getClassFn = (_item: TestItem, _colKey: string) => "custom-class";
   getStyleFn = (_item: TestItem, _colKey: string) => "color: red";
 }
@@ -153,7 +161,7 @@ export class SdSheetCellStyleTest {
 @Component({
   selector: "sd-sheet-inset-test",
   template: `
-    <sd-sheet [items]="items()" [inset]="true">
+    <sd-sheet [items]="items()" [inset]="true" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -164,6 +172,7 @@ export class SdSheetCellStyleTest {
 })
 export class SdSheetInsetTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 // --- Slice: 헤더 기능 fixtures (headerStyle, tooltip, headerTplRef) ---
@@ -171,7 +180,7 @@ export class SdSheetInsetTest {
 @Component({
   selector: "sd-sheet-header-style-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [headerStyle]="'color: red; font-weight: bold'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -182,12 +191,13 @@ export class SdSheetInsetTest {
 })
 export class SdSheetHeaderStyleTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-header-style-with-width-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [headerStyle]="'color: red'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -198,12 +208,13 @@ export class SdSheetHeaderStyleTest {
 })
 export class SdSheetHeaderStyleWithWidthTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-tooltip-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [tooltip]="'이 컬럼은 수량입니다'">
         <ng-template [cell]="items()">cell</ng-template>
       </sd-sheet-column>
@@ -214,12 +225,13 @@ export class SdSheetHeaderStyleWithWidthTest {
 })
 export class SdSheetTooltipTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-header-tpl-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template #headerTpl><em class="custom-header">커스텀 헤더</em></ng-template>
         <ng-template [cell]="items()">cell</ng-template>
@@ -231,6 +243,7 @@ export class SdSheetTooltipTest {
 })
 export class SdSheetHeaderTplTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 // --- Slice: 셀 템플릿 타입 안전성 fixtures (Feature 3.1) ---
@@ -238,7 +251,7 @@ export class SdSheetHeaderTplTest {
 @Component({
   selector: "sd-cell-tpl-render-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-item="item">{{ item.name }}</ng-template>
       </sd-sheet-column>
@@ -249,12 +262,13 @@ export class SdSheetHeaderTplTest {
 })
 export class SdSheetCellTplRenderTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-cell-tpl-context-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-item="item" let-idx="index" let-d="depth" let-e="edit">
           <span class="ctx-item">{{ item.name }}</span>
@@ -270,12 +284,13 @@ export class SdSheetCellTplRenderTest {
 })
 export class SdSheetCellTplContextTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-cell-tpl-multi-col-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()" let-item="item">name:{{ item.name }}</ng-template>
       </sd-sheet-column>
@@ -289,6 +304,7 @@ export class SdSheetCellTplContextTest {
 })
 export class SdSheetCellTplMultiColTest {
   items = signal<TestItem[]>([{ name: "Alice", age: 30 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 // --- Slice 2: 컬럼 고정 fixtures ---
@@ -296,7 +312,7 @@ export class SdSheetCellTplMultiColTest {
 @Component({
   selector: "sd-sheet-fixed-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'100px'" [fixed]="true">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -315,12 +331,13 @@ export class SdSheetFixedTest {
   items = signal<TestItem3[]>([
     { name: "Alice", age: 30, city: "Seoul" },
   ]);
+  trackByFn = (item: TestItem3) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-fixed-3col-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'a'" [header]="'A'" [width]="'100px'" [fixed]="true">
         <ng-template [cell]="items()">a</ng-template>
       </sd-sheet-column>
@@ -342,6 +359,7 @@ export class SdSheetFixed3ColTest {
   items = signal<TestItem3[]>([
     { name: "Alice", age: 30, city: "Seoul" },
   ]);
+  trackByFn = (item: TestItem3) => item.name;
 }
 
 // --- Slice 3: 행 선택 fixtures ---
@@ -349,7 +367,12 @@ export class SdSheetFixed3ColTest {
 @Component({
   selector: "sd-sheet-select-single-test",
   template: `
-    <sd-sheet [items]="items()" [selectMode]="'single'" [(selectedItems)]="selectedItems">
+    <sd-sheet
+      [items]="items()"
+      [selectMode]="'single'"
+      [trackByFn]="trackByFn"
+      [(selectedKeys)]="selectedKeys"
+    >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -364,13 +387,19 @@ export class SdSheetSelectSingleTest {
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<TestItem[]>([]);
+  selectedKeys = signal<string[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-select-multi-test",
   template: `
-    <sd-sheet [items]="items()" [selectMode]="'multi'" [(selectedItems)]="selectedItems">
+    <sd-sheet
+      [items]="items()"
+      [selectMode]="'multi'"
+      [trackByFn]="trackByFn"
+      [(selectedKeys)]="selectedKeys"
+    >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -385,7 +414,8 @@ export class SdSheetSelectMultiTest {
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<TestItem[]>([]);
+  selectedKeys = signal<string[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
@@ -394,7 +424,8 @@ export class SdSheetSelectMultiTest {
     <sd-sheet
       [items]="items()"
       [selectMode]="'multi'"
-      [(selectedItems)]="selectedItems"
+      [trackByFn]="trackByFn"
+      [(selectedKeys)]="selectedKeys"
       [getItemSelectableFn]="selectableFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
@@ -411,7 +442,8 @@ export class SdSheetSelectDisabledTest {
     { name: "B", age: 2 },
     { name: "C", age: 3 },
   ]);
-  selectedItems = signal<TestItem[]>([]);
+  selectedKeys = signal<string[]>([]);
+  trackByFn = (item: TestItem) => item.name;
   selectableFn = (item: TestItem): boolean | string => {
     if (item.name === "C") return "권한 없음";
     return true;
@@ -421,7 +453,7 @@ export class SdSheetSelectDisabledTest {
 @Component({
   selector: "sd-sheet-no-select-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -432,6 +464,7 @@ export class SdSheetSelectDisabledTest {
 })
 export class SdSheetNoSelectTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
@@ -441,7 +474,8 @@ export class SdSheetNoSelectTest {
       [items]="items()"
       [selectMode]="'single'"
       [autoSelect]="'click'"
-      [(selectedItems)]="selectedItems"
+      [trackByFn]="trackByFn"
+      [(selectedKeys)]="selectedKeys"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
@@ -456,7 +490,8 @@ export class SdSheetAutoSelectClickTest {
     { name: "A", age: 1 },
     { name: "B", age: 2 },
   ]);
-  selectedItems = signal<TestItem[]>([]);
+  selectedKeys = signal<string[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
@@ -466,7 +501,8 @@ export class SdSheetAutoSelectClickTest {
       [items]="items()"
       [selectMode]="'single'"
       [autoSelect]="'focus'"
-      [(selectedItems)]="selectedItems"
+      [trackByFn]="trackByFn"
+      [(selectedKeys)]="selectedKeys"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
@@ -481,13 +517,14 @@ export class SdSheetAutoSelectFocusTest {
     { name: "A", age: 1 },
     { name: "B", age: 2 },
   ]);
-  selectedItems = signal<TestItem[]>([]);
+  selectedKeys = signal<string[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-focus-mode-row-test",
   template: `
-    <sd-sheet [items]="items()" [focusMode]="'row'">
+    <sd-sheet [items]="items()" [focusMode]="'row'" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -498,6 +535,7 @@ export class SdSheetAutoSelectFocusTest {
 })
 export class SdSheetFocusModeRowTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 // --- Slice 4: 정렬 fixtures ---
@@ -505,7 +543,7 @@ export class SdSheetFocusModeRowTest {
 @Component({
   selector: "sd-sheet-sort-test",
   template: `
-    <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true">
+    <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -524,12 +562,13 @@ export class SdSheetSortTest {
     { name: "Bob", age: 35 },
   ]);
   sorts = signal<SortingDef[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-sort-no-auto-test",
   template: `
-    <sd-sheet [items]="items()" [(sorts)]="sorts">
+    <sd-sheet [items]="items()" [(sorts)]="sorts" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -544,12 +583,13 @@ export class SdSheetSortNoAutoTest {
     { name: "Alice", age: 25 },
   ]);
   sorts = signal<SortingDef[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-sort-disabled-test",
   template: `
-    <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true">
+    <sd-sheet [items]="items()" [(sorts)]="sorts" [useAutoSort]="true" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'" [disableSorting]="true">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -564,6 +604,7 @@ export class SdSheetSortDisabledTest {
     { name: "Alice", age: 25 },
   ]);
   sorts = signal<SortingDef[]>([]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 // --- Slice 5: 트리 구조 + 페이지네이션 fixtures ---
@@ -580,6 +621,7 @@ export interface TreeItem {
       [items]="items()"
       [getChildrenFn]="childrenFn"
       [(expandedItems)]="expandedItems"
+      [trackByFn]="trackByFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
@@ -598,12 +640,13 @@ export class SdSheetTreeTest {
   items = signal<TreeItem[]>([this.parentA, this.parentB]);
   expandedItems = signal<TreeItem[]>([]);
   childrenFn = (item: TreeItem) => item.children;
+  trackByFn = (item: TreeItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-no-tree-test",
   template: `
-    <sd-sheet [items]="items()">
+    <sd-sheet [items]="items()" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -614,6 +657,7 @@ export class SdSheetTreeTest {
 })
 export class SdSheetNoTreeTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
@@ -624,6 +668,7 @@ export class SdSheetNoTreeTest {
       [totalPageCount]="3"
       [(currentPage)]="currentPage"
       [visiblePageCount]="10"
+      [trackByFn]="trackByFn"
     >
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
@@ -639,12 +684,13 @@ export class SdSheetPaginationTest {
     { name: "B", age: 2 },
   ]);
   currentPage = signal(0);
+  trackByFn = (item: TestItem) => item.name;
 }
 
 @Component({
   selector: "sd-sheet-no-pagination-test",
   template: `
-    <sd-sheet [items]="items()" [totalPageCount]="1">
+    <sd-sheet [items]="items()" [totalPageCount]="1" [trackByFn]="trackByFn">
       <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
         <ng-template [cell]="items()">name</ng-template>
       </sd-sheet-column>
@@ -655,5 +701,6 @@ export class SdSheetPaginationTest {
 })
 export class SdSheetNoPaginationTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
+  trackByFn = (item: TestItem) => item.name;
 }
 

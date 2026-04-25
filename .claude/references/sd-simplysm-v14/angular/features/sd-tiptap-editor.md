@@ -1,5 +1,7 @@
 # `SdTiptapEditor`
 
+> **읽어야 하는 상황**: 리치 텍스트(HTML) 편집기가 필요할 때. 단순 텍스트는 [`SdTextarea`](../ui-form/sd-textarea.md) 참조.
+
 TipTap 기반 리치 텍스트 에디터 컴포넌트. 툴바를 통해 텍스트 서식(제목, 굵게, 기울임, 색상, 정렬 등)을 제어한다.
 
 ```typescript

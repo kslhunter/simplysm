@@ -1,4 +1,6 @@
-# SdBrowserSupportConfig
+# `SdBrowserSupportConfig`
+
+> **읽어야 하는 상황**: 클라이언트 패키지의 브라우저 호환성(browserslist, PostCSS 플러그인, 레거시 모듈)을 설정할 때.
 
 클라이언트 패키지의 브라우저 지원 설정. [`SdClientPackageConfig`](./sd-client-package-config.md)의 `browserSupport` 필드에 사용한다.
 

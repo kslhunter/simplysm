@@ -110,6 +110,37 @@ describe("LOGIC-015: header merge spanStartHeaders tracking", () => {
     });
   });
 
+  it("동일 그룹 헤더라도 fixed 경계는 병합하지 않고 fixed 상태를 보존한다", () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const cols = signal([
+        createMockColumnControl({ key: "a", header: ["X", "A1"], fixed: true, ordering: 0 }),
+        createMockColumnControl({ key: "b", header: ["X", "B1"], fixed: true, ordering: 1 }),
+        createMockColumnControl({ key: "c", header: ["X", "C1"], fixed: false, ordering: 2 }),
+      ] as any);
+
+      const engine = useSheetLayoutEngine({
+        columnControls: cols as any,
+        config: signal(undefined),
+      });
+
+      const table = engine.headerDefTable();
+      expect(table[0].length).toBe(2);
+      expect(table[0][0]).toMatchObject({
+        text: "X",
+        fixed: true,
+        colspan: 2,
+        colIndex: 0,
+      });
+      expect(table[0][1]).toMatchObject({
+        text: "X",
+        fixed: false,
+        colspan: 1,
+        colIndex: 2,
+      });
+    });
+  });
+
   it("연속 컬럼 중간에 다른 상위 헤더가 있으면 머지되지 않는다", () => {
     TestBed.configureTestingModule({});
     TestBed.runInInjectionContext(() => {

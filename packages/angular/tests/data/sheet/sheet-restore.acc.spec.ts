@@ -18,7 +18,7 @@ describe("Feature 4.1: sd-sheet 복원", () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const sdSheet = fixture.debugElement.children[0].componentInstance as SdSheet<unknown>;
+      const sdSheet = fixture.debugElement.children[0].componentInstance as SdSheet<unknown, unknown>;
       const fn = sdSheet.trackByFn();
       expect(fn).toBeDefined();
 

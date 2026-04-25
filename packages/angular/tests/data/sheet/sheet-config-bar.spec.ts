@@ -6,6 +6,7 @@ import {
   SdSheetConfigBarKeyTest,
   SdSheetConfigBarPageTest,
   SdSheetNoConfigBarTest,
+  SdSheetOnePageNoConfigBarTest,
   SdSheetHideConfigBarTest,
 } from "./sd-sheet-edit-test.fixture";
 
@@ -46,6 +47,14 @@ describe("Feature 6.2 Slice 3: config bar", () => {
 
   it("Scenario: key도 없고 페이지네이션도 불필요하면 config bar 미표시", async () => {
     const fixture = await stableFixture(SdSheetNoConfigBarTest);
+    const host = fixture.nativeElement as HTMLElement;
+
+    const toolBar = host.querySelector("._tool");
+    expect(toolBar).toBeFalsy();
+  });
+
+  it("Scenario: key가 없고 페이지가 1개뿐이면 config bar 미표시", async () => {
+    const fixture = await stableFixture(SdSheetOnePageNoConfigBarTest);
     const host = fixture.nativeElement as HTMLElement;
 
     const toolBar = host.querySelector("._tool");

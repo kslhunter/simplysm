@@ -1,6 +1,8 @@
-# SdConfig
+# `SdConfig`
 
-`sd.config.ts` 설정 타입. `sd.config.ts`는 반드시 [`SdConfigFn`](#sdconfigfn) 형식의 함수를 default export해야 한다.
+> **읽어야 하는 상황**: `sd.config.ts` 파일을 처음 작성하거나 최상위 설정 구조(`packages`, `replaceDeps`, `postPublish`)를 수정할 때. 개별 패키지 설정은 [`SdPackageConfig`](./sd-package-config.md) 참조.
+
+`sd.config.ts`는 반드시 [`SdConfigFn`](#sdconfigfn) 형식의 함수를 default export해야 한다.
 
 ## When to use
 

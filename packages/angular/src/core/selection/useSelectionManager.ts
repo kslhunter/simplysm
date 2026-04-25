@@ -1,27 +1,33 @@
 import { computed, type Signal, type WritableSignal } from "@angular/core";
 import { obj } from "@simplysm/core-common";
 
-export function useSelectionManager<T>(options: {
-  displayItems: Signal<T[]>;
-  selectedItems: WritableSignal<T[]>;
+export function useSelectionManager<TItem, TKey>(options: {
+  displayItems: Signal<TItem[]>;
+  selectedKeys: WritableSignal<NonNullable<TKey>[]>;
   selectMode: Signal<"single" | "multi" | undefined>;
-  getItemSelectableFn: Signal<((item: T) => boolean | string) | undefined>;
-  trackByFn: Signal<(item: T, index: number) => unknown>;
+  getItemSelectableFn: Signal<((item: TItem) => boolean | string) | undefined>;
+  trackByFn: Signal<(item: TItem, index: number) => TKey>;
 }): {
   hasSelectable: Signal<boolean>;
   isAllSelected: Signal<boolean>;
-  getSelectable(item: T): true | string | undefined;
-  getCanChangeFn(item: T): () => boolean;
-  select(item: T): void;
-  deselect(item: T): void;
-  toggle(item: T): void;
+  getSelectable(item: TItem): true | string | undefined;
+  getCanChangeFn(item: TItem): () => boolean;
+  select(item: TItem): void;
+  deselect(item: TItem): void;
+  toggle(item: TItem): void;
   toggleAll(): void;
-  isSelected(item: T): boolean;
+  isSelected(item: TItem): boolean;
 } {
   const selectableItems = computed(() => {
+    const trackFn = options.trackByFn();
+    const idxMap = new Map<TItem, number>();
+    options.displayItems().forEach((it, i) => idxMap.set(it, i));
     const fn = options.getItemSelectableFn();
-    if (fn == null) return options.displayItems();
-    return options.displayItems().filter((item) => fn(item) === true);
+    return options.displayItems().filter((item) => {
+      if (trackFn(item, idxMap.get(item) ?? 0) == null) return false;
+      if (fn == null) return true;
+      return fn(item) === true;
+    });
   });
 
   const hasSelectable = computed(() => {
@@ -29,14 +35,9 @@ export function useSelectionManager<T>(options: {
   });
 
   const displayItemIndexMap = computed(() => {
-    const map = new Map<T, number>();
+    const map = new Map<TItem, number>();
     options.displayItems().forEach((it, i) => map.set(it, i));
     return map;
-  });
-
-  const selectedKeys = computed(() => {
-    const fn = options.trackByFn();
-    return options.selectedItems().map((it, i) => fn(it, i));
   });
 
   function isKeyEqual(a: unknown, b: unknown): boolean {
@@ -44,7 +45,7 @@ export function useSelectionManager<T>(options: {
     return obj.equal(a, b);
   }
 
-  function keyOf(item: T): unknown {
+  function keyOf(item: TItem): TKey {
     const idx = displayItemIndexMap().get(item);
     return options.trackByFn()(item, idx ?? 0);
   }
@@ -52,7 +53,7 @@ export function useSelectionManager<T>(options: {
   const isAllSelected = computed(() => {
     const items = selectableItems();
     if (items.length === 0) return false;
-    const keys = selectedKeys();
+    const keys = options.selectedKeys();
     const fn = options.trackByFn();
     return items.every((it, i) => {
       const key = fn(it, i);
@@ -60,9 +61,10 @@ export function useSelectionManager<T>(options: {
     });
   });
 
-  function getSelectable(item: T): true | string | undefined {
+  function getSelectable(item: TItem): true | string | undefined {
     const mode = options.selectMode();
     if (mode == null) return undefined;
+    if (keyOf(item) == null) return undefined;
     const fn = options.getItemSelectableFn();
     if (fn == null) return true;
     const result = fn(item);
@@ -71,40 +73,40 @@ export function useSelectionManager<T>(options: {
     return result; // string reason
   }
 
-  function getCanChangeFn(item: T): () => boolean {
+  function getCanChangeFn(item: TItem): () => boolean {
     return () => {
       const selectable = getSelectable(item);
       return selectable === true;
     };
   }
 
-  function select(item: T): void {
+  function select(item: TItem): void {
     const mode = options.selectMode();
     if (mode == null) return;
     if (getSelectable(item) !== true) return;
 
+    const key = keyOf(item);
+    if (key == null) return;
+
     if (mode === "single") {
-      options.selectedItems.set([item]);
+      options.selectedKeys.set([key]);
       return;
     }
 
-    const key = keyOf(item);
-    const fn = options.trackByFn();
-    options.selectedItems.update((arr) => {
-      if (arr.some((it, i) => isKeyEqual(fn(it, i), key))) return arr;
-      return [...arr, item];
+    options.selectedKeys.update((arr) => {
+      if (arr.some((k) => isKeyEqual(k, key))) return arr;
+      return [...arr, key];
     });
   }
 
-  function deselect(item: T): void {
+  function deselect(item: TItem): void {
     const key = keyOf(item);
-    const fn = options.trackByFn();
-    options.selectedItems.update((arr) =>
-      arr.filter((it, i) => !isKeyEqual(fn(it, i), key)),
+    options.selectedKeys.update((arr) =>
+      arr.filter((k) => !isKeyEqual(k, key)),
     );
   }
 
-  function toggle(item: T): void {
+  function toggle(item: TItem): void {
     if (isSelected(item)) {
       deselect(item);
     } else {
@@ -119,27 +121,23 @@ export function useSelectionManager<T>(options: {
 
     if (isAllSelected()) {
       const keysToRemove = selectable.map((it) => fn(it, idxMap.get(it) ?? 0));
-      options.selectedItems.update((arr) =>
-        arr.filter((it, i) => {
-          const k = fn(it, i);
-          return !keysToRemove.some((rk) => isKeyEqual(rk, k));
-        }),
+      options.selectedKeys.update((arr) =>
+        arr.filter((k) => !keysToRemove.some((rk) => isKeyEqual(rk, k))),
       );
     } else {
-      options.selectedItems.update((arr) => {
-        const existingKeys = arr.map((it, i) => fn(it, i));
-        const toAdd = selectable.filter((it) => {
-          const k = fn(it, idxMap.get(it) ?? 0);
-          return !existingKeys.some((ek) => isKeyEqual(ek, k));
-        });
-        return [...arr, ...toAdd];
+      options.selectedKeys.update((arr) => {
+        const newKeys = selectable
+          .map((it) => fn(it, idxMap.get(it) ?? 0))
+          .filter((k): k is NonNullable<TKey> => k != null)
+          .filter((k) => !arr.some((ek) => isKeyEqual(ek, k)));
+        return [...arr, ...newKeys];
       });
     }
   }
 
-  function isSelected(item: T): boolean {
+  function isSelected(item: TItem): boolean {
     const key = keyOf(item);
-    return selectedKeys().some((k) => isKeyEqual(k, key));
+    return options.selectedKeys().some((k) => isKeyEqual(k, key));
   }
 
   return {

@@ -1,5 +1,7 @@
 # `SdTextfield`
 
+> **읽어야 하는 상황**: 한 줄 텍스트, 숫자, 날짜, 시간, 색상 등을 입력받을 때. 여러 줄 텍스트는 [`SdTextarea`](./sd-textarea.md), 리치 텍스트는 [`SdTiptapEditor`](../features/sd-tiptap-editor.md) 참조.
+
 텍스트 입력 컴포넌트. 13가지 타입을 지원한다.
 
 ```typescript
@@ -62,14 +64,6 @@ class SdTextfield<K extends keyof SdTextfieldTypes> {
 | `theme` | input | `string \| undefined` | `undefined` | 테마 |
 
 **스타일 적용**: 입력 영역 스타일은 `inputClass`/`inputStyle`을 사용한다. 호스트(`<sd-textfield>`)에 직접 `class`/`style`을 줘도 입력 영역 외형은 변경되지 않는다.
-
-### 실사용 예
-
-- [crud-list.md §3 최소 뼈대: 조회 전용 page](../recipes/crud-list.md#3-최소-뼈대-조회-전용-page) — 필터 영역 텍스트 입력
-- [crud-list.md §5 확장 A: inline 편집/저장](../recipes/crud-list.md#5-확장-a-inline-편집저장) — 시트 셀 내 편집 (inset+sm, readonly=!edit)
-- [crud-detail.md §3 최소 뼈대: 읽기 전용 상세 폼](../recipes/crud-detail.md#3-최소-뼈대-읽기-전용-상세-폼) — 읽기 전용 필드 (readonly=true)
-- [crud-detail.md §5 확장 A: 편집/저장](../recipes/crud-detail.md#5-확장-a-편집저장) — 편집 가능 필드 (disabled=!canEdit)
-- [crud-detail.md §10 확장 F: 복합 상세](../recipes/crud-detail.md#10-확장-f-복합-상세-내부-sd-sheet) — 하위 컬렉션 시트 셀 내 편집
 
 ## Related Types
 
