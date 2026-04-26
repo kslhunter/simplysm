@@ -1,0 +1,21 @@
+{
+  "name": "@simplysm/sd-codex",
+  "version": "14.0.53",
+  "description": "심플리즘 패키지 - Codex 셋업",
+  "author": "심플리즘",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm.git",
+    "directory": "packages/sd-codex"
+  },
+  "type": "module",
+  "files": [
+    "scripts",
+    "codex"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
+    "prepack": "node scripts/sync.mjs"
+  }
+}

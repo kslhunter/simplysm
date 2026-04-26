@@ -1,129 +1,108 @@
-# Simplysm
+# Simplysm 작업 지침
 
-pnpm 기반 TypeScript ESM 모노레포. 루트 패키지는 `private: true`이며 공개 패키지는
-`packages/*` 아래에 둔다.
+이 파일은 Codex가 `simplysm` 저장소에서 작업할 때 따르는 루트 지침이다. 프로젝트 소개나
+기술 스택 설명이 아니라, 작업을 시작하고 수정 범위를 결정하고 검증하는 기준만 둔다.
+
+## 먼저 읽기
+
+작업을 시작하기 전에 아래 문서를 읽는다. 상세 규칙은 이 파일에 복사하지 않고 원문을 기준으로
+판단한다.
+
+- [sd-codex-rules.md](.codex/rules/sd-codex-rules.md)
+- [sd-options.md](.codex/rules/sd-options.md)
+- [sd-simplysm-v14.md](.codex/rules/sd-simplysm-v14.md)
+
+## 세션 시작 체크
+
+1. 사용자 요청이 코드 수정, 문서 수정, 분석, 검증 중 무엇인지 먼저 구분한다.
+2. 관련 패키지를 찾고 `packages/<pkg>/AGENTS.md`가 있으면 읽는다.
+3. `@simplysm/*`를 import하는 파일을 만들거나 고치면, 작업 전에 해당 문서를 읽는다.
+   문서 위치는 `.codex/references/sd-simplysm-v14/<pkg>/README.md`이다.
+4. 기존 변경사항은 사용자 작업으로 간주한다. 되돌리거나 덮어쓰기 전에 반드시 현재 diff를 확인한다.
+5. 모호한 요구사항은 추측으로 진행하지 않는다. 필요한 경우 사용자에게 확인하고 응답을 기다린다.
 
 ## 작업 언어
 
 - 사용자 안내, 작업 요약, 저장소 문서는 별도 요청이 없으면 한국어로 작성한다.
 - 공개 소비자 문서는 패키지를 사용하는 LLM이 바로 코드를 작성할 수 있는 작업 라우터 형태로 작성한다.
 
-## 프로젝트 정보
+## 어디를 볼지
 
-- 이름: `simplysm`
-- 설명: 심플리즘 패키지
-- 패키지 매니저: pnpm (`pnpm-lock.yaml`)
-- 문서 루트: `.codex/references/sd-simplysm-v14`
+요청을 받으면 아래 기준으로 첫 조사 위치를 정한다.
 
-## 모노레포 구조
+- Angular UI, 컴포넌트, 프로바이더: `packages/angular`
+- 브라우저 유틸리티: `packages/core-browser`
+- 플랫폼 중립 유틸리티: `packages/core-common`
+- Node.js 유틸리티: `packages/core-node`
+- Excel 처리: `packages/excel`
+- FTP/SFTP 스토리지: `packages/storage`
+- ORM 쿼리·스키마: `packages/orm-common`
+- ORM Node 드라이버: `packages/orm-node`, `tests/orm`
+- 서비스 공통 프로토콜: `packages/service-common`
+- 서비스 클라이언트: `packages/service-client`, `tests/service`
+- 서비스 서버: `packages/service-server`, `tests/service`
+- Capacitor 플러그인: `packages/capacitor-plugin-*`
+- 빌드, 검사, 배포 CLI: `packages/sd-cli`, `tests/sd-cli-client`, `tests/sd-cli-server`
+- Codex 설정 동기화와 스킬: `packages/sd-codex`, `.codex/skills`, `.codex/rules`
+- Claude 설정 동기화: `packages/sd-claude`
+- ESLint 규칙과 공유 설정: `packages/lint`, `eslint.config.ts`
 
-워크스페이스 경로는 `packages/*`, `tests/*`이다.
+## 수정 경계
 
-| 패키지 | 역할 |
-|--------|------|
-| `angular` | Angular UI 컴포넌트와 프로바이더 |
-| `capacitor-plugin-auto-update` | Capacitor 앱 자동 업데이트 |
-| `capacitor-plugin-file-system` | Capacitor 파일 시스템 브리지 |
-| `capacitor-plugin-intent` | Android Intent 브리지 |
-| `capacitor-plugin-usb-storage` | USB 저장소 브리지 |
-| `core-browser` | 브라우저 전용 코어 유틸리티 |
-| `core-common` | 플랫폼 중립 코어 유틸리티 |
-| `core-node` | Node.js 코어 유틸리티 |
-| `excel` | Excel 파일 읽기와 쓰기 |
-| `lint` | Simplysm ESLint 플러그인과 설정 |
-| `orm-common` | ORM 공통 쿼리와 스키마 |
-| `orm-node` | Node.js ORM 드라이버 |
-| `sd-claude` | Claude Code 설정 동기화 스크립트 |
-| `sd-cli` | 빌드, 검사, 배포 CLI |
-| `service-client` | 서비스 클라이언트 런타임 |
-| `service-common` | 서비스 공통 프로토콜과 타입 |
-| `service-server` | Fastify 기반 서비스 서버 |
-| `storage` | FTP/SFTP 스토리지 클라이언트 |
+- 워크스페이스는 `packages/*`, `tests/*`이다.
+- 루트 설정 파일은 전체 워크스페이스 동작이 바뀔 때만 수정한다.
+  대상은 `package.json`, `pnpm-workspace.yaml`, `tsconfig.json`, `eslint.config.ts`, `sd.config.ts`이다.
+- `pnpm-lock.yaml`은 의존성 추가, 제거, 버전 변경이 있을 때만 갱신한다.
+- 공개 API를 바꾸면 같은 작업에서 소비자 문서와 `_api-index.md` 갱신 여부를 확인한다.
+- 패키지 내부 규칙은 해당 패키지의 `AGENTS.md`에 둔다. 루트 문서에 패키지 내부 구조를 길게 반복하지 않는다.
+- 생성물은 생성 명령을 실행한 경우에만 갱신한다.
 
-## 기술 스택
-
-- TypeScript 5.9, ESM, `moduleResolution: bundler`
-- Angular 21 계열, Vite 7, Vitest 4
-- Playwright browser provider, Chromium
-- ESLint 9 flat config, `typescript-eslint`, `angular-eslint`
-- Fastify, WebSocket, ORM 드라이버(`mysql2`, `pg`, `tedious`)
-- Capacitor plugin 패키지, esbuild, Sass
-
-## 명령어
-
-### 개발
+## 명령 실행
 
 ```bash
-pnpm dev [-- --target <pkg>]             # 서버 패키지를 개발 모드로 실행
-pnpm watch [-- --target <pkg>]           # 라이브러리 패키지를 watch 빌드
-pnpm sd-cli device --target <pkg>        # 네이티브 앱을 디바이스/데스크톱에서 실행
+pnpm check [--target <pkg>]           # 타입체크와 lint를 함께 확인
+pnpm typecheck [--target <pkg>]       # 타입 오류만 확인
+pnpm lint [--target <pkg>]            # lint 오류만 확인
+pnpm test                             # 전체 Vitest 테스트
+vitest run <path>                     # 변경 범위에 맞는 테스트 파일 실행
 ```
-
-### 빌드와 배포
 
 ```bash
-pnpm build [-- --target <pkg>]           # 프로덕션 빌드
-pnpm pub [-- --target <pkg>]             # 빌드 후 패키지 배포
-pnpm pub:no-build [-- --target <pkg>]    # 빌드 없이 배포 경로 실행
+pnpm dev [--target <pkg>]             # 서버 패키지 개발 모드
+pnpm watch [--target <pkg>]           # 라이브러리 watch 빌드
+pnpm build [--target <pkg>]           # 프로덕션 빌드
+pnpm sd-cli --help                    # sd-cli 옵션 확인
 ```
 
-### 코드 품질
+금지 명령과 우회 금지는 `.codex/rules/sd-codex-rules.md`를 따른다. 특히 `git reset`,
+`git checkout`, `git restore`, `git clean`, `git stash`, `sed`, `npx tsc`, `npx eslint`를
+사용하지 않는다.
 
-```bash
-pnpm check [-- --target <pkg>]           # 타입체크와 lint 병렬 실행
-pnpm typecheck [-- --target <pkg>]       # TypeScript 타입 검사
-pnpm lint [-- --target <pkg>]            # lint 검사
-pnpm test                                # 전체 Vitest 테스트
-pnpm test -- <path>                      # 특정 테스트 파일 실행
-```
+## 코드 작성 기준
 
-### 도구
+- TypeScript ESM 기준으로 작성하고, `verbatimModuleSyntax`에 맞춰 type-only import를 분리한다.
+- `@simplysm/*`는 공개 진입점 기준으로 import한다. `@simplysm/<pkg>/src/...` 하위 경로 import는 금지한다.
+- 내부 모듈 import에는 `.js` 확장자를 붙이지 않는다.
+- 정적 import를 우선한다. 정적 import가 불가능한 경우에만 동적 `import()`를 사용한다.
+- 하위 폴더에 re-export 전용 `index.ts`를 만들지 않는다. 공개 export는 `src/index.ts`에서 관리한다.
+- `Buffer`/`buffer`, `events`/`eventemitter3`, 직접 `process.env`/`import.meta.env` 접근을 사용하지 않는다.
+- hard private(`#field`) 대신 TypeScript `private` 멤버를 사용한다.
+- 일반 값 비교는 `===`/`!==`, nullish 검사는 `== null`/`!= null`을 사용한다.
+- 타입 추론을 약화하는 수정이나 불필요한 `as` 캐스팅을 추가하지 않는다.
 
-```bash
-pnpm sd-cli --help                       # sd-cli 명령과 옵션 확인
-pnpm sd-cli replace-deps                 # sd.config.ts replaceDeps 기준 로컬 소스 연결
-pnpm cc-auth                             # Claude Code 인증 스크립트 실행
-```
+## 검증 기준
 
-## 아키텍처
+- 타입 또는 lint에 영향을 주는 변경은 `pnpm check [--target <pkg>]`를 우선 실행한다.
+- 런타임 로직을 바꾸면 관련 `vitest run <path>`를 실행한다.
+- ORM 통합 테스트는 `tests/orm/docker-compose.test.yml`의 DB 서비스가 필요하다.
+- 서비스 통합 테스트는 `tests/service`를 우선 확인한다.
+- `sd-cli` 번들·실행 동작은 `tests/sd-cli-client`, `tests/sd-cli-server`를 확인한다.
+- 검증을 실행하지 못하면 최종 응답에 실행하지 못한 이유와 남은 위험을 적는다.
 
-의존 방향은 기능 패키지에서 코어 패키지로 흐른다. `core-common`은 플랫폼 중립 기반
-패키지이고, 브라우저/Node 전용 패키지는 이를 확장한다.
+## 구조 판단 기준
 
-```text
-UI:        angular -> core-browser/core-common/service-client/service-common
-Capacitor: auto-update -> file-system/core-browser/core-common/service-*
-Service:   service-server -> service-common/orm-node/core-node
-           service-client -> service-common/orm-common/core-common
-ORM:       orm-node -> orm-common/core-common
-Core:      core-node/core-browser -> core-common
-Tools:     sd-cli -> core-node/core-common/storage
-Storage:   storage -> core-common
-Lint:      lint -> ESLint/Angular ESLint 플러그인
-Scripts:   sd-claude -> scripts/claude 자산
-```
-
-루트 통합 테스트는 `tests/orm`, `tests/service`, `tests/sd-cli-client`,
-`tests/sd-cli-server`에 둔다. 패키지 단위 테스트는 `packages/<package>/tests`에 둔다.
-
-## 코딩 규칙
-
-- TypeScript는 `strict`, `noImplicitOverride`, `noImplicitReturns`,
-  `noPropertyAccessFromIndexSignature`, `verbatimModuleSyntax`를 켠다.
-- `@simplysm/*` import는 `packages/*/src/index.ts` 공개 진입점으로 해석한다.
-- Prettier는 2칸 들여쓰기, 줄 너비 100, 세미콜론, trailing comma, LF를 사용한다.
-- ESLint는 미사용 import, `console.*`, hard private, Simplysm 하위 경로 import를 오류로 처리한다.
-- Node `Buffer`/`buffer`, `events`/`eventemitter3`, 직접 `process.env`/`import.meta.env`
-  접근을 금지한다.
-- 일반 동등 비교는 `===`/`!==`를 사용하고, nullish 검사는 `== null`/`!= null`을 사용한다.
-
-## 테스트
-
-Vitest 프로젝트는 Node, browser Playwright, Angular, `sd-cli-*`, ORM, service 통합 테스트로
-분리된다. ORM 통합 테스트는 `tests/orm/docker-compose.test.yml`의 DB 서비스가 필요하다.
-
-## 무조건 먼저 읽어야 할 자료
-
-- [sd-codex-rules.md](.codex/rules/sd-codex-rules.md)
-- [sd-options.md](.codex/rules/sd-options.md)
-- [sd-simplysm-v14.md](.codex/rules/sd-simplysm-v14.md)
+- 의존 방향은 기능 패키지에서 코어 패키지로 흐르게 유지한다.
+- `core-common`에는 플랫폼 중립 코드만 둔다.
+- 브라우저 전용 코드는 `core-browser`, Node.js 전용 코드는 `core-node`에 둔다.
+- 서비스 서버 변경은 `service-common`, `service-client`, `orm-node`와의 계약 영향을 확인한다.
+- ORM Node 변경은 `orm-common`의 쿼리·스키마 계약과 `tests/orm` 영향을 확인한다.

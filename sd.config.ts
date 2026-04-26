@@ -24,6 +24,15 @@ const config: SdConfigFn = () => ({
         args: ["scripts/sync.mjs"],
       },
     },
+    "sd-codex": {
+      target: "scripts",
+      publish: { type: "npm" },
+      watch: {
+        target: ["../../.codex/**/sd-*", "../../.codex/**/sd-*/**"],
+        cmd: "node",
+        args: ["scripts/sync.mjs"],
+      },
+    },
     "service-client": { target: "neutral", publish: { type: "npm" } },
     "service-common": { target: "neutral", publish: { type: "npm" } },
     "service-server": { target: "node", publish: { type: "npm" } },

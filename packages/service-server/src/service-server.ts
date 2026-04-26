@@ -18,7 +18,7 @@ import type { WebSocket } from "ws";
 import { signJwt, verifyJwt } from "./auth/jwt-manager";
 import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
-import { handleV1Connection } from "./legacy/v1-auto-update-handler";
+import { handleV1Connection, type V1AutoUpdateMethods } from "./legacy/v1-auto-update-handler";
 import { createServiceContext } from "./core/define-service";
 import consola from "consola";
 
@@ -46,7 +46,8 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   constructor(readonly options: ServiceServerOptions) {
     super();
 
-    this._jwtSecret = options.auth != null && options.auth !== false ? options.auth.jwtSecret : undefined;
+    this._jwtSecret =
+      options.auth != null && options.auth !== false ? options.auth.jwtSecret : undefined;
 
     // SSL 설정 (동기)
     // 참고: Fastify HTTPS는 Buffer 타입이 필요함 (Uint8Array를 직접 사용할 수 없음)
@@ -164,20 +165,23 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         }
         this._wsHandler.addSocket(socket, clientId, clientName, req);
       } else {
-        // V1 레거시 지원 (자동 업데이트 전용)
+        // V1 레거시 지원
         const autoUpdateDef = this.options.services.find((s) => s.name === "AutoUpdate");
-        if (autoUpdateDef == null) {
+        const legacyV1Handlers = this.options.legacyV1Handlers ?? [];
+        if (autoUpdateDef == null && legacyV1Handlers.length < 1) {
           socket.close(1008, "AutoUpdate 서비스가 설정되지 않았습니다");
           return;
         }
 
-        const legacyCtx = createServiceContext(this, undefined, undefined, {});
-        const autoUpdateMethods = autoUpdateDef.factory(legacyCtx) as {
-          getLastVersion: (platform: string) => Promise<any>;
-        };
-
-        handleV1Connection(socket, autoUpdateMethods, (name) => {
-          legacyCtx.legacy = { clientName: name };
+        handleV1Connection(socket, {
+          serviceContextFactory: (request) =>
+            createServiceContext(this, undefined, undefined, { clientName: request.clientName }),
+          handlers: legacyV1Handlers,
+          autoUpdateMethodsFactory:
+            autoUpdateDef == null
+              ? undefined
+              : ({ serviceContext }) =>
+                  createV1AutoUpdateMethods(autoUpdateDef.factory(serviceContext)),
         });
       }
     };
@@ -221,9 +225,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this.emit("close");
   }
 
-  getEvent<TEventDef extends ServiceEventDef>(
-    eventName: string,
-  ): ServerEventProxy<TEventDef> {
+  getEvent<TEventDef extends ServiceEventDef>(eventName: string): ServerEventProxy<TEventDef> {
     return {
       emit: (infoSelector, data) => this.emitEvent<TEventDef>(eventName, infoSelector, data),
     };
@@ -281,4 +283,17 @@ export function createServiceServer<TAuthInfo = unknown>(
   options: ServiceServerOptions,
 ): ServiceServer<TAuthInfo> {
   return new ServiceServer<TAuthInfo>(options);
+}
+
+function createV1AutoUpdateMethods(
+  methods: Record<string, ((...args: any[]) => any) | undefined>,
+): V1AutoUpdateMethods {
+  const getLastVersion = methods["getLastVersion"];
+  if (getLastVersion == null) {
+    throw new Error("AutoUpdate 서비스에 getLastVersion 메서드가 없습니다.");
+  }
+
+  return {
+    getLastVersion: (platform) => getLastVersion(platform),
+  };
 }

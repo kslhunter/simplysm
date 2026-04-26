@@ -69,14 +69,21 @@ export async function runCheck(options: CheckOptions): Promise<void> {
           formattedOutput: r.formattedOutput,
         });
 
-        // Lint 결과: lint가 포함된 경우에만
-        if (needsLint && r.lint != null) {
-          let lintResult = r.lint;
+        // Lint 결과: 엔진 lint 결과가 없더라도 scripts 패키지 lint는 별도 실행한다.
+        if (needsLint) {
+          let lintResult: LintResult = r.lint ?? {
+            success: true,
+            errorCount: 0,
+            warningCount: 0,
+            formattedOutput: "",
+          };
 
           // scripts 패키지가 있으면 별도 runLintInWorker 호출 후 결과 병합
-          if (r.scriptsPackagePaths != null && r.scriptsPackagePaths.length > 0) {
+          const scriptsPackagePaths = r.scriptsPackagePaths ?? [];
+          const hasScriptsPackages = scriptsPackagePaths.length > 0;
+          if (hasScriptsPackages) {
             const scriptsLintResult: LintResult = await runLintInWorker({
-              targets: r.scriptsPackagePaths,
+              targets: scriptsPackagePaths,
               fix: options.fix,
               timing: false,
             });
@@ -90,13 +97,15 @@ export async function runCheck(options: CheckOptions): Promise<void> {
             };
           }
 
-          results.push({
-            name: "LINT",
-            success: lintResult.success,
-            errorCount: lintResult.errorCount,
-            warningCount: lintResult.warningCount,
-            formattedOutput: lintResult.formattedOutput,
-          });
+          if (r.lint != null || hasScriptsPackages) {
+            results.push({
+              name: "LINT",
+              success: lintResult.success,
+              errorCount: lintResult.errorCount,
+              warningCount: lintResult.warningCount,
+              formattedOutput: lintResult.formattedOutput,
+            });
+          }
         }
 
         return results;

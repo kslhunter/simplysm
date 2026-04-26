@@ -264,6 +264,27 @@ describe("runCheck", () => {
       expect(successArgs.some((a) => a.includes("LINT"))).toBe(true);
       expect(process.exitCode).toBeUndefined();
     });
+
+    it("runs scripts lint when typecheck has no engine lint result", async () => {
+      mocks.executeTypecheck.mockResolvedValue({
+        success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
+        scriptsPackagePaths: ["packages/sd-codex"],
+      });
+      mocks.runLintInWorker.mockResolvedValue({
+        success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
+      });
+
+      await runCheck({ targets: [], types: ["typecheck", "lint"], fix: false });
+
+      expect(mocks.runLintInWorker).toHaveBeenCalledWith({
+        targets: ["packages/sd-codex"],
+        fix: false,
+        timing: false,
+      });
+      const successArgs = collectArgs(mockLogger.success);
+      expect(successArgs.some((a) => a.includes("LINT"))).toBe(true);
+      expect(process.exitCode).toBeUndefined();
+    });
   });
 
   describe("lint-only path", () => {
