@@ -18,6 +18,8 @@
   - [ ] `.codex/skills/sd-dev/SKILL.md` 파일의 Step 6이 `$sd-review` 스킬을 호출한다고 명시한다.
   - [ ] `.codex/skills/sd-dev/SKILL.md` 파일의 Step 6이 현재 `$sd-dev` 실행은 `$sd-review` 호출 시점에 종료된다고 명시한다.
   - [ ] `.codex/skills/sd-dev/SKILL.md` 파일이 내부 리뷰 스킬을 직접 호출하라고 지시하지 않는다.
+  - [ ] `.codex/skills/sd-dev/SKILL.md` 파일이 `$sd-review`가 전달한 확정 이슈 목록을 Step 3(sd-plan)으로 보낸다고 명시한다.
+  - [ ] `.codex/skills/sd-dev/SKILL.md` 파일이 `$sd-review`가 전달한 확정 이슈 목록으로 시작한 경우 `$sd-wbs`를 수행하지 않는다고 명시한다.
 
 ## 안티패턴 Eval
 

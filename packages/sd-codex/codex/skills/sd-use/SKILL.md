@@ -34,7 +34,7 @@ USAGE
 FLOWS
   진입점                             개발 파이프라인
   sd-wbs    프로젝트 → Feature 분해 ─┐
-  sd-review 코드 리뷰 → 리포트 생성  ├→ sd-plan → sd-tdd
+  sd-review 코드 리뷰 → 수정 개발 루프 ├→ sd-plan → sd-tdd
   sd-debug  에러 → 근본 원인 분석    │  │        │
   (없음)    바로 개발 시작          ─┘  └────────┘
                                         sd-dev (순차 실행)
@@ -48,7 +48,7 @@ SKILLS
 
   품질
     sd-check            typecheck / lint / test 실행 및 에러 수정
-    sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰
+    sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰 및 수정 개발 연결
     sd-refactor         구조·설계·아키텍처 리팩토링 분석 리포트
     sd-debug            버그/에러 근본 원인 분석
 
