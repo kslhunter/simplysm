@@ -3,7 +3,7 @@ import semver from "semver";
 import { fsx, pathx } from "@simplysm/core-node";
 import { defineService, type ServiceMethods } from "../core/define-service";
 
-export const AutoUpdateService = defineService("AutoUpdate", (ctx) => ({
+export const AutoUpdateService = defineService(["AutoUpdate", "SdAutoUpdateService"], (ctx) => ({
   async getLastVersion(platform: string): Promise<
     | {
         version: string;

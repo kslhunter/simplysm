@@ -29,7 +29,7 @@ describe("ensureCleanWorkingTree", () => {
     vi.clearAllMocks();
   });
 
-  it("auto-commits with claude when uncommitted changes detected", async () => {
+  it("auto-commits with codex when uncommitted changes detected", async () => {
     const logger = createLogger();
     mocks.execa.mockImplementation((cmd: string, args?: string[]) => {
       if (cmd === "git" && args?.[0] === "diff") {
@@ -40,11 +40,14 @@ describe("ensureCleanWorkingTree", () => {
 
     await ensureCleanWorkingTree(true, logger);
 
-    const claudeCalls = mocks.execa.mock.calls.filter(
-      (c: unknown[]) => c[0] === "claude",
+    const codexCalls = mocks.execa.mock.calls.filter(
+      (c: unknown[]) => c[0] === "codex",
     );
-    expect(claudeCalls).toHaveLength(1);
-    expect((claudeCalls[0][1] as string[])).toContain("/sd-commit");
+    expect(codexCalls).toHaveLength(1);
+    expect((codexCalls[0][1] as string[])).toContain("exec");
+    expect((codexCalls[0][1] as string[])).toContain("gpt-5.3-codex-spark");
+    expect((codexCalls[0][1] as string[])).toContain('model_reasoning_effort="low"');
+    expect((codexCalls[0][1] as string[])).toContain("$sd-commit");
   });
 
   it("skips auto-commit when no uncommitted changes", async () => {
@@ -55,20 +58,20 @@ describe("ensureCleanWorkingTree", () => {
 
     await ensureCleanWorkingTree(true, logger);
 
-    const claudeCalls = mocks.execa.mock.calls.filter(
-      (c: unknown[]) => c[0] === "claude",
+    const codexCalls = mocks.execa.mock.calls.filter(
+      (c: unknown[]) => c[0] === "codex",
     );
-    expect(claudeCalls).toHaveLength(0);
+    expect(codexCalls).toHaveLength(0);
   });
 
-  it("throws when claude auto-commit fails", async () => {
+  it("throws when codex auto-commit fails", async () => {
     const logger = createLogger();
     mocks.execa.mockImplementation((cmd: string, args?: string[]) => {
       if (cmd === "git" && args?.[0] === "diff") {
         return { stdout: "file.txt", stderr: "", exitCode: 0 };
       }
-      if (cmd === "claude") {
-        throw new Error("claude commit failed");
+      if (cmd === "codex") {
+        throw new Error("codex commit failed");
       }
       return { stdout: "", stderr: "", exitCode: 0 };
     });

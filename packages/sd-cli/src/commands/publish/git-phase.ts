@@ -2,7 +2,7 @@ import type { consola } from "consola";
 import { cpx } from "@simplysm/core-node";
 
 /**
- * 미커밋 변경사항을 감지하고 Claude CLI로 자동 커밋을 시도한다.
+ * 미커밋 변경사항을 감지하고 Codex CLI로 자동 커밋을 시도한다.
  * @throws 자동 커밋 실패 시 Error
  */
 export async function ensureCleanWorkingTree(
@@ -18,34 +18,24 @@ export async function ensureCleanWorkingTree(
 
   if (diff.trim() === "" && stagedDiff.trim() === "") return;
 
-  logger.info("커밋되지 않은 변경사항 감지. claude로 자동 커밋 시도 중...");
+  logger.info("커밋되지 않은 변경사항 감지. codex로 자동 커밋 시도 중...");
   try {
     await cpx.spawn(
-      "claude",
+      "pnpm",
       [
-        "-p",
-        "/sd-commit",
-        "--dangerously-skip-permissions",
+        "exec",
+        "codex",
+        "exec",
+        "--dangerously-bypass-approvals-and-sandbox",
+        "--ephemeral",
         "--model",
-        "claude-haiku-4-5",
-        "--no-session-persistence",
-        "--strict-mcp-config",
+        "gpt-5.3-codex-spark",
+        "-c",
+        'model_reasoning_effort="low"',
+        "$sd-commit",
       ],
       {
         stdio: "inherit",
-        env: {
-          // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
-          ...process.env,
-          MCP_CONNECTION_NONBLOCKING: "true",
-          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
-          DISABLE_TELEMETRY: "1",
-          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
-          CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
-          CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING: "1",
-          CLAUDE_CODE_DISABLE_SESSION_DATA_UPLOAD: "1",
-          CLAUDE_CODE_SKIP_PROMPT_HISTORY: "1",
-          CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS: "1",
-        },
       },
     );
   } catch (e) {

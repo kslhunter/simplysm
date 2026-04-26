@@ -385,7 +385,7 @@ describe("runPublish", () => {
       expect(getExecaCalls("npm", "whoami")).toHaveLength(0);
     });
 
-    it("auto-commits with claude when uncommitted changes detected", async () => {
+    it("auto-commits with codex when uncommitted changes detected", async () => {
       setupHappyPath();
       mocks.execa.mockImplementation(
         (cmd: string, args?: string[], _opts?: unknown) => {
@@ -404,23 +404,26 @@ describe("runPublish", () => {
         options: [],
       });
 
-      // claude CLI should have been called for auto-commit
-      const claudeCalls = mocks.execa.mock.calls.filter(
-        (c: unknown[]) => c[0] === "claude",
+      // codex CLI should have been called for auto-commit
+      const codexCalls = mocks.execa.mock.calls.filter(
+        (c: unknown[]) => c[0] === "codex",
       );
-      expect(claudeCalls).toHaveLength(1);
-      expect((claudeCalls[0][1] as string[])).toContain("/sd-commit");
+      expect(codexCalls).toHaveLength(1);
+      expect((codexCalls[0][1] as string[])).toContain("exec");
+      expect((codexCalls[0][1] as string[])).toContain("gpt-5.3-codex-spark");
+      expect((codexCalls[0][1] as string[])).toContain('model_reasoning_effort="low"');
+      expect((codexCalls[0][1] as string[])).toContain("$sd-commit");
     });
 
-    it("aborts when auto-commit claude command fails", async () => {
+    it("aborts when auto-commit codex command fails", async () => {
       setupHappyPath();
       mocks.execa.mockImplementation((cmd: string, args?: string[]) => {
         if (cmd === "npm") return { stdout: "testuser", stderr: "", exitCode: 0 };
         if (cmd === "git" && args?.[0] === "diff") {
           return { stdout: "file.txt", stderr: "", exitCode: 0 };
         }
-        if (cmd === "claude") {
-          throw new Error("claude commit failed");
+        if (cmd === "codex") {
+          throw new Error("codex commit failed");
         }
         return { stdout: "", stderr: "", exitCode: 0 };
       });
@@ -445,11 +448,11 @@ describe("runPublish", () => {
         options: [],
       });
 
-      // No claude CLI calls
-      const claudeCalls = mocks.execa.mock.calls.filter(
-        (c: unknown[]) => c[0] === "claude",
+      // No codex CLI calls
+      const codexCalls = mocks.execa.mock.calls.filter(
+        (c: unknown[]) => c[0] === "codex",
       );
-      expect(claudeCalls).toHaveLength(0);
+      expect(codexCalls).toHaveLength(0);
     });
   });
 

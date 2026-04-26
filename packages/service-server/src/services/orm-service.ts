@@ -20,7 +20,7 @@ const logger = consola.withTag("service-server:OrmService");
 const socketConns = new WeakMap<ServiceSocket, Map<number, DbConn>>();
 
 export const OrmService = defineService(
-  "Orm",
+  ["Orm", "SdOrmService"],
   auth((ctx) => {
     const sock = (): ServiceSocket => {
       const socket = ctx.socket;
