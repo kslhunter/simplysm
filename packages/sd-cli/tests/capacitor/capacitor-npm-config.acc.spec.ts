@@ -27,9 +27,13 @@ vi.mock("@simplysm/core-node", async (importOriginal) => {
   };
 });
 
-const execaCalls: { command: string; args: string[] }[] = [];
+const execaCalls: { command: string; args: string[]; options: unknown }[] = [];
 const mockCpxSpawn = vi.fn((...args: unknown[]) => {
-  execaCalls.push({ command: args[0] as string, args: (args[1] as string[] | undefined) ?? [] });
+  execaCalls.push({
+    command: args[0] as string,
+    args: (args[1] as string[] | undefined) ?? [],
+    options: args[2],
+  });
   return Promise.resolve({ stdout: "", stderr: "", exitCode: 0 });
 });
 
@@ -118,7 +122,9 @@ describe("initCapNpmProject", () => {
     }, ["android"], []);
 
     expect(changed).toBe(true);
-    expect(execaCalls.some((c) => c.command === "pnpm" && c.args.includes("install"))).toBe(true);
+    const installCall = execaCalls.find((c) => c.command === "pnpm" && c.args.includes("install"));
+    expect(installCall).toBeDefined();
+    expect(installCall?.options).toEqual(expect.objectContaining({ shell: true }));
   });
 
   it("최초 실행 시 cap init을 수행한다", async () => {
@@ -148,9 +154,11 @@ describe("initCapNpmProject", () => {
       appName: "Test App",
     }, { name: "test-pkg", version: "1.0.0" }, [], []);
 
-    expect(
-      execaCalls.some((c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("init")),
-    ).toBe(true);
+    const capInitCall = execaCalls.find(
+      (c) => c.command === "pnpm" && c.args.includes("cap") && c.args.includes("init"),
+    );
+    expect(capInitCall).toBeDefined();
+    expect(capInitCall?.options).toEqual(expect.objectContaining({ shell: true }));
   });
 });
 

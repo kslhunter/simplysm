@@ -1,6 +1,6 @@
 import semver from "semver";
 import type { consola } from "consola";
-import { cpx } from "@simplysm/core-node";
+import { shellSpawn } from "../../utils/shell-spawn";
 
 /**
  * npm 레지스트리에 패키지를 배포한다
@@ -26,5 +26,5 @@ export async function publishNpm(
     logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
   }
 
-  await cpx.spawn("pnpm", args, { cwd: pkgPath });
+  await shellSpawn("pnpm", args, { cwd: pkgPath });
 }

@@ -1,10 +1,11 @@
 import path from "path";
 import { consola } from "consola";
-import { cpx, fsx } from "@simplysm/core-node";
+import { fsx } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../../sd-config.types";
 import { loadSdConfig } from "../../utils/sd-config";
 import { validateTargets } from "../../utils/package-utils";
+import { shellSpawn } from "../../utils/shell-spawn";
 import { runBuild } from "../build";
 import { parseWorkspaceGlobs } from "../../deps/replace-deps/replace-deps-resolve";
 import fs from "fs";
@@ -136,7 +137,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   if (publishPackages.some((p) => p.config.type === "npm")) {
     logger.debug("npm 인증 검증 중...");
     try {
-      const { stdout: whoami } = await cpx.spawn("npm", ["whoami"]);
+      const { stdout: whoami } = await shellSpawn("npm", ["whoami"]);
       if (whoami.trim() === "") {
         throw new Error("npm 로그인 정보를 찾을 수 없습니다.");
       }

@@ -58,3 +58,4 @@ packages/sd-codex/
 
 - `AGENTS.md`는 자동 복사하지 않는다. 프로젝트별 루트 지침 파일은 소비 프로젝트에서 직접 관리한다.
 - `scripts/*.mjs`는 패키지 운영 스크립트이며, `src/index.ts` 기반 공개 API로 문서화하지 않는다.
+- `codex/` 디렉터리는 루트 `.codex/`에서 `scripts/sync.mjs`로 동기화되는 배포 자산이다. 일반 작업 중 `packages/sd-codex/codex/`를 수동으로 맞추려고 수정하지 않는다.

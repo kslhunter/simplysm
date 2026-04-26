@@ -182,9 +182,11 @@ describe("Electron", () => {
       expect(findElectronPackageJson()).toBeDefined();
 
       const spawnCalls = mockCpxSpawn.mock.calls;
-      expect(
-        spawnCalls.find((c) => c[0] === "pnpm" && (c[1] as string[]).includes("install")),
-      ).toBeDefined();
+      const installCall = spawnCalls.find(
+        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("install"),
+      );
+      expect(installCall).toBeDefined();
+      expect(installCall?.[2]).toEqual(expect.objectContaining({ shell: true }));
       expect(
         spawnCalls.find(
           (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron-rebuild"),
@@ -520,6 +522,10 @@ describe("Electron", () => {
       expect(callArgs.format).toBe("esm");
       expect(callArgs.bundle).toBe(true);
       expect(callArgs.external).toContain("electron");
+      const electronCall = mockCpxSpawn.mock.calls.find(
+        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron"),
+      );
+      expect(electronCall?.[2]).toEqual(expect.objectContaining({ shell: true, reject: false }));
 
       // ESM 배너에 createRequire shim 포함
       expect(banner).toContain("createRequire");

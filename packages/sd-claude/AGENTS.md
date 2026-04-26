@@ -119,3 +119,4 @@ const allEntries = collectSdEntries(claudeDir).filter(
 - `package.json`에 `main` 또는 `exports`가 없으므로 소비자 문서 entrypoint를 추적할 수 없다.
 - 병합 소스 파일에 소스 섹션이 없으므로 공개 API Entry 수는 0이다.
 - `scripts/*.mjs`는 패키지 운영 스크립트이며, `src/index.ts` 기반 공개 API로 문서화하지 않는다.
+- `claude/` 디렉터리는 루트 `.claude/`에서 `scripts/sync.mjs`로 동기화되는 배포 자산이다. 일반 작업 중 `packages/sd-claude/claude/`를 수동으로 맞추려고 수정하지 않는다.

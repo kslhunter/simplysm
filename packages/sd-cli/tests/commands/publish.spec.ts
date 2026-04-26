@@ -256,6 +256,7 @@ describe("runPublish", () => {
         (c: unknown[]) => c[0] === "pnpm" && (c[1] as string[] | undefined)?.[0] === "publish",
       );
       expect(call?.[2]).toHaveProperty("cwd", pkgPath("pkg-a"));
+      expect(call?.[2]).toHaveProperty("shell", true);
     });
 
     it("publishes all packages with publish config when targets empty", async () => {
@@ -334,6 +335,11 @@ describe("runPublish", () => {
 
       expect(process.exitCode).toBeUndefined();
       expect(getExecaCalls("npm", "whoami")).toHaveLength(1);
+      expect(mocks.execa).toHaveBeenCalledWith(
+        "npm",
+        ["whoami"],
+        expect.objectContaining({ shell: true }),
+      );
     });
 
     it("aborts when npm whoami fails", async () => {

@@ -2,8 +2,9 @@ import path from "path";
 import { existsSync } from "node:fs";
 import { createRequire } from "module";
 import { consola, LogLevels } from "consola";
-import { cpx, fsx, pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { createLazyLogger } from "../runtime/lazy-logger";
+import { shellSpawn } from "../utils/shell-spawn";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 
 const logger = createLazyLogger("sd:cli:capacitor:npm-config");
@@ -143,11 +144,11 @@ export async function initCapNpmProject(
   // pnpm install + 빌드 스크립트 승인
   const isDebug = consola.level >= LogLevels.debug;
   logger.debug("pnpm install 시작");
-  await cpx.spawn("pnpm", ["install"], {
+  await shellSpawn("pnpm", ["install"], {
     cwd: capPath,
     ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
   });
-  await cpx.spawn("pnpm", ["approve-builds", "--all"], {
+  await shellSpawn("pnpm", ["approve-builds", "--all"], {
     cwd: capPath,
     ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
   });
@@ -157,7 +158,7 @@ export async function initCapNpmProject(
   const configPath = pathx.posixResolve(capPath, "capacitor.config.ts");
   if (!(await fsx.exists(configPath))) {
     logger.debug("cap init 시작");
-    await cpx.spawn("pnpm", ["exec", "cap", "init", config.appId, config.appId], {
+    await shellSpawn("pnpm", ["exec", "cap", "init", config.appId, config.appId], {
       cwd: capPath,
       ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
     });

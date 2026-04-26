@@ -1,9 +1,11 @@
 import os from "os";
 import fs from "fs";
 import module from "module";
-import { cpx, fsx, pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
+import type { cpx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
 import { createLazyLogger } from "../runtime/lazy-logger";
+import { shellSpawn } from "../utils/shell-spawn";
 import type { NpmConfig, SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../esbuild/esbuild-config.js";
 
@@ -48,10 +50,9 @@ export class Electron {
   ): Promise<string> {
     Electron._logger.debug(`실행: ${cmd} ${args.join(" ")}`);
     const isDebug = consola.level >= LogLevels.debug;
-    const { stdout: result } = await cpx.spawn(cmd, args, {
+    const { stdout: result } = await shellSpawn(cmd, args, {
       cwd,
       env,
-      shell: true,
       ...(isDebug ? { stdio: "inherit" } : {}),
     });
     Electron._logger.debug(`결과: ${result}`);
@@ -102,10 +103,9 @@ export class Electron {
 
     const spawnElectron = () => {
       Electron._logger.debug("Electron 프로세스 시작");
-      currentElectron = cpx.spawn("pnpm", ["exec", "electron", "."], {
+      currentElectron = shellSpawn("pnpm", ["exec", "electron", "."], {
         cwd: this._srcPath,
         stdio: "inherit",
-        shell: true,
         reject: false,
       });
 
