@@ -10,7 +10,11 @@ import type { SdViewType } from "../../../src/core/routing/injectViewTypeSignal"
     [(busyCount)]="busyCount"
     [restricted]="restricted()"
     [viewType]="viewType()"
-  />`,
+  >
+    <ng-template #contentTpl>
+      <p class="test-content">base content</p>
+    </ng-template>
+  </sd-base-container>`,
   standalone: true,
   imports: [SdBaseContainer],
 })

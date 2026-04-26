@@ -6,6 +6,7 @@ import type { ExpectedSql } from "../setup/test-utils";
 export const clearSchema: ExpectedSql = {
   mysql: mysql`
 SET FOREIGN_KEY_CHECKS = 0;
+SET SESSION group_concat_max_len = 4294967295;
 SET @tables = NULL;
 SELECT GROUP_CONCAT(CONCAT('\`TestDb\`.\`', REPLACE(table_name, '\`', '\`\`'), '\`')) INTO @tables FROM information_schema.tables WHERE table_schema = 'TestDb';
 SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ', @tables));
@@ -104,7 +105,7 @@ CREATE TABLE \`TestDb\`.\`User\` (
   \`companyId\` BIGINT NULL,
   \`createdAt\` DATETIME NOT NULL,
   CONSTRAINT \`PK_User\` PRIMARY KEY (\`id\`)
-)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
   `,
   mssql: tsql`
 CREATE TABLE [TestDb].[TestSchema].[User] (

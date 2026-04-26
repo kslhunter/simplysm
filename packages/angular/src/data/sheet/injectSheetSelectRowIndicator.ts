@@ -9,7 +9,7 @@ function isKeyEqual(a: unknown, b: unknown): boolean {
 
 export function injectSheetSelectRowIndicator<TItem, TKey>(options: {
   domAccessor: ReturnType<typeof injectSheetDomAccessor>;
-  selectedKeys: Signal<NonNullable<TKey>[]>;
+  selectedKeys: Signal<TKey[]>;
   displayItems: Signal<TItem[]>;
   trackByFn: Signal<(item: TItem, index: number) => TKey>;
 }) {

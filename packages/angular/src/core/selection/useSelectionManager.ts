@@ -3,7 +3,7 @@ import { obj } from "@simplysm/core-common";
 
 export function useSelectionManager<TItem, TKey>(options: {
   displayItems: Signal<TItem[]>;
-  selectedKeys: WritableSignal<NonNullable<TKey>[]>;
+  selectedKeys: WritableSignal<TKey[]>;
   selectMode: Signal<"single" | "multi" | undefined>;
   getItemSelectableFn: Signal<((item: TItem) => boolean | string) | undefined>;
   trackByFn: Signal<(item: TItem, index: number) => TKey>;
@@ -128,7 +128,7 @@ export function useSelectionManager<TItem, TKey>(options: {
       options.selectedKeys.update((arr) => {
         const newKeys = selectable
           .map((it) => fn(it, idxMap.get(it) ?? 0))
-          .filter((k): k is NonNullable<TKey> => k != null)
+          .filter((k): k is TKey => k != null)
           .filter((k) => !arr.some((ek) => isKeyEqual(ek, k)));
         return [...arr, ...newKeys];
       });

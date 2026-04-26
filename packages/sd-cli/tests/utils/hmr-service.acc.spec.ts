@@ -68,8 +68,9 @@ describe("HMR Service 통합", () => {
   describe("Scenario: WebSocket 연결 + /@ng/component 통합", () => {
     it("WebSocket으로 연결하고 /@ng/component 엔드포인트에서 templateUpdates 조회가 가능하다", async () => {
       const templateUpdates = new Map<string, string>();
+      const componentId = "src/app/app.component.ts@AppComponent";
       templateUpdates.set(
-        "src/app/app.component.ts@AppComponent",
+        encodeURIComponent(componentId),
         'export function AppComponent_UpdateMetadata() {}',
       );
 
@@ -81,7 +82,7 @@ describe("HMR Service 통합", () => {
 
       // /@ng/component 엔드포인트 확인
       const res = await fetch(
-        `http://127.0.0.1:${port}/app/@ng/component?c=${encodeURIComponent("src/app/app.component.ts@AppComponent")}`,
+        `http://127.0.0.1:${port}/app/@ng/component?c=${encodeURIComponent(componentId)}`,
       );
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toBe("text/javascript");

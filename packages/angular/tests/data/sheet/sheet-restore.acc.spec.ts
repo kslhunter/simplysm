@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import {
   SdSheetBasicTest,
+  SdSheetDefaultTrackByTest,
   SdSheetSelectMultiTest,
   SdSheetSelectDisabledTest,
 } from "./sd-sheet-test.fixture";
@@ -13,12 +14,12 @@ describe("Feature 4.1: sd-sheet 복원", () => {
   describe("Slice 1: trackByFn 기본값 + 정렬 아이콘", () => {
     it("Rule: trackByFn 기본값은 (item) => item — 미지정 시 객체 identity 반환", async () => {
       const fixture = TestBed.configureTestingModule({
-        imports: [SdSheetBasicTest],
-      }).createComponent(SdSheetBasicTest);
+        imports: [SdSheetDefaultTrackByTest],
+      }).createComponent(SdSheetDefaultTrackByTest);
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const sdSheet = fixture.debugElement.children[0].componentInstance as SdSheet<unknown, unknown>;
+      const sdSheet = fixture.debugElement.children[0].componentInstance as SdSheet<unknown>;
       const fn = sdSheet.trackByFn();
       expect(fn).toBeDefined();
 

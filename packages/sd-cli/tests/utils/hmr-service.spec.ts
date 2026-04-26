@@ -95,10 +95,10 @@ describe("createHmrService", () => {
       expect(body).toBe("empty-id-content");
     });
 
-    it("componentId로 templateUpdates를 직접 조회한다 (인코딩 없이)", async () => {
+    it("componentId를 인코딩한 key로 templateUpdates를 조회한다", async () => {
       const updates = new Map<string, string>();
       const rawId = "src/components/my-comp.ts@MyComp";
-      updates.set(rawId, "raw-key-content");
+      updates.set(encodeURIComponent(rawId), "encoded-key-content");
       await setup(updates);
 
       const res = await fetch(
@@ -106,7 +106,7 @@ describe("createHmrService", () => {
       );
       expect(res.status).toBe(200);
       const body = await res.text();
-      expect(body).toBe("raw-key-content");
+      expect(body).toBe("encoded-key-content");
     });
   });
 

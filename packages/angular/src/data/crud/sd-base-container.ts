@@ -6,7 +6,7 @@ import {
   inject,
   input,
   model,
-  TemplateRef,
+  type TemplateRef,
   untracked,
   ViewEncapsulation,
 } from "@angular/core";
@@ -63,7 +63,9 @@ import { NgTemplateOutlet } from "@angular/common";
         }
 
         <div class="flex-fill">
-          <ng-content />
+          @if (contentTplRef()) {
+            <ng-template [ngTemplateOutlet]="contentTplRef()" />
+          }
         </div>
 
         @if (bottomCommandTplRef()) {
@@ -91,6 +93,7 @@ export class SdBaseContainer {
 
   topbarTplRef = contentChild<TemplateRef<void>>("topbarTpl");
   commandTplRef = contentChild<TemplateRef<void>>("commandTpl");
+  contentTplRef = contentChild<TemplateRef<void>>("contentTpl");
   bottomCommandTplRef = contentChild<TemplateRef<void>>("bottomCommandTpl");
 
   constructor() {

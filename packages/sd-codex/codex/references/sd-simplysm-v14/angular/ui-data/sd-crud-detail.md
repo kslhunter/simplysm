@@ -2,7 +2,7 @@
 
 > **읽어야 하는 상황**: CRUD 상세 화면(폼 + 저장)을 만들 때. 목록 화면은 [`SdCrudList`](./sd-crud-list.md) 참조.
 
-CRUD 상세 화면 스캐폴드. `SdBaseContainer`를 내부에 사용하며, 폼 제출(`Ctrl+S` 저장), readonly 모드, viewType별 저장 버튼 배치를 제공한다.
+CRUD 상세 화면 스캐폴드. `SdBaseContainer`를 내부에 사용하며, `#contentTpl` 본문 템플릿을 폼 또는 readonly 컨테이너 안에 렌더링한다. 폼 제출(`Ctrl+S` 저장), readonly 모드, viewType별 저장 버튼 배치를 제공한다.
 
 ## Import
 
@@ -37,6 +37,20 @@ import { SdCrudDetail } from "@simplysm/angular";
 | `submit` | `void` | 폼 제출 시 발생. 저장 버튼 클릭, `Ctrl+S` 단축키, 또는 폼 내부 `Enter` 키 모두 이 이벤트를 트리거한다. |
 
 ## Content Children (ng-template)
+
+### `#contentTpl` — 상세 본문 영역
+
+상세 화면 본문은 반드시 `<ng-template #contentTpl>`로 제공한다. `SdCrudDetail`은 이 템플릿을 `readonly=false`일 때 내부 `<sd-form>` 안에 렌더링하고, `readonly=true`일 때 `<div class="fill">` 안에 렌더링한다.
+
+```html
+<sd-crud-detail [viewType]="'page'" (submit)="onSubmit()">
+  <ng-template #contentTpl>
+    <div class="p-default">
+      <sd-textfield [(value)]="data().name" [required]="true" />
+    </div>
+  </ng-template>
+</sd-crud-detail>
+```
 
 ### `#commandTpl` — 추가 명령 버튼 영역
 
@@ -90,7 +104,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 └─────────────────────────────────────────────────────┘
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
-│    <ng-content /> ← 폼 필드들                       │
+│    #contentTpl 내용 ← 폼 필드들                     │
 │  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ```
@@ -106,7 +120,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 └─────────────────────────────────────────────────────┘
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
-│    <ng-content /> ← 폼 필드들                       │
+│    #contentTpl 내용 ← 폼 필드들                     │
 │  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ┌─ 하단 명령 영역 (bottomCommandTpl이 있을 때만) ─────┐
@@ -125,7 +139,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 └─────────────────────────────────────────────────────┘
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
-│    <ng-content /> ← 폼 필드들                       │
+│    #contentTpl 내용 ← 폼 필드들                     │
 │  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ┌─ 하단 명령 영역 (항상 표시) ────────────────────────┐
@@ -169,32 +183,34 @@ viewType에 따라 렌더링 위치가 달라진다:
         </sd-button>
       </ng-template>
 
-      <div class="fill p-default">
-        <sd-dock-container>
-          <sd-dock class="pb-sm">
-            <div class="form-box-inline p-sm-default bd-radius-default bd bd-trans-light fill">
-              <div>
-                <label>문서번호</label>
-                <div>{{ data().code }}</div>
+      <ng-template #contentTpl>
+        <div class="fill p-default">
+          <sd-dock-container>
+            <sd-dock class="pb-sm">
+              <div class="form-box-inline p-sm-default bd-radius-default bd bd-trans-light fill">
+                <div>
+                  <label>문서번호</label>
+                  <div>{{ data().code }}</div>
+                </div>
+                <div>
+                  <label>날짜</label>
+                  <sd-textfield
+                    [type]="'date'"
+                    [disabled]="!canEdit()"
+                    [(value)]="data().dueDate"
+                    (valueChange)="mark(data)"
+                  />
+                </div>
               </div>
-              <div>
-                <label>날짜</label>
-                <sd-textfield
-                  [type]="'date'"
-                  [disabled]="!canEdit()"
-                  [(value)]="data().dueDate"
-                  (valueChange)="mark(data)"
-                />
-              </div>
-            </div>
-          </sd-dock>
+            </sd-dock>
 
-          <!-- 탭이나 서브 리스트 등 -->
-          <div class="fill">
-            <app-sub-list [(items)]="data().items" (itemsChange)="mark(data)" />
-          </div>
-        </sd-dock-container>
-      </div>
+            <!-- 탭이나 서브 리스트 등 -->
+            <div class="fill">
+              <app-sub-list [(items)]="data().items" (itemsChange)="mark(data)" />
+            </div>
+          </sd-dock-container>
+        </div>
+      </ng-template>
     </sd-crud-detail>
   `,
 })
@@ -246,20 +262,34 @@ export class MyDetail {
   [viewType]="'modal'"
   (submit)="onSubmit()"
 >
-  <div class="p-default">
-    <div class="form-box-inline">
-      <div>
-        <label>이름</label>
-        <sd-textfield [(value)]="data().name" [required]="true" />
+  <ng-template #contentTpl>
+    <div class="p-default">
+      <div class="form-box-inline">
+        <div>
+          <label>이름</label>
+          <sd-textfield [(value)]="data().name" [required]="true" />
+        </div>
       </div>
     </div>
-  </div>
+  </ng-template>
 </sd-crud-detail>
 ```
 
 ## Anti-patterns
 
 ```html
+<!-- ❌ 본문을 sd-crud-detail의 직접 content로 넣지 않는다 -->
+<sd-crud-detail [viewType]="'page'">
+  <div class="p-default">...</div>  <!-- ❌ -->
+</sd-crud-detail>
+
+<!-- ✅ 본문은 contentTpl로 전달한다 -->
+<sd-crud-detail [viewType]="'page'">
+  <ng-template #contentTpl>
+    <div class="p-default">...</div>
+  </ng-template>
+</sd-crud-detail>
+
 <!-- ❌ readonly일 때 commandTpl 안에 저장 버튼을 별도로 넣지 않는다 -->
 <!-- SdCrudDetail이 viewType에 맞는 저장 버튼을 자동 배치한다 -->
 <ng-template #commandTpl>

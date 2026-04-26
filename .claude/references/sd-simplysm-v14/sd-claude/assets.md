@@ -36,19 +36,17 @@ claude/
 | `sd-check/`           | sd-check           | typecheck/lint/test 실행 및 에러 해결              |
 | `sd-claude-docs/`     | sd-claude-docs     | CLAUDE.md + usage 문서 동시 생성                   |
 | `sd-commit/`          | sd-commit          | 전체 변경사항에 대한 단일 커밋 생성                |
-| `sd-debug/`           | sd-debug           | 버그 근본 원인 분석 및 해결책 제안                 |
+| `sd-debug/`           | sd-debug           | 버그 근본 원인 분석(ACH) 및 수정 개발 연결         |
 | `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
 | `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
 | `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |
 | `sd-inner-clarify/`   | sd-inner-clarify   | (내부 전용) 명확성 분류·근거 탐색·명확화 질문      |
-| `sd-inner-debug/`     | sd-inner-debug     | (내부 전용) 근본 원인 분석(ACH) 로직               |
-| `sd-inner-review/`    | sd-inner-review    | (내부 전용) 코드 리뷰 분석 로직                    |
 | `sd-issue/`           | sd-issue           | GitHub 이슈 생성                                   |
 | `sd-outlook/`         | sd-outlook         | Outlook 메일 검색/다운로드 (Python)                |
 | `sd-plan/`            | sd-plan            | 요구명세/구현계획 작성                             |
 | `sd-prompt/`          | sd-prompt          | 스킬/프롬프트 파일 작성/개선                       |
 | `sd-refactor/`        | sd-refactor        | 리팩토링 분석 리포트 생성                          |
-| `sd-review/`          | sd-review          | 코드 리뷰 리포트 생성                              |
+| `sd-review/`          | sd-review          | 코드 리뷰 및 수정 개발 연결                        |
 | `sd-tdd/`             | sd-tdd             | TDD 개발                                           |
 | `sd-use/`             | sd-use             | 자연어 → sd-\* 스킬 라우팅                         |
 | `sd-wbs/`             | sd-wbs             | WBS Feature 분해                                   |

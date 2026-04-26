@@ -47,7 +47,7 @@ describe("ensureCleanWorkingTree", () => {
     expect((codexCalls[0][1] as string[])).toContain("exec");
     expect((codexCalls[0][1] as string[])).toContain("gpt-5.3-codex-spark");
     expect((codexCalls[0][1] as string[])).toContain('model_reasoning_effort="low"');
-    expect((codexCalls[0][1] as string[])).toContain("$sd-commit");
+    expect((codexCalls[0][1] as string[]).some((arg) => arg.includes("$sd-commit"))).toBe(true);
   });
 
   it("skips auto-commit when no uncommitted changes", async () => {

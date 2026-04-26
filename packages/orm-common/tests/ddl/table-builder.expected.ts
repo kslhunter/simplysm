@@ -6,7 +6,7 @@ export const singlePrimaryKey: ExpectedSql = {
     CREATE TABLE \`TestDb\`.\`User\` (
       \`id\` BIGINT NOT NULL,
       CONSTRAINT \`PK_User\` PRIMARY KEY (\`id\`)
-    )
+    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
   `,
   mssql: tsql`
     CREATE TABLE [TestDb].[TestSchema].[User] (
@@ -29,7 +29,7 @@ export const compositePrimaryKey: ExpectedSql = {
       \`productId\` BIGINT NOT NULL,
       \`quantity\` INT NOT NULL,
       CONSTRAINT \`PK_Order\` PRIMARY KEY (\`userId\`, \`productId\`)
-    )
+    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
   `,
   mssql: tsql`
     CREATE TABLE [TestDb].[TestSchema].[Order] (
@@ -55,7 +55,7 @@ export const complexOptions1: ExpectedSql = {
       \`id\` BIGINT NOT NULL,
       \`name\` VARCHAR(100) NOT NULL,
       CONSTRAINT \`PK_User\` PRIMARY KEY (\`id\`)
-    )
+    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
   `,
   mssql: tsql`
     CREATE TABLE [TestDb].[TestSchema].[User] (
@@ -84,7 +84,7 @@ export const complexOptions3: ExpectedSql = {
       \`description\` LONGTEXT NULL,
       \`createdAt\` DATETIME NOT NULL,
       CONSTRAINT \`PK_Product\` PRIMARY KEY (\`id\`)
-    )
+    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
   `,
   mssql: tsql`
     CREATE TABLE [TestDb].[TestSchema].[Product] (

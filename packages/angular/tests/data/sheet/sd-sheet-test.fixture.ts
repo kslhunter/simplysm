@@ -40,6 +40,25 @@ export class SdSheetBasicTest {
 }
 
 @Component({
+  selector: "sd-sheet-default-track-by-test",
+  template: `
+    <sd-sheet [items]="items()">
+      <sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'200px'">
+        <ng-template [cell]="items()">cell</ng-template>
+      </sd-sheet-column>
+    </sd-sheet>
+  `,
+  standalone: true,
+  imports: [SdSheet, SdSheetColumn, SdSheetColumnCellTemplate],
+})
+export class SdSheetDefaultTrackByTest {
+  items = signal<TestItem[]>([
+    { name: "Alice", age: 30 },
+    { name: "Bob", age: 25 },
+  ]);
+}
+
+@Component({
   selector: "sd-sheet-multi-header-test",
   template: `
     <sd-sheet [items]="items()" [trackByFn]="trackByFn">
@@ -703,4 +722,3 @@ export class SdSheetNoPaginationTest {
   items = signal<TestItem[]>([{ name: "A", age: 1 }]);
   trackByFn = (item: TestItem) => item.name;
 }
-

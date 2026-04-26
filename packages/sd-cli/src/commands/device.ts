@@ -109,7 +109,11 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
   } else if (clientConfig.capacitor != null) {
     logger.start(`${targetName} (capacitor) 실행 중...`);
     const cap = await Capacitor.create(pkgDir, clientConfig.capacitor, clientConfig.exclude);
-    await cap.run(serverUrl, extraReversePorts);
+    if (extraReversePorts != null) {
+      await cap.run(serverUrl, extraReversePorts);
+    } else {
+      await cap.run(serverUrl);
+    }
     logger.success(`${targetName} (capacitor) 실행 완료`);
   } else {
     throw new SdError(`${targetName}에 capacitor 또는 electron 설정이 없습니다.`);

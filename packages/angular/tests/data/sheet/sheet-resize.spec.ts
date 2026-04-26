@@ -159,7 +159,7 @@ describe("Feature 6.2 Slice 2: 컬럼 리사이징", () => {
 
   it("Scenario: 테이블 높이만 변경되어도 포커스/선택 행 인디케이터를 다시 그린다", async () => {
     const fixture = await stableFixture(SdSheetResizeTest);
-    const sheetComponent = fixture.debugElement.children[0].componentInstance as any;
+    const sheetComponent = fixture.debugElement.children[0].componentInstance;
 
     const focusRedrawSpy = vi.spyOn(sheetComponent._focusIndicator, "redraw");
     const selectRedrawSpy = vi.spyOn(sheetComponent._selectRowIndicator, "redraw");

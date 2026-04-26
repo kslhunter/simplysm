@@ -14,6 +14,7 @@ npm install @simplysm/angular
 ## 먼저 읽기 (횡단 전제)
 
 - [provideSdAngular](./bootstrap/provide-sd-angular.md) — 반드시 등록해야 하는 환경 프로바이더
+- [component-authoring-rules](./component-authoring-rules.md) — 소비 컴포넌트 로컬 상태 타입과 초기값 공통 규칙
 
 ## 하려는 작업 → 읽을 파일
 

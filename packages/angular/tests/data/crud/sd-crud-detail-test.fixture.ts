@@ -13,7 +13,9 @@ import type { SdViewType } from "../../../src/core/routing/injectViewTypeSignal"
     [viewType]="viewType()"
     (submit)="onSubmit()"
   >
-    <p class="test-content">detail content</p>
+    <ng-template #contentTpl>
+      <p class="test-content">detail content</p>
+    </ng-template>
   </sd-crud-detail>`,
   standalone: true,
   imports: [SdCrudDetail],

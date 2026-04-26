@@ -8,7 +8,7 @@ import {
   input,
   model,
   output,
-  TemplateRef,
+  type TemplateRef,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -115,68 +115,69 @@ import {
         </ng-template>
       }
 
-      <!-- CONTENT -->
-      <div class="flex-column fill">
-        @if (filterTplRef()) {
-          <sd-form (formSubmit)="filterSubmit.emit()" class="block p-default">
-            <div class="form-box-inline">
-              <div>
-                <sd-button [type]="'submit'" [theme]="'info'">
-                  <ng-icon [svg]="tablerSearch" />
-                  조회
-                </sd-button>
+      <ng-template #contentTpl>
+        <div class="flex-column fill">
+          @if (filterTplRef()) {
+            <sd-form (formSubmit)="filterSubmit.emit()" class="block p-default">
+              <div class="form-box-inline">
+                <div>
+                  <sd-button [type]="'submit'" [theme]="'info'">
+                    <ng-icon [svg]="tablerSearch" />
+                    조회
+                  </sd-button>
+                </div>
+                <ng-template [ngTemplateOutlet]="filterTplRef()" />
               </div>
-              <ng-template [ngTemplateOutlet]="filterTplRef()" />
-            </div>
-          </sd-form>
-        }
+            </sd-form>
+          }
 
-        @if (!readonly() || toolTplRef()) {
-          <div class="flex-row gap-sm p-xs-default">
-            @if (!readonly()) {
-              <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="create.emit()">
-                <ng-icon [svg]="tablerCirclePlus" />
-                등록
-              </sd-button>
-              @if (selectMode() !== "single") {
-                <sd-button
-                  [size]="'sm'"
-                  [theme]="'link-danger'"
-                  (click)="delete.emit(currSelectedItems())"
-                  [disabled]="!hasSelectedNotDeleted()"
-                >
-                  <ng-icon [svg]="tablerEraser" />
-                  선택 삭제
+          @if (!readonly() || toolTplRef()) {
+            <div class="flex-row gap-sm p-xs-default">
+              @if (!readonly()) {
+                <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="create.emit()">
+                  <ng-icon [svg]="tablerCirclePlus" />
+                  등록
                 </sd-button>
-                @if (hasSelectedDeleted()) {
+                @if (selectMode() !== "single") {
                   <sd-button
                     [size]="'sm'"
-                    [theme]="'link-warning'"
-                    (click)="restore.emit(currSelectedItems())"
+                    [theme]="'link-danger'"
+                    (click)="delete.emit(currSelectedItems())"
+                    [disabled]="!hasSelectedNotDeleted()"
                   >
-                    <ng-icon [svg]="tablerRestore" />
-                    선택 복구
+                    <ng-icon [svg]="tablerEraser" />
+                    선택 삭제
                   </sd-button>
+                  @if (hasSelectedDeleted()) {
+                    <sd-button
+                      [size]="'sm'"
+                      [theme]="'link-warning'"
+                      (click)="restore.emit(currSelectedItems())"
+                    >
+                      <ng-icon [svg]="tablerRestore" />
+                      선택 복구
+                    </sd-button>
+                  }
                 }
               }
-            }
 
-            @if (toolTplRef()) {
-              <ng-template [ngTemplateOutlet]="toolTplRef()" />
-            }
-          </div>
-        }
+              @if (toolTplRef()) {
+                <ng-template [ngTemplateOutlet]="toolTplRef()" />
+              }
+            </div>
+          }
 
-        @if (readonly()) {
-          <div class="flex-fill p-default pt-0">
-            <ng-template [ngTemplateOutlet]="sheet" />
-          </div>
-        } @else {
-          <sd-form #formCtrl (formSubmit)="submit.emit()" class="flex-fill p-default pt-0">
-            <ng-template [ngTemplateOutlet]="sheet" />
-          </sd-form>
-        }
-      </div>
+          @if (readonly()) {
+            <div class="flex-fill p-default pt-0">
+              <ng-template [ngTemplateOutlet]="sheet" />
+            </div>
+          } @else {
+            <sd-form #formCtrl (formSubmit)="submit.emit()" class="flex-fill p-default pt-0">
+              <ng-template [ngTemplateOutlet]="sheet" />
+            </sd-form>
+          }
+        </div>
+      </ng-template>
     </sd-base-container>
 
     <ng-template #sheet>

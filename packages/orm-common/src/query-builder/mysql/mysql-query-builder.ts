@@ -551,7 +551,9 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       colDefs.push(`CONSTRAINT ${pkName} PRIMARY KEY (${pkCols})`);
     }
 
-    return { sql: `CREATE TABLE ${table} (\n  ${colDefs.join(",\n  ")}\n)` };
+    return {
+      sql: `CREATE TABLE ${table} (\n  ${colDefs.join(",\n  ")}\n) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`,
+    };
   }
 
   protected dropTable(def: DropTableQueryDef): QueryBuildResult {
@@ -749,6 +751,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
     return {
       sql: `
 SET FOREIGN_KEY_CHECKS = 0;
+SET SESSION group_concat_max_len = 4294967295;
 SET @tables = NULL;
 SELECT GROUP_CONCAT(CONCAT('\`${def.database}\`.\`', REPLACE(table_name, '\`', '\`\`'), '\`')) INTO @tables FROM information_schema.tables WHERE table_schema = '${dbName}';
 SET @drop_stmt = IF(@tables IS NULL, 'SELECT 1', CONCAT('DROP TABLE IF EXISTS ', @tables));

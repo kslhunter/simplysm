@@ -294,43 +294,23 @@ viewType에 따라 렌더링 위치가 달라진다:
   │  (readonly=true이면 저장 버튼 숨김)               │
   └──────────────────────────────────────────────────┘
 
-  <div class="flex-column fill">
-    ┌─ 필터 영역 (filterTpl이 있을 때만) ────────────┐
-    │  <sd-form (formSubmit)="filterSubmit.emit()">  │
-    │    <div class="form-box-inline">               │
-    │      <div>                                     │
-    │        [조회 버튼: info 테마, search 아이콘]     │
-    │      </div>                                    │
-    │      [#filterTpl 내용]                          │
-    │    </div>                                      │
-    │  </sd-form>                                    │
-    └────────────────────────────────────────────────┘
-
-    ┌─ 도구 영역 (readonly=false 또는 toolTpl) ──────┐
-    │  [등록 버튼] [선택 삭제 버튼] [선택 복구 버튼]   │
-    │  [#toolTpl 내용]                                │
-    │  (readonly=true이면 등록/삭제/복구 숨김)         │
-    └────────────────────────────────────────────────┘
-
-    ┌─ 시트 영역 ────────────────────────────────────┐
-    │  <sd-form>  (또는 readonly=true이면 <div>)     │
-    │    <sd-sheet                                   │
-    │      [key]="key + '-sheet'"                    │
-    │      [items]="items()"                         │
-    │      [(currentPage)]="currentPage"             │
-    │      [totalPageCount]="totalPageCount()"       │
-    │      [(sorts)]="sorts"                         │
-    │      [useAutoSort]="totalPageCount() === 0"    │
-    │      [selectMode]="selectMode ?? (readonly ? undefined : 'multi')" │
-    │      [(selectedKeys)]="selectedKeys"           │
-    │      [trackByFn]="trackByFn()"                 │
-    │      [columnControlsInput]="columnControls()"  │
-    │    >                                           │
-    │      [자동 삭제/복구 버튼 컬럼] (readonly=false)│
-    │    </sd-sheet>                                 │
-    │  </sd-form>                                    │
-    └────────────────────────────────────────────────┘
-  </div>
+  ┌─ #contentTpl ────────────────────────────────────┐
+  │  <div class="flex-column fill">                  │
+  │    [필터 영역] filterTpl이 있을 때만              │
+  │      - 조회 버튼 자동 추가                        │
+  │      - #filterTpl 내용 렌더링                     │
+  │                                                   │
+  │    [도구 영역] readonly=false 또는 toolTpl        │
+  │      - 등록/선택 삭제/선택 복구 버튼 자동 추가    │
+  │      - #toolTpl 내용 렌더링                       │
+  │                                                   │
+  │    [시트 영역]                                   │
+  │      - readonly=false: <sd-form> 안에 sd-sheet    │
+  │      - readonly=true: <div> 안에 sd-sheet         │
+  │      - columnControls()를 sd-sheet에 전달         │
+  │      - 자동 삭제/복구 버튼 컬럼 추가              │
+  │  </div>                                          │
+  └──────────────────────────────────────────────────┘
 
   ┌─ #bottomCommandTpl (modal+selectMode 또는 있을 때) ┐
   │  [#bottomCommandTpl 내용 (좌측)]                    │

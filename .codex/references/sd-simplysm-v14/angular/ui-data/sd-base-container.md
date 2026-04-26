@@ -36,9 +36,10 @@ import { SdBaseContainer } from "@simplysm/angular";
 |---|---|---|
 | `#topbarTpl` | `viewType="page"`일 때 `<sd-topbar>` 내부 | 탑바 우측에 버튼(저장, 커스텀 명령 등)을 배치한다. `viewType`이 `"page"`가 아니면 무시된다. |
 | `#commandTpl` | 콘텐츠 영역 상단 | `p-default` 패딩, `flex-row gap-default` 레이아웃의 명령 영역. 하단에 `bdb bdb-theme-gray-lightest` 테두리가 그려진다. |
+| `#contentTpl` | 콘텐츠 영역 중앙 | 메인 콘텐츠. 상단 명령 영역과 하단 명령 영역 사이의 `flex-fill` 영역에 렌더링된다. |
 | `#bottomCommandTpl` | 콘텐츠 영역 하단 | `p-sm-default` 패딩, `flex-row main-align-end gap-sm` 레이아웃의 명령 영역. 상단에 `bdt bdt-theme-gray-lightest` 테두리가 그려진다. 모달의 "확인" 버튼 등에 사용된다. |
 
-**`ng-content`**: 위 템플릿 외의 일반 콘텐츠는 `<ng-content>`로 투영되어 상단 명령 영역과 하단 명령 영역 사이의 `flex-fill` 영역에 렌더링된다.
+본문은 반드시 `<ng-template #contentTpl>`로 제공한다. `SdBaseContainer`는 직접 content를 렌더링하지 않는다.
 
 ## 내부 레이아웃 구조
 
@@ -66,7 +67,7 @@ import { SdBaseContainer } from "@simplysm/angular";
   │  <div class="flex-column fill">                       │
   │    [#commandTpl 영역] (있을 때만)                      │
   │    <div class="flex-fill">                            │
-  │      <ng-content /> ← 메인 콘텐츠                     │
+  │      [#contentTpl 렌더링] ← 메인 콘텐츠               │
   │    </div>                                             │
   │    [#bottomCommandTpl 영역] (있을 때만)                │
   │  </div>                                               │
@@ -100,29 +101,31 @@ import { SdBaseContainer } from "@simplysm/angular";
   [restricted]="!perms().includes('use')"
   [viewType]="viewType()"
 >
-  <div class="flex-row fill">
-    <!-- 좌측: 목록 (control viewType) -->
-    <app-my-list
-      #headerSheet
-      selectMode="single"
-      class="flex-min bdr bdr-color-lighter"
-    />
-
-    <!-- 우측: 상세 (control viewType) -->
-    @let _selectedId = headerSheet.selectedKeys().first();
-    @if (_selectedId == null) {
-      <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px">
-        <ng-icon [svg]="tablerArrowLeft" />
-        선택하세요.
-      </div>
-    } @else {
-      <app-my-detail
-        class="flex-fill"
-        [itemId]="_selectedId"
-        (submitted)="headerSheet.doRefresh()"
+  <ng-template #contentTpl>
+    <div class="flex-row fill">
+      <!-- 좌측: 목록 (control viewType) -->
+      <app-my-list
+        #headerSheet
+        selectMode="single"
+        class="flex-min bdr bdr-color-lighter"
       />
-    }
-  </div>
+
+      <!-- 우측: 상세 (control viewType) -->
+      @let _selectedId = headerSheet.selectedKeys().first();
+      @if (_selectedId == null) {
+        <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px">
+          <ng-icon [svg]="tablerArrowLeft" />
+          선택하세요.
+        </div>
+      } @else {
+        <app-my-detail
+          class="flex-fill"
+          [itemId]="_selectedId"
+          (submitted)="headerSheet.doRefresh()"
+        />
+      }
+    </div>
+  </ng-template>
 </sd-base-container>
 ```
 
@@ -138,4 +141,20 @@ export class MyView {
   initialized = signal(true);   // 직접 데이터를 로딩하지 않으므로 즉시 true
   busyCount = signal(0);
 }
+```
+
+## Anti-patterns
+
+```html
+<!-- ❌ 메인 콘텐츠를 직접 content로 넣지 않는다 -->
+<sd-base-container [viewType]="viewType()">
+  <div class="fill">...</div>
+</sd-base-container>
+
+<!-- ✅ 메인 콘텐츠는 contentTpl로 전달한다 -->
+<sd-base-container [viewType]="viewType()">
+  <ng-template #contentTpl>
+    <div class="fill">...</div>
+  </ng-template>
+</sd-base-container>
 ```

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { signal } from "@angular/core";
 import { useSheetCellStyling } from "../../../src/data/sheet/useSheetCellStyling";
-import type { SdSheetColumnDef } from "../../../src/data/sheet/types";
+import type { SdSheetColumnDef, SdSheetHeaderDef } from "../../../src/data/sheet/types";
 import type { ExpandItemDef } from "../../../src/core/selection/useExpandingManager";
 
 interface Item {
@@ -21,6 +21,21 @@ function makeColDef(overrides: Partial<SdSheetColumnDef> = {}): SdSheetColumnDef
     disableSorting: false,
     disableResizing: false,
     ordering: 0,
+    ...overrides,
+  };
+}
+
+function makeHeaderDef(overrides: Partial<SdSheetHeaderDef> = {}): SdSheetHeaderDef {
+  const colDef = overrides.colDef ?? makeColDef();
+
+  return {
+    text: "이름",
+    colspan: 1,
+    rowspan: 1,
+    isLastRow: true,
+    fixed: colDef.fixed,
+    colDef,
+    colIndex: 0,
     ...overrides,
   };
 }
@@ -70,14 +85,9 @@ describe("useSheetCellStyling", () => {
         fixedLeftMap: fixedMap,
       });
 
-      const style = styling.getHeaderCellStyle({
-        text: "이름",
-        colspan: 1,
-        rowspan: 1,
-        isLastRow: true,
-        colDef: makeColDef({ key: "name", fixed: true }),
-        colIndex: 0,
-      });
+      const style = styling.getHeaderCellStyle(
+        makeHeaderDef({ colDef: makeColDef({ key: "name", fixed: true }) }),
+      );
 
       expect(style).toContain("left: 0px");
     });
@@ -162,14 +172,7 @@ describe("useSheetCellStyling", () => {
       const colDef = makeColDef({ headerStyle: "color: red" });
       const { styling } = setup({ columnDefs: [colDef] });
 
-      const style = styling.getHeaderCellStyle({
-        text: "이름",
-        colspan: 1,
-        rowspan: 1,
-        isLastRow: true,
-        colDef,
-        colIndex: 0,
-      });
+      const style = styling.getHeaderCellStyle(makeHeaderDef({ colDef }));
 
       expect(style).toContain("width: 200px");
       expect(style).toContain("color: red");
@@ -179,14 +182,7 @@ describe("useSheetCellStyling", () => {
       const colDef = makeColDef({ headerStyle: undefined });
       const { styling } = setup({ columnDefs: [colDef] });
 
-      const style = styling.getHeaderCellStyle({
-        text: "이름",
-        colspan: 1,
-        rowspan: 1,
-        isLastRow: true,
-        colDef,
-        colIndex: 0,
-      });
+      const style = styling.getHeaderCellStyle(makeHeaderDef({ colDef }));
 
       expect(style).toContain("width: 200px");
       expect(style).not.toContain("color");
@@ -195,14 +191,12 @@ describe("useSheetCellStyling", () => {
     it("colDef가 없는 비-leaf 셀은 null을 반환한다", () => {
       const { styling } = setup();
 
-      const style = styling.getHeaderCellStyle({
+      const style = styling.getHeaderCellStyle(makeHeaderDef({
         text: "그룹",
-        colspan: 1,
-        rowspan: 1,
         isLastRow: false,
+        fixed: false,
         colDef: undefined,
-        colIndex: 0,
-      });
+      }));
 
       expect(style).toBeNull();
     });
@@ -214,14 +208,7 @@ describe("useSheetCellStyling", () => {
         columnDefs: [makeColDef({ collapse: true })],
       });
 
-      const style = styling.getHeaderCellStyle({
-        text: "이름",
-        colspan: 1,
-        rowspan: 1,
-        isLastRow: true,
-        colDef: makeColDef({ collapse: true }),
-        colIndex: 0,
-      });
+      const style = styling.getHeaderCellStyle(makeHeaderDef({ colDef: makeColDef({ collapse: true }) }));
       expect(style).toContain("width: 0");
       expect(style).toContain("padding: 0");
     });

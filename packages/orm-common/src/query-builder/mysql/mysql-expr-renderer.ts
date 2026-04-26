@@ -536,7 +536,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
       expr.targetType.type === "varchar"
         ? `CHAR(${expr.targetType.length})`
         : this.renderDataType(expr.targetType);
-    return `CAST(${this.render(expr.source)} AS ${targetType})`;
+    const castSql = `CAST(${this.render(expr.source)} AS ${targetType})`;
+    return expr.targetType.type === "varchar" || expr.targetType.type === "char"
+      ? `${castSql} COLLATE utf8mb4_bin`
+      : castSql;
   }
 
   //#endregion

@@ -57,7 +57,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
       password: this.config.password,
       database: this.config.database,
       multipleStatements: true,
-      charset: "utf8mb4",
+      charset: "utf8mb4_bin",
       infileStreamFactory: (filePath: string) => fs.createReadStream(filePath), // LOAD DATA LOCAL INFILE 지원
     } as Parameters<typeof this._mysql2.createConnection>[0]);
 

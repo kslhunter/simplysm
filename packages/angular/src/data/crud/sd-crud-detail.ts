@@ -82,19 +82,18 @@ import { tablerDeviceFloppy } from "@ng-icons/tabler-icons";
         </ng-template>
       }
 
-      <!-- CONTENT -->
-      <ng-template #contentTpl>
-        <ng-content />
-      </ng-template>
-
-      @if (readonly()) {
-        <div class="fill">
-          <ng-template [ngTemplateOutlet]="contentTpl" />
-        </div>
-      } @else {
-        <sd-form #formCtrl (formSubmit)="submit.emit()" class="block fill">
-          <ng-template [ngTemplateOutlet]="contentTpl" />
-        </sd-form>
+      @if (contentTplRef()) {
+        <ng-template #contentTpl>
+          @if (readonly()) {
+            <div class="fill">
+              <ng-template [ngTemplateOutlet]="contentTplRef()" />
+            </div>
+          } @else {
+            <sd-form #formCtrl (formSubmit)="submit.emit()" class="block fill">
+              <ng-template [ngTemplateOutlet]="contentTplRef()" />
+            </sd-form>
+          }
+        </ng-template>
       }
     </sd-base-container>
   `,
@@ -112,6 +111,7 @@ export class SdCrudDetail {
   submit = output();
 
   commandTplRef = contentChild<TemplateRef<void>>("commandTpl");
+  contentTplRef = contentChild<TemplateRef<void>>("contentTpl");
   bottomCommandTplRef = contentChild<TemplateRef<void>>("bottomCommandTpl");
 
   onSaveButtonClick() {

@@ -65,7 +65,9 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
         let fingerprint = String(output.bytes);
         if (outDir != null) {
           try {
-            const filePath = path.resolve(normalizedPath);
+            const filePath = path.isAbsolute(normalizedPath)
+              ? normalizedPath
+              : path.resolve(outDir, normalizedPath);
             const content = fs.readFileSync(filePath);
             fingerprint = crypto.createHash("md5").update(content).digest("hex");
           } catch {

@@ -582,11 +582,11 @@ import { SdEvents } from "../../core/events/sd-events";
     `,
   ],
 })
-export class SdSheet<TItem, TKey> {
+export class SdSheet<TItem> {
   // Inputs
   key = input<string>();
   items = input<TItem[]>([]);
-  trackByFn = input.required<(item: TItem, index: number) => TKey>();
+  trackByFn = input<(item: TItem, index: number) => unknown>((item) => item);
   selectMode = input<"single" | "multi">();
   autoSelect = input<"click" | "focus">();
   getItemSelectableFn = input<(item: TItem) => boolean | string>();
@@ -607,7 +607,7 @@ export class SdSheet<TItem, TKey> {
   cellKeydown = output<SdSheetCellKeydownEventParam<TItem>>();
 
   // Models
-  selectedKeys = model<NonNullable<TKey>[]>([]);
+  selectedKeys = model<unknown[]>([]);
   expandedItems = model<TItem[]>([]);
   sorts = model<SortingDef[]>([]); // Re-exported from useSortingManager
   currentPage = model(0);
@@ -699,7 +699,7 @@ export class SdSheet<TItem, TKey> {
   });
 
   // Select row indicator
-  private readonly _selectRowIndicator = injectSheetSelectRowIndicator<TItem, TKey>({
+  private readonly _selectRowIndicator = injectSheetSelectRowIndicator<TItem, unknown>({
     domAccessor: this.domAccessor,
     selectedKeys: this.selectedKeys,
     displayItems: this.displayItems,
@@ -707,7 +707,7 @@ export class SdSheet<TItem, TKey> {
   });
 
   // Selection manager
-  selection = useSelectionManager<TItem, TKey>({
+  selection = useSelectionManager<TItem, unknown>({
     displayItems: this.displayItems,
     selectedKeys: this.selectedKeys,
     selectMode: this.selectMode,

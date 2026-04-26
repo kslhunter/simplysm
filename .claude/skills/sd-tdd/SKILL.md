@@ -1,7 +1,6 @@
 ---
 name: sd-tdd
 description: 구현계획(plan) 기반으로 TDD 개발하는 스킬
-effort: low
 ---
 
 # sd-tdd: TDD 개발
@@ -143,7 +142,7 @@ Unit Test는 내부 설계를 검증한다. Acceptance와 달리 아래가 허�
 
 #### 절차
 
-1. **Unit Test 작성 (Red)** — Acceptance Test와 별개의 도구 호출(Write/Edit)로 작성한다
+1. **Unit Test 작성 (Red)** — Acceptance Test와 역할이 겹치지 않도록, 개별 메서드·경계값·에러 케이스를 별도 테스트로 작성한다
 2. **최소 구현 (Green)** — Unit Test를 통과시키는 최소한의 코드를 작성한다
 3. **Refactor**
   - 방금 작성한 코드 범위에서 중복 제거, 하드코딩 제거(Fake It → 실제 구현), 네이밍 개선, Extract Variable/Method.
