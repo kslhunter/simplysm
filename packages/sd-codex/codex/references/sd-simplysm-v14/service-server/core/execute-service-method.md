@@ -27,7 +27,7 @@ async function executeServiceMethod(
 | Param | Type | Description |
 |-------|------|-------------|
 | `server` | `ServiceServer` | 서버 인스턴스 |
-| `def.serviceName` | `string` | 호출할 서비스 이름 |
+| `def.serviceName` | `string` | 호출할 서비스 이름. `ServiceDefinition.names` 중 하나와 일치하면 실행된다 |
 | `def.methodName` | `string` | 호출할 메서드 이름 |
 | `def.params` | `unknown[]` | 메서드 매개변수 배열 |
 | `def.socket` | `ServiceSocket` (optional) | WebSocket 연결 (WebSocket 요청 시) |

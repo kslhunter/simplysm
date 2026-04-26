@@ -34,12 +34,12 @@ description: 정적 분석이 잡지 못하는 관점(로직 버그, 일관성, 
 
 대상 경로 유형에 따라 소스를 수집한다.
 
-- **패키지 디렉토리** (경로 내 `src/` 존재): `merge-source.sh`로 병합하여 `.tmp/review/{yyMMddHHmmss}.txt` 파일로 저장한 뒤 읽는다.
+- **패키지 디렉토리** (경로 내 `src/` 존재): `merge-source.py`로 병합하여 `.tmp/review/{yyMMddHHmmss}.txt` 파일로 저장한 뒤 읽는다.
   - `{yyMMddHHmmss}`는 실제 현재 시각을 `yyMMddHHmmss` 형식으로 기재한다.
-  - 실행 시 현재 셸에서 안전한 방식으로 `.codex/skills/sd-review/merge-source.sh`를 호출한다.
+  - 실행 시 현재 셸에서 사용 가능한 Python 실행기(`python`, `python3`, `py`)로 `.codex/skills/sd-review/merge-source.py <출력파일> --dir <디렉토리경로>`를 호출한다.
 - **개별 파일 목록**:
   - **5개 미만**: 각 파일을 개별로 읽는다.
-  - **5개 이상**: `merge-source.sh`로 병합하여 `.tmp/review/{yyMMddHHmmss}.txt` 파일로 저장한 뒤 읽는다.
+  - **5개 이상**: `merge-source.py`로 병합하여 `.tmp/review/{yyMMddHHmmss}.txt` 파일로 저장한 뒤 읽는다.
 - **프로젝트 전체 큰그림 리뷰**:
   - 모든 파일을 정밀 병합해 읽지 않는다.
   - 우선 `packages/*/AGENTS.md`, `packages/*/package.json`, 루트 핵심 설정(`package.json`, `pnpm-workspace.yaml`, `tsconfig.json`, `eslint.config.ts`, `sd.config.ts`)을 읽어 패키지 경계와 의존 방향을 파악한다.

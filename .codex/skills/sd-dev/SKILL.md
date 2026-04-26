@@ -19,6 +19,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 | wbs + Feature 번호                   | → Step 3 (sd-plan)                                                             |
 | Feature 문서 경로                    | → Step 4 (sd-tdd). Slice 체크박스(`[x]`/`[ ]`)를 확인하여 진행 상태를 복원한다 |
 | `$sd-review`가 전달한 확정 이슈 목록 | → Step 3 (sd-plan: 리뷰 수정 Feature 문서 생성)                                |
+| `$sd-debug`가 전달한 선택 해결 방안  | → Step 3 (sd-plan: 디버그 수정 Feature 문서 생성)                              |
 | 그 외 (자연어 요청, 참고자료 등)     | → Step 2 (sd-wbs)                                                              |
 
 ## Step 2: sd-wbs
@@ -37,6 +38,12 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 - `$sd-wbs`를 수행하지 않는다.
 - 확정 이슈 목록 전체를 하나의 리뷰 수정 Feature로 보고 `$sd-plan`을 즉시 수행한다.
 - 이슈별 또는 근본 원인별 작업 단위는 WBS Feature가 아니라 Feature 문서의 Slice로 나눈다.
+
+`$sd-debug`가 전달한 선택 해결 방안으로 시작한 경우:
+
+- `$sd-wbs`를 수행하지 않는다.
+- 선택된 해결 방안 전체를 하나의 디버그 수정 Feature로 보고 `$sd-plan`을 즉시 수행한다.
+- 근본 원인, 재현 절차, 선택 방안, 제외된 방안은 Feature 문서의 요구사항·구현계획 근거로 반영한다.
 
 ## Step 4: sd-tdd
 

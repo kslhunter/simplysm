@@ -122,6 +122,7 @@ export function auth(permissionsOrFn: string[] | Function, maybeFn?: Function): 
 
 export interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> {
   name: string;
+  names: string[];
   factory: (ctx: ServiceContext) => TMethods;
   authPermissions?: string[];
 }
@@ -142,11 +143,18 @@ export interface ServiceDefinition<TMethods = Record<string, (...args: any[]) =>
  * })));
  */
 export function defineService<TMethods extends Record<string, (...args: any[]) => any>>(
-  name: string,
+  name: string | string[],
   factory: (ctx: ServiceContext) => TMethods,
 ): ServiceDefinition<TMethods> {
+  const names = Array.isArray(name) ? [...name] : [name];
+  if (names.length < 1) {
+    throw new Error("서비스 이름은 하나 이상 필요합니다.");
+  }
+  const primaryName = names[0];
+
   return {
-    name,
+    name: primaryName,
+    names,
     factory,
     authPermissions: getServiceAuthPermissions(factory),
   };

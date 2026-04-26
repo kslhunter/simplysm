@@ -8,7 +8,25 @@ describe("defineService", () => {
     }));
 
     expect(svc.name).toBe("Health");
+    expect(svc.names).toEqual(["Health"]);
     expect(typeof svc.factory).toBe("function");
+  });
+
+  it("creates service definition with multiple names", () => {
+    const svc = defineService(["Auth", "AuthService"], (_ctx) => ({
+      signIn: () => "ok",
+    }));
+
+    expect(svc.name).toBe("Auth");
+    expect(svc.names).toEqual(["Auth", "AuthService"]);
+  });
+
+  it("throws error when no service name is provided", () => {
+    expect(() =>
+      defineService([], (_ctx) => ({
+        check: () => "ok",
+      })),
+    ).toThrow("서비스 이름은 하나 이상 필요합니다.");
   });
 
   it("factory generates methods when called with context", () => {

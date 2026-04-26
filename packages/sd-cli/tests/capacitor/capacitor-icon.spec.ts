@@ -171,7 +171,12 @@ describe("Capacitor 아이콘 처리", () => {
       const assetsCmd = execaCalls.find(
         (c) => c.command === "pnpm" && c.args.includes("capacitor-assets"),
       );
-      expect(assetsCmd).toBeDefined();
+      if (assetsCmd == null) {
+        throw new Error("capacitor-assets generate 명령이 실행되지 않았습니다.");
+      }
+      const iconBackgroundColorArgIndex = assetsCmd.args.indexOf("--iconBackgroundColor");
+      expect(iconBackgroundColorArgIndex).not.toBe(-1);
+      expect(assetsCmd.args[iconBackgroundColorArgIndex + 1]).toBe("#ffffff");
 
       // sharp가 소스 이미지를 처리했는지 확인
       expect(mockSharp).toHaveBeenCalled();
@@ -258,6 +263,23 @@ describe("Capacitor 아이콘 처리", () => {
         (call) => typeof call[0] === "string" && call[0].includes("logo.png"),
       );
       expect(logoCall).toBeDefined();
+    });
+
+    it("capacitor-assets generate 명령에 흰색 아이콘 배경색을 전달한다", async () => {
+      const { setupIcon } = await import("../../src/capacitor/capacitor-icon.js");
+
+      await setupIcon(PKG_PATH, _CAP_PATH, "assets/icon.png");
+
+      const assetsCmd = execaCalls.find(
+        (c) => c.command === "pnpm" && c.args.includes("capacitor-assets"),
+      );
+      if (assetsCmd == null) {
+        throw new Error("capacitor-assets generate 명령이 실행되지 않았습니다.");
+      }
+
+      const iconBackgroundColorArgIndex = assetsCmd.args.indexOf("--iconBackgroundColor");
+      expect(iconBackgroundColorArgIndex).not.toBe(-1);
+      expect(assetsCmd.args[iconBackgroundColorArgIndex + 1]).toBe("#ffffff");
     });
   });
 });

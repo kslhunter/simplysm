@@ -57,7 +57,7 @@ export async function setupIcon(
         "capacitor-assets",
         "generate",
         "--iconBackgroundColor",
-        "transparent",
+        "#ffffff",
         "--splashBackgroundColor",
         "transparent",
         "--logoSplashScale",

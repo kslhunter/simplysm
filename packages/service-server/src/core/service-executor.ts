@@ -14,7 +14,7 @@ export async function executeServiceMethod(
   },
 ): Promise<unknown> {
   // 서비스 정의 검색
-  const serviceDef = server.options.services.find((item) => item.name === def.serviceName);
+  const serviceDef = server.options.services.find((item) => item.names.includes(def.serviceName));
 
   if (serviceDef == null) {
     throw new Error(`서비스 [${def.serviceName}]를 찾을 수 없습니다.`);

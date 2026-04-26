@@ -1,6 +1,6 @@
 ---
 name: sd-inner-clarify
-description: (내부 전용) 명확성 분류·근거 탐색·재분류·명확화 질문 프로세스. sd-plan, sd-wbs, sd-tdd, sd-refactor, sd-prompt, sd-inner-debug 등에서 호출된다. 직접 호출하지 않는다.
+description: (내부 전용) 명확성 분류·근거 탐색·재분류·명확화 질문 프로세스. sd-plan, sd-wbs, sd-tdd, sd-refactor, sd-prompt, sd-debug 등에서 호출된다. 직접 호출하지 않는다.
 ---
 
 # sd-inner-clarify: 명확화 프로세스

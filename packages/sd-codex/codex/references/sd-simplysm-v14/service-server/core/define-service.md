@@ -11,7 +11,7 @@
 
 ```typescript
 function defineService<TMethods extends Record<string, (...args: any[]) => any>>(
-  name: string,
+  name: string | string[],
   factory: (ctx: ServiceContext) => TMethods,
 ): ServiceDefinition<TMethods>;
 ```
@@ -20,7 +20,7 @@ function defineService<TMethods extends Record<string, (...args: any[]) => any>>
 
 | Param | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | 서비스 이름. HTTP에서 `/api/{name}/{method}`, WebSocket에서 `{name}.{method}`로 라우팅된다 |
+| `name` | `string \| string[]` | 서비스 이름 또는 이름 배열. HTTP에서 `/api/{name}/{method}`, WebSocket에서 `{name}.{method}`로 라우팅된다 |
 | `factory` | `(ctx: ServiceContext) => TMethods` | 요청마다 호출되는 팩토리 함수. 메서드 객체를 반환한다 |
 
 ## Returns
@@ -36,6 +36,7 @@ function defineService<TMethods extends Record<string, (...args: any[]) => any>>
 ```typescript
 interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> {
   name: string;
+  names: string[];
   factory: (ctx: ServiceContext) => TMethods;
   authPermissions?: string[];
 }
@@ -43,7 +44,8 @@ interface ServiceDefinition<TMethods = Record<string, (...args: any[]) => any>> 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | 서비스 이름 |
+| `name` | `string` | 대표 서비스 이름. `defineService()`의 첫 번째 이름이다 |
+| `names` | `string[]` | 라우팅에 사용할 전체 서비스 이름 배열 |
 | `factory` | `(ctx: ServiceContext) => TMethods` | 요청마다 호출되는 팩토리 함수 |
 | `authPermissions` | `string[]` (optional) | `auth()`로 래핑된 팩토리의 서비스 수준 권한 배열 |
 
@@ -69,6 +71,11 @@ export type UserServiceType = ServiceMethods<typeof UserService>;
 // 기본 서비스 (인증 불필요)
 const HealthService = defineService("Health", (ctx) => ({
   check: () => ({ status: "ok" }),
+}));
+
+// 여러 이름으로 같은 서비스 라우팅
+const AuthService = defineService(["Auth", "AuthService"], (ctx) => ({
+  signIn: (id: string) => ({ id }),
 }));
 
 // 서비스 수준 인증 (모든 메서드에 로그인 필요)

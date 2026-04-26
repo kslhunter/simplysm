@@ -121,7 +121,7 @@ version: "14.0.51" → 메이저 버전: 14 → {문서 루트}: .codex/referenc
 
 subagent가 개별 파일을 하나씩 읽는 대신 병합 파일 1회 읽기로 전체 소스를 파악할 수 있게 한다. 컨텍스트 소비를 대폭 줄이는 핵심 단계이다.
 
-각 패키지에 대해 `.codex/skills/sd-codex-docs/merge-source.sh`를 실행하여 `./.tmp/docs/{yyMMddHHmmss}/{패키지명}-source.txt` 파일로 저장한다.
+각 패키지에 대해 현재 셸에서 사용 가능한 Python 실행기(`python`, `python3`, `py`)로 `.codex/skills/sd-codex-docs/merge-source.py <패키지경로> <출력파일경로>`를 실행하여 `./.tmp/docs/{yyMMddHHmmss}/{패키지명}-source.txt` 파일로 저장한다.
 
 - `{yyMMddHHmmss}`는 실제 현재 시각을 `yyMMddHHmmss` 형식으로 기재한다.
 - 여러 패키지면 병렬로 수행한다.
@@ -181,7 +181,7 @@ Step 1 결과와 Step 3의 각 패키지 AGENTS.md를 조합하여 루트 AGENTS
 - **무조건 항상 읽어야 할 자료**: `.codex/rules/*.md`에 매칭되는 룰 본문 파일을 상대 경로 Markdown 링크로 나열 (`*.eval.md` 제외)
 - **저장소 구조와 수정 경계**: 워크스페이스 경로, 루트/패키지/테스트/문서 산출물의 책임 경계
 - **패키지 라우팅**: 사용자 요청 유형별로 먼저 볼 패키지·테스트·문서 경로를 표로 정리
-- **명령어**: 1-2의 스크립트를 작업 유형별 bash 코드 블록으로 포매팅, 각 명령을 언제 쓰는지 인라인 주석 추가
+- **명령어**: 1-2의 스크립트를 작업 유형별 shell 코드 블록으로 포매팅, 각 명령을 언제 쓰는지 인라인 주석 추가
 - **코딩 규칙**: 1-3에서 선별한 규칙 중 작업 중 실수하기 쉬운 전역 금지·필수 규칙을 불릿 리스트로 포매팅
 - **테스트와 검증 기준**: 변경 유형별 최소 검증 명령, 통합 테스트 전제 조건, 실행하지 못한 경우 보고 기준
 - **주의할 변경사항**: lockfile, 생성물, 공개 API, 설정 파일처럼 파급이 큰 파일을 언제 함께 갱신해야 하는지 기술
@@ -235,7 +235,7 @@ pnpm 기반 TypeScript ESM 모노레포. 이 파일은 Codex가 작업 전에 �
 
 ## 명령어
 
-```bash
+```shell
 pnpm check [--target <pkg>]              # 패키지 변경 후 타입체크와 lint 실행
 pnpm typecheck [--target <pkg>]          # 타입 오류만 확인
 pnpm lint [--target <pkg>]               # lint 오류만 확인

@@ -27,6 +27,21 @@ describe("executeServiceMethod with ServiceDefinition", () => {
     expect(result).toBe("Echo: hello");
   });
 
+  it("executes a service method through an additional service name", async () => {
+    const AuthService = defineService(["Auth", "AuthService"], (_ctx) => ({
+      signIn: (id: string) => `signed:${id}`,
+    }));
+
+    const server = createMockServer([AuthService]);
+    const result = await executeServiceMethod(server, {
+      serviceName: "AuthService",
+      methodName: "signIn",
+      params: ["user"],
+    });
+
+    expect(result).toBe("signed:user");
+  });
+
   it("throws error when service not found", async () => {
     const server = createMockServer([]);
 

@@ -166,7 +166,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         this._wsHandler.addSocket(socket, clientId, clientName, req);
       } else {
         // V1 레거시 지원
-        const autoUpdateDef = this.options.services.find((s) => s.name === "AutoUpdate");
+        const autoUpdateDef = this.options.services.find((s) => s.names.includes("AutoUpdate"));
         const legacyV1Handlers = this.options.legacyV1Handlers ?? [];
         if (autoUpdateDef == null && legacyV1Handlers.length < 1) {
           socket.close(1008, "AutoUpdate 서비스가 설정되지 않았습니다");

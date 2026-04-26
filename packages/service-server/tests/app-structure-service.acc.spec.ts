@@ -15,6 +15,7 @@ describe("AppStructureService", () => {
     const svc = AppStructureService(itemsMap);
 
     expect(svc.name).toBe("AppStructure");
+    expect(svc.names).toEqual(["AppStructure"]);
     expect(typeof svc.factory).toBe("function");
 
     const methods = svc.factory({} as any);
