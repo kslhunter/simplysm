@@ -20,7 +20,7 @@ export class SdLabel
 ## Usage
 
 ```html
-<sd-label [theme]="'success'">완료<$sd-label>
-<sd-label [theme]="'danger'">오류<$sd-label>
-<sd-label [color]="'#ff6600'">커스텀<$sd-label>
+<sd-label [theme]="'success'">완료</sd-label>
+<sd-label [theme]="'danger'">오류</sd-label>
+<sd-label [color]="'#ff6600'">커스텀</sd-label>
 ```

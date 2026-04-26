@@ -1,24 +1,21 @@
 # `MssqlDbConn`
 
-> **읽어야 하는 상황**: MSSQL/Azure SQL의 저수준 연결 동작이나 bulk insert 구현을 확인할 때. 일반적으로 [`createDbConn`](../core/create-db-conn.md)이 자동 생성하므로 직접 사용할 일은 드물다.
-
-tedious 라이브러리를 사용하여 MSSQL/Azure SQL 연결을 관리하는 클래스.
+> **읽어야 하는 상황**: MSSQL 또는 Azure SQL의 저수준 연결 구현, 파라미터 바인딩, `tedious` BulkLoad 동작을 확인할 때. 설정만으로 생성하려면 [`createDbConn`](../core/create-db-conn.md)을 사용.
 
 ## When to use
 
-- ✅ 테스트 코드에서 MSSQL 연결을 직접 생성하여 네이티브 라이브러리를 주입할 때.
-- ❌ 일반적으로 직접 생성하지 않는다. [`createDbConn()`](../core/create-db-conn.md)이 dialect에 따라 자동 생성한다.
+- ✅ MSSQL/Azure SQL 연결 구현을 직접 테스트하거나 `DbConn` 구현 세부 동작을 확인할 때 사용.
+- ❌ 일반 애플리케이션 코드에서 생성자를 직접 호출하지 말고 [`createDbConn`](../core/create-db-conn.md)을 사용.
 
 ## Signature
 
 ```typescript
-class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
+export class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   isConnected: boolean;
   isInTransaction: boolean;
-  readonly config: MssqlDbConnConfig;
 
   constructor(
-    tedious: typeof import("tedious"),
+    _tedious: typeof import("tedious"),
     config: MssqlDbConnConfig,
   );
 
@@ -41,47 +38,37 @@ class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
 
 | Member | Kind | Type | Description |
 |--------|------|------|-------------|
-| `isConnected` | property | `boolean` | 연결 여부 |
-| `isInTransaction` | property | `boolean` | 트랜잭션 진행 여부 |
-| `config` | property | `MssqlDbConnConfig` | 연결 설정 |
-| `connect()` | method | `Promise<void>` | DB 연결을 수립한다. `dialect === "mssql-azure"`인 경우 `encrypt: true`로 연결한다. 연결 성공 시 유휴 타임아웃 타이머(`DB_CONN_DEFAULT_TIMEOUT * 2`)를 시작한다 |
-| `close()` | method | `Promise<void>` | 진행 중인 요청을 취소(`cancel()`)하고 30초 내에 완료될 때까지 대기한 뒤 연결을 종료한다 |
-| `beginTransaction(isolationLevel?)` | method | `Promise<void>` | 트랜잭션을 시작한다 |
-| `commitTransaction()` | method | `Promise<void>` | 트랜잭션을 커밋한다 |
-| `rollbackTransaction()` | method | `Promise<void>` | 트랜잭션을 롤백한다 |
-| `execute(queries)` | method | `Promise<Record<string, unknown>[][]>` | SQL 쿼리 배열을 순차 실행한다 |
-| `executeParametrized(query, params?)` | method | `Promise<Record<string, unknown>[][]>` | 파라미터화된 쿼리를 실행한다. 파라미터가 있으면 `execSql()`, 없으면 `execSqlBatch()`를 사용한다. 쿼리 오류 시 오류 발생 줄을 `==> ` 접두사로 표시하여 에러 메시지에 포함한다 |
-| `bulkInsert(tableName, columnMetas, records)` | method | `Promise<void>` | tedious `BulkLoad` API를 사용하여 대량 삽입한다 |
-
-일반적으로 직접 생성하지 않고 [`createDbConn()`](../core/create-db-conn.md)을 통해 인스턴스를 얻는다. 직접 생성은 테스트 코드에서 네이티브 라이브러리를 주입할 때 사용한다.
-
-생성자에서 tedious 라이브러리 모듈을 첫 번째 인수로 직접 주입받는다. `createDbConn()`이 동적 import 후 전달한다.
-
-## `bulkInsert()` 값 변환 규칙
-
-| 값 타입 | 변환 방식 |
-|---------|-----------|
-| `Uuid` | `toString()` |
-| `Uint8Array` | `Buffer.from(val)` (tedious 라이브러리 요구사항으로 인한 예외적 허용) |
-| `DateTime` / `DateOnly` | `.date` (native Date 객체) |
-| `Time` | `"HH:mm:ss"` 포맷 문자열 |
+| `config` | constructor property | `MssqlDbConnConfig` | 연결 설정. `dialect: "mssql-azure"`이면 `encrypt: true`로 연결한다. |
+| `isConnected` | property | `boolean` | 연결 성공 후 `true`, 종료 후 `false`. |
+| `isInTransaction` | property | `boolean` | transaction 시작 후 `true`, commit/rollback 후 `false`. |
+| `executeParametrized` | method | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | `params`가 있으면 `p0`, `p1` 이름으로 `tedious` 파라미터를 추가한다. |
+| `bulkInsert` | method | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | `tedious` `BulkLoad`로 대량 삽입한다. |
 
 ## Usage
 
 ```typescript
-import { MssqlDbConn } from "@simplysm/orm-node";
+import { createDbConn } from "@simplysm/orm-node";
 
-const tedious = await import("tedious");
-const conn = new MssqlDbConn(tedious, {
+const conn = await createDbConn({
   dialect: "mssql",
   host: "localhost",
-  port: 1433,
   username: "sa",
-  password: "password",
-  database: "mydb",
+  password: "secret",
+  database: "app",
 });
 
 await conn.connect();
-const results = await conn.execute(["SELECT 1 AS val"]);
-await conn.close();
+try {
+  await conn.executeParametrized("select * from dbo.Users where id = @p0", [1]);
+} finally {
+  await conn.close();
+}
 ```
+
+## Anti-patterns
+
+### null/undefined 파라미터 바인딩
+
+`executeParametrized`의 MSSQL 타입 추론은 `null` 또는 `undefined` 값을 받으면 `SdError`를 던진다.
+
+**근거**: private `_guessTediousType`이 `value == null`이면 `"_guessTediousType: null/undefined 값은 지원하지 않습니다."` 오류를 발생시킨다.

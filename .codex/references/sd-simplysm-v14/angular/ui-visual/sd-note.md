@@ -20,6 +20,6 @@ export class SdNote
 ## Usage
 
 ```html
-<sd-note [theme]="'warning'">저장하지 않은 변경사항이 있습니다.<$sd-note>
-<sd-note [theme]="'info'">Ctrl+S로 저장할 수 있습니다.<$sd-note>
+<sd-note [theme]="'warning'">저장하지 않은 변경사항이 있습니다.</sd-note>
+<sd-note [theme]="'info'">Ctrl+S로 저장할 수 있습니다.</sd-note>
 ```

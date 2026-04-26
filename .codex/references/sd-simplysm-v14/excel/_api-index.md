@@ -38,3 +38,19 @@
 | `ExcelBorderPosition` | type | [excel-style-options.md](./types/excel-style-options.md) | 테두리 위치를 지정할 때 |
 | `ExcelHorizontalAlign` | type | [excel-style-options.md](./types/excel-style-options.md) | 가로 정렬을 지정할 때 |
 | `ExcelVerticalAlign` | type | [excel-style-options.md](./types/excel-style-options.md) | 세로 정렬을 지정할 때 |
+| `ExcelXmlContentTypeData` | interface | [xml-data-types.md](./types/xml-data-types.md) | xlsx content type XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlRelationshipData` | interface | [xml-data-types.md](./types/xml-data-types.md) | xlsx relationship XML 구조를 타입으로 다룰 때 |
+| `ExcelRelationshipData` | interface | [xml-data-types.md](./types/xml-data-types.md) | 단일 relationship 항목 구조를 타입으로 다룰 때 |
+| `ExcelXmlWorkbookData` | interface | [xml-data-types.md](./types/xml-data-types.md) | workbook XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlWorksheetData` | interface | [xml-data-types.md](./types/xml-data-types.md) | worksheet XML 구조를 타입으로 다룰 때 |
+| `ExcelRowData` | interface | [xml-data-types.md](./types/xml-data-types.md) | worksheet row XML 구조를 타입으로 다룰 때 |
+| `ExcelCellData` | interface | [xml-data-types.md](./types/xml-data-types.md) | worksheet cell XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlDrawingData` | interface | [xml-data-types.md](./types/xml-data-types.md) | drawing XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlSharedStringData` | interface | [xml-data-types.md](./types/xml-data-types.md) | shared string XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlSharedStringDataSi` | type | [xml-data-types.md](./types/xml-data-types.md) | shared string item 구조를 타입으로 다룰 때 |
+| `ExcelXmlSharedStringDataText` | type | [xml-data-types.md](./types/xml-data-types.md) | shared string text node 구조를 타입으로 다룰 때 |
+| `ExcelXmlStyleData` | interface | [xml-data-types.md](./types/xml-data-types.md) | style XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlStyleDataXf` | interface | [xml-data-types.md](./types/xml-data-types.md) | cell format XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlStyleDataFill` | interface | [xml-data-types.md](./types/xml-data-types.md) | fill style XML 구조를 타입으로 다룰 때 |
+| `ExcelXmlStyleDataBorder` | interface | [xml-data-types.md](./types/xml-data-types.md) | border style XML 구조를 타입으로 다룰 때 |
+| `ExcelXml` | interface | [xml-data-types.md](./types/xml-data-types.md) | xlsx XML model 구현 계약을 타입으로 다룰 때 |

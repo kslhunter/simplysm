@@ -1,11 +1,11 @@
 # `AutoUpdate`
 
-> **읽어야 하는 상황**: 앱 부트스트랩 시 서버에서 최신 APK를 자동 다운로드·설치하거나, 네트워크 없이 외부 저장소(USB)에서 APK를 업데이트할 때. APK 설치만 직접 제어하려면 [`ApkInstaller`](../apk-installer/apk-installer.md) 참조.
+> **읽어야 하는 상황**: 앱 부트스트랩 시 서버에서 최신 APK를 자동 다운로드·설치하거나, 네트워크 없이 외부 저장소 디렉토리에서 APK를 업데이트할 때. APK 설치만 직접 제어하려면 [`ApkInstaller`](../apk-installer/apk-installer.md) 참조.
 
 ## When to use
 
 - ✅ 앱 부트스트랩 시 서버에서 최신 APK를 자동 다운로드·설치할 때 → `run()`
-- ✅ 네트워크 없이 외부 저장소(USB 등)에서 APK를 업데이트할 때 → `runByExternalStorage()`
+- ✅ 네트워크 없이 외부 저장소 디렉토리에서 APK를 업데이트할 때 → `runByExternalStorage()`
 - ❌ APK 설치 권한만 확인하거나 설치만 직접 수행 → [`ApkInstaller`](../apk-installer/apk-installer.md)
 
 ## Signature
@@ -29,7 +29,7 @@ export abstract class AutoUpdate {
 | Member | Kind | Description |
 |--------|------|-------------|
 | `run` | static method | `AutoUpdateService.getLastVersion("android")`로 서버에서 최신 버전 정보를 조회한 뒤, 현재 버전보다 높으면 APK를 다운로드하여 설치한다. 업데이트 후 앱을 무한 대기 상태로 전환한다. |
-| `runByExternalStorage` | static method | 외부 저장소의 `opt.dirPath` 디렉토리에서 숫자와 점으로만 구성된 이름의 `.apk` 파일(예: `1.2.3.apk`) 중 최신 semver 버전을 찾아 설치한다. |
+| `runByExternalStorage` | static method | 외부 저장소의 `opt.dirPath` 디렉토리에서 숫자와 점으로만 구성된 이름의 `.apk` 파일 중 최신 semver 버전을 찾아 설치한다. |
 
 ## Parameters
 
@@ -45,11 +45,11 @@ export abstract class AutoUpdate {
 | Param | Type | Description |
 |-------|------|-------------|
 | `log` | `(messageHtml: string) => void` | 진행 상황 HTML을 받아 사용자에게 표시하는 콜백. |
-| `dirPath` | `string` | 외부 저장소 루트(`FileSystem.getStoragePath("external")`) 기준 상대 경로. 해당 경로에 `1.2.3.apk` 형식 파일이 있어야 한다. |
+| `dirPath` | `string` | 외부 저장소 루트(`FileSystem.getStoragePath("external")`) 기준 상대 경로. 해당 경로에 `1.2.3.apk`처럼 APK 파일명에서 버전을 추출할 수 있는 파일이 있어야 한다. |
 
 ## 동작 설명
 
-**권한 처리**: 두 메서드 모두 내부적으로 `ApkInstaller.checkPermissions()`를 호출한다.
+**권한 처리**: 두 메서드 모두 내부적으로 Android user agent를 확인하고 `ApkInstaller.checkPermissions()`를 호출한다.
 - `manifest: false` → 재설치 에러를 throw하고 앱을 무한 대기로 전환한다.
 - `granted: false` → 권한 요청 후 최대 300초(1초 간격)간 승인을 폴링한다.
 
@@ -82,7 +82,7 @@ await AutoUpdate.run({
 
 ### 전형 예제 — 외부 저장소(USB) 기반 업데이트
 
-`opt.dirPath`는 외부 저장소 루트 기준 상대 경로다. 해당 경로에 `1.2.3.apk` 형식 파일이 있어야 한다.
+`opt.dirPath`는 외부 저장소 루트 기준 상대 경로다. 해당 경로에 APK 파일명에서 semver 버전을 추출할 수 있는 파일이 있어야 한다.
 
 ```typescript
 import { AutoUpdate } from "@simplysm/capacitor-plugin-auto-update";

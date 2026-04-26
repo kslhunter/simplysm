@@ -22,88 +22,88 @@ npm install @simplysm/angular
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
 | 앱 부트스트랩 (provideSdAngular 등록) | [provide-sd-angular.md](./bootstrap/provide-sd-angular.md) |
-| clientName 설정 조회 | [sd-angular-config-provider.md](./bootstrap$sd-angular-config-provider.md) |
+| clientName 설정 조회 | [sd-angular-config-provider.md](./bootstrap/sd-angular-config-provider.md) |
 
 ### 사용자 입력 받기
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 텍스트/숫자/날짜/색상 등 한 줄 입력 | [sd-textfield.md](./ui-form$sd-textfield.md) |
-| 여러 줄 텍스트 입력 | [sd-textarea.md](./ui-form$sd-textarea.md) |
-| 리치 텍스트 (HTML) 편집 | [sd-tiptap-editor.md](./features$sd-tiptap-editor.md) |
-| 숫자 패드 입력 (터치 기기) | [sd-numpad.md](./ui-form$sd-numpad.md) |
-| 범위 입력 (from ~ to) | [sd-range.md](./ui-form$sd-range.md) |
-| 날짜 범위 선택 (일/월/범위 모드) | [sd-date-range-picker.md](./ui-form$sd-date-range-picker.md) |
-| 드롭다운으로 항목 선택 (single/multi) | [sd-select.md](./ui-form$sd-select.md) |
-| 공유 데이터에서 드롭다운 선택 | [sd-shared-data-select.md](./ui-form$sd-shared-data-select.md) |
-| 모달을 열어 항목 선택 | [sd-modal-select-button.md](./ui-form$sd-modal-select-button.md) |
-| 공유 데이터를 모달에서 선택 | [sd-shared-data-components.md](./features$sd-shared-data-components.md) |
-| 체크박스 토글 | [sd-checkbox.md](./ui-form$sd-checkbox.md) |
-| 스위치 토글 | [sd-switch.md](./ui-form$sd-switch.md) |
-| 체크박스 그룹 (다중 선택) | [sd-checkbox-group.md](./ui-form$sd-checkbox-group.md) |
-| 버튼 스타일 선택 | [sd-select.md](./ui-form$sd-select.md) (SdSelectButton) |
-| 폼 제출 (submit 이벤트, 유효성) | [sd-form.md](./ui-form$sd-form.md) |
-| 상태 프리셋 저장/불러오기 | [sd-state-preset.md](./ui-form$sd-state-preset.md) |
+| 텍스트/숫자/날짜/색상 등 한 줄 입력 | [sd-textfield.md](./ui-form/sd-textfield.md) |
+| 여러 줄 텍스트 입력 | [sd-textarea.md](./ui-form/sd-textarea.md) |
+| 리치 텍스트 (HTML) 편집 | [sd-tiptap-editor.md](./features/sd-tiptap-editor.md) |
+| 숫자 패드 입력 (터치 기기) | [sd-numpad.md](./ui-form/sd-numpad.md) |
+| 범위 입력 (from ~ to) | [sd-range.md](./ui-form/sd-range.md) |
+| 날짜 범위 선택 (일/월/범위 모드) | [sd-date-range-picker.md](./ui-form/sd-date-range-picker.md) |
+| 드롭다운으로 항목 선택 (single/multi) | [sd-select.md](./ui-form/sd-select.md) |
+| 공유 데이터에서 드롭다운 선택 | [sd-shared-data-select.md](./ui-form/sd-shared-data-select.md) |
+| 모달을 열어 항목 선택 | [sd-modal-select-button.md](./ui-form/sd-modal-select-button.md) |
+| 공유 데이터를 모달에서 선택 | [sd-shared-data-components.md](./features/sd-shared-data-components.md) |
+| 체크박스 토글 | [sd-checkbox.md](./ui-form/sd-checkbox.md) |
+| 스위치 토글 | [sd-switch.md](./ui-form/sd-switch.md) |
+| 체크박스 그룹 (다중 선택) | [sd-checkbox-group.md](./ui-form/sd-checkbox-group.md) |
+| 버튼 스타일 선택 | [sd-select.md](./ui-form/sd-select.md) (SdSelectButton) |
+| 폼 제출 (submit 이벤트, 유효성) | [sd-form.md](./ui-form/sd-form.md) |
+| 상태 프리셋 저장/불러오기 | [sd-state-preset.md](./ui-form/sd-state-preset.md) |
 
 ### 데이터 표시하기
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 스프레드시트 형태 데이터 표시 (정렬, 고정, 리사이즈) | [sd-sheet.md](./ui-data$sd-sheet.md) |
-| 리스트 형태 데이터 표시 | [sd-list.md](./ui-data$sd-list.md) |
-| 캘린더에 항목 배치 | [sd-calendar.md](./ui-visual$sd-calendar.md) |
-| 차트 (ECharts) 표시 | [sd-echarts.md](./ui-visual$sd-echarts.md) |
-| 바코드 생성 | [sd-barcode.md](./ui-visual$sd-barcode.md) |
-| 라벨 (테마 색상) 표시 | [sd-label.md](./ui-visual$sd-label.md) |
-| 노트/알림 메시지 박스 표시 | [sd-note.md](./ui-visual$sd-note.md) |
-| 진행률 바 표시 | [sd-progress.md](./ui-visual$sd-progress.md) |
+| 스프레드시트 형태 데이터 표시 (정렬, 고정, 리사이즈) | [sd-sheet.md](./ui-data/sd-sheet.md) |
+| 리스트 형태 데이터 표시 | [sd-list.md](./ui-data/sd-list.md) |
+| 캘린더에 항목 배치 | [sd-calendar.md](./ui-visual/sd-calendar.md) |
+| 차트 (ECharts) 표시 | [sd-echarts.md](./ui-visual/sd-echarts.md) |
+| 바코드 생성 | [sd-barcode.md](./ui-visual/sd-barcode.md) |
+| 라벨 (테마 색상) 표시 | [sd-label.md](./ui-visual/sd-label.md) |
+| 노트/알림 메시지 박스 표시 | [sd-note.md](./ui-visual/sd-note.md) |
+| 진행률 바 표시 | [sd-progress.md](./ui-visual/sd-progress.md) |
 
 ### CRUD 스캐폴드
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| CRUD 페이지/모달의 기본 컨테이너 (busy, restricted, viewType별 레이아웃) | [sd-base-container.md](./ui-data$sd-base-container.md) |
-| CRUD 상세 화면 (폼 + 저장) | [sd-crud-detail.md](./ui-data$sd-crud-detail.md) |
-| CRUD 목록 화면 (시트 + 필터 + 등록/삭제/복구) | [sd-crud-list.md](./ui-data$sd-crud-list.md) |
+| CRUD 페이지/모달의 기본 컨테이너 (busy, restricted, viewType별 레이아웃) | [sd-base-container.md](./ui-data/sd-base-container.md) |
+| CRUD 상세 화면 (폼 + 저장) | [sd-crud-detail.md](./ui-data/sd-crud-detail.md) |
+| CRUD 목록 화면 (시트 + 필터 + 등록/삭제/복구) | [sd-crud-list.md](./ui-data/sd-crud-list.md) |
 
 ### 모달/알림/피드백
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 코드에서 모달을 프로그래밍 방식으로 열기 | [sd-modal-provider.md](./providers$sd-modal-provider.md) |
-| 모달 컴포넌트 구현 (SdModalContentDef) | [sd-modal-content-def.md](./provider-types$sd-modal-content-def.md) |
-| 확인/취소 대화상자 | [sd-confirm-modal.md](./ui-overlay$sd-confirm-modal.md) |
-| 텍스트 입력 대화상자 | [sd-prompt-modal.md](./ui-overlay$sd-prompt-modal.md) |
-| 모달 내부에서 모달/컨텐츠 참조 | [sd-activated-modal-provider.md](./providers$sd-activated-modal-provider.md) |
-| 토스트 알림 표시 (info/success/warning/danger) | [sd-toast-provider.md](./providers$sd-toast-provider.md) |
-| busy 로딩 표시 (spinner/bar/cube) | [sd-busy-provider.md](./providers$sd-busy-provider.md) |
-| 인쇄 또는 PDF 생성 | [sd-print-provider.md](./providers$sd-print-provider.md) |
-| 네이티브 파일 선택 대화상자 | [sd-file-dialog-provider.md](./providers$sd-file-dialog-provider.md) |
+| 코드에서 모달을 프로그래밍 방식으로 열기 | [sd-modal-provider.md](./providers/sd-modal-provider.md) |
+| 모달 컴포넌트 구현 (SdModalContentDef) | [sd-modal-content-def.md](./provider-types/sd-modal-content-def.md) |
+| 확인/취소 대화상자 | [sd-confirm-modal.md](./ui-overlay/sd-confirm-modal.md) |
+| 텍스트 입력 대화상자 | [sd-prompt-modal.md](./ui-overlay/sd-prompt-modal.md) |
+| 모달 내부에서 모달/컨텐츠 참조 | [sd-activated-modal-provider.md](./providers/sd-activated-modal-provider.md) |
+| 토스트 알림 표시 (info/success/warning/danger) | [sd-toast-provider.md](./providers/sd-toast-provider.md) |
+| busy 로딩 표시 (spinner/bar/cube) | [sd-busy-provider.md](./providers/sd-busy-provider.md) |
+| 인쇄 또는 PDF 생성 | [sd-print-provider.md](./providers/sd-print-provider.md) |
+| 네이티브 파일 선택 대화상자 | [sd-file-dialog-provider.md](./providers/sd-file-dialog-provider.md) |
 
 ### 레이아웃/내비게이션
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 도킹 레이아웃 (top/bottom/left/right 고정 영역) | [sd-dock-container.md](./ui-layout$sd-dock-container.md) |
-| 사이드바 + 메뉴 구성 | [sd-sidebar-container.md](./ui-navigation$sd-sidebar-container.md) |
-| 사이드바 메뉴 항목 | [sd-sidebar-menu.md](./ui-navigation$sd-sidebar-menu.md) |
-| 사이드바 사용자 영역 | [sd-sidebar-user.md](./ui-navigation$sd-sidebar-user.md) |
-| 탑바 구성 | [sd-topbar-container.md](./ui-navigation$sd-topbar-container.md) |
-| 탑바 메뉴/사용자 영역 | [sd-topbar-menu.md](./ui-navigation$sd-topbar-menu.md), [sd-topbar-user.md](./ui-navigation$sd-topbar-user.md) |
-| 탭 전환 | [sd-tab.md](./ui-navigation$sd-tab.md) |
-| 접기/펼치기 패널 | [sd-collapse.md](./ui-navigation$sd-collapse.md) |
-| 페이지네이션 | [sd-pagination.md](./ui-navigation$sd-pagination.md) |
-| 간격 (gap) 삽입 | [sd-gap.md](./ui-layout$sd-gap.md) |
-| 칸반 보드 (드래그앤드롭) | [sd-kanban-board.md](./ui-layout$sd-kanban-board.md) |
-| 드롭다운 팝업 | [sd-dropdown.md](./ui-overlay$sd-dropdown.md) |
-| 버튼/앵커 클릭 | [sd-button.md](./ui-form$sd-button.md) |
-| 추가 동작 버튼 (콘텐츠 + 버튼 영역) | [sd-additional-button.md](./ui-form$sd-additional-button.md) |
+| 도킹 레이아웃 (top/bottom/left/right 고정 영역) | [sd-dock-container.md](./ui-layout/sd-dock-container.md) |
+| 사이드바 + 메뉴 구성 | [sd-sidebar-container.md](./ui-navigation/sd-sidebar-container.md) |
+| 사이드바 메뉴 항목 | [sd-sidebar-menu.md](./ui-navigation/sd-sidebar-menu.md) |
+| 사이드바 사용자 영역 | [sd-sidebar-user.md](./ui-navigation/sd-sidebar-user.md) |
+| 탑바 구성 | [sd-topbar-container.md](./ui-navigation/sd-topbar-container.md) |
+| 탑바 메뉴/사용자 영역 | [sd-topbar-menu.md](./ui-navigation/sd-topbar-menu.md), [sd-topbar-user.md](./ui-navigation/sd-topbar-user.md) |
+| 탭 전환 | [sd-tab.md](./ui-navigation/sd-tab.md) |
+| 접기/펼치기 패널 | [sd-collapse.md](./ui-navigation/sd-collapse.md) |
+| 페이지네이션 | [sd-pagination.md](./ui-navigation/sd-pagination.md) |
+| 간격 (gap) 삽입 | [sd-gap.md](./ui-layout/sd-gap.md) |
+| 칸반 보드 (드래그앤드롭) | [sd-kanban-board.md](./ui-layout/sd-kanban-board.md) |
+| 드롭다운 팝업 | [sd-dropdown.md](./ui-overlay/sd-dropdown.md) |
+| 버튼/앵커 클릭 | [sd-button.md](./ui-form/sd-button.md) |
+| 추가 동작 버튼 (콘텐츠 + 버튼 영역) | [sd-additional-button.md](./ui-form/sd-additional-button.md) |
 
 ### 스타일/테마
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 다크모드/폰트 크기 전환 | [sd-theme-provider.md](./providers$sd-theme-provider.md) |
+| 다크모드/폰트 크기 전환 | [sd-theme-provider.md](./providers/sd-theme-provider.md) |
 | 레이아웃/유틸리티 CSS 클래스 | [classes.md](./styling/classes.md) |
 | CSS 변수 (색상, 간격, 폰트) 오버라이드 | [variables.md](./styling/variables.md) |
 | 다크 모드 테마 | [themes.md](./styling/themes.md) |
@@ -113,16 +113,16 @@ npm install @simplysm/angular
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 시스템 설정 비동기 저장/조회 | [sd-system-config-provider.md](./providers$sd-system-config-provider.md) |
+| 시스템 설정 비동기 저장/조회 | [sd-system-config-provider.md](./providers/sd-system-config-provider.md) |
 | 시스템 설정 resource 래퍼 | [inject-sd-system-config-resource.md](./utils/inject-sd-system-config-resource.md) |
-| 시스템 로그 기록 | [sd-system-log-provider.md](./providers$sd-system-log-provider.md) |
-| 앱 구조 (메뉴/권한) 관리 | [sd-app-structure-provider.md](./providers$sd-app-structure-provider.md) |
-| 공유 데이터 캐시 (이벤트 기반) | [sd-shared-data-provider.md](./providers$sd-shared-data-provider.md) |
-| ServiceClient 팩토리 | [sd-service-client-factory-provider.md](./providers$sd-service-client-factory-provider.md) |
-| localStorage 래퍼 (clientName 스코프) | [sd-local-storage-provider.md](./providers$sd-local-storage-provider.md) |
-| 새 윈도우 네비게이션 | [sd-navigate-window-provider.md](./providers$sd-navigate-window-provider.md) |
-| 권한 매트릭스 테이블 표시 | [sd-permission-table.md](./features$sd-permission-table.md) |
-| 주소 검색 (Daum Postcode) | [sd-address-search-modal.md](./features$sd-address-search-modal.md) |
+| 시스템 로그 기록 | [sd-system-log-provider.md](./providers/sd-system-log-provider.md) |
+| 앱 구조 (메뉴/권한) 관리 | [sd-app-structure-provider.md](./providers/sd-app-structure-provider.md) |
+| 공유 데이터 캐시 (이벤트 기반) | [sd-shared-data-provider.md](./providers/sd-shared-data-provider.md) |
+| ServiceClient 팩토리 | [sd-service-client-factory-provider.md](./providers/sd-service-client-factory-provider.md) |
+| localStorage 래퍼 (clientName 스코프) | [sd-local-storage-provider.md](./providers/sd-local-storage-provider.md) |
+| 새 윈도우 네비게이션 | [sd-navigate-window-provider.md](./providers/sd-navigate-window-provider.md) |
+| 권한 매트릭스 테이블 표시 | [sd-permission-table.md](./features/sd-permission-table.md) |
+| 주소 검색 (Daum Postcode) | [sd-address-search-modal.md](./features/sd-address-search-modal.md) |
 | 선택 관리 (single/multi/expanding/sorting) | [selection-managers.md](./utils/selection-managers.md) |
 | 라우팅 signal (현재 페이지 코드, 뷰 타입) | [inject-routing-signals.md](./utils/inject-routing-signals.md) |
 | setup 함수 (리플, 유효성, canDeactivate 등) | [setup-functions.md](./utils/setup-functions.md) |
@@ -135,22 +135,22 @@ npm install @simplysm/angular
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 리플 효과 적용 | [sd-ripple.md](./directives$sd-ripple.md) |
-| 뷰포트 진입 시 reveal 애니메이션 | [sd-show-effect.md](./directives$sd-show-effect.md) |
-| 유효성 검증 표시 | [sd-invalid.md](./directives$sd-invalid.md) |
-| 템플릿 컨텍스트 타입 가드 | [sd-typed-template.md](./directives$sd-typed-template.md) |
-| 라우터 네비게이션 (Ctrl+클릭 새 창) | [sd-router-link.md](./directives$sd-router-link.md) |
-| 키보드 단축키 (Ctrl+S 저장 등) | [sd-command-directive.md](./directives$sd-command-directive.md) |
-| ResizeObserver 이벤트 | [sd-resize-directive.md](./directives$sd-resize-directive.md) |
-| IntersectionObserver 이벤트 | [sd-intersection-directive.md](./directives$sd-intersection-directive.md) |
-| 이벤트 수식어 (.capture/.passive/.once) | [sd-events.md](./directives$sd-events.md) |
+| 리플 효과 적용 | [sd-ripple.md](./directives/sd-ripple.md) |
+| 뷰포트 진입 시 reveal 애니메이션 | [sd-show-effect.md](./directives/sd-show-effect.md) |
+| 유효성 검증 표시 | [sd-invalid.md](./directives/sd-invalid.md) |
+| 템플릿 컨텍스트 타입 가드 | [sd-typed-template.md](./directives/sd-typed-template.md) |
+| 라우터 네비게이션 (Ctrl+클릭 새 창) | [sd-router-link.md](./directives/sd-router-link.md) |
+| 키보드 단축키 (Ctrl+S 저장 등) | [sd-command-directive.md](./directives/sd-command-directive.md) |
+| ResizeObserver 이벤트 | [sd-resize-directive.md](./directives/sd-resize-directive.md) |
+| IntersectionObserver 이벤트 | [sd-intersection-directive.md](./directives/sd-intersection-directive.md) |
+| 이벤트 수식어 (.capture/.passive/.once) | [sd-events.md](./directives/sd-events.md) |
 
 ### 플러그인
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 이벤트 옵션 플러그인 (.capture 등) | [sd-option-event-plugin.md](./plugins$sd-option-event-plugin.md) |
-| 글로벌 에러 핸들러 | [sd-global-error-handler.md](./plugins$sd-global-error-handler.md) |
+| 이벤트 옵션 플러그인 (.capture 등) | [sd-option-event-plugin.md](./plugins/sd-option-event-plugin.md) |
+| 글로벌 에러 핸들러 | [sd-global-error-handler.md](./plugins/sd-global-error-handler.md) |
 
 ## 이 패키지를 쓰지 말아야 할 때
 

@@ -1,7 +1,6 @@
 ---
 name: sd-deliverable
 description: 코드 분석 기반으로 사용자 매뉴얼(md)과 SIT 문서(md)를 생성·업데이트하는 스킬. "매뉴얼 만들어줘", "SIT 문서 만들어줘", "산출물 생성", "매뉴얼 업데이트" 등을 요청할 때 사용한다.
-effort: low
 ---
 
 # sd-deliverable: 매뉴얼 & SIT 생성
@@ -89,7 +88,7 @@ $sd-deliverable {대상 경로} [--ref {참조 문서 경로}] [--out {출력 �
 | 모달/다이얼로그 | 보조 화면 흐름 |
 | 드롭다운 연동 | 선택에 따른 데이터 필터링 |
 
-분석 대상 파일이 20개 이상이면, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 `spawn_agent`로 병렬 분석한다.
+분석 대상 파일이 20개 이상이면, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 `spawn_agent`로 병렬 분석한다. 각 `spawn_agent` 호출에는 `model: "gpt-5.3-codex-spark"`와 `reasoning_effort: "low"`를 명시한다.
 
 ### `--ref` 참조 문서 활용
 

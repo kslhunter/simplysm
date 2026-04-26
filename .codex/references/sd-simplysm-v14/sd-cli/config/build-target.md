@@ -16,7 +16,7 @@ export type BuildTarget = "node" | "browser" | "neutral";
 
 ## Usage
 
-[`SdBuildPackageConfig`](.$sd-build-package-config.md)의 `target` 필드에 사용한다.
+[`SdBuildPackageConfig`](./sd-build-package-config.md)의 `target` 필드에 사용한다.
 
 ```typescript
 import type { SdConfigFn } from "@simplysm/sd-cli";

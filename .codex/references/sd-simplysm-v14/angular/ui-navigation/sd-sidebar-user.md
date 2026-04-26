@@ -41,5 +41,5 @@ interface SdSidebarUserMenu {
   [userMenu]="{ title: '홍길동', menus: [{ title: '로그아웃', onClick: logout }] }"
 >
   <span>홍길동</span>
-<$sd-sidebar-user>
+</sd-sidebar-user>
 ```

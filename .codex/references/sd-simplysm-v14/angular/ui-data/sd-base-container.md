@@ -53,9 +53,9 @@ import { SdBaseContainer } from "@simplysm/angular";
   │    <sd-topbar>                                        │
   │      <h4>{viewTitle}</h4>                             │
   │      [#topbarTpl 렌더링]                              │
-  │    <$sd-topbar>                                       │
+  │    </sd-topbar>                                       │
   │    [#content 렌더링]                                  │
-  │  <$sd-topbar-container>                               │
+  │  </sd-topbar-container>                               │
   └───────────────────────────────────────────────────────┘
 
   ┌─ viewType="modal" | "control" ────────────────────────┐
@@ -71,7 +71,7 @@ import { SdBaseContainer } from "@simplysm/angular";
   │    [#bottomCommandTpl 영역] (있을 때만)                │
   │  </div>                                               │
   └───────────────────────────────────────────────────────┘
-<$sd-busy-container>
+</sd-busy-container>
 ```
 
 ## 초기화 순서 (lifecycle)
@@ -123,7 +123,7 @@ import { SdBaseContainer } from "@simplysm/angular";
       />
     }
   </div>
-<$sd-base-container>
+</sd-base-container>
 ```
 
 ### 소비 컴포넌트 클래스 패턴

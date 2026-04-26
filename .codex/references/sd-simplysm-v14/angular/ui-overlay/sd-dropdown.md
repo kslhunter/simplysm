@@ -31,12 +31,12 @@ export class SdDropdownPopup
 
 ```html
 <sd-dropdown>
-  <sd-button>메뉴 열기<$sd-button>
+  <sd-button>메뉴 열기</sd-button>
   <sd-dropdown-popup>
     <sd-list>
-      <sd-list-item (click)="onAction1()">동작 1<$sd-list-item>
-      <sd-list-item (click)="onAction2()">동작 2<$sd-list-item>
-    <$sd-list>
-  <$sd-dropdown-popup>
-<$sd-dropdown>
+      <sd-list-item (click)="onAction1()">동작 1</sd-list-item>
+      <sd-list-item (click)="onAction2()">동작 2</sd-list-item>
+    </sd-list>
+  </sd-dropdown-popup>
+</sd-dropdown>
 ```

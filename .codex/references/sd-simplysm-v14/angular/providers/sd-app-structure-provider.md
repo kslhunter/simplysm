@@ -62,7 +62,7 @@ protected readonly canEdit = computed(() => this.perms().includes("edit"));
 
 ```html
 @if (!perms().includes("use")) {
-  <sd-note theme="warning">이 화면의 사용 권한이 없습니다.<$sd-note>
+  <sd-note theme="warning">이 화면의 사용 권한이 없습니다.</sd-note>
 }
 ```
 

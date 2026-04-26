@@ -1,6 +1,6 @@
 # `SdModalProvider`
 
-> **읽어야 하는 상황**: 코드에서 프로그래밍 방식으로 모달을 열고 결과를 받아야 할 때. 단순 확인/취소는 [`SdConfirmModal`](../ui-overlay$sd-confirm-modal.md), 텍스트 입력은 [`SdPromptModal`](../ui-overlay$sd-prompt-modal.md) 참조.
+> **읽어야 하는 상황**: 코드에서 프로그래밍 방식으로 모달을 열고 결과를 받아야 할 때. 단순 확인/취소는 [`SdConfirmModal`](../ui-overlay/sd-confirm-modal.md), 텍스트 입력은 [`SdPromptModal`](../ui-overlay/sd-prompt-modal.md) 참조.
 
 프로그래밍 방식으로 모달을 생성하는 프로바이더.
 

@@ -1,6 +1,6 @@
 # `SdCheckbox`
 
-> **읽어야 하는 상황**: 체크박스로 boolean 값을 토글할 때. 스위치 형태는 [`SdSwitch`](.$sd-switch.md), 다중 선택 그룹은 [`SdCheckboxGroup`](.$sd-checkbox-group.md) 참조.
+> **읽어야 하는 상황**: 체크박스로 boolean 값을 토글할 때. 스위치 형태는 [`SdSwitch`](./sd-switch.md), 다중 선택 그룹은 [`SdCheckboxGroup`](./sd-checkbox-group.md) 참조.
 
 체크박스 컴포넌트.
 

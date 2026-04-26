@@ -1,6 +1,6 @@
 # `SdConfirmModal`
 
-> **읽어야 하는 상황**: 확인/취소 대화상자를 표시할 때. 텍스트 입력은 [`SdPromptModal`](.$sd-prompt-modal.md), 커스텀 모달은 [`SdModalProvider`](../providers$sd-modal-provider.md) 참조.
+> **읽어야 하는 상황**: 확인/취소 대화상자를 표시할 때. 텍스트 입력은 [`SdPromptModal`](./sd-prompt-modal.md), 커스텀 모달은 [`SdModalProvider`](../providers/sd-modal-provider.md) 참조.
 
 범용 확인 모달. `SdModalContentDef<boolean>`을 구현한다.
 메시지를 표시하고 확인/취소한다. 확인 시 `true` 반환, 취소 시 `undefined` 반환.

@@ -45,7 +45,7 @@ protected readonly viewTitle = injectViewTitleSignal();
 ```html
 <sd-topbar>
   <h4>{{ viewTitle() }}</h4>
-<$sd-topbar>
+</sd-topbar>
 ```
 
 ## `injectViewTypeSignal`

@@ -1,6 +1,6 @@
 # `SdSwitch`
 
-> **읽어야 하는 상황**: 스위치 형태로 on/off를 토글할 때. 체크박스 형태는 [`SdCheckbox`](.$sd-checkbox.md) 참조.
+> **읽어야 하는 상황**: 스위치 형태로 on/off를 토글할 때. 체크박스 형태는 [`SdCheckbox`](./sd-checkbox.md) 참조.
 
 토글 스위치 컴포넌트. `value` model로 on/off 상태를 관리한다.
 

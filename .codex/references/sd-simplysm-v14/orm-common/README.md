@@ -98,6 +98,7 @@ npm install @simplysm/orm-common
 |-------------|-----------|
 | QueryDef AST를 dialect별 SQL 문자열로 변환할 때 (테스트용) | [createQueryBuilder](./query-builder/create-query-builder.md) |
 | DB 원시 결과를 중첩 TypeScript 객체로 변환할 때 (커스텀 executor용) | [parseQueryResult](./types/parse-query-result.md) |
+| 여러 result set 중 QueryBuildResult 메타데이터가 가리키는 결과만 꺼낼 때 | [pickResultSets](./types/pick-result-sets.md) |
 
 ### 타입 참조
 

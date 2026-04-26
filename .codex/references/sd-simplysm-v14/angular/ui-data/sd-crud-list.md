@@ -1,6 +1,6 @@
 # `SdCrudList`
 
-> **읽어야 하는 상황**: CRUD 목록 화면(시트 + 필터 + 등록/삭제)을 만들 때. 상세 화면은 [`SdCrudDetail`](.$sd-crud-detail.md) 참조.
+> **읽어야 하는 상황**: CRUD 목록 화면(시트 + 필터 + 등록/삭제)을 만들 때. 상세 화면은 [`SdCrudDetail`](./sd-crud-detail.md) 참조.
 
 CRUD 목록 화면 스캐폴드. `SdBaseContainer`를 내부에 사용하며, `SdSheet` 기반 데이터 표시, 필터 폼, 등록/삭제/복구 버튼, 모달 선택 모드를 제공한다.
 
@@ -88,7 +88,7 @@ SdCrudList<TItem, TKey>
   <div class="form-box-item">
     <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
       삭제항목 포함
-    <$sd-checkbox>
+    </sd-checkbox>
   </div>
 </ng-template>
 ```
@@ -109,7 +109,7 @@ viewType에 따라 렌더링 위치가 달라진다:
   <sd-button [theme]="'link-success'" (click)="onExportExcel()">
     <ng-icon [svg]="tablerFileExcel" />
     엑셀 다운로드
-  <$sd-button>
+  </sd-button>
 </ng-template>
 ```
 
@@ -123,12 +123,12 @@ viewType에 따라 렌더링 위치가 달라진다:
     <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
       <ng-icon [svg]="tablerUpload" />
       엑셀 업로드
-    <$sd-button>
+    </sd-button>
   }
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
     <ng-icon [svg]="tablerFileExcel" />
     엑셀 다운로드
-  <$sd-button>
+  </sd-button>
 </ng-template>
 ```
 
@@ -139,7 +139,7 @@ viewType에 따라 렌더링 위치가 달라진다:
     <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onAddItemButtonClick()">
       <ng-icon [svg]="tablerCirclePlus" />
       신규등록
-    <$sd-button>
+    </sd-button>
   </ng-template>
 }
 ```
@@ -192,7 +192,7 @@ viewType에 따라 렌더링 위치가 달라진다:
       {{ item.id }}
     </div>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 편집 가능한 텍스트 셀 -->
 <sd-sheet-column [key]="'code'" [header]="'코드'">
@@ -208,7 +208,7 @@ viewType에 따라 렌더링 위치가 달라진다:
       (valueChange)="mark(items)"
     />
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 드롭다운 셀 (edit 무관하게 항상 편집 가능) -->
 <sd-sheet-column [key]="'endCustomerName'" [header]="'최종고객사'">
@@ -225,9 +225,9 @@ viewType에 따라 렌더링 위치가 달라진다:
       <ng-template [itemOf]="sharedEndCustomers.items()" let-ec>
         {{ ec.name }}
       </ng-template>
-    <$sd-shared-data-select>
+    </sd-shared-data-select>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 다단 헤더 셀 -->
 <sd-sheet-column [header]="['납품', '담당자명']" [key]="'contactName'">
@@ -242,7 +242,7 @@ viewType에 따라 렌더링 위치가 달라진다:
       (valueChange)="mark(items)"
     />
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 날짜 포맷 셀 -->
 <sd-sheet-column [key]="'lastModifiedAt'" [header]="'수정일시'" [hidden]="true">
@@ -251,7 +251,7 @@ viewType에 따라 렌더링 위치가 달라진다:
       {{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
     </div>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 숫자 포맷 셀 -->
 <sd-sheet-column [header]="['박스수', '지시']" [key]="'instructionBoxCount'">
@@ -260,7 +260,7 @@ viewType에 따라 렌더링 위치가 달라진다:
       {{ item.instructionBoxCount | number }}
     </div>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 
 <!-- 버튼 셀 (정렬 비활성) -->
 <sd-sheet-column [header]="'내역'" [key]="'historyButton'" [disableSorting]="true">
@@ -268,9 +268,9 @@ viewType에 따라 렌더링 위치가 달라진다:
     <sd-button [inset]="true" [size]="'sm'" (click)="onItemHistoryButtonClick(item, $event)">
       <ng-icon [svg]="tablerHistory" />
       내역
-    <$sd-button>
+    </sd-button>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 ```
 
 #### 헤더 템플릿: `<ng-template #headerTpl>`
@@ -303,7 +303,7 @@ viewType에 따라 렌더링 위치가 달라진다:
     │      </div>                                    │
     │      [#filterTpl 내용]                          │
     │    </div>                                      │
-    │  <$sd-form>                                    │
+    │  </sd-form>                                    │
     └────────────────────────────────────────────────┘
 
     ┌─ 도구 영역 (readonly=false 또는 toolTpl) ──────┐
@@ -327,8 +327,8 @@ viewType에 따라 렌더링 위치가 달라진다:
     │      [columnControlsInput]="columnControls()"  │
     │    >                                           │
     │      [자동 삭제/복구 버튼 컬럼] (readonly=false)│
-    │    <$sd-sheet>                                 │
-    │  <$sd-form>                                    │
+    │    </sd-sheet>                                 │
+    │  </sd-form>                                    │
     └────────────────────────────────────────────────┘
   </div>
 
@@ -336,7 +336,7 @@ viewType에 따라 렌더링 위치가 달라진다:
   │  [#bottomCommandTpl 내용 (좌측)]                    │
   │  [선택 해제 버튼] [확인 버튼(multi만)]               │
   └────────────────────────────────────────────────────┘
-<$sd-base-container>
+</sd-base-container>
 ```
 
 ## 자동 생성되는 삭제/복구 컬럼
@@ -407,7 +407,7 @@ viewType에 따라 렌더링 위치가 달라진다:
         <div class="form-box-item">
           <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
             삭제항목 포함
-          <$sd-checkbox>
+          </sd-checkbox>
         </div>
       </ng-template>
 
@@ -417,7 +417,7 @@ viewType에 따라 렌더링 위치가 달라진다:
             {{ item.id }}
           </div>
         </ng-template>
-      <$sd-sheet-column>
+      </sd-sheet-column>
 
       <sd-sheet-column [header]="'코드'" [key]="'code'">
         <ng-template [cell]="items()" let-item="item" let-edit="edit">
@@ -432,7 +432,7 @@ viewType에 따라 렌더링 위치가 달라진다:
             (valueChange)="mark(items)"
           />
         </ng-template>
-      <$sd-sheet-column>
+      </sd-sheet-column>
 
       <sd-sheet-column [header]="'명칭'" [key]="'name'">
         <ng-template [cell]="items()" let-item="item" let-edit="edit">
@@ -447,7 +447,7 @@ viewType에 따라 렌더링 위치가 달라진다:
             (valueChange)="mark(items)"
           />
         </ng-template>
-      <$sd-sheet-column>
+      </sd-sheet-column>
 
       <sd-sheet-column [key]="'lastModifiedAt'" [header]="'수정일시'" [hidden]="true">
         <ng-template [cell]="items()" let-item="item">
@@ -455,8 +455,8 @@ viewType에 따라 렌더링 위치가 달라진다:
             {{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
           </div>
         </ng-template>
-      <$sd-sheet-column>
-    <$sd-crud-list>
+      </sd-sheet-column>
+    </sd-crud-list>
   `,
 })
 export class CustomerList implements SdSelectModal<number> {
@@ -582,14 +582,14 @@ export class CustomerList implements SdSelectModal<number> {
       <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onAddItemButtonClick()">
         <ng-icon [svg]="tablerCirclePlus" />
         신규등록
-      <$sd-button>
+      </sd-button>
     </ng-template>
   }
 
   <sd-sheet-column [fixed]="true" [header]="'#'" [key]="'id'">
     <!-- ... -->
-  <$sd-sheet-column>
-<$sd-crud-list>
+  </sd-sheet-column>
+</sd-crud-list>
 ```
 
 ## Anti-patterns
@@ -597,7 +597,7 @@ export class CustomerList implements SdSelectModal<number> {
 ```html
 <!-- ❌ filterTpl 안에 조회 버튼을 직접 넣지 않는다 (자동 추가됨) -->
 <ng-template #filterTpl>
-  <sd-button [type]="'submit'">조회<$sd-button>  <!-- ❌ -->
+  <sd-button [type]="'submit'">조회</sd-button>  <!-- ❌ -->
   <sd-textfield [(value)]="filter().name" />
 </ng-template>
 
@@ -605,8 +605,8 @@ export class CustomerList implements SdSelectModal<number> {
 <sd-crud-list>
   <sd-sheet>  <!-- ❌ -->
     <sd-sheet-column />
-  <$sd-sheet>
-<$sd-crud-list>
+  </sd-sheet>
+</sd-crud-list>
 
 <!-- ✅ sd-sheet-column을 sd-crud-list 직접 자식으로 배치한다 -->
 <sd-crud-list>
@@ -614,8 +614,8 @@ export class CustomerList implements SdSelectModal<number> {
     <ng-template [cell]="items()" let-item="item">
       {{ item.name }}
     </ng-template>
-  <$sd-sheet-column>
-<$sd-crud-list>
+  </sd-sheet-column>
+</sd-crud-list>
 
 <!-- ❌ cell 템플릿에서 items 시그널 호출을 빠뜨리지 않는다 -->
 <ng-template [cell]="[]" let-item="item">  <!-- ❌ 타입 추론 불가 -->

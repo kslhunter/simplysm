@@ -47,7 +47,7 @@ npm install @simplysm/core-common
 
 | 하려는 작업 | 읽을 파일 |
 |-------------|-----------|
-| 원인 에러를 감싸 트리 구조 에러 체인을 구성 | [sd-error.md](./errors$sd-error.md) |
+| 원인 에러를 감싸 트리 구조 에러 체인을 구성 | [sd-error.md](./errors/sd-error.md) |
 | 인자 유효성 오류를 YAML 형식 메시지로 표시 | [argument-error.md](./errors/argument-error.md) |
 | 미구현 기능 호출 표시 | [not-implemented-error.md](./errors/not-implemented-error.md) |
 | 대기 시간 초과 표시 | [timeout-error.md](./errors/timeout-error.md) |

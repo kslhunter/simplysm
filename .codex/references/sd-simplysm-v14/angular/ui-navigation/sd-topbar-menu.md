@@ -21,5 +21,5 @@ export class SdTopbarMenu
 ```html
 <sd-topbar>
   <sd-topbar-menu [menus]="sdAppStructure.usableMenus()" />
-<$sd-topbar>
+</sd-topbar>
 ```

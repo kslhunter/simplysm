@@ -24,4 +24,4 @@ class SdEvents {}
 - 드래그: `dragover.capture`, `dragenter.capture`, `dragleave.capture`, `drop.capture`
 - 애니메이션: `transitionend.once`, `animationend.once`
 
-> **NOTE:** `sdResize`는 [`SdResizeDirective`](.$sd-resize-directive.md)로, `sdSaveCommand`/`sdInsertCommand`는 [`SdCommandDirective`](.$sd-command-directive.md)로 분리되어 독립 디렉티브로 제공된다. [`SdIntersectionDirective`](.$sd-intersection-directive.md)는 IntersectionObserver 기반 디렉티브.
+> **NOTE:** `sdResize`는 [`SdResizeDirective`](./sd-resize-directive.md)로, `sdSaveCommand`/`sdInsertCommand`는 [`SdCommandDirective`](./sd-command-directive.md)로 분리되어 독립 디렉티브로 제공된다. [`SdIntersectionDirective`](./sd-intersection-directive.md)는 IntersectionObserver 기반 디렉티브.

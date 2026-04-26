@@ -27,6 +27,16 @@ npm install @simplysm/service-common
 | WebSocket 메시지를 인코딩/디코딩 (자동 청킹·재조립 포함) | [create-service-protocol.md](./protocol/create-service-protocol.md) |
 | 프로토콜 크기 제한·청킹 임계값 등 설정 상수를 참조 | [protocol-config.md](./protocol/protocol-config.md) |
 | 메시지 타입 구조(유니언, 방향별 분류)를 파악 | [service-message.md](./protocol/service-message.md) |
+| 청크 수신 진행률 메시지를 처리 | [service-progress-message.md](./protocol/service-progress-message.md) |
+| 서버 에러 응답 메시지를 처리 | [service-error-message.md](./protocol/service-error-message.md) |
+| 클라이언트 인증 토큰 메시지를 전송 | [service-auth-message.md](./protocol/service-auth-message.md) |
+| 서비스 메서드 호출 요청 메시지를 구성 | [service-request-message.md](./protocol/service-request-message.md) |
+| 서비스 메서드 응답 메시지를 처리 | [service-response-message.md](./protocol/service-response-message.md) |
+| 이벤트 리스너 등록 메시지를 구성 | [service-add-event-listener-message.md](./protocol/service-add-event-listener-message.md) |
+| 이벤트 리스너 제거 메시지를 구성 | [service-remove-event-listener-message.md](./protocol/service-remove-event-listener-message.md) |
+| 등록된 이벤트 리스너 정보 조회 메시지를 구성 | [service-get-event-listener-infos-message.md](./protocol/service-get-event-listener-infos-message.md) |
+| 클라이언트에서 이벤트 발생 메시지를 구성 | [service-emit-event-message.md](./protocol/service-emit-event-message.md) |
+| 서버에서 전달된 이벤트 알림 메시지를 처리 | [service-event-message.md](./protocol/service-event-message.md) |
 
 ### 이벤트
 

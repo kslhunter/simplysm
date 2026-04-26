@@ -42,6 +42,12 @@ npm install @simplysm/excel
 | 셀 좌표·범위 좌표 타입을 확인할 때 | [ExcelAddressPoint](./types/excel-address-point.md) |
 | 셀 값의 타입(ExcelValueType, ExcelCellType)을 확인할 때 | [ExcelValueType](./types/excel-value-type.md) |
 
+### XML 데이터 타입 확인
+
+| 하려는 작업 | 읽을 파일 |
+|-------------|-----------|
+| 공개 export된 xlsx XML 데이터 구조 타입을 확인할 때 | [XML Data Types](./types/xml-data-types.md) |
+
 ## 이 패키지를 쓰지 말아야 할 때
 
 - xls(구형 바이너리 포맷) 파일 처리가 필요한 경우 -- xlsx만 지원한다

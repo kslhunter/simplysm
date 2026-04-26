@@ -27,8 +27,8 @@ class SdForm {
 ```html
 <sd-form #formCtrl (formSubmit)="onSubmit($event)">
   <sd-textfield [type]="'text'" [(value)]="name" [required]="true" />
-  <sd-button [type]="'submit'">저장<$sd-button>
-<$sd-form>
+  <sd-button [type]="'submit'">저장</sd-button>
+</sd-form>
 ```
 
 프로그래밍 방식 저장:

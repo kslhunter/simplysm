@@ -40,12 +40,12 @@ class SdTabItem<T> {
 ```html
 <!-- ✅ 올바른 사용: 탭은 선택 UI, 뷰는 @if로 제어 -->
 <sd-tab [(value)]="tab">
-  <sd-tab-item [value]="'list'">목록<$sd-tab-item>
-  <sd-tab-item [value]="'detail'">상세<$sd-tab-item>
-<$sd-tab>
+  <sd-tab-item [value]="'list'">목록</sd-tab-item>
+  <sd-tab-item [value]="'detail'">상세</sd-tab-item>
+</sd-tab>
 
 @if (tab() === "list") {
-  <sd-sheet ...><$sd-sheet>
+  <sd-sheet ...></sd-sheet>
 }
 @if (tab() === "detail") {
   <app-detail ...></app-detail>

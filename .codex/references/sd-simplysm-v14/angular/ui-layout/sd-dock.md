@@ -23,11 +23,11 @@ export class SdDock
 <sd-dock-container>
   <sd-dock [position]="'top'">
     <!-- 상단 고정 영역 -->
-  <$sd-dock>
+  </sd-dock>
   <sd-dock [position]="'bottom'" [resizable]="true" [key]="'my-page-bottom-dock'">
     <!-- 하단 조절 가능 영역 -->
-  <$sd-dock>
+  </sd-dock>
   <ng-content /> <!-- 나머지 영역 -->
-<$sd-dock-container>
+</sd-dock-container>
 ```
 

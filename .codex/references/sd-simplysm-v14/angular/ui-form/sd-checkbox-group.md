@@ -1,6 +1,6 @@
 # `SdCheckboxGroup`
 
-> **읽어야 하는 상황**: 체크박스 그룹으로 다중 선택을 관리할 때. 단일 체크박스는 [`SdCheckbox`](.$sd-checkbox.md) 참조.
+> **읽어야 하는 상황**: 체크박스 그룹으로 다중 선택을 관리할 때. 단일 체크박스는 [`SdCheckbox`](./sd-checkbox.md) 참조.
 
 체크박스 그룹 컴포넌트. `SdCheckboxGroupItem`과 함께 사용하여 다중 선택을 관리한다.
 
@@ -34,8 +34,8 @@ export class SdCheckboxGroupItem<T>
 
 ```html
 <sd-checkbox-group [(value)]="selectedRoles">
-  <sd-checkbox-group-item [value]="'admin'">관리자<$sd-checkbox-group-item>
-  <sd-checkbox-group-item [value]="'user'">사용자<$sd-checkbox-group-item>
-  <sd-checkbox-group-item [value]="'viewer'">조회<$sd-checkbox-group-item>
-<$sd-checkbox-group>
+  <sd-checkbox-group-item [value]="'admin'">관리자</sd-checkbox-group-item>
+  <sd-checkbox-group-item [value]="'user'">사용자</sd-checkbox-group-item>
+  <sd-checkbox-group-item [value]="'viewer'">조회</sd-checkbox-group-item>
+</sd-checkbox-group>
 ```

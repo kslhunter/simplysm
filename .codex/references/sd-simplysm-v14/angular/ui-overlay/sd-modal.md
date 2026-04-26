@@ -1,6 +1,6 @@
 # `SdModal`
 
-> **읽어야 하는 상황**: 모달 래퍼 컴포넌트의 내부 구조를 이해할 때. 모달 생성은 [`SdModalProvider`](../providers$sd-modal-provider.md) 참조.
+> **읽어야 하는 상황**: 모달 래퍼 컴포넌트의 내부 구조를 이해할 때. 모달 생성은 [`SdModalProvider`](../providers/sd-modal-provider.md) 참조.
 
 모달 래퍼 컴포넌트. `SdModalProvider.showAsync()`에 의해 프로그래밍 방식으로 생성된다. 직접 템플릿에 배치하지 않는다.
 
@@ -33,4 +33,4 @@ export class SdModal
 | `actionTplRef` | input | `TemplateRef<any> \| undefined` | 헤더 액션 영역 템플릿 |
 | `closeRequest` | output | `void` | 닫기 요청 (배경 클릭, ESC, X 버튼) |
 
-모달 컴포넌트를 직접 사용하는 대신 [`SdModalProvider`](../providers$sd-modal-provider.md)를 사용한다.
+모달 컴포넌트를 직접 사용하는 대신 [`SdModalProvider`](../providers/sd-modal-provider.md)를 사용한다.

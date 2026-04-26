@@ -1,7 +1,7 @@
 # @simplysm/service-server
 
 > Fastify 기반 서비스 서버. WebSocket/HTTP 이중 전송, JWT 인증, ORM 브리지, 자동 업데이트를 제공한다.
-> Node.js 런타임 전용. `@simplysm/service-common`과 `@simplysm/core-common`에 의존한다.
+> Node.js 런타임 전용. `@simplysm/service-common`, `@simplysm/core-common`, `@simplysm/core-node`와 ORM 패키지에 의존한다.
 
 ## Installation
 

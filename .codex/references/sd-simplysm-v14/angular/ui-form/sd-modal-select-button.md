@@ -1,6 +1,6 @@
 # `SdModalSelectButton`
 
-> **읽어야 하는 상황**: 모달을 열어 항목을 선택하는 버튼이 필요할 때. 공유 데이터 기반 선택은 [`SdSharedDataSelectButton`](../features$sd-shared-data-components.md), 드롭다운 선택은 [`SdSelect`](.$sd-select.md) 참조.
+> **읽어야 하는 상황**: 모달을 열어 항목을 선택하는 버튼이 필요할 때. 공유 데이터 기반 선택은 [`SdSharedDataSelectButton`](../features/sd-shared-data-components.md), 드롭다운 선택은 [`SdSelect`](./sd-select.md) 참조.
 
 모달을 열어 항목을 선택하는 버튼 컴포넌트. 선택된 값은 `value` model로 관리된다.
 
@@ -50,5 +50,5 @@ type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<T, "selectMod
   [(value)]="selectedCustomerId"
 >
   {{ selectedCustomerName() }}
-<$sd-modal-select-button>
+</sd-modal-select-button>
 ```

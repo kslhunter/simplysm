@@ -36,5 +36,5 @@ interface SdTopbarUserMenu {
 ```html
 <sd-topbar-user [menus]="[{ title: '내 정보', onClick: goToProfile }, { title: '로그아웃', onClick: logout }]">
   홍길동
-<$sd-topbar-user>
+</sd-topbar-user>
 ```

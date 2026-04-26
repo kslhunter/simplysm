@@ -60,12 +60,12 @@ class SdTopbarUser {
       @if (canEdit()) {
         <sd-button [theme]="'link-primary'" (click)="onSaveButtonClick()">
           <ng-icon [svg]="tablerDeviceFloppy" /> 저장 <small>(CTRL+S)</small>
-        <$sd-button>
+        </sd-button>
       }
-    <$sd-topbar>
+    </sd-topbar>
   }
   <!-- 메인 콘텐츠 -->
-<$sd-topbar-container>
+</sd-topbar-container>
 ```
 
 페이지/모달/control 뷰에서 **재사용**되는 화면은 topbar를 page 뷰에서만 렌더한다. `@if (viewType() === "page")` 조건을 사용한다.

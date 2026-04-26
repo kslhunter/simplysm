@@ -25,7 +25,7 @@ export class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget
   @for (item of lane.items; track item.id) {
     <sd-kanban [value]="item" [draggable]="true">
       {{ item.title }}
-    <$sd-kanban>
+    </sd-kanban>
   }
-<$sd-kanban-lane>
+</sd-kanban-lane>
 ```

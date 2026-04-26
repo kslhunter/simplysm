@@ -71,9 +71,9 @@ class SdSharedDataSelect<
           <div>{{ item.__searchText }}</div>
         </div>
       </ng-template>
-    <$sd-shared-data-select>
+    </sd-shared-data-select>
   </ng-template>
-<$sd-sheet-column>
+</sd-sheet-column>
 ```
 
 시트 셀 내 사용 시 `[inset]="true" [size]="'sm'"`을 반드시 지정한다.

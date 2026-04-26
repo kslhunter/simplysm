@@ -2,7 +2,7 @@
 
 > **읽어야 하는 상황**: watch 모드에서 특정 파일 변경 시 자동으로 명령어를 실행하는 훅을 설정할 때.
 
-watch 모드에서 파일 변경을 감지하고 명령어를 실행하는 훅 설정. [`SdBuildPackageConfig`](.$sd-build-package-config.md) 및 [`SdScriptsPackageConfig`](.$sd-scripts-package-config.md)의 `watch` 필드에 사용한다.
+watch 모드에서 파일 변경을 감지하고 명령어를 실행하는 훅 설정. [`SdBuildPackageConfig`](./sd-build-package-config.md) 및 [`SdScriptsPackageConfig`](./sd-scripts-package-config.md)의 `watch` 필드에 사용한다.
 
 ```typescript
 export interface SdWatchHookConfig {

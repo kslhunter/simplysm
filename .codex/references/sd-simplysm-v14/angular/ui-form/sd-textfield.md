@@ -1,6 +1,6 @@
 # `SdTextfield`
 
-> **읽어야 하는 상황**: 한 줄 텍스트, 숫자, 날짜, 시간, 색상 등을 입력받을 때. 여러 줄 텍스트는 [`SdTextarea`](.$sd-textarea.md), 리치 텍스트는 [`SdTiptapEditor`](../features$sd-tiptap-editor.md) 참조.
+> **읽어야 하는 상황**: 한 줄 텍스트, 숫자, 날짜, 시간, 색상 등을 입력받을 때. 여러 줄 텍스트는 [`SdTextarea`](./sd-textarea.md), 리치 텍스트는 [`SdTiptapEditor`](../features/sd-tiptap-editor.md) 참조.
 
 텍스트 입력 컴포넌트. 13가지 타입을 지원한다.
 

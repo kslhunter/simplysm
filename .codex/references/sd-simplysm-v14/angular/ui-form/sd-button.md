@@ -1,6 +1,6 @@
 # `SdButton`
 
-> **읽어야 하는 상황**: 클릭 가능한 버튼을 배치할 때. 텍스트 내 인라인 클릭 요소는 [`SdAnchor`](.$sd-anchor.md), 콘텐츠 + 추가 동작 버튼은 [`SdAdditionalButton`](.$sd-additional-button.md) 참조.
+> **읽어야 하는 상황**: 클릭 가능한 버튼을 배치할 때. 텍스트 내 인라인 클릭 요소는 [`SdAnchor`](./sd-anchor.md), 콘텐츠 + 추가 동작 버튼은 [`SdAdditionalButton`](./sd-additional-button.md) 참조.
 
 버튼 컴포넌트.
 

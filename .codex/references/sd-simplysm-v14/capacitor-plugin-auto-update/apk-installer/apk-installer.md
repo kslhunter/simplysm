@@ -1,10 +1,10 @@
 # `ApkInstaller`
 
-> **읽어야 하는 상황**: `AutoUpdate` 없이 APK 설치 권한 확인·요청, APK 설치, 앱 버전 정보 조회를 직접 제어할 때. 서버/외부 저장소 기반 자동 업데이트는 [`AutoUpdate`](../auto-update/auto-update.md) 참조.
+> **읽어야 하는 상황**: 자동 업데이트 흐름 없이 APK 설치 권한 확인·요청, APK 설치, 앱 버전 정보 조회를 직접 제어할 때. 서버/외부 저장소 기반 자동 업데이트는 [`AutoUpdate`](../auto-update/auto-update.md) 참조.
 
 ## When to use
 
-- ✅ `AutoUpdate`를 사용하지 않고 APK 설치 흐름을 직접 제어할 때
+- ✅ 자동 업데이트 흐름을 사용하지 않고 APK 설치 흐름을 직접 제어할 때
 - ✅ 앱의 현재 버전 정보(`versionName`, `versionCode`)를 조회할 때
 - ❌ 서버 또는 외부 저장소에서 자동 업데이트 → [`AutoUpdate`](../auto-update/auto-update.md) — 버전 비교·다운로드·설치를 모두 처리한다
 
@@ -24,7 +24,7 @@ export abstract class ApkInstaller {
 | Member | Kind | Return | Description |
 |--------|------|--------|-------------|
 | `checkPermissions` | static method | `Promise<{ granted: boolean; manifest: boolean }>` | 설치 권한 승인 여부(`granted`)와 AndroidManifest 선언 여부(`manifest`) 동시 확인. `manifest: false`이면 APK를 재설치해야 한다. |
-| `requestPermissions` | static method | `Promise<void>` | `REQUEST_INSTALL_PACKAGES` 권한 요청. 시스템 설정 화면으로 이동하므로 이후 `checkPermissions`로 결과를 폴링해야 한다. |
+| `requestPermissions` | static method | `Promise<void>` | `REQUEST_INSTALL_PACKAGES` 권한 요청. Android 구현은 설정 화면으로 이동하므로 이후 `checkPermissions`로 결과를 다시 확인한다. |
 | `install` | static method | `Promise<void>` | `content://` URI(FileProvider URI)로 APK 설치 인텐트 실행. `FileSystem.getUri(filePath)`로 URI를 얻는다. |
 | `getVersionInfo` | static method | `Promise<VersionInfo>` | 현재 설치된 앱의 버전 정보 조회. 브라우저 환경에서는 `env("__VER__") ?? "0.0.0"`을 `versionName`으로 반환한다. |
 
@@ -60,7 +60,7 @@ if (!manifest) {
 }
 if (!granted) {
   await ApkInstaller.requestPermissions();
-  // 시스템 설정 화면으로 이동하므로, 복귀 후 다시 checkPermissions()로 확인해야 한다
+  // Android 구현은 설정 화면으로 이동하므로, 복귀 후 다시 checkPermissions()로 확인한다.
 }
 
 // 2. APK 설치 (filePath는 FileSystem으로 저장한 경로)
@@ -98,8 +98,8 @@ export interface VersionInfo {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `versionName` | `string` | 앱 버전 이름. semver 형식 (예: `"1.2.3"`). `AutoUpdate`의 버전 비교에 사용된다. |
-| `versionCode` | `string` | 앱 버전 코드. 정수를 문자열로 표현 (예: `"42"`). |
+| `versionName` | `string` | 앱 버전 이름. `AutoUpdate`의 버전 비교에는 semver 형식 값이 필요하다. |
+| `versionCode` | `string` | 앱 버전 코드 문자열. |
 
 ### `ApkInstallerPlugin`
 

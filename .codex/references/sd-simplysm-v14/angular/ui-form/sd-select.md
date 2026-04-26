@@ -1,6 +1,6 @@
 # `SdSelect`
 
-> **읽어야 하는 상황**: 드롭다운으로 항목을 선택할 때 (single/multi). 공유 데이터에서 선택은 [`SdSharedDataSelect`](.$sd-shared-data-select.md), 모달에서 선택은 [`SdModalSelectButton`](.$sd-modal-select-button.md) 참조.
+> **읽어야 하는 상황**: 드롭다운으로 항목을 선택할 때 (single/multi). 공유 데이터에서 선택은 [`SdSharedDataSelect`](./sd-shared-data-select.md), 모달에서 선택은 [`SdModalSelectButton`](./sd-modal-select-button.md) 참조.
 
 드롭다운 선택 컴포넌트. single/multi 모드를 지원한다.
 

@@ -22,7 +22,7 @@ export class SdAdditionalButton
 ```html
 <sd-additional-button>
   선택된 항목 이름
-  <sd-anchor>편집<$sd-anchor>
-  <sd-button>삭제<$sd-button>
-<$sd-additional-button>
+  <sd-anchor>편집</sd-anchor>
+  <sd-button>삭제</sd-button>
+</sd-additional-button>
 ```

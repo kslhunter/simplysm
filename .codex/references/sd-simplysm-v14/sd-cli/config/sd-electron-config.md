@@ -1,8 +1,8 @@
 # `SdElectronConfig`
 
-> **읽어야 하는 상황**: 클라이언트 패키지에 Electron 데스크톱 앱 설정을 추가할 때. 모바일 앱은 [`SdCapacitorConfig`](.$sd-capacitor-config.md) 참조.
+> **읽어야 하는 상황**: 클라이언트 패키지에 Electron 데스크톱 앱 설정을 추가할 때. 모바일 앱은 [`SdCapacitorConfig`](./sd-capacitor-config.md) 참조.
 
-Electron 데스크톱 앱 설정. [`SdClientPackageConfig`](.$sd-client-package-config.md)의 `electron` 필드에 사용한다.
+Electron 데스크톱 앱 설정. [`SdClientPackageConfig`](./sd-client-package-config.md)의 `electron` 필드에 사용한다.
 
 ```typescript
 export interface SdElectronConfig {

@@ -7,7 +7,7 @@
 
 | API | Kind | 문서 | 언제 쓰나 |
 |-----|------|------|-----------|
-| `SdError` | class | [sd-error.md](./errors$sd-error.md) | 원인 에러를 감싸 트리 구조 에러 체인을 구성할 때 |
+| `SdError` | class | [sd-error.md](./errors/sd-error.md) | 원인 에러를 감싸 트리 구조 에러 체인을 구성할 때 |
 | `ArgumentError` | class | [argument-error.md](./errors/argument-error.md) | 인자 유효성 오류를 YAML 형식 메시지로 표시할 때 |
 | `NotImplementedError` | class | [not-implemented-error.md](./errors/not-implemented-error.md) | 미구현 기능이 호출되었음을 표시할 때 |
 | `TimeoutError` | class | [timeout-error.md](./errors/timeout-error.md) | 대기 시간 초과를 시도 횟수와 함께 표시할 때 |

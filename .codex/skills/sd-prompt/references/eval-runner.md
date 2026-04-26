@@ -21,7 +21,7 @@ Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 
 
 ## 시나리오 실행 subagent
 
-각 시나리오마다, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 `spawn_agent`를 실행한다. 여러 시나리오는 병렬로 실행할 수 있다.
+각 시나리오마다, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 `spawn_agent`(effort: `medium`)를 실행한다. 여러 시나리오는 병렬로 실행할 수 있다.
 
 subagent 입력:
 
@@ -41,7 +41,7 @@ subagent가 완료되면, subagent 최종 응답을 `{시나리오 디렉토리}
 
 ## Judge 판정
 
-실행 완료 후, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 Judge subagent(effort: `low`)에 다음을 전달한다:
+실행 완료 후, 이 스킬 실행 요청을 `spawn_agent` 사용 승인으로 보고 Judge subagent(effort: `medium`)에 다음을 전달한다:
 
 ```markdown
 다음 Eval 실행 결과를 판정하고, FAIL 항목에 대해 개선안을 제안하라:

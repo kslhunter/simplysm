@@ -13,7 +13,7 @@
 
 ```typescript
 class FtpStorageClient implements StorageClient {
-  constructor(private readonly _secure: boolean = false);
+  constructor(_secure?: boolean);
 }
 ```
 
@@ -21,7 +21,7 @@ class FtpStorageClient implements StorageClient {
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `_secure` | `boolean` | `false` | `true`이면 FTPS (TLS/SSL 암호화), `false`이면 FTP |
+| `_secure` | `boolean \| undefined` | `false` | `true`이면 FTPS (TLS/SSL 암호화), `false` 또는 생략이면 FTP |
 
 ## Members
 

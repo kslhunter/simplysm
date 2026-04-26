@@ -19,7 +19,7 @@ export class SdTopbar
     <h1>앱 타이틀</h1>
     <sd-topbar-menu [menus]="menus()" />
     <sd-topbar-user [menus]="userMenus()" />
-  <$sd-topbar>
+  </sd-topbar>
   ...
-<$sd-topbar-container>
+</sd-topbar-container>
 ```

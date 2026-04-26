@@ -1,6 +1,6 @@
 # `SdBusyContainer`
 
-> **읽어야 하는 상황**: 특정 영역에 busy 로딩 오버레이를 표시할 때. 글로벌 busy는 [`SdBusyProvider`](../providers$sd-busy-provider.md) 참조.
+> **읽어야 하는 상황**: 특정 영역에 busy 로딩 오버레이를 표시할 때. 글로벌 busy는 [`SdBusyProvider`](../providers/sd-busy-provider.md) 참조.
 
 busy 상태(로딩 중) 표시 컨테이너 컴포넌트. `busy` 입력이 `true`일 때 스크린 오버레이와 인디케이터를 표시한다.
 
@@ -16,7 +16,7 @@ export class SdBusyContainer
 | `busy` | input | `boolean` | busy 상태 (기본값: `false`) |
 | `type` | input | `SdBusyType` | 인디케이터 유형. 미지정 시 `SdBusyProvider.type()` 값 사용 |
 
-글로벌 busy 표시는 [`SdBusyProvider`](../providers$sd-busy-provider.md)를 통해 관리한다.
+글로벌 busy 표시는 [`SdBusyProvider`](../providers/sd-busy-provider.md)를 통해 관리한다.
 
 ## Usage
 
@@ -24,7 +24,7 @@ export class SdBusyContainer
 <!-- 컴포넌트 로컬 busy -->
 <sd-busy-container [busy]="busyCount() > 0">
   <!-- 콘텐츠 -->
-<$sd-busy-container>
+</sd-busy-container>
 ```
 
 ### busyCount 카운트 패턴

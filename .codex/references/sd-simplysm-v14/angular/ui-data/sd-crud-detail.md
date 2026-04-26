@@ -1,6 +1,6 @@
 # `SdCrudDetail`
 
-> **읽어야 하는 상황**: CRUD 상세 화면(폼 + 저장)을 만들 때. 목록 화면은 [`SdCrudList`](.$sd-crud-list.md) 참조.
+> **읽어야 하는 상황**: CRUD 상세 화면(폼 + 저장)을 만들 때. 목록 화면은 [`SdCrudList`](./sd-crud-list.md) 참조.
 
 CRUD 상세 화면 스캐폴드. `SdBaseContainer`를 내부에 사용하며, 폼 제출(`Ctrl+S` 저장), readonly 모드, viewType별 저장 버튼 배치를 제공한다.
 
@@ -54,12 +54,12 @@ viewType에 따라 렌더링 위치가 달라진다:
     <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
       <ng-icon [svg]="tablerEraser" />
       삭제
-    <$sd-button>
+    </sd-button>
   }
   <sd-button [theme]="'link-info'" (click)="onSomeAction()">
     <ng-icon [svg]="tablerSend" />
     추가동작
-  <$sd-button>
+  </sd-button>
 </ng-template>
 ```
 
@@ -71,7 +71,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 <ng-template #bottomCommandTpl>
   <sd-button [size]="'sm'" (click)="onSomeBottomAction()">
     추가 하단 버튼
-  <$sd-button>
+  </sd-button>
 </ng-template>
 ```
 
@@ -91,7 +91,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
 │    <ng-content /> ← 폼 필드들                       │
-│  <$sd-form>                                         │
+│  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -107,7 +107,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
 │    <ng-content /> ← 폼 필드들                       │
-│  <$sd-form>                                         │
+│  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ┌─ 하단 명령 영역 (bottomCommandTpl이 있을 때만) ─────┐
 │  [#bottomCommandTpl 내용 (좌측)]   [확인 버튼 (우측)]│
@@ -126,14 +126,14 @@ viewType에 따라 렌더링 위치가 달라진다:
 ┌─ 콘텐츠 ────────────────────────────────────────────┐
 │  <sd-form>                                          │
 │    <ng-content /> ← 폼 필드들                       │
-│  <$sd-form>                                         │
+│  </sd-form>                                         │
 └─────────────────────────────────────────────────────┘
 ┌─ 하단 명령 영역 (항상 표시) ────────────────────────┐
 │  [#bottomCommandTpl 내용 (좌측)]   [확인 버튼 (우측)]│
 └─────────────────────────────────────────────────────┘
 ```
 
-- 확인 버튼: `<sd-button [size]="'sm'" [theme]="'primary'">확인<$sd-button>` (클릭 시 `formCtrl.requestSubmit()` → `submit` 이벤트)
+- 확인 버튼: `<sd-button [size]="'sm'" [theme]="'primary'">확인</sd-button>` (클릭 시 `formCtrl.requestSubmit()` → `submit` 이벤트)
 - `readonly=true`여도 확인 버튼은 항상 표시됨 (modal viewType 조건으로 하단 영역이 렌더링되므로)
 
 ## readonly 모드 상세
@@ -161,12 +161,12 @@ viewType에 따라 렌더링 위치가 달라진다:
           <sd-button [theme]="'danger'" (click)="onDeleteButtonClick()">
             <ng-icon [svg]="tablerEraser" />
             삭제
-          <$sd-button>
+          </sd-button>
         }
         <sd-button [theme]="'link-info'" (click)="onSpecialAction()">
           <ng-icon [svg]="tablerSend" />
           특별동작
-        <$sd-button>
+        </sd-button>
       </ng-template>
 
       <div class="fill p-default">
@@ -187,15 +187,15 @@ viewType에 따라 렌더링 위치가 달라진다:
                 />
               </div>
             </div>
-          <$sd-dock>
+          </sd-dock>
 
           <!-- 탭이나 서브 리스트 등 -->
           <div class="fill">
             <app-sub-list [(items)]="data().items" (itemsChange)="mark(data)" />
           </div>
-        <$sd-dock-container>
+        </sd-dock-container>
       </div>
-    <$sd-crud-detail>
+    </sd-crud-detail>
   `,
 })
 export class MyDetail {
@@ -254,7 +254,7 @@ export class MyDetail {
       </div>
     </div>
   </div>
-<$sd-crud-detail>
+</sd-crud-detail>
 ```
 
 ## Anti-patterns
@@ -263,11 +263,11 @@ export class MyDetail {
 <!-- ❌ readonly일 때 commandTpl 안에 저장 버튼을 별도로 넣지 않는다 -->
 <!-- SdCrudDetail이 viewType에 맞는 저장 버튼을 자동 배치한다 -->
 <ng-template #commandTpl>
-  <sd-button (click)="onSave()">저장<$sd-button>  <!-- ❌ -->
+  <sd-button (click)="onSave()">저장</sd-button>  <!-- ❌ -->
 </ng-template>
 
 <!-- ✅ commandTpl에는 저장 외의 추가 명령만 넣는다 -->
 <ng-template #commandTpl>
-  <sd-button [theme]="'danger'" (click)="onDelete()">삭제<$sd-button>  <!-- ✅ -->
+  <sd-button [theme]="'danger'" (click)="onDelete()">삭제</sd-button>  <!-- ✅ -->
 </ng-template>
 ```

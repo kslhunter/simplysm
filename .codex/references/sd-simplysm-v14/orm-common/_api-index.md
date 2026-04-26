@@ -57,3 +57,4 @@
 | `QueryDef` | type | [query-def.md](./types/query-def.md) | SQL AST 구조를 이해할 때 |
 | `Expr` | type | [expr.md](./types/expr.md) | 표현식 AST 구조를 이해할 때 |
 | `parseQueryResult` | function | [parse-query-result.md](./types/parse-query-result.md) | DB 원시 결과를 중첩 TypeScript 객체로 변환할 때 (커스텀 executor용) |
+| `pickResultSets` | function | [pick-result-sets.md](./types/pick-result-sets.md) | 여러 result set 중 QueryBuildResult 메타데이터가 가리키는 결과만 꺼낼 때 |

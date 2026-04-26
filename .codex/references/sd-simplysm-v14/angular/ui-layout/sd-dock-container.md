@@ -38,12 +38,12 @@ class SdDock {
 <sd-dock-container>
   <sd-dock>
     <!-- 상단 필터/도구 바 (기본 position="top") -->
-  <$sd-dock>
+  </sd-dock>
   <!-- 메인 콘텐츠 -->
   <sd-dock [position]="'bottom'">
     <!-- 하단 액션 바 -->
-  <$sd-dock>
-<$sd-dock-container>
+  </sd-dock>
+</sd-dock-container>
 ```
 
 > **CRITICAL — modal 하단 바에 `[position]="'bottom'"` 반드시 명시**

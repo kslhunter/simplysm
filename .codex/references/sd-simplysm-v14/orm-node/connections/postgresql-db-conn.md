@@ -1,25 +1,22 @@
 # `PostgresqlDbConn`
 
-> **읽어야 하는 상황**: PostgreSQL의 저수준 연결 동작이나 bulk insert 구현을 확인할 때. 일반적으로 [`createDbConn`](../core/create-db-conn.md)이 자동 생성하므로 직접 사용할 일은 드물다.
-
-pg + pg-copy-streams 라이브러리를 사용하여 PostgreSQL 연결을 관리하는 클래스.
+> **읽어야 하는 상황**: PostgreSQL의 저수준 연결 구현, 단일 result set 처리, `COPY FROM STDIN` bulk insert 동작을 확인할 때. 설정만으로 생성하려면 [`createDbConn`](../core/create-db-conn.md)을 사용.
 
 ## When to use
 
-- ✅ 테스트 코드에서 PostgreSQL 연결을 직접 생성하여 네이티브 라이브러리를 주입할 때.
-- ❌ 일반적으로 직접 생성하지 않는다. [`createDbConn()`](../core/create-db-conn.md)이 dialect에 따라 자동 생성한다.
+- ✅ PostgreSQL 연결 구현의 쿼리 실행과 COPY 기반 bulk insert 세부 동작을 확인할 때 사용.
+- ❌ 일반 애플리케이션 코드에서 생성자를 직접 호출하지 말고 [`createDbConn`](../core/create-db-conn.md)을 사용.
 
 ## Signature
 
 ```typescript
-class PostgresqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
+export class PostgresqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
   isConnected: boolean;
   isInTransaction: boolean;
-  readonly config: PostgresqlDbConnConfig;
 
   constructor(
-    pg: typeof import("pg"),
-    pgCopyStreams: typeof import("pg-copy-streams"),
+    _pg: typeof import("pg"),
+    _pgCopyStreams: typeof import("pg-copy-streams"),
     config: PostgresqlDbConnConfig,
   );
 
@@ -42,47 +39,37 @@ class PostgresqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
 
 | Member | Kind | Type | Description |
 |--------|------|------|-------------|
-| `isConnected` | property | `boolean` | 연결 여부 |
-| `isInTransaction` | property | `boolean` | 트랜잭션 진행 여부 |
-| `config` | property | `PostgresqlDbConnConfig` | 연결 설정 |
-| `connect()` | method | `Promise<void>` | DB 연결을 수립한다. 기본 포트는 `5432`. `connectionTimeoutMillis: DB_CONN_CONNECT_TIMEOUT`, `query_timeout: DB_CONN_DEFAULT_TIMEOUT`으로 연결한다 |
-| `close()` | method | `Promise<void>` | DB 연결을 종료한다 |
-| `beginTransaction(isolationLevel?)` | method | `Promise<void>` | `BEGIN` 후 `SET TRANSACTION ISOLATION LEVEL {level}`을 실행한다 |
-| `commitTransaction()` | method | `Promise<void>` | `COMMIT`을 실행한다 |
-| `rollbackTransaction()` | method | `Promise<void>` | `ROLLBACK`을 실행한다 |
-| `execute(queries)` | method | `Promise<Record<string, unknown>[][]>` | SQL 쿼리 배열을 순차 실행한다 |
-| `executeParametrized(query, params?)` | method | `Promise<Record<string, unknown>[][]>` | 파라미터화된 쿼리를 실행한다. PostgreSQL은 단일 결과 집합을 반환하므로 `[result.rows]`로 래핑하여 반환한다 |
-| `bulkInsert(tableName, columnMetas, records)` | method | `Promise<void>` | `COPY FROM STDIN`(CSV 형식)을 사용하여 대량 삽입한다 |
-
-일반적으로 직접 생성하지 않고 [`createDbConn()`](../core/create-db-conn.md)을 통해 인스턴스를 얻는다. 직접 생성은 테스트 코드에서 네이티브 라이브러리를 주입할 때 사용한다.
-
-생성자에서 pg와 pg-copy-streams 라이브러리 모듈을 첫 번째, 두 번째 인수로 직접 주입받는다.
-
-## `bulkInsert()` 처리 방식
-
-`pg-copy-streams`의 `from()` 함수로 스트림을 생성하고, `Readable.from(csvContent)`를 파이프한다.
-
-binary 컬럼 값 변환:
-- `binary` 타입: PostgreSQL bytea hex 형식 (`\x{hex}`, CSV 큰따옴표로 감쌈)
-- `uuid` 타입: `toString()` 그대로
+| `config` | constructor property | `PostgresqlDbConnConfig` | PostgreSQL 연결 설정. `port` 기본값은 `5432`. |
+| `isConnected` | property | `boolean` | 연결 성공 후 `true`, 종료 후 `false`. |
+| `isInTransaction` | property | `boolean` | transaction 시작 후 `true`, commit/rollback 후 `false`. |
+| `executeParametrized` | method | `(query: string, params?: unknown[]) => Promise<Record<string, unknown>[][]>` | `pg.Client.query` 결과의 `rows`를 단일 result set으로 반환한다. |
+| `bulkInsert` | method | `(tableName: string, columnMetas: Record<string, ColumnMeta>, records: Record<string, unknown>[]) => Promise<void>` | `COPY ${tableName} (...) FROM STDIN WITH (FORMAT csv, NULL '\\N')` 스트림으로 삽입한다. |
 
 ## Usage
 
 ```typescript
-import { PostgresqlDbConn } from "@simplysm/orm-node";
+import { createDbConn } from "@simplysm/orm-node";
 
-const pg = await import("pg");
-const pgCopyStreams = await import("pg-copy-streams");
-const conn = new PostgresqlDbConn(pg, pgCopyStreams, {
+const conn = await createDbConn({
   dialect: "postgresql",
   host: "localhost",
-  port: 5432,
-  username: "postgres",
-  password: "password",
-  database: "testdb",
+  username: "app",
+  password: "secret",
+  database: "app",
 });
 
 await conn.connect();
-const results = await conn.execute(["SELECT 1 AS val"]);
-await conn.close();
+try {
+  await conn.executeParametrized("select * from users where id = $1", [1]);
+} finally {
+  await conn.close();
+}
 ```
+
+## Anti-patterns
+
+### bulk insert 중 tableName 이스케이프 기대
+
+`bulkInsert`는 `COPY ${tableName}` 형태로 tableName을 그대로 SQL에 넣는다. 소비자 코드는 신뢰된 테이블명만 전달해야 한다.
+
+**근거**: 구현체는 컬럼명만 큰따옴표로 감싸고 `tableName`에는 별도 escape를 수행하지 않는다.

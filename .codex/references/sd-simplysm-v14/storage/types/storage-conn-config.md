@@ -18,7 +18,7 @@ interface StorageConnConfig {
 | Field | Type | Description |
 |-------|------|-------------|
 | `host` | `string` | 서버 호스트 주소 |
-| `port` | `number \| undefined` | 포트 번호. 생략 시 프로토콜 기본값 사용 (FTP/FTPS: 21, SFTP: 22) |
+| `port` | `number \| undefined` | 포트 번호. 값이 있으면 하위 FTP/SFTP 클라이언트 연결 옵션으로 전달 |
 | `user` | `string \| undefined` | 사용자 이름 |
 | `password` | `string \| undefined` | 비밀번호. SFTP에서 생략하면 SSH agent + `~/.ssh/id_ed25519` 키 파일 인증을 순서대로 시도 |
 

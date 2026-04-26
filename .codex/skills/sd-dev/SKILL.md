@@ -8,28 +8,6 @@ description: 요구명세 → 구현계획 → TDD 개발 → 체크 → 리뷰�
 sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 오케스트레이터.
 **CRITICAL**: Step간 진행은 사용자 확인없이 즉시 다음 Step으로 진행한다.
 
-## 공통 규칙
-
-### subagent 실행 프로토콜
-
-Step 4~6은 `spawn_agent`로 subagent를 생성하여 수행한다. `fork_context: false`로 생성하고, preamble과 Step별 작업 지시만 `message`에 담아 컨텍스트 소진을 방지한다.
-
-#### message 구성
-
-1. orchestrator가 `.codex/skills/sd-dev/subagent-preamble.md`를 읽는다
-2. 그 내용 + Step별 작업 지시를 합쳐 `spawn_agent`의 `message`를 구성한다
-
-#### NEED_INPUT 처리 루프
-
-`wait_agent`로 subagent의 최종 메시지를 확인했을 때 `---NEED_INPUT---`이 포함되면:
-
-1. 상황과 선택지를 파악한다
-2. `.codex/rules/sd-options.md`를 읽고, 그 규칙에 맞춰 대화 메시지로 사용자에게 질문한다
-3. `send_input`으로 사용자 결정을 subagent에 전달한다
-4. `wait_agent`로 subagent의 최종 메시지를 다시 확인한다 (`---NEED_INPUT---` 반복 가능)
-
-포함되지 않으면 해당 Step 완료.
-
 ## Step 1: 입력 분기
 
 인자에 따라 시작 Step을 결정한다. (인자가 없는경우 대화에서 유추)
@@ -53,56 +31,25 @@ Step 4~6은 `spawn_agent`로 subagent를 생성하여 수행한다. `fork_contex
 
 `$sd-plan` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 4로 진행한다.
 
-## Step 4: sd-tdd (subagent)
+## Step 4: sd-tdd
 
-`spawn_agent`로 subagent를 생성하고 `wait_agent`로 완료를 기다려 sd-tdd를 수행한다. (subagent 실행 프로토콜 참조)
+`$sd-tdd` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 5로 진행한다.
 
-### message 구성
-
-preamble + 아래 작업 지시:
-
-    ## 작업
-    `$sd-tdd` 스킬을 호출하여 지침에 따라 TDD 개발을 수행하세요.
-    - Feature 문서: {feature_doc_path}
-    - WBS 문서: {wbs_path}
-
-NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
-
-## Step 5: sd-check (subagent)
+## Step 5: sd-check
 
 수정된 소스코드(`src/`, `tests/`)가 하나도 없으면(예: 문서만 수정) 이 단계를 스킵한다.
 
-`spawn_agent`로 subagent를 생성하고 `wait_agent`로 완료를 기다려 변경 패키지에 대한 sd-check를 수행한다. (subagent 실행 프로토콜 참조)
+변경 패키지에 대해 `$sd-check` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 6로 진행한다.
 
-### message 구성
+## Step 6: sd-review
 
-preamble + 아래 작업 지시:
-
-    ## 작업
-    `$sd-check` 스킬을 호출하여 지침에 따라 체크를 수행하세요.
-    - 대상 패키지: {변경된 패키지 목록}
-
-NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
-
-## Step 6: sd-review (subagent)
-
-`spawn_agent`로 subagent를 생성하고 `wait_agent`로 완료를 기다려 코드 리뷰 + 수정을 수행한다. (subagent 실행 프로토콜 참조)
-
-### message 구성
-
-preamble + 아래 작업 지시:
-
-    ## 작업
-    1. `$sd-inner-review` 스킬을 호출하여 지침에 따라 코드 리뷰를 수행하세요.
-       - 요구사항 원천: {wbs_path}, {feature_doc_path}
-    2. 발견된 **모든** 이슈를 직접 수정하세요.
-    3. 수정 내역을 요약하여 보고하세요 (파일경로, 수정 내용).
-
-NEED_INPUT 처리 루프에 따라 사용자 입력을 중계한다.
+`$sd-inner-review` 스킬을 호출하여 코드 리뷰를 수행한다.
+- wbs/feature 문서를 읽고 잘 구현되었는지 함께 검토한다.
+- 발견된 **모든** 이슈를 직접 수정한다.
 
 ### 수정 후 재검증
 
-subagent가 코드 수정을 보고하면, `spawn_agent`로 새 subagent를 생성하고 `wait_agent`로 완료를 기다려 Step 5(sd-check)를 재수행한다.
+코드 리뷰 단계에서 코드 수정이 있었으면 Step 5(sd-check)를 재수행한다.
 
 ## Step 7: 완료 보고
 
@@ -136,6 +83,6 @@ subagent가 코드 수정을 보고하면, `spawn_agent`로 새 subagent를 생�
 ```
 
 완료 보고 출력 직전에 **반드시(MUST) wbs.md의 현재 상태를 다시 읽어** Feature 체크박스(`[x]`/`[ ]`)를 확인한 뒤, 위 두 섹션 중 조건에 맞는 정확히 하나만 출력한다.
-- 다시 읽지 않으면 병렬 로 수행한 모든것이 적용되지 않은 상태로 표기되기 때문에 중복 수행 문제가 발생할 수 있다.
+- 다시 읽지 않으면 이전 단계에서 변경된 상태가 반영되지 않아 중복 수행 문제가 발생할 수 있다.
 
 **NEVER:** 미완료(`[ ]`) Feature가 1개라도 남아 있으면 `$sd-review`를 어떤 형태로도(조건부·제안·예시 포함) 언급하지 않는다. "모든 Feature가 끝난 뒤 $sd-review를 권장" 같은 조건부 안내도 금지한다.

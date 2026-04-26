@@ -32,5 +32,5 @@ export class SdCalendar<T>
   <ng-template itemOf let-item>
     <div class="tx-sm">{{ item.title }}</div>
   </ng-template>
-<$sd-calendar>
+</sd-calendar>
 ```

@@ -8,7 +8,7 @@ TypeScript AOT 컴파일러. Angular 패키지(`angularCompilerOptions`가 `tsco
 
 - ✅ Angular/TS 패키지를 프로그래매틱하게 컴파일해야 할 때 (커스텀 빌드 파이프라인, Vite 플러그인 내부 등)
 - ✅ 증분 빌드가 필요한 watch 모드 구현 시
-- ❌ CLI 명령어로 빌드할 때 — `pnpm build`/`pnpm watch` 사용. `SdTsCompiler`는 sd-cli 내부 엔진과 [`sdAngularPlugin`](../angular-vite-plugin$sd-angular-plugin.md)에서 사용하는 저수준 API
+- ❌ CLI 명령어로 빌드할 때 — `pnpm build`/`pnpm watch` 사용. `SdTsCompiler`는 sd-cli 내부 엔진과 [`sdAngularPlugin`](../angular-vite-plugin/sd-angular-plugin.md)에서 사용하는 저수준 API
 
 ```typescript
 export class SdTsCompiler {
