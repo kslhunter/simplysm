@@ -1,7 +1,6 @@
 ---
 name: sd-tdd
 description: 구현계획(plan) 기반으로 TDD 개발하는 스킬
-effort: medium
 ---
 
 # sd-tdd: TDD 개발
