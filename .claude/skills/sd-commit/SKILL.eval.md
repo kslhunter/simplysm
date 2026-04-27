@@ -8,8 +8,6 @@
   - `src/hello.ts` 신규 생성: `export function hello() { return "hello"; }`
   - `src/utils.ts` 생성 후 초기 커밋된 상태에서 수정: `length - 1` → `length` (버그 수정)
 - 체크리스트:
-  - [ ] `.tmp/{yyMMddHHmmss}_commit.txt`에 diff가 저장되었다
-  - [ ] diff 파일을 Read하여 분석하였다
   - [ ] 커밋 메시지 제목이 72자 이내의 총괄 요약이다
   - [ ] 서로 다른 type의 변경이 별도 그룹으로 분리되어 있다
   - [ ] Co-Authored-By가 포함되어 있다
@@ -27,5 +25,4 @@
 
 ## 안티패턴
 
-- [ ] diff를 파일 저장 없이 stdout으로만 처리하지 않았다
 - [ ] 커밋 전 사용자에게 확인을 묻지 않았다

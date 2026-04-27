@@ -9,20 +9,14 @@ model: haiku
 ## 프로세스
 
 ```
-Step 1: 스테이징 및 Diff 수집 → Step 2: Diff 분석 → Step 3: 메시지 작성 → Step 4: 커밋
+Step 1: 스테이징 → Step 2: Diff 분석 → Step 3: 메시지 작성 → Step 4: 커밋
 ```
 
-## Step 1: 스테이징 및 Diff 수집
+## Step 1: 스테이징
 
-모든 변경사항을 스테이징하고 diff를 파일로 저장한다.
+`git add -A`로 모든 변경을 스테이징한다 (sd-commit은 전체 단일 커밋 정책이므로 "관련 파일만 add" 권고를 의도적으로 오버라이드).
 
-```bash
-mkdir -p .tmp && git add -A && git diff --staged > ".tmp/$(date +%y%m%d%H%M%S)_commit.txt"
-```
-
-파일이 비어있으면 스테이징된 변경사항이 없는 것이다. 사용자에게 알리고 중단한다.
-
-생성된 파일을 Read하여 전체 변경 내역을 확인한다.
+스테이징된 변경이 없으면 사용자에게 알리고 중단한다.
 
 ## Step 2: Diff 분석
 
