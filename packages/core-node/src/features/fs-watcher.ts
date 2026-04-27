@@ -3,8 +3,44 @@ import * as chokidar from "chokidar";
 import consola from "consola";
 import type { EventName } from "chokidar/handler.js";
 import { Minimatch } from "minimatch";
+import * as nodeFs from "node:fs";
 import path from "path";
 import { type PosixPath, posix } from "../utils/path";
+
+//#region Native FSWatcher error guard
+
+/*
+ * Windows에서 watched 디렉토리가 사라지면 Node 내부 `_handle.onchange`가
+ * EPERM을 emit하는데, race window(close 진행 중 등)에서 리스너가 없는 인스턴스가
+ * 발견되면 EventEmitter의 기본 동작에 의해 `uncaughtException`으로 throw되어
+ * 프로세스가 즉시 종료된다. prototype의 emit를 감싸서 orphan 'error'를 swallow한다.
+ */
+interface FsWatcherInstance {
+  listenerCount: (event: string) => number;
+  emit: (event: string, ...args: unknown[]) => boolean;
+  [k: symbol]: unknown;
+}
+const FSW_CTOR = (nodeFs as unknown as { FSWatcher?: { prototype: FsWatcherInstance } }).FSWatcher;
+const FSW_PROTO = FSW_CTOR?.prototype;
+const FSW_GUARD_FLAG = Symbol.for("@simplysm/core-node/fs-watcher/error-guard");
+if (FSW_PROTO != null && FSW_PROTO[FSW_GUARD_FLAG] !== true) {
+  const origEmit = FSW_PROTO.emit;
+  FSW_PROTO.emit = function patchedFsWatcherEmit(
+    this: FsWatcherInstance,
+    event: string,
+    ...args: unknown[]
+  ): boolean {
+    if (event === "error" && this.listenerCount("error") === 0) {
+      // chokidar/sd-fs-watcher가 error를 라우팅하기 전에 close된 native handle 등에서
+      // 발생하는 orphan error. 무시하지 않으면 프로세스가 종료된다.
+      return false;
+    }
+    return origEmit.call(this, event, ...args);
+  };
+  FSW_PROTO[FSW_GUARD_FLAG] = true;
+}
+
+//#endregion
 
 //#region Helpers
 
@@ -140,8 +176,8 @@ export class FsWatcher {
 
     for (const p of this._paths) {
       const posixPath = posix(p);
+      this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
       if (GLOB_CHARS_RE.test(posixPath)) {
-        this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
         watchPaths.push(extractGlobBase(p));
       } else {
         watchPaths.push(p);

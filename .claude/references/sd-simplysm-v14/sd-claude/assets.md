@@ -36,7 +36,7 @@ claude/
 | `sd-check/`           | sd-check           | typecheck/lint/test 실행 및 에러 해결              |
 | `sd-claude-docs/`     | sd-claude-docs     | CLAUDE.md + usage 문서 동시 생성                   |
 | `sd-commit/`          | sd-commit          | 전체 변경사항에 대한 단일 커밋 생성                |
-| `sd-debug/`           | sd-debug           | 버그 근본 원인 분석(ACH) 및 수정 개발 연결         |
+| `sd-debug/`           | sd-debug           | 버그 근본 원인 분석(ACH) 및 보고                   |
 | `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
 | `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
 | `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |

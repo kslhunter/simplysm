@@ -36,9 +36,10 @@ FLOWS
   진입점                             개발 파이프라인
   sd-wbs    프로젝트 → Feature 분해 ─┐
   sd-review 코드 리뷰 → 수정 개발 루프 ├→ sd-plan → sd-tdd
-  sd-debug  에러 → 원인 분석/방안 선택 ├→ sd-plan → sd-tdd
   (없음)    바로 개발 시작          ─┘  └────────┘
                                         sd-dev (순차 실행)
+
+  sd-debug  버그/에러 → 원인 분석 보고 (분석 종착, 후속은 사용자 지시)
 
 SKILLS
   개발
@@ -51,7 +52,7 @@ SKILLS
     sd-check            typecheck / lint / test 실행 및 에러 수정
     sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰 및 수정 개발 연결
     sd-refactor         구조·설계·아키텍처 리팩토링 분석 리포트
-    sd-debug            버그/에러 근본 원인 분석 및 수정 개발 연결
+    sd-debug            버그/에러 근본 원인 분석 및 보고
 
   Git
     sd-commit           전체 변경사항 단일 커밋 생성
@@ -65,10 +66,6 @@ SKILLS
   도구
     sd-prompt           스킬/프롬프트 파일 생성·개선
     sd-outlook          Outlook 메일 검색/다운로드
-
-  기타
-    my-apk-decompile    APK 디컴파일 및 소스 분석
-    playwright-cli      브라우저 자동화 및 Playwright 테스트
 ````
 
 ## Step 3: 스킬 실행

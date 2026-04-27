@@ -27,7 +27,6 @@
     "postinstall": "playwright-cli install --skills && playwright install chromium"
   },
   "devDependencies": {
-    "@openai/codex": "^0.125.0",
     "@playwright/cli": "^0.1.9",
     "@vitest/browser-playwright": "^4.1.5",
     "@vitest/coverage-v8": "^4.1.5",

@@ -41,7 +41,6 @@ export default defineConfig({
           exclude: [
             "packages/sd-cli/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/sd-claude/tests/**/*.spec.{ts,js,mjs,cjs}",
-            "packages/sd-codex/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/core-node/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/lint/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/orm-node/tests/**/*.spec.{ts,js,mjs,cjs}",

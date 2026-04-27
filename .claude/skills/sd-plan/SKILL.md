@@ -41,9 +41,8 @@ sd-plan은 개발자 중심으로 **어떻게 만들지(How)** 를 결정한다.
 
 - wbs 문서 경로 + Feature 번호
 - `/sd-review`가 전달한 확정 이슈 목록
-- `/sd-debug`가 전달한 선택 해결 방안
 
-wbs 문서 경로와 Feature 번호가 없더라도 `/sd-review` 또는 `/sd-debug` 전달 입력이면 종료하지 않고 Feature 문서 생성을 진행한다.
+wbs 문서 경로와 Feature 번호가 없더라도 `/sd-review` 전달 입력이면 종료하지 않고 Feature 문서 생성을 진행한다.
 그 외 입력이면 `/sd-wbs`를 안내하고 종료한다.
 
 ## Step 2: Feature 분석

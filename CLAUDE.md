@@ -96,3 +96,8 @@ ORM:      orm-node / orm-common
 ## 참조 문서 유지보수
 
 - `@simplysm/*` 패키지의 public API 변경 시 `.claude/references/sd-simplysm-v14/{패키지명}/README.md` 및 하위 Entry 파일의 수정이 필요할 수 있다.
+
+## Claude 에셋 동기화
+
+- `.claude/`(스킬·룰·참조 문서)가 원본이다. `packages/sd-claude/claude/`는 배포 직전 자동 복제되는 산출물이다.
+- Claude 에셋 수정은 `.claude/`만 수정한다. `packages/sd-claude/claude/`를 직접 수정하면 다음 동기화 시 덮어쓰여 사라진다.
