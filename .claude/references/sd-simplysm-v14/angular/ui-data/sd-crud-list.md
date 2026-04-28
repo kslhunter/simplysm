@@ -182,7 +182,7 @@ viewType에 따라 렌더링 위치가 달라진다:
 | `item` | `TItem` | 현재 행 항목 (명시적 이름) |
 | `index` | `number` | 행 인덱스 |
 | `depth` | `number` | 트리 데이터의 중첩 깊이 |
-| `edit` | `boolean` | 현재 행이 편집 모드인지 여부. 행 클릭(또는 더블클릭) 시 `true`가 된다. `SdTextfield`의 `[readonly]`에 `!edit`을 바인딩하여 인라인 편집을 구현한다. |
+| `edit` | `boolean` | 현재 행이 편집 모드인지 여부. 행 클릭(또는 더블클릭) 시 `true`가 된다. `SdTextfield`의 `[readonly]`에 `!edit`을 바인딩하여 인라인 편집을 구현한다. **`SdSelect`/`SdSharedDataSelect`/`SdCheckbox`/`SdButton`류는 `readonly` 입력 자체가 없으며 클릭 한 번에 즉시 동작하므로 `let-edit`을 받지 않고 `[disabled]="!canEdit()"`만 사용한다 (자세한 내용은 [`sd-sheet.md`](./sd-sheet.md)의 "컨트롤별 `edit` 모드 처리" 표 참조).** |
 
 ```html
 <!-- 읽기 전용 셀 -->
@@ -592,6 +592,88 @@ export class CustomerList implements SdSelectModal<number> {
 </sd-crud-list>
 ```
 
+## Usage: 외부 input(초기 필터)을 받는 모달
+
+`SdSelectModal`로도 사용되면서 동시에 페이지 라우팅으로도 진입 가능한 컴포넌트는, 호출자가 `inputs`로 강제 주입하는 초기 필터(`includeCustomerIds`, `includeGoodsIds`, `excludeIds` 등)와 사용자가 화면에서 변경하는 `filter`/`lastFilter`가 같은 키를 공유한다. 이때 effect를 **두 개로 분리**해야 한다.
+
+### ✅ 권장: input 동기화와 검색 트리거를 분리
+
+```typescript
+constructor() {
+  // effect 1: 외부 input → filter/lastFilter 단방향 동기화 (input 변경 시만 트리거)
+  effect(() => {
+    const cIds = this.includeCustomerIds() ?? [];
+    const gIds = this.includeGoodsIds() ?? [];
+    const xIds = this.excludeIds() ?? [];
+
+    untracked(() => {
+      this.filter.update((f) => ({
+        ...f,
+        includeCustomerIds: cIds,
+        includeGoodsIds: gIds,
+        excludeIds: xIds,
+      }));
+      this.lastFilter.set({ ...this.filter() });
+    });
+  });
+
+  // effect 2: lastFilter/page/sortingDefs → 검색 (사용자 onFilterSubmit/페이지 이동/정렬 시 트리거)
+  effect(() => {
+    if (!this.perms().includes("use") || !this.ready()) {
+      this.initialized.set(true);
+      return;
+    }
+
+    this.lastFilter();
+    this.page();
+    this.sortingDefs();
+
+    void untracked(async () => {
+      this.busyCount.update((v) => v + 1);
+      await this._sdToast.try(async () => {
+        await this._refresh();
+      });
+      this.busyCount.update((v) => v - 1);
+      this.initialized.set(true);
+    });
+  });
+}
+```
+
+- effect 1은 **input signal에만 의존**. 페이지 모드(input 미전달)에서는 init 1회만 실행되고 이후 트리거되지 않으므로, 사용자가 화면에서 바꾼 `filter`/`lastFilter`를 덮어쓰지 않는다.
+- effect 2는 **lastFilter/page/sortingDefs에만 의존**. `onFilterSubmit()`이 `lastFilter.set` 하면 검색이 자동 실행된다.
+- 모달 모드에서 호출자가 inputs를 한 번만 전달하므로, 모달이 열린 동안 effect 1이 재트리거되지 않아 모달 내 사용자 변경도 보존된다.
+
+### ❌ 안티패턴: 한 effect에서 input vs lastFilter 비교 후 reset
+
+```typescript
+constructor() {
+  effect(() => {
+    if (!this.perms().includes("use") || !this.ready()) { /* ... */ return; }
+
+    const cIds = this.includeCustomerIds() ?? [];      // 페이지 모드: 항상 []
+    const lf = this.lastFilter();                       // 사용자 검색 직후: [123]
+    if (!obj.equal(cIds, lf.includeCustomerIds)) {     // ❌ input과 lastFilter 비교
+      untracked(() => {
+        this.filter.update((f) => ({ ...f, includeCustomerIds: cIds }));
+        this.lastFilter.set({ ...this.filter() });     // ❌ 사용자 변경을 [] 로 덮어씀
+        this.page.set(0);
+      });
+    }
+
+    this.lastFilter();
+    this.page();
+    this.sortingDefs();
+
+    void untracked(async () => { await this._refresh(); });
+  });
+}
+```
+
+- 사용자가 화면에서 필터를 변경하고 `onFilterSubmit()` 호출 → `lastFilter.set([123])` → 이 effect 재실행 → `cIds=[]`와 `lastFilter=[123]`이 다르다고 판단 → `filter`/`lastFilter`를 `[]`로 reset → `_refresh()`는 빈 필터로 검색.
+- 결과: 페이지 모드에서 필터가 항상 빈 배열로 동작하는 것처럼 보임 (필터 미적용).
+- 외부 input은 "외부에서 명령적 reset"의 트리거여야 하며, 사용자 변경(`lastFilter`)과 동등 비교의 기준이 되어선 안 된다.
+
 ## Anti-patterns
 
 ```html
@@ -620,4 +702,20 @@ export class CustomerList implements SdSelectModal<number> {
 <!-- ❌ cell 템플릿에서 items 시그널 호출을 빠뜨리지 않는다 -->
 <ng-template [cell]="[]" let-item="item">  <!-- ❌ 타입 추론 불가 -->
 <ng-template [cell]="items()" let-item="item">  <!-- ✅ -->
+
+<!-- ❌ select류 컨트롤에 [readonly]="!edit"을 바인딩하지 않는다 -->
+<sd-select [readonly]="!edit" ...>
+<!-- → typecheck 에러: Can't bind to 'readOnly' since it isn't a known property of 'sd-select' -->
+
+<!-- ❌ 위 에러를 회피하려고 disabled에 !edit을 합치지 않는다 -->
+<!-- (select는 즉시 변경 컨트롤이라 edit 모드 분기가 의미 없고, -->
+<!--  값 표시 행에서도 disabled로 회색 처리되어 권한 없음 시각과 혼동됨) -->
+<ng-template [cell]="items()" let-item="item" let-edit="edit">
+  <sd-select [disabled]="!canEdit() || !edit" ...>
+</ng-template>
+
+<!-- ✅ select류는 edit 모드 분기 없음. let-edit 안 받고 disabled는 권한만 -->
+<ng-template [cell]="items()" let-item="item">
+  <sd-select [disabled]="!canEdit()" ...>  <!-- ✅ -->
+</ng-template>
 ```

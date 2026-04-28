@@ -177,11 +177,7 @@ export class FsWatcher {
     for (const p of this._paths) {
       const posixPath = posix(p);
       this._globMatchers.push(new Minimatch(posixPath, { dot: true }));
-      if (GLOB_CHARS_RE.test(posixPath)) {
-        watchPaths.push(extractGlobBase(p));
-      } else {
-        watchPaths.push(p);
-      }
+      watchPaths.push(extractGlobBase(p));
     }
 
     // 중복 경로 제거

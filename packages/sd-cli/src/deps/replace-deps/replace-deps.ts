@@ -85,6 +85,31 @@ async function copyWithUnlink(
 }
 
 /**
+ * 교체된 패키지의 postinstall 스크립트를 actualTargetPath에서 실행한다.
+ * scripts.postinstall이 없으면 조용히 종료한다. 실행 실패는 로깅만 하고 throw하지 않는다.
+ */
+async function runPostinstall(
+  entry: ReplaceDepEntry,
+  logger: ReturnType<typeof consola.withTag>,
+): Promise<void> {
+  const sourcePkgJsonPath = pathx.posix(path.join(entry.resolvedSourcePath, "package.json"));
+  try {
+    const pkgJson = JSON.parse(await fs.promises.readFile(sourcePkgJsonPath, "utf-8"));
+    const postinstall = pkgJson.scripts?.postinstall as string | undefined;
+    if (postinstall == null) return;
+
+    logger.warn(`[${entry.targetName}] postinstall 스크립트 실행: ${postinstall}`);
+    logger.start(`[${entry.targetName}] postinstall 실행 중...`);
+    await promisify(exec)(postinstall, { cwd: entry.actualTargetPath });
+    logger.success(`[${entry.targetName}] postinstall 실행 완료`);
+  } catch (err) {
+    logger.error(
+      `[${entry.targetName}] postinstall 실패: ${err instanceof Error ? err.message : err}`,
+    );
+  }
+}
+
+/**
  * npm publish 시 files 필드와 무관하게 항상 포함되는 파일 패턴 (대소문자 무시)
  */
 export const NPM_DEFAULT_FILE_PATTERN = /^(readme|license|licence|changelog|history)/i;
@@ -173,22 +198,8 @@ export async function setupReplaceDeps(
   logger.success(`replace-deps 설정 완료 (${copiedEntries.length}개 의존성 교체)`);
 
   // 교체된 패키지의 postinstall 스크립트 실행
-  for (const { targetName, resolvedSourcePath, actualTargetPath } of copiedEntries) {
-    const sourcePkgJsonPath = pathx.posix(path.join(resolvedSourcePath, "package.json"));
-    try {
-      const pkgJson = JSON.parse(await fs.promises.readFile(sourcePkgJsonPath, "utf-8"));
-      const postinstall = pkgJson.scripts?.postinstall as string | undefined;
-      if (postinstall == null) continue;
-
-      logger.warn(`[${targetName}] postinstall 스크립트 실행: ${postinstall}`);
-      logger.start(`[${targetName}] postinstall 실행 중...`);
-      await promisify(exec)(postinstall, { cwd: actualTargetPath });
-      logger.success(`[${targetName}] postinstall 실행 완료`);
-    } catch (err) {
-      logger.error(
-        `[${targetName}] postinstall 실패: ${err instanceof Error ? err.message : err}`,
-      );
-    }
+  for (const entry of copiedEntries) {
+    await runPostinstall(entry, logger);
   }
 }
 
@@ -285,7 +296,30 @@ export async function watchReplaceDeps(
     followSymlinks: false,
   });
 
+  // entry(actualTargetPath) 단위 postinstall debounce.
+  // 짧은 시간 내 여러 파일 변경이 발생하면 마지막 변경 후 1초 뒤에 한 번만 실행한다.
+  const POSTINSTALL_DEBOUNCE_MS = 1000;
+  const postinstallTimers = new Map<string, NodeJS.Timeout>();
+  const postinstallEntryByKey = new Map<string, ReplaceDepEntry>();
+
+  const schedulePostinstall = (entry: ReplaceDepEntry) => {
+    const key = entry.actualTargetPath;
+    const prev = postinstallTimers.get(key);
+    if (prev != null) clearTimeout(prev);
+    postinstallEntryByKey.set(key, entry);
+    const timer = setTimeout(() => {
+      postinstallTimers.delete(key);
+      const target = postinstallEntryByKey.get(key);
+      postinstallEntryByKey.delete(key);
+      if (target == null) return;
+      void runPostinstall(target, logger);
+    }, POSTINSTALL_DEBOUNCE_MS);
+    postinstallTimers.set(key, timer);
+  };
+
   watcher.onChange({ delay: 300 }, async (changeInfos) => {
+    const changedEntries = new Set<ReplaceDepEntry>();
+
     const flags = await Promise.all(
       changeInfos.map(async ({ path: changedPath }) => {
         const src = findSource(changedPath);
@@ -317,10 +351,12 @@ export async function watchReplaceDeps(
                 await fsx.mkdir(pathx.posix(path.dirname(destPath)));
                 await fsx.copy(changedPath, destPath);
                 localActualCopy = true;
+                changedEntries.add(e);
               }
             } else {
               await fsx.rm(destPath);
               localActualCopy = true;
+              changedEntries.add(e);
             }
           } catch (err) {
             logger.error(
@@ -334,6 +370,9 @@ export async function watchReplaceDeps(
     );
 
     if (flags.some((f) => f)) {
+      for (const entry of changedEntries) {
+        schedulePostinstall(entry);
+      }
       options?.onChanged?.();
     }
   });
@@ -343,6 +382,11 @@ export async function watchReplaceDeps(
   return {
     entries,
     dispose: () => {
+      for (const timer of postinstallTimers.values()) {
+        clearTimeout(timer);
+      }
+      postinstallTimers.clear();
+      postinstallEntryByKey.clear();
       void watcher.close();
     },
   };

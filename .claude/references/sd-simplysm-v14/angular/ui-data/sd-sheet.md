@@ -111,6 +111,33 @@ class SdSheetColumnCellTemplate<T> {
 - **일반 텍스트**: `<div class="p-xs-sm">` 로 감싸 기본 패딩 적용
 - **컨트롤 삽입**: 반드시 `[inset]="true"` + `[size]="'sm'"` 지정
 
+**컨트롤별 `edit` 모드 처리** — `SdSheetCellContext.edit`은 셀이 편집 진입 모드인지 여부(행 클릭/더블클릭으로 활성)다. 컨트롤 종류에 따라 처리가 다르다:
+
+| 컨트롤 | `[disabled]` | `[readonly]` | `let-edit="edit"` |
+|--------|-------------|-------------|---------------------|
+| `SdTextfield` (text/number/date 등) | `!canEdit()` | `!edit` | 받음 |
+| `SdSelect` / `SdSharedDataSelect` | `!canEdit()` | (사용 안 함) | **받지 않음** |
+| `SdCheckbox` | `!canEdit()` | (사용 안 함) | 받지 않음 |
+| `SdButton` | `!canEdit()` | (사용 안 함) | 받지 않음 |
+
+`readonly`는 "값은 보이되 편집 진입을 막는다", `disabled`는 "회색 + 비활성"이라 의미·시각이 다르다. textfield 류는 둘을 분리해 인라인 편집(읽기 모드 → 클릭 → 편집 모드) UX를 구현한다.
+
+select·체크박스·버튼류는 클릭 한 번으로 즉시 동작하는 컨트롤이라 `edit` 모드 분기 자체가 의미 없다. `let-edit="edit"`을 받지 않고 `[disabled]`는 권한(`!canEdit()`)만 반영한다.
+
+```html
+<!-- ❌ select류 컨트롤에서 disabled에 !edit을 합치지 않는다 -->
+<ng-template [cell]="items()" let-item="item" let-edit="edit">
+  <sd-select [disabled]="!canEdit() || !edit" ...>
+</ng-template>
+
+<!-- ✅ select는 edit 모드 분기 없음. let-edit 안 받고 disabled는 권한만 -->
+<ng-template [cell]="items()" let-item="item">
+  <sd-select [disabled]="!canEdit()" ...>
+</ng-template>
+```
+
+> **주의**: `SdSelect`/`SdSharedDataSelect`/`SdCheckbox`/`SdButton`은 `readonly` 입력을 **제공하지 않는다**. `[readonly]="!edit"`을 바인딩하면 typecheck 에러(`Can't bind to 'readOnly' since it isn't a known property of 'sd-...'`)가 발생한다. textfield 패턴(`disabled`/`readonly` 분리)을 select류에 그대로 적용하지 말 것.
+
 ### `SdSheetCellContext`
 
 ```typescript

@@ -40,7 +40,7 @@ claude/
 | `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
 | `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
 | `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |
-| `sd-inner-clarify/`   | sd-inner-clarify   | (내부 전용) 명확성 분류·근거 탐색·명확화 질문      |
+| `sd-clarify/`   | sd-clarify   | (내부 전용) 명확성 분류·근거 탐색·명확화 질문      |
 | `sd-issue/`           | sd-issue           | GitHub 이슈 생성                                   |
 | `sd-outlook/`         | sd-outlook         | Outlook 메일 검색/다운로드 (Python)                |
 | `sd-plan/`            | sd-plan            | 요구명세/구현계획 작성                             |

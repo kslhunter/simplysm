@@ -11,7 +11,7 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   try {
     const link = document.createElement("a");
     link.href = url;
-    link.download = sanitize(fileName) || "download";
+    link.download = sanitize(fileName).replace(/[[\]]/g, "") || "download";
     link.click();
   } finally {
     setTimeout(() => URL.revokeObjectURL(url), 1000);

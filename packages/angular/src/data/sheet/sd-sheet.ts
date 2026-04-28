@@ -856,6 +856,19 @@ export class SdSheet<TItem> {
     event.preventDefault();
     event.stopPropagation();
 
+    // SdCheckbox host의 (click) 자체 토글이 microtask로 적용한 범위 selection을 되돌리는 것을 방지
+    const checkboxEl = event.currentTarget;
+    if (checkboxEl instanceof HTMLElement) {
+      checkboxEl.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        },
+        { once: true, capture: true },
+      );
+    }
+
     const focusedEl = document.activeElement;
     if (!(focusedEl instanceof HTMLElement)) return;
 

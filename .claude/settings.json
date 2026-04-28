@@ -1,6 +1,4 @@
 {
-  "transcriptView": "verbose",
-  "outputStyle": "Explanatory",
   "hooks": {
     "PreToolUse": [
       {

@@ -18,7 +18,6 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 | wbs 경로만 (추가 요청 있음)          | → Step 2 (sd-wbs 업데이트)                                                     |
 | wbs + Feature 번호                   | → Step 3 (sd-plan)                                                             |
 | Feature 문서 경로                    | → Step 4 (sd-tdd). Slice 체크박스(`[x]`/`[ ]`)를 확인하여 진행 상태를 복원한다 |
-| `/sd-review`가 전달한 확정 이슈 목록 | → Step 3 (sd-plan: 리뷰 수정 Feature 문서 생성)                                |
 | 그 외 (자연어 요청, 참고자료 등)     | → Step 2 (sd-wbs)                                                              |
 
 ## Step 2: sd-wbs
@@ -31,12 +30,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 ## Step 3: sd-plan
 
 `/sd-plan` 스킬을 즉시 수행한다. 완료 후 사용자 확인 없이 즉시 Step 4로 진행한다.
-
-`/sd-review`가 전달한 확정 이슈 목록으로 시작한 경우:
-
-- `/sd-wbs`를 수행하지 않는다.
-- 확정 이슈 목록 전체를 하나의 리뷰 수정 Feature로 보고 `/sd-plan`을 즉시 수행한다.
-- 이슈별 또는 근본 원인별 작업 단위는 WBS Feature가 아니라 Feature 문서의 Slice로 나눈다.
+단, Feature 문서의 Scenario 수가 10개를 초과하면 Step 4를 중단하고 `/sd-dev {Feature파일경로}`로 새 세션에서 진행하도록 안내한다.
 
 ## Step 4: sd-tdd
 

@@ -19,7 +19,11 @@ const config: SdConfigFn = () => ({
       target: "scripts",
       publish: { type: "npm" },
       watch: {
-        target: ["../../.claude/**/sd-*", "../../.claude/**/sd-*/**", "../../.claude/settings.json"],
+        target: [
+          "../../.claude/**/sd-*", // 파일들
+          "../../.claude/**/sd-*/**", // sd-*폴더내 파일 및 폴더들
+          "../../.claude/settings.json", // 세팅 파일
+        ],
         cmd: "node",
         args: ["scripts/sync.mjs"],
       },

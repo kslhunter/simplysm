@@ -121,6 +121,74 @@ describe("SdFsWatcher", () => {
 
   //#endregion
 
+  //#region Absolute Path (no glob)
+
+  describe("절대경로 watch (글롭 없음)", () => {
+    const DELAY = 300;
+
+    const waitForChanges = (
+      watcherInstance: FsWatcher,
+      delay: number,
+    ): Promise<Array<{ event: string; path: string }>> => {
+      return new Promise((resolve) => {
+        watcherInstance.onChange({ delay }, (changeInfos) => {
+          resolve(changeInfos.map((c) => ({ event: c.event, path: c.path })));
+        });
+      });
+    };
+
+    it("디렉토리 절대경로 watch 시 직접 자식 파일 추가 감지", async () => {
+      watcher = await FsWatcher.watch([testDir]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      fs.writeFileSync(path.join(testDir, "child.txt"), "hello");
+
+      const changes = await changesPromise;
+
+      expect(changes.length).toBe(1);
+      expect(changes[0].path).toContain("child.txt");
+      expect(changes[0].event).toBe("add");
+    });
+
+    it("디렉토리 절대경로 watch 시 중첩 하위 디렉토리 파일 변경 감지", async () => {
+      const subDir = path.join(testDir, "sub", "deep");
+      fs.mkdirSync(subDir, { recursive: true });
+
+      watcher = await FsWatcher.watch([testDir]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      fs.writeFileSync(path.join(subDir, "nested.txt"), "deep");
+
+      const changes = await changesPromise;
+
+      const nested = changes.find((c) => c.path.endsWith("nested.txt"));
+      expect(nested).toBeDefined();
+      expect(nested?.event).toBe("add");
+    });
+
+    it("단일 파일 절대경로 watch 시 해당 파일 수정 감지", async () => {
+      const filePath = path.join(testDir, "single.txt");
+      fs.writeFileSync(filePath, "initial");
+
+      watcher = await FsWatcher.watch([filePath]);
+
+      const changesPromise = waitForChanges(watcher, DELAY);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      fs.writeFileSync(filePath, "modified");
+
+      const changes = await changesPromise;
+
+      expect(changes.length).toBe(1);
+      expect(changes[0].path).toContain("single.txt");
+      expect(["change", "add"]).toContain(changes[0].event);
+    });
+  });
+
+  //#endregion
+
   //#region Event Merging
 
   describe("이벤트 병합", () => {

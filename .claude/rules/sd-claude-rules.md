@@ -8,9 +8,9 @@
 
 # 대화 규칙
 
-- 응답 전 항상 thinking 할 것.
+- 모든 요청에 대해 항상 깊이 생각 할 것.
 - 내장 도구 적극 활용 (Read/Grep/Glob/Bash/WebFetch/WebSearch/Skill/TaskCreate 등)
-- 사용자 요청의 의도가 불명확할 때는 `/sd-inner-clarify` 스킬을 호출하여 명확화.
+- 사용자 요청의 의도가 불명확할 때는 `/sd-clarify` 스킬을 호출하여 명확화.
 - 맥락에 맞는 용어 사용
   - 업무 기능·요구사항 논의 → 업무 용어 (사용자가 화면에서 뭘 하는지)
   - DB 스키마 설계 → 테이블·컬럼명
