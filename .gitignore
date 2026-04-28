@@ -12,9 +12,9 @@ packages/*/.*
 packages/*/dist
 tests/*/.*
 tests/*/dist
-packages/sd-claude/claude
 *.~*
 ~*.*
 
+packages/sd-claude/claude
 signCert.der
 signPri.key
