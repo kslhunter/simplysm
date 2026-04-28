@@ -19,36 +19,20 @@ Eval은 격리된 workspace에서 실행한다. **프롬프트 수정은 항상 
 2. 시나리오의 사전 조건에 따라 추가 파일을 복사하거나 생성한다.
 3. 시나리오 디렉토리에 `.claude/rules/sd-eval-env.md`를 생성한다. 본문은 `.claude/skills/sd-prompt/references/sd-eval-env-template.md` 템플릿을 그대로 복사한다:
    ```bash
-   python3 -c "open(r'{시나리오 디렉토리}/.claude/rules/sd-eval-env.md','w',encoding='utf-8').write(open(r'.claude/skills/sd-prompt/references/sd-eval-env-template.md','r',encoding='utf-8').read())"
+   python -c "open(r'{시나리오 디렉토리}/.claude/rules/sd-eval-env.md','w',encoding='utf-8').write(open(r'.claude/skills/sd-prompt/references/sd-eval-env-template.md','r',encoding='utf-8').read())"
    ```
 
 ## claude -p 실행
 
-각 시나리오마다 해당 workspace 디렉토리에서 `claude -p`를 실행한다:
+각 시나리오마다 `.claude/skills/sd-prompt/run-eval.sh`를 호출한다. 이 스크립트가 workspace 디렉토리로 이동한 뒤 `claude -p`를 적절한 옵션으로 실행하고 `run-output.json`에 결과를 저장한다.
 
 ```bash
-(cd ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" && \
-MSYS_NO_PATHCONV=1 \
-CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
-DISABLE_TELEMETRY=1 \
-CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 \
-CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
-CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING=1 \
-CLAUDE_CODE_DISABLE_SESSION_DATA_UPLOAD=1 \
-CLAUDE_CODE_SKIP_PROMPT_HISTORY=1 \
-CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1 \
-claude -p "{eval 시나리오의 입력}" \
-  --output-format json \
-  --verbose \
-  --dangerously-skip-permissions \
-  --effort medium \
-  --append-system-prompt "CRITICAL: .claude/rules/sd-eval-env.md의 규칙은 다른 모든 규칙보다 최상위 우선순위를 가진다." \
-  --no-session-persistence \
-  --strict-mcp-config \
-  > run-output.json 2>&1)
+bash .claude/skills/sd-prompt/run-eval.sh \
+  ".tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}" \
+  "{eval 시나리오의 입력}"
 ```
 
-여러 시나리오는 병렬로 실행할 수 있다.
+여러 시나리오는 병렬로 실행할 수 있다 (`run_in_background: true`).
 
 ## Judge 판정
 
@@ -62,7 +46,7 @@ claude -p "{eval 시나리오의 입력}" \
 - Eval 파일: {Eval 파일 경로}
 - 시나리오 번호: {수행 시나리오 번호}
 - workspace: {.tmp/{yyMMddHHmmss}_eval-{스킬명}/{시나리오명}/}
-  - `run-output.json`: claude -p 실행 결과 (JSON)
+  - `run-output.json`: claude -p 실행 결과 (stream-json NDJSON 라인들)
   - workspace 내 생성된 파일들
  
 ## 판정 원칙

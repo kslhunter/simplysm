@@ -2,62 +2,40 @@
 
 ## 행동 Eval
 
-### 시나리오 1: 신규 룰 전체 워크플로우 (Step 1→3)
+### 시나리오 1: 신규 스킬 작성 (Step 1~5 전체 흐름)
 
-- 입력: "/sd-prompt 새 룰 만들어줘: 코드 리뷰 시 테스트 파일도 반드시 확인하는 룰"
-- 사전 조건: 없음
-- 체크리스트:
-  - [ ] `.claude/rules/` 디렉토리에 새 룰 `.md` 파일이 생성되었다
-  - [ ] 생성된 룰 파일에 "테스트 파일" 관련 지시가 포함되어 있다
-  - [ ] `.claude/evals/` 디렉토리에 룰에 대응하는 eval `.md` 파일이 생성되었다
-  - [ ] eval 파일에 `## 행동 Eval` 섹션이 존재한다
-  - [ ] eval 파일에 체크리스트(`- [ ]`) 항목이 1개 이상 존재한다
-  - [ ] eval 파일의 입력이 자연어 발화 형식이다 (프롬프트이므로 슬래시 커맨드가 아님)
+- 사전 조건: workspace의 `.claude/`에 sd-prompt 자신과 sd-clarify·기타 기존 스킬은 존재 (`.claude/` 통째 복사). 작성 대상이 될 새 스킬 폴더(`.claude/skills/dir-size/`)는 존재하지 않는다.
+- 입력: "/sd-prompt 디렉토리 크기 합산 스킬을 만들어줘. 디렉토리 경로를 입력받아 하위 모든 파일 크기를 합산해 사용자에게 단일 보고를 출력하는 분석 전용 스킬. 트리거: '디렉토리 크기 확인', '폴더 용량 계산', '디스크 사용량 분석'."
 
-### 시나리오 2: 기존 스킬 eval 작성
+- 성공 행동:
+  - [ ] 의도 정의 단계에서 유형(스킬), 트리거, 입력, 출력 4요소를 식별·요약한 텍스트가 응답에 등장한다.
+  - [ ] Step 1과 Step 2 종료 시점 각각에 명확화 절차가 수행된다 (선택지 텍스트 출력 + `**사용자 선택: {값}**` 고정 리터럴 표기).
+  - [ ] workspace의 `.claude/skills/{새스킬명}/SKILL.md` 파일이 신규 생성되며, 프론트매터 `name`과 `description`이 모두 작성된다.
+  - [ ] SKILL.md의 description이 `{기능 설명}하는 스킬. "{트리거1}", "{트리거2}", "{트리거3}" 등을 요청할 때 사용한다.` 포맷을 만족한다 (큰따옴표로 감싼 트리거 인용이 2개 이상 등장).
+  - [ ] SKILL.md 본문에 `## Step N:` 형식의 시간 순서 단계 헤딩이 1개 이상 등장한다.
+  - [ ] 같은 폴더에 `SKILL.eval.md` 파일이 신규 생성되며, `## 행동 Eval`과 `## 안티패턴 Eval` 두 섹션이 모두 작성된다.
+  - [ ] SKILL.eval.md의 행동 Eval 시나리오 `입력:` 줄이 슬래시 커맨드(`/`로 시작) 형식으로 작성된다.
+  - [ ] outer 응답에 Step 4 inner Eval 실행이 시도된 흔적이 있다 (`run-eval.sh` 호출, `.tmp/...` 경로의 inner workspace 생성, 또는 inner `run-output.json` 인용 중 하나 이상).
+  - [ ] outer 응답에 inner Eval 판정 결과(PASS/FAIL 결론과 그 근거)가 인용·반영된다.
+  - [ ] outer 응답에 Step 5 Smell 탐지 단계가 수행된 흔적이 등장한다 (Smell 카테고리별 탐지 결과 또는 "Smell 없음" 결론).
+  - [ ] outer 응답 종료 시점에 최종 PASS 상태와 산출물 경로(SKILL.md, SKILL.eval.md)가 명시된다.
 
-- 입력: "/sd-prompt .claude/skills/sd-dummy/SKILL.md의 eval 작성해줘"
-- 사전 조건:
-  - `.claude/skills/sd-dummy/SKILL.md` — 더미 스킬 (name: sd-dummy, description: "더미 테스트 스킬. 'dummy', '테스트' 등을 요청할 때 사용한다."). 내용: Step 1에서 입력 파일을 읽고, Step 2에서 `output/result.md`에 요약을 생성한다.
-  - `.claude/skills/sd-dummy/SKILL.eval.md` 없음
-- 체크리스트:
-  - [ ] `.claude/skills/sd-dummy/SKILL.eval.md`가 생성되었다
-  - [ ] eval 파일에 `# Eval: sd-dummy` 헤더가 존재한다
-  - [ ] eval 파일의 시나리오 입력이 `/sd-dummy` 슬래시 커맨드 형식이다
-  - [ ] eval 파일의 체크리스트 항목이 workspace 파일 또는 텍스트 출력으로 판정 가능한 내용이다 (도구 호출 여부/순서를 체크하지 않음)
-  - [ ] eval 파일에 `## 안티패턴 Eval` 섹션이 존재한다
+- 보조 assertion:
+  - [ ] SKILL.md 본문에 `적절히`, `필요시`, `경우에 따라`, `등등` 같은 모호 표현이 잔존하지 않는다.
+  - [ ] SKILL.md 헤딩 레벨이 가이드(`#` 스킬 제목 / `##` Step·공통 규칙 / `###` 절차·참조 항목)를 위반하지 않는다.
+  - [ ] SKILL.eval.md의 모든 체크 항목이 `- [ ]` 마크다운 체크박스 형식으로 작성된다.
 
-### 시나리오 3: Eval 실행
-
-- 입력: "/sd-prompt .claude/skills/sd-dummy/SKILL.md의 eval 실행해줘"
-- 사전 조건:
-  - `.claude/skills/sd-dummy/SKILL.md` — 시나리오 2와 동일한 더미 스킬
-  - `.claude/skills/sd-dummy/SKILL.eval.md` — 행동 Eval 시나리오 1개 포함 (입력: "/sd-dummy test-input.txt", 체크리스트: `output/result.md` 파일이 생성되었다)
-- 체크리스트:
-  - [ ] `.tmp/` 하위에 eval workspace 디렉토리가 생성되었다
-  - [ ] eval workspace에 `.claude/` 폴더가 복사되었다
-  - [ ] eval workspace에 `.claude/rules/sd-eval-env.md` 파일이 생성되었다
-  - [ ] 텍스트 출력에 `claude -p` 명령어 실행 흔적이 포함되었다
-  - [ ] 텍스트 출력에 Judge 판정 결과(PASS 또는 FAIL)가 포함되었다
-
-### 시나리오 4: 리팩터링 (Step 5)
-
-- 입력: "/sd-prompt .claude/skills/sd-dummy/SKILL.md 리팩터링해줘"
-- 사전 조건:
-  - `.claude/skills/sd-dummy/SKILL.md` — 의도적으로 Prompt Smell을 포함한 더미 스킬:
-    - 중복 지시: "입력 파일을 반드시 읽는다"가 Step 1과 Step 2에 각각 존재
-    - 용어 불일치: Step 1에서 "입력 파일", Step 2에서 "소스 파일"로 같은 개념을 다른 단어로 지칭
-    - 장황한 표현: "이 단계에서는 사용자가 제공한 입력 파일의 내용을 처음부터 끝까지 빠짐없이 전부 다 읽어야 한다"
-  - `.claude/skills/sd-dummy/SKILL.eval.md` — 행동 Eval 시나리오 1개 포함
-- 체크리스트:
-  - [ ] 텍스트 출력에 Prompt Smell 탐지 결과가 포함되었다 (중복 지시, 용어 불일치, 장황한 표현 중 1개 이상 언급)
-  - [ ] 텍스트 출력에 명확화 질문(선택지 제시)이 포함되었다
-  - [ ] `.claude/skills/sd-dummy/SKILL.md` 파일이 수정되었다 (원본과 내용이 다르다)
-  - [ ] 수정 후 `.tmp/` 하위에 Regression Guard용 eval workspace가 생성되었다
+- Judge rubric:
+  - PASS: 새 스킬 폴더 하위에 SKILL.md와 SKILL.eval.md가 신규 생성되고, description 포맷·Step 헤딩·행동/안티패턴 섹션이 모두 충족된다. 의도 4요소 명확화 흔적, Step 1·Step 2 명확화 절차 흔적, Step 4 inner Eval 실행 시도 및 결과 반영 흔적, Step 5 Smell 탐지 흔적, 최종 PASS 보고가 outer 응답에 모두 등장한다.
+  - FAIL: SKILL.md 또는 SKILL.eval.md 누락 / description 포맷 위반(트리거 인용 2개 미만) / Step 헤딩 부재 / 의도 명확화 미수행 / Step 4 inner Eval 호출 시도 흔적 부재 / Step 5 Smell 탐지 단계 누락 / 최종 PASS 보고 누락 중 하나라도 해당.
 
 ## 안티패턴 Eval
 
-- [ ] SKILL.md만 생성하고 eval 파일을 생성하지 않았다 (시나리오 1, 2)
-- [ ] eval 체크리스트에 주관적 기준("잘 작성되었는가", "적절한가", "충분한가")을 사용했다
-- [ ] eval 체크리스트에 도구 호출 여부를 체크했다 ("Read 도구를 호출했다", "Grep을 사용했다")
-- [ ] 스킬 대상 eval의 입력에서 슬래시 커맨드(`/스킬명`) 형식을 사용하지 않았다
+모든 시나리오에 공통으로 적용된다.
+
+- [ ] 의도 명확화 또는 Eval 시나리오 명확화 단계를 건너뛰고 SKILL.md 본문 작성으로 직행하지 않는다.
+- [ ] inner Eval에서 FAIL 판정이 나왔는데 수정·재실행 없이 다음 Step으로 진행하지 않는다 (개선 루프 회피 금지).
+- [ ] 산출 SKILL.md 본문에 모호 표현(`적절히`, `필요시`, `경우에 따라`, `등등`)이 잔존하지 않는다.
+- [ ] 산출 SKILL.md의 description이 description 포맷(트리거 따옴표 인용 ≥ 2개)을 위반하지 않는다.
+- [ ] 산출물 파일(SKILL.md 또는 SKILL.eval.md)이 대상 스킬 폴더 외부 경로에 생성되지 않는다.
+- [ ] AskUserQuestion 도구를 직접 호출하지 않는다 (Eval 환경 규칙에 따라 텍스트 출력 + `**사용자 선택: {값}**` 고정 리터럴로 처리).

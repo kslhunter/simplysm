@@ -36,15 +36,8 @@ export async function ensureCleanWorkingTree(
         env: {
           // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
           ...process.env,
-          MCP_CONNECTION_NONBLOCKING: "true",
-          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
-          DISABLE_TELEMETRY: "1",
-          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
-          CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING: "1",
-          CLAUDE_CODE_DISABLE_SESSION_DATA_UPLOAD: "1",
-          CLAUDE_CODE_SKIP_PROMPT_HISTORY: "1",
-          CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS: "1",
+          CLAUDE_CODE_SKIP_PROMPT_HISTORY: "1"
         },
       },
     );

@@ -226,6 +226,11 @@ export async function watchReplaceDeps(
   const entries = await resolveAllReplaceDepEntries(projectRoot, replaceDeps, logger);
 
   logger.start(`replace-deps 워치 시작 중... (${entries.length}개 대상)`);
+  for (const entry of entries) {
+    logger.debug(
+      `[${entry.targetName}] entry: source=${entry.resolvedSourcePath} -> target=${entry.actualTargetPath}`,
+    );
+  }
 
   // resolvedSourcePath(posix) → entries 그룹화
   // resolvedSourcePath는 replace-deps-resolve의 pathx.posixResolve 결과로 이미 POSIX이다.
@@ -236,6 +241,7 @@ export async function watchReplaceDeps(
     arr.push(entry);
     sourceMap.set(key, arr);
   }
+  logger.debug(`source 그룹 수: ${sourceMap.size}`);
 
   // 각 source의 watchPaths 수집 (files 필드 없는 source는 경고 후 제외). source 단위 병렬.
   const allWatchPaths = new Set<string>();
@@ -253,7 +259,9 @@ export async function watchReplaceDeps(
         }
 
         for (const f of files) {
-          allWatchPaths.add(pathx.posix(path.join(sourcePath, f)));
+          const wp = pathx.posix(path.join(sourcePath, f));
+          allWatchPaths.add(wp);
+          logger.debug(`[${sourceEntries[0].targetName}] 감시 경로 추가: ${wp}`);
         }
 
         const rootEntries = await fs.promises
@@ -261,7 +269,9 @@ export async function watchReplaceDeps(
           .catch(() => [] as string[]);
         for (const name of rootEntries) {
           if (NPM_DEFAULT_FILE_PATTERN.test(name)) {
-            allWatchPaths.add(pathx.posix(path.join(sourcePath, name)));
+            const wp = pathx.posix(path.join(sourcePath, name));
+            allWatchPaths.add(wp);
+            logger.debug(`[${sourceEntries[0].targetName}] 감시 경로 추가(npm 기본): ${wp}`);
           }
         }
       } catch (err) {
@@ -292,9 +302,11 @@ export async function watchReplaceDeps(
     return undefined;
   };
 
+  logger.debug(`FsWatcher.watch 시작 (총 ${allWatchPaths.size}개 경로)`);
   const watcher = await FsWatcher.watch([...allWatchPaths], {
     followSymlinks: false,
   });
+  logger.debug("FsWatcher.watch 준비 완료");
 
   // entry(actualTargetPath) 단위 postinstall debounce.
   // 짧은 시간 내 여러 파일 변경이 발생하면 마지막 변경 후 1초 뒤에 한 번만 실행한다.
@@ -305,26 +317,43 @@ export async function watchReplaceDeps(
   const schedulePostinstall = (entry: ReplaceDepEntry) => {
     const key = entry.actualTargetPath;
     const prev = postinstallTimers.get(key);
-    if (prev != null) clearTimeout(prev);
+    if (prev != null) {
+      clearTimeout(prev);
+      logger.debug(`[${entry.targetName}] postinstall 재예약 (이전 타이머 취소)`);
+    } else {
+      logger.debug(`[${entry.targetName}] postinstall 예약 (${POSTINSTALL_DEBOUNCE_MS}ms 후)`);
+    }
     postinstallEntryByKey.set(key, entry);
     const timer = setTimeout(() => {
       postinstallTimers.delete(key);
       const target = postinstallEntryByKey.get(key);
       postinstallEntryByKey.delete(key);
       if (target == null) return;
+      logger.debug(`[${target.targetName}] postinstall 디바운스 만료, 실행 시작`);
       void runPostinstall(target, logger);
     }, POSTINSTALL_DEBOUNCE_MS);
     postinstallTimers.set(key, timer);
   };
 
   watcher.onChange({ delay: 300 }, async (changeInfos) => {
+    logger.debug(`변경 감지 ${changeInfos.length}건`);
+    for (const ci of changeInfos) {
+      logger.debug(`  - ${ci.event}: ${ci.path}`);
+    }
+
     const changedEntries = new Set<ReplaceDepEntry>();
 
     const flags = await Promise.all(
       changeInfos.map(async ({ path: changedPath }) => {
         const src = findSource(changedPath);
-        if (src == null) return false;
+        if (src == null) {
+          logger.debug(`source 매칭 실패, 무시: ${changedPath}`);
+          return false;
+        }
         const sourceEntries = sourceMap.get(src)!;
+        logger.debug(
+          `source 매칭: ${changedPath} -> ${src} (target ${sourceEntries.length}개)`,
+        );
 
         let localActualCopy = false;
 
@@ -345,16 +374,22 @@ export async function watchReplaceDeps(
             if (sourceExists) {
               const stat = await fs.promises.stat(changedPath);
               if (stat.isDirectory()) {
+                logger.debug(`[${e.targetName}] mkdir: ${relativePath}`);
                 await fsx.mkdir(destPath);
               } else {
-                if (await isFileContentSame(changedPath, destPath)) continue;
+                if (await isFileContentSame(changedPath, destPath)) {
+                  logger.debug(`[${e.targetName}] 동일 콘텐츠, 스킵: ${relativePath}`);
+                  continue;
+                }
                 await fsx.mkdir(pathx.posix(path.dirname(destPath)));
                 await fsx.copy(changedPath, destPath);
+                logger.debug(`[${e.targetName}] 복사 완료: ${relativePath}`);
                 localActualCopy = true;
                 changedEntries.add(e);
               }
             } else {
               await fsx.rm(destPath);
+              logger.debug(`[${e.targetName}] 삭제 완료: ${relativePath}`);
               localActualCopy = true;
               changedEntries.add(e);
             }
@@ -370,10 +405,15 @@ export async function watchReplaceDeps(
     );
 
     if (flags.some((f) => f)) {
+      logger.debug(
+        `배치 종료, 변경된 entry ${changedEntries.size}개: ${[...changedEntries].map((e) => e.targetName).join(", ")}`,
+      );
       for (const entry of changedEntries) {
         schedulePostinstall(entry);
       }
       options?.onChanged?.();
+    } else {
+      logger.debug("배치 종료, 실제 변경 없음");
     }
   });
 
