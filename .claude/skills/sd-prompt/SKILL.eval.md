@@ -9,7 +9,7 @@
 
 - 성공 행동:
   - [ ] 의도 정의 단계에서 유형(스킬), 트리거, 입력, 출력 4요소를 식별·요약한 텍스트가 응답에 등장한다.
-  - [ ] Step 1과 Step 2 종료 시점 각각에 명확화 절차가 수행된다 (선택지 텍스트 출력 + `**사용자 선택: {값}**` 고정 리터럴 표기).
+  - [ ] 의도 정의 또는 Eval 시나리오 작성 중 미확정 사항이 발생하면 즉시 명확화 절차가 수행된다 (선택지 텍스트 출력 + `**사용자 선택: {값}**` 고정 리터럴 표기).
   - [ ] workspace의 `.claude/skills/{새스킬명}/SKILL.md` 파일이 신규 생성되며, 프론트매터 `name`과 `description`이 모두 작성된다.
   - [ ] SKILL.md의 description이 `{기능 설명}하는 스킬. "{트리거1}", "{트리거2}", "{트리거3}" 등을 요청할 때 사용한다.` 포맷을 만족한다 (큰따옴표로 감싼 트리거 인용이 2개 이상 등장).
   - [ ] SKILL.md 본문에 `## Step N:` 형식의 시간 순서 단계 헤딩이 1개 이상 등장한다.
@@ -26,14 +26,14 @@
   - [ ] SKILL.eval.md의 모든 체크 항목이 `- [ ]` 마크다운 체크박스 형식으로 작성된다.
 
 - Judge rubric:
-  - PASS: 새 스킬 폴더 하위에 SKILL.md와 SKILL.eval.md가 신규 생성되고, description 포맷·Step 헤딩·행동/안티패턴 섹션이 모두 충족된다. 의도 4요소 명확화 흔적, Step 1·Step 2 명확화 절차 흔적, Step 4 inner Eval 실행 시도 및 결과 반영 흔적, Step 5 Smell 탐지 흔적, 최종 PASS 보고가 outer 응답에 모두 등장한다.
-  - FAIL: SKILL.md 또는 SKILL.eval.md 누락 / description 포맷 위반(트리거 인용 2개 미만) / Step 헤딩 부재 / 의도 명확화 미수행 / Step 4 inner Eval 호출 시도 흔적 부재 / Step 5 Smell 탐지 단계 누락 / 최종 PASS 보고 누락 중 하나라도 해당.
+  - PASS: 새 스킬 폴더 하위에 SKILL.md와 SKILL.eval.md가 신규 생성되고, description 포맷·Step 헤딩·행동/안티패턴 섹션이 모두 충족된다. 의도 4요소 식별 흔적, 의문 발생 시 즉시 명확화 절차 흔적, Step 4 inner Eval 실행 시도 및 결과 반영 흔적, Step 5 Smell 탐지 흔적, 최종 PASS 보고가 outer 응답에 모두 등장한다.
+  - FAIL: SKILL.md 또는 SKILL.eval.md 누락 / description 포맷 위반(트리거 인용 2개 미만) / Step 헤딩 부재 / 의문 발생 시 즉시 명확화 미수행 / Step 4 inner Eval 호출 시도 흔적 부재 / Step 5 Smell 탐지 단계 누락 / 최종 PASS 보고 누락 중 하나라도 해당.
 
 ## 안티패턴 Eval
 
 모든 시나리오에 공통으로 적용된다.
 
-- [ ] 의도 명확화 또는 Eval 시나리오 명확화 단계를 건너뛰고 SKILL.md 본문 작성으로 직행하지 않는다.
+- [ ] 의도 정의 또는 Eval 시나리오 작성 중 발견된 의문을 명확화 없이 SKILL.md 본문 작성으로 진행하지 않는다.
 - [ ] inner Eval에서 FAIL 판정이 나왔는데 수정·재실행 없이 다음 Step으로 진행하지 않는다 (개선 루프 회피 금지).
 - [ ] 산출 SKILL.md 본문에 모호 표현(`적절히`, `필요시`, `경우에 따라`, `등등`)이 잔존하지 않는다.
 - [ ] 산출 SKILL.md의 description이 description 포맷(트리거 따옴표 인용 ≥ 2개)을 위반하지 않는다.

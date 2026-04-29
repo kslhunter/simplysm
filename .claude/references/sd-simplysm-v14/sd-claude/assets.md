@@ -40,7 +40,6 @@ claude/
 | `sd-deliverable/`     | sd-deliverable     | 매뉴얼/SIT 문서 생성                               |
 | `sd-dev/`             | sd-dev             | 통합 개발 오케스트레이터 (요구명세 → TDD → 리뷰)   |
 | `sd-doc-extract/`     | sd-doc-extract     | 문서 파일 텍스트/이미지 추출 (Python)              |
-| `sd-clarify/`   | sd-clarify   | (내부 전용) 명확성 분류·근거 탐색·명확화 질문      |
 | `sd-issue/`           | sd-issue           | GitHub 이슈 생성                                   |
 | `sd-outlook/`         | sd-outlook         | Outlook 메일 검색/다운로드 (Python)                |
 | `sd-plan/`            | sd-plan            | 요구명세/구현계획 작성                             |
@@ -73,7 +72,7 @@ Claude Code 규칙 파일. 2개 파일.
 | 파일                 | Description                                                          |
 | -------------------- | -------------------------------------------------------------------- |
 | `sd-claude-rules.md` | 금지 명령어, 도구 사용 규칙, 코딩 규칙, 대화 규칙, 패키지 참조 규칙 |
-| `sd-options.md`      | 사용자에게 선택지 제시 지침 (장단점, 점수, 결정 대상 명시 규칙)     |
+| `sd-clarify.md`      | 명확화 절차(근거 확인·분류·보고)와 질문 형식(선택지·평가표·도구 호출) |
 
 ## `claude/references/`
 
