@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-claude",
-  "version": "14.0.58",
+  "version": "14.0.59",
   "description": "심플리즘 패키지 - Claude Code 셋업",
   "author": "심플리즘",
   "license": "Apache-2.0",
