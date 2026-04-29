@@ -91,6 +91,14 @@ const UserRole = Table("UserRole")
 
 ## 권장사항
 
+### 컬럼 네이밍
+
+- 컬럼명만으로 저장되는 값의 성격을 알 수 있어야 한다.
+- 엔터티명 단독 사용 금지 → 역할을 나타내는 접미어를 붙인다.
+  - `subCustomer` ✗ → `subCustomerName` / `subCustomerId` ✓
+  - `company` ✗ → `companyName` / `companyId` ✓
+- 흔히 쓰이는 접미어: `Id`, `Name`, `Code`, `Type`, `Date`(date), `DateTime`(datetime), `Count`, `Rate`
+
 ### `isDeleted` 컬럼
 
 - **기초정보(마스터 데이터) 테이블**: `isDeleted: c.boolean().default(false)` 컬럼을 포함한다. 삭제 시 `isDeleted: true`로 soft-delete하고, 복구 기능을 제공한다.

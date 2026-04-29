@@ -30,7 +30,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 ## Step 3: sd-plan
 
 `/sd-plan` 스킬을 즉시 수행한다.
-단, Task 문서의 Scenario 수가 10개를 초과하면 Step 4~7을 모두 스킵하고 `/sd-dev {Task파일경로}`로 새 세션에서 진행하도록 안내 후 즉시 종료한다. 이 경우 Step 7 완료 보고는 출력하지 않는다.
+단, Task 문서의 Scenario 수가 2개를 초과하면 Step 4~7을 모두 스킵하고 `/sd-dev {Task파일경로}`로 새 세션에서 진행하도록 안내 후 즉시 종료한다. 이 경우 Step 7 완료 보고는 출력하지 않는다.
 
 ## Step 4: sd-tdd
 

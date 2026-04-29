@@ -1,7 +1,6 @@
 ---
 name: sd-tdd
 description: 구현계획(plan) 기반으로 TDD 개발하는 스킬
-model: claude-opus-4-6[1m]
 ---
 
 # sd-tdd: TDD 개발
