@@ -121,6 +121,20 @@ Feature: Story {번호} {이름}
 
 모든 사용자 결정사항은 `### 설계 결정` 표에 기록한다 (D1, D2, ... 순번 부여).
 
+### 선택적 자료
+
+구현 설계와 함께 개발자 시점 자료를 Task 성격에 따라 선택적으로 포함한다.
+작성 시 해당 references 파일을 읽고 가이드에 따른다.
+
+| 자료 | 작성 위치 | 가이드 | 적용 기준 |
+|---|---|---|---|
+| 시퀀스 다이어그램 | 구현 설계 시작 (영향 범위 다음) | `references/sequence-diagram.md` | client·server·db 등 다중 모듈이 협력하는 Task |
+| DB 모델 변경 표 | 엔티티 섹션 안 | `references/db-model-change.md` | 신규/수정 모델·컬럼·관계가 있는 Task |
+| API/서비스 메서드 명세 | 서비스 / API 섹션 안 | `references/api-spec.md` | 서버 메서드·엔드포인트 신규/변경이 있는 Task |
+| 상태 전이도 (FSM) | 엔티티 섹션 인접 | `references/state-machine.md` | 도메인 객체에 status 컬럼 + 전이 3개 이상인 경우 |
+
+자료가 불필요한 Task면 해당 항목을 생략한다.
+
 ```markdown
 ## 구현 설계
 
@@ -129,13 +143,21 @@ Feature: Story {번호} {이름}
 - 신규: {파일 목록}
 - 수정: {파일 목록}
 
+### 시퀀스 다이어그램 (선택, references/sequence-diagram.md 참조)
+
 ### 엔티티 [근거: ...]
 
 {시그니처 또는 코드}
 
+#### DB 모델 변경 표 (선택, references/db-model-change.md 참조)
+
+#### 상태 전이도 (선택, references/state-machine.md 참조)
+
 ### 서비스 / API [근거: ...]
 
 {시그니처}
+
+#### API/서비스 메서드 명세 (선택, references/api-spec.md 참조)
 
 ### UI [근거: ...]
 
