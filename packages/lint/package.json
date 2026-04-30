@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/lint",
-  "version": "14.0.61",
+  "version": "14.0.62",
   "description": "심플리즘 패키지 - ESLint plugin",
   "author": "심플리즘",
   "license": "Apache-2.0",
