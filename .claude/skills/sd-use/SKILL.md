@@ -61,7 +61,6 @@ SKILLS
   문서
     sd-claude-docs      CLAUDE.md + usage 문서 생성
     sd-doc-extract      문서에서 텍스트/이미지 추출
-    sd-deliverable      매뉴얼 & SIT 문서 생성
 
   도구
     sd-prompt           스킬/프롬프트 파일 생성·개선

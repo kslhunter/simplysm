@@ -10,9 +10,7 @@ import {
   inject,
   input,
   model,
-  signal,
   TemplateRef,
-  untracked,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -293,7 +291,31 @@ export class SdSelect<M extends "single" | "multi", T> {
 
   private readonly _sanitizer = inject(DomSanitizer);
 
-  _selectedItemContentHTML = signal<SafeHtml | undefined>(undefined);
+  _selectedItemContentHTML = computed<SafeHtml | undefined>(() => {
+    const items = this._itemControls();
+    const currentValue = this.value();
+
+    if (this.selectMode() === "multi") {
+      if (!Array.isArray(currentValue) || currentValue.length === 0) return undefined;
+      const arr: T[] = currentValue;
+      const selectedItems = items.filter((item) => arr.includes(item.value()));
+      const isVertical = this.multiSelectionDisplayDirection() === "vertical";
+      const separator = isVertical ? "<div class='p-sm-0'></div>" : ", ";
+      const htmlParts: string[] = [];
+      for (const item of selectedItems) {
+        const html = item.contentHTML();
+        if (html !== "") htmlParts.push(`<span style="display: inline">${html}</span>`);
+      }
+      if (htmlParts.length === 0) return undefined;
+      return this._sanitizer.bypassSecurityTrustHtml(htmlParts.join(separator));
+    }
+
+    const selectedItem = items.find((item) => item.value() === currentValue);
+    if (selectedItem == null) return undefined;
+    const html = selectedItem.contentHTML();
+    if (html === "") return undefined;
+    return this._sanitizer.bypassSecurityTrustHtml(html);
+  });
 
   _flatItems = computed(() => {
     const items = this.items();
@@ -361,54 +383,6 @@ export class SdSelect<M extends "single" | "multi", T> {
         onCleanup(() => {
           popupEl.removeEventListener("keydown", onKeydown);
         });
-      }
-    });
-
-    // Mirror selected item's contentHTML to the trigger display area
-    // PERF-004: item.value() reads are untracked to reduce signal subscriptions from O(N) to O(K).
-    // _itemControls() already tracks item additions/removals, value() tracks selection changes.
-    effect(() => {
-      const items = this._itemControls();
-      const currentValue = this.value();
-
-      if (this.selectMode() === "multi") {
-        if (!Array.isArray(currentValue) || currentValue.length === 0) {
-          this._selectedItemContentHTML.set(undefined);
-          return;
-        }
-
-        const arr: T[] = currentValue;
-        const selectedItems = untracked(() => items.filter((item) => arr.includes(item.value())));
-
-        const isVertical = this.multiSelectionDisplayDirection() === "vertical";
-        const separator = isVertical ? "<div class='p-sm-0'></div>" : ", ";
-        const htmlParts: string[] = [];
-        for (const item of selectedItems) {
-          const html = item.contentHTML();
-          if (html !== "") {
-            htmlParts.push(`<span style="display: inline">${html}</span>`);
-          }
-        }
-        if (htmlParts.length > 0) {
-          this._selectedItemContentHTML.set(
-            this._sanitizer.bypassSecurityTrustHtml(htmlParts.join(separator)),
-          );
-        } else {
-          this._selectedItemContentHTML.set(undefined);
-        }
-        return;
-      }
-
-      const selectedItem = untracked(() => items.find((item) => item.value() === currentValue));
-      if (selectedItem != null) {
-        const html = selectedItem.contentHTML();
-        if (html !== "") {
-          this._selectedItemContentHTML.set(this._sanitizer.bypassSecurityTrustHtml(html));
-        } else {
-          this._selectedItemContentHTML.set(undefined);
-        }
-      } else {
-        this._selectedItemContentHTML.set(undefined);
       }
     });
   }
