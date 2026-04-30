@@ -14,6 +14,7 @@ WBS는 고객 중심으로 **무엇을 만들어야 하는지(What)** 를 확정
 ## What/How 경계
 
 이 스킬은 비즈니스 요구사항(What)만 분석한다.
+What은 사용자 시점, How는 개발자 시점이다.
 
 **What — 이 스킬에서 반드시 확정 (위임 금지):**
 
@@ -125,6 +126,21 @@ USM의 모든 단위는 **사용자 동작 단위**이다. 다음 분할은 절�
 
 사용자 입력이 위 금지 분할(레이어/Actor)을 명시 요청하더라도 그대로 따르지 않는다. USM 패러다임으로 재해석하여 사용자 동작 단위로 분해하고, 재해석 사항을 재해석 목록에 등록한다.
 
+### 선택적 자료
+
+USM 분해와 함께 사용자 시점 자료를 프로젝트 내용에 따라 선택적으로 포함한다.
+작성 시 해당 references 파일을 읽고 가이드에 따른다.
+
+| 자료 | 작성 위치 | 가이드 | 적용 기준 |
+|---|---|---|---|
+| 메뉴 구성 | wbs.md 상단 (Impact Mapping 다음) | `references/menu-structure.md` | 사용자가 보는 메뉴/네비게이션이 있는 경우 |
+| 용어 사전 | wbs.md 상단 (Impact Mapping 다음) | `references/glossary.md` | 도메인 어휘·약어가 다수이거나 동의어 정리가 필요한 경우 |
+| 업무 플로우 (mermaid) | 각 Activity 헤더 직후 | `references/flow-diagram.md` | 사용자 여정·상태 전이가 핵심인 Activity |
+| 와이어프레임 | 해당 Task 또는 Story 안 | `references/wireframe.md` | 사용자가 보는 화면이 있는 Task/Story |
+| 결정 규칙표 | 해당 Task 또는 Story 안 | `references/decision-table.md` | 분기 조건 조합이 많은 Task/Story (mermaid 보완재) |
+
+자료가 불필요한 프로젝트면 해당 섹션을 생략한다.
+
 ### 3-1. Activity Backbone 도출
 
 Activity는 사용자가 시스템과 함께 달성하는 큰 활동(=업무 영역)이다. 사용자 여정의 시간 흐름 또는 업무 묶음을 따라 Backbone을 구성한다.
@@ -135,6 +151,8 @@ Activity는 사용자가 시스템과 함께 달성하는 큰 활동(=업무 영
 **좋은 예:**
 
 - "회원 가입/인증" → "도서 검색" → "대출/반납" → "도서 관리"
+
+이 단계에서 작성할 자료(선택): 메뉴 구성, 용어 사전, Activity별 업무 플로우.
 
 ### 3-2. Task 분해
 
@@ -165,6 +183,8 @@ Task는 Activity 안의 사용자 작업이다. 후속 스킬(`/sd-plan`, `/sd-t
 
 의존성이 없다는 근거를 명시할 수 없으면 의존성이 있는 것으로 간주한다. 과소 설정(블로킹·재작업)이 과대 설정(약간의 직렬화)보다 비용이 크다.
 
+이 단계에서 작성할 자료(선택): 해당 Task의 와이어프레임·결정 규칙표.
+
 ### 3-3. Story 작성
 
 Story는 Task 안의 한 사용자 시나리오이다. 한 줄 사용자 동작 형식으로 작성한다.
@@ -189,6 +209,8 @@ Story는 Task 안의 한 사용자 시나리오이다. 한 줄 사용자 동작 
 
 - 추정 진행, "추후 결정" fallback, 자체 추가 금지.
 - wbs.md 본문에 "후속 확정/보류/추후 결정/협의 필요" 같은 미확정 표현 사용 금지.
+
+이 단계에서 작성할 자료(선택): 해당 Story의 와이어프레임·결정 규칙표 (Task 단위로 부족한 경우).
 
 ## Step 4: 자가검증 (Self-Refine)
 
@@ -253,9 +275,19 @@ Backbone 흐름·Story 단위 적정성·양방향 커버리지는 Step 6 격리
     - **Impact:** [행동 변화]
       - **Deliverable:** [산출물]
 
+## 메뉴 구성 (선택)
+
+[references/menu-structure.md 참조]
+
+## 용어 사전 (선택)
+
+[references/glossary.md 참조]
+
 ## USM Backbone
 
 ### Activity 1. [Activity 이름]
+
+**업무 플로우 (선택, references/flow-diagram.md 참조)**
 
 #### [ ] Task 1.1 [Task 이름]
 
@@ -269,6 +301,10 @@ Backbone 흐름·Story 단위 적정성·양방향 커버리지는 Step 6 격리
 
 - Impact Mapping Deliverable: "상세 정보 팝업"
 - 요구사항: "팝업 형태로 상세 정보 표시"
+
+**와이어프레임 (선택, references/wireframe.md 참조)**
+
+**결정 규칙표 (선택, references/decision-table.md 참조)**
 
 **Stories:**
 

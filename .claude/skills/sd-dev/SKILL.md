@@ -34,7 +34,7 @@ sd-wbs → sd-plan → sd-tdd → sd-check → sd-review를 순차 진행하는 
 
 ## Step 4: sd-tdd
 
-`/sd-tdd` 스킬을 즉시 수행한다.
+`/sd-tdd` 스킬을 즉시 수행한다. 완료후 다음 단계를 즉시 수행한다.
 
 ## Step 5: sd-check
 
@@ -43,6 +43,8 @@ sd-tdd Step 3-4 `변경 사항 요약`의 `변경 파일 목록`이 비어 있�
 `변경 패키지` 목록을 인자로 전달하여 `/sd-check`를 즉시 호출한다.
 
 예: `/sd-check core-common angular`
+
+완료후 다음 단계를 즉시 수행한다.
 
 ## Step 6: sd-review
 
@@ -58,6 +60,8 @@ sd-review 보고에 확정 이슈가 없으면 이 단계를 스킵하고 Step 7
 2. 수정 완료 후 `/sd-check` 스킬을 1회 호출하여 회귀가 없는지 확인한다.
 
 수정 내역과 미수정 건은 Step 7 완료 보고의 `리뷰 수정 건` / `리뷰 미수정 건` 섹션에 반영한다.
+
+완료후 다음 단계를 즉시 수행한다.
 
 ## Step 7: 완료 보고 양식
 

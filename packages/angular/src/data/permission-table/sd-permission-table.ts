@@ -229,6 +229,11 @@ export class SdPermissionTable<TModule> {
       if (cached != null) return cached;
 
       if (item.perms) {
+        if (item.children) {
+          for (const child of item.children) {
+            walk(child, type);
+          }
+        }
         const result = item.perms.includes(type);
         cache.set(key, result);
         return result;
@@ -262,6 +267,11 @@ export class SdPermissionTable<TModule> {
       if (cached != null) return cached;
 
       if (item.perms) {
+        if (item.children) {
+          for (const child of item.children) {
+            walk(child, type);
+          }
+        }
         const permCode = item.codeChain.join(".");
         const result = value[permCode + "." + type] ?? false;
         cache.set(key, result);
@@ -298,6 +308,11 @@ export class SdPermissionTable<TModule> {
       if (cached != null) return cached;
 
       if (isDisabled) {
+        if (item.children) {
+          for (const child of item.children) {
+            walk(child);
+          }
+        }
         cache.set(key, true);
         return true;
       }

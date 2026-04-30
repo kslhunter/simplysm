@@ -100,3 +100,64 @@ export class SdPermissionTableDisabledTest {
   ]);
   value = signal<Record<string, boolean>>({});
 }
+
+@Component({
+  selector: "sd-permission-table-disabled-two-level-test",
+  template: `<sd-permission-table [items]="items()" [(value)]="value" [disabled]="true" />`,
+  standalone: true,
+  imports: [SdPermissionTable],
+})
+export class SdPermissionTableDisabledTwoLevelTest {
+  items = signal<SdPermission[]>([
+    {
+      title: "모듈A",
+      codeChain: ["moduleA"],
+      modules: undefined,
+      perms: undefined,
+      children: [
+        {
+          title: "기능1",
+          codeChain: ["moduleA", "func1"],
+          modules: undefined,
+          perms: ["use", "edit"],
+          children: undefined,
+        },
+        {
+          title: "기능2",
+          codeChain: ["moduleA", "func2"],
+          modules: undefined,
+          perms: ["use"],
+          children: undefined,
+        },
+      ],
+    },
+  ]);
+  value = signal<Record<string, boolean>>({});
+}
+
+@Component({
+  selector: "sd-permission-table-disabled-mixed-node-test",
+  template: `<sd-permission-table [items]="items()" [(value)]="value" [disabled]="true" />`,
+  standalone: true,
+  imports: [SdPermissionTable],
+})
+export class SdPermissionTableDisabledMixedNodeTest {
+  items = signal<SdPermission[]>([
+    {
+      title: "모듈A",
+      codeChain: ["moduleA"],
+      modules: undefined,
+      perms: ["use", "edit"],
+      children: [
+        {
+          title: "기능1",
+          codeChain: ["moduleA", "func1"],
+          modules: undefined,
+          perms: ["use", "edit"],
+          children: undefined,
+        },
+      ],
+    },
+  ]);
+  value = signal<Record<string, boolean>>({});
+}

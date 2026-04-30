@@ -5,6 +5,8 @@ import {
   SdPermissionTableTwoLevelTest,
   SdPermissionTableThreeLevelTest,
   SdPermissionTableDisabledTest,
+  SdPermissionTableDisabledTwoLevelTest,
+  SdPermissionTableDisabledMixedNodeTest,
 } from "./sd-permission-table-test.fixture";
 
 describe("Feature 7.4b Slice 1: 계층형 권한 트리 렌더링", () => {
@@ -277,6 +279,17 @@ describe("Feature 7.4b Slice 3: use/edit 체크박스 토글 및 전파", () => 
     expect(editCheckbox.getAttribute("data-sd-disabled")).toBe("true");
   });
 
+  it("use 체크 상태에서 edit 체크박스가 활성이다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableTwoLevelTest] })
+      .createComponent(SdPermissionTableTwoLevelTest);
+    fixture.componentInstance.value.set({ "moduleA.func1.use": true });
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
+    const editCheckbox = (rows[1] as HTMLElement).querySelectorAll("sd-checkbox")[1] as HTMLElement;
+    expect(editCheckbox.getAttribute("data-sd-disabled")).not.toBe("true");
+  });
+
   it("disabled=true 시 모든 체크박스가 비활성화된다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdPermissionTableDisabledTest] })
       .createComponent(SdPermissionTableDisabledTest);
@@ -286,5 +299,39 @@ describe("Feature 7.4b Slice 3: use/edit 체크박스 토글 및 전파", () => 
     for (const cb of Array.from(checkboxes)) {
       expect((cb as HTMLElement).getAttribute("data-sd-disabled")).toBe("true");
     }
+  });
+});
+
+describe("Feature 7.4b Slice 4: disabled 트리 일관 적용", () => {
+  it("disabled=true + 부모-자식 트리 시 자식 행 편집 체크박스가 비활성된다", () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdPermissionTableDisabledTwoLevelTest],
+    }).createComponent(SdPermissionTableDisabledTwoLevelTest);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
+    const childRow = rows[1] as HTMLElement;
+    const checkboxes = childRow.querySelectorAll("sd-checkbox");
+
+    expect((checkboxes[0] as HTMLElement).getAttribute("data-sd-disabled")).toBe("true");
+    expect((checkboxes[1] as HTMLElement).getAttribute("data-sd-disabled")).toBe("true");
+  });
+
+  it("disabled=true + 혼합 노드 트리 시 부모와 자식의 편집 체크박스가 모두 비활성된다", () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdPermissionTableDisabledMixedNodeTest],
+    }).createComponent(SdPermissionTableDisabledMixedNodeTest);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll("sd-permission-table tr");
+    const parentEditCheckbox = (rows[0] as HTMLElement).querySelectorAll(
+      "sd-checkbox",
+    )[1] as HTMLElement;
+    const childEditCheckbox = (rows[1] as HTMLElement).querySelectorAll(
+      "sd-checkbox",
+    )[1] as HTMLElement;
+
+    expect(parentEditCheckbox.getAttribute("data-sd-disabled")).toBe("true");
+    expect(childEditCheckbox.getAttribute("data-sd-disabled")).toBe("true");
   });
 });
