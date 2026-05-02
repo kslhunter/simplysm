@@ -6,7 +6,7 @@ model: haiku
 
 # sd-use: SD 스킬 라우터
 
-사용자의 요청을 적절한 sd-* 스킬로 라우팅한다. 개별 sd-* 스킬에 익숙하지 않은 사용자가 원하는 작업을 자연어로 설명하면, sd-use가 가장 적합한 스킬을 선택하여 실행한다.
+사용자의 자연어 요청을 적절한 sd-* 스킬로 라우팅한다.
 
 ## 인자
 
@@ -22,8 +22,7 @@ model: haiku
 
 ## Step 2: Help 모드
 
-아래 코드 블록을 그대로 출력한 후 종료한다. Skill 도구를 호출하지 않는다.
-마크다운 표나 리스트로 변환하지 않는다. 반드시 단일 코드 블록(``` 안)으로 출력한다.
+아래 코드 블록을 단일 코드 블록 그대로 출력한 후 종료한다 (마크다운 변환 금지). Skill 도구는 호출하지 않는다.
 
 ````
 sd-use — SD 스킬 라우터
@@ -39,12 +38,18 @@ FLOWS
   (없음)    바로 개발 시작          ─┘  └────────┘
                                         sd-dev (순차 실행)
 
-  sd-debug  버그/에러 → 원인 분석 보고 (분석 종착, 후속은 사용자 지시)
+  sd-category  대규모 요구사항 → 카테고리 분해 (sd-wbs 호출 단위 결정, sd-wbs 진입 전)
+  sd-demo      wbs → UI 데모 → 고객 컨펌 → wbs 역동기화 (sd-wbs 후 선택, sd-plan 진입 전)
+  sd-sit-plan  SIT 검증 체크리스트 문서(sit.md) 생성
+  sd-sit       sit.md 기반 SIT 검증 실행 (sd-sit-plan 후속)
+  sd-debug     버그/에러 → 원인 분석 보고 (분석 종착, 후속은 사용자 지시)
 
 SKILLS
   개발
     sd-dev              Feature 전체 개발 (wbs → plan → TDD → check → review)
+    sd-category         대규모 요구사항 → 카테고리 분해 (sd-wbs 호출 단위 결정)
     sd-wbs              프로젝트 → Feature 분해 (WBS)
+    sd-demo             wbs → UI 데모 코드 생성·동기화 (선택)
     sd-plan             Feature 요구명세 + 구현계획 작성
     sd-tdd              구현 계획 → TDD 코드 구현
 
@@ -53,6 +58,8 @@ SKILLS
     sd-review           로직 버그, 보안, 성능, 설계 이슈 리뷰 및 수정 개발 연결
     sd-refactor         구조·설계·아키텍처 리팩토링 분석 리포트
     sd-debug            버그/에러 근본 원인 분석 및 보고
+    sd-sit-plan         SIT 검증 체크리스트 문서(sit.md) 생성
+    sd-sit              sit.md 기반 SIT 검증 실행 및 결과 갱신
 
   Git
     sd-commit           전체 변경사항 단일 커밋 생성
@@ -75,6 +82,6 @@ SKILLS
 
 ### 3-2. 안내 및 실행
 
-선택된 스킬을 사용자에게 알리는 텍스트 메시지를 출력한 후 Skill 도구를 호출한다. 안내는 필수이다. 예시: `> **sd-commit** 스킬을 실행합니다.`
+선택된 스킬을 사용자에게 알리는 텍스트 메시지를 출력한 후 Skill 도구를 호출한다. 예시: `> sd-commit 스킬을 실행합니다.`
 
 선택된 스킬 이름과 함께 사용자의 원래 요청을 `args`로 전달한다.

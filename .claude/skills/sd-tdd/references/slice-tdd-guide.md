@@ -101,3 +101,8 @@ Scenario 단위의 설계 개선.
 | 중복 코드 (3회 이상 반복)                           | Extract Method 후 공유        |
 | Primitive Obsession                                 | Replace Primitive with Object |
 | 네이밍이 의도를 드러내지 않음                       | Rename                        |
+| Pass-through (인자만 다음 레이어로 위임)            | Inline Method                 |
+| Classitis (얇은 클래스 과다 분해)                   | Inline Class                  |
+| Conjoined Methods (항상 짝으로 호출되는 메서드)     | Combine Methods               |
+| Information Leakage (같은 지식이 둘 이상 모듈에)    | Move Method + Combine         |
+| Temporal Decomposition (시간순으로만 쪼갠 메서드군) | Reorganize by Knowledge       |

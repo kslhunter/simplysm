@@ -37,15 +37,18 @@ pnpm device -t my-client-app             # 네이티브 앱 디바이스/데스�
 
 ### 코드 품질
 
+작업 직후 자동 점검은 `sd-check` 스킬을 사용한다 (필요한 단계를 알아서 묶어 실행).
+단발 검증은 `pnpm check --fix`가 기본. `pnpm typecheck` / `pnpm lint` 단독은 `check` 실패 후 단계 격리 분석용에 한정한다.
+
 ```bash
-pnpm check                               # 전체 검사 (typecheck + lint 병렬)
-pnpm check --fix                         # 전체 검사 + 린트 자동 수정 (되도록 이것으로 수행)
+pnpm check --fix                         # 기본 검증 (typecheck + lint 일괄, lint 자동 수정 포함)
+pnpm check                               # 자동 수정 없이 검사만
 pnpm check -t core-common                # 특정 패키지만 검사
 pnpm check --type lint                   # 특정 타입만 검사
 pnpm check -t angular --type typecheck   # 특정 패키지의 특정 타입만 검사
-pnpm typecheck                           # TypeScript 타입 체크
-pnpm lint                                # ESLint
-pnpm lint --fix                          # 린트 자동 수정
+pnpm typecheck                           # check 실패 후 타입 단계만 격리 분석할 때
+pnpm lint                                # check 실패 후 lint 단계만 격리 분석할 때
+pnpm lint --fix                          # lint 자동 수정만 단독 실행
 vitest run [files..]                     # Vitest 테스트 (파일 직접 지정 가능)
 ```
 
@@ -75,11 +78,10 @@ ORM:      orm-node / orm-common
 ## 코딩 규칙
 
 - `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
-- `console.*` 금지, `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
-- `Buffer` 금지 → `Uint8Array` (복잡한 연산은 `@simplysm/core-common`의 `BytesUtils`), `events`/`eventemitter3` 금지 → `@simplysm/core-common`의 `EventEmitter`
+- `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
 - `===` 필수 (`null` 비교만 `==` 허용), `require-await` 필수, 미사용 import 자동 제거
-- `process.env`/`import.meta.env` 직접 접근 금지 → `env("...")` 사용, `NODE_ENV` 환경변수 사용 금지
 - Prettier: `printWidth: 100`, `quoteProps: consistent`, `htmlWhitespaceSensitivity: ignore`, `endOfLine: lf`
+- `@simplysm/*` 표준 API 매핑은 `.claude/rules/sd-simplysm-v14.md`의 "표준 API → simplysm 매핑" 섹션 참조
 
 ### 브라우저 호환성 (Chrome 61+)
 

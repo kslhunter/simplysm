@@ -122,4 +122,3 @@
 - [ ] 근거 없는 항목 금지 — `Rule:`·`Scenario:` 블록, `### 설계 결정` 표 행, `## 구현 설계` 항목 각각에 `[근거: ...]` 또는 `# 근거: ...` 또는 등가 태그가 부착되어 있다 (Slice 항목은 `Scenarios:` 줄의 Story Scenario 매핑이 근거를 대체하므로 별도 태그 불요).
 - [ ] 가짜 코드베이스 인용 금지 — `## 코드베이스 분석` 섹션의 인용 경로가 workspace에 실재한다. workspace는 `.claude/` 폴더가 통째로 복사되므로 `.claude/references/**`·`.claude/rules/**` 인용은 유효 경로로 간주한다. 작업 디렉토리에 소스 코드(`packages/**`, `src/**` 등)가 없으면 "유사 기능 없음" 분기를 명시하되, 실재하지 않는 코드 경로(예: `packages/library-server/...:42`)를 근거로 임의 인용하지 않는다.
 - [ ] 입력 범위 초과 금지 — 산출 Task 문서 본문에 입력으로 지정되지 않은 Task 번호(예: `Task 1.2`, `Story 1.2.x`)의 Story·Slice·구현 설계가 포함되지 않는다.
-- [ ] AskUserQuestion 직접 호출 금지 — 명확화·결정 요청은 Eval 환경 규칙(`.claude/rules/sd-eval-env.md`)에 따라 텍스트 출력 + `**사용자 선택: {값}**` 고정 리터럴로 처리되며, 도구 호출로 사용자 입력을 요구하지 않는다.
