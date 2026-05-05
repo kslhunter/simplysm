@@ -1,21 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type esbuild from "esbuild";
 import type { ISdTsCompilerResult } from "../../src/ts-compiler/sd-ts-compiler-result";
-
-//#region Mocks
+import * as sdTsCompilerMod from "../../src/ts-compiler/SdTsCompiler";
 
 const mockCompileAsync = vi.fn<() => Promise<ISdTsCompilerResult>>();
 const MockSdTsCompiler = vi.fn().mockImplementation(function () {
   return { compileAsync: mockCompileAsync };
 });
 
-vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
-  SdTsCompiler: MockSdTsCompiler,
-}));
+vi.spyOn(sdTsCompilerMod, "SdTsCompiler" as any).mockImplementation(MockSdTsCompiler as any);
 
-//#endregion
-
-const { createTscPlugin } = await import("../../src/esbuild/esbuild-tsc-plugin");
+import { createTscPlugin } from "../../src/esbuild/esbuild-tsc-plugin";
 
 /** esbuild 플러그인 lifecycle을 시뮬레이션하는 헬퍼 */
 function setupPlugin(plugin: esbuild.Plugin) {

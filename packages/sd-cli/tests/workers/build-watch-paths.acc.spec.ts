@@ -1,17 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import * as collectDepsMod from "../../src/deps/replace-deps/collect-deps";
+import { buildWatchPaths } from "../../src/workers/build-watch-paths";
 
-// collectDeps는 파일 시스템에 의존하므로 모킹
-vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
-  collectDeps: vi.fn(),
-}));
-
-const { collectDeps } = await import("../../src/deps/replace-deps/collect-deps");
-const { buildWatchPaths } = await import("../../src/workers/build-watch-paths");
-
-const mockCollectDeps = vi.mocked(collectDeps);
+const mockCollectDeps = vi.spyOn(collectDepsMod, "collectDeps");
 
 beforeEach(() => {
-  vi.restoreAllMocks();
+  mockCollectDeps.mockReset();
 });
 
 describe("buildWatchPaths", () => {

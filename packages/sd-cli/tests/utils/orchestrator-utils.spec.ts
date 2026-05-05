@@ -1,28 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SdConfig } from "../../src/sd-config.types";
 
-//#region Mocks
+import * as sdConfigMod from "../../src/utils/sd-config";
+import * as packageUtilsMod from "../../src/utils/package-utils";
 
-const mocks = vi.hoisted(() => ({
-  loadSdConfig: vi.fn(),
-  validateTargets: vi.fn(),
-}));
+const mocks = {
+  loadSdConfig: vi.spyOn(sdConfigMod, "loadSdConfig"),
+  validateTargets: vi.spyOn(packageUtilsMod, "validateTargets"),
+};
 
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: mocks.loadSdConfig,
-}));
-
-vi.mock("../../src/utils/package-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/package-utils")>();
-  return {
-    ...actual,
-    validateTargets: mocks.validateTargets,
-  };
-});
-
-const { loadAndValidateConfig } = await import("../../src/utils/orchestrator-utils");
-
-//#endregion
+import { loadAndValidateConfig } from "../../src/utils/orchestrator-utils";
 
 beforeEach(() => {
   vi.clearAllMocks();

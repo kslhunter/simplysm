@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// --- Mock factories (vi.mock is hoisted) ---
+import { Worker } from "@simplysm/core-node";
 
 const mockWorker = {
   build: vi.fn(),
@@ -10,15 +9,9 @@ const mockWorker = {
   on: vi.fn(),
 };
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(() => mockWorker),
-  },
-}));
+vi.spyOn(Worker, "create").mockReturnValue(mockWorker as any);
 
-// --- Dynamic imports after mocking ---
-
-const { NgtscEngine } = await import("../../src/engines/NgtscEngine");
+import { NgtscEngine } from "../../src/engines/NgtscEngine";
 
 import type { BuildPackageInfo } from "../../src/engines/types";
 

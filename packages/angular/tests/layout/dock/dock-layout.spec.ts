@@ -11,17 +11,14 @@ import {
 } from "./sd-dock-test.fixture";
 
 function setupTestBed(component: any) {
-  const mockConfigProvider = {
-    getAsync: vi.fn().mockResolvedValue(undefined),
-    setAsync: vi.fn().mockResolvedValue(undefined),
-  };
-
   TestBed.configureTestingModule({
     imports: [component],
-    providers: [
-      { provide: SdSystemConfigProvider, useValue: mockConfigProvider },
-    ],
   });
+  const sysConfig = TestBed.inject(SdSystemConfigProvider);
+  const mockConfigProvider = {
+    getAsync: vi.spyOn(sysConfig, "getAsync").mockResolvedValue(undefined),
+    setAsync: vi.spyOn(sysConfig, "setAsync").mockResolvedValue(undefined),
+  };
 
   return { mockConfigProvider };
 }

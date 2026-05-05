@@ -1,16 +1,19 @@
 import hashlib, json, os, sys
 
+sys.path.insert(0, ".claude/scripts")
+from sd_paths import resolve_tmp_base
+
 data = json.load(sys.stdin)
 file_path = data["tool_input"]["file_path"]
 session_id = data.get("session_id", "unknown")
 
 if os.path.isfile(file_path):
     path_hash = hashlib.sha256(os.path.normpath(file_path).encode()).hexdigest()
-    cache_file = os.path.join(".tmp", "read_hash", session_id, path_hash)
+    cache_file = resolve_tmp_base() / "read_hash" / session_id / path_hash
 
     cached_hash = ""
-    if os.path.isfile(cache_file):
-        cached_hash = open(cache_file, "r").read().strip()
+    if cache_file.is_file():
+        cached_hash = cache_file.read_text().strip()
 
     current_hash = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
 

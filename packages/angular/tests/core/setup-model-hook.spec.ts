@@ -20,10 +20,9 @@ describe("FIX-1 Slice 1: setupModelHook Promise 결과 존중", () => {
     });
 
     it("canFn의 Promise가 reject되면 orgSet이 호출되지 않고 ErrorHandler.handleError가 호출된다", async () => {
-      const mockErrorHandler = { handleError: vi.fn() };
-      TestBed.configureTestingModule({
-        providers: [{ provide: ErrorHandler, useValue: mockErrorHandler }],
-      });
+      TestBed.configureTestingModule({});
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
 
       const model = signal(0);
       const canFn = signal(
@@ -37,7 +36,7 @@ describe("FIX-1 Slice 1: setupModelHook Promise 결과 존중", () => {
       await new Promise((r) => setTimeout(r, 0));
 
       expect(model()).toBe(0);
-      expect(mockErrorHandler.handleError).toHaveBeenCalledWith(
+      expect(handleErrorSpy).toHaveBeenCalledWith(
         expect.objectContaining({ message: "test reject" }),
       );
     });

@@ -75,7 +75,6 @@ describe("FIX-1 Slice 4: SdSharedDataProvider getter 에러 처리", () => {
   it("getter의 Promise가 reject되면 에러가 ErrorHandler로 전달된다", async () => {
     mockClient = new MockServiceClient();
 
-    const errorHandlerSpy = { handleError: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         TestSharedDataProvider,
@@ -83,12 +82,10 @@ describe("FIX-1 Slice 4: SdSharedDataProvider getter 에러 처리", () => {
           provide: SdServiceClientFactoryProvider,
           useValue: { get: () => mockClient },
         },
-        {
-          provide: ErrorHandler,
-          useValue: errorHandlerSpy,
-        },
       ],
     });
+    const errorHandlerSpy = vi.spyOn(TestBed.inject(ErrorHandler), "handleError")
+      .mockImplementation(() => {});
 
     const provider = TestBed.inject(TestSharedDataProvider);
 
@@ -102,7 +99,7 @@ describe("FIX-1 Slice 4: SdSharedDataProvider getter 에러 처리", () => {
     // loadingCount가 0이 될 때까지 대기 (finally가 실행되므로)
     await provider.wait();
 
-    expect(errorHandlerSpy.handleError).toHaveBeenCalledWith(
+    expect(errorHandlerSpy).toHaveBeenCalledWith(
       expect.objectContaining({ message: "getter failed" }),
     );
   });
@@ -111,7 +108,6 @@ describe("FIX-1 Slice 4: SdSharedDataProvider getter 에러 처리", () => {
 describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
   it("이벤트 콜백에서 getter가 reject되면 에러 핸들러가 호출되고 loadingCount가 정상 복원된다", async () => {
     mockClient = new MockServiceClient();
-    const errorHandlerSpy = { handleError: vi.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -120,12 +116,10 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
           provide: SdServiceClientFactoryProvider,
           useValue: { get: () => mockClient },
         },
-        {
-          provide: ErrorHandler,
-          useValue: errorHandlerSpy,
-        },
       ],
     });
+    const errorHandlerSpy = vi.spyOn(TestBed.inject(ErrorHandler), "handleError")
+      .mockImplementation(() => {});
 
     const provider = TestBed.inject(TestSharedDataProvider);
     let callCount = 0;
@@ -141,13 +135,13 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
 
     provider.getHandle("users");
     await provider.wait();
-    expect(errorHandlerSpy.handleError).not.toHaveBeenCalled();
+    expect(errorHandlerSpy).not.toHaveBeenCalled();
 
     // 이벤트 발행 → _onEvent → getter reject
     await provider.emitAsync("users");
     await provider.wait();
 
-    expect(errorHandlerSpy.handleError).toHaveBeenCalledWith(
+    expect(errorHandlerSpy).toHaveBeenCalledWith(
       expect.objectContaining({ message: "event getter failed" }),
     );
     expect(provider.loadingCount()).toBe(0);
@@ -155,7 +149,6 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
 
   it("부분 업데이트(changeKeys 지정)에서 getter reject 시에도 에러 핸들러가 호출된다", async () => {
     mockClient = new MockServiceClient();
-    const errorHandlerSpy = { handleError: vi.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -164,9 +157,10 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
           provide: SdServiceClientFactoryProvider,
           useValue: { get: () => mockClient },
         },
-        { provide: ErrorHandler, useValue: errorHandlerSpy },
       ],
     });
+    const errorHandlerSpy = vi.spyOn(TestBed.inject(ErrorHandler), "handleError")
+      .mockImplementation(() => {});
 
     const provider = TestBed.inject(TestSharedDataProvider);
     let callCount = 0;
@@ -186,7 +180,7 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
     await provider.emitAsync("users", [1]);
     await provider.wait();
 
-    expect(errorHandlerSpy.handleError).toHaveBeenCalledWith(
+    expect(errorHandlerSpy).toHaveBeenCalledWith(
       expect.objectContaining({ message: "partial getter failed" }),
     );
     expect(provider.loadingCount()).toBe(0);

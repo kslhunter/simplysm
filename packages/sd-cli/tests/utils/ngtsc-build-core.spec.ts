@@ -1,104 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import ts from "typescript";
+import { describe, it, expect } from "vitest";
 
-// --- Mock: AngularCompiler를 사용하는지 검증 ---
-
-const mockInitialize = vi.fn().mockResolvedValue({ affectedFiles: new Set() });
-const mockCollectDiagnostics = vi.fn().mockReturnValue([]);
-const mockEmitAffectedFiles = vi.fn().mockReturnValue([]);
-const mockGetTsProgram = vi.fn().mockReturnValue({
-  getSourceFiles: () => [],
-});
-
-const angularCompilerConstructorSpy = vi.fn();
-
-vi.mock("../../src/angular/angular-compiler", () => {
-  class AngularCompiler {
-    constructor(options: unknown) {
-      angularCompilerConstructorSpy(options);
-    }
-    initialize = mockInitialize;
-    *collectDiagnostics() {
-      yield* mockCollectDiagnostics();
-    }
-    *emitAffectedFiles() {
-      yield* mockEmitAffectedFiles();
-    }
-    getTsProgram = mockGetTsProgram;
-  }
-
-  class AngularSourceFileCache extends Map<string, ts.SourceFile> {
-    readonly modifiedFiles = new Set<string>();
-    invalidate(_files: Iterable<string>): void {
-      // no-op
-    }
-  }
-
-  return {
-    AngularCompiler,
-    AngularSourceFileCache,
-    augmentHostWithCaching: vi.fn(),
-  };
-});
-
-vi.mock("../../src/utils/tsconfig", () => ({
-  parseTsconfig: vi.fn().mockReturnValue({
-    options: {
-      target: ts.ScriptTarget.ESNext,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      strict: false,
-      skipLibCheck: true,
-    },
-    fileNames: ["/workspace/packages/test-pkg/src/main.ts"],
-  }),
-  getPackageSourceFiles: vi
-    .fn()
-    .mockReturnValue(["/workspace/packages/test-pkg/src/main.ts"]),
-  getCompilerOptionsForEnv: vi.fn().mockImplementation((opts: ts.CompilerOptions) => opts),
-}));
-
-const ngtscProgramSpy = vi.fn();
-vi.mock("../../src/angular/angular-build", () => {
-  class NgtscProgram {
-    constructor(...args: unknown[]) {
-      ngtscProgramSpy(...args);
-    }
-    compiler = {
-      analyzeAsync: vi.fn().mockResolvedValue(undefined),
-      getDiagnosticsForFile: vi.fn().mockReturnValue([]),
-      getOptionDiagnostics: vi.fn().mockReturnValue([]),
-      getResourceDependencies: vi.fn().mockReturnValue([]),
-      ignoreForDiagnostics: new Set(),
-      ignoreForEmit: new Set(),
-      incrementalCompilation: {
-        safeToSkipEmit: vi.fn().mockReturnValue(false),
-        recordSuccessfulEmit: vi.fn(),
-      },
-      prepareEmit: vi.fn().mockReturnValue({ transformers: { before: [], after: [] } }),
-    };
-    getTsProgram() {
-      return { getSourceFiles: () => [] } as unknown as ts.Program;
-    }
-  }
-  return {
-    NgtscProgram,
-    OptimizeFor: { WholeProgram: 0, SingleFile: 1 },
-  };
-});
-
-const {
-  createLibraryTransformStylesheet,
-} = await import("../../src/angular/ngtsc-build-core");
-
-
-// ─── createLibraryTransformStylesheet ───
+import { createLibraryTransformStylesheet } from "../../src/angular/ngtsc-build-core";
 
 describe("createLibraryTransformStylesheet", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("외부 .scss 파일이면 compileScssFile로 CSS를 반환하고 의존성을 기록한다", async () => {
     const loadPaths = ["/pkg/scss", "/cwd/node_modules"];
     const scssErrors: string[] = [];
@@ -185,4 +89,3 @@ describe("createLibraryTransformStylesheet", () => {
     expect(scssDependencies.has("/project/src/app.component.ts")).toBe(true);
   });
 });
-

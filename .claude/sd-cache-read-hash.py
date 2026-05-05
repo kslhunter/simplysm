@@ -1,5 +1,8 @@
 import hashlib, json, os, sys
 
+sys.path.insert(0, ".claude/scripts")
+from sd_paths import resolve_tmp_base
+
 data = json.load(sys.stdin)
 tool_input = data["tool_input"]
 file_path = tool_input.get("file_path", "")
@@ -11,8 +14,7 @@ if not file_path or not os.path.isfile(file_path):
 file_hash = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
 path_hash = hashlib.sha256(os.path.normpath(file_path).encode()).hexdigest()
 
-cache_dir = os.path.join(".tmp", "read_hash", session_id)
-os.makedirs(cache_dir, exist_ok=True)
+cache_dir = resolve_tmp_base() / "read_hash" / session_id
+cache_dir.mkdir(parents=True, exist_ok=True)
 
-with open(os.path.join(cache_dir, path_hash), "w") as f:
-    f.write(file_hash)
+(cache_dir / path_hash).write_text(file_hash)

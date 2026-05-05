@@ -1,105 +1,96 @@
-# Simplysm
+# CLAUDE.md
 
-pnpm 모노레포. TypeScript ESM 프로젝트 (`"type": "module"`). 패키지 경로: `packages/*`, 통합 테스트: `tests/*`
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**CRITICAL**: 이 프로젝트의 개발자는 **엄격한 완벽주의자**라는것을 항상 고려하라.
+## 프로젝트 개요
 
-## 기술 스택
+`simplysm` 모노레포. pnpm workspace 기반이며 `packages/*` 와 `tests/*` 두 곳을 워크스페이스로 둔다. 모든 패키지는 단일 버전(현재 `14.0.x`)을 공유한다.
 
-Node.js 20, Angular 21, TypeScript 5.9, Fastify 5.8, Vite 7, Vitest, esbuild, ESLint, Prettier
+자체 CLI(`@simplysm/sd-cli`)가 빌드/배포 오케스트레이터 역할을 한다. 일반 도구(tsc/eslint/vite-build)를 직접 부르지 않고 `pnpm sd-cli ...` 로 통합한다.
 
-## 명령어
+## 자주 쓰는 명령
 
-모든 명령어는 내부적으로 `pnpm sd-cli <command>`를 실행한다. `--debug` 플래그는 모든 명령어에서 사용 가능하다.
-`--target`을 생략하면 `sd.config.ts`에 정의된 모든 패키지를 대상으로 한다.
-대상은 패키지명으로 지정한다 (예: `--target core-common` 또는 `-t core-common`).
+루트에서:
 
-### 개발
+| 명령                | 설명                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm watch`        | 워크스페이스 전체 watch 빌드                                                                    |
+| `pnpm dev`          | 서버 패키지 dev 모드 실행                                                                       |
+| `pnpm build`        | 프로덕션 빌드                                                                                   |
+| `pnpm pub`          | 빌드 후 배포 (`sd.config.ts`의 `publish` 설정 따름)                                             |
+| `pnpm pub:no-build` | 기존 빌드 산출물로 배포                                                                         |
+| `pnpm check --fix`  | **기본 검증 명령** — typecheck + lint 한꺼번에, 자동수정 포함, -t 옵션으로 타겟프로젝트 선택    |
+| `pnpm typecheck`    | `pnpm check` 에서 문제 났을 때 타입만 따로 보기 위함 (직접 `npx tsc` 호출은 hook 으로 차단)     |
+| `pnpm lint`         | `pnpm check` 에서 문제 났을 때 lint 만 따로 보기 위함 (직접 `npx eslint` 호출은 hook 으로 차단) |
+| `pnpm test`         | Vitest 전체 (`--reporter=dot --silent=passed-only`)                                             |
 
-```bash
-pnpm dev                                 # 모든 서버 패키지를 개발 모드로 실행
-pnpm dev -t my-server                    # 특정 패키지만 실행
-pnpm dev -o optA -o optB                 # sd.config.ts에 옵션 전달
-pnpm watch                               # 모든 라이브러리 패키지를 watch 빌드
-pnpm watch -t core-common storage        # 특정 패키지만 watch 빌드
-```
+타겟 한정·옵션 전달:
 
-### 빌드 & 배포
+- `pnpm sd-cli <cmd> -t <package> -t <package2>` — 특정 패키지만
+- `pnpm sd-cli <cmd> -o <opt>` — `sd.config.ts` 함수에 전달되는 `opt[]`
+- `pnpm sd-cli check --type lint --fix` — 자동 수정 lint
+- `pnpm sd-cli --help` — 모든 서브커맨드 통합 도움말
 
-```bash
-pnpm build                               # 전체 프로덕션 빌드
-pnpm build -t core-common storage        # 특정 패키지만 빌드
-pnpm pub                                 # 빌드 후 배포 (npm/sftp)
-pnpm pub:no-build                        # 빌드 없이 배포만
-pnpm pub --dry-run                       # 실제 배포 없이 시뮬레이션
-pnpm device -t my-client-app             # 네이티브 앱 디바이스/데스크톱 실행
-```
+단일 테스트: `pnpm exec vitest run <file-pattern>` 또는 `pnpm exec vitest run --project <node|browser|angular|sd-cli-server|sd-cli-client|orm|service> <pattern>`.
 
-### 코드 품질
-
-작업 직후 자동 점검은 `sd-check` 스킬을 사용한다 (필요한 단계를 알아서 묶어 실행).
-단발 검증은 `pnpm check --fix`가 기본. `pnpm typecheck` / `pnpm lint` 단독은 `check` 실패 후 단계 격리 분석용에 한정한다.
-
-```bash
-pnpm check --fix                         # 기본 검증 (typecheck + lint 일괄, lint 자동 수정 포함)
-pnpm check                               # 자동 수정 없이 검사만
-pnpm check -t core-common                # 특정 패키지만 검사
-pnpm check --type lint                   # 특정 타입만 검사
-pnpm check -t angular --type typecheck   # 특정 패키지의 특정 타입만 검사
-pnpm typecheck                           # check 실패 후 타입 단계만 격리 분석할 때
-pnpm lint                                # check 실패 후 lint 단계만 격리 분석할 때
-pnpm lint --fix                          # lint 자동 수정만 단독 실행
-vitest run [files..]                     # Vitest 테스트 (파일 직접 지정 가능)
-```
-
-## 아키텍처
-
-의존 방향: 위 → 아래. `core-common`은 내부 의존성 없는 리프 패키지이다.
+ORM 통합 테스트는 Docker DB 컨테이너 필요:
 
 ```
-UI:       angular (Angular 21)
-서비스:   service-server (Fastify) / service-client / service-common
-ORM:      orm-node / orm-common
-코어:     core-common (중립) / core-browser / core-node
-유틸:     excel, storage (FTP/SFTP)
-모바일:   capacitor-plugin-* (4개: auto-update, intent, file-system, usb-storage)
-도구:     sd-cli (빌드/체크 CLI), lint (ESLint 공유 설정), sd-claude (Claude Code 에셋 동기화)
+docker compose -f tests/orm/docker-compose.test.yml up -d   # mysql 23306, postgres 25432, mssql 21433
+docker compose -f tests/orm/docker-compose.test.yml down
 ```
 
-## 통합 테스트
+## 환경
 
-`tests/`에 위치. targets 없이 전체 패키지 수행하거나 `vitest`명령을 수동으로 구성하여 수행해야 한다.
+- Node 20, pnpm 11, Python 3 (`mise.toml` 참조). `.claude/` 훅이 Python을 사용한다.
+- TypeScript 경로 alias: `@simplysm/*` → `packages/*/src/index.ts`. 워크스페이스 내부 의존성은 빌드 없이 곧바로 소스 import 된다.
+- ESM 전용 (`"type": "module"`), `verbatimModuleSyntax` 활성. type-only import 는 반드시 `import type` 로.
 
-- `tests/orm` — DB 연결, DbContext 테스트 (MySQL, PostgreSQL, MSSQL). Docker 필요.
-- `tests/service` — 서비스 클라이언트-서버 통신 테스트.
-- `tests/sd-cli-client` — sd-cli 클라이언트 빌드 통합 테스트.
-- `tests/sd-cli-server` — sd-cli 서버 빌드 통합 테스트.
+## 아키텍처 핵심
 
-## 코딩 규칙
+### 빌드 타겟 (`sd.config.ts` → `packages` 키)
 
-- `import type` 필수 (`verbatimModuleSyntax`), `#private` 금지 → `private` 키워드 사용
-- `if (str)` 금지 → 명시적 비교 `str !== ""` 사용 (nullable boolean/object는 허용)
-- `===` 필수 (`null` 비교만 `==` 허용), `require-await` 필수, 미사용 import 자동 제거
-- Prettier: `printWidth: 100`, `quoteProps: consistent`, `htmlWhitespaceSensitivity: ignore`, `endOfLine: lf`
-- `@simplysm/*` 표준 API 매핑은 `.claude/rules/sd-simplysm-v14.md`의 "표준 API → simplysm 매핑" 섹션 참조
+`sd-cli` 가 패키지마다 다음 타겟 중 하나로 빌드한다:
 
-### 브라우저 호환성 (Chrome 61+)
+- `node` / `browser` / `neutral` — esbuild 라이브러리 패키지. npm 배포용.
+- `client` — Frontend 앱 (Angular + Capacitor/Electron + PWA 옵션). esbuild + define 으로 env 주입.
+- `server` — Fastify 서버 앱. esbuild banner 로 env 주입, PM2 옵션.
+- `scripts` — 유틸 패키지. `watch` 훅으로 임의 명령 실행 가능 (예: `sd-claude` 패키지가 `.claude/sd-*` 변경을 감지해 `scripts/sync.mjs` 호출).
 
-- sd-cli의 `browserSupport.browserslist` 설정은 esbuild target으로 변환되어 **문법(syntax)만 다운레벨 컴파일**한다.
-  최신 문법(`?.`, `??`, `&&=` 등)은 esbuild가 변환하므로 자유롭게 사용 가능하다.
+타입 정의는 `packages/sd-cli/src/sd-config.types.ts` 가 권위 있는 소스다.
 
-- **런타임 API는 esbuild가 폴리필하지 않는다.**
-  - 프로토타입 메서드, 전역 함수, 내장 객체의 신규 메서드 등 런타임 API를 사용할 때는 반드시 **Chrome 61에 해당 API가 존재하는지 확인**하고, 존재하지 않으면 사용하지 않는다.
-  - 단, 소비 프로젝트에서 `polyfills.ts`로 폴리필 가능한 API(예: `Array.prototype.flat`, `Object.fromEntries` 등 표준 프로토타입 메서드)는 예외로 사용 가능하다.
-  - 폴리필로 해결 불가능한 API(예: `WeakRef`, `FinalizationRegistry`, `Proxy` 등 엔진 네이티브 구현 필수)는 절대 사용하지 않는다.
+### sd-cli 진입 흐름
 
-**판단 방법:** 연산자·키워드·선언 형태 → 문법(esbuild 변환 가능, 사용 OK). 프로토타입 메서드·전역 함수·내장 객체 신규 메서드 → 런타임 API(Chrome 61 지원 여부 확인 필수).
+`packages/sd-cli/src/sd-cli.ts` → `sd-cli-entry.ts` (yargs).
 
-## 참조 문서 유지보수
+1. **Dev 실행 (`tsx`, `.ts`)**: CPU affinity/priority 설정 후 `sd-cli-entry` 를 직접 import.
+2. **Prod 실행 (`.js`)**: ① `replaceDeps` 인라인 처리(node_modules 의 패키지를 로컬 소스로 심링크) ② 서브프로세스로 `sd-cli-entry.js` 재실행 (모듈 캐시 분리, `--max-old-space-size=8192`).
 
-- `@simplysm/*` 패키지의 public API 변경 시 `.claude/references/sd-simplysm-v14/{패키지명}/README.md` 및 하위 Entry 파일의 수정이 필요할 수 있다.
+서브커맨드 구현은 `packages/sd-cli/src/commands/` 에, 빌드 엔진/오케스트레이터는 `engines/`, `orchestrators/` 에 있다.
 
-## Claude 에셋 동기화
+### sd-claude 동기화
 
-- `.claude/`(스킬·룰·참조 문서)가 원본이다. `packages/sd-claude/claude/`는 배포 직전 자동 복제되는 산출물이다.
-- Claude 에셋 수정은 `.claude/`만 수정한다. `packages/sd-claude/claude/`를 직접 수정하면 다음 동기화 시 덮어쓰여 사라진다.
+`.claude/` 의 `sd-*` 에셋(스킬·룰·훅 스크립트·`settings.json`)은 `packages/sd-claude/scripts/sync.mjs` 를 통해 `packages/sd-claude/claude/` 로 증분 복사된 뒤 npm 배포된다. Windows EPERM 회피를 위해 `rmSync(recursive)` 대신 mtime+size 비교 후 변경분만 unlink/copy 한다.
+
+`.claude/skills/` 의 sd-\* 스킬은 SD 워크플로(spec/demo/plan/impl/verify) 오케스트레이터다. 이 저장소에서 작업할 때 `/sd-dev` 등으로 호출 가능.
+
+## Vitest 프로젝트 구조
+
+`vitest.config.ts` 는 7 개 project 로 분리된다:
+
+| project         | 환경                         | 대상                                                          |
+| --------------- | ---------------------------- | ------------------------------------------------------------- |
+| `node`          | node                         | core-node, sd-cli, lint, orm-node, service-server, storage 등 |
+| `browser`       | chromium (playwright)        | core-browser, service-client 등                               |
+| `angular`       | chromium + `sdAngularPlugin` | `packages/angular/tests` (TestBed)                            |
+| `sd-cli-server` | node                         | `tests/sd-cli-server` (esbuild banner 주입 검증)              |
+| `sd-cli-client` | node                         | `tests/sd-cli-client` (esbuild define 주입 검증)              |
+| `orm`           | node + globalSetup           | `tests/orm` — Docker DB 필요, `fileParallelism: false`        |
+| `service`       | chromium + globalSetup       | `tests/service` — server+browser 통합                         |
+
+## 개발 시 주의사항
+
+- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **명시 첨부 없이는 읽지 않는다**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 참조 (자동 로드됨).
+- Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증을 수행한다. 훅 차단 시 우회하지 말고 원인을 해결한다.
+- ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/templates/**`.
+- 기본 응답 언어는 한국어.

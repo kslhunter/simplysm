@@ -9,6 +9,7 @@ import fsp from "fs/promises";
 let workerFns: Record<string, (...args: any[]) => any>;
 let mockSend: ReturnType<typeof vi.fn>;
 
+// @simplysm/core-node createWorker는 Worker thread 부작용이 있어 mock 유지
 vi.mock("@simplysm/core-node", () => ({
   createWorker: vi.fn((fns: Record<string, Function>) => {
     workerFns = fns as any;
@@ -17,18 +18,13 @@ vi.mock("@simplysm/core-node", () => ({
   }),
 }));
 
-vi.mock("../../src/runtime/worker-utils", () => ({
-  registerCleanupHandlers: vi.fn(),
-  setupWorkerConsola: vi.fn(),
-}));
-
-// @fastify/http-proxy mock
+// @fastify/http-proxy는 외부 npm으로 mock 유지
 const mockProxyPlugin = vi.fn();
 vi.mock("@fastify/http-proxy", () => ({
   default: mockProxyPlugin,
 }));
 
-// Port availability mock
+// net 표준 모듈은 ESM namespace immutable + OS 의존이라 mock 유지
 let portCheckResults: boolean[] = [];
 let portCheckIndex = 0;
 
@@ -43,9 +39,6 @@ vi.mock("net", () => ({
         listen: () => {
           const isAvailable = portCheckResults[portCheckIndex++] ?? true;
           if (isAvailable) {
-            const _closeFn = (cb?: () => void) => {
-              cb?.();
-            };
             handlers["listening"]();
           } else {
             handlers["error"]();
@@ -58,6 +51,11 @@ vi.mock("net", () => ({
     }),
   },
 }));
+
+import * as workerUtils from "../../src/runtime/worker-utils";
+
+vi.spyOn(workerUtils, "registerCleanupHandlers").mockImplementation(() => {});
+vi.spyOn(workerUtils, "setupWorkerConsola").mockImplementation(() => {});
 
 // Import triggers createWorker
 await import("../../src/workers/server-runtime.worker");

@@ -53,8 +53,15 @@ export async function configureAndroid(
 
 /**
  * Java 21 경로 자동 탐색
+ *
+ * JAVA_HOME이 Java 21이면 우선 사용한다. JDK 표준 `release` 파일의 `JAVA_VERSION`으로 판별.
  */
 export async function findJava21(): Promise<string | undefined> {
+  const javaHome = env("JAVA_HOME");
+  if (javaHome != null && (await _isJava21(javaHome))) {
+    return pathx.posix(javaHome);
+  }
+
   const patterns = [
     "C:/Program Files/Amazon Corretto/jdk21*",
     "C:/Program Files/Eclipse Adoptium/jdk-21*",
@@ -72,6 +79,13 @@ export async function findJava21(): Promise<string | undefined> {
   }
 
   return undefined;
+}
+
+async function _isJava21(javaHome: string): Promise<boolean> {
+  const releasePath = pathx.posixResolve(javaHome, "release");
+  if (!(await fsx.exists(releasePath))) return false;
+  const content = await fsx.read(releasePath);
+  return /JAVA_VERSION="21(\.|")/m.test(content);
 }
 
 /**

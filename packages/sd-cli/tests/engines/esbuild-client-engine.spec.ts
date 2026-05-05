@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// --- Mock factories (vi.mock is hoisted) ---
+import { Worker } from "@simplysm/core-node";
 
 const mockWorker = {
   build: vi.fn(),
@@ -10,24 +9,9 @@ const mockWorker = {
   on: vi.fn(),
 };
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(() => mockWorker),
-  },
-}));
+vi.spyOn(Worker, "create").mockReturnValue(mockWorker as any);
 
-// fs mock
-const mockUnlinkSync = vi.fn();
-vi.mock("node:fs", () => ({
-  default: {
-    unlinkSync: (...args: any[]) => mockUnlinkSync(...args),
-  },
-  unlinkSync: (...args: any[]) => mockUnlinkSync(...args),
-}));
-
-// --- Dynamic imports after mocking ---
-
-const { EsbuildClientEngine } = await import("../../src/engines/EsbuildClientEngine");
+import { EsbuildClientEngine } from "../../src/engines/EsbuildClientEngine";
 
 import type { ClientPackageInfo } from "../../src/engines/types";
 
@@ -400,12 +384,9 @@ describe("EsbuildClientEngine", () => {
     });
 
     it(".dev-port 파일 삭제 실패를 무시한다", async () => {
-      mockUnlinkSync.mockImplementation(() => {
-        throw new Error("ENOENT");
-      });
-
       mockWorker.build.mockResolvedValue({ success: true });
 
+      // pkg.dir이 실재하지 않는 경로이므로 unlinkSync는 ENOENT를 throw한다
       const engine = new EsbuildClientEngine({ cwd: "/root", pkg: createMockPkg() });
       await engine.run({ js: true, dts: false });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { consola } from "consola";
 
-// --- Mock ESLint ---
-
+// eslint은 외부 npm으로 ESM namespace immutable — vi.mock 유지
 const { mockLintFiles, mockLoadFormatter, MockESLintClass } = vi.hoisted(() => {
   const lintFilesFn = vi.fn();
   const loadFormatterFn = vi.fn();
@@ -18,10 +18,6 @@ vi.mock("eslint", () => ({
   ESLint: MockESLintClass,
 }));
 
-// --- Spy consola ---
-
-import { consola } from "consola";
-
 const mockLintLogger = {
   debug: vi.fn(),
   info: vi.fn(),
@@ -31,7 +27,7 @@ const mockLintLogger = {
 
 vi.spyOn(consola, "withTag").mockReturnValue(mockLintLogger as any);
 
-const { LintWithProgramRunner } = await import("../../src/lint/lint-with-program");
+import { LintWithProgramRunner } from "../../src/lint/lint-with-program";
 
 // --- Helpers ---
 

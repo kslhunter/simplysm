@@ -24,6 +24,9 @@ const allEntries = collectSdEntries(claudeDir).filter(
 if (fs.existsSync(path.join(claudeDir, "settings.json"))) {
   allEntries.push("settings.json");
 }
+if (fs.existsSync(path.join(claudeDir, "simplysm.json"))) {
+  allEntries.push("simplysm.json");
+}
 
 function filter(source) {
   const name = path.basename(source);

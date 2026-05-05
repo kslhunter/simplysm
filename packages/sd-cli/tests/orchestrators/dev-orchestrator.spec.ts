@@ -1,28 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// --- Mock factories (vi.mock is hoisted) ---
-
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: vi.fn(),
-}));
-
-vi.mock("../../src/utils/build-env", () => ({
-  getVersion: vi.fn(),
-}));
-
-vi.mock("../../src/deps/replace-deps/replace-deps", () => ({
-  watchReplaceDeps: vi.fn(),
-}));
-
-vi.mock("../../src/utils/output-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/output-utils")>();
-  return {
-    ...actual,
-    printDiagnostics: vi.fn(),
-    printServers: vi.fn(),
-  };
-});
-
+// SignalHandler는 OS signal 등록 부작용이 있어 mock 유지
 vi.mock("../../src/runtime/SignalHandler", () => ({
   SignalHandler: vi.fn().mockImplementation(function (this: any) {
     this.waitForTermination = vi.fn().mockResolvedValue(undefined);
@@ -31,7 +9,28 @@ vi.mock("../../src/runtime/SignalHandler", () => ({
   }),
 }));
 
-// Engine mock
+import * as sdConfigMod from "../../src/utils/sd-config";
+import * as buildEnvMod from "../../src/utils/build-env";
+import * as replaceDepsMod from "../../src/deps/replace-deps/replace-deps";
+import * as outputUtilsMod from "../../src/utils/output-utils";
+import * as engineFactoryMod from "../../src/engines/engine-factory";
+import * as coreNode from "@simplysm/core-node";
+import * as capacitorMod from "../../src/capacitor/capacitor";
+import * as electronMod from "../../src/electron/electron";
+
+import { loadSdConfig } from "../../src/utils/sd-config";
+import { getVersion } from "../../src/utils/build-env";
+import { watchReplaceDeps } from "../../src/deps/replace-deps/replace-deps";
+import { printDiagnostics, printServers as _printServers } from "../../src/utils/output-utils";
+import { createBuildEngine } from "../../src/engines/engine-factory";
+import { Worker } from "@simplysm/core-node";
+import { Capacitor } from "../../src/capacitor/capacitor";
+import { Electron } from "../../src/electron/electron";
+
+import { SignalHandler } from "../../src/runtime/SignalHandler";
+import { DevOrchestrator } from "../../src/orchestrators/DevOrchestrator";
+import type { SdConfig } from "../../src/sd-config.types";
+
 const mockBuildEngines: Array<{
   run: ReturnType<typeof vi.fn>;
   startWatch: ReturnType<typeof vi.fn>;
@@ -40,91 +39,17 @@ const mockBuildEngines: Array<{
   port?: number;
 }> = [];
 
-vi.mock("../../src/engines/engine-factory", () => ({
-  createBuildEngine: vi.fn((pkg: any, options: any) => {
-    const engine = {
-      run: vi.fn().mockResolvedValue({
-        success: true,
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-      }),
-      startWatch: vi.fn().mockImplementation(() => {
-        const resolve = options.rebuildManager.registerBuild(
-          `${pkg.name}:build`,
-          `${pkg.name} (${pkg.config.target})`,
-        );
-        options.resultCollector.add({
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "build",
-          status: "success",
-        });
-        resolve();
-      }),
-      stop: vi.fn().mockResolvedValue(undefined),
-      _pkgName: pkg.name,
-    };
-    mockBuildEngines.push(engine);
-    return engine;
-  }),
-}));
-
-vi.mock("@simplysm/core-node", () => ({
-  FsWatcher: {
-    watch: vi.fn().mockResolvedValue({
-      onChange: vi.fn(),
-      close: vi.fn().mockResolvedValue(undefined),
-    }),
-  },
-  Worker: {
-    create: vi.fn(),
-  },
-  pathx: {
-    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
-    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\\/g, "/")),
-    isChildPath: vi.fn((child: string, parent: string) => child.startsWith(parent + "/")),
-    filterByTargets: vi.fn((files: string[], targets: string[]) => targets.length === 0 ? files : files),
-  },
-}));
-
-// Capacitor mock
 const mockCapacitorInstance = {
   initialize: vi.fn().mockResolvedValue(undefined),
   build: vi.fn().mockResolvedValue(undefined),
   run: vi.fn().mockResolvedValue(undefined),
 };
 
-vi.mock("../../src/capacitor/capacitor", () => ({
-  Capacitor: {
-    create: vi.fn().mockResolvedValue(mockCapacitorInstance),
-  },
-}));
-
-// Electron mock
 const mockElectronInstance = {
   initialize: vi.fn().mockResolvedValue(undefined),
   build: vi.fn().mockResolvedValue(undefined),
   run: vi.fn().mockResolvedValue(undefined),
 };
-
-vi.mock("../../src/electron/electron", () => ({
-  Electron: {
-    create: vi.fn().mockResolvedValue(mockElectronInstance),
-  },
-}));
-
-// --- Dynamic imports after mocking ---
-
-const { DevOrchestrator } = await import("../../src/orchestrators/DevOrchestrator");
-const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { watchReplaceDeps } = await import("../../src/deps/replace-deps/replace-deps");
-const { printDiagnostics, printServers: _printServers } = await import("../../src/utils/output-utils");
-const { createBuildEngine } = await import("../../src/engines/engine-factory");
-const { Worker } = await import("@simplysm/core-node");
-const { getVersion } = await import("../../src/utils/build-env");
-const { Capacitor } = await import("../../src/capacitor/capacitor");
-const { Electron } = await import("../../src/electron/electron");
-
-import type { SdConfig } from "../../src/sd-config.types";
 
 // --- Runtime worker mock helper ---
 
@@ -230,27 +155,61 @@ function setupEngineWithClientPort(
 
 describe("DevOrchestrator", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.mocked(SignalHandler).mockReset();
+    vi.mocked(SignalHandler).mockImplementation(function (this: any) {
+      this.waitForTermination = vi.fn().mockResolvedValue(undefined);
+      this.isTerminated = vi.fn().mockReturnValue(false);
+      this.requestTermination = vi.fn();
+    });
+
     mockBuildEngines.length = 0;
     mockRuntimeProxies = [];
     capturedRebuildManager = undefined;
     capturedResultCollector = undefined;
+
     vi.spyOn(process, "cwd").mockReturnValue("/test-root");
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    vi.mocked(Worker.create).mockImplementation(() => {
+
+    vi.spyOn(sdConfigMod, "loadSdConfig").mockResolvedValue({ packages: {} });
+    vi.spyOn(buildEnvMod, "getVersion").mockResolvedValue("1.0.0");
+    vi.spyOn(replaceDepsMod, "watchReplaceDeps").mockResolvedValue({
+      entries: [], dispose: vi.fn(),
+    });
+    vi.spyOn(outputUtilsMod, "printDiagnostics").mockImplementation(() => {});
+    vi.spyOn(outputUtilsMod, "printServers").mockImplementation(() => {});
+
+    vi.spyOn(coreNode.FsWatcher, "watch").mockResolvedValue({
+      onChange: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+    } as any);
+    vi.spyOn(coreNode.Worker, "create").mockImplementation(() => {
       const proxy = createMockRuntimeProxy();
       mockRuntimeProxies.push(proxy);
       return proxy as any;
     });
-    mockCapacitorInstance.initialize.mockResolvedValue(undefined);
-    mockCapacitorInstance.build.mockResolvedValue(undefined);
-    mockCapacitorInstance.run.mockResolvedValue(undefined);
-    mockElectronInstance.initialize.mockResolvedValue(undefined);
-    mockElectronInstance.build.mockResolvedValue(undefined);
-    mockElectronInstance.run.mockResolvedValue(undefined);
-    vi.mocked(Capacitor.create).mockResolvedValue(mockCapacitorInstance as any);
-    vi.mocked(Electron.create).mockResolvedValue(mockElectronInstance as any);
-    vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+    vi.spyOn(coreNode.pathx, "posix").mockImplementation((p: string) => p.replace(/\\/g, "/") as coreNode.pathx.PosixPath);
+    vi.spyOn(coreNode.pathx, "posixResolve").mockImplementation(
+      (...args: string[]) => args.join("/").replace(/\\/g, "/") as coreNode.pathx.PosixPath,
+    );
+    vi.spyOn(coreNode.pathx, "isChildPath").mockImplementation(
+      (child: string, parent: string) => child.startsWith(parent + "/"),
+    );
+    vi.spyOn(coreNode.pathx, "filterByTargets").mockImplementation(
+      (files: string[], targets: string[]) => targets.length === 0 ? files : files,
+    );
+
+    mockCapacitorInstance.initialize.mockReset().mockResolvedValue(undefined);
+    mockCapacitorInstance.build.mockReset().mockResolvedValue(undefined);
+    mockCapacitorInstance.run.mockReset().mockResolvedValue(undefined);
+    mockElectronInstance.initialize.mockReset().mockResolvedValue(undefined);
+    mockElectronInstance.build.mockReset().mockResolvedValue(undefined);
+    mockElectronInstance.run.mockReset().mockResolvedValue(undefined);
+
+    vi.spyOn(capacitorMod.Capacitor, "create").mockResolvedValue(mockCapacitorInstance as any);
+    vi.spyOn(electronMod.Electron, "create").mockResolvedValue(mockElectronInstance as any);
+
+    vi.spyOn(engineFactoryMod, "createBuildEngine").mockImplementation((pkg: any, options: any) => {
       capturedRebuildManager = options.rebuildManager;
       capturedResultCollector = options.resultCollector;
       const engine = {

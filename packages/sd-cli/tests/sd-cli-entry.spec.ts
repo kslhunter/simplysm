@@ -1,24 +1,21 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock all command modules to prevent side effects during parsing
-vi.mock("../src/commands/check", () => ({
-  runCheck: vi.fn().mockResolvedValue(undefined),
-}));
-vi.mock("../src/commands/watch", () => ({
-  runWatch: vi.fn().mockResolvedValue(undefined),
-}));
-vi.mock("../src/commands/dev", () => ({
-  runDev: vi.fn().mockResolvedValue(undefined),
-}));
-vi.mock("../src/commands/build", () => ({
-  runBuild: vi.fn().mockResolvedValue(undefined),
-}));
-vi.mock("../src/commands/publish", () => ({
-  runPublish: vi.fn().mockResolvedValue(undefined),
-}));
-vi.mock("../src/commands/replace-deps", () => ({
-  runReplaceDeps: vi.fn().mockResolvedValue(undefined),
-}));
+import * as checkCmd from "../src/commands/check";
+import * as watchCmd from "../src/commands/watch";
+import * as devCmd from "../src/commands/dev";
+import * as buildCmd from "../src/commands/build";
+import * as publishCmd from "../src/commands/publish/publish-command";
+import * as replaceDepsCmd from "../src/commands/replace-deps";
+
+beforeEach(() => {
+  vi.restoreAllMocks();
+  vi.spyOn(checkCmd, "runCheck").mockResolvedValue(undefined);
+  vi.spyOn(watchCmd, "runWatch").mockResolvedValue(undefined);
+  vi.spyOn(devCmd, "runDev").mockResolvedValue(undefined);
+  vi.spyOn(buildCmd, "runBuild").mockResolvedValue(undefined);
+  vi.spyOn(publishCmd, "runPublish").mockResolvedValue(undefined);
+  vi.spyOn(replaceDepsCmd, "runReplaceDeps").mockResolvedValue(undefined);
+});
 
 describe("sd-cli-entry COMMAND_NAMES", () => {
   it("includes expected commands", async () => {

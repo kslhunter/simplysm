@@ -1,29 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Worker } from "@simplysm/core-node";
 
-//#region Mocks
-
-const mocks = vi.hoisted(() => ({
-  workerCreate: vi.fn(),
+const mocks = {
+  workerCreate: vi.spyOn(Worker, "create"),
   lintFn: vi.fn(),
   terminateFn: vi.fn(async () => {}),
-}));
+};
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: mocks.workerCreate,
-  },
-}));
-
-const { runLintInWorker } = await import("../../src/lint/lint-utils");
-
-//#endregion
+import { runLintInWorker } from "../../src/lint/lint-utils";
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.workerCreate.mockReturnValue({
     lint: mocks.lintFn,
     terminate: mocks.terminateFn,
-  });
+    on: vi.fn(),
+    off: vi.fn(),
+  } as never);
 });
 
 describe("runLintInWorker", () => {

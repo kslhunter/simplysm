@@ -141,14 +141,10 @@ export async function initCapNpmProject(
     await fsx.write(workspaceYamlPath, "");
   }
 
-  // pnpm install + 빌드 스크립트 승인
+  // pnpm install (빌드 스크립트 자동 승인)
   const isDebug = consola.level >= LogLevels.debug;
   logger.debug("pnpm install 시작");
-  await shellSpawn("pnpm", ["install"], {
-    cwd: capPath,
-    ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
-  });
-  await shellSpawn("pnpm", ["approve-builds", "--all"], {
+  await shellSpawn("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], {
     cwd: capPath,
     ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
   });

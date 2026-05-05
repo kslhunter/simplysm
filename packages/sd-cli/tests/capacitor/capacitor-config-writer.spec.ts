@@ -1,22 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fsx } from "@simplysm/core-node";
 
-//#region Mocks
-
-const mockFsxWrite = vi.fn().mockResolvedValue(undefined);
-const mockFsxRead = vi.fn();
-
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...original,
-    fsx: {
-      write: mockFsxWrite,
-      read: mockFsxRead,
-    },
-  };
-});
-
-//#endregion
+const mockFsxWrite = vi.spyOn(fsx, "write").mockResolvedValue(undefined);
+const mockFsxRead = vi.spyOn(fsx, "read");
 
 const CAP_PATH = "/fake/.capacitor";
 

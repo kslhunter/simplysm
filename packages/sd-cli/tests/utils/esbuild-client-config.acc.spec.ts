@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
 
-// --- Mocks ---
-
+// 외부 npm + Node 표준 모듈은 ESM namespace immutable이라 vi.mock 유지
 const mockContext = {
   rebuild: vi.fn(),
   watch: vi.fn(),
@@ -13,18 +12,6 @@ vi.mock("esbuild", () => ({
   default: {
     context: vi.fn(() => Promise.resolve(mockContext)),
   },
-}));
-
-const mockAngularPlugin = { name: "sd-angular-compiler" };
-
-vi.mock("../../src/esbuild/esbuild-angular-compiler-plugin", () => ({
-  createAngularCompilerPlugin: vi.fn(() => mockAngularPlugin),
-}));
-
-const mockTransformStylesheet = vi.fn();
-
-vi.mock("../../src/angular/client-transform-stylesheet", () => ({
-  createClientTransformStylesheet: vi.fn(() => mockTransformStylesheet),
 }));
 
 vi.mock("browserslist-to-esbuild", () => ({
@@ -44,7 +31,14 @@ vi.mock("module", async (importOriginal) => {
   };
 });
 
-// --- Imports (after mocks) ---
+import * as angularPluginMod from "../../src/esbuild/esbuild-angular-compiler-plugin";
+import * as transformStylesheetMod from "../../src/angular/client-transform-stylesheet";
+
+const mockAngularPlugin = { name: "sd-angular-compiler" };
+const mockTransformStylesheet = vi.fn();
+
+vi.spyOn(angularPluginMod, "createAngularCompilerPlugin").mockReturnValue(mockAngularPlugin as any);
+vi.spyOn(transformStylesheetMod, "createClientTransformStylesheet").mockReturnValue(mockTransformStylesheet as any);
 
 const { createClientEsbuildContext, ClientSourceFileCache } = await import(
   "../../src/esbuild/esbuild-client-config"

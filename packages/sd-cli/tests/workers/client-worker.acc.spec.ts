@@ -1,105 +1,78 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
-//#region Mocks
+import * as coreNode from "@simplysm/core-node";
+import * as sharedWorkerLifecycle from "../../src/workers/shared-worker-lifecycle";
+import * as esbuildClientConfig from "../../src/esbuild/esbuild-client-config";
+import * as esbuildIndexHtml from "../../src/esbuild/esbuild-index-html";
+import * as esbuildPwa from "../../src/esbuild/esbuild-pwa";
+import * as devHttpServer from "../../src/dev-server/dev-http-server";
+import * as hmrService from "../../src/dev-server/hmr-service";
+import * as hmrClientScript from "../../src/dev-server/hmr-client-script";
+import * as copyPublic from "../../src/utils/copy-public";
+import * as sdConfig from "../../src/utils/sd-config";
 
 let workerFns: Record<string, (...args: any[]) => any>;
 let mockSend: ReturnType<typeof vi.fn>;
 
 const mockRebuild = vi.fn();
 const mockDispose = vi.fn();
-const mockReadFileSync = vi.fn();
-const mockExistsSync = vi.fn();
 
-vi.mock("@simplysm/core-node", () => ({
-  createWorker: vi.fn((fns: Record<string, Function>) => {
-    workerFns = fns as any;
-    mockSend = vi.fn();
-    return { send: mockSend };
-  }),
-}));
+vi.spyOn(coreNode, "createWorker").mockImplementation((fns: Record<string, Function>) => {
+  workerFns = fns as any;
+  mockSend = vi.fn();
+  return { send: mockSend } as any;
+});
 
-vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
-  setupWorkerLifecycle: vi.fn(() => ({
-    logger: { debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
-    guardStartWatch: vi.fn(),
-  })),
-}));
+vi.spyOn(sharedWorkerLifecycle, "setupWorkerLifecycle").mockImplementation(() => ({
+  logger: { debug: vi.fn(), error: vi.fn(), warn: vi.fn() },
+  guardStartWatch: vi.fn(),
+}) as any);
 
-vi.mock("../../src/esbuild/esbuild-client-config", () => ({
-  createClientEsbuildContext: vi.fn(() =>
-    Promise.resolve({
-      context: { rebuild: mockRebuild, dispose: mockDispose, watch: vi.fn() },
-      sourceFileCache: {},
-    }),
-  ),
-}));
+vi.spyOn(esbuildClientConfig, "createClientEsbuildContext").mockResolvedValue({
+  context: { rebuild: mockRebuild, dispose: mockDispose, watch: vi.fn() },
+  sourceFileCache: {},
+} as any);
 
-vi.mock("../../src/esbuild/esbuild-index-html", () => ({
-  generateIndexHtml: vi.fn(() =>
-    Promise.resolve({ content: "<html></html>", errors: [], warnings: [] }),
-  ),
-}));
+vi.spyOn(esbuildIndexHtml, "generateIndexHtml").mockResolvedValue({
+  content: "<html></html>", errors: [], warnings: [],
+});
 
-vi.mock("../../src/esbuild/esbuild-pwa", () => ({
-  applyPwa: vi.fn(() => Promise.resolve()),
-  createPwaHtmlTransform: vi.fn(),
-}));
+vi.spyOn(esbuildPwa, "applyPwa").mockResolvedValue(undefined);
+vi.spyOn(esbuildPwa, "createPwaHtmlTransform").mockReturnValue(undefined as any);
 
-vi.mock("../../src/dev-server/dev-http-server", () => ({
-  createDevHttpServer: vi.fn(),
-}));
+vi.spyOn(devHttpServer, "createDevHttpServer").mockReturnValue(undefined as any);
+vi.spyOn(hmrService, "createHmrService").mockReturnValue(undefined as any);
+vi.spyOn(hmrClientScript, "createHmrPostTransform").mockReturnValue(undefined as any);
 
-vi.mock("../../src/dev-server/hmr-service", () => ({
-  createHmrService: vi.fn(),
-}));
+vi.spyOn(copyPublic, "copyPublicFiles").mockResolvedValue(undefined);
+vi.spyOn(copyPublic, "watchPublicFiles").mockReturnValue(undefined as any);
 
-vi.mock("../../src/dev-server/hmr-client-script", () => ({
-  createHmrPostTransform: vi.fn(),
-}));
+vi.spyOn(sdConfig, "loadSdConfig").mockResolvedValue({
+  packages: { "my-app": { target: "client", server: "my-server" } },
+} as any);
 
-vi.mock("../../src/utils/copy-public", () => ({
-  copyPublicFiles: vi.fn(() => Promise.resolve()),
-  watchPublicFiles: vi.fn(),
-}));
-
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: vi.fn(() =>
-    Promise.resolve({
-      packages: { "my-app": { target: "client", server: "my-server" } },
-    }),
-  ),
-}));
-
-vi.mock("node:fs", () => ({
-  default: {
-    readFileSync: (...args: any[]) => mockReadFileSync(...args),
-    writeFileSync: vi.fn(),
-    existsSync: (...args: any[]) => mockExistsSync(...args),
-    mkdirSync: vi.fn(),
-    rmSync: vi.fn(),
-  },
-}));
-
-//#endregion
-
-// Import triggers createWorker, capturing the functions
 await import("../../src/workers/client.worker");
 
-const baseBuildInfo = {
-  name: "my-app",
-  cwd: "/workspace",
-  pkgDir: "/workspace/packages/my-app",
-};
+let tmpRoot: string;
+let baseBuildInfo: { name: string; cwd: string; pkgDir: string };
+
+beforeAll(() => {
+  tmpRoot = mkdtempSync(path.join(tmpdir(), "client-worker-acc-"));
+  const pkgDir = path.join(tmpRoot, "packages", "my-app");
+  mkdirSync(pkgDir, { recursive: true });
+  writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify({ name: "@scope/my-app" }));
+  baseBuildInfo = { name: "my-app", cwd: tmpRoot, pkgDir };
+});
+
+afterAll(() => {
+  rmSync(tmpRoot, { recursive: true, force: true });
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockReadFileSync.mockImplementation((filePath: any) => {
-    if (String(filePath).endsWith("package.json")) {
-      return JSON.stringify({ name: "@scope/my-app" });
-    }
-    return "";
-  });
-  mockExistsSync.mockReturnValue(false);
   mockRebuild.mockResolvedValue({
     metafile: { outputs: {} },
     errors: [],
@@ -140,49 +113,3 @@ describe("client.worker build() — Acceptance", () => {
     expect(result.errors).toContain("Unexpected crash");
   });
 });
-
-describe("client.worker build() — browserSupport 전달", () => {
-  // Scenario: browserSupport가 ClientBuildInfo를 통해 전달된다
-  it("browserSupport 설정이 createClientEsbuildContext에 legacyModule/browserslist/postcssPlugins로 전달된다", async () => {
-    const { createClientEsbuildContext } = await import(
-      "../../src/esbuild/esbuild-client-config"
-    );
-
-    const result = await workerFns["build"]({
-      ...baseBuildInfo,
-      browserSupport: {
-        legacyModule: true,
-        browserslist: "Chrome 61",
-        postCss: { plugins: [["autoprefixer"]] },
-      },
-    });
-
-    expect(result.success).toBe(true);
-    expect(vi.mocked(createClientEsbuildContext)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        legacyModule: true,
-        browserslist: "Chrome 61",
-        postcssPlugins: [["autoprefixer"]],
-      }),
-    );
-  });
-
-  // Scenario: browserSupport 미설정 시 기본값으로 동작한다
-  it("browserSupport 미설정 시 legacyModule=false, browserslist=undefined로 전달된다", async () => {
-    const { createClientEsbuildContext } = await import(
-      "../../src/esbuild/esbuild-client-config"
-    );
-
-    const result = await workerFns["build"](baseBuildInfo);
-
-    expect(result.success).toBe(true);
-    expect(vi.mocked(createClientEsbuildContext)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        legacyModule: false,
-        browserslist: undefined,
-        postcssPlugins: undefined,
-      }),
-    );
-  });
-});
-

@@ -1,32 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
+import { fsx, FsWatcher } from "@simplysm/core-node";
 
 const mockOnChange = vi.fn();
 const mockWatcherClose = vi.fn();
 
 const toPosix = (p: string) => p.replace(/\\/g, "/");
 
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...actual,
-    fsx: {
-      glob: vi.fn(),
-      mkdir: vi.fn(),
-      copy: vi.fn(),
-      rm: vi.fn(),
-    },
-    FsWatcher: {
-      watch: vi.fn(() => Promise.resolve({
-        onChange: mockOnChange,
-        close: mockWatcherClose,
-      })),
-    },
-  };
-});
+vi.spyOn(fsx, "glob");
+vi.spyOn(fsx, "mkdir");
+vi.spyOn(fsx, "copy");
+vi.spyOn(fsx, "rm");
+vi.spyOn(FsWatcher, "watch").mockImplementation(() =>
+  Promise.resolve({ onChange: mockOnChange, close: mockWatcherClose } as any),
+);
 
-const { fsx, FsWatcher } = await import("@simplysm/core-node");
-const { copySrcFiles, watchCopySrcFiles } = await import("../../src/utils/copy-src");
+import { copySrcFiles, watchCopySrcFiles } from "../../src/utils/copy-src";
 
 const pkgDir = toPosix(path.resolve("/workspace/packages/my-pkg"));
 const srcDir = toPosix(path.join(pkgDir, "src"));

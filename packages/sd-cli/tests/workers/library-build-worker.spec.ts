@@ -1,79 +1,52 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
-import * as collectDepsModule from "../../src/deps/replace-deps/collect-deps";
 
-//#region Mocks
+import * as coreNode from "@simplysm/core-node";
+import * as collectDepsModule from "../../src/deps/replace-deps/collect-deps";
+import * as sdTsCompilerMod from "../../src/ts-compiler/SdTsCompiler";
+import * as ngtscBuildCore from "../../src/angular/ngtsc-build-core";
+import * as sharedWorkerLifecycle from "../../src/workers/shared-worker-lifecycle";
 
 let workerFns: Record<string, (...args: any[]) => any>;
 let mockSend: ReturnType<typeof vi.fn>;
 
-// FsWatcher mock
 const mockOnChange = vi.fn();
 const mockWatcherClose = vi.fn();
 
-// SdTsCompiler mock
-const { mockCompileAsync, MockSdTsCompiler, mockSideEffectScssRegistry } = vi.hoisted(() => {
-  const compileAsync = vi.fn();
-  const sideEffectScssRegistry = new Map();
-  const Compiler = vi.fn().mockImplementation(function (this: any) {
-    this.compileAsync = compileAsync;
-    this.sideEffectScssRegistry = sideEffectScssRegistry;
-  });
-  return { mockCompileAsync: compileAsync, MockSdTsCompiler: Compiler, mockSideEffectScssRegistry: sideEffectScssRegistry };
+const mockCompileAsync = vi.fn();
+const mockSideEffectScssRegistry = new Map();
+const MockSdTsCompiler = vi.fn().mockImplementation(function (this: any) {
+  this.compileAsync = mockCompileAsync;
+  this.sideEffectScssRegistry = mockSideEffectScssRegistry;
 });
+vi.spyOn(sdTsCompilerMod, "SdTsCompiler" as any).mockImplementation(MockSdTsCompiler as any);
 
-vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
-  SdTsCompiler: MockSdTsCompiler,
-}));
+const mockWriteEmitResults = vi.spyOn(ngtscBuildCore, "writeEmitResults").mockImplementation(() => undefined);
+const mockCompileSideEffectScss = vi.spyOn(ngtscBuildCore, "compileSideEffectScss").mockImplementation(() => undefined);
 
-// ngtsc-build-core mock (writeEmitResults + compileSideEffectScss)
-const { mockWriteEmitResults, mockCompileSideEffectScss } = vi.hoisted(() => {
-  return { mockWriteEmitResults: vi.fn(), mockCompileSideEffectScss: vi.fn() };
+vi.spyOn(coreNode, "createWorker").mockImplementation((fns: Record<string, Function>) => {
+  workerFns = fns as any;
+  mockSend = vi.fn();
+  return { send: mockSend } as any;
 });
-
-vi.mock("../../src/angular/ngtsc-build-core", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../../src/angular/ngtsc-build-core")>();
-  return {
-    ...original,
-    writeEmitResults: mockWriteEmitResults,
-    compileSideEffectScss: mockCompileSideEffectScss,
-  };
-});
-
-vi.mock("@simplysm/core-node", () => ({
-  createWorker: vi.fn((fns: Record<string, Function>) => {
-    workerFns = fns as any;
-    mockSend = vi.fn();
-    return { send: mockSend };
-  }),
-  FsWatcher: {
-    watch: vi.fn(() => Promise.resolve({
-      onChange: mockOnChange,
-      close: mockWatcherClose,
-    })),
-  },
-  pathx: {
-    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
-    posixResolve: vi.fn((...args: string[]) => path.resolve(...args).replace(/\\/g, "/")),
-  },
-}));
+vi.spyOn(coreNode.FsWatcher, "watch").mockImplementation(() =>
+  Promise.resolve({ onChange: mockOnChange, close: mockWatcherClose } as any),
+);
+vi.spyOn(coreNode.pathx, "posix").mockImplementation((p: string) => p.replace(/\\/g, "/") as coreNode.pathx.PosixPath);
+vi.spyOn(coreNode.pathx, "posixResolve").mockImplementation(
+  (...args: string[]) => path.resolve(...args).replace(/\\/g, "/") as coreNode.pathx.PosixPath,
+);
 
 const mockDebug = vi.fn();
+vi.spyOn(sharedWorkerLifecycle, "setupWorkerLifecycle").mockImplementation(() => ({
+  logger: { debug: mockDebug, warn: vi.fn() },
+  guardStartWatch: vi.fn(),
+}) as any);
 
-vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
-  setupWorkerLifecycle: vi.fn(() => ({
-    logger: { debug: mockDebug, warn: vi.fn() },
-    guardStartWatch: vi.fn(),
-  })),
-}));
-
-// collect-deps spy
 const mockCollectDeps = vi.spyOn(collectDepsModule, "collectDeps").mockReturnValue({
   workspaceDeps: [],
   replaceDeps: [],
 });
-
-//#endregion
 
 const defaultCompileResult = {
   program: { getSourceFiles: () => [{ fileName: "/pkg/src/index.ts" }] },

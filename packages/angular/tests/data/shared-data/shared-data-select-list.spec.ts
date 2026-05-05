@@ -1,26 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import { SDSLTestHost, listItem, type TestListItem } from "./sd-shared-data-select-list-test.fixture";
 import { SdSharedDataSelectList } from "../../../src/data/shared-data/sd-shared-data-select-list";
 import type { SdSelectModal } from "../../../src/controls/button/sd-modal-select-button";
 
-function createMockModalProvider() {
-  return {
-    showAsync: vi.fn().mockResolvedValue(undefined),
-    modalCount: signal(0),
-  };
-}
-
-let mockModal: ReturnType<typeof createMockModalProvider>;
+let mockModal: { showAsync: ReturnType<typeof vi.spyOn> };
 
 function setupTestBed() {
-  mockModal = createMockModalProvider();
   TestBed.configureTestingModule({
     imports: [SDSLTestHost],
-    providers: [{ provide: SdModalProvider, useValue: mockModal }],
   });
+  const modalProvider = TestBed.inject(SdModalProvider);
+  mockModal = {
+    showAsync: vi.spyOn(modalProvider, "showAsync").mockResolvedValue(undefined),
+  };
 }
 
 function createFixture() {

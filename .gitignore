@@ -1,6 +1,7 @@
 .playwright-cli
 __pycache__
 .claude/worktrees
+.claude/skills/playwright-cli
 
 .tmp
 .logs

@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import { SdToastProvider } from "../../../src/core/toast/sd-toast.provider";
@@ -7,44 +6,29 @@ import { SdLocalStorageProvider } from "../../../src/core/config/sd-local-storag
 import { SdStatePresetTestHost } from "./sd-state-preset-test.fixture";
 import { SdStatePreset } from "../../../src/data/state-preset/sd-state-preset";
 
-function createMockModalProvider() {
-  return {
-    showAsync: vi.fn().mockResolvedValue(undefined),
-    modalCount: signal(0),
-  };
-}
-
-function createMockToastProvider() {
-  return {
-    info: vi.fn(),
-    warning: vi.fn(),
-  };
-}
-
-function createMockLocalStorage() {
-  const store = new Map<string, any>();
-  return {
-    set: vi.fn((key: string, value: any) => store.set(key, value)),
-    get: vi.fn((key: string) => store.get(key)),
-  };
-}
-
-let mockModal: ReturnType<typeof createMockModalProvider>;
-let mockToast: ReturnType<typeof createMockToastProvider>;
-let mockLocalStorage: ReturnType<typeof createMockLocalStorage>;
+let mockModal: { showAsync: ReturnType<typeof vi.spyOn> };
+let mockToast: {
+  info: ReturnType<typeof vi.spyOn>;
+  warning: ReturnType<typeof vi.spyOn>;
+};
 
 function setupTestBed() {
-  mockModal = createMockModalProvider();
-  mockToast = createMockToastProvider();
-  mockLocalStorage = createMockLocalStorage();
   TestBed.configureTestingModule({
     imports: [SdStatePresetTestHost],
-    providers: [
-      { provide: SdModalProvider, useValue: mockModal },
-      { provide: SdToastProvider, useValue: mockToast },
-      { provide: SdLocalStorageProvider, useValue: mockLocalStorage },
-    ],
   });
+  const modalProvider = TestBed.inject(SdModalProvider);
+  mockModal = {
+    showAsync: vi.spyOn(modalProvider, "showAsync").mockResolvedValue(undefined as any),
+  };
+  const toastProvider = TestBed.inject(SdToastProvider);
+  mockToast = {
+    info: vi.spyOn(toastProvider, "info").mockImplementation(() => undefined),
+    warning: vi.spyOn(toastProvider, "warning").mockImplementation(() => undefined),
+  };
+  // SdLocalStorageProvider는 실제 localStorage(JSDOM 제공) 사용
+  const localStorage = TestBed.inject(SdLocalStorageProvider);
+  vi.spyOn(localStorage, "get").mockImplementation((_key: string) => undefined);
+  vi.spyOn(localStorage, "set").mockImplementation(() => {});
 }
 
 describe("SdStatePreset 프리셋 이름 중복 검사", () => {

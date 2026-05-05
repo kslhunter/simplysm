@@ -1,18 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import path from "path";
+import fs from "fs/promises";
+import os from "os";
 
-vi.mock("fs/promises", () => ({
-  default: {
-    readFile: vi.fn(),
-    writeFile: vi.fn(),
-    mkdir: vi.fn(),
-  },
-}));
-
-const { createServerEsbuildOptions, createEnvBanner, writeChangedOutputFiles } =
-  await import("../../src/esbuild/esbuild-config");
-
-const { default: mockFs } = await import("fs/promises");
+import {
+  createServerEsbuildOptions,
+  createEnvBanner,
+  writeChangedOutputFiles,
+} from "../../src/esbuild/esbuild-config";
 
 describe("createServerEsbuildOptions", () => {
   const baseOptions = {
@@ -121,93 +116,107 @@ describe("createEnvBanner", () => {
 });
 
 describe("writeChangedOutputFiles", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined);
-    vi.mocked(mockFs.writeFile).mockResolvedValue();
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "sd-esbuild-config-"));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
   it("adds .js extension to relative import paths in .js files", async () => {
-    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
+    const distDir = path.join(tmpDir, "dist");
+    const filePath = path.join(distDir, "foo.js");
 
     await writeChangedOutputFiles([
       {
-        path: "/pkg/dist/foo.js",
+        path: filePath,
         text: 'import { bar } from "./bar";\nexport { baz } from "../utils/baz";',
       },
     ] as any);
 
-    expect(mockFs.writeFile).toHaveBeenCalledWith(
-      "/pkg/dist/foo.js",
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe(
       'import { bar } from "./bar.js";\nexport { baz } from "../utils/baz.js";',
     );
   });
 
   it("preserves imports that already have extensions", async () => {
-    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
+    const filePath = path.join(tmpDir, "dist", "foo.js");
 
     await writeChangedOutputFiles([
       {
-        path: "/pkg/dist/foo.js",
+        path: filePath,
         text: 'import data from "./data.json";\nimport styles from "./styles.css";\nimport mod from "./native.node";',
       },
     ] as any);
 
-    expect(mockFs.writeFile).toHaveBeenCalledWith(
-      "/pkg/dist/foo.js",
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe(
       'import data from "./data.json";\nimport styles from "./styles.css";\nimport mod from "./native.node";',
     );
   });
 
   it("skips writing when transformed content matches existing file", async () => {
-    vi.mocked(mockFs.readFile).mockResolvedValue('import { bar } from "./bar.js";');
+    const filePath = path.join(tmpDir, "dist", "foo.js");
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    const existing = 'import { bar } from "./bar.js";';
+    await fs.writeFile(filePath, existing);
+    const statBefore = await fs.stat(filePath);
 
+    await new Promise((r) => setTimeout(r, 10));
     await writeChangedOutputFiles([
       {
-        path: "/pkg/dist/foo.js",
+        path: filePath,
         text: 'import { bar } from "./bar";',
       },
     ] as any);
 
-    expect(mockFs.writeFile).not.toHaveBeenCalled();
+    const statAfter = await fs.stat(filePath);
+    expect(statAfter.mtimeMs).toBe(statBefore.mtimeMs);
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe(existing);
   });
 
   it("writes file when content changed", async () => {
-    vi.mocked(mockFs.readFile).mockResolvedValue('import { old } from "./old.js";');
+    const filePath = path.join(tmpDir, "dist", "foo.js");
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, 'import { old } from "./old.js";');
 
     await writeChangedOutputFiles([
       {
-        path: "/pkg/dist/foo.js",
+        path: filePath,
         text: 'import { bar } from "./bar";',
       },
     ] as any);
 
-    expect(mockFs.writeFile).toHaveBeenCalled();
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe('import { bar } from "./bar.js";');
   });
 
   it("writes new file when existing file does not exist", async () => {
-    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("ENOENT"));
+    const filePath = path.join(tmpDir, "dist", "foo.js");
 
     await writeChangedOutputFiles([
-      {
-        path: "/pkg/dist/foo.js",
-        text: 'const x = 1;',
-      },
+      { path: filePath, text: "const x = 1;" },
     ] as any);
 
-    expect(mockFs.mkdir).toHaveBeenCalledWith(path.dirname("/pkg/dist/foo.js"), { recursive: true });
-    expect(mockFs.writeFile).toHaveBeenCalledWith("/pkg/dist/foo.js", "const x = 1;");
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe("const x = 1;");
   });
 
   it("does not transform non-.js files", async () => {
-    vi.mocked(mockFs.readFile).mockRejectedValue(new Error("not found"));
-
+    const filePath = path.join(tmpDir, "dist", "foo.js.map");
     const mapContent = '{"version":3,"sources":["./bar"]}';
+
     await writeChangedOutputFiles([
-      { path: "/pkg/dist/foo.js.map", text: mapContent },
+      { path: filePath, text: mapContent },
     ] as any);
 
-    expect(mockFs.writeFile).toHaveBeenCalledWith("/pkg/dist/foo.js.map", mapContent);
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe(mapContent);
   });
 });
 

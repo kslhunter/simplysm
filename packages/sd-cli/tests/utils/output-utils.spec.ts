@@ -4,20 +4,14 @@ import type { BuildResult } from "../../src/runtime/ResultCollector";
 import type { PartialMessage } from "esbuild";
 
 // output-utils.ts가 모듈 로드 시 consola.withTag("sd:cli:output")로 로거를 생성하므로,
-// withTag가 consola 자체를 반환하도록 하여 기존 스파이가 태그 로거 호출을 캡처하게 한다.
-vi.mock("consola", async (importOriginal) => {
-  const mod = await importOriginal<typeof import("consola")>();
-  const orig = mod.consola;
-  vi.spyOn(orig, "withTag").mockReturnValue(orig);
-  return { consola: orig };
-});
-
-const { formatBuildMessages, formatEsbuildMessages, printDiagnostics, printServers } =
-  await import("../../src/utils/output-utils");
-
+// 동적 import 전에 spy 등록하여 withTag가 consola 자체를 반환하게 한다
+vi.spyOn(consola, "withTag").mockReturnValue(consola);
 vi.spyOn(consola, "error").mockImplementation(() => {});
 vi.spyOn(consola, "warn").mockImplementation(() => {});
 vi.spyOn(consola, "info").mockImplementation(() => {});
+
+const { formatBuildMessages, formatEsbuildMessages, printDiagnostics, printServers } =
+  await import("../../src/utils/output-utils");
 
 describe("formatBuildMessages", () => {
   it("formats name, label, and messages into indented lines", () => {

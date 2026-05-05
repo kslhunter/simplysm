@@ -1,27 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
+import { cpx, fsx } from "@simplysm/core-node";
+import { StorageFactory } from "@simplysm/storage";
 
-const mocks = vi.hoisted(() => ({
-  execa: vi.fn(),
+const mocks = {
+  execa: vi.spyOn(cpx, "spawn"),
   fsx: {
-    readJson: vi.fn(),
-    copy: vi.fn(),
+    readJson: vi.spyOn(fsx, "readJson"),
+    copy: vi.spyOn(fsx, "copy"),
   },
-  storageConnect: vi.fn(),
-}));
+  storageConnect: vi.spyOn(StorageFactory, "connect"),
+};
 
-vi.mock("@simplysm/core-node", () => ({
-  cpx: {
-    spawn: mocks.execa,
-  },
-  fsx: mocks.fsx,
-}));
-
-vi.mock("@simplysm/storage", () => ({
-  StorageFactory: { connect: mocks.storageConnect },
-}));
-
-const { runDeployment } = await import("../../src/commands/publish/deployment-phase");
+import { runDeployment } from "../../src/commands/publish/deployment-phase";
 
 const CWD = process.cwd();
 
@@ -49,17 +40,17 @@ describe("runDeployment", () => {
   it("deploys packages in dependency level order", async () => {
     const publishOrder: string[] = [];
     mocks.execa.mockImplementation(
-      (_cmd: string, _args?: string[], opts?: { cwd?: string }) => {
+      ((_cmd: string, _args?: string[], opts?: { cwd?: string }) => {
         publishOrder.push(path.basename(opts?.cwd ?? ""));
         return { stdout: "", stderr: "", exitCode: 0 };
-      },
+      }) as never,
     );
-    mocks.fsx.readJson.mockImplementation((p: string) => {
+    mocks.fsx.readJson.mockImplementation(((p: string) => {
       if (p.includes("pkg-b")) {
         return { name: "@simplysm/pkg-b", version: "14.0.1", dependencies: { "@simplysm/pkg-a": "~14.0.0" } };
       }
       return { name: "@simplysm/pkg-a", version: "14.0.1", dependencies: {} };
-    });
+    }) as never);
 
     const logger = createLogger();
     await runDeployment(
@@ -104,19 +95,19 @@ describe("runDeployment", () => {
   });
 
   it("reports partially deployed packages on failure", async () => {
-    mocks.fsx.readJson.mockImplementation((p: string) => {
+    mocks.fsx.readJson.mockImplementation(((p: string) => {
       const name = path.basename(path.dirname(p));
       return { name: `@simplysm/${name}`, version: "14.0.1", dependencies: {} };
-    });
+    }) as never);
 
     // pkg-a succeeds, pkg-b fails
     mocks.execa.mockImplementation(
-      (_cmd: string, _args?: string[], opts?: { cwd?: string }) => {
+      ((_cmd: string, _args?: string[], opts?: { cwd?: string }) => {
         if (opts?.cwd?.includes("pkg-b")) {
           throw new Error("publish failed");
         }
         return { stdout: "", stderr: "", exitCode: 0 };
-      },
+      }) as never,
     );
 
     const logger = createLogger();

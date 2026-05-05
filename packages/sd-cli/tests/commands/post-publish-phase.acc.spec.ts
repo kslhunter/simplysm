@@ -1,16 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { cpx } from "@simplysm/core-node";
 
-const mocks = vi.hoisted(() => ({
-  execa: vi.fn(),
-}));
+const mocks = {
+  execa: vi.spyOn(cpx, "spawn"),
+};
 
-vi.mock("@simplysm/core-node", () => ({
-  cpx: {
-    spawn: mocks.execa,
-  },
-}));
-
-const { runPostPublish } = await import("../../src/commands/publish/post-publish-phase");
+import { runPostPublish } from "../../src/commands/publish/post-publish-phase";
 
 function createLogger() {
   return {

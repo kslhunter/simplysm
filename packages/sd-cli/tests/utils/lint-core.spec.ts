@@ -1,24 +1,14 @@
 /* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Hoisted mock references — available inside vi.mock factories
+// eslint, jiti는 외부 npm 패키지로 ESM namespace immutable — vi.mock 유지
 const mocks = vi.hoisted(() => ({
-  fsxExists: vi.fn<(path: string) => Promise<boolean>>(),
-  fsxGlob: vi.fn<(...args: unknown[]) => Promise<string[]>>(),
   lintFiles: vi.fn<() => Promise<Array<{ errorCount: number; warningCount: number }>>>(),
   loadFormatter: vi.fn(),
   outputFixes: vi.fn(),
   jitiImport: vi.fn(),
   eslintCtor: vi.fn(),
 }));
-
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...actual,
-    fsx: { exists: mocks.fsxExists, glob: mocks.fsxGlob },
-  };
-});
 
 vi.mock("eslint", () => ({
   ESLint: class MockESLint {
@@ -33,7 +23,11 @@ vi.mock("jiti", () => ({
   createJiti: vi.fn(() => ({ import: mocks.jitiImport })),
 }));
 
-const { loadIgnorePatterns, executeLint } = await import("../../src/lint/lint-core");
+import { fsx } from "@simplysm/core-node";
+import { loadIgnorePatterns, executeLint } from "../../src/lint/lint-core";
+
+const fsxExists = vi.spyOn(fsx, "exists");
+const fsxGlob = vi.spyOn(fsx, "glob");
 
 //#region loadIgnorePatterns
 
@@ -41,7 +35,7 @@ describe("loadIgnorePatterns", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("extracts globalIgnores patterns from eslint config", async () => {
-    mocks.fsxExists.mockImplementation((p) =>
+    fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
     mocks.jitiImport.mockResolvedValue({
@@ -57,7 +51,7 @@ describe("loadIgnorePatterns", () => {
   });
 
   it("ignores config objects that have files key", async () => {
-    mocks.fsxExists.mockImplementation((p) =>
+    fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
     mocks.jitiImport.mockResolvedValue({
@@ -69,7 +63,7 @@ describe("loadIgnorePatterns", () => {
   });
 
   it("throws when no eslint config file found", async () => {
-    mocks.fsxExists.mockResolvedValue(false);
+    fsxExists.mockResolvedValue(false);
 
     await expect(loadIgnorePatterns("/project")).rejects.toThrow(
       "ESLint 설정 파일",
@@ -85,11 +79,11 @@ describe("executeLint", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: eslint config exists with no ignores
-    mocks.fsxExists.mockImplementation((p) =>
+    fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
     mocks.jitiImport.mockResolvedValue({ default: [] });
-    mocks.fsxGlob.mockResolvedValue(["/project/src/a.ts", "/project/src/b.ts"]);
+    fsxGlob.mockResolvedValue(["/project/src/a.ts", "/project/src/b.ts"]);
     mocks.lintFiles.mockResolvedValue([{ errorCount: 0, warningCount: 0 }]);
     mocks.loadFormatter.mockResolvedValue({
       format: vi.fn().mockResolvedValue(""),
@@ -106,7 +100,7 @@ describe("executeLint", () => {
 
   it("filters files by targets via pathx.filterByTargets", async () => {
     const cwd = process.cwd().replace(/\\/g, "/");
-    mocks.fsxGlob.mockResolvedValue([
+    fsxGlob.mockResolvedValue([
       `${cwd}/packages/core-common/src/a.ts`,
       `${cwd}/packages/other/src/b.ts`,
     ]);
@@ -162,7 +156,7 @@ describe("executeLint", () => {
   });
 
   it("returns success when no files to lint", async () => {
-    mocks.fsxGlob.mockResolvedValue([]);
+    fsxGlob.mockResolvedValue([]);
 
     const result = await executeLint({ targets: [], fix: false, timing: false });
 

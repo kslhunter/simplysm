@@ -1,11 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import * as coreNode from "@simplysm/core-node";
 
-// setupConsola는 consola 글로벌 상태를 변경하므로 모킹
-vi.mock("@simplysm/core-node", () => ({
-  setupConsola: vi.fn(),
-}));
+vi.spyOn(coreNode, "setupConsola").mockImplementation(() => undefined);
 
-const { setupWorkerLifecycle } = await import("../../src/workers/shared-worker-lifecycle");
+import { setupWorkerLifecycle } from "../../src/workers/shared-worker-lifecycle";
 
 describe("setupWorkerLifecycle", () => {
   // Scenario: setupWorkerLifecycle 함수가 4개 초기화 단계를 통합한다

@@ -1,15 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import ts from "typescript";
+import * as angularBuild from "../../src/angular/angular-build";
 
-// Minimal mock to allow angular-compiler import (it depends on angular-build)
-vi.mock("../../src/angular/angular-build", () => ({
-  NgtscProgram: vi.fn(),
-  OptimizeFor: { WholeProgram: 0, SingleFile: 1 },
-}));
+// angular-build의 NgtscProgram 클래스 인스턴스화는 실제 Angular 컴파일러 필요 — spy로 차단
+vi.spyOn(angularBuild, "NgtscProgram" as any).mockImplementation((() => ({})) as any);
 
-const { AngularSourceFileCache, augmentHostWithCaching } = await import(
-  "../../src/angular/angular-compiler"
-);
+import { AngularSourceFileCache, augmentHostWithCaching } from "../../src/angular/angular-compiler";
 
 // =============================================================================
 // AngularSourceFileCache — Unit Tests

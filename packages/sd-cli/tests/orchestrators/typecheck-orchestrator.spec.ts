@@ -1,66 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-//#region Mocks
+import * as orchestratorUtils from "../../src/utils/orchestrator-utils";
+import * as typecheckSerialization from "../../src/typecheck/typecheck-serialization";
+import * as typecheckNonPackage from "../../src/typecheck/typecheck-non-package";
+import * as engineFactory from "../../src/engines/engine-factory";
+import * as packageUtils from "../../src/utils/package-utils";
 
-const mocks = vi.hoisted(() => ({
-  loadAndValidateConfig: vi.fn(),
-  deserializeDiagnostic: vi.fn((d: any) => d),
-  typecheckNonPackageFiles: vi.fn(),
-  createTypecheckEngine: vi.fn(),
-  discoverWorkspacePackages: vi.fn(),
-  mergeTestsPackagesIntoConfig: vi.fn(),
-}));
+import { TypecheckOrchestrator } from "../../src/orchestrators/TypecheckOrchestrator";
+
+const mocks = {
+  loadAndValidateConfig: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  deserializeDiagnostic: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  typecheckNonPackageFiles: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  createTypecheckEngine: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  discoverWorkspacePackages: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  mergeTestsPackagesIntoConfig: undefined as unknown as ReturnType<typeof vi.spyOn>,
+};
 
 const mockEngines: Array<{
   run: ReturnType<typeof vi.fn>;
   stop: ReturnType<typeof vi.fn>;
 }> = [];
-
-vi.mock("../../src/utils/orchestrator-utils", () => ({
-  loadAndValidateConfig: mocks.loadAndValidateConfig,
-}));
-
-vi.mock("../../src/typecheck/typecheck-serialization", () => ({
-  deserializeDiagnostic: mocks.deserializeDiagnostic,
-}));
-
-vi.mock("../../src/typecheck/typecheck-non-package", () => ({
-  typecheckNonPackageFiles: mocks.typecheckNonPackageFiles,
-}));
-
-vi.mock("../../src/engines/engine-factory", () => ({
-  createTypecheckEngine: mocks.createTypecheckEngine,
-}));
-
-vi.mock("../../src/utils/package-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/package-utils")>();
-  return {
-    ...actual,
-    discoverWorkspacePackages: mocks.discoverWorkspacePackages,
-    mergeTestsPackagesIntoConfig: mocks.mergeTestsPackagesIntoConfig,
-  };
-});
-
-vi.mock("typescript", async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
-  const origDefault = (orig["default"] ?? orig) as Record<string, unknown>;
-  return {
-    ...orig,
-    default: {
-      ...origDefault,
-      sortAndDeduplicateDiagnostics: vi.fn((d: unknown[]) => d),
-      formatDiagnosticsWithColorAndContext: vi.fn((diags: Array<{ messageText: string }>) =>
-        diags.map((d) => `formatted: ${d.messageText}`).join("\n"),
-      ),
-    },
-  };
-});
-
-const { TypecheckOrchestrator } = await import(
-  "../../src/orchestrators/TypecheckOrchestrator"
-);
-
-//#endregion
 
 //#region Helpers
 
@@ -99,8 +59,16 @@ function setupDefaults(packages: Record<string, any> = {}) {
 //#region Tests
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.restoreAllMocks();
   mockEngines.length = 0;
+
+  mocks.loadAndValidateConfig = vi.spyOn(orchestratorUtils, "loadAndValidateConfig");
+  mocks.deserializeDiagnostic = vi.spyOn(typecheckSerialization, "deserializeDiagnostic")
+    .mockImplementation((d: any) => d);
+  mocks.typecheckNonPackageFiles = vi.spyOn(typecheckNonPackage, "typecheckNonPackageFiles");
+  mocks.createTypecheckEngine = vi.spyOn(engineFactory, "createTypecheckEngine");
+  mocks.discoverWorkspacePackages = vi.spyOn(packageUtils, "discoverWorkspacePackages");
+  mocks.mergeTestsPackagesIntoConfig = vi.spyOn(packageUtils, "mergeTestsPackagesIntoConfig");
 });
 
 describe("TypecheckOrchestrator", () => {

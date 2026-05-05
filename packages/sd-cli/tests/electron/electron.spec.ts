@@ -1,48 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
+import { fsx, cpx } from "@simplysm/core-node";
 
-//#region Mocks
-
-// fsx mock
-const mockFsxExists = vi.fn();
-const mockFsxReadJson = vi.fn();
-const mockFsxWriteJson = vi.fn().mockResolvedValue(undefined);
-const mockFsxWrite = vi.fn().mockResolvedValue(undefined);
-const mockFsxMkdir = vi.fn().mockResolvedValue(undefined);
-const mockFsxCopy = vi.fn().mockResolvedValue(undefined);
-const mockFsxReaddir = vi.fn();
-const mockFsxGlob = vi.fn();
-
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...original,
-    fsx: {
-      exists: mockFsxExists,
-      readJson: mockFsxReadJson,
-      writeJson: mockFsxWriteJson,
-      write: mockFsxWrite,
-      mkdir: mockFsxMkdir,
-      copy: mockFsxCopy,
-      readdir: mockFsxReaddir,
-      glob: mockFsxGlob,
-    },
-    cpx: {
-      spawn: mockCpxSpawn,
-      spawnSync: vi.fn().mockReturnValue({ stdout: "", stderr: "", exitCode: 0 }),
-    },
-  };
-});
-
-// cpx mock (was execa)
-const mockCpxSpawn = vi.fn().mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
-
-// esbuild mock
+// esbuild는 외부 npm으로 ESM namespace immutable이라 vi.mock 유지
 const mockEsbuildBuild = vi.fn().mockResolvedValue({});
 let mockEsbuildOnEndCallback: ((result: { errors: unknown[] }) => void | Promise<void>) | null =
   null;
 const mockEsbuildContext = vi.fn().mockImplementation((options: any) => {
-  // Extract the electron-restart plugin's onEnd callback
   const plugin = options?.plugins?.find((p: any) => p.name === "electron-restart");
   if (plugin != null) {
     plugin.setup({
@@ -53,7 +17,6 @@ const mockEsbuildContext = vi.fn().mockImplementation((options: any) => {
   }
   return {
     watch: vi.fn().mockImplementation(async () => {
-      // Simulate initial build success — trigger onEnd
       if (mockEsbuildOnEndCallback != null) {
         await mockEsbuildOnEndCallback({ errors: [] });
       }
@@ -66,7 +29,20 @@ vi.mock("esbuild", () => ({
   context: mockEsbuildContext,
 }));
 
-// consola mock
+// @simplysm/core-node fsx, cpx는 spy로 전환
+const mockFsxExists = vi.spyOn(fsx, "exists");
+const mockFsxReadJson = vi.spyOn(fsx, "readJson");
+const mockFsxWriteJson = vi.spyOn(fsx, "writeJson").mockResolvedValue(undefined);
+vi.spyOn(fsx, "write").mockResolvedValue(undefined);
+vi.spyOn(fsx, "mkdir").mockResolvedValue(undefined);
+const mockFsxCopy = vi.spyOn(fsx, "copy").mockResolvedValue(undefined);
+const mockFsxReaddir = vi.spyOn(fsx, "readdir");
+const mockFsxGlob = vi.spyOn(fsx, "glob");
+
+const mockCpxSpawn = vi.spyOn(cpx, "spawn").mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
+vi.spyOn(cpx, "spawnSync").mockReturnValue({ stdout: "", stderr: "", exitCode: 0 });
+
+// consola spy
 const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
 const mockLoggerInfo = vi.fn();
@@ -130,8 +106,8 @@ function findBuilderConfig(): Record<string, unknown> | undefined {
 
 function normalizedCopyCalls(): string[][] {
   return mockFsxCopy.mock.calls.map((c) => [
-    (c[0] as string).replace(/\\/g, "/"),
-    (c[1] as string).replace(/\\/g, "/"),
+    c[0].replace(/\\/g, "/"),
+    c[1].replace(/\\/g, "/"),
   ]);
 }
 
@@ -183,13 +159,13 @@ describe("Electron", () => {
 
       const spawnCalls = mockCpxSpawn.mock.calls;
       const installCall = spawnCalls.find(
-        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("install"),
+        (c) => c[0] === "pnpm" && c[1].includes("install"),
       );
       expect(installCall).toBeDefined();
       expect(installCall?.[2]).toEqual(expect.objectContaining({ shell: true }));
       expect(
         spawnCalls.find(
-          (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron-rebuild"),
+          (c) => c[0] === "pnpm" && c[1].includes("electron-rebuild"),
         ),
       ).toBeDefined();
     });
@@ -201,7 +177,7 @@ describe("Electron", () => {
       await electron.initialize();
 
       const rebuildCall = mockCpxSpawn.mock.calls.find(
-        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron-rebuild"),
+        (c) => c[0] === "pnpm" && c[1].includes("electron-rebuild"),
       );
       expect(rebuildCall).toBeUndefined();
     });
@@ -523,7 +499,7 @@ describe("Electron", () => {
       expect(callArgs.bundle).toBe(true);
       expect(callArgs.external).toContain("electron");
       const electronCall = mockCpxSpawn.mock.calls.find(
-        (c) => c[0] === "pnpm" && (c[1] as string[]).includes("electron"),
+        (c) => c[0] === "pnpm" && c[1].includes("electron"),
       );
       expect(electronCall?.[2]).toEqual(expect.objectContaining({ shell: true, reject: false }));
 

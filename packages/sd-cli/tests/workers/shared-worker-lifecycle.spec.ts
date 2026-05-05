@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
+import * as coreNode from "@simplysm/core-node";
 
-// setupConsola는 consola 글로벌 상태를 변경하므로 모킹
-vi.mock("@simplysm/core-node", () => ({
-  setupConsola: vi.fn(),
-}));
+// setupConsola는 consola 글로벌 상태를 변경하므로 spy로 차단
+vi.spyOn(coreNode, "setupConsola").mockImplementation(() => undefined);
 
-const { setupWorkerLifecycle } = await import("../../src/workers/shared-worker-lifecycle");
+import { setupWorkerLifecycle } from "../../src/workers/shared-worker-lifecycle";
 
 beforeEach(() => {
   vi.restoreAllMocks();

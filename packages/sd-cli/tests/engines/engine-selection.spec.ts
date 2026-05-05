@@ -1,23 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Worker } from "@simplysm/core-node";
 import * as packageUtils from "../../src/utils/package-utils";
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(() => ({
-      build: vi.fn(),
-      startWatch: vi.fn(),
-      stopWatch: vi.fn(),
-      terminate: vi.fn(),
-      on: vi.fn(),
-    })),
-  },
-}));
+vi.spyOn(Worker, "create").mockReturnValue({
+  build: vi.fn(),
+  startWatch: vi.fn(),
+  stopWatch: vi.fn(),
+  terminate: vi.fn(),
+  on: vi.fn(),
+} as any);
 
-const { createBuildEngine, createTypecheckEngine } = await import("../../src/engines/engine-factory");
-const { TscEngine } = await import("../../src/engines/TscEngine");
-const { NgtscEngine } = await import("../../src/engines/NgtscEngine");
-const { ServerEsbuildEngine } = await import("../../src/engines/ServerEsbuildEngine");
-const { EsbuildClientEngine } = await import("../../src/engines/EsbuildClientEngine");
+import { createBuildEngine, createTypecheckEngine } from "../../src/engines/engine-factory";
+import { TscEngine } from "../../src/engines/TscEngine";
+import { NgtscEngine } from "../../src/engines/NgtscEngine";
+import { ServerEsbuildEngine } from "../../src/engines/ServerEsbuildEngine";
+import { EsbuildClientEngine } from "../../src/engines/EsbuildClientEngine";
 
 import type { BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../../src/engines/types";
 

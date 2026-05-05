@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { consola } from "consola";
 
+import * as typecheckOrchestrator from "../../src/orchestrators/TypecheckOrchestrator";
+import * as lintCore from "../../src/lint/lint-core";
+import * as lintUtils from "../../src/lint/lint-utils";
+import * as sdConfigMod from "../../src/utils/sd-config";
+import * as packageUtils from "../../src/utils/package-utils";
+
+import { runCheck } from "../../src/commands/check";
+
 const mockLogger = {
   debug: vi.fn(),
   info: vi.fn(),
@@ -10,41 +18,13 @@ const mockLogger = {
   success: vi.fn(),
 };
 
-vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
-
-const mocks = vi.hoisted(() => ({
-  executeTypecheck: vi.fn(),
-  executeLint: vi.fn(),
-  runLintInWorker: vi.fn(),
-  loadSdConfig: vi.fn(),
-  discoverWorkspacePackages: vi.fn(),
-}));
-
-vi.mock("../../src/orchestrators/TypecheckOrchestrator", () => ({
-  executeTypecheck: mocks.executeTypecheck,
-}));
-
-vi.mock("../../src/lint/lint-core", () => ({
-  executeLint: mocks.executeLint,
-}));
-
-vi.mock("../../src/lint/lint-utils", () => ({
-  runLintInWorker: mocks.runLintInWorker,
-}));
-
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: mocks.loadSdConfig,
-}));
-
-vi.mock("../../src/utils/package-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/package-utils")>();
-  return {
-    ...actual,
-    discoverWorkspacePackages: mocks.discoverWorkspacePackages,
-  };
-});
-
-const { runCheck } = await import("../../src/commands/check");
+const mocks = {
+  executeTypecheck: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  executeLint: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  runLintInWorker: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  loadSdConfig: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  discoverWorkspacePackages: undefined as unknown as ReturnType<typeof vi.spyOn>,
+};
 
 /**
  * Collects all calls to the given mock function's first argument into an array,
@@ -58,9 +38,18 @@ describe("runCheck", () => {
   let savedExitCode: typeof process.exitCode;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
     savedExitCode = process.exitCode;
     process.exitCode = undefined;
+
+    vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
+    Object.values(mockLogger).forEach((m) => m.mockReset());
+
+    mocks.executeTypecheck = vi.spyOn(typecheckOrchestrator, "executeTypecheck");
+    mocks.executeLint = vi.spyOn(lintCore, "executeLint");
+    mocks.runLintInWorker = vi.spyOn(lintUtils, "runLintInWorker");
+    mocks.loadSdConfig = vi.spyOn(sdConfigMod, "loadSdConfig");
+    mocks.discoverWorkspacePackages = vi.spyOn(packageUtils, "discoverWorkspacePackages");
 
     // Default: workspace packages
     mocks.discoverWorkspacePackages.mockReturnValue(

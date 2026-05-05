@@ -1,40 +1,77 @@
 /* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { fsx } from "@simplysm/core-node";
 
-//#region Mocks
-
-const mockFsxExists = vi.fn();
-const mockFsxRead = vi.fn();
-const mockFsxWrite = vi.fn().mockResolvedValue(undefined);
-const mockFsxGlob = vi.fn();
-
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...original,
-    fsx: {
-      exists: mockFsxExists,
-      read: mockFsxRead,
-      write: mockFsxWrite,
-      glob: mockFsxGlob,
-    },
-  };
-});
-
-//#endregion
+const mockFsxExists = vi.spyOn(fsx, "exists");
+const mockFsxRead = vi.spyOn(fsx, "read");
+const mockFsxWrite = vi.spyOn(fsx, "write").mockResolvedValue(undefined);
+const mockFsxGlob = vi.spyOn(fsx, "glob");
 
 describe("findJava21", () => {
+  let savedEnv: Record<string, string | undefined>;
   beforeEach(() => {
     vi.clearAllMocks();
+    savedEnv = { ...process.env };
+    delete process.env["JAVA_HOME"];
+    mockFsxExists.mockResolvedValue(false);
+  });
+  afterEach(() => {
+    process.env = savedEnv;
+  });
+
+  it("JAVA_HOME이 Java 21이면 최우선으로 사용한다", async () => {
+    process.env["JAVA_HOME"] = "C:\\Program Files\\Java\\jdk-21.0.5";
+    mockFsxExists.mockImplementation(((p: string) =>
+      p === "C:/Program Files/Java/jdk-21.0.5/release") as never);
+    mockFsxRead.mockResolvedValue(
+      'IMPLEMENTOR="Oracle"\nJAVA_VERSION="21.0.5"\nJAVA_VERSION_DATE="2024-10-15"\n',
+    );
+
+    const { findJava21 } = await import("../../src/capacitor/capacitor-android.js");
+    const result = await findJava21();
+    expect(result).toBe("C:/Program Files/Java/jdk-21.0.5");
+    expect(mockFsxGlob).not.toHaveBeenCalled();
+  });
+
+  it("JAVA_HOME이 21이 아니면 glob 패턴 폴백으로 진행한다", async () => {
+    process.env["JAVA_HOME"] = "C:\\Program Files\\Java\\jdk-17.0.10";
+    mockFsxExists.mockImplementation(((p: string) =>
+      p === "C:/Program Files/Java/jdk-17.0.10/release") as never);
+    mockFsxRead.mockResolvedValue('JAVA_VERSION="17.0.10"\n');
+    mockFsxGlob.mockImplementation(((pattern: string) => {
+      if (pattern.includes("Amazon Corretto")) {
+        return ["C:/Program Files/Amazon Corretto/jdk21.0.1"];
+      }
+      return [];
+    }) as never);
+
+    const { findJava21 } = await import("../../src/capacitor/capacitor-android.js");
+    const result = await findJava21();
+    expect(result).toBe("C:/Program Files/Amazon Corretto/jdk21.0.1");
+  });
+
+  it("JAVA_HOME에 release 파일이 없으면 glob 패턴 폴백으로 진행한다", async () => {
+    process.env["JAVA_HOME"] = "C:\\nonexistent";
+    mockFsxExists.mockResolvedValue(false);
+    mockFsxGlob.mockImplementation(((pattern: string) => {
+      if (pattern.includes("Eclipse Adoptium")) {
+        return ["C:/Program Files/Eclipse Adoptium/jdk-21.0.4"];
+      }
+      return [];
+    }) as never);
+
+    const { findJava21 } = await import("../../src/capacitor/capacitor-android.js");
+    const result = await findJava21();
+    expect(result).toBe("C:/Program Files/Eclipse Adoptium/jdk-21.0.4");
   });
 
   it("여러 패턴 중 첫 매치를 사용하고 마지막 정렬 결과를 반환한다", async () => {
-    mockFsxGlob.mockImplementation((pattern: string) => {
+    mockFsxGlob.mockImplementation(((pattern: string) => {
       if (pattern.includes("Amazon Corretto")) {
         return ["C:/Program Files/Amazon Corretto/jdk21.0.1", "C:/Program Files/Amazon Corretto/jdk21.0.3"];
       }
       return [];
-    });
+    }) as never);
 
     const { findJava21 } = await import("../../src/capacitor/capacitor-android.js");
     const result = await findJava21();
@@ -62,7 +99,7 @@ describe("findAndroidSdk", () => {
 
   it("ANDROID_SDK_ROOT로 SDK를 감지한다", async () => {
     process.env["ANDROID_SDK_ROOT"] = "D:/Android/Sdk";
-    mockFsxExists.mockImplementation((p: string) => p === "D:/Android/Sdk");
+    mockFsxExists.mockImplementation(((p: string) => p === "D:/Android/Sdk") as never);
 
     const { findAndroidSdk } = await import("../../src/capacitor/capacitor-android.js");
     const result = await findAndroidSdk();
@@ -103,7 +140,7 @@ describe("configureAndroid", () => {
   it("모든 Android 설정을 순서대로 수행한다", async () => {
     mockFsxExists.mockResolvedValue(true);
     mockFsxGlob.mockResolvedValue(["C:/Program Files/Amazon Corretto/jdk21.0.1"]);
-    mockFsxRead.mockImplementation((p: string) => {
+    mockFsxRead.mockImplementation(((p: string) => {
       if (p.includes("gradle.properties")) return "org.gradle.jvmargs=-Xmx2048m";
       if (p.includes("local.properties")) return "";
       if (p.includes("AndroidManifest.xml")) {
@@ -131,7 +168,7 @@ describe("configureAndroid", () => {
 </resources>`;
       }
       return "";
-    });
+    }) as never);
 
     const { configureAndroid } = await import("../../src/capacitor/capacitor-android.js");
     await configureAndroid(
@@ -175,7 +212,7 @@ describe("configureAndroid", () => {
   it("minor/patch >= 100인 버전에서 versionCode가 충돌하지 않는다", async () => {
     mockFsxExists.mockResolvedValue(true);
     mockFsxGlob.mockResolvedValue(["C:/Program Files/Amazon Corretto/jdk21.0.1"]);
-    mockFsxRead.mockImplementation((p: string) => {
+    mockFsxRead.mockImplementation(((p: string) => {
       if (p.includes("gradle.properties")) return "";
       if (p.includes("local.properties")) return "";
       if (p.includes("AndroidManifest.xml")) {
@@ -189,7 +226,7 @@ describe("configureAndroid", () => {
         return '<resources><style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen"></style></resources>';
       }
       return "";
-    });
+    }) as never);
 
     const { configureAndroid } = await import("../../src/capacitor/capacitor-android.js");
 

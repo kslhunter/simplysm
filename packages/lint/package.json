@@ -27,19 +27,19 @@
   },
   "dependencies": {
     "@angular-eslint/utils": "^21.3.1",
-    "@angular/compiler": "^21.2.10",
-    "@typescript-eslint/utils": "^8.59.0",
+    "@angular/compiler": "^21.2.11",
+    "@typescript-eslint/utils": "^8.59.1",
     "angular-eslint": "^21.3.1",
     "eslint": "^9.39.4",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.5.0",
+    "globals": "^17.6.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.0"
+    "typescript-eslint": "^8.59.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.39",
-    "@typescript-eslint/rule-tester": "^8.59.0"
+    "@typescript-eslint/rule-tester": "^8.59.1"
   }
 }

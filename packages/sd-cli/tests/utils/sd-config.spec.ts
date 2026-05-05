@@ -1,25 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fsx } from "@simplysm/core-node";
 
-const mockExists = vi.fn();
+const mockExists = vi.spyOn(fsx, "exists");
 const mockJitiImport = vi.fn();
 
-vi.mock("@simplysm/core-node", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@simplysm/core-node")>();
-  return {
-    ...actual,
-    fsx: {
-      exists: (...args: unknown[]) => mockExists(...args),
-    },
-  };
-});
-
+// jiti는 외부 npm으로 ESM namespace immutable이라 vi.mock 유지
 vi.mock("jiti", () => ({
   createJiti: () => ({
     import: (...args: unknown[]) => mockJitiImport(...args),
   }),
 }));
 
-const { loadSdConfig } = await import("../../src/utils/sd-config");
+import { loadSdConfig } from "../../src/utils/sd-config";
 
 describe("loadSdConfig", () => {
   const baseParams = { cwd: "/project", dev: true, opt: [] as string[] };

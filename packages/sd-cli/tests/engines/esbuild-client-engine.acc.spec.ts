@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// --- Mock factories (vi.mock is hoisted) ---
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { Worker } from "@simplysm/core-node";
 
 const mockWorker = {
   build: vi.fn(),
@@ -10,24 +12,9 @@ const mockWorker = {
   on: vi.fn(),
 };
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(() => mockWorker),
-  },
-}));
+vi.spyOn(Worker, "create").mockReturnValue(mockWorker as any);
 
-// fs mock for .dev-port deletion in stop()
-const mockUnlinkSync = vi.fn();
-vi.mock("node:fs", () => ({
-  default: {
-    unlinkSync: (...args: any[]) => mockUnlinkSync(...args),
-  },
-  unlinkSync: (...args: any[]) => mockUnlinkSync(...args),
-}));
-
-// --- Dynamic imports after mocking ---
-
-const { EsbuildClientEngine } = await import("../../src/engines/EsbuildClientEngine");
+import { EsbuildClientEngine } from "../../src/engines/EsbuildClientEngine";
 
 import type { ClientPackageInfo } from "../../src/engines/types";
 
@@ -244,26 +231,35 @@ describe("EsbuildClientEngine Acceptance", () => {
 
   // Scenario: 엔진 중지
   it("stop()으로 worker를 종료하고 .dev-port를 삭제한다", async () => {
-    // Given: dev watch 모드가 실행 중이다
-    mockWorker.startWatch.mockResolvedValue({ success: true });
+    // Given: dev watch 모드가 실행 중이고 .dev-port 파일이 존재한다
+    const tmpRoot = mkdtempSync(path.join(tmpdir(), "esbuild-client-engine-"));
+    try {
+      const pkgDir = path.join(tmpRoot, "my-client");
+      const distDir = path.join(pkgDir, "dist");
+      mkdirSync(distDir, { recursive: true });
+      const portFile = path.join(distDir, ".dev-port");
+      writeFileSync(portFile, "4200");
 
-    const engine = new EsbuildClientEngine({
-      cwd: "/root",
-      pkg: createMockPkg({ dir: "/packages/my-client" }),
-    });
+      mockWorker.startWatch.mockResolvedValue({ success: true });
 
-    await engine.startWatch({ js: true, dts: false });
+      const engine = new EsbuildClientEngine({
+        cwd: tmpRoot,
+        pkg: createMockPkg({ dir: pkgDir }),
+      });
 
-    // When: stop()이 호출된다
-    await engine.stop();
+      await engine.startWatch({ js: true, dts: false });
 
-    // Then: worker가 종료된다
-    expect(mockWorker.stopWatch).toHaveBeenCalled();
-    expect(mockWorker.terminate).toHaveBeenCalled();
+      // When: stop()이 호출된다
+      await engine.stop();
 
-    // And: .dev-port 파일 삭제가 시도된다
-    expect(mockUnlinkSync).toHaveBeenCalledWith(
-      expect.stringContaining(".dev-port"),
-    );
+      // Then: worker가 종료된다
+      expect(mockWorker.stopWatch).toHaveBeenCalled();
+      expect(mockWorker.terminate).toHaveBeenCalled();
+
+      // And: .dev-port 파일이 삭제된다
+      expect(existsSync(portFile)).toBe(false);
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true });
+    }
   });
 });

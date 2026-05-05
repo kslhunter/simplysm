@@ -39,16 +39,6 @@
           }
         ]
       }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/sd-subagent-start.sh"
-          }
-        ]
-      }
     ]
   },
   "statusLine": {

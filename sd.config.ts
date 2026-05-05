@@ -23,6 +23,7 @@ const config: SdConfigFn = () => ({
           "../../.claude/**/sd-*", // 파일들
           "../../.claude/**/sd-*/**", // sd-*폴더내 파일 및 폴더들
           "../../.claude/settings.json", // 세팅 파일
+          "../../.claude/simplysm.json", // 설정 파일
         ],
         cmd: "node",
         args: ["scripts/sync.mjs"],

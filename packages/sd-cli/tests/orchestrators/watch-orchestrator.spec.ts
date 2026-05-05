@@ -1,28 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// --- Mock factories (vi.mock is hoisted) ---
-
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: vi.fn(),
-}));
-
-vi.mock("../../src/utils/build-env", () => ({
-  getVersion: vi.fn(),
-}));
-
-vi.mock("../../src/deps/replace-deps/replace-deps", () => ({
-  watchReplaceDeps: vi.fn(),
-}));
-
-vi.mock("../../src/utils/output-utils", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/utils/output-utils")>();
-  return {
-    ...actual,
-    printDiagnostics: vi.fn(),
-    printServers: vi.fn(),
-  };
-});
-
+// SignalHandler는 OS signal(SIGINT/SIGTERM) 등록 부작용이 있어 mock 유지
 vi.mock("../../src/runtime/SignalHandler", () => ({
   SignalHandler: vi.fn().mockImplementation(function (this: any) {
     this.waitForTermination = vi.fn().mockResolvedValue(undefined);
@@ -31,66 +9,7 @@ vi.mock("../../src/runtime/SignalHandler", () => ({
   }),
 }));
 
-vi.mock("../../src/utils/copy-src", () => ({
-  watchCopySrcFiles: vi.fn().mockResolvedValue({
-    close: vi.fn().mockResolvedValue(undefined),
-  }),
-}));
-
-// Engine mock — tracks created engines and the package they were created for
-const mockBuildEngines: Array<{
-  run: ReturnType<typeof vi.fn>;
-  startWatch: ReturnType<typeof vi.fn>;
-  stop: ReturnType<typeof vi.fn>;
-  _pkgName: string;
-}> = [];
-
-vi.mock("../../src/engines/engine-factory", () => ({
-  createBuildEngine: vi.fn((pkg: any, options: any) => {
-    const engine = {
-      run: vi.fn().mockResolvedValue({
-        success: true,
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-      }),
-      startWatch: vi.fn().mockImplementation(() => {
-        const resolve = options.rebuildManager.registerBuild(
-          `${pkg.name}:build`,
-          `${pkg.name} (${pkg.config.target})`,
-        );
-        options.resultCollector.add({
-          name: pkg.name,
-          target: pkg.config.target,
-          type: "build",
-          status: "success",
-        });
-        resolve();
-      }),
-      stop: vi.fn().mockResolvedValue(undefined),
-      _pkgName: pkg.name,
-    };
-    mockBuildEngines.push(engine);
-    return engine;
-  }),
-}));
-
-vi.mock("@simplysm/core-node", () => ({
-  FsWatcher: {
-    watch: vi.fn().mockResolvedValue({
-      onChange: vi.fn(),
-      close: vi.fn().mockResolvedValue(undefined),
-    }),
-  },
-  Worker: {
-    create: vi.fn(),
-  },
-  pathx: {
-    posix: vi.fn((p: string) => p.replace(/\\/g, "/")),
-    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\\/g, "/")),
-    isChildPath: vi.fn((child: string, parent: string) => child.startsWith(parent + "/")),
-    filterByTargets: vi.fn((files: string[], targets: string[]) => targets.length === 0 ? files : files),
-  },
-}));
-
+// child_process는 ESM namespace immutable이라 spyOn 불가 — vi.mock 유지
 vi.mock("child_process", () => ({
   spawn: vi.fn(() => ({
     on: vi.fn(),
@@ -99,19 +18,32 @@ vi.mock("child_process", () => ({
   })),
 }));
 
-// --- Dynamic imports after mocking ---
+import * as sdConfigMod from "../../src/utils/sd-config";
+import * as buildEnvMod from "../../src/utils/build-env";
+import * as replaceDepsMod from "../../src/deps/replace-deps/replace-deps";
+import * as outputUtilsMod from "../../src/utils/output-utils";
+import * as copySrcMod from "../../src/utils/copy-src";
+import * as engineFactoryMod from "../../src/engines/engine-factory";
+import * as coreNode from "@simplysm/core-node";
 
-const { WatchOrchestrator } = await import("../../src/orchestrators/WatchOrchestrator");
-const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { watchReplaceDeps } = await import("../../src/deps/replace-deps/replace-deps");
-const { printDiagnostics } = await import("../../src/utils/output-utils");
-const { createBuildEngine } = await import("../../src/engines/engine-factory");
-const { watchCopySrcFiles } = await import("../../src/utils/copy-src");
-const { FsWatcher } = await import("@simplysm/core-node");
-const { spawn } = await import("child_process");
-const { getVersion } = await import("../../src/utils/build-env");
+import { loadSdConfig } from "../../src/utils/sd-config";
+import { getVersion } from "../../src/utils/build-env";
+import { watchReplaceDeps } from "../../src/deps/replace-deps/replace-deps";
+import { printDiagnostics } from "../../src/utils/output-utils";
+import { watchCopySrcFiles } from "../../src/utils/copy-src";
+import { FsWatcher } from "@simplysm/core-node";
+import { spawn } from "child_process";
 
+import { SignalHandler } from "../../src/runtime/SignalHandler";
+import { WatchOrchestrator } from "../../src/orchestrators/WatchOrchestrator";
 import type { SdConfig } from "../../src/sd-config.types";
+
+const mockBuildEngines: Array<{
+  run: ReturnType<typeof vi.fn>;
+  startWatch: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+  _pkgName: string;
+}> = [];
 
 // --- Helpers ---
 
@@ -129,11 +61,55 @@ function setupDefaults(config: SdConfig): void {
 
 describe("WatchOrchestrator", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.mocked(spawn).mockClear();
+    vi.mocked(SignalHandler).mockReset();
+    vi.mocked(SignalHandler).mockImplementation(function (this: any) {
+      this.waitForTermination = vi.fn().mockResolvedValue(undefined);
+      this.isTerminated = vi.fn().mockReturnValue(false);
+      this.requestTermination = vi.fn();
+    });
     mockBuildEngines.length = 0;
     vi.spyOn(process, "cwd").mockReturnValue("/test-root");
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    vi.mocked(createBuildEngine).mockImplementation((pkg: any, options: any) => {
+
+    vi.spyOn(sdConfigMod, "loadSdConfig").mockResolvedValue({ packages: {} });
+    vi.spyOn(buildEnvMod, "getVersion").mockResolvedValue("1.0.0");
+    vi.spyOn(replaceDepsMod, "watchReplaceDeps").mockResolvedValue({
+      entries: [],
+      dispose: vi.fn(),
+    });
+    vi.spyOn(outputUtilsMod, "printDiagnostics").mockImplementation(() => {});
+    vi.spyOn(outputUtilsMod, "printServers").mockImplementation(() => {});
+    vi.spyOn(copySrcMod, "watchCopySrcFiles").mockResolvedValue({
+      close: vi.fn().mockResolvedValue(undefined),
+    } as any);
+
+    vi.spyOn(coreNode.FsWatcher, "watch").mockResolvedValue({
+      onChange: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+    } as any);
+    vi.spyOn(coreNode.Worker, "create").mockReturnValue(undefined as any);
+    vi.spyOn(coreNode.pathx, "posix").mockImplementation((p: string) => p.replace(/\\/g, "/") as coreNode.pathx.PosixPath);
+    vi.spyOn(coreNode.pathx, "posixResolve").mockImplementation(
+      (...args: string[]) => args.join("/").replace(/\\/g, "/") as coreNode.pathx.PosixPath,
+    );
+    vi.spyOn(coreNode.pathx, "isChildPath").mockImplementation(
+      (child: string, parent: string) => child.startsWith(parent + "/"),
+    );
+    vi.spyOn(coreNode.pathx, "filterByTargets").mockImplementation(
+      (files: string[], targets: string[]) => targets.length === 0 ? files : files,
+    );
+
+    vi.mocked(spawn).mockImplementation(
+      (() => ({
+        on: vi.fn(),
+        kill: vi.fn(),
+        exitCode: 0,
+      })) as any,
+    );
+
+    vi.spyOn(engineFactoryMod, "createBuildEngine").mockImplementation((pkg: any, options: any) => {
       const engine = {
         run: vi.fn().mockResolvedValue({
           success: true,
@@ -333,8 +309,6 @@ describe("WatchOrchestrator", () => {
     setupDefaults(createConfig({
       packages: { "core-common": { target: "node" } },
     }));
-
-    const { SignalHandler } = await import("../../src/runtime/SignalHandler");
 
     const orchestrator = new WatchOrchestrator({ targets: [], options: [] });
     await orchestrator.initialize();

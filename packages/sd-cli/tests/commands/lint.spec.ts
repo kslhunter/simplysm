@@ -1,33 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-//#region Mocks
-
-const mocks = vi.hoisted(() => ({
-  executeLint: vi.fn(),
-}));
-
-vi.mock("../../src/lint/lint-core", () => ({
-  executeLint: mocks.executeLint,
-}));
-
-const { runLint } = await import("../../src/commands/lint");
-
-//#endregion
-
-//#region runLint
+import * as lintCore from "../../src/lint/lint-core";
+import { runLint } from "../../src/commands/lint";
 
 describe("runLint", () => {
   let savedExitCode: typeof process.exitCode;
   let writeSpy: ReturnType<typeof vi.spyOn>;
+  let executeLintSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     savedExitCode = process.exitCode;
     process.exitCode = undefined;
     writeSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
-
-    // Default: successful lint
-    mocks.executeLint.mockResolvedValue({
+    executeLintSpy = vi.spyOn(lintCore, "executeLint").mockResolvedValue({
       success: true,
       errorCount: 0,
       warningCount: 0,
@@ -38,10 +22,11 @@ describe("runLint", () => {
   afterEach(() => {
     process.exitCode = savedExitCode;
     writeSpy.mockRestore();
+    executeLintSpy.mockRestore();
   });
 
   it("writes formatted output to stdout when there are results", async () => {
-    mocks.executeLint.mockResolvedValue({
+    executeLintSpy.mockResolvedValue({
       success: false,
       errorCount: 1,
       warningCount: 0,
@@ -54,7 +39,7 @@ describe("runLint", () => {
   });
 
   it("sets exitCode to 1 when lint errors are found", async () => {
-    mocks.executeLint.mockResolvedValue({
+    executeLintSpy.mockResolvedValue({
       success: false,
       errorCount: 1,
       warningCount: 0,
@@ -78,5 +63,3 @@ describe("runLint", () => {
     expect(writeSpy).not.toHaveBeenCalled();
   });
 });
-
-//#endregion

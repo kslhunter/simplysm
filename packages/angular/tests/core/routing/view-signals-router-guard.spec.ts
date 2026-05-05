@@ -4,9 +4,13 @@ import { ActivatedRoute, Router, UrlSegment } from "@angular/router";
 import { BehaviorSubject, Subject } from "rxjs";
 import { describe, it, expect, vi } from "vitest";
 import { SdAppStructureProvider } from "../../../src/core/app-structure/sd-app-structure.provider";
+import { SdServiceClientFactoryProvider } from "../../../src/core/service-client/sd-service-client-factory.provider";
 import { injectViewTitleSignal } from "../../../src/core/routing/injectViewTitleSignal";
 import { injectViewTypeSignal, type SdViewType } from "../../../src/core/routing/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../src/core/routing/setupCanDeactivate";
+
+// SdServiceClientFactoryProvider stub — SdAppStructureProvider가 inject하지만 본 테스트에선 미사용
+const stubServiceClientFactory = { get: () => undefined };
 
 // reflectComponentType가 읽는 ɵcmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
 function createTestComponent(selector: string) {
@@ -28,16 +32,9 @@ function mockUrlRoute(path: string) {
 describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => {
   describe("Rule: 뷰 제목 시그널을 이관한다", () => {
     it("앱 구조에서 제목을 반환한다", () => {
-      const mockAppStructure = {
-        getTitleByFullCode: vi.fn().mockReturnValue("[메인] 서브"),
-        items: [],
-        usableModules: () => undefined,
-        permRecord: () => undefined,
-      };
-
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdAppStructureProvider, useValue: mockAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/main/sub" },
@@ -55,6 +52,8 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
           },
         ],
       });
+      const appStructure = TestBed.inject(SdAppStructureProvider);
+      const getTitleSpy = vi.spyOn(appStructure, "getTitleByFullCode").mockReturnValue("[메인] 서브");
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
@@ -62,20 +61,13 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       expect(signal!()).toBe("[메인] 서브");
-      expect(mockAppStructure.getTitleByFullCode).toHaveBeenCalledWith("main.sub");
+      expect(getTitleSpy).toHaveBeenCalledWith("main.sub");
     });
 
     it("currPageCode 우선, fullPageCode 폴백한다", () => {
-      const mockAppStructure = {
-        getTitleByFullCode: vi.fn().mockReturnValue("페이지1 제목"),
-        items: [],
-        usableModules: () => undefined,
-        permRecord: () => undefined,
-      };
-
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdAppStructureProvider, useValue: mockAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/page1" },
@@ -83,6 +75,8 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
           // ActivatedRoute 미제공 → injectCurrentPageCodeSignal returns undefined
         ],
       });
+      const appStructure = TestBed.inject(SdAppStructureProvider);
+      const getTitleSpy = vi.spyOn(appStructure, "getTitleByFullCode").mockReturnValue("페이지1 제목");
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
@@ -90,27 +84,22 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       });
 
       expect(signal!()).toBe("페이지1 제목");
-      expect(mockAppStructure.getTitleByFullCode).toHaveBeenCalledWith("page1");
+      expect(getTitleSpy).toHaveBeenCalledWith("page1");
     });
 
     it("getTitleByFullCode가 throw하면 빈 문자열을 반환한다", () => {
-      const mockAppStructure = {
-        getTitleByFullCode: vi.fn().mockImplementation(() => {
-          throw new Error("Item not found for fullCode: page1");
-        }),
-        items: [],
-        usableModules: () => undefined,
-        permRecord: () => undefined,
-      };
-
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdAppStructureProvider, useValue: mockAppStructure },
+          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/page1" },
           },
         ],
+      });
+      const appStructure = TestBed.inject(SdAppStructureProvider);
+      vi.spyOn(appStructure, "getTitleByFullCode").mockImplementation(() => {
+        throw new Error("Item not found for fullCode: page1");
       });
 
       let titleSignal: Signal<string> | undefined;

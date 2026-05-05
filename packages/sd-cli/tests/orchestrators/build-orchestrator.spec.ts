@@ -1,8 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// --- Mock factories (vi.mock is hoisted) ---
-
 import { consola } from "consola";
+
+import * as sdConfig from "../../src/utils/sd-config";
+import * as buildEnv from "../../src/utils/build-env";
+import * as copySrc from "../../src/utils/copy-src";
+import * as lintUtils from "../../src/lint/lint-utils";
+import * as outputUtils from "../../src/utils/output-utils";
+import * as typecheckSerialization from "../../src/typecheck/typecheck-serialization";
+import * as coreNode from "@simplysm/core-node";
+import * as engineFactory from "../../src/engines/engine-factory";
+import * as capacitorMod from "../../src/capacitor/capacitor";
+import * as electronMod from "../../src/electron/electron";
+
+import { loadSdConfig } from "../../src/utils/sd-config";
+import { getVersion } from "../../src/utils/build-env";
+import { copySrcFiles } from "../../src/utils/copy-src";
+import { runLintInWorker } from "../../src/lint/lint-utils";
+import { Worker, fsx } from "@simplysm/core-node";
+import { createBuildEngine } from "../../src/engines/engine-factory";
+import { Capacitor } from "../../src/capacitor/capacitor";
+import { Electron } from "../../src/electron/electron";
+
+import { BuildOrchestrator, classifyPackages } from "../../src/orchestrators/BuildOrchestrator";
+import type { SdConfig } from "../../src/sd-config.types";
 
 const mockLogger = {
   debug: vi.fn(),
@@ -13,105 +33,23 @@ const mockLogger = {
   success: vi.fn(),
 };
 
-vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
-
-vi.mock("../../src/utils/sd-config", () => ({
-  loadSdConfig: vi.fn(),
-}));
-
-vi.mock("../../src/utils/build-env", () => ({
-  getVersion: vi.fn(),
-}));
-
-vi.mock("../../src/utils/copy-src", () => ({
-  copySrcFiles: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../../src/lint/lint-utils", () => ({
-  runLintInWorker: vi.fn().mockResolvedValue({ success: true, errorCount: 0, warningCount: 0, formattedOutput: "" }),
-}));
-
-vi.mock("../../src/utils/output-utils", () => ({
-  formatBuildMessages: vi.fn(
-    (name: string, target: string, msgs: string[]) => `${name} (${target}): ${msgs.join(", ")}`,
-  ),
-}));
-
-vi.mock("../../src/typecheck/typecheck-serialization", () => ({
-  deserializeDiagnostic: vi.fn((d: any) => d),
-}));
-
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(),
-  },
-  fsx: {
-    rm: vi.fn().mockResolvedValue(undefined),
-  },
-  pathx: {
-    posixResolve: vi.fn((...args: string[]) => args.join("/").replace(/\\/g, "/")),
-  },
-}));
-
 const mockEngines: Array<{
   run: ReturnType<typeof vi.fn>;
   startWatch: ReturnType<typeof vi.fn>;
   stop: ReturnType<typeof vi.fn>;
 }> = [];
 
-vi.mock("../../src/engines/engine-factory", () => ({
-  createBuildEngine: vi.fn(() => {
-    const engine = {
-      run: vi.fn().mockResolvedValue({
-        build: { success: true, errors: [], warnings: [], diagnostics: [] },
-      }),
-      startWatch: vi.fn().mockResolvedValue(undefined),
-      stop: vi.fn().mockResolvedValue(undefined),
-    };
-    mockEngines.push(engine);
-    return engine;
-  }),
-}));
-
-// Capacitor mock
 const mockCapacitorInstance = {
   initialize: vi.fn().mockResolvedValue(undefined),
   build: vi.fn().mockResolvedValue(undefined),
   run: vi.fn().mockResolvedValue(undefined),
 };
 
-vi.mock("../../src/capacitor/capacitor", () => ({
-  Capacitor: {
-    create: vi.fn().mockResolvedValue(mockCapacitorInstance),
-  },
-}));
-
-// Electron mock
 const mockElectronInstance = {
   initialize: vi.fn().mockResolvedValue(undefined),
   build: vi.fn().mockResolvedValue(undefined),
   run: vi.fn().mockResolvedValue(undefined),
 };
-
-vi.mock("../../src/electron/electron", () => ({
-  Electron: {
-    create: vi.fn().mockResolvedValue(mockElectronInstance),
-  },
-}));
-
-// --- Dynamic imports after mocking ---
-
-const { BuildOrchestrator, classifyPackages } = await import("../../src/orchestrators/BuildOrchestrator");
-const { loadSdConfig } = await import("../../src/utils/sd-config");
-const { getVersion } = await import("../../src/utils/build-env");
-const { copySrcFiles } = await import("../../src/utils/copy-src");
-const { Worker, fsx } = await import("@simplysm/core-node");
-const { createBuildEngine } = await import("../../src/engines/engine-factory");
-
-const { Capacitor } = await import("../../src/capacitor/capacitor");
-const { Electron } = await import("../../src/electron/electron");
-
-import type { SdConfig } from "../../src/sd-config.types";
 
 // --- Helpers ---
 
@@ -136,27 +74,46 @@ function setupDefaults(config: Partial<SdConfig> = {}): void {
 // --- Tests ---
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.restoreAllMocks();
   mockEngines.length = 0;
-  // Reset process.exitCode
   process.exitCode = undefined;
-  // Mock process.stdout.write
+
+  vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
+  Object.values(mockLogger).forEach((m) => m.mockReset());
+
+  mockCapacitorInstance.initialize.mockReset().mockResolvedValue(undefined);
+  mockCapacitorInstance.build.mockReset().mockResolvedValue(undefined);
+  mockCapacitorInstance.run.mockReset().mockResolvedValue(undefined);
+  mockElectronInstance.initialize.mockReset().mockResolvedValue(undefined);
+  mockElectronInstance.build.mockReset().mockResolvedValue(undefined);
+  mockElectronInstance.run.mockReset().mockResolvedValue(undefined);
+
   vi.spyOn(process.stdout, "write").mockReturnValue(true);
-  // Reset Capacitor/Electron instance mocks
-  mockCapacitorInstance.initialize.mockResolvedValue(undefined);
-  mockCapacitorInstance.build.mockResolvedValue(undefined);
-  mockCapacitorInstance.run.mockResolvedValue(undefined);
-  mockElectronInstance.initialize.mockResolvedValue(undefined);
-  mockElectronInstance.build.mockResolvedValue(undefined);
-  mockElectronInstance.run.mockResolvedValue(undefined);
-  vi.mocked(Capacitor.create).mockResolvedValue(mockCapacitorInstance as any);
-  vi.mocked(Electron.create).mockResolvedValue(mockElectronInstance as any);
-  // Restore default createBuildEngine mock implementation
-  vi.mocked(createBuildEngine).mockImplementation(() => {
+
+  vi.spyOn(sdConfig, "loadSdConfig").mockResolvedValue({ packages: {} });
+  vi.spyOn(buildEnv, "getVersion").mockResolvedValue("1.0.0");
+  vi.spyOn(copySrc, "copySrcFiles").mockResolvedValue(undefined);
+  vi.spyOn(lintUtils, "runLintInWorker").mockResolvedValue({
+    success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
+  });
+  vi.spyOn(outputUtils, "formatBuildMessages").mockImplementation(
+    (name: string, target: string, msgs: string[]) => `${name} (${target}): ${msgs.join(", ")}`,
+  );
+  vi.spyOn(typecheckSerialization, "deserializeDiagnostic").mockImplementation((d: any) => d);
+
+  vi.spyOn(coreNode.fsx, "rm").mockResolvedValue(undefined);
+  vi.spyOn(coreNode.pathx, "posixResolve").mockImplementation(
+    (...args: string[]) => args.join("/").replace(/\\/g, "/") as coreNode.pathx.PosixPath,
+  );
+  vi.spyOn(coreNode.Worker, "create").mockReturnValue(undefined as any);
+
+  vi.spyOn(capacitorMod.Capacitor, "create").mockResolvedValue(mockCapacitorInstance as any);
+  vi.spyOn(electronMod.Electron, "create").mockResolvedValue(mockElectronInstance as any);
+
+  vi.spyOn(engineFactory, "createBuildEngine").mockImplementation(() => {
     const engine = {
       run: vi.fn().mockResolvedValue({
         build: { success: true, errors: [], warnings: [], diagnostics: [] },
-
       }),
       startWatch: vi.fn().mockResolvedValue(undefined),
       stop: vi.fn().mockResolvedValue(undefined),
@@ -968,8 +925,6 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
 });
 
 //#region Slice 3: build 명령어 lint 통합 (Feature 3.2)
-
-const { runLintInWorker } = await import("../../src/lint/lint-utils");
 
 describe("BuildOrchestrator lint integration", () => {
   // build에서 lint를 실행하지 않는다 (lint는 check에서만 실행)

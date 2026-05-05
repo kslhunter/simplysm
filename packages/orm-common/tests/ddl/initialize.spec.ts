@@ -1,21 +1,23 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { initialize } from "../../src/ddl/initialize";
 import type { Queryable } from "../../src/exec/queryable";
 import type { Migration } from "../../src/types/db";
 import "../setup/test-utils";
 
 /**
- * initializeImpl 직접 호출용 가짜 DbContext
+ * initialize() 함수의 직접 호출용 fixture DbContext.
+ * DbContext 인터페이스의 일부만 구현한 경량 객체로, executeDefs 응답을
+ * appliedMigrations 옵션에 따라 시뮬레이션한다.
  */
-function createFakeDb(opts: {
+function createFixtureDb(opts: {
   appliedMigrations: { code: string }[] | "TABLE_NOT_EXISTS";
   migrations: Migration[];
 }) {
-  const executeDefs = vi.fn((defs: any[]) => {
+  async function executeDefs(defs: any[]): Promise<any[][]> {
     const results: any[][] = [];
     for (const def of defs) {
       if (def.type === "schemaExists") {
-        results.push([{}]); // schema exists
+        results.push([{}]);
       } else if (def.type === "select" && def.from?.name === "_migration") {
         if (opts.appliedMigrations === "TABLE_NOT_EXISTS") {
           const err = new Error("Invalid object name '_migration'") as any;
@@ -27,10 +29,9 @@ function createFakeDb(opts: {
         results.push([]);
       }
     }
-    return Promise.resolve(results);
-  });
+    return results;
+  }
 
-  // _migration() Queryable 모킹 — execute()가 executeDefs를 호출
   const migrationQueryable = {
     execute: async () => {
       const results = await executeDefs([
@@ -38,8 +39,8 @@ function createFakeDb(opts: {
       ]);
       return results[0];
     },
-    insert: vi.fn(async () => {}),
-    getInsertQueryDef: vi.fn(),
+    insert: async () => {},
+    getInsertQueryDef: () => undefined,
   };
 
   return {
@@ -58,7 +59,7 @@ function createFakeDb(opts: {
 
 describe("initializeImpl", () => {
   it("migration 배열이 비어있으면 false 반환", async () => {
-    const db = createFakeDb({
+    const db = createFixtureDb({
       appliedMigrations: [],
       migrations: [],
     });

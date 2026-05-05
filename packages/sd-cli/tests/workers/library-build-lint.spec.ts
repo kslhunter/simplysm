@@ -1,39 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// --- Mocks ---
+import * as coreNode from "@simplysm/core-node";
+import * as sdTsCompilerMod from "../../src/ts-compiler/SdTsCompiler";
+import * as sharedWorkerLifecycle from "../../src/workers/shared-worker-lifecycle";
+import * as collectDepsMod from "../../src/deps/replace-deps/collect-deps";
 
-const { mockCompileAsync, MockSdTsCompiler } = vi.hoisted(() => {
-  const compileAsync = vi.fn();
-  const Compiler = vi.fn().mockImplementation(function () {
-    return { compileAsync };
-  });
-  return { mockCompileAsync: compileAsync, MockSdTsCompiler: Compiler };
+const mockCompileAsync = vi.fn();
+const MockSdTsCompiler = vi.fn().mockImplementation(function () {
+  return { compileAsync: mockCompileAsync };
 });
+vi.spyOn(sdTsCompilerMod, "SdTsCompiler" as any).mockImplementation(MockSdTsCompiler as any);
 
-vi.mock("../../src/ts-compiler/SdTsCompiler", () => ({
-  SdTsCompiler: MockSdTsCompiler,
-}));
+vi.spyOn(sharedWorkerLifecycle, "setupWorkerLifecycle").mockImplementation(() => ({
+  logger: { debug: vi.fn(), warn: vi.fn() },
+  guardStartWatch: vi.fn(),
+}) as any);
 
-vi.mock("../../src/workers/shared-worker-lifecycle", () => ({
-  setupWorkerLifecycle: vi.fn(() => ({
-    logger: { debug: vi.fn(), warn: vi.fn() },
-    guardStartWatch: vi.fn(),
-  })),
-}));
+vi.spyOn(coreNode, "createWorker").mockImplementation((methods: Record<string, Function>) => {
+  Object.assign(workerMethods, methods);
+  return { send: vi.fn() } as any;
+});
+vi.spyOn(coreNode.FsWatcher, "watch").mockImplementation(() => Promise.resolve(undefined as any));
 
-vi.mock("@simplysm/core-node", () => ({
-  createWorker: vi.fn(
-    (methods: Record<string, Function>) => {
-      Object.assign(workerMethods, methods);
-      return { send: vi.fn() };
-    },
-  ),
-  FsWatcher: { watch: vi.fn() },
-}));
-
-vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
-  collectDeps: vi.fn(() => ({ workspaceDeps: [], replaceDeps: [] })),
-}));
+vi.spyOn(collectDepsMod, "collectDeps").mockReturnValue({ workspaceDeps: [], replaceDeps: [] });
 
 const defaultCompileResult = {
   program: { getSourceFiles: () => [] },

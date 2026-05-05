@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mocks = vi.hoisted(() => ({
-  parseTsconfig: vi.fn(),
+// typescript default export는 ESM에서 spyOn 불가 (Cannot redefine property) — vi.mock 유지
+const tsMocks = vi.hoisted(() => ({
   createIncrementalCompilerHost: vi.fn(),
   createIncrementalProgram: vi.fn(),
-  serializeDiagnostic: vi.fn((d: any) => d),
-}));
-
-vi.mock("../../src/utils/tsconfig", () => ({
-  parseTsconfig: mocks.parseTsconfig,
-}));
-
-vi.mock("../../src/typecheck/typecheck-serialization", () => ({
-  serializeDiagnostic: mocks.serializeDiagnostic,
 }));
 
 vi.mock("typescript", async (importOriginal) => {
@@ -22,18 +13,34 @@ vi.mock("typescript", async (importOriginal) => {
     ...orig,
     default: {
       ...origDefault,
-      createIncrementalCompilerHost: mocks.createIncrementalCompilerHost,
-      createIncrementalProgram: mocks.createIncrementalProgram,
+      createIncrementalCompilerHost: tsMocks.createIncrementalCompilerHost,
+      createIncrementalProgram: tsMocks.createIncrementalProgram,
       DiagnosticCategory: { Error: 1, Warning: 0 },
     },
   };
 });
 
-const { typecheckNonPackageFiles } = await import("../../src/typecheck/typecheck-non-package");
+import * as tsconfigMod from "../../src/utils/tsconfig";
+import * as typecheckSerializationMod from "../../src/typecheck/typecheck-serialization";
+
+import { typecheckNonPackageFiles } from "../../src/typecheck/typecheck-non-package";
+
+const mocks = {
+  parseTsconfig: undefined as unknown as ReturnType<typeof vi.spyOn>,
+  createIncrementalCompilerHost: tsMocks.createIncrementalCompilerHost,
+  createIncrementalProgram: tsMocks.createIncrementalProgram,
+  serializeDiagnostic: undefined as unknown as ReturnType<typeof vi.spyOn>,
+};
 
 describe("typecheckNonPackageFiles", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+
+    mocks.parseTsconfig = vi.spyOn(tsconfigMod, "parseTsconfig");
+    mocks.serializeDiagnostic = vi.spyOn(typecheckSerializationMod, "serializeDiagnostic")
+      .mockImplementation((d: any) => d);
+    mocks.createIncrementalCompilerHost.mockReset();
+    mocks.createIncrementalProgram.mockReset();
 
     mocks.parseTsconfig.mockReturnValue({
       fileNames: [
@@ -45,7 +52,7 @@ describe("typecheckNonPackageFiles", () => {
       errors: [],
     });
 
-    mocks.createIncrementalCompilerHost.mockReturnValue({});
+    mocks.createIncrementalCompilerHost.mockReturnValue({} as any);
 
     const mockProgram = {
       emit: vi.fn(() => ({ diagnostics: [] })),

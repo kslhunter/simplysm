@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-//#region Mocks
-
 const mockRebuild = vi.fn();
 const mockDispose = vi.fn();
 
@@ -14,6 +12,7 @@ const mockTscPlugin = {
   resetBuilderProgram: vi.fn(),
 };
 
+// esbuild는 외부 npm으로 ESM namespace immutable이라 vi.mock 유지
 vi.mock("esbuild", () => ({
   default: {
     context: vi.fn(() =>
@@ -24,27 +23,19 @@ vi.mock("esbuild", () => ({
     messages.map((m) => m.text),
 }));
 
-vi.mock("../../src/esbuild/esbuild-config", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../src/esbuild/esbuild-config")>();
-  return {
-    ...actual,
-    writeChangedOutputFiles: vi.fn(() => Promise.resolve()),
-  };
-});
+import * as esbuildConfigMod from "../../src/esbuild/esbuild-config";
+import * as tscPluginMod from "../../src/esbuild/esbuild-tsc-plugin";
 
-vi.mock("../../src/esbuild/esbuild-tsc-plugin", () => ({
-  createTscPlugin: vi.fn(() => mockTscPlugin),
-}));
-
-//#endregion
+vi.spyOn(esbuildConfigMod, "writeChangedOutputFiles").mockResolvedValue(undefined);
+vi.spyOn(tscPluginMod, "createTscPlugin").mockReturnValue(mockTscPlugin as any);
 
 const esbuild = (await import("esbuild")).default;
-const { writeChangedOutputFiles } = await import("../../src/esbuild/esbuild-config");
+const { writeChangedOutputFiles } = esbuildConfigMod;
+const { createTscPlugin } = tscPluginMod;
 const {
   createContext, rebuild, recreateContext, dispose, getMetafile, hasContext,
   getTscProgram, getTscAffectedFiles, getTscDiagnostics,
 } = await import("../../src/workers/server-esbuild-context");
-const { createTscPlugin } = await import("../../src/esbuild/esbuild-tsc-plugin");
 
 const baseOptions = {
   pkgDir: "/workspace/packages/my-server",

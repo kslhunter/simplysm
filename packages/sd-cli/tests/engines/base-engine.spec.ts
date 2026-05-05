@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// --- Mock factories (vi.mock is hoisted) ---
+import { Worker } from "@simplysm/core-node";
 
 const mockWorker = {
   build: vi.fn(),
@@ -10,16 +9,10 @@ const mockWorker = {
   on: vi.fn(),
 };
 
-vi.mock("@simplysm/core-node", () => ({
-  Worker: {
-    create: vi.fn(() => mockWorker),
-  },
-}));
+vi.spyOn(Worker, "create").mockReturnValue(mockWorker as any);
 
-// --- Dynamic imports after mocking ---
-
-const { TscEngine } = await import("../../src/engines/TscEngine");
-const { BaseEngine } = await import("../../src/engines/BaseEngine");
+import { TscEngine } from "../../src/engines/TscEngine";
+import { BaseEngine } from "../../src/engines/BaseEngine";
 
 import type { BuildPackageInfo, BuildOutput } from "../../src/engines/types";
 import type { BuildResult } from "../../src/runtime/ResultCollector";
@@ -64,8 +57,6 @@ describe("BaseEngine", () => {
 
   describe("_createWorker resourceLimits", () => {
     it("Worker.create에 resourceLimits를 전달한다", async () => {
-      const { Worker } = await import("@simplysm/core-node");
-
       const engine = new TscEngine({ cwd: "/root", pkg: createMockPkg() });
       await engine.run({ js: true, dts: true });
 

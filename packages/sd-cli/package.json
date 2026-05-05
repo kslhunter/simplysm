@@ -24,8 +24,8 @@
     }
   },
   "dependencies": {
-    "@angular/build": "^21.2.8",
-    "@angular/compiler-cli": "^21.2.10",
+    "@angular/build": "^21.2.9",
+    "@angular/compiler-cli": "^21.2.11",
     "@fastify/http-proxy": "^11.4.4",
     "@inquirer/prompts": "^8.4.2",
     "@simplysm/core-common": "workspace:*",
@@ -42,7 +42,7 @@
     "jiti": "^2.6.1",
     "lmdb": "^3.5.4",
     "mime": "^4.1.0",
-    "postcss": "^8.5.12",
+    "postcss": "^8.5.13",
     "sass": "^1.99.0",
     "semver": "^7.7.4",
     "sharp": "^0.34.5",
@@ -50,7 +50,7 @@
     "ssh2": "^1.17.0",
     "typescript": "^5.9.3",
     "ws": "^8.20.0",
-    "yaml": "^2.8.3",
+    "yaml": "^2.8.4",
     "yargs": "^18.0.0"
   },
   "devDependencies": {

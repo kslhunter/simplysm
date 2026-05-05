@@ -75,8 +75,7 @@ export class Electron {
     }
 
     Electron._logger.debug("pnpm install 시작");
-    await this._exec("pnpm", ["install"], this._srcPath);
-    await this._exec("pnpm", ["approve-builds", "--all"], this._srcPath);
+    await this._exec("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], this._srcPath);
     Electron._logger.debug("pnpm install 완료");
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];

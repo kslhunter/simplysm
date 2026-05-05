@@ -7,6 +7,9 @@ import { SdToastProvider } from "../../../src/core/toast/sd-toast.provider";
 import { SdActivatedModalProvider } from "../../../src/core/modal/sd-activated-modal.provider";
 import { SdCrudListTestHost } from "./sd-crud-list-test.fixture";
 
+// SdSharedDataProvider/SdToastProvider/SdActivatedModalProvider는 Angular DI 트리에서
+// 외부 의존(ServiceClient, SdToastContainer, modal context)이 깊어 useValue stub 유지.
+// 룰의 "함수 호출 인터셉트는 spy" 원칙이지만, 이 케이스는 의존성 자체의 대체로 정당화.
 function createMockSharedDataProvider() {
   return {
     wait: vi.fn().mockResolvedValue(undefined),

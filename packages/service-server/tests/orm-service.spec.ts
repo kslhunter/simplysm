@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { QueryDef } from "@simplysm/orm-common";
-
-vi.mock("@simplysm/orm-node", () => ({
-  createDbConn: vi.fn(),
-}));
-
+import * as ormNode from "@simplysm/orm-node";
 import { createDbConn } from "@simplysm/orm-node";
 import { OrmService } from "../src/services/orm-service";
+
+// orm-node createDbConn은 외부 DB 연결 의존이라 spy로 차단 (실 DB는 tests/orm/에서 통합 테스트)
+vi.spyOn(ormNode, "createDbConn");
 
 describe("OrmService.executeDefs", () => {
   let mockExecute: ReturnType<typeof vi.fn>;

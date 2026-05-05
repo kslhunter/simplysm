@@ -35,6 +35,9 @@ try {
   if (fs.existsSync(path.join(sourceDir, "settings.json"))) {
     sourceEntries.push("settings.json");
   }
+  if (fs.existsSync(path.join(sourceDir, "simplysm.json"))) {
+    sourceEntries.push("simplysm.json");
+  }
   if (sourceEntries.length === 0) {
     process.exit(0);
   }

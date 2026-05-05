@@ -1,16 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import * as collectDepsMod from "../../src/deps/replace-deps/collect-deps";
+import { buildWatchPaths } from "../../src/workers/build-watch-paths";
 
-vi.mock("../../src/deps/replace-deps/collect-deps", () => ({
-  collectDeps: vi.fn(),
-}));
-
-const { collectDeps } = await import("../../src/deps/replace-deps/collect-deps");
-const { buildWatchPaths } = await import("../../src/workers/build-watch-paths");
-
-const mockCollectDeps = vi.mocked(collectDeps);
+const mockCollectDeps = vi.spyOn(collectDepsMod, "collectDeps");
 
 beforeEach(() => {
-  vi.restoreAllMocks();
+  mockCollectDeps.mockReset();
 });
 
 describe("buildWatchPaths", () => {
