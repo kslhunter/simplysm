@@ -19,7 +19,7 @@ description: 스킬을 작성하거나 기존 스킬을 수정하는 스킬. Use
    - 상세: [references/eval-authoring.md](references/eval-authoring.md)
 
 3. 스킬 작성 - 다음을 작성하라:
-   - 간결한 지침이 담긴 SKILL.md
+   - 간결하고 명확한 지침이 담긴 SKILL.md
    - 별도의 참고파일 (내용이 100줄을 넘을 경우)
    - 유틸리티 스크립트 (필요한 경우)
    - 상세: [references/skill-authoring.md](references/skill-authoring.md)
@@ -33,6 +33,10 @@ description: 스킬을 작성하거나 기존 스킬을 수정하는 스킬. Use
    - FAIL 케이스의 reason 을 분석해 스킬 혹은 Eval 을 수정한 뒤, 같은 골든 셋 전체를 다시 4단계로 돌린다.
    - 스킬의 문제인지 Eval 의 문제인지 모호하면 사용자에게 물어본다.
    - 새로 발견한 실패 패턴은 골든 셋에 케이스로 추가한다.
+
+6. 산출물 가독성 점검 (eval PASS 후)
+   - SKILL.md / references / scripts 를 다시 통독: "Claude 에이전트가 잘 이해하고 따를 수 있게 간결·명확한가? 중복·꾸밈·과한 예시는 없는가?"
+   - **표현·구조 정리만 허용, 의미 변경 금지.** 의미가 바뀌면 4단계로 회귀해 재검증.
 
 ## 스킬 구조
 
