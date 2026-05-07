@@ -15,10 +15,10 @@ BLOCKED = [
     (CMD_POS + r"git\s+clean\b", "git clean"),
     # No directory change allowed
     (CMD_POS + r"cd\s+", "cd (directory change not allowed)"),
-    # Use pnpm typecheck instead
-    (CMD_POS + r"npx\s+tsc\b", "npx tsc (use pnpm typecheck)"),
-    # Use pnpm lint instead
-    (CMD_POS + r"npx\s+eslint\b", "npx eslint (use pnpm lint)"),
+    # Use {PM} typecheck instead
+    (CMD_POS + r"npx\s+tsc\b", "npx tsc (use {PM} typecheck)"),
+    # Use {PM} lint instead
+    (CMD_POS + r"npx\s+eslint\b", "npx eslint (use {PM} lint)"),
 ]
 
 for pattern, label in BLOCKED:
