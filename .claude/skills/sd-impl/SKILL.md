@@ -11,7 +11,7 @@ plan.md 따라 코드 작성. 평소 자동, 막힘 시만 사용자 개입(huma
 ## 산출물
 
 ```
-.specs/{yyMMddHHmmss}/REQ-XXX-슬러그/
+.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/
   spec.md / plan.md   ← 입력
   impl.md             ← 본 단계 산출물
 + 코드 변경 (uncommitted)

@@ -177,4 +177,49 @@ describe("SELECT - ORDER BY", () => {
   });
 
   //#endregion
+
+  //#region ========== Literal-valued column (raw 상수 ExprUnit 화) ==========
+
+  describe("리터럴 상수 컬럼 -> ORDER BY 그 컬럼 (string overload)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .select((u) => ({ id: u.id, label: "fixed" }))
+      .orderBy("label", "DESC")
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.literalColumnOrderByString[dialect]);
+    });
+  });
+
+  describe("리터럴 상수 컬럼 -> ORDER BY 그 컬럼 (lambda overload)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .select((u) => ({ id: u.id, label: "fixed" }))
+      .orderBy((item) => item.label, "DESC")
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.literalColumnOrderByLambda[dialect]);
+    });
+  });
+
+  describe("null/undefined 컬럼 통과 (SELECT 본문 회귀)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .select((u) => ({ id: u.id, x: null }))
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.literalNullColumn[dialect]);
+    });
+  });
+
+  //#endregion
 });

@@ -277,9 +277,11 @@ def _run_xlsx(
             if last_row >= 1 and last_col >= 1:
                 for row in ws_f.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col):
                     for cell in row:
+                        if cell.data_type != "f":
+                            continue
                         v = cell.value
-                        if isinstance(v, str) and v.startswith("="):
-                            formulas[cell.coordinate] = v
+                        # 일반·shared formula 는 str, array formula 는 ArrayFormula(.text 보유)
+                        formulas[cell.coordinate] = v if isinstance(v, str) else getattr(v, "text", str(v))
             if formulas:
                 _common.write_text(
                     sheets_dir / f"{idx}_{safe_name}.formulas.json",

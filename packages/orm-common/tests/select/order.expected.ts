@@ -148,3 +148,58 @@ export const orderLimitCombo: ExpectedSql = {
 };
 
 //#endregion
+
+//#region ========== Literal-valued column ==========
+
+export const literalColumnOrderByString: ExpectedSql = {
+  mysql: mysql`
+    SELECT \`T1\`.\`id\` AS \`id\`, 'fixed' AS \`label\`
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+    ORDER BY 'fixed' DESC
+  `,
+  mssql: tsql`
+    SELECT [T1].[id] AS [id], N'fixed' AS [label]
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+    ORDER BY N'fixed' DESC
+  `,
+  postgresql: pgsql`
+    SELECT "T1"."id" AS "id", 'fixed' AS "label"
+    FROM "TestSchema"."User" AS "T1"
+    ORDER BY 'fixed' DESC
+  `,
+};
+
+export const literalNullColumn: ExpectedSql = {
+  mysql: mysql`
+    SELECT \`T1\`.\`id\` AS \`id\`, NULL AS \`x\`
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+  `,
+  mssql: tsql`
+    SELECT [T1].[id] AS [id], NULL AS [x]
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+  `,
+  postgresql: pgsql`
+    SELECT "T1"."id" AS "id", NULL AS "x"
+    FROM "TestSchema"."User" AS "T1"
+  `,
+};
+
+export const literalColumnOrderByLambda: ExpectedSql = {
+  mysql: mysql`
+    SELECT \`T1\`.\`id\` AS \`id\`, 'fixed' AS \`label\`
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+    ORDER BY 'fixed' DESC
+  `,
+  mssql: tsql`
+    SELECT [T1].[id] AS [id], N'fixed' AS [label]
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+    ORDER BY N'fixed' DESC
+  `,
+  postgresql: pgsql`
+    SELECT "T1"."id" AS "id", 'fixed' AS "label"
+    FROM "TestSchema"."User" AS "T1"
+    ORDER BY 'fixed' DESC
+  `,
+};
+
+//#endregion

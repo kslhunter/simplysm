@@ -15,11 +15,11 @@ src/                                ← UI scaffold (메인 코드베이스 직�
   pages/<신규>.tsx
   data/mock-<도메인>.ts             ← mock data 별도 파일
 
-.specs/{yyMMddHHmmss}/DEMO-001-슬러그/
+.specs/{yyMMdd_HHmmss}/DEMO-001-슬러그/
   demo.md                           ← 시나리오/만든 파일/Mock 요약/피드백 라운드
 ```
 
-세션 폴더(`{yyMMddHHmmss}`)는 spec 단계의 결과를 그대로 사용 (이미 존재).
+세션 폴더(`{yyMMdd_HHmmss}`)는 spec 단계의 결과를 그대로 사용 (이미 존재).
 
 ## 워크플로
 
@@ -27,7 +27,7 @@ src/                                ← UI scaffold (메인 코드베이스 직�
 
 2. 대상 REQ들의 spec.md 읽기 + 코드베이스(디자인 시스템 등) 파악
 
-3. DEMO ID 부여 + `.specs/{yyMMddHHmmss}/DEMO-XXX-슬러그/` 생성
+3. DEMO ID 부여 + `.specs/{yyMMdd_HHmmss}/DEMO-XXX-슬러그/` 생성
    - DEMO ID는 세션 폴더 내 `DEMO-001` 부터 순번
    - 슬러그는 한글 OK
 

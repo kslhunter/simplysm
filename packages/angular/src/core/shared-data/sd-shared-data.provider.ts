@@ -15,7 +15,7 @@ export interface SharedDataInfo<T extends SharedDataBase<string | number>> {
   serviceKey: string;
   getter: (changeKeys?: (string | number)[]) => Promise<T[]>;
   filter?: unknown;
-  orderBy?: (a: T, b: T) => number;
+  orderBy?: (item: T) => any;
 }
 
 export interface SharedDataHandle<T extends SharedDataBase<string | number>> {
@@ -189,11 +189,9 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
         const merged = [...filtered, ...newItems];
 
         // orderBy 적용
-        if (entry.info.orderBy != null) {
-          merged.sort(entry.info.orderBy);
-        }
+        const ordered = entry.info.orderBy != null ? merged.orderBy(entry.info.orderBy) : merged;
 
-        entry.itemsSignal.set(merged);
+        entry.itemsSignal.set(ordered);
       }
     } catch (err) {
       this._errorHandler.handleError(err);

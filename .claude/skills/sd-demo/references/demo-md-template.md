@@ -1,6 +1,6 @@
 # demo.md 템플릿
 
-위치: `.specs/{yyMMddHHmmss}/DEMO-XXX-슬러그/demo.md`
+위치: `.specs/{yyMMdd_HHmmss}/DEMO-XXX-슬러그/demo.md`
 
 ## 템플릿
 

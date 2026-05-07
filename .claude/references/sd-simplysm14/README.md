@@ -9,6 +9,14 @@ Claude 에이전트가 반드시 지켜야 할 행동 지침이다. (@simplysm/\
 - `pnpm check --fix`이 **기본 검증 명령**이며, typecheck + lint 한꺼번에, 자동수정 포함
 - `pnpm typecheck`, `pnpm lint`는 `pnpm check` 에서 문제 났을 때 타입만 따로 보기 위함
 
+## 개발 매뉴얼
+
+- **클라이언트 화면 작성** — [client-component.md](./client-component.md)
+- **클라이언트 탭 컨트롤** — [client-tab.md](./client-tab.md)
+- **클라이언트 환경 셋업** — [client-setup.md](./client-setup.md)
+- **ORM 쿼리 작성** — [orm.md](./orm.md)
+  - **UNION 사용법** — [orm-union.md](./orm-union.md)
+
 ## 패키지 인덱스
 
 - **angular** — 표준 Angular UI/기능 라이브러리

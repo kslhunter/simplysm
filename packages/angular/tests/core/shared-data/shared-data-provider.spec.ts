@@ -201,7 +201,7 @@ describe("Feature 2.1: _onEvent 에러 처리 + key 타입 정규화", () => {
         if (callCount === 1) return Promise.resolve(initialData);
         return Promise.resolve([testUser(2, "Bob Updated", 2)]);
       },
-      orderBy: (a, b) => a.sortOrder - b.sortOrder,
+      orderBy: (item) => item.sortOrder,
     });
 
     provider.getHandle("users");
@@ -413,7 +413,7 @@ describe("Feature 3.5 Slice 2: SdSharedDataProvider + SharedDataHandle", () => {
         // 부분 로드: key 2만 반환
         return Promise.resolve([testUser(2, "Bob Updated", 0)]);
       },
-      orderBy: (a, b) => a.sortOrder - b.sortOrder,
+      orderBy: (item) => item.sortOrder,
     });
 
     const handle = provider.getHandle("users");

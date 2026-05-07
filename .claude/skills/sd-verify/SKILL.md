@@ -5,12 +5,12 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 
 # verify 단계
 
-산출물 4종(overview/spec/plan/impl) + 실제 코드 통합 읽기 → 충돌·누락 발견 → 보고 + 해결방안 제안. REQ 단위. 자동 검증 + 사용자 시연 결합 (human-in-the-loop).
+REQ 단위로 4문서(overview/spec/plan/impl) + 코드 통합 읽기. 자동 검증 + 사용자 시연 결합.
 
 ## 산출물
 
 ```
-.specs/{yyMMddHHmmss}/
+.specs/{yyMMdd_HHmmss}/
   overview.md                   ← 입력 (해당 REQ + 공통)
   REQ-XXX-슬러그/
     spec.md / plan.md / impl.md ← 입력
@@ -27,7 +27,7 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 6. **시연** (필요 R만, plan 모드 기준 — 아래 표 참조)
 7. 모든 R 충족 + 충돌·누락 0건 → 체크포인트 (메타 `상태: verified`, spec.md 메타 `상태: done`)
 
-발견 시: verify.md 기록 + Q (해결방안 후보 제시) → 사용자 확정 → 해당 단계 재진입.
+발견 시: verify.md 기록 + 즉시 보고 + 해결방안 제안 (예: 새 REQ 분리 / 현 REQ 재작업 / 무시). 결정은 사용자.
 
 ## 충돌·누락 (양방향 점검)
 
@@ -39,11 +39,6 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 | **놓친 구현·문서화** (앞 → 뒤) | 앞 문서 항목이 뒤로 안 닿음 | spec R이 plan에 미매핑, plan 위치가 코드 미반영, impl이 보고 안 한 변경 |
 | **단계 간 모순** | 두 단계가 다른 결론 | plan은 분리, 코드는 단일 파일 |
 
-해결방안 후보 매핑:
-- 문서 미업데이트 → 어느 문서 갱신할지 사용자 선택 → 해당 단계 재진입
-- 놓친 구현·문서화 → implement / plan / impl.md 보고 보강 중 선택
-- 모순 → 진실 결정부터 사용자에게 확인 → 해당 방향으로 재진입
-
 ## 충족 판정
 
 | 분류 | 의미 |
@@ -52,7 +47,7 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 | 부분충족 | 일부 sub-criteria 미만족 또는 충돌·누락 발견 |
 | 미충족 | 만족 X |
 
-종료 시 모든 R 충족 + 발견 0건. 미해소 항목은 재진입.
+종료 시 모든 R 충족 + 발견 0건. 미해소 항목 남은 채 done 금지.
 
 ## 시연 (plan 모드 기준)
 
@@ -62,25 +57,29 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 | 사후 테스트 | 필수 |
 | 생략 | 필수 |
 
-시나리오는 plan.md / impl.md 케이스 그대로 사용 (verify가 새로 정의 X). 한 번에 하나씩, 사용자 확인 결과 verify.md 기록.
+시나리오는 plan.md / impl.md 케이스 사용. 한 번에 하나씩, 결과 verify.md 기록.
 
-시연 도구·환경 실패(playwright 미동작, 빌드 실패, 접근 불가 등)는 **충족 판정 사유 아님**. 상황(도구·증상·재현 시도)을 사용자에 보고하고 판단 대기. 임의 스킵·done 금지. 미수행 R은 verify.md에 "시연 미수행 — <사유>"로 기록하고 REQ done 차단.
+시연 도구·환경 실패(playwright 미동작, 빌드 실패, 접근 불가 등)는 **충족 판정 사유 아님**. 상황(도구·증상·재현 시도)을 사용자에 즉시 보고하고 판단 대기. 임의 스킵·done 금지.
 
-## 예시 (Q 형식)
+사용자가 명시적으로 미수행으로 결정한 R은 verify.md에 "시연 미수행 — <사유>"로 기록하고 REQ done 차단.
+
+## 예시 (보고 형식)
 
 ```
 발견 — plan.md는 컴포넌트 분리 명시, 코드는 단일 파일 (모순).
-어느 쪽이 진실?
- (a) 분리 → implement 재진입 (코드 분리)
- (b) 단일 파일 → plan 재진입 (계획 갱신, 사유 기록)
+verify.md 기록 완료.
+제안:
+ (a) 분리 유지가 맞다면 → 현 REQ 재작업 (코드 분리)
+ (b) 단일 파일이 맞다면 → 현 REQ 재작업 (plan 갱신, 사유 기록)
+ (c) 범위 큰 재설계라면 → 별도 REQ 분리
+결정 부탁.
 ```
 
 ## 핵심 원칙
 
-- **양방향 점검**: 뒤→앞과 앞→뒤 둘 다 의식. 한 방향만 보면 절반 놓침.
+- **양방향 점검**: 뒤→앞과 앞→뒤 둘 다. 한 방향만 보면 절반 놓침.
 - **자연어 추출**: 페어 매트릭스로 정형화 X (OK 채우기 함정)
-- **자동 수정 금지**: spec/plan/impl/overview/코드 직접 수정 X. 보고 + 해결방안 제안만.
-- **자동 판단 금지**: 재진입 단계는 사용자 선택
+- **발견은 보고·제안까지**: 직접 수정·재진입 X, 결정은 사용자
 - self-contained 블록 (R 블록 안에 검증/시연/판정 인라인)
 - raw input·ID 불변
 
@@ -90,9 +89,8 @@ description: overview/spec/plan/impl + 실제 코드를 REQ 단위로 통합 읽
 - ❌ overview/plan 안 읽고 spec+impl+코드만 보기
 - ❌ 한 방향만 점검 (문서 미업데이트 통째로 놓침)
 - ❌ 페어 매트릭스로 정형화
-- ❌ verify가 문서/코드 직접 수정
+- ❌ verify가 문서/코드 직접 수정 또는 임의 재진입 트리거
 - ❌ 시연 시나리오 새로 정의
-- ❌ 재진입 단계 자동 결정
 - ❌ TDD R에 시연 강요 / 사후·생략 R 시연 생략
 - ❌ 시연 도구(playwright 등) 실패·미실행을 보고 없이 넘기고 충족 판정 / REQ done
 - ❌ 미해소 항목 남은 채로 REQ done

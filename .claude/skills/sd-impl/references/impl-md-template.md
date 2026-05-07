@@ -1,6 +1,6 @@
 # impl.md 템플릿
 
-위치: `.specs/{yyMMddHHmmss}/REQ-XXX-슬러그/impl.md`
+위치: `.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/impl.md`
 
 ## 템플릿
 
@@ -49,6 +49,8 @@
 | **변경 의도** | 자명하면 "그대로", 자명하지 않으면 사유 |
 | **이슈/결정** | (있을 때만) 막힘 상황, 시도 횟수, 결정 |
 
+`plan 대비 차이`가 "없음"이 아니거나 `이슈/결정`에 결정이 발생한 경우, 결정 출처를 `근거:` 줄로 명시한다.
+
 ## 예시
 
 ```markdown
@@ -76,8 +78,10 @@
     - 케이스: "권한 있는 사용자 → true" / "권한 없는 사용자 → false"
     - 결과: PASS (2/2)
 - **plan 대비 차이**: PermissionContext 신설 (plan은 기존 hasPermission 가정)
+  - 근거: 사용자 답변 (2026-05-04)
 - **이슈/결정**:
   - 이슈: hasPermission 패턴이 사용 안 되고 있음 발견
   - 시도: 1회
-  - 결정: PermissionContext 신설 (사용자 확인)
+  - 결정: PermissionContext 신설
+    - 근거: 사용자 답변 (2026-05-04)
 ```

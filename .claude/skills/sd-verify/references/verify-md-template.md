@@ -1,6 +1,6 @@
 # verify.md 템플릿
 
-위치: `.specs/{yyMMddHHmmss}/REQ-XXX-슬러그/verify.md`
+위치: `.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/verify.md`
 
 ## 템플릿
 

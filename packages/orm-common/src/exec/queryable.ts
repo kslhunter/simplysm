@@ -18,7 +18,7 @@ import {
   type ColumnBuilderRecord,
   type DataToColumnBuilderRecord,
 } from "../schema/factory/column-builder";
-import type { ColumnPrimitive, ColumnPrimitiveStr } from "../types/column";
+import { inferColumnPrimitiveStr, type ColumnPrimitive, type ColumnPrimitiveStr } from "../types/column";
 import type { WhereExprUnit, ExprInput } from "../expr/expr-unit";
 import { ExprUnit } from "../expr/expr-unit";
 import type { Expr } from "../types/expr";
@@ -250,16 +250,7 @@ export class Queryable<
   select<R extends Record<string, any>>(
     fn: (columns: QueryableRecord<TData>) => R,
   ): Queryable<UnwrapQueryableRecord<R>, never> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.select(fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
-      }) as any;
-    }
-
-    const newColumns = fn(this.meta.columns);
+    const newColumns = wrapColumnsPrimitives(fn(this.meta.columns));
 
     return new Queryable<any, never>({
       ...this.meta,
@@ -281,14 +272,6 @@ export class Queryable<
    * ```
    */
   distinct(): Queryable<TData, never> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.distinct());
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     return new Queryable({
       ...this.meta,
       distinct: true,
@@ -313,14 +296,6 @@ export class Queryable<
    * ```
    */
   lock(): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.lock());
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     return new Queryable({
       ...this.meta,
       lock: true,
@@ -346,14 +321,6 @@ export class Queryable<
    * ```
    */
   top(count: number): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.top(count));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     return new Queryable({
       ...this.meta,
       top: count,
@@ -377,14 +344,6 @@ export class Queryable<
    * ```
    */
   limit(skip: number, take: number): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.limit(skip, take));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     if (!this.meta.orderBy) {
       throw new ArgumentError("limit()은 ORDER BY 절이 필요합니다.", {
         method: "limit",
@@ -431,14 +390,6 @@ export class Queryable<
             obj.getChainValue(columns, fnOrKey, true) as ExprUnit<ColumnPrimitive>
         : fnOrKey;
 
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.orderBy(fn, orderBy));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     const column = fn(this.meta.columns);
 
     return new Queryable({
@@ -465,14 +416,6 @@ export class Queryable<
    * ```
    */
   where(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.where(predicate));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     const conditions = predicate(this.meta.columns);
 
     return new Queryable({
@@ -503,14 +446,6 @@ export class Queryable<
     fn: (columns: QueryableRecord<TData>) => ExprUnit<string | undefined>[],
     searchText: string,
   ): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.search(fn, searchText));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     if (searchText.trim() === "") {
       return this;
     }
@@ -577,14 +512,6 @@ export class Queryable<
   groupBy(
     fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>[],
   ): Queryable<TData, never> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.groupBy(fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     const groupBy = fn(this.meta.columns);
 
     return new Queryable({ ...this.meta, groupBy });
@@ -608,14 +535,6 @@ export class Queryable<
    * ```
    */
   having(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, never> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.having(predicate));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-      });
-    }
-
     const conditions = predicate(this.meta.columns);
 
     return new Queryable({
@@ -649,15 +568,6 @@ export class Queryable<
     as: A,
     fn: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>,
   ): Queryable<TData & { [K in A]?: R[] }, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.join(as, fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
-      });
-    }
-
     // 1. JOIN 별칭 생성
     const joinAlias = `${this.meta.as}.${as}`;
 
@@ -705,15 +615,6 @@ export class Queryable<
     { [K in keyof TData as K extends A ? never : K]: TData[K] } & { [K in A]?: R },
     TFrom
   > {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.joinSingle(as, fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
-      });
-    }
-
     // 1. JOIN 별칭 생성
     const joinAlias = `${this.meta.as}.${as}`;
 
@@ -764,15 +665,6 @@ export class Queryable<
    * ```
    */
   include(fn: (item: PathProxy<TData>) => PathProxy<unknown>): Queryable<TData, TFrom> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.include(fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
-      });
-    }
-
     const proxy = createPathProxy<TData>();
     const result = fn(proxy);
     const relationChain = result[PATH_SYMBOL].join(".");
@@ -1009,14 +901,6 @@ export class Queryable<
   recursive(
     fn: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>,
   ): Queryable<TData, never> {
-    if (Array.isArray(this.meta.from)) {
-      const newFroms = this.meta.from.map((from) => from.recursive(fn));
-      return new Queryable({
-        ...this.meta,
-        from: newFroms,
-        columns: transformColumnsAlias(newFroms[0].meta.columns, this.meta.as, ""),
-      });
-    }
     // 동적 CTE 이름 생성
     const cteName = this.meta.db.getNextAlias();
 
@@ -1858,12 +1742,47 @@ function transformColumnsAlias<TRecord extends DataRecord>(
       }
     } else if (typeof value === "object" && value != null) {
       result[key] = transformColumnsAlias(value as QueryableRecord<DataRecord>, alias, fullKey);
-    } else {
+    } else if (value == null) {
       result[key] = value;
+    } else {
+      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as ColumnPrimitive), {
+        type: "value",
+        value: value as ColumnPrimitive,
+      });
     }
   }
 
   return result as QueryableRecord<TRecord>;
+}
+
+/**
+ * select callback 결과 객체를 walk 하면서 raw 상수를 ExprUnit 으로 감싼다.
+ * `transformColumnsAlias` 와 동일 분기 구조이지만 alias 를 부여하지 않으며,
+ * 사용자가 만든 ExprUnit 의 dataType/expr 은 보존한다.
+ */
+function wrapColumnsPrimitives<T>(columns: T): T {
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(columns as Record<string, unknown>)) {
+    if (value instanceof ExprUnit) {
+      result[key] = value;
+    } else if (Array.isArray(value)) {
+      if (value.length > 0) {
+        result[key] = [wrapColumnsPrimitives(value[0])];
+      }
+    } else if (typeof value === "object" && value != null) {
+      result[key] = wrapColumnsPrimitives(value);
+    } else if (value == null) {
+      result[key] = value;
+    } else {
+      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as ColumnPrimitive), {
+        type: "value",
+        value: value as ColumnPrimitive,
+      });
+    }
+  }
+
+  return result as T;
 }
 
 //#endregion

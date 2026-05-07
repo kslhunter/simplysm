@@ -1,12 +1,12 @@
 # overview.md 템플릿 (세션 차원)
 
-세션 폴더 안에 위치 (`.specs/{yyMMddHHmmss}/overview.md`).
+세션 폴더 안에 위치 (`.specs/{yyMMdd_HHmmss}/overview.md`).
 spec 단계 워크플로 4번(전체 구조 잡기)에서 초안 작성. 이후 REQ 추가/폐기/분리/병합/번호 재배치/의존성 변경 시 즉시 갱신.
 
 ## 템플릿
 
 ```markdown
-# Session {yyMMddHHmmss}
+# Session {yyMMdd_HHmmss}
 
 ## 메타
 - 생성일: YYYY-MM-DD HH:MM
