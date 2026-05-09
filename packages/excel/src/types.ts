@@ -271,7 +271,7 @@ export interface ExcelXmlStyleData {
     fonts: [
       {
         $: { count: string };
-        font: {}[];
+        font: ExcelXmlStyleDataFont[];
       },
     ];
     fills: [
@@ -299,6 +299,16 @@ export interface ExcelXmlStyleData {
       },
     ];
   };
+}
+
+export interface ExcelXmlStyleDataFont {
+  sz?: [{ $: { val: string } }];
+  name?: [{ $: { val: string } }];
+  b?: [{}];
+  i?: [{}];
+  u?: [{ $?: { val?: ExcelFontUnderline } }];
+  strike?: [{}];
+  color?: [{ $: { rgb: string } }];
 }
 
 export interface ExcelXmlStyleDataDxf {
@@ -424,6 +434,30 @@ export interface ExcelXml {
 export type ExcelBorderPosition = "left" | "right" | "top" | "bottom";
 export type ExcelHorizontalAlign = "center" | "left" | "right";
 export type ExcelVerticalAlign = "center" | "top" | "bottom";
+export type ExcelFontUnderline = "single" | "double" | "singleAccounting" | "doubleAccounting";
+
+/**
+ * 폰트 속성. cell 단위 override (`ExcelStyleOptions.font`) 와
+ * workbook default (`wb.setDefaultStyle({ font })`) 양쪽이 공유한다.
+ *
+ * 미지정 속성은 OOXML `<font>` 자식 엘리먼트로 emit 되지 않으며, Excel 자체 기본값으로 표시된다.
+ */
+export interface ExcelFont {
+  /** 폰트 크기 (pt) */
+  size?: number;
+  /** 폰트명 (예: "맑은 고딕", "Calibri") */
+  family?: string;
+  /** 굵게 */
+  bold?: boolean;
+  /** 기울임 */
+  italic?: boolean;
+  /** 밑줄 — `<u val="..."/>` 의 val 에 그대로 매핑 */
+  underline?: ExcelFontUnderline;
+  /** 글자색 (ARGB 8자리, 예: "00FF0000") */
+  color?: string;
+  /** 취소선 */
+  strike?: boolean;
+}
 
 /**
  * 셀 스타일 옵션
@@ -457,6 +491,8 @@ export interface ExcelStyleOptions {
    * `numberFormat`과 동시 지정 시 이 필드가 우선 적용된다.
    */
   numberFormatCode?: string;
+  /** 폰트 (size/family/bold/italic/underline/color/strike) */
+  font?: ExcelFont;
 }
 
 //#endregion

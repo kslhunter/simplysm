@@ -13,8 +13,9 @@ import {
   Time,
 } from "@simplysm/core-common";
 import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
-import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
+import { convertExcelStyleOptions } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
+import { getOrCreateStyleData } from "./utils/excel-style-data";
 
 /**
  * Excel 셀을 나타내는 클래스.
@@ -233,36 +234,10 @@ export class ExcelCell {
    * @param opts.verticalAlign 세로 정렬 ("top", "center", "bottom")
    * @param opts.numberFormat 숫자 형식 프리셋 ("number", "DateOnly", "DateTime", "Time", "string")
    * @param opts.numberFormatCode 커스텀 Excel formatCode (예: "0.000000"). `numberFormat`과 동시 지정 시 이 필드가 우선한다.
+   * @param opts.font 폰트 (size/family/bold/italic/underline/color/strike). 미지정 속성은 워크북 default 폰트로 표시된다.
    */
   async setStyle(opts: ExcelStyleOptions): Promise<void> {
-    const style: ExcelStyle = {};
-
-    if (opts.background != null) {
-      if (!/^[0-9A-F]{8}$/i.test(opts.background)) {
-        throw new Error("잘못된 색상 형식입니다. (형식: 00000000: alpha(반전)+rgb)");
-      }
-      style.background = opts.background;
-    }
-
-    if (opts.border != null) {
-      style.border = opts.border;
-    }
-
-    if (opts.horizontalAlign != null) {
-      style.horizontalAlign = opts.horizontalAlign;
-    }
-
-    if (opts.verticalAlign != null) {
-      style.verticalAlign = opts.verticalAlign;
-    }
-
-    if (opts.numberFormatCode != null) {
-      style.numFmtCode = opts.numberFormatCode;
-    } else if (opts.numberFormat != null) {
-      style.numFmtId = ExcelUtils.convertNumFmtNameToId(opts.numberFormat).toString();
-    }
-
-    await this._setStyleInternal(style);
+    await this._setStyleInternal(convertExcelStyleOptions(opts));
   }
 
   //#endregion
@@ -328,24 +303,7 @@ export class ExcelCell {
   }
 
   private async _getOrCreateStyleData(): Promise<ExcelXmlStyle> {
-    let styleData = await this._getStyleData();
-    if (styleData == null) {
-      styleData = new ExcelXmlStyleClass();
-      this._zipCache.set("xl/styles.xml", styleData);
-
-      const typeData = await this._getTypeData();
-      typeData.add(
-        "/xl/styles.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
-      );
-
-      const wbRelData = await this._getWbRelData();
-      wbRelData.add(
-        "styles.xml",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
-      );
-    }
-    return styleData;
+    return getOrCreateStyleData(this._zipCache);
   }
 
   //#endregion

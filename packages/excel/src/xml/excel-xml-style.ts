@@ -1,17 +1,21 @@
 import type {
   ExcelBorderPosition,
   ExcelConditionalRuleStyle,
+  ExcelFont,
   ExcelHorizontalAlign,
+  ExcelStyleOptions,
   ExcelVerticalAlign,
   ExcelXml,
   ExcelXmlStyleData,
   ExcelXmlStyleDataBorder,
   ExcelXmlStyleDataDxf,
   ExcelXmlStyleDataFill,
+  ExcelXmlStyleDataFont,
   ExcelXmlStyleDataXf,
 } from "../types";
 import "@simplysm/core-common";
 import { num, obj } from "@simplysm/core-common";
+import { ExcelUtils } from "../utils/excel-utils";
 
 export interface ExcelStyle {
   numFmtId?: string;
@@ -20,6 +24,50 @@ export interface ExcelStyle {
   background?: string;
   verticalAlign?: ExcelVerticalAlign;
   horizontalAlign?: ExcelHorizontalAlign;
+  font?: ExcelFont;
+}
+
+/**
+ * `ExcelStyleOptions` (사용자 표면) → 내부 `ExcelStyle` 변환.
+ * cell.setStyle 과 wb.setDefaultStyle 이 공유한다.
+ *
+ * - background ARGB 8자리 형식 검증
+ * - numberFormatCode 가 numberFormat 보다 우선
+ * - font 는 그대로 전달 (구체 검증은 ExcelXmlStyle 내부에서 수행)
+ */
+export function convertExcelStyleOptions(opts: ExcelStyleOptions): ExcelStyle {
+  const style: ExcelStyle = {};
+
+  if (opts.background != null) {
+    if (!/^[0-9A-F]{8}$/i.test(opts.background)) {
+      throw new Error("잘못된 색상 형식입니다. (형식: 00000000: alpha(반전)+rgb)");
+    }
+    style.background = opts.background;
+  }
+
+  if (opts.border != null) {
+    style.border = opts.border;
+  }
+
+  if (opts.horizontalAlign != null) {
+    style.horizontalAlign = opts.horizontalAlign;
+  }
+
+  if (opts.verticalAlign != null) {
+    style.verticalAlign = opts.verticalAlign;
+  }
+
+  if (opts.numberFormatCode != null) {
+    style.numFmtCode = opts.numberFormatCode;
+  } else if (opts.numberFormat != null) {
+    style.numFmtId = ExcelUtils.convertNumFmtNameToId(opts.numberFormat).toString();
+  }
+
+  if (opts.font != null) {
+    style.font = opts.font;
+  }
+
+  return style;
 }
 
 /**
@@ -72,39 +120,19 @@ export class ExcelXmlStyle implements ExcelXml {
 
   add(style: ExcelStyle): string {
     const newXf: ExcelXmlStyleDataXf = { $: {} };
-
-    if (style.numFmtId != null) {
-      newXf.$.numFmtId = style.numFmtId;
-    }
-
-    if (style.numFmtCode != null) {
-      newXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
-      newXf.$.applyNumberFormat = "1";
-    }
-
-    if (style.background != null) {
-      const newFill: ExcelXmlStyleDataFill = {
-        patternFill: [
-          {
-            $: { patternType: "solid" },
-            fgColor: [{ $: { rgb: style.background.toUpperCase() } }],
-          },
-        ],
-      };
-
-      newXf.$.applyFill = "1";
-      newXf.$.fillId = this._getSameOrCreateFill(newFill);
-    }
-
-    if (style.border != null) {
-      const newBorder = this._createBorderFromPositions(style.border);
-      newXf.$.applyBorder = "1";
-      newXf.$.borderId = this._getSameOrCreateBorder(newBorder);
-    }
-
-    this._applyAlignment(newXf, style);
-
+    this._applyStyleToXf(newXf, style);
     return this._getSameOrCreateXf(newXf);
+  }
+
+  /**
+   * 워크북 default cell style 설정. `cellXfs[0].xf[0]` (OOXML default cell style 자리) 을 새로 빌드해 덮어쓴다.
+   * fonts/fills/borders/numFmts 자원은 `_getSameOrCreate*` 로 누적·dedup 되고 인덱스가 cellXfs[0] 에 박힌다.
+   * 미호출 시 기존 cellXfs[0] 그대로 보존된다.
+   */
+  setDefaultStyle(style: ExcelStyle): void {
+    const newXf: ExcelXmlStyleDataXf = { $: { numFmtId: "0" } };
+    this._applyStyleToXf(newXf, style);
+    this.data.styleSheet.cellXfs[0].xf[0] = newXf;
   }
 
   addWithClone(id: string, style: ExcelStyle): string {
@@ -181,6 +209,12 @@ export class ExcelXmlStyle implements ExcelXml {
       }
     }
 
+    if (style.font != null) {
+      this._validateFont(style.font);
+      cloneXf.$.applyFont = "1";
+      cloneXf.$.fontId = this._getSameOrCreateFont(this._buildFontXml(style.font));
+    }
+
     this._applyAlignment(cloneXf, style);
 
     return this._getSameOrCreateXf(cloneXf);
@@ -250,6 +284,21 @@ export class ExcelXmlStyle implements ExcelXml {
 
       result.verticalAlign = xf.alignment?.[0].$.vertical;
       result.horizontalAlign = xf.alignment?.[0].$.horizontal;
+
+      if (xf.$.fontId != null) {
+        const fontIdNum = num.parseInt(xf.$.fontId);
+        if (fontIdNum != null) {
+          const font = this.data.styleSheet.fonts[0].font[fontIdNum] as
+            | ExcelXmlStyleDataFont
+            | undefined;
+          if (font != null) {
+            const parsed = this._parseFontXml(font);
+            if (Object.keys(parsed).length > 0) {
+              result.font = parsed;
+            }
+          }
+        }
+      }
     }
 
     return result;
@@ -361,6 +410,108 @@ export class ExcelXmlStyle implements ExcelXml {
     ).toString();
 
     return nextNumFmtId;
+  }
+
+  private _applyStyleToXf(xf: ExcelXmlStyleDataXf, style: ExcelStyle): void {
+    if (style.numFmtId != null) {
+      xf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.numFmtCode != null) {
+      xf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
+      xf.$.applyNumberFormat = "1";
+    }
+
+    if (style.background != null) {
+      const newFill: ExcelXmlStyleDataFill = {
+        patternFill: [
+          {
+            $: { patternType: "solid" },
+            fgColor: [{ $: { rgb: style.background.toUpperCase() } }],
+          },
+        ],
+      };
+      xf.$.applyFill = "1";
+      xf.$.fillId = this._getSameOrCreateFill(newFill);
+    }
+
+    if (style.border != null) {
+      const newBorder = this._createBorderFromPositions(style.border);
+      xf.$.applyBorder = "1";
+      xf.$.borderId = this._getSameOrCreateBorder(newBorder);
+    }
+
+    if (style.font != null) {
+      this._validateFont(style.font);
+      xf.$.applyFont = "1";
+      xf.$.fontId = this._getSameOrCreateFont(this._buildFontXml(style.font));
+    }
+
+    this._applyAlignment(xf, style);
+  }
+
+  private _validateFont(font: ExcelFont): void {
+    if (font.color != null && !/^[0-9A-F]{8}$/i.test(font.color)) {
+      throw new Error("잘못된 폰트 색상 형식입니다. (형식: 00000000: alpha(반전)+rgb)");
+    }
+  }
+
+  private _buildFontXml(font: ExcelFont): ExcelXmlStyleDataFont {
+    const result: ExcelXmlStyleDataFont = {};
+    if (font.size != null) {
+      result.sz = [{ $: { val: font.size.toString() } }];
+    }
+    if (font.family != null) {
+      result.name = [{ $: { val: font.family } }];
+    }
+    if (font.bold === true) {
+      result.b = [{}];
+    }
+    if (font.italic === true) {
+      result.i = [{}];
+    }
+    if (font.underline != null) {
+      result.u = [{ $: { val: font.underline } }];
+    }
+    if (font.strike === true) {
+      result.strike = [{}];
+    }
+    if (font.color != null) {
+      result.color = [{ $: { rgb: font.color.toUpperCase() } }];
+    }
+    return result;
+  }
+
+  private _parseFontXml(item: ExcelXmlStyleDataFont): ExcelFont {
+    const result: ExcelFont = {};
+    if (item.sz?.[0].$.val != null) {
+      const sz = num.parseFloat(item.sz[0].$.val);
+      if (sz != null) result.size = sz;
+    }
+    if (item.name?.[0].$.val != null) {
+      result.family = item.name[0].$.val;
+    }
+    if (item.b != null) result.bold = true;
+    if (item.i != null) result.italic = true;
+    if (item.u != null) {
+      result.underline = item.u[0].$?.val ?? "single";
+    }
+    if (item.strike != null) result.strike = true;
+    if (item.color?.[0].$.rgb != null) {
+      result.color = item.color[0].$.rgb;
+    }
+    return result;
+  }
+
+  private _getSameOrCreateFont(item: ExcelXmlStyleDataFont): string {
+    const prevSameFont = this.data.styleSheet.fonts[0].font.single((f) => obj.equal(f, item));
+    if (prevSameFont != null) {
+      return this.data.styleSheet.fonts[0].font.indexOf(prevSameFont).toString();
+    } else {
+      this.data.styleSheet.fonts[0].font.push(item);
+      this.data.styleSheet.fonts[0].$.count = this.data.styleSheet.fonts[0].font.length.toString();
+      return (this.data.styleSheet.fonts[0].font.length - 1).toString();
+    }
   }
 
   private _applyAlignment(xf: ExcelXmlStyleDataXf, style: ExcelStyle): void {

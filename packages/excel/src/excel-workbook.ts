@@ -6,6 +6,9 @@ import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
 import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
 import { ExcelXmlWorkbook as ExcelXmlWorkbookClass } from "./xml/excel-xml-workbook";
 import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-worksheet";
+import { convertExcelStyleOptions } from "./xml/excel-xml-style";
+import { getOrCreateStyleData } from "./utils/excel-style-data";
+import type { ExcelStyleOptions } from "./types";
 
 /**
  * Excel 워크북 처리 클래스
@@ -153,6 +156,33 @@ export class ExcelWorkbook {
     const ws = new ExcelWorksheet(this.zipCache, wsId, fileName);
     this._wsMap.set(wsId, ws);
     return ws;
+  }
+
+  //#endregion
+
+  //#region Style Methods
+
+  /**
+   * 워크북 default cell style 설정. `xl/styles.xml` 의 `cellXfs[0]` (OOXML default cell style 자리) 에
+   * 입력 옵션으로 새 xf 를 빌드해 덮어쓴다. 폰트뿐 아니라 background/border/horizontalAlign/
+   * verticalAlign/numberFormat/numberFormatCode/font 등 `ExcelStyleOptions` 의 모든 필드를 받는다.
+   *
+   * 미호출 시 `cellXfs[0]` 은 변경되지 않으며, 기존 워크북 read 시 원본 default 가 그대로 보존된다.
+   * font 미지정 시에는 `fonts[0]` 이 빈 `<font/>` (또는 원본) 으로 유지되어 Excel 자체 기본 폰트로 표시된다.
+   *
+   * @example
+   * ```typescript
+   * const wb = new ExcelWorkbook();
+   * await wb.setDefaultStyle({
+   *   font: { family: "맑은 고딕", size: 10 },
+   *   horizontalAlign: "center",
+   * });
+   * ```
+   */
+  async setDefaultStyle(opts: ExcelStyleOptions): Promise<void> {
+    this._ensureNotClosed();
+    const styleData = await getOrCreateStyleData(this.zipCache);
+    styleData.setDefaultStyle(convertExcelStyleOptions(opts));
   }
 
   //#endregion
