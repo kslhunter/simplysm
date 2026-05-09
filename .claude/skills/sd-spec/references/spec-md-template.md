@@ -1,6 +1,6 @@
 # spec.md 템플릿
 
-REQ 폴더 안에 위치 (`.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/spec.md`).
+REQ 폴더 안에 위치 (`.specs/{yyMMddHHmmss}/REQ-XXX-slug/spec.md`).
 
 ## 템플릿
 

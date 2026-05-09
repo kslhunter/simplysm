@@ -15,11 +15,11 @@ src/                                ← UI scaffold (메인 코드베이스 직�
   pages/<신규>.tsx
   data/mock-<도메인>.ts             ← mock data 별도 파일
 
-.specs/{yyMMdd_HHmmss}/DEMO-001-슬러그/
-  demo.md                           ← 시나리오/만든 파일/Mock 요약/피드백 라운드
+.specs/{yyMMddHHmmss}/DEMO-001-slug/
+  demo.md                           ← 시나리오 / 만든 파일 / Mock 요약 / 피드백 라운드
 ```
 
-세션 폴더(`{yyMMdd_HHmmss}`)는 spec 단계의 결과를 그대로 사용 (이미 존재).
+세션 폴더(`{yyMMddHHmmss}`)는 spec 단계의 결과를 그대로 사용 (이미 존재).
 
 ## 워크플로
 
@@ -27,32 +27,30 @@ src/                                ← UI scaffold (메인 코드베이스 직�
 
 2. 대상 REQ들의 spec.md 읽기 + 코드베이스(디자인 시스템 등) 파악
 
-3. DEMO ID 부여 + `.specs/{yyMMdd_HHmmss}/DEMO-XXX-슬러그/` 생성
-   - DEMO ID는 세션 폴더 내 `DEMO-001` 부터 순번
-   - 슬러그는 한글 OK
+3. DEMO ID 부여(세션 폴더 내 `DEMO-001`부터 순번, slug: 한글) + 디렉토리/demo.md 초안(메타) 생성 + overview.md `## DEMO 매핑`에 `DEMO-XXX-slug: REQ-XXX, ... (상태: drafting)` 추가 (섹션 없으면 신규 생성)
 
-4. UI scaffold 작성 (메인 코드베이스에 직접)
+4. UI scaffold 작성 (메인 코드베이스 직접)
    - 페이지 + 컴포넌트 배치 (디자인 시스템 활용)
-   - mock data는 **별도 파일** + `MOCK_` prefix + 상단 주석
+   - mock data는 별도 파일 + `MOCK_` prefix + 상단 주석
    - 데모 흐름 필수 인터랙션만 (페이지 이동/폼 입력 시각/클릭 반응)
-   - 모호한 부분 → Q
+   - 결정거리(레이아웃 구조, 영역 배치, 요소 흐름 등) 모호 → 한 번에 하나씩 Q → 답변 즉시 반영
 
-5. demo.md 작성 (템플릿: [references/demo-md-template.md](references/demo-md-template.md))
+5. demo.md 잔여 섹션 채움 (시나리오 / 만든 파일 / Mock Data 요약). 템플릿: [references/demo-md-template.md](references/demo-md-template.md)
 
-6. Q 다이얼로그 (있다면, 한 번에 하나씩) → 사용자 답변 → 즉시 갱신
+6. Q 다이얼로그 (잔여, 한 번에 하나씩) → 사용자 답변 → 즉시 갱신
 
-7. demo 작성 끝 → 메타 `상태: demo-ready` → 사용자에게 "산출물 소비자에게 보여주세요" 알림
+7. demo 작성 끝 → 메타 `상태: demo-ready` (overview `## DEMO 매핑` 동기화) → 사용자에게 시연 알림
 
-8. 사용자가 산출물 소비자 피드백 가져옴 → 메타 `상태: reviewing`
+8. 사용자가 피드백 가져옴 → 메타 `상태: reviewing` (overview 동기화)
 
 9. 피드백 분류 (UI 조정 / spec 변경 / 모호) — 사용자 확정
-   - UI 조정 → demo 코드 수정
-   - spec 변경 (R 단위) → spec.md 수정 + 메타 `이력` 기록
-   - REQ 구조 변경(분리/병합) → spec 재진입 후보 알림 (demo 단독 처리 X)
+    - UI 조정 → demo 코드 수정
+    - spec 변경 (R 단위) → spec.md 수정 + 메타 `이력` 기록
+    - REQ 구조 변경(분리/병합) → spec 재진입 후보 알림 (demo 단독 처리 X)
 
 10. 라운드 기록 (append-only) → "다음 라운드? 종료?"
     - 다음 → 7번으로
-    - 종료 → **demo.md 형식 점검** (만든 파일 목록 / 라운드 기록 / 메타 일관성) → **역방향 자잘 갱신** (spec 메타 이력 누락 등 — 라운드 중 spec 변경은 9번에서 이미 처리, 여기선 잔여 점검만) → 메타 `상태: done`
+    - 종료 → demo.md 형식 점검 (시나리오 / 만든 파일 / 라운드 / 메타) → 역방향 자잘 갱신 → 메타 `상태: done` (overview 동기화)
 
 ## 책임 범위
 
@@ -84,10 +82,11 @@ export const MOCK_RTP_LIST = [...]
 
 ## 안티패턴
 
-- ❌ throwaway로 만들기 (격리 폴더에 만들고 폐기) — production 첫 단계임
+- ❌ throwaway로 만들기 (production 첫 단계)
 - ❌ 실제 데이터 처리 로직 (저장/삭제/계산)
 - ❌ Mock data를 페이지 inline에 굳히기
 - ❌ 피드백 분류 자동 결정
-- ❌ REQ 구조 변경을 demo 단독 처리 (spec 재진입)
+- ❌ REQ 구조 변경을 demo 단독 처리
 - ❌ 라운드 기록 누락
 - ❌ 종료 결정 직후 demo.md 형식 점검 없이 done 전환
+- ❌ DEMO 생성·상태 변경 시 overview `## DEMO 매핑` 갱신 누락

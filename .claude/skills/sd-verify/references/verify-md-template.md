@@ -1,11 +1,11 @@
 # verify.md 템플릿
 
-위치: `.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/verify.md`
+위치: `.specs/{yyMMddHHmmss}/REQ-XXX-slug/verify.md`
 
 ## 템플릿
 
 ```markdown
-# REQ-001-슬러그 / Verify
+# REQ-001-slug / Verify
 
 ## 메타
 - 상태: verifying | verified

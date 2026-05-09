@@ -1,10 +1,12 @@
 import type {
   ExcelBorderPosition,
+  ExcelConditionalRuleStyle,
   ExcelHorizontalAlign,
   ExcelVerticalAlign,
   ExcelXml,
   ExcelXmlStyleData,
   ExcelXmlStyleDataBorder,
+  ExcelXmlStyleDataDxf,
   ExcelXmlStyleDataFill,
   ExcelXmlStyleDataXf,
 } from "../types";
@@ -251,6 +253,47 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     return result;
+  }
+
+  addDxf(style: ExcelConditionalRuleStyle): string {
+    const dxfItem: ExcelXmlStyleDataDxf = {};
+
+    if (style.fontColor != null || style.fontWeight != null) {
+      const font: NonNullable<ExcelXmlStyleDataDxf["font"]>[number] = {};
+      if (style.fontWeight != null) {
+        font.b = [{ $: { val: style.fontWeight === "bold" ? "1" : "0" } }];
+      }
+      if (style.fontColor != null) {
+        font.color = [{ $: { rgb: style.fontColor.toUpperCase() } }];
+      }
+      dxfItem.font = [font];
+    }
+
+    if (style.background != null) {
+      dxfItem.fill = [
+        {
+          patternFill: [
+            {
+              $: { patternType: "solid" },
+              bgColor: [{ $: { rgb: style.background.toUpperCase() } }],
+            },
+          ],
+        },
+      ];
+    }
+
+    const dxfs = (this.data.styleSheet.dxfs = this.data.styleSheet.dxfs ?? [
+      { $: { count: "0" }, dxf: [] },
+    ]);
+
+    const prevSameDxf = dxfs[0].dxf.single((item) => obj.equal(item, dxfItem));
+    if (prevSameDxf != null) {
+      return dxfs[0].dxf.indexOf(prevSameDxf).toString();
+    }
+
+    dxfs[0].dxf.push(dxfItem);
+    dxfs[0].$.count = dxfs[0].dxf.length.toString();
+    return (dxfs[0].dxf.length - 1).toString();
   }
 
   getNumFmtCode(numFmtId: string): string | undefined {

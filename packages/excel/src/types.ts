@@ -128,8 +128,43 @@ export interface ExcelXmlWorksheetData {
         }[];
       },
     ];
+    conditionalFormatting?: ExcelXmlConditionalFormattingData[];
     drawing?: { $: { "r:id": string } }[];
   };
+}
+
+export interface ExcelXmlConditionalFormattingData {
+  $: { sqref: string };
+  cfRule: ExcelXmlCfRuleData[];
+}
+
+export interface ExcelXmlCfRuleData {
+  $: {
+    type:
+      | "cellIs"
+      | "containsText"
+      | "notContainsText"
+      | "beginsWith"
+      | "endsWith"
+      | "expression";
+    operator?:
+      | "lessThan"
+      | "lessThanOrEqual"
+      | "equal"
+      | "notEqual"
+      | "greaterThanOrEqual"
+      | "greaterThan"
+      | "between"
+      | "notBetween"
+      | "containsText"
+      | "notContains"
+      | "beginsWith"
+      | "endsWith";
+    priority: string;
+    dxfId: string;
+    text?: string;
+  };
+  formula: string[];
 }
 
 export interface ExcelRowData {
@@ -257,7 +292,32 @@ export interface ExcelXmlStyleData {
         xf: ExcelXmlStyleDataXf[];
       },
     ];
+    dxfs?: [
+      {
+        $: { count: string };
+        dxf: ExcelXmlStyleDataDxf[];
+      },
+    ];
   };
+}
+
+export interface ExcelXmlStyleDataDxf {
+  font?: [
+    {
+      b?: [{ $: { val: "0" | "1" } }];
+      color?: [{ $: { rgb: string } }];
+    },
+  ];
+  fill?: [
+    {
+      patternFill: [
+        {
+          $: { patternType?: "solid" };
+          bgColor?: [{ $: { rgb: string } }];
+        },
+      ];
+    },
+  ];
 }
 
 export interface ExcelXmlStyleDataXf {
@@ -398,5 +458,55 @@ export interface ExcelStyleOptions {
    */
   numberFormatCode?: string;
 }
+
+//#endregion
+
+//#region Conditional Format Types
+
+/**
+ * 조건부 서식 강조 스타일.
+ * 미지정 필드는 base 셀 스타일을 그대로 두고, 지정 필드만 OOXML dxf 로 emit 되어 native CF 오버레이로 합성된다.
+ */
+export interface ExcelConditionalRuleStyle {
+  /** 배경색 (ARGB 8자리, 예: "00FFFF00") */
+  background?: string;
+  /** 글자색 (ARGB 8자리) */
+  fontColor?: string;
+  /** 글자 굵기. "normal" 은 base 가 bold 라도 강제 normal. */
+  fontWeight?: "bold" | "normal";
+}
+
+/**
+ * 조건부 서식 규칙.
+ * - `cellIs` 단일 비교(`<`, `>`, `<=`, `>=`, `=`, `<>`): `value` 는 number 또는 string.
+ * - `cellIs` 구간(`between`, `notBetween`): `value` 는 [a, b] 튜플(양 끝 inclusive).
+ * - `text` 매칭(`contains`, `notContains`, `beginsWith`, `endsWith`): `value` 는 string. SEARCH 기반(대소문자 무시) 고정.
+ *
+ * `value: number` 는 raw formula(`<formula>4999</formula>`), `value: string` 은 따옴표 둘러싼 리터럴 formula(`<formula>"OK"</formula>`) 로 emit.
+ */
+export type ExcelConditionalRule =
+  | {
+      type: "cellIs";
+      op: "<" | ">" | "<=" | ">=" | "=" | "<>";
+      value: number | string;
+      style: ExcelConditionalRuleStyle;
+    }
+  | {
+      type: "cellIs";
+      op: "between" | "notBetween";
+      value: [number, number] | [string, string];
+      style: ExcelConditionalRuleStyle;
+    }
+  | {
+      type: "text";
+      op: "contains" | "notContains" | "beginsWith" | "endsWith";
+      value: string;
+      style: ExcelConditionalRuleStyle;
+    }
+  | {
+      type: "expression";
+      formula: string;
+      style: ExcelConditionalRuleStyle;
+    };
 
 //#endregion

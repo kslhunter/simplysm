@@ -1,11 +1,11 @@
 # impl.md 템플릿
 
-위치: `.specs/{yyMMdd_HHmmss}/REQ-XXX-슬러그/impl.md`
+위치: `.specs/{yyMMddHHmmss}/REQ-XXX-slug/impl.md`
 
 ## 템플릿
 
 ```markdown
-# REQ-001-슬러그 / Implementation
+# REQ-001-slug / Implementation
 
 ## 메타
 - 상태: implementing | implemented

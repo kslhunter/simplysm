@@ -5,7 +5,13 @@ import mime from "mime";
 import { ExcelCell } from "./excel-cell";
 import { ExcelCol } from "./excel-col";
 import { ExcelRow } from "./excel-row";
-import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelValueType } from "./types";
+import type {
+  ExcelAddressPoint,
+  ExcelAddressRangePoint,
+  ExcelConditionalRule,
+  ExcelValueType,
+  ExcelXmlCfRuleData,
+} from "./types";
 import { ExcelUtils } from "./utils/excel-utils";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelXmlContentType } from "./xml/excel-xml-content-type";
@@ -306,6 +312,142 @@ export class ExcelWorksheet {
 
     const wsXml = await this._getWsData();
     wsXml.freezeAt(point);
+  }
+
+  //#endregion
+
+  //#region Conditional Format Methods
+
+  /**
+   * 셀/범위에 조건부 서식 규칙을 적용한다.
+   *
+   * @param opts.ref 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) Excel 주소.
+   * @param opts.rules 적용할 규칙 배열. 배열 순서가 priority(앞이 우선)이며, 호출 간에는 시트 전역 카운터로 이어붙는다.
+   *
+   * @remarks
+   * 같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적된다.
+   * 정적 셀 스타일과 조건부 서식의 합성은 Excel native CF 오버레이에 위임한다.
+   *
+   * @example
+   * ```typescript
+   * await ws.addConditionalFormat({
+   *   ref: "B2:B100",
+   *   rules: [
+   *     { type: "cellIs", op: "<", value: 1000, style: { background: "00FF0000" } },
+   *     { type: "cellIs", op: "<", value: 4999, style: { background: "00FFFF00" } },
+   *   ],
+   * });
+   * ```
+   */
+  async addConditionalFormat(opts: {
+    ref: string;
+    rules: ExcelConditionalRule[];
+  }): Promise<void> {
+    if (opts.rules.length === 0) return;
+
+    const wsData = await this._getWsData();
+    const styleData = await this._ensureStyleData();
+    const topLeft = opts.ref.split(":")[0];
+
+    const dxfRules: {
+      dxfId: string;
+      cfRule: {
+        type: ExcelXmlCfRuleData["$"]["type"];
+        operator?: ExcelXmlCfRuleData["$"]["operator"];
+        formula: string[];
+        text?: string;
+      };
+    }[] = [];
+
+    for (const rule of opts.rules) {
+      const dxfId = styleData.addDxf(rule.style);
+      const spec = ExcelWorksheet._buildCfRuleSpec(rule, topLeft);
+      dxfRules.push({ dxfId, cfRule: spec });
+    }
+
+    wsData.addConditionalFormatting(opts.ref, dxfRules);
+  }
+
+  private static _buildCfRuleSpec(
+    rule: ExcelConditionalRule,
+    topLeft: string,
+  ): {
+    type: ExcelXmlCfRuleData["$"]["type"];
+    operator?: ExcelXmlCfRuleData["$"]["operator"];
+    formula: string[];
+    text?: string;
+  } {
+    const encodeLiteral = (v: number | string): string =>
+      typeof v === "number" ? v.toString() : `"${v.replaceAll('"', '""')}"`;
+
+    if (rule.type === "expression") {
+      return {
+        type: "expression",
+        formula: [rule.formula],
+      };
+    }
+
+    if (rule.type === "text") {
+      const escaped = rule.value.replaceAll('"', '""');
+      const lenLiteral = `LEN("${escaped}")`;
+      switch (rule.op) {
+        case "contains":
+          return {
+            type: "containsText",
+            operator: "containsText",
+            text: rule.value,
+            formula: [`NOT(ISERROR(SEARCH("${escaped}",${topLeft})))`],
+          };
+        case "notContains":
+          return {
+            type: "notContainsText",
+            operator: "notContains",
+            text: rule.value,
+            formula: [`ISERROR(SEARCH("${escaped}",${topLeft}))`],
+          };
+        case "beginsWith":
+          return {
+            type: "beginsWith",
+            operator: "beginsWith",
+            text: rule.value,
+            formula: [`LEFT(${topLeft},${lenLiteral})="${escaped}"`],
+          };
+        case "endsWith":
+          return {
+            type: "endsWith",
+            operator: "endsWith",
+            text: rule.value,
+            formula: [`RIGHT(${topLeft},${lenLiteral})="${escaped}"`],
+          };
+      }
+    }
+
+    const operator: ExcelXmlCfRuleData["$"]["operator"] = (() => {
+      switch (rule.op) {
+        case "<":
+          return "lessThan";
+        case ">":
+          return "greaterThan";
+        case "<=":
+          return "lessThanOrEqual";
+        case ">=":
+          return "greaterThanOrEqual";
+        case "=":
+          return "equal";
+        case "<>":
+          return "notEqual";
+        case "between":
+          return "between";
+        case "notBetween":
+          return "notBetween";
+      }
+    })();
+
+    const formula = Array.isArray(rule.value)
+      ? [encodeLiteral(rule.value[0]), encodeLiteral(rule.value[1])]
+      : [encodeLiteral(rule.value)];
+
+    return { type: "cellIs", operator, formula };
   }
 
   //#endregion

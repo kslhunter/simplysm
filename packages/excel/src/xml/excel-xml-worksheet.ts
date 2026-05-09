@@ -4,6 +4,7 @@ import type {
   ExcelCellType,
   ExcelRowData,
   ExcelXml,
+  ExcelXmlCfRuleData,
   ExcelXmlWorksheetData,
 } from "../types";
 import { ExcelUtils } from "../utils/excel-utils";
@@ -219,6 +220,41 @@ export class ExcelXmlWorksheet implements ExcelXml {
       this.data.worksheet.mergeCells[0].mergeCell = filteredMergeCells;
       this.data.worksheet.mergeCells[0].$.count = filteredMergeCells.length.toString();
     }
+  }
+
+  /**
+   * `<conditionalFormatting>` 블록을 시트에 push.
+   * priority 는 시트 전역 카운터(기존 cfRule 의 최대 priority + 1)부터 호출 내 rules 순서대로 부여.
+   */
+  addConditionalFormatting(sqref: string, rules: { dxfId: string; cfRule: Omit<ExcelXmlCfRuleData["$"], "priority" | "dxfId"> & { formula: string[] } }[]): void {
+    const cfList = (this.data.worksheet.conditionalFormatting =
+      this.data.worksheet.conditionalFormatting ?? []);
+
+    let nextPriority = 1;
+    for (const block of cfList) {
+      for (const rule of block.cfRule) {
+        const p = num.parseInt(rule.$.priority);
+        if (p != null && p >= nextPriority) {
+          nextPriority = p + 1;
+        }
+      }
+    }
+
+    const cfRuleData: ExcelXmlCfRuleData[] = rules.map((r) => ({
+      $: {
+        type: r.cfRule.type,
+        priority: (nextPriority++).toString(),
+        dxfId: r.dxfId,
+        ...(r.cfRule.operator != null ? { operator: r.cfRule.operator } : {}),
+        ...(r.cfRule.text != null ? { text: r.cfRule.text } : {}),
+      },
+      formula: r.cfRule.formula,
+    }));
+
+    cfList.push({
+      $: { sqref },
+      cfRule: cfRuleData,
+    });
   }
 
   shiftMergeCells(fromRow: number, delta: number): void {
@@ -445,6 +481,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
       if (key === "cols") continue;
       if (key === "sheetViews") continue;
       if (key === "sheetFormatPr") continue;
+      if (key === "conditionalFormatting") continue;
 
       if (key === "sheetData") {
         if (this.data.worksheet.sheetViews != null) {
@@ -460,6 +497,9 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
         if (this.data.worksheet.mergeCells != null) {
           result.mergeCells = this.data.worksheet.mergeCells;
+        }
+        if (this.data.worksheet.conditionalFormatting != null) {
+          result.conditionalFormatting = this.data.worksheet.conditionalFormatting;
         }
       } else {
         const worksheetRec = this.data.worksheet as Record<string, unknown>;

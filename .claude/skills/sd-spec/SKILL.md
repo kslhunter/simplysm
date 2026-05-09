@@ -32,14 +32,14 @@ raw input → 세션 폴더 + REQ별 spec.md 생성. 사용자와 다이얼로�
 
 ```
 .specs/
-  {yyMMdd_HHmmss}/                       ← 세션 폴더
+  {yyMMddHHmmss}/                       ← 세션 폴더
     overview.md
-    REQ-001-슬러그/
+    REQ-001-slug/
       spec.md
 ```
 
-- 세션 폴더명 = `6자리 숫자 + "_" + 6자리 숫자` Bash(`date +%y%m%d_%H%M%S`)
-- REQ ID = `REQ-001` ... 슬러그는 한글 OK
+- 세션 폴더명 = `12자리 숫자` Bash(`date +%y%m%d%H%M%S`)
+- REQ ID = `REQ-001` (slug: 한글)
 
 ## REQ 상태 (spec 단계 한정)
 
@@ -54,7 +54,7 @@ raw input → 세션 폴더 + REQ별 spec.md 생성. 사용자와 다이얼로�
 
 ## 워크플로
 
-1. 세션 폴더 `.specs/{yyMMdd_HHmmss}/` 생성 (raw input 모드만)
+1. 세션 폴더 `.specs/{yyMMddHHmmss}/` 생성 (raw input 모드만)
 
 2. raw input 읽기 — **불변**. STT 오타/화자 추정/모호 발화: [references/raw-input-handling.md](references/raw-input-handling.md)
 

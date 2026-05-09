@@ -19,6 +19,11 @@ BLOCKED = [
     (CMD_POS + r"npx\s+tsc\b", "npx tsc (use {PM} typecheck)"),
     # Use {PM} lint instead
     (CMD_POS + r"npx\s+eslint\b", "npx eslint (use {PM} lint)"),
+    # Playwright CLI: do not specify save paths; let it auto-save under .playwright-cli/
+    (CMD_POS + r"(npx\s+)?playwright-cli\s+(?:-s=\S+\s+)?(screenshot|pdf|snapshot)\b[^|;&\n]*[ \t]--filename\b",
+     "playwright-cli {screenshot|pdf|snapshot} --filename (omit to auto-save under .playwright-cli/)"),
+    (CMD_POS + r"(npx\s+)?playwright-cli\s+(?:-s=\S+\s+)?(state-save|video-start)[ \t]+\S",
+     "playwright-cli {state-save|video-start} <path> (omit path to auto-save under .playwright-cli/)"),
 ]
 
 for pattern, label in BLOCKED:

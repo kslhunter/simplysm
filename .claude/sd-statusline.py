@@ -196,16 +196,17 @@ def main():
     cwd = stdin_data.get("workspace", {}).get("current_dir") or stdin_data.get("cwd", "")
     folder = os.path.basename(cwd) if cwd else "?"
 
-    # Extract model
+    # Extract model (+ effort if present)
     model_id = stdin_data.get("model", {}).get("id", "")
     model = format_model(model_id) if model_id else "?"
+    effort_level = (stdin_data.get("effort") or {}).get("level")
+    if effort_level:
+        model = f"{model} {effort_level}"
 
     # Extract context %
-    ctx_window = stdin_data.get("context_window")
-    if ctx_window is not None:
-        ctx_str = f"{ctx_window.get('used_percentage') or 0}%"
-    else:
-        ctx_str = "?"
+    ctx_window = stdin_data.get("context_window") or {}
+    used_pct = ctx_window.get("used_percentage")
+    ctx_str = f"{used_pct}%" if used_pct is not None else "?"
 
     # Rate limits from stdin
     rate_limits = stdin_data.get("rate_limits", {})
@@ -219,12 +220,6 @@ def main():
         eu = cache.get("extra_usage", {})
         if eu.get("is_enabled") and eu.get("used_credits") is not None:
             extra_str = f"${eu['used_credits'] / 100:.2f}"
-
-    # Write rate_limits to cache
-    cache = cache or {}
-    cache["rate_limits"] = rate_limits
-    cache["rate_limits_ts"] = time.time()
-    write_cache_atomic(cache)
 
     # Spawn background fetch if needed
     version = stdin_data.get("version", "2.1.86")

@@ -496,17 +496,20 @@ async onSubmit(): Promise<void> {
 
 ### 폼 항목 레이아웃
 
-여러 입력 항목을 가로로 나열할 때 `form-box-inline` 컨테이너 + 항목별 `form-box-item`:
+label + 입력 그룹을 묶는 전용 클래스 3종:
+
+- `form-box` — 세로 스택. `> div` 또는 `> .form-box-item` 안에 `<label>` + 입력. 항목 사이 `gap-default`.
+- `form-box-inline` — 가로 인라인 flex (wrap). 라벨이 입력 옆에 붙음. 검색·필터폼에 사용. 라벨 없는 `form-box-item` 도 허용 (버튼 등).
+- `form-table` — `<table>` 기반. `<th>` 가 우측 정렬 라벨, `<td>` 가 입력. `<th class="form-table-header">` 는 섹션 헤더(좌측 정렬, 회색, 위쪽 여백 큼). 라벨/입력 폭을 정렬해야 하는 등록·편집 폼에 사용.
 
 ```html
 <div class="form-box-inline">
   <div class="form-box-item">
-    <label>이름</label>
-    <sd-textfield [(value)]="data().name" (valueChange)="mark(data)" />
+    <label>기준 일자</label>
+    <sd-modal-select-button [(value)]="baseDate" ...>{{ baseDate() ?? "선택" }}</sd-modal-select-button>
   </div>
   <div class="form-box-item">
-    <label>등록일</label>
-    <sd-textfield [type]="'date'" [(value)]="data().createdAt" (valueChange)="mark(data)" />
+    <sd-button [theme]="'primary'" (click)="onCompareButtonClick()">비교</sd-button>
   </div>
 </div>
 ```
@@ -604,6 +607,7 @@ sharedCustomers = useSharedSignal("고객사");
 
 - 영역 분할은 `sd-dock-container` / `sd-dock`, 영역 안 배치는 flex 유틸 클래스를 우선한다. 자체 styles 작성은 마지막 수단.
 - 글로벌 클래스 정의는 `@simplysm/angular/scss/commons/`.
+- `sd-dock-container`에 `p-default`와 같은 `padding` 클래스 사용 금지
 
 ## 아이콘
 

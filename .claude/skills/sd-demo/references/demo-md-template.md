@@ -1,11 +1,11 @@
 # demo.md 템플릿
 
-위치: `.specs/{yyMMdd_HHmmss}/DEMO-XXX-슬러그/demo.md`
+위치: `.specs/{yyMMddHHmmss}/DEMO-XXX-slug/demo.md`
 
 ## 템플릿
 
-```markdown
-# DEMO-001-슬러그 / Demo
+````markdown
+# DEMO-001-slug / Demo
 
 ## 메타
 - 상태: drafting | demo-ready | reviewing | done
@@ -39,7 +39,7 @@
   - <피드백 2> → ...
 - **처리**:
   - <적용 결과>
-```
+````
 
 ## 섹션별 역할
 
@@ -62,7 +62,7 @@
 
 ## 예시
 
-```markdown
+````markdown
 # DEMO-001-RTP / Demo
 
 ## 메타
@@ -89,4 +89,4 @@
 
 ## 산출물 소비자 피드백 라운드
 <!-- 아직 진행 안 함 -->
-```
+````

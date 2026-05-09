@@ -10,9 +10,9 @@ REQ 단위로 4문서(overview/spec/plan/impl) + 코드 통합 읽기. 자동 �
 ## 산출물
 
 ```
-.specs/{yyMMdd_HHmmss}/
+.specs/{yyMMddHHmmss}/
   overview.md                   ← 입력 (해당 REQ + 공통)
-  REQ-XXX-슬러그/
+  REQ-XXX-slug/
     spec.md / plan.md / impl.md ← 입력
     verify.md                   ← 산출물
 ```
