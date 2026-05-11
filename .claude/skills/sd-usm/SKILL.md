@@ -22,7 +22,9 @@ USM (Frame → Backbone → Walking Skeleton → Stories) 으로 Requirement Sou
 
 - **선행**: Requirement Source 의 모든 파일(첨부·unpack 산출물 포함) 전체 Read 후 진행. 발췌·파일명 추측·메타데이터만 보고 진행 금지.
 - **Requirement Source 보존**: 채팅 paste / 구두 요청 등 외부 파일이 없는 경우 `.story-maps/{slug}/source.md` 로 원문 그대로 저장 후 story-map.md 의 `Requirement Source` 가 이를 참조.
+- **Requirement Source 부정확성** (STT 오타 / 화자 추정 / 모호 발화 / 도메인 용어 다의성): [.claude/references/sd-requirement-source-handling.md](../../references/sd-requirement-source-handling.md).
 - **1차확정 (Framing)**: Frame 후보 식별. 복수면 ① Map 분할 ② 스코프 축소 중 사용자 확정.
-- **2차확정 (Backbone + Walking Skeleton)**: Backbone + Walking Skeleton 작성 → Frame·Activity·Task 트리 사용자 확정.
-- 1, 2차 확정외 판단은 에이전트 자율 판단에 맡김.
-- **Requirement Source 부정확성** (STT 오타 / 화자 추정 / 모호 발화 / 도메인 용어 다의성): [.claude/references/requirement-source-handling.md](../../references/requirement-source-handling.md).
+  - Frame 단위: 최종 사용자(business actor) 관점의 end-to-end 흐름.
+- **2차확정 (Business Flow)**: 업무 프로세스(다중 actor·분기·트리거·데이터 흐름)인 경우에만. `## Business Flow` 작성 → 사용자 확정. 단순 CRUD·단일 화면 등은 생략.
+- **3차확정 (Backbone + Walking Skeleton)**: Backbone + Walking Skeleton 작성 → Frame·Activity·Task 트리 사용자 확정. 업무 프로세스 케이스에선 Business Flow 노드를 Activity·Task 로 분해.
+- **결정 근거**: sd-base-rules.md "결정 근거" 적용. 근거 없는 항목은 story-map.md / task.md 에 Open Question 인라인.

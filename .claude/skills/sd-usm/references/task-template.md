@@ -17,10 +17,10 @@
 ## Stories
 - [ ] Story 1: <Connextra 한 줄: "[Persona] 가 [목적] 을 위해 [행동] 한다">
   > [YYYY-MM-DD, 초안] "원문 발췌"
-  > 출처: <파일경로>:L<범위> 또는 채팅 paste + 일자
+  > 출처: <파일경로>:<범위> 또는 채팅 paste + 일자
 
   - **AC**: <합의된 인수 조건> (YYYY-MM-DD)
-    - 근거: 사용자 답변 (YYYY-MM-DD) / <코드경로>:L<범위> / <URL> / <표준명>
+    - 근거: 사용자 답변 (YYYY-MM-DD) / <코드경로>:<범위> / <URL> / <표준명>
   - [ ] **Open Question**: <확인 필요 사항>
 
 - [ ] Story 2: ...

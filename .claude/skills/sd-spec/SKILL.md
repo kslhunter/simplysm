@@ -1,105 +1,74 @@
 ---
 name: sd-spec
-description: raw input(메일/회의록/사용자 요청)을 구조화된 REQ로 정리해 spec.md 산출물로 만드는 스킬. Use when 산출물 소비자 요청을 구조화하거나 새 기능 요구사항을 정리할 때
+description: SI/업무시스템 요구사항을 분석해 spec.md 로 구조화한다. Use when "요구사항 분석", "SI 분석", "업무시스템 spec 작성" 을 요청할 때
 ---
 
-# spec 단계
+# sd-spec
 
-raw input → 세션 폴더 + REQ별 spec.md 생성. 사용자와 다이얼로그로 Q를 풀어가며 specified 도달.
+요구사항을 spec.md 로 구조화. 추상 흐름 → 구체 구현 순으로 사용자와 항목별 합의하며 진행.
 
-## 핵심 원칙
-
-- **self-contained 블록**: R 블록 안에 인용/A/Q 인라인. (별도 파일/섹션 분리 X)
-- **raw input 불변**: 어디 있든 수정·보정 X.
-- **Append-only**: R/REQ 자체 삭제 X. 폐기는 dropped 상태. 번호 재배치는 허용.
-- **자동 판단 금지**: 결정 근거 없으면 Q 등록. 모든 A에 근거 출처 명시.
-- **한 번에 하나씩 Q**: REQ 번호 순.
-- **즉시 갱신**: 매 답변마다 spec.md 갱신.
-- **체크리스트 유지**: R 항목 산문화 X.
-- **인용 출처 명시**: 파일경로:L범위 또는 채팅 paste + 일자.
-- **단계 전환 동의**: 5→6, 6단계 안 REQ 전환 모두 사용자 동의 후.
-- **specified 전환 전 전체 재검토**: 마지막 Q 답변 직후 전체 재검토 없이 specified 전환 X.
-
-## 입력 형태 (raw input 모드)
-
-| 형태 | 설명 |
-|---|---|
-| Bulk | 다중 출처 → 분류 작업 |
-| Direct | 1줄~몇 줄 요청 → cascading implications 발굴 |
-| Mixed | 둘 다 (분류 + 확장 병행) |
-
-## 산출물 구조
+## 산출물
 
 ```
-.specs/
-  {yyMMddHHmmss}/                       ← 세션 폴더
-    overview.md
-    REQ-001-slug/
-      spec.md
+.specs/{yyMMddHHmmss}_{slug}/spec.md
 ```
 
-- 세션 폴더명 = `12자리 숫자` Bash(`date +%y%m%d%H%M%S`)
-- REQ ID = `REQ-001` (slug: 한글)
+폴더명 = `{Bash(date +%y%m%d%H%M%S)}_{slug}` (slug: 한글, 사용자 요청에서 자동 인지).
 
-## REQ 상태 (spec 단계 한정)
-
-전체 라이프사이클은 spec.md 메타 참조. spec 단계가 다루는 4개:
-
-| 상태 | 진입 조건 |
-|---|---|
-| draft | spec.md 생성 직후 |
-| specifying | Q/A 진행 중 |
-| specified | REQ 종료 통과 (Q 0개 + 전체 재검토) |
-| dropped | 사용자 합의로 폐기 |
+- 작성 규약 (섹션 구조·헤더 마커·참조·섹션별 표기): [spec-authoring](references/spec-authoring.md)
+- 풀 예시: [example-spec](references/example-spec.md)
 
 ## 워크플로
 
-1. 세션 폴더 `.specs/{yyMMddHHmmss}/` 생성 (raw input 모드만)
+각 단계: LLM 임의안 제시 → "맞나요?" 확정. 섹션별 작성 규약은 [spec-authoring](references/spec-authoring.md) 참조.
 
-2. raw input 읽기 — **불변**. STT 오타/화자 추정/모호 발화: [references/raw-input-handling.md](references/raw-input-handling.md)
+### 0단계: 초기 생성
 
-3. 입력 형태 식별 (Bulk/Direct/Mixed)
+- 폴더 생성: `.specs/{yyMMddHHmmss}_{slug}/`
+- spec.md 에 [spec-md-template](references/spec-md-template.md) 적용 (빈 헤더만)
+- 시스템명 사용자 확인 후 입력 → 1단계 진입
 
-4. overview.md 초안 + **도메인 검토 게이트** — 도메인 구성/순서 노출 → 합의 → 확정. 도메인 1개면 생략. REQ 디테일은 5단계 게이트에서. [references/overview-md-template.md](references/overview-md-template.md)
+### 1단계: §1 개요
 
-5. REQ별 spec.md 작성 — 도메인 순서대로. 한 도메인 완료 → 다음 도메인 REQ 게이트로. **모든 도메인 5단계 완료 전 6단계 진입 금지.** [references/spec-md-template.md](references/spec-md-template.md)
+§1.1 → §1.2 → §1.3 → §1.4 순서로 각각 LLM 임의안 → "맞나요?".
 
-   **REQ 분할/순서**
-   - 분할 기준: 한 화면 / 독립 동작 가능 기능 / 응집된 입력·처리·출력 단위. 분할 모호 시 최대한 분할.
-   - 도메인 자기 완결: 각 도메인 REQ는 그 도메인이 자기 시점에 동작하기 위한 최소 구현. 뒷 도메인에서 쓸 것을 미리 챙기지 않음. 뒷 도메인 진입 시 앞 도메인 산출물 확장이 필요하면 그 도메인의 증분 REQ로 정의.
-   - REQ 검토 게이트: 각 도메인 첫 REQ 진입 시, REQ 구성/관계/순서를 도메인 성격에 맞춰 표현 → 합의 → 즉시 파급효과 반영 → spec.md 작성.
+- §1.4 환경/장치는 두 묻기로 분리: 1) ASCII 구성도 → "맞나요?" 2) 장치 목록 → "맞나요?"
 
-   **모드별 처리**
-   - Bulk/Mixed: R 항목 추출 + 매핑 검증 + 충돌/모호 → Q 등록.
-   - Direct: 코드베이스 분석 + cascading implications → Q 등록.
+### 2단계: §4/§5 헤더 분할
 
-   **변경 시 동기화**
-   - 의존성/REQ 변경 발생 시 즉시 번호 재배치 + overview.md 갱신.
+업무 프로세스(§4) 와 기타 요구사항(§5) 의 큰 단위 + 순서를 LLM 이 컨텍스트 기반으로 헤더만 나열 → "이렇게 구성하면 되나요?"
 
-   **5단계 종료**
-   - 남은 단계(6) 간략 안내 + 6단계 진행 Y/N. "다른 세션에서도 진행 가능" 정보 노출.
-   - 단, REQ 1개면 Y/N 묻지 않고 즉시 6단계 진입.
+### 3단계: §4.x/§5.x 본문 작성
 
-6. Q 다이얼로그 루프 (한 번에 하나씩, REQ 번호 순)
-   - 관련자료 통독
-   - 관련 R/T + 컨텍스트 같이 보여줌
-   - 답변 → 즉시 spec.md 갱신 (Q 삭제 + A 전환 또는 항목 수정)
-   - **답변 반영 후 파급 분석**: 다른 R/T 영향 점검 → 새 Q 등록 또는 기존 항목 수정. 의존성/REQ 변경 시 즉시 반영. (Q 총량 일시적 증가 정상)
-   - **REQ 종료** (한 REQ Q 0개 도달 시):
-     ```
-     loop:
-         spec.md 전체 재검토 (R 정합성 / 누락 결정거리 / 모호 표현 / 미해결 의존)
-         if 신규 Q 등록됨:
-             "Q 다이얼로그 루프" 재진입 → Q 0 도달
-             continue
-         break
-     상태 ← specified
-     남은 REQ 안내 + 다음 REQ 진행 Y/N
-       ("다른 세션에서도 진행 가능 / specified 된 REQ 는 sd-plan 으로 바로 넘길 수 있음" 노출)
-       마지막 REQ면 Y/N 묻지 않고 즉시 종료.
-     ```
-   - **6단계 종료**: 모든 REQ specified 도달 시 종료.
+분할된 단위 순서대로 한 항목씩.
 
-## 번호 재배치
+- **§4.x 업무 프로세스**: BPMN LLM 임의안 (사용자에겐 ASCII, 확정 후 mermaid 로 문서 저장) + 관련 섹션 (화면·자동 처리·외부 인터페이스) → "맞나요?"
+- **§5.x 기타 요구사항**: 본문 전체 LLM 임의안 → "맞나요?"
 
-의존성이 4단계 이후 새로 발견되면 즉시 재배치. 재배치 시 동시 갱신: REQ 폴더명, spec.md `## 메타` 의존, `## 이력` REQ ID, overview.md REQ 목록/도메인 그룹/의존성. 흔적은 남기지 않음 (drop과 달리 단순 재정렬).
+### 4단계: §6/§7/§8 헤더 분할
+
+확정된 §4.x/§5.x 가 매핑되는 화면(§6) / 자동 처리(§7) / 외부 인터페이스(§8) 의 §번호 + 이름만 순서대로 나열 → "이렇게 구성하면 되나요?"
+
+- §6 인 경우 화면 목록 표도 함께 제시.
+
+### 5단계: §6.x/§7.x/§8.x 본문 작성
+
+확정된 구체 단위 순서대로 한 항목씩.
+
+- **§6.x 화면**: 합의 단위 크므로 가능한 한 잘게 분리해 각각 "맞나요?" (한 번의 묻기 = 사용자가 단번에 yes/no 판단 가능한 단위).
+  - 1차 분리: 기능 개요 / 와이어프레임 / 항목 / 동작
+  - 2차 분리: 항목 → 영역(좌/우 등) / 하위 요소(필터·시트 컬럼·입력/상세 폼 등)
+  - example 의 화면 패턴 참조
+- **§7.x 자동 처리**:
+  1. Flowchart (사용자에겐 ASCII, 확정 후 mermaid 로 문서 저장) → "맞나요?"
+  2. 목적 / 트리거 / 처리 / 예외 처리 / 관련 화면 한꺼번에 → "맞나요?"
+- **§8.x 외부 인터페이스**:
+  1. 기본 정보(상대/방향/전송) + 자료 매핑 → "맞나요?"
+  2. 예외 처리 → "맞나요?"
+
+## 운용
+
+- **결정 근거**: sd-base-rules.md "결정 근거" 적용. 사용자 확정 = 헤더 `[확정: 날짜]` 마커로 표시.
+- **Requirement Source 부정확성** (STT 오타 / 화자 추정 / 모호 발화 / 도메인 용어 다의성): [.claude/references/sd-requirement-source-handling.md](../../references/sd-requirement-source-handling.md).
+- **다른 섹션 변경·추가 발생 시**: 본문 작성 중 다른 섹션에 변경 또는 신규 추가가 필요해지면 (LLM 이 발견 / 사용자 요청 / 새 엔티티·공통 규격 등장 등 모든 경우), 해당 섹션 LLM 임의안 보여주고 "맞나요?" 확정 받은 후 원 작업 재개.
+- **§9 본문 외 결정사항**: 작업 중 발생 시 LLM 이 사용자에게 확인 후 추가. 빈 상태 정상.

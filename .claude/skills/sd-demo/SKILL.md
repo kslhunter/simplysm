@@ -1,92 +1,42 @@
 ---
 name: sd-demo
-description: spec.md(요구사항) 기반으로 UI scaffold를 메인 코드베이스에 작성하고 산출물 소비자 시연용 demo.md를 생성하는 스킬. Use when 산출물 소비자에게 화면을 시연해 spec 검증이 필요할 때 (선택적 단계, spec과 plan 사이)
+description: spec.md 의 §5 화면 1건을 코드베이스 컨벤션에 맞춰 MOCK 데이터가 채워진 화면 코드로 산출. Use when spec 의 특정 화면을 데모 코드로 만들 때
 ---
 
-# demo 단계
+# sd-demo
 
-spec.md 1+ REQ → UI scaffold(메인 코드베이스 직접) + demo.md(시나리오/만든 파일/라운드 기록).
-production의 첫 단계 (throwaway 아님). plan/implement가 그 위에 기능을 입힘.
+spec.md §5 화면 1건을 코드베이스 컨벤션의 화면 코드로 옮긴다. MOCK 데이터로 시각 확인이 가능하게 채우고, 인터랙션 동작은 만들지 않는다.
 
-## 산출물
+## 입력
 
-```
-src/                                ← UI scaffold (메인 코드베이스 직접)
-  pages/<신규>.tsx
-  data/mock-<도메인>.ts             ← mock data 별도 파일
-
-.specs/{yyMMddHHmmss}/DEMO-001-slug/
-  demo.md                           ← 시나리오 / 만든 파일 / Mock 요약 / 피드백 라운드
-```
-
-세션 폴더(`{yyMMddHHmmss}`)는 spec 단계의 결과를 그대로 사용 (이미 존재).
+- spec.md 경로 (예: `.spec/{ts}/spec.md`)
+- 화면 ID/명칭 (사용자가 지정)
 
 ## 워크플로
 
-1. 입력 받기: 대상 REQ ID 목록 (예: `REQ-001`, 또는 여러 개)
+1. **spec 화면 정의 추출** — spec.md 의 해당 §5.X 항목을 읽어 4슬롯(텍스트 와이어프레임 / 기능 개요 / 항목 / 동작·예외) 확보. 항목·MOCK 값 결정에 영향 줄 §2 공통정의 / §3 도메인 모델 참조도 함께 읽는다.
 
-2. 대상 REQ들의 spec.md 읽기 + 코드베이스(디자인 시스템 등) 파악
+2. **코드베이스 컨벤션 식별** — 기존 화면 코드 1개 이상을 표본으로 다음을 파악:
+   - 화면 코드 위치 디렉토리 패턴
+   - UI 라이브러리·프리미티브 (입력 / 버튼 / 표시 / 표 등)
+   - 컴포넌트 파일 구성 / MOCK 데이터 작성 위치
 
-3. DEMO ID 부여(세션 폴더 내 `DEMO-001`부터 순번, slug: 한글) + 디렉토리/demo.md 초안(메타) 생성 + overview.md `## DEMO 매핑`에 `DEMO-XXX-slug: REQ-XXX, ... (상태: drafting)` 추가 (섹션 없으면 신규 생성)
+   표본이 없으면 사용자에게 묻는다.
 
-4. UI scaffold 작성 (메인 코드베이스 직접)
-   - 페이지 + 컴포넌트 배치 (디자인 시스템 활용)
-   - mock data는 별도 파일 + `MOCK_` prefix + 상단 주석
-   - 데모 흐름 필수 인터랙션만 (페이지 이동/폼 입력 시각/클릭 반응)
-   - 결정거리(레이아웃 구조, 영역 배치, 요소 흐름 등) 모호 → 한 번에 하나씩 Q → 답변 즉시 반영
+3. **항목 → 컨트롤 매핑** — spec 항목표 "구분" 어휘를 표본의 UI 프리미티브로 매핑. 매핑 근거는 표본 코드의 실사용 패턴.
 
-5. demo.md 잔여 섹션 채움 (시나리오 / 만든 파일 / Mock Data 요약). 템플릿: [references/demo-md-template.md](references/demo-md-template.md)
+4. **MOCK 데이터 결정** — 표시류·기본값 칸을 §2 공통정의 / §3 도메인 모델 어휘로 1~3건 채움 (실제처럼 보이는 더미값).
 
-6. Q 다이얼로그 (잔여, 한 번에 하나씩) → 사용자 답변 → 즉시 갱신
+5. **화면 코드 생성** — 표본과 동일한 위치/패턴으로 화면 코드 파일(들)을 만든다.
+   - 와이어프레임 레이아웃 그대로 시각화
+   - 항목은 §3 매핑 결과대로 배치, 표시류는 MOCK 으로 채움
+   - 버튼·이벤트는 시각 표시만 (핸들러 비움 또는 no-op)
 
-7. demo 작성 끝 → 메타 `상태: demo-ready` (overview `## DEMO 매핑` 동기화) → 사용자에게 시연 알림
+6. **검증** — 코드베이스에 표준 검증 명령(typecheck / lint)이 있으면 실행해 통과시킨다.
 
-8. 사용자가 피드백 가져옴 → 메타 `상태: reviewing` (overview 동기화)
+## 비범위 (do not)
 
-9. 피드백 분류 (UI 조정 / spec 변경 / 모호) — 사용자 확정
-    - UI 조정 → demo 코드 수정
-    - spec 변경 (R 단위) → spec.md 수정 + 메타 `이력` 기록
-    - REQ 구조 변경(분리/병합) → spec 재진입 후보 알림 (demo 단독 처리 X)
-
-10. 라운드 기록 (append-only) → "다음 라운드? 종료?"
-    - 다음 → 7번으로
-    - 종료 → demo.md 형식 점검 (시나리오 / 만든 파일 / 라운드 / 메타) → 역방향 자잘 갱신 → 메타 `상태: done` (overview 동기화)
-
-## 책임 범위
-
-만들 것: 페이지 레이아웃·컴포넌트 배치 / mock data 표시 / 페이지 이동·폼 입력 시각·클릭 반응
-
-만들지 말 것: 실제 데이터 저장·삭제·수정 / API 호출(mock 포함) / 비즈니스 로직 / 인증·권한 처리
-
-원칙: **말로 설명할 수 있는 건 만들지 않는다**
-
-## Mock Data 정책 (3중 강한 표시)
-
-```typescript
-// src/data/mock-rtp.ts
-// MOCK DATA - replaced in implement stage
-export const MOCK_RTP_LIST = [...]
-```
-
-- 반드시 별도 파일 (페이지 inline 금지)
-- 변수/상수 `MOCK_` prefix 필수
-- 파일 상단 주석에 `MOCK` 키워드 필수
-
-## 핵심 원칙
-
-- self-contained 블록 (라운드 단위 demo.md)
-- raw input 불변
-- ID 불변 (DEMO-001 = 영원히 DEMO-001)
-- 자동 판단 금지 (피드백 분류는 사용자)
-- 한 번에 하나씩 Q
-
-## 안티패턴
-
-- ❌ throwaway로 만들기 (production 첫 단계)
-- ❌ 실제 데이터 처리 로직 (저장/삭제/계산)
-- ❌ Mock data를 페이지 inline에 굳히기
-- ❌ 피드백 분류 자동 결정
-- ❌ REQ 구조 변경을 demo 단독 처리
-- ❌ 라운드 기록 누락
-- ❌ 종료 결정 직후 demo.md 형식 점검 없이 done 전환
-- ❌ DEMO 생성·상태 변경 시 overview `## DEMO 매핑` 갱신 누락
+- 인터랙션 로직 동작 구현 (검증 룰 / 액션 결과 / 라우팅)
+- 산문 설명 / README / demo.md 등 별도 문서 생성
+- spec.md 수정
+- 지정 화면 외 다른 화면 생성
