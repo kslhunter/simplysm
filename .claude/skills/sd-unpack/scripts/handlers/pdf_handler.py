@@ -28,26 +28,17 @@ def run(input_path: Path, out_dir: Path) -> None:
         # 임베드된 첨부 (embedded files)
         attachment_links: list[str] = []
         attachments_dir = out_dir / "attachments"
-        try:
-            count = doc.embfile_count()
-        except AttributeError:
-            count = 0
+        count = doc.embfile_count()
         for i in range(count):
-            try:
-                info = doc.embfile_info(i)
-                data = doc.embfile_get(i)
-            except Exception:
-                continue
+            info = doc.embfile_info(i)
+            data = doc.embfile_get(i)
             filename = info.get("filename", f"embedded_{i}.bin") if isinstance(info, dict) else f"embedded_{i}.bin"
             _common.mkdir(attachments_dir)
             dst = _common.unique_path(attachments_dir, filename)
             _common.write_bytes(dst, data)
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
-                try:
-                    os.unlink(_common.long_str(dst))
-                except OSError:
-                    pass
+                os.unlink(_common.long_str(dst))
                 attachment_links.append(f"attachments/{recursed.name}/")
             else:
                 attachment_links.append(f"attachments/{dst.name}")

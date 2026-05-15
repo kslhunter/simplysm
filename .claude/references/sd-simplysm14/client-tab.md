@@ -13,23 +13,25 @@
 
 ## 표준 패턴
 
-탭은 보통 **상단 고정 + 본문 fill** 구조. `sd-dock` 으로 탭바를 고정하고, 본문은 `@if` 분기.
+탭은 **상단 고정 + 본문 fill** 구조. flex-column 으로 탭바를 상단 고정, 본문은 `flex-fill` 안에 `@if` 분기.
 
 ```html
-<sd-dock-container>
-  <sd-dock class="pb-default">
+<div class="flex-column fill">
+  <div class="pb-default">
     <sd-tab [(value)]="activeTab">
       <sd-tab-item [value]="'info'">기본정보</sd-tab-item>
       <sd-tab-item [value]="'history'">이력</sd-tab-item>
     </sd-tab>
-  </sd-dock>
+  </div>
 
-  @if (activeTab() === "info") {
-    <app-info-list />
-  } @else {
-    <app-history-list />
-  }
-</sd-dock-container>
+  <div class="flex-fill">
+    @if (activeTab() === "info") {
+      <app-info-list />
+    } @else {
+      <app-history-list />
+    }
+  </div>
+</div>
 ```
 
 ```ts

@@ -27,12 +27,12 @@
     "./dist/index.js"
   ],
   "devDependencies": {
-    "@types/node": "^20.19.39"
+    "@types/node": "^20.19.41"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.8.26",
     "consola": "^3.4.2",
-    "fast-xml-parser": "^5.7.2",
-    "yaml": "^2.8.4"
+    "fast-xml-parser": "^5.8.0",
+    "yaml": "^2.9.0"
   }
 }

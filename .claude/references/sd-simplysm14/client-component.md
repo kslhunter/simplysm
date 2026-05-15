@@ -1,14 +1,12 @@
 # 클라이언트 화면 작성 매뉴얼
 
-이 문서는 `@simplysm/angular` v14 패키지로 화면을 만들 때 따르는 컨벤션을 모은다.
-
 ## 파일명·역할·위치
 
 화면 파일은 `<domain>.<역할>.ts` 형식, 역할 접미사로 책임을 표시한다.
 
 | 파일명 형식                  | 역할                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------- |
-| `<domain>.view.ts`           | list/detail 로 깔끔히 나뉘지 않는 화면. 보통 list/detail 의 orchestrator. |
+| `<domain>.view.ts`           | list/detail 로 깔끔히 나뉘지 않는 화면. (예시: list/detail 의 orchestrator) |
 | `<domain>.list.ts`           | 목록. `sd-crud-list` 사용.                                                |
 | `<domain>.detail.ts`         | 단건 보기/편집. `sd-crud-detail` 사용.                                    |
 | `<domain>.modal.ts`          | 모달 전용 화면.                                                           |
@@ -65,6 +63,8 @@ Angular 기본과 다른 부분만 명시:
 
 화면이 list 또는 detail 하나로 끝나면 view 를 만들지 않고 list/detail 자체가 라우팅 진입 단위가 된다.
 
+### list + detail 합성
+
 view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
 ```html
@@ -74,7 +74,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
       <app-outbound-instruction-list #headerSheet selectMode="single" class="flex-min" />
 
       @let _selectedId = headerSheet.selectedKeys().first(); @if (_selectedId == null) {
-      <div class="flex-fill ...">선택하세요.</div>
+      <div class="flex-fill p-default">선택하세요.</div>
       } @else {
       <app-outbound-instruction-detail
         class="flex-fill"
@@ -93,9 +93,40 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 - detail 의 단건 변경·삭제는 list 가 표시하는 같은 데이터에 반영돼야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화한다.
 - view 는 `sd-base-container` 를 루트로 두고, 내부 컨텐츠는 `#contentTpl` 슬롯에 둔다.
 
+### list + list 합성 (마스터-라인)
+
+좌 list 가 마스터(헤더), 우 list 가 디테일(라인) 역할로 합성:
+
+```html
+<sd-base-container [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" ...>
+  <ng-template #contentTpl>
+    <div class="flex-row fill">
+      <app-master-list #headerSheet selectMode="single" class="flex-min" />
+
+      @let _selectedId = headerSheet.selectedKeys().first();
+      @if (_selectedId == null) {
+        <div class="flex-fill p-default">선택하세요.</div>
+      } @else {
+        <app-line-list
+          class="flex-fill"
+          [headerId]="_selectedId"
+          (submitted)="headerSheet.doRefresh()"
+        />
+      }
+    </div>
+  </ng-template>
+</sd-base-container>
+```
+
+핵심 약속:
+
+- 우 list 는 좌의 선택 키를 `input` 으로 받아 자동 재조회. (외부 input → filter 머지 패턴은 §"외부 input 을 filter 에 반영" 참조.)
+- 우 list 의 저장·삭제 후 좌 헤더 목록까지 갱신해야 하면 우 list 가 `submitted` output 을 emit, view 가 받아 `#headerSheet.doRefresh()` 호출.
+- 우 list 안에 추가 분기(탭 등)는 [client-tab.md](./client-tab.md) 매뉴얼 채택.
+
 ## 화면 컴포넌트의 표준 시그널
 
-화면 컴포넌트(view/list/detail/modal) 가 공통으로 쓰는 시그널 5종. **필요한 것만 채택**하되, 채택할 때는 아래 약속된 이름·의미·전파를 그대로 따른다.
+화면 컴포넌트(view/list/detail/modal) 가 공통으로 쓰는 시그널 4종. **필요한 것만 채택**하되, 채택할 때는 아래 약속된 이름·의미·전파를 그대로 따른다.
 
 | 이름          | 종류                     | 의미                                                                                                                                  |
 | ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -103,15 +134,8 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 | `initialized` | `signal(false)`          | 첫 데이터 로드까지 끝났는지. 자식이 자기 로드 끝낸 뒤 set true.                                                                       |
 | `busyCount`   | `signal(0)`              | 진행 중인 비동기 작업 수. 시작 시 `+1`, 끝나면 `-1`. > 0 이면 화면이 busy 표시.                                                       |
 | `viewType`    | `injectViewTypeSignal()` | 화면이 page / control / modal 어느 컨텍스트에서 동작 중인지. 라우팅 진입이면 `'page'`, view 자식이면 `'control'`, 모달이면 `'modal'`. |
-| `restricted`  | `computed`               | 권한 부족 등으로 컴포넌트를 비활성화할지. 보통 `!perms().includes('use')`.                                                            |
 
 **전파**: 부모가 자식에게 위 시그널들을 그대로 흘려보낸다. `sd-base-container` / `sd-crud-list` / `sd-crud-detail` 가 이들을 입력으로 받는 표준.
-
-**`viewType` 결정**:
-
-- **라우팅 진입 단위**(view 또는 단독 list/detail) — `viewType = injectViewTypeSignal()` 로 받음.
-- **view 의 자식**(view 안에 임베드되는 list/detail) — 보통 `'control'` 고정값으로 전달.
-- **모달 진입** — modal 컴포넌트의 `viewType` 은 `'modal'` 로 자동 주입됨.
 
 **`busyCount` 사용 패턴**:
 
@@ -141,7 +165,7 @@ perms = injectPermsSignal(
 
 - 단순한 권한 체크는 `this.perms().includes("use")` 를 템플릿·코드에 인라인으로 쓴다. 별도 computed 로 묶지 않는다.
 - `restricted` 입력은 `[restricted]="!perms().includes('use')"` 형태로 인라인 전달. (별도 `canUse` / `restricted` computed 만들지 않는다.)
-- 권한 체크 뒤에 추가 조건(데이터 상태 등)이 결합되어 **빈번히 쓰일 때만** computed 로 묶는다.
+- 권한 체크 뒤에 추가 조건(데이터 상태 등)이 결합되어 **같은 결합이 2회 이상 참조될 때만** computed 로 묶는다.
 
 ```ts
 canEdit = computed(() => this.perms().includes("edit") && this.data().state === "작성");
@@ -224,7 +248,7 @@ if (!result) return;
 - **`type`** — `SdModal` 을 구현(상속)한 컴포넌트 클래스.
 - **`title`** — 모달 헤더 제목.
 - **`inputs`** — 모달 컴포넌트가 받을 input 시그널 값. 없으면 `{}`.
-- **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 X/취소로 닫으면 `undefined`.
+- **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 닫기(X)/취소로 닫으면 `undefined`.
 
 ## `mark` 헬퍼
 
@@ -328,6 +352,25 @@ private async _refresh(): Promise<void> {
 ```
 
 `_search` 는 ORM 쿼리 실행. 자세한 사용은 [orm.md](./orm.md) 참조.
+
+### 페이지네이션
+
+두 패턴 중 택일. 데이터 규모와 검색·정렬 책임에 따라 화면 작성자가 판단(명확한 컷오프 없음).
+
+**서버 페이징** — 한 페이지 분량만 매번 서버에서 가져옴. 위 §시그널 구성/effect/`_refresh` 가 가정한 디폴트 패턴.
+
+- `pageLength` 시그널을 두고 `_refresh` 에서 서버 응답의 총 페이지 수로 set.
+- `page` / `sortingDefs` / `lastFilter` 모두 effect 의존성. 변경 시 재조회.
+- `<sd-crud-list>` 에 `[totalPageCount]="pageLength()"` 전달. `[itemsPerPage]` 는 생략(=0).
+
+**클라이언트 페이징** — 전체 데이터를 한 번에 로드, 시트가 자체 slice/sort.
+
+- `pageLength` 시그널·`sortingDefs` effect 의존성 불필요. (정렬은 시트 내부에서 처리.)
+- `_refresh` 는 전체 아이템을 한 번에 `items.set(all)`.
+- `<sd-crud-list>` 에 `[itemsPerPage]="<페이지당 행 수>"` 전달. `[totalPageCount]` 는 생략(=0).
+- `[(sorts)]` 는 화면이 정렬 상태를 들고 있어야 할 때만 묶음. 아니면 생략.
+
+**`[visiblePageCount]`** (기본 10) — 페이지네이터가 한 번에 표시하는 페이지 번호 개수. 두 패턴 모두 사용자가 명시 지시한 경우에만 명시.
 
 ### 외부 input 을 filter 에 반영
 
@@ -466,17 +509,22 @@ async onSubmit(): Promise<void> {
 ## 시트 컬럼·셀 표준
 
 ```html
-<sd-sheet-column [key]="'name'" [header]="'이름'" [width]="'160px'">
+<sd-sheet-column [key]="'name'" [header]="'이름'">
   <ng-template [cell]="items()" let-item="item">
     <div class="p-xs-sm">{{ item.name }}</div>
   </ng-template>
 </sd-sheet-column>
 ```
 
+**폭 약속**:
+
+- `[width]` 는 **명시하지 않음이 기본** — 자동. px 지정은 사용자가 명시 지시한 경우에만.
+- 영역 폭(`flex-min` 의 `style="width: ..."` 등) 도 동일.
+
 **셀 본문 약속**:
 
 - 시트 셀에는 패딩이 없으므로 본문 div 에 `p-xs-sm` 클래스를 붙이는 게 기본.
-- 정렬은 `tx-right` (숫자), `tx-center` (라벨/아이콘), 기본 left.
+- 정렬 클래스(`tx-right` / `tx-center` / `tx-left`)는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정(브라우저 기본 left). "숫자는 우측", "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
 - `[cell]="items()"` 는 타입 추론용 더미 — 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 들고 있다.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
 
@@ -492,23 +540,46 @@ async onSubmit(): Promise<void> {
 </sd-crud-list>
 ```
 
+### 요약 행
+
+컬럼에 `<ng-template #summaryTpl>` 을 두면 시트의 헤더 영역 하단(`thead` 내부)에 요약 행이 렌더된다. 스크롤 시 헤더와 함께 상단 고정되며, 배경은 warning 계열로 자동 강조된다.
+
+```html
+<sd-sheet-column [key]="'quantity'" [header]="'수량'">
+  <ng-template #summaryTpl>
+    <div class="p-xs-sm tx-right">{{ totalQuantity() }}</div>
+  </ng-template>
+  <ng-template [cell]="items()" let-item="item">
+    <div class="p-xs-sm tx-right">{{ item.quantity }}</div>
+  </ng-template>
+</sd-sheet-column>
+```
+
+- 컬럼 중 하나라도 `#summaryTpl` 을 가지면 요약 행 전체가 활성화된다. 정의 없는 컬럼은 빈 셀.
+- 셀 본문 약속(`p-xs-sm`, 정렬 클래스 등)은 요약 셀에도 동일하게 적용.
+- 합계·평균 등 집계 값은 시트가 계산해주지 않는다. 화면 컴포넌트에서 `computed` 로 직접 만들어 노출한다.
+
+```ts
+totalQuantity = computed(() => this.items().sum((i) => i.quantity) ?? 0);
+```
+
 ## 폼·입력 컨트롤
 
 ### 폼 항목 레이아웃
 
 label + 입력 그룹을 묶는 전용 클래스 3종:
 
-- `form-box` — 세로 스택. `> div` 또는 `> .form-box-item` 안에 `<label>` + 입력. 항목 사이 `gap-default`.
+- `form-box` — 세로 스택. `> div` 또는 `> div` 안에 `<label>` + 입력. 항목 사이 `gap-default`.
 - `form-box-inline` — 가로 인라인 flex (wrap). 라벨이 입력 옆에 붙음. 검색·필터폼에 사용. 라벨 없는 `form-box-item` 도 허용 (버튼 등).
 - `form-table` — `<table>` 기반. `<th>` 가 우측 정렬 라벨, `<td>` 가 입력. `<th class="form-table-header">` 는 섹션 헤더(좌측 정렬, 회색, 위쪽 여백 큼). 라벨/입력 폭을 정렬해야 하는 등록·편집 폼에 사용.
 
 ```html
 <div class="form-box-inline">
-  <div class="form-box-item">
+  <div>
     <label>기준 일자</label>
     <sd-modal-select-button [(value)]="baseDate" ...>{{ baseDate() ?? "선택" }}</sd-modal-select-button>
   </div>
-  <div class="form-box-item">
+  <div>
     <sd-button [theme]="'primary'" (click)="onCompareButtonClick()">비교</sd-button>
   </div>
 </div>
@@ -533,6 +604,16 @@ label + 입력 그룹을 묶는 전용 클래스 3종:
 | 체크박스 / 라디오    | `<sd-checkbox [radio]>`                                      |
 | 라벨/배지            | `<sd-label [theme]>`                                         |
 | 버튼/액션            | `<sd-button>`, `<sd-anchor>`                                 |
+
+### 버튼 스타일
+
+화면 액션 `<sd-button>` 은 역할별로 `theme`·`size` 를 구분.
+
+| 역할                                                          | `[theme]`                                                                   | `[size]` |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| 데이터 자체를 통으로 변경하는 최상위 액션 (저장·삭제·생성 등) | 일반 시리즈 (`primary` / `danger` / `success` / `warning` 등 의미에 맞춰)   | 기본     |
+| 위 액션 옆 유틸리티 버튼 (양식 다운로드·인쇄 등)              | link 시리즈 (`link-primary` 등)                                             | 기본     |
+| 시트 위(또는 시트 셀 안)에 나열되는 버튼                      | link 시리즈 또는 `link`                                                     | `sm`     |
 
 ### `<sd-form>` 으로 감싸기
 
@@ -581,18 +662,33 @@ sharedCustomers = useSharedSignal("고객사");
 
 ## 레이아웃·유틸 클래스
 
-**화면 레이아웃** (영역 분할 — 상단/하단/좌/우/중앙): `<sd-dock-container>` + `<sd-dock>`.
+**화면 레이아웃** (영역 분할): flex 유틸 클래스.
+
+상하 분할 (상단 고정 + 본문 fill):
 
 ```html
-<sd-dock-container>
-  <sd-dock class="pb-sm">
+<div class="flex-column fill">
+  <div class="pb-sm">
     <!-- 상단 고정 영역 -->
-  </sd-dock>
-  <!-- 본문 (남은 공간 자동) -->
-</sd-dock-container>
+  </div>
+  <div class="flex-fill">
+    <!-- 본문 (남은 공간 자동) -->
+  </div>
+</div>
 ```
 
-**아이템 레이아웃** (영역 안 항목 배치): flex 유틸 클래스.
+좌우 분할 (좌측 콘텐츠 폭 + 우측 fill):
+
+```html
+<div class="flex-row fill">
+  <div class="flex-min">
+    <!-- 좌측 -->
+  </div>
+  <div class="flex-fill">
+    <!-- 우측 -->
+  </div>
+</div>
+```
 
 자주 쓰는 유틸:
 
@@ -605,9 +701,8 @@ sharedCustomers = useSharedSignal("고객사");
 
 **약속**:
 
-- 영역 분할은 `sd-dock-container` / `sd-dock`, 영역 안 배치는 flex 유틸 클래스를 우선한다. 자체 styles 작성은 마지막 수단.
+- 영역 분할·배치 모두 flex 유틸 클래스 우선. 자체 styles 작성은 마지막 수단.
 - 글로벌 클래스 정의는 `@simplysm/angular/scss/commons/`.
-- `sd-dock-container`에 `p-default`와 같은 `padding` 클래스 사용 금지
 
 ## 아이콘
 
@@ -635,101 +730,6 @@ export class SomeComponent {
 - 아이콘 셋트는 `tabler-icons` 통일.
 - 사용할 아이콘은 컴포넌트 클래스에 `protected readonly tablerXxx = tablerXxx` 로 노출 후 템플릿에서 `[svg]` 바인딩.
 
-## `sd-crud-list`
+## sd-crud-* 컴포넌트
 
-목록 화면의 표준 골격. 시트 + 검색 폼 + 등록/삭제/복구 버튼 + CTRL+S 저장 + 모달 선택 모드를 한꺼번에 처리.
-
-### 표준 호출
-
-```html
-<sd-crud-list
-  [(ready)]="ready"
-  [initialized]="initialized()"
-  [(busyCount)]="busyCount"
-  [restricted]="!perms().includes('use')"
-  [readonly]="!canEdit()"
-  [viewType]="viewType()"
-  [selectMode]="selectMode() ?? 'multi'"
-  [key]="'<도메인-키>'"
-  [items]="items()"
-  [trackByFn]="trackByFn"
-  [(selectedKeys)]="selectedKeys"
-  [(currentPage)]="page"
-  [totalPageCount]="pageLength()"
-  [(sorts)]="sortingDefs"
-  (filterSubmit)="onFilterSubmit()"
-  (submit)="onSubmit()"
-  (create)="onCreate()"
-  (delete)="onDelete($event)"
-  (restore)="onRestore($event)"
->
-  <ng-template #filterTpl>...</ng-template>
-  <ng-template #toolTpl>...</ng-template>
-
-  <sd-sheet-column ...>
-    <ng-template [cell]="items()" let-item="item">...</ng-template>
-  </sd-sheet-column>
-</sd-crud-list>
-```
-
-### 슬롯 약속
-
-| 슬롯                | 용도                                                                       |
-| ------------------- | -------------------------------------------------------------------------- |
-| `#filterTpl`        | 검색 폼 필드. 있으면 상단에 조회 버튼과 함께 노출.                         |
-| `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                          |
-| `#commandTpl`       | 상단(또는 modal/control 모드의 명령 영역) 추가 액션 버튼.                  |
-| `#bottomCommandTpl` | modal 하단 좌측 영역. modal + selectMode 면 "선택 해제/확인" 과 함께 표시. |
-
-`<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영된다.
-
-### viewType 별 동작
-
-- **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
-- **`'control'`** — view 안에 임베드. 명령 영역에 저장 버튼.
-- **`'modal'`** — 모달. `selectMode` 와 함께 쓰면 close 페이로드 `{ selectedKeys }` 자동 처리.
-
-### 모달 선택 모드
-
-`viewType="modal"` + `selectMode` 지정 시:
-
-- `single` — 행 클릭 즉시 modal close.
-- `multi` — 하단 "확인(N)" 버튼이 close 발생.
-
-호출측은 `_sdModal.showAsync(...)` 결과로 `{ selectedKeys }` 페이로드 회수.
-
-## `sd-crud-detail`
-
-단일 레코드 편집 화면의 표준 골격. 폼 래핑 + CTRL+S/저장 버튼 + 모달의 "확인" 버튼 자동 처리.
-
-### 표준 호출
-
-```html
-<sd-crud-detail
-  [(ready)]="ready"
-  [initialized]="initialized()"
-  [(busyCount)]="busyCount"
-  [restricted]="!perms().includes('use')"
-  [readonly]="!canEdit()"
-  [viewType]="viewType()"
-  (submit)="onSubmit()"
->
-  <ng-template #contentTpl>
-    <!-- 폼 본문 -->
-  </ng-template>
-</sd-crud-detail>
-```
-
-### 슬롯 약속
-
-| 슬롯                 | 용도                                                              |
-| -------------------- | ----------------------------------------------------------------- |
-| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그냥 표시된다.       |
-| `#commandTpl`        | 상단/명령 영역 추가 버튼.                                         |
-| `#bottomCommandTpl`  | modal 하단 좌측. modal 일 때 우측 "확인" 버튼이 항상 자동 추가됨. |
-
-### viewType 별 동작
-
-- **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
-- **`'control'`** — view 안에 임베드. 명령 영역에 저장 버튼.
-- **`'modal'`** — 모달. 하단 우측 "확인" 버튼이 자동.
+목록 화면 표준 골격 `sd-crud-list`, 단건 편집 화면 표준 골격 `sd-crud-detail`. 화면 작성 시 이 둘을 채택할지 결정한다. 채택 시 사용법은 [client-crud.md](./client-crud.md).

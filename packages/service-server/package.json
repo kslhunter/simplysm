@@ -32,9 +32,9 @@
     "consola": "^3.4.2",
     "fastify": "^5.8.5",
     "jose": "^6.2.3",
-    "semver": "^7.7.4",
+    "semver": "^7.8.0",
     "utf-8-validate": "^6.0.6",
-    "ws": "^8.20.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@types/semver": "^7.7.1",

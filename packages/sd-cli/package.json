@@ -24,10 +24,10 @@
     }
   },
   "dependencies": {
-    "@angular/build": "^21.2.9",
-    "@angular/compiler-cli": "^21.2.11",
+    "@angular/build": "^21.2.11",
+    "@angular/compiler-cli": "^21.2.13",
     "@fastify/http-proxy": "^11.4.4",
-    "@inquirer/prompts": "^8.4.2",
+    "@inquirer/prompts": "^8.4.3",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",
@@ -39,18 +39,18 @@
     "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "glob": "^13.0.6",
-    "jiti": "^2.6.1",
+    "jiti": "^2.7.0",
     "lmdb": "^3.5.4",
     "mime": "^4.1.0",
-    "postcss": "^8.5.13",
+    "postcss": "^8.5.14",
     "sass": "^1.99.0",
-    "semver": "^7.7.4",
+    "semver": "^7.8.0",
     "sharp": "^0.34.5",
     "smol-toml": "^1.6.1",
     "ssh2": "^1.17.0",
     "typescript": "^5.9.3",
-    "ws": "^8.20.0",
-    "yaml": "^2.8.4",
+    "ws": "^8.20.1",
+    "yaml": "^2.9.0",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
@@ -58,7 +58,7 @@
     "@types/ssh2": "^1.15.5",
     "@types/ws": "^8.18.1",
     "@types/yargs": "^17.0.35",
-    "vite": "^7.3.2",
+    "vite": "^7.3.3",
     "vite-tsconfig-paths": "^6.1.1"
   }
 }

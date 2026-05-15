@@ -72,8 +72,6 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 `.claude/` 의 `sd-*` 에셋(스킬·룰·훅 스크립트·`settings.json`)은 `packages/sd-claude/scripts/sync.mjs` 를 통해 `packages/sd-claude/claude/` 로 증분 복사된 뒤 npm 배포된다. Windows EPERM 회피를 위해 `rmSync(recursive)` 대신 mtime+size 비교 후 변경분만 unlink/copy 한다.
 
-`.claude/skills/` 의 sd-\* 스킬은 SD 워크플로(spec/demo/plan/impl/verify) 오케스트레이터다. 이 저장소에서 작업할 때 `/sd-dev` 등으로 호출 가능.
-
 ## Vitest 프로젝트 구조
 
 `vitest.config.ts` 는 7 개 project 로 분리된다:

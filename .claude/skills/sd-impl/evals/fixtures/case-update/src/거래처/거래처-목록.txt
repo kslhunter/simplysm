@@ -1,0 +1,1 @@
+거래처 목록 화면 placeholder (eval fixture 더미)

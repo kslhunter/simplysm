@@ -7,6 +7,7 @@ Usage: python unpack.py <file>
 """
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 
@@ -17,10 +18,7 @@ from handlers.dispatch import unpack_to
 def main() -> None:
     # Windows 콘솔에서 한글 파일명이 깨지지 않도록 stdout/stderr 을 UTF-8 로 강제.
     for stream in (sys.stdout, sys.stderr):
-        try:
-            stream.reconfigure(encoding="utf-8")
-        except Exception:
-            pass
+        stream.reconfigure(encoding="utf-8")
 
     if len(sys.argv) < 2:
         sys.stderr.write("Usage: python unpack.py <file>\n")
@@ -32,6 +30,8 @@ def main() -> None:
         sys.exit(2)
 
     out_dir = _common.output_dir_for(input_path)
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
     _common.mkdir(out_dir)
 
     # 어떤 예외든 그대로 throw 한다. 호출자(Claude 에이전트 또는 사용자)가

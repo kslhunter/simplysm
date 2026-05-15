@@ -23,10 +23,10 @@
     "@simplysm/core-common": "workspace:*",
     "@simplysm/service-client": "workspace:*",
     "@simplysm/service-common": "workspace:*",
-    "semver": "^7.7.4"
+    "semver": "^7.8.0"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.6.2",
+    "@capacitor/core": "^7.6.5",
     "@types/semver": "^7.7.1"
   },
   "peerDependencies": {

@@ -27,17 +27,17 @@
     "postinstall": "playwright-cli install --skills && playwright install chromium"
   },
   "devDependencies": {
-    "@playwright/cli": "^0.1.11",
-    "@vitest/browser-playwright": "^4.1.5",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@playwright/cli": "^0.1.13",
+    "@vitest/browser-playwright": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.6",
     "eslint": "^9.39.4",
-    "jiti": "^2.6.1",
-    "playwright": "^1.59.1",
+    "jiti": "^2.7.0",
+    "playwright": "^1.60.0",
     "prettier": "^3.8.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.2",
+    "vite": "^7.3.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   }
 }

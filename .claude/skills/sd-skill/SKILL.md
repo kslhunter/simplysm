@@ -1,13 +1,13 @@
 ---
 name: sd-skill
-description: 스킬을 작성하거나 기존 스킬을 수정하는 스킬. Use when 새로운 스킬을 작성 혹은 수정 할 때
+description: 사용자가 정의한 작업 도메인을 SKILL.md + references/scripts 묶음으로 생성·수정한다. Use when 새 스킬을 작성하거나 기존 스킬을 수정할 때.
 ---
 
 # 스킬 작성
 
 ## 워크플로
 
-1. 의도 정의 - 다음을 파악한다.
+1. 의도 정의 - 다음을 파악한다. **멀티질문 X — 항목 1건씩 합의** (sd-base-rules "결정거리 1건씩 질문" 적용):
    - 이 스킬이 다루는 작업/도메인은 무엇인가?
    - 구체적으로 어떤 유즈케이스를 커버해야 하는가?
    - 실행 가능 스크립트가 필요한가? 지침만으로 충분한가?
@@ -17,6 +17,7 @@ description: 스킬을 작성하거나 기존 스킬을 수정하는 스킬. Use
    - 채점 기준이 될 케이스들: `evals/golden.jsonl`
    - 케이스 시작 시점의 워크스페이스 초기 상태: `evals/fixtures/<name>/`
    - 상세: [references/eval-authoring.md](references/eval-authoring.md)
+     - **주의**: 타 스킬 eval 확인 및 답습 금지, 이 상세지침만을 따를것
 
 3. 스킬 작성 - 다음을 작성하라:
    - 간결하고 명확한 지침이 담긴 SKILL.md
@@ -42,7 +43,6 @@ description: 스킬을 작성하거나 기존 스킬을 수정하는 스킬. Use
 
 ```
 .claude/
-├── simplysm.json                # tmpdir 오버라이드 (선택)
 └── skills/
     └── <skill-name>/
         ├── SKILL.md             # 스킬 본문 (필수)

@@ -32,10 +32,7 @@ def run(input_path: Path, out_dir: Path) -> None:
         body_html: str | None = None
         if body_html_raw:
             if isinstance(body_html_raw, bytes):
-                try:
-                    body_html = body_html_raw.decode("utf-8", errors="replace")
-                except Exception:
-                    body_html = body_html_raw.decode("latin-1", errors="replace")
+                body_html = _common.decode_bytes(body_html_raw)
             else:
                 body_html = body_html_raw
 
@@ -70,10 +67,7 @@ def run(input_path: Path, out_dir: Path) -> None:
             _common.write_bytes(dst, data)
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
-                try:
-                    os.unlink(_common.long_str(dst))
-                except OSError:
-                    pass
+                os.unlink(_common.long_str(dst))
                 attachment_links.append(f"attachments/{recursed.name}/")
             else:
                 attachment_links.append(f"attachments/{dst.name}")
@@ -91,7 +85,4 @@ def run(input_path: Path, out_dir: Path) -> None:
             attachments=attachment_links,
         )
     finally:
-        try:
-            msg.close()
-        except Exception:
-            pass
+        msg.close()

@@ -29,6 +29,16 @@ def ensure_pip(import_name: str, pip_name: Optional[str] = None) -> None:
         )
 
 
+def decode_bytes(payload: bytes) -> str:
+    """바이트 → 문자열. charset-normalizer 로 인코딩 자동 감지. 실패 시 throw."""
+    ensure_pip("charset_normalizer", "charset-normalizer")
+    from charset_normalizer import from_bytes
+    result = from_bytes(payload).best()
+    if result is None:
+        raise RuntimeError(f"encoding detection failed (payload size={len(payload)})")
+    return str(result)
+
+
 CONTAINER_EXTS = {".eml", ".msg", ".pdf", ".docx", ".pptx", ".xlsx", ".xlsb", ".doc", ".ppt", ".xls"}
 
 OS_FORBIDDEN_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')

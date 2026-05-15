@@ -1,6 +1,6 @@
 # 클라이언트 환경 셋업 매뉴얼
 
-이 문서는 `@simplysm/angular` 위에 앱이 만들어두는 표준 추상화 계층(서비스 클라이언트·ORM·공유 데이터)을 정의·등록하는 컨벤션을 모은다. 화면 작성 시점에는 거의 건드리지 않으며, 새 앱 부트스트랩이나 새 서비스/마스터 데이터 추가 시에만 본다. 화면 컨벤션은 [client-component.md](./client-component.md) 참조.
+화면 작성 시점에는 거의 건드리지 않으며, 새 앱 부트스트랩이나 새 서비스/마스터 데이터 추가 시에만 본다.
 
 ## AppServiceProvider
 
@@ -148,7 +148,7 @@ export interface ISharedCustomer extends SharedDataBase<number> {
 - getter 의 select 결과에 매직 필드 포함:
   - `__valueKey` — 항목 키.
   - `__searchText` — 검색 텍스트.
-  - `__isHidden` — 숨김 여부 (보통 `isDeleted`).
+  - `__isHidden` — 숨김 여부 (예시: `isDeleted`).
 - `getter(changeKeys)` 가 있으면 그 키들만 다시 조회 (incremental refresh).
 - `orderBy` 는 정렬 키를 반환하는 함수 (`(item) => item.code`).
 - `useSharedSignal<K>(name)` 헬퍼 함수를 같이 export — 컴포넌트는 inject 없이 이름만으로 접근.

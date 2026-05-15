@@ -9,12 +9,16 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import shutil
 import sys
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any
+
+EXCLUDED_DIRS = frozenset({"node_modules", ".git", "dist", ".cache", "__pycache__"})
 
 
 def _ensure_pip(import_name: str, pip_name: str | None = None) -> None:
@@ -59,10 +63,12 @@ def sweep_stale(runs_dir: Path, max_age_hours: int = 24) -> None:
     cutoff = time.time() - max_age_hours * 3600
     for d in runs_dir.iterdir():
         try:
-            if d.stat().st_mtime < cutoff:
-                shutil.rmtree(d, ignore_errors=True)
-        except OSError:
-            pass
+            mtime = d.stat().st_mtime
+        except OSError as e:
+            sys.stderr.write(f"[sweep_stale] stat failed: {d}: {e}\n")
+            continue
+        if mtime < cutoff:
+            shutil.rmtree(d, ignore_errors=True)
 
 
 def serialize_block(block: Any) -> dict:
@@ -87,24 +93,29 @@ def serialize_message(msg: Any) -> dict:
 
 def walk_tree(root: Path, exclude_skill_names: set[str], max_file_bytes: int = 20000) -> dict:
     files: dict[str, str] = {}
-    for p in root.rglob("*"):
-        if not p.is_file():
-            continue
-        rel = p.relative_to(root).as_posix()
-        parts = rel.split("/")
-        if len(parts) >= 3 and parts[0] == ".claude" and parts[1] == "skills" and parts[2] in exclude_skill_names:
-            continue
-        try:
-            content = p.read_text(encoding="utf-8")
-            if len(content) > max_file_bytes:
-                content = content[:max_file_bytes] + f"\n... <truncated, {p.stat().st_size} bytes total>"
-            files[rel] = content
-        except (UnicodeDecodeError, OSError):
+    for dirpath, dirnames, filenames in os.walk(root):
+        rel_dir = Path(dirpath).relative_to(root).as_posix()
+        rel_parts = rel_dir.split("/") if rel_dir != "." else []
+        # prune .claude/skills/<excluded>/ subtrees
+        if len(rel_parts) == 2 and rel_parts[0] == ".claude" and rel_parts[1] == "skills":
+            dirnames[:] = [d for d in dirnames if d not in exclude_skill_names]
+        # prune standard excluded dirs (node_modules, .git, etc.)
+        dirnames[:] = [d for d in dirnames if d not in EXCLUDED_DIRS]
+
+        for fname in filenames:
+            p = Path(dirpath) / fname
+            rel = p.relative_to(root).as_posix()
             try:
-                size = p.stat().st_size
-            except OSError:
-                size = -1
-            files[rel] = f"<binary or unreadable, {size} bytes>"
+                content = p.read_text(encoding="utf-8")
+                if len(content) > max_file_bytes:
+                    content = content[:max_file_bytes] + f"\n... <truncated, {p.stat().st_size} bytes total>"
+                files[rel] = content
+            except (UnicodeDecodeError, OSError):
+                try:
+                    size = p.stat().st_size
+                except OSError:
+                    size = -1
+                files[rel] = f"<binary or unreadable, {size} bytes>"
     return files
 
 
@@ -136,25 +147,6 @@ def merge_overlay(src: Path, dst: Path) -> None:
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(p, target)
-
-
-def apply_sabotage(skill_md_path: Path, sabotage: dict) -> None:
-    """Apply sabotage patch to a SKILL.md file. Currently supports remove_between."""
-    text = skill_md_path.read_text(encoding="utf-8")
-    rb = sabotage.get("remove_between")
-    if rb:
-        start = rb["start"]
-        end = rb["end"]
-        si = text.find(start)
-        if si == -1:
-            raise RuntimeError(f"sabotage start anchor not found: {start!r}")
-        ei = text.find(end, si + len(start))
-        if ei == -1:
-            raise RuntimeError(f"sabotage end anchor not found: {end!r}")
-        text = text[:si] + text[ei:]
-    else:
-        raise RuntimeError(f"unsupported sabotage spec: {sabotage}")
-    skill_md_path.write_text(text, encoding="utf-8")
 
 
 EVAL_MODE_PREFIX = """<eval-mode>
@@ -279,9 +271,6 @@ async def run_case(
     )
     exclude_skill_names = pre_existing_skills - fixture_skills
 
-    expected_verdict = case.get("expected_verdict", "PASS")
-    sabotage = case.get("sabotage_skill_patch")
-
     try:
         if sandbox.exists():
             shutil.rmtree(sandbox, ignore_errors=True)
@@ -289,12 +278,6 @@ async def run_case(
 
         copy_dot_claude(src_dot_claude, sandbox / ".claude")
         merge_overlay(fixture_dir, sandbox)
-
-        if sabotage:
-            for skill_dir in (sandbox / ".claude" / "skills").iterdir():
-                if (skill_dir / "scripts" / "run_eval.py").exists():
-                    apply_sabotage(skill_dir / "SKILL.md", sabotage)
-                    break
 
         events = await run_target(case["input"], sandbox)
         tree = walk_tree(sandbox, exclude_skill_names=exclude_skill_names)
@@ -311,23 +294,18 @@ async def run_case(
             json.dumps(verdict_data, ensure_ascii=False, indent=2), encoding="utf-8"
         )
 
-        judge_verdict = verdict_data.get("verdict", "ERROR")
-        if judge_verdict == "ERROR":
-            meta_verdict = "ERROR"
-        elif judge_verdict == expected_verdict:
-            meta_verdict = "PASS"
-        else:
-            meta_verdict = "FAIL"
+        verdict = verdict_data.get("verdict", "ERROR")
 
         return {
             "id": case_id,
-            "verdict": meta_verdict,
-            "judge_verdict": judge_verdict,
-            "expected_verdict": expected_verdict,
+            "verdict": verdict,
             "dir": str(case_results),
         }
     except Exception as e:
-        (case_results / "error.txt").write_text(f"{type(e).__name__}: {e}", encoding="utf-8")
+        (case_results / "error.txt").write_text(
+            f"{type(e).__name__}: {e}\n\n{traceback.format_exc()}",
+            encoding="utf-8",
+        )
         return {
             "id": case_id,
             "verdict": "ERROR",

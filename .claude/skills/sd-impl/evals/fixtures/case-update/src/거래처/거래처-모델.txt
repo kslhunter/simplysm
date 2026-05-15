@@ -1,0 +1,1 @@
+거래처 도메인 모델 placeholder (eval fixture 더미)

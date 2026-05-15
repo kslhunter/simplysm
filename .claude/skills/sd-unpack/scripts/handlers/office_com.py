@@ -160,18 +160,14 @@ def _run_pptx(
 
         for shape_idx, shape in enumerate(slide.shapes, start=1):
             if shape.has_chart:
-                # 차트 데이터 추출은 best-effort (비표준 차트면 못 뺄 수 있음).
-                try:
-                    data = _extract_pptx_chart_data(shape.chart)
-                    _common.mkdir(charts_dir)
-                    chart_filename = f"slide{i:02d}_chart{shape_idx:02d}.data.json"
-                    _common.write_text(
-                        charts_dir / chart_filename,
-                        json.dumps(data, ensure_ascii=False, indent=2),
-                    )
-                    slide_charts.setdefault(idx, []).append(chart_filename)
-                except Exception:
-                    pass
+                data = _extract_pptx_chart_data(shape.chart)
+                _common.mkdir(charts_dir)
+                chart_filename = f"slide{i:02d}_chart{shape_idx:02d}.data.json"
+                _common.write_text(
+                    charts_dir / chart_filename,
+                    json.dumps(data, ensure_ascii=False, indent=2),
+                )
+                slide_charts.setdefault(idx, []).append(chart_filename)
 
         # 슬라이드별 산출물 풀목록
         parts = [f"`slides/{idx}_{safe_title}.png`", "`.md`"]
@@ -290,18 +286,14 @@ def _run_xlsx(
             sheet_formula_count[idx] = len(formulas)
 
             for chart_idx, chart in enumerate(getattr(ws_f, "_charts", []), start=1):
-                # 차트 데이터 추출은 best-effort (비표준 차트면 못 뺄 수 있음).
-                try:
-                    data = _extract_openpyxl_chart_data(chart)
-                    _common.mkdir(charts_dir)
-                    chart_filename = f"sheet{idx}_chart{chart_idx:02d}.data.json"
-                    _common.write_text(
-                        charts_dir / chart_filename,
-                        json.dumps(data, ensure_ascii=False, indent=2),
-                    )
-                    sheet_charts.setdefault(idx, []).append(chart_filename)
-                except Exception:
-                    pass
+                data = _extract_openpyxl_chart_data(chart)
+                _common.mkdir(charts_dir)
+                chart_filename = f"sheet{idx}_chart{chart_idx:02d}.data.json"
+                _common.write_text(
+                    charts_dir / chart_filename,
+                    json.dumps(data, ensure_ascii=False, indent=2),
+                )
+                sheet_charts.setdefault(idx, []).append(chart_filename)
     finally:
         wb_values.close()
         wb_formulas.close()
@@ -554,21 +546,15 @@ def _extract_xlsx_images_with_position(
             for img in getattr(ws, "_images", []):
                 # anchor 위치 추출 (OneCellAnchor / TwoCellAnchor 둘 다 _from 갖음)
                 cell_addr = "anchor_unknown"
-                try:
-                    anchor = img.anchor
-                    marker = getattr(anchor, "_from", None) or getattr(anchor, "from", None)
-                    if marker is not None:
-                        col = marker.col + 1  # 0-based → 1-based
-                        row = marker.row + 1
-                        cell_addr = f"{get_column_letter(col)}{row}"
-                except Exception:
-                    pass
+                anchor = img.anchor
+                marker = getattr(anchor, "_from", None) or getattr(anchor, "from", None)
+                if marker is not None:
+                    col = marker.col + 1  # 0-based → 1-based
+                    row = marker.row + 1
+                    cell_addr = f"{get_column_letter(col)}{row}"
 
                 # 이미지 raw 데이터 추출 (openpyxl 내부 API).
-                try:
-                    data = img._data()
-                except Exception:
-                    continue
+                data = img._data()
                 if not data:
                     continue
 

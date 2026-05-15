@@ -1,6 +1,6 @@
 ---
 name: sd-unpack
-description: 문서를 첨부 포함 깊숙히 해체해 평문/이미지/원본 트리로 펼치는 스킬. eml/msg/pdf/docx/pptx/xlsx/xlsb 와 레거시 doc/ppt/xls 를 지원하며, 컨테이너 안 첨부도 재귀적으로 풀어 Claude 에이전트가 README.md 한 번 Read 로 진입할 수 있게 만든다. Use when 분석에 앞서 문서 안 첨부까지 모두 풀어 평문·이미지로 만들어 둬야 할 때
+description: 메일·문서(eml/msg/pdf/docx/pptx/xlsx/xlsb, 레거시 doc/ppt/xls)를 첨부 포함 재귀적으로 풀어 평문 트리로 펼친다. Use when 위 형식 파일의 본문·첨부 전반을 훑어야 할 때 (분석·요약·정리·검토 등). 단순 단답 조회(특정 값/셀 확인)나 옆에 이미 펼친 `<basename>_<ext>/` 폴더가 있으면 호출 X.
 
 ---
 
@@ -16,9 +16,15 @@ python .claude/skills/sd-unpack/scripts/unpack.py <입력파일 절대경로>
 
 여러 파일을 풀어달라는 요청이 오면 단일 파일 단위로 반복 호출한다.
 
+## 환경
+
+Windows + MS Office 필요 (docx/pptx/xlsx 변환). Python 패키지 의존은 `ensure_pip` 가 자동 처리. COM 의존 미충족 시 해당 형식 핸들러는 throw.
+
 ## 결과 폴더
 
 입력 파일 옆에 `<basename>_<ext>/` 가 생긴다. 컨테이너 첨부는 같은 패턴으로 재귀적으로 풀린다. 폴더 안 `_source.<ext>` + `README.md` 가 풀린 폴더의 식별 마커.
+
+동일 입력 재호출 시 기존 결과 폴더는 사전 삭제 후 재생성 (이전 산출 잔존물 섞이지 않게).
 
 시각은 PNG, 텍스트/구조는 MD/JSON 으로 분리해 출력한다.
 

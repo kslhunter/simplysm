@@ -6,7 +6,7 @@
 
 - `_systemLog` 잔존 참조 없음: grep 결과 0건
 - `_clientFactory` 잔존 참조 없음: grep 결과 0건
-- `_config = inject(SdAngularConfigProvider)` 잔존 참조 없음: sd-dock.ts의 `_config`는 `injectSdSystemConfigResource` 호출로 범위 외
+- `_config = inject(SdAngularConfigProvider)` 잔존 참조 없음: grep 결과 0건
 - `_navWindow` 잔존 참조 없음: grep 결과 0건
 - `_activatedModal` (readonly 선언) 잔존 참조 없음: grep 결과 0건
 - `_systemConfig` 잔존 참조 없음: grep 결과 0건

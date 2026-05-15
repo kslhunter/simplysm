@@ -191,10 +191,6 @@ export { SdGap } from "./controls/gap/sd-gap";
 // controls/pagination
 export { SdPagination } from "./controls/pagination/sd-pagination";
 
-// layout/dock
-export { SdDockContainer } from "./layout/dock/sd-dock-container";
-export { SdDock } from "./layout/dock/sd-dock";
-
 // layout/sidebar
 export { SdSidebarContainer } from "./layout/sidebar/sd-sidebar-container";
 export { SdSidebar } from "./layout/sidebar/sd-sidebar";

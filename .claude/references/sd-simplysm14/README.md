@@ -1,17 +1,28 @@
-# 문서 설명
+# @simplysm/* v14 행동 지침
 
 Claude 에이전트가 반드시 지켜야 할 행동 지침이다. (@simplysm/\* v14 포함시)
 
-## CLAUDE.md 명령어 구성 참조
+## 코드 위치 원칙
 
-명령어 구성시 check, typecheck, lint 중 check 가 기본임을 표기
+기본 위치는 **클라이언트**. 서버(`service-server`)는 다음 두 경우에만 둔다:
 
-- `pnpm check --fix`이 **기본 검증 명령**이며, typecheck + lint 한꺼번에, 자동수정 포함
-- `pnpm typecheck`, `pnpm lint`는 `pnpm check` 에서 문제 났을 때 타입만 따로 보기 위함
+- **보안**: 클라이언트에 노출 불가한 자격증명/키, 권한 우회 위험, 외부에 직접 노출하면 안 되는 연산.
+- **클라이언트 미지원**: 브라우저/모바일 런타임에서 실행 불가한 기능(특정 네이티브 API, 서버 측 자원 접근 등).
+
+ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당하지 않는 한 클라이언트 코드에 직접 둔다. "서버에 두는 게 관행"이라는 이유로 service 로 이관하지 않는다.
+
+## CLAUDE.md 명령어 표기
+
+`CLAUDE.md` 작성 시, 검증 명령은 다음 역할로 표기한다.
+
+- **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck + lint 일괄, 자동 수정 포함.
+- **보조**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제 났을 때 각각 따로 보기 위함. 단독 사용은 회피.
 
 ## 개발 매뉴얼
 
 - **클라이언트 화면 작성** — [client-component.md](./client-component.md)
+- **클라이언트 sd-crud-* 컴포넌트** — [client-crud.md](./client-crud.md)
+- **클라이언트 데모 작성** — [client-demo.md](./client-demo.md)
 - **클라이언트 탭 컨트롤** — [client-tab.md](./client-tab.md)
 - **클라이언트 환경 셋업** — [client-setup.md](./client-setup.md)
 - **ORM 쿼리 작성** — [orm.md](./orm.md)

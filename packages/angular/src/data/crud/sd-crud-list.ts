@@ -186,6 +186,8 @@ import {
         [items]="items()"
         [(currentPage)]="currentPage"
         [totalPageCount]="totalPageCount()"
+        [itemsPerPage]="itemsPerPage()"
+        [visiblePageCount]="visiblePageCount()"
         [(sorts)]="sorts"
         [useAutoSort]="totalPageCount() === 0"
         [selectMode]="selectMode() ?? (readonly() ? undefined : 'multi')"
@@ -259,6 +261,8 @@ export class SdCrudList<TItem, TKey> {
 
   currentPage = model(0);
   totalPageCount = input(0);
+  itemsPerPage = input(0);
+  visiblePageCount = input(10);
   sorts = model<SortingDef[]>([]);
 
   trackByFn = input.required<(item: TItem) => TKey>();

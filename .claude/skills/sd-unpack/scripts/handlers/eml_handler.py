@@ -15,19 +15,14 @@ from .dispatch import maybe_recurse_attachment
 def _decode_header(raw: str | None) -> str:
     if not raw:
         return ""
-    try:
-        return str(make_header(decode_header(raw)))
-    except Exception:
-        return raw
+    return str(make_header(decode_header(raw)))
 
 
 def _decode_payload(part) -> str:
     payload = part.get_payload(decode=True) or b""
-    charset = part.get_content_charset() or "utf-8"
-    try:
-        return payload.decode(charset, errors="replace")
-    except LookupError:
-        return payload.decode("utf-8", errors="replace")
+    if not payload:
+        return ""
+    return _common.decode_bytes(payload)
 
 
 def run(input_path: Path, out_dir: Path) -> None:
@@ -97,10 +92,7 @@ def run(input_path: Path, out_dir: Path) -> None:
     for ap in saved_attachments:
         recursed = maybe_recurse_attachment(ap, attachments_dir)
         if recursed is not None:
-            try:
-                os.unlink(_common.long_str(ap))
-            except OSError:
-                pass
+            os.unlink(_common.long_str(ap))
             attachment_links.append(f"attachments/{recursed.name}/")
         else:
             attachment_links.append(f"attachments/{ap.name}")

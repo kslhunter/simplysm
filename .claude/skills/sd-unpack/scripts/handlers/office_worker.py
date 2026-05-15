@@ -235,10 +235,7 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
             ) from e
     finally:
         if original_visible != -1:
-            try:
-                ws.Visible = original_visible
-            except Exception:
-                pass
+            ws.Visible = original_visible
 
 
 # ====================================================================
