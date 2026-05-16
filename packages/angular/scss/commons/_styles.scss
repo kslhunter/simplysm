@@ -418,11 +418,11 @@
 
   @each $val in [start, end, center] {
     .main-align-#{$val} {
-      justify-content: $val;
+      justify-content: $val !important;
     }
 
     .cross-align-#{$val} {
-      align-items: $val;
+      align-items: $val !important;
     }
   }
 } // @layer utilities

@@ -20,6 +20,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당�
 
 ## 개발 매뉴얼
 
+- **클라이언트 기본 지침** — [client-rules.md](./client-rules.md)
 - **클라이언트 화면 작성** — [client-component.md](./client-component.md)
 - **클라이언트 sd-crud-* 컴포넌트** — [client-crud.md](./client-crud.md)
 - **클라이언트 데모 작성** — [client-demo.md](./client-demo.md)

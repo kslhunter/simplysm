@@ -532,14 +532,44 @@ export class MysqlExprRenderer extends ExprRendererBase {
   }
 
   protected cast(expr: ExprCast): string {
-    const targetType =
-      expr.targetType.type === "varchar"
-        ? `CHAR(${expr.targetType.length})`
-        : this.renderDataType(expr.targetType);
+    const targetType = this._renderCastTargetType(expr.targetType);
     const castSql = `CAST(${this.render(expr.source)} AS ${targetType})`;
     return expr.targetType.type === "varchar" || expr.targetType.type === "char"
       ? `${castSql} COLLATE utf8mb4_bin`
       : castSql;
+  }
+
+  /** CAST 전용 타겟 타입 (MySQL CAST 가 허용하는 타입만 사용). DDL 용은 renderDataType 별도. */
+  private _renderCastTargetType(dataType: DataType): string {
+    switch (dataType.type) {
+      case "int":
+      case "bigint":
+      case "boolean":
+        return "SIGNED";
+      case "float":
+        return "FLOAT";
+      case "double":
+        return "DOUBLE";
+      case "decimal":
+        return dataType.scale != null
+          ? `DECIMAL(${dataType.precision}, ${dataType.scale})`
+          : `DECIMAL(${dataType.precision})`;
+      case "varchar":
+      case "char":
+        return `CHAR(${dataType.length})`;
+      case "text":
+        return "CHAR";
+      case "binary":
+        return "BINARY";
+      case "datetime":
+        return "DATETIME";
+      case "date":
+        return "DATE";
+      case "time":
+        return "TIME";
+      case "uuid":
+        return "BINARY(16)";
+    }
   }
 
   //#endregion

@@ -252,6 +252,7 @@ export default tseslint.config(
       "@simplysm/ng-template-sd-require-binding-attrs": "error",
       "@angular-eslint/template/eqeqeq": ["error", { allowNullOrUndefined: true }],
       "@angular-eslint/template/label-has-associated-control": "off",
+      "@angular-eslint/template/no-any": "error",
     },
   },
   {

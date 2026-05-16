@@ -60,7 +60,7 @@ export const castToInt: ExpectedSql = {
   mysql: mysql`
     SELECT
       \`T1\`.\`id\` AS \`id\`,
-      CAST(\`T1\`.\`age\` AS INT) AS \`ageInt\`
+      CAST(\`T1\`.\`age\` AS SIGNED) AS \`ageInt\`
     FROM \`TestDb\`.\`User\` AS \`T1\`
   `,
   mssql: tsql`

@@ -524,7 +524,8 @@ async onSubmit(): Promise<void> {
 **셀 본문 약속**:
 
 - 시트 셀에는 패딩이 없으므로 본문 div 에 `p-xs-sm` 클래스를 붙이는 게 기본.
-- 정렬 클래스(`tx-right` / `tx-center` / `tx-left`)는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정(브라우저 기본 left). "숫자는 우측", "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
+- 정렬 클래스(`tx-right` / `tx-center` / `tx-left`)는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정(브라우저 기본 left). "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
+- 단, **숫자 셀은 `tx-right` 기본 적용** (수량·금액·단가·합계 등 숫자값 컬럼).
 - `[cell]="items()"` 는 타입 추론용 더미 — 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 들고 있다.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
 

@@ -197,28 +197,28 @@ import {
           &[data-sd-type="month"] {
             > input,
             > ._contents {
-              width: 8.25em;
+              min-width: 8.25em;
             }
           }
 
           &[data-sd-type="date"] {
             > input,
             > ._contents {
-              width: 8.25em;
+              min-width: 8.25em;
             }
           }
 
           &[data-sd-type="datetime-local"] {
             > input,
             > ._contents {
-              width: 14em;
+              min-width: 14em;
             }
           }
 
           &[data-sd-type="year"] {
             > input,
             > ._contents {
-              width: 4em;
+              min-width: 4em;
             }
           }
 

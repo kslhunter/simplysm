@@ -53,8 +53,8 @@ import { matchesSearchText } from "./matchesSearchText";
   ],
   template: `
     <sd-select
-      [value]="$any(value())"
-      (valueChange)="value.set($any($event))"
+      [value]="value()"
+      (valueChange)="value.set($event)"
       [disabled]="disabled()"
       [required]="required()"
       [inset]="inset()"
