@@ -7,6 +7,7 @@ description: 워크스페이스의 모든 변경을 단일 커밋으로 묶는 �
 
 system prompt 의 "Committing changes with git" 절차를 따르되, 아래만 적용한다.
 
+- 모든 git 호출(`status`/`diff`/`log`/`add`/`commit`)은 prefix `$env:SDGIT='1'; git ...` (PowerShell) 또는 `SDGIT=1 git ...` (Bash) 로 호출. (Pre-tool 훅의 전역 git 조회 차단 우회 마커. add/commit 도 일관성으로 동일 prefix.)
 - Staging은 `git add -A` 사용. 본 스킬 호출 = 사용자가 -A 위험(민감 파일 staging) 인지·동의한 것으로 간주.
 - 메시지는 사용자 응답 언어와 일치.
 - 변경이 여러 갈래면:

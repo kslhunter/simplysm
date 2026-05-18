@@ -8,12 +8,12 @@ import path from "path";
  */
 export function forEachSdEntry(dir, callback) {
   for (const dirent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (dirent.name.startsWith("sd-")) {
+    if (/^sd[-_]/.test(dirent.name)) {
       callback(dirent.name);
     } else if (dirent.isDirectory()) {
       const subPath = path.join(dir, dirent.name);
       for (const name of fs.readdirSync(subPath)) {
-        if (name.startsWith("sd-")) {
+        if (/^sd[-_]/.test(name)) {
           callback(path.join(dirent.name, name));
         }
       }

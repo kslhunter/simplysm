@@ -1,7 +1,5 @@
-.claude
-!.claude/**/sd-*
-!.claude/settings.json
-!.claude/simplysm.json
+.claude/skills/*
+!.claude/skills/sd-*
 
 .playwright-cli
 __pycache__

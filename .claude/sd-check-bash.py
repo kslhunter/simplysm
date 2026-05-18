@@ -30,3 +30,17 @@ for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
         print(f"Blocked: {label}", file=sys.stderr)
         sys.exit(2)
+
+# Git read-only inspection block (working-tree-only policy).
+# Bypass: any occurrence of `SDGIT` token in the command.
+GIT_READ_VERBS = r"status|diff|log|show|blame|reflog|rev-list|rev-parse|ls-files|ls-tree|cat-file|describe|whatchanged|shortlog|grep"
+if not re.search(r"\bSDGIT\b", cmd):
+    m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
+    if m:
+        print(
+            f"Blocked: git {m.group('verb')} "
+            "(working-tree inspection via git is forbidden; use Read/Grep/Glob). "
+            "If intentional, prefix the command with `SDGIT=1 ` (bash) or `$env:SDGIT='1'; ` (PowerShell).",
+            file=sys.stderr,
+        )
+        sys.exit(2)

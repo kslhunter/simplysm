@@ -21,7 +21,7 @@ description: 사용자가 정의한 작업 도메인을 SKILL.md + references/sc
 
 3. 스킬 작성 - 다음을 작성하라:
    - 간결하고 명확한 지침이 담긴 SKILL.md
-   - 별도의 참고파일 (내용이 100줄을 넘을 경우)
+   - 별도의 참고파일 (필요한 경우)
    - 유틸리티 스크립트 (필요한 경우)
    - 상세: [references/skill-authoring.md](references/skill-authoring.md)
 
