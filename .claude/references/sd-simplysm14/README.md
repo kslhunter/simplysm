@@ -20,44 +20,36 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당�
 
 ## 개발 매뉴얼
 
-- **클라이언트 기본 지침** — [client-rules.md](./client-rules.md)
-- **클라이언트 화면 작성** — [client-component.md](./client-component.md)
-- **클라이언트 sd-crud-* 컴포넌트** — [client-crud.md](./client-crud.md)
-- **클라이언트 데모 작성** — [client-demo.md](./client-demo.md)
-- **클라이언트 탭 컨트롤** — [client-tab.md](./client-tab.md)
-- **클라이언트 환경 셋업** — [client-setup.md](./client-setup.md)
-- **ORM 쿼리 작성** — [orm.md](./orm.md)
-  - **UNION 사용법** — [orm-union.md](./orm-union.md)
+트리거 조건이 처음 충족될 때 해당 자료를 Read.
+
+| 트리거                                                  | 매뉴얼                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------ |
+| 클라이언트 코드(앱·`@simplysm/angular`) 작성 — 항상     | [client-rules.md](./manuals/client-rules.md)           |
+| 화면 컴포넌트(`<domain>.<역할>.ts`) 작성/수정           | [client-component.md](./manuals/client-component.md)   |
+| `sd-crud-list` / `sd-crud-detail` 채택한 목록·단건 화면 | [client-crud.md](./manuals/client-crud.md)             |
+| 클라이언트 데모 컴포넌트 작성                           | [client-demo.md](./manuals/client-demo.md)             |
+| `<sd-tab>` 사용                                         | [client-tab.md](./manuals/client-tab.md)               |
+| 새 앱 부트스트랩 또는 새 서비스·마스터 데이터 추가      | [client-setup.md](./manuals/client-setup.md)           |
+| DB 스키마 정의 또는 ORM 쿼리 작성                       | [orm.md](./manuals/orm.md)                             |
+| 이종 엔티티를 한 목록으로 합쳐 표시 (UNION)             | [orm-union.md](./manuals/orm-union.md)                 |
 
 ## 패키지 인덱스
 
-- **angular** — 표준 Angular UI/기능 라이브러리
-- **capacitor-plugin-auto-update** — 모바일 앱 자동 업데이트(zip diff + APK 설치)
-- **capacitor-plugin-file-system** — 모바일 앱 네이티브 파일시스템 접근
-- **capacitor-plugin-intent** — Android Intent 송수신
-- **capacitor-plugin-usb-storage** — Android USB OTG 외장 저장소 접근
-- **core-common** — 환경 비종속 공용 도구
-  - 표준 에러 클래스(`SdError`/`ArgumentError`/`NotImplementedError`/`TimeoutError`)
-  - 값 타입(`Uuid`/`DateTime`/`DateOnly`/`Time`/`LazyGcMap`)
-  - 디바운스 큐·직렬 큐·이벤트 에미터
-  - bytes/날짜/JSON/숫자/객체/경로/텍스트/XML/zip 변환 유틸
-- **core-browser** — 브라우저 전용 보강
-  - DOM 트리 탐색·포커스 보조 확장
-  - IndexedDB 기반 가상 파일시스템
-  - 진행률·취소·타임아웃 가능 fetch 래퍼
-  - 파일 선택/다운로드 헬퍼
-- **core-node** — Node 전용 보강
-  - 파일 IO/복사/경로 래퍼
-  - 파일 감시(chokidar)
-  - 로거(consola)
-  - worker_threads 추상화
-- **excel** — xlsx 파일 읽기/쓰기
-- **lint** — 자체 ESLint 플러그인 + recommended 프리셋
-- **orm-common** — DB 비종속 ORM 코어(쿼리 빌더·표현식·스키마·DDL)
-- **orm-node** — Node DB 드라이버 연결(mssql/mysql/postgresql)
-- **sd-claude** — 소비 앱에 Claude Code 셋업을 npm 으로 배포
-- **sd-cli** — 모노레포 빌드/배포 오케스트레이터(tsc/esbuild/ngtsc/Capacitor/Electron)
-- **service-client** — 서비스 서버 호출 클라이언트 SDK
-- **service-common** — 서비스 서버↔클라이언트 프로토콜·타입 계약
-- **service-server** — Fastify 기반 서비스 서버
-- **storage** — FTP/SFTP 원격 파일 스토리지 클라이언트
+- **angular** — Angular 21 standalone/signal/zoneless 기반 업무 클라이언트 UI 라이브러리. `provideSdAngular` 부트스트랩, 폼/시트/CRUD/모달/토스트/사이드바·탑바·드롭다운/공유데이터·칸반 등 화면 컴포넌트와 인프라 프로바이더 제공. 자세히: [apis/angular/README.md](./apis/angular/README.md)
+- **capacitor-plugin-auto-update** — Android Capacitor 앱에서 APK 자동 업데이트와 APK 설치 권한·버전 조회. 자세히: [apis/capacitor-plugin-auto-update/README.md](./apis/capacitor-plugin-auto-update/README.md)
+- **capacitor-plugin-file-system** — Capacitor 모바일/웹 파일 시스템 접근(권한·경로·디렉토리·파일 IO). 자세히: [apis/capacitor-plugin-file-system/README.md](./apis/capacitor-plugin-file-system/README.md)
+- **capacitor-plugin-intent** — Android 인텐트 브로드캐스트 송수신 및 `startActivityForResult` 연동(산업용 스캐너·PDA·외부 결제 등). 자세히: [apis/capacitor-plugin-intent/README.md](./apis/capacitor-plugin-intent/README.md)
+- **capacitor-plugin-usb-storage** — Android/Browser 에서 USB Mass Storage 장치 목록·권한·디렉토리/파일 읽기. 자세히: [apis/capacitor-plugin-usb-storage/README.md](./apis/capacitor-plugin-usb-storage/README.md)
+- **core-browser** — 브라우저 전용. `Element`/`HTMLElement` 프로토타입 확장, DOM 탐색·포커스·레이아웃 보정, 클립보드/측정, 파일 다이얼로그·다운로드, 진행률 fetch, IndexedDB 키/값 저장소와 가상 파일시스템. 자세히: [apis/core-browser/README.md](./apis/core-browser/README.md)
+- **core-common** — 공통 유틸리티(타입·에러·큐·이벤트·변환·확장 메서드·환경변수). simplysm 모든 패키지의 공용 기반. 자세히: [apis/core-common/README.md](./apis/core-common/README.md)
+- **core-node** — Node 전용 IO/경로/프로세스/감시/consola/worker_threads 래퍼(`fsx`, `pathx`, `cpx`, `FsWatcher`, `setupConsola`, `Worker`/`createWorker`). 자세히: [apis/core-node/README.md](./apis/core-node/README.md)
+- **excel** — xlsx 워크북을 열어 셀·시트·스타일·조건부서식·이미지를 읽고 쓰거나, Zod 스키마 기반 레코드 입출력. 자세히: [apis/excel/README.md](./apis/excel/README.md)
+- **lint** — ESLint flat config 작성 시 `@simplysm/lint/eslint-recommended` 프리셋 또는 `@simplysm/lint/eslint-plugin` 개별 규칙 import. 자세히: [apis/lint/README.md](./apis/lint/README.md)
+- **orm-common** — Dialect 독립 ORM 코어. `DbContext` 서브클래싱 + Table/View/Procedure 빌더 + `expr` AST + `Queryable` 체이닝으로 SQL 을 만들고 dialect QueryBuilder 로 렌더. 자세히: [apis/orm-common/README.md](./apis/orm-common/README.md)
+- **orm-node** — Node 환경에서 `DbContext` 를 MSSQL/MySQL/PostgreSQL 실 연결에 붙이는 어댑터(`createOrm`), raw SQL/bulk insert (`createDbConn`). 자세히: [apis/orm-node/README.md](./apis/orm-node/README.md)
+- **sd-claude** — `.claude/` 자산 배포 및 `sd-claude` CLI 만 제공. 라이브러리 코드 API 없음(npm 배포 전용). 자세히: [apis/sd-claude/README.md](./apis/sd-claude/README.md)
+- **sd-cli** — `sd.config.ts` 작성 타입, Vitest 의 Angular AOT plugin(`sdAngularPlugin`), TS 패키지 증분 컴파일 엔진(`SdTsCompiler`). 자세히: [apis/sd-cli/README.md](./apis/sd-cli/README.md)
+- **service-client** — `@simplysm/service-server` 와 WebSocket 으로 통신하는 클라이언트. RPC·이벤트 구독·파일 업/다운로드·원격 ORM 실행을 단일 `ServiceClient` 에서 제공(Node/브라우저 공용). 자세히: [apis/service-client/README.md](./apis/service-client/README.md)
+- **service-common** — 서버/클라이언트가 공유하는 서비스 프로토콜·메시지·서비스 인터페이스·앱 구조·이벤트 정의. 자세히: [apis/service-common/README.md](./apis/service-common/README.md)
+- **service-server** — Fastify + WebSocket 위에 서비스(`defineService`)·JWT 인증(`auth`)·빌트인 ORM/AutoUpdate/AppStructure·V1 레거시 호환을 부트스트랩(`createServiceServer().listen()`). 자세히: [apis/service-server/README.md](./apis/service-server/README.md)
+- **storage** — FTP/FTPS/SFTP 원격 스토리지에 동일 인터페이스(`StorageClient`)로 파일 읽기/쓰기/관리. 자세히: [apis/storage/README.md](./apis/storage/README.md)
