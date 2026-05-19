@@ -166,7 +166,7 @@ export function spawn(
       const result: SpawnResult = { stdout, stderr, exitCode };
 
       if (exitCode !== 0 && options?.reject !== false) {
-        reject(new Error(`Command failed: ${cmd} ${args.join(" ")}`));
+        reject(new Error(formatCommandFailure(cmd, args, exitCode, stdout, stderr)));
       } else {
         resolve(result);
       }
@@ -197,10 +197,22 @@ export function spawnSync(
   const exitCode = result.status ?? 0;
 
   if (exitCode !== 0 && options?.reject !== false) {
-    throw new Error(`Command failed: ${cmd} ${args.join(" ")}`);
+    throw new Error(formatCommandFailure(cmd, args, exitCode, stdout, stderr));
   }
 
   return { stdout, stderr, exitCode };
+}
+
+function formatCommandFailure(
+  cmd: string,
+  args: string[],
+  exitCode: number,
+  stdout: string,
+  stderr: string,
+): string {
+  const detail = (stderr.trim() || stdout.trim()).slice(-4000);
+  const header = `Command failed (exit ${exitCode}): ${cmd} ${args.join(" ")}`;
+  return detail ? `${header}\n${detail}` : header;
 }
 
 //#endregion
