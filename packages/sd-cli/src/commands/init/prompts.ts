@@ -21,6 +21,7 @@ export async function promptInit(): Promise<InitInput> {
 
   let hasDb = false;
   let dbDialect: DbDialect | undefined;
+  let dbContextName: string | undefined;
   let serverPort: number | undefined;
   if (hasServer) {
     hasDb = await confirm({
@@ -35,6 +36,12 @@ export async function promptInit(): Promise<InitInput> {
           { name: "PostgreSQL", value: "postgres" },
           { name: "MSSQL", value: "mssql" },
         ],
+      });
+      dbContextName = await input({
+        message: "DB context base 이름 (예: main → MainDbContext 클래스 생성):",
+        default: "main",
+        validate: (v) =>
+          /^[A-Za-z][A-Za-z0-9]*$/.test(v) || "영문 (대소문자) + 숫자만, 첫 글자는 영문",
       });
     }
 
@@ -95,6 +102,7 @@ export async function promptInit(): Promise<InitInput> {
     clients,
     hasDb,
     dbDialect,
+    dbContextName,
     mobileAppId,
     serverPort,
   };

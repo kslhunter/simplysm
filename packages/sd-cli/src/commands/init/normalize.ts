@@ -6,6 +6,20 @@ const DB_PORTS: Record<NonNullable<InitInput["dbDialect"]>, number> = {
   mssql: 1433,
 };
 
+function toDbContextBase(name: string): string {
+  return name.replace(/DbContext$/i, "");
+}
+
+function toDbContextClassName(name: string): string {
+  const trimmed = toDbContextBase(name);
+  const pascal = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  return `${pascal}DbContext`;
+}
+
+function toDbContextNameUpper(name: string): string {
+  return toDbContextBase(name).toUpperCase();
+}
+
 export function normalize(input: InitInput): NormalizedInput {
   const clients: ClientSpec[] = input.clients.map((c) => {
     const name = c.name.startsWith("client-") ? c.name : `client-${c.name}`;
@@ -34,6 +48,8 @@ export function normalize(input: InitInput): NormalizedInput {
     isMysql: hasDb && input.dbDialect === "mysql",
     isPostgres: hasDb && input.dbDialect === "postgres",
     isMssql: hasDb && input.dbDialect === "mssql",
+    dbContextClassName: hasDb ? toDbContextClassName(input.dbContextName ?? "main") : "",
+    dbContextNameUpper: hasDb ? toDbContextNameUpper(input.dbContextName ?? "main") : "",
     serverPort: input.serverPort ?? 40080,
     mobileAppId: hasMobile ? input.mobileAppId : undefined,
     firstMobileClientName: clients.find((c) => c.isMobile)?.name,

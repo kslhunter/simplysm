@@ -30,18 +30,21 @@ if (isDev) {
   setupConsola({ cli: true });
 
   // Phase 1: replaceDeps (인라인 — 설치된 버전으로 복사)
-  try {
-    const { loadSdConfig } = await import("./utils/sd-config.js");
-    const { setupReplaceDeps } = await import("./deps/replace-deps/replace-deps.js");
-    const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: false, opt: [] });
-    if (process.argv[2] !== "replace-deps" && sdConfig.replaceDeps != null) {
-      await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);
-    }
-  } catch (err: unknown) {
-    // sd.config.ts가 없거나 replaceDeps가 설정되지 않으면 건너뜀
-    const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
-    if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
-      logger.warn("replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
+  // init 명령은 빈 디렉토리에서 실행되므로 sd.config.ts 사전 로드 자체를 건너뜀
+  if (process.argv[2] !== "init") {
+    try {
+      const { loadSdConfig } = await import("./utils/sd-config.js");
+      const { setupReplaceDeps } = await import("./deps/replace-deps/replace-deps.js");
+      const sdConfig = await loadSdConfig({ cwd: process.cwd(), dev: false, opt: [] });
+      if (process.argv[2] !== "replace-deps" && sdConfig.replaceDeps != null) {
+        await setupReplaceDeps(process.cwd(), sdConfig.replaceDeps);
+      }
+    } catch (err: unknown) {
+      // sd.config.ts가 없거나 replaceDeps가 설정되지 않으면 건너뜀
+      const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
+      if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
+        logger.warn("replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
+      }
     }
   }
 

@@ -6,7 +6,8 @@ const KEBAB_CASE_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 export async function validateBeforePrompt(cwd: string): Promise<void> {
   if (!(await fsx.exists(cwd))) return;
   const children = await fsx.readdir(cwd);
-  const significant = children.filter((n) => n !== ".git");
+  // 점프리픽스 항목 (`.git`, `.idea`, `.vscode`, `.logs`, `.cache`, `.DS_Store` 등 IDE/툴 자산) 은 무시
+  const significant = children.filter((n) => !n.startsWith("."));
   if (significant.length > 0) {
     throw new Error(
       `작업 디렉토리가 비어있지 않습니다 (감지된 항목: ${significant.join(", ")}). 빈 디렉토리에서 다시 실행하세요.`,

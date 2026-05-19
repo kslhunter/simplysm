@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { createOrmClientConnector, type OrmClientConnector } from "@simplysm/service-client";
-import { MainDbContext } from "@{{workspaceName}}/common";
+import { {{dbContextClassName}} } from "@{{workspaceName}}/common";
 import { AppServiceProvider } from "./AppServiceProvider";
 
 @Injectable({ providedIn: "root" })
@@ -12,22 +12,22 @@ export class AppOrmProvider {
     return (this._orm ??= createOrmClientConnector(this._appService.client));
   }
 
-  connectAsync<R>(callback: (db: MainDbContext) => Promise<R>): Promise<R> {
+  connectAsync<R>(callback: (db: {{dbContextClassName}}) => Promise<R>): Promise<R> {
     return this.orm.connect(
       {
-        DbClass: MainDbContext,
-        connOpt: { configName: "MAIN" },
+        DbClass: {{dbContextClassName}},
+        connOpt: { configName: "{{dbContextNameUpper}}" },
         dbContextOpt: { database: "{{workspaceNameUpper}}", schema: "dbo" },
       },
       callback,
     );
   }
 
-  connectWithoutTransAsync<R>(callback: (db: MainDbContext) => Promise<R>): Promise<R> {
+  connectWithoutTransAsync<R>(callback: (db: {{dbContextClassName}}) => Promise<R>): Promise<R> {
     return this.orm.connectWithoutTransaction(
       {
-        DbClass: MainDbContext,
-        connOpt: { configName: "MAIN" },
+        DbClass: {{dbContextClassName}},
+        connOpt: { configName: "{{dbContextNameUpper}}" },
         dbContextOpt: { database: "{{workspaceNameUpper}}", schema: "dbo" },
       },
       callback,

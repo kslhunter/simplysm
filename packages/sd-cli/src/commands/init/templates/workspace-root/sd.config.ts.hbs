@@ -11,7 +11,7 @@ const config: SdConfigFn = () => ({
       configs: {
 {{#if hasDb}}
         orm: {
-          MAIN: {
+          {{dbContextNameUpper}}: {
             dialect: "{{dbDialect}}",
             host: "localhost",
             port: {{dbPort}},
@@ -45,10 +45,10 @@ const config: SdConfigFn = () => ({
       server: "server",
 {{/if}}
 {{#if isMobile}}
+      pwa: false,
       capacitor: {
         appId: "{{../mobileAppId}}",
         appName: "{{../description}}",
-        plugins: {},
         icon: "res/icon.png",
         platform: {
           android: {},

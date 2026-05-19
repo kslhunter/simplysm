@@ -122,10 +122,10 @@ const config: SdConfigFn = () => ({
     "client-pda": {
       target: "client",
       server: "server",
+      pwa: false,
       capacitor: {
         appId: "kr.co.demo2.app",
         appName: "Demo2 Workspace",
-        plugins: {},
         icon: "res/icon.png",
         platform: {
           android: {},

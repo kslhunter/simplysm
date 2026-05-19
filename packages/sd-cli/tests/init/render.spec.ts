@@ -29,6 +29,39 @@ describe("sd.config.ts.hbs", () => {
     expect(out).toMatchSnapshot();
   });
 
+  it("mobile client 정의에 pwa:false 자동 포함", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: false,
+      mobileAppId: "kr.co.demo.app",
+      clients: [{ name: "pda", type: "mobile", hasRouter: false }],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"),
+      data,
+    );
+    expect(out).toContain("pwa: false");
+  });
+
+  it("web client 정의에는 pwa 키 없음 (기본 활성)", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: false,
+      clients: [{ name: "admin", type: "web", hasRouter: true }],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"),
+      data,
+    );
+    expect(out).not.toContain("pwa: false");
+  });
+
   it("case-002: server+admin+pda(mobile), DB=mysql", async () => {
     const data = buildData({
       workspaceName: "demo2",
@@ -160,7 +193,7 @@ describe("client/src/AppPage.ts.hbs", () => {
 });
 
 describe("client-common/src/providers/AppOrmProvider.ts.hbs", () => {
-  it("workspaceNameUpper 가 database 명에 들어감", async () => {
+  it("default dbContextName=main → MainDbContext + workspaceNameUpper database", async () => {
     const data = buildData({
       workspaceName: "demo2",
       description: "Demo2",
@@ -176,6 +209,114 @@ describe("client-common/src/providers/AppOrmProvider.ts.hbs", () => {
     );
     expect(out).toContain('database: "DEMO2"');
     expect(out).toContain('from "@demo2/common"');
+    expect(out).toContain("import { MainDbContext }");
+    expect(out).toContain("DbClass: MainDbContext");
+    expect(out).toContain('configName: "MAIN"');
+  });
+
+  it("custom dbContextName=order → OrderDbContext 가 import·DbClass 에 반영", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "order",
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "client-common/src/providers/AppOrmProvider.ts.hbs"),
+      data,
+    );
+    expect(out).toContain("import { OrderDbContext }");
+    expect(out).toContain("DbClass: OrderDbContext");
+    expect(out).toContain('configName: "ORDER"');
+  });
+});
+
+describe("sd.config.ts.hbs orm config 키", () => {
+  it("DB=Y default → MAIN", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"),
+      data,
+    );
+    expect(out).toContain("MAIN: {");
+  });
+
+  it("DB=Y dbContextName=order → ORDER", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "order",
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"),
+      data,
+    );
+    expect(out).toContain("ORDER: {");
+    expect(out).not.toContain("MAIN: {");
+  });
+});
+
+describe("common/src/DbContext.ts.hbs", () => {
+  it("dbContextClassName 자리에 클래스명 들어감", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "main",
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(path.join(TPL_ROOT, "common/src/DbContext.ts.hbs"), data);
+    expect(out).toContain("export class MainDbContext extends DbContext");
+  });
+});
+
+describe("common/src/index.ts.hbs", () => {
+  it("DB=Y → MainDbContext re-export", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(path.join(TPL_ROOT, "common/src/index.ts.hbs"), data);
+    expect(out).toContain('export * from "./MainDbContext"');
+  });
+
+  it("DB=N → 빈 export", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: false,
+      clients: [],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(path.join(TPL_ROOT, "common/src/index.ts.hbs"), data);
+    expect(out).toContain("export {}");
+    expect(out).not.toContain("DbContext");
   });
 });
 

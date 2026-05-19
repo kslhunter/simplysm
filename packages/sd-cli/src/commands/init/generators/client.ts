@@ -14,9 +14,13 @@ export async function generateClient(
   const data = { ...base, client };
 
   await copyFixed(path.join(TPL, "tsconfig.json"), path.join(out, "tsconfig.json"));
-  await copyFixed(path.join(TPL, "ngsw-config.json"), path.join(out, "ngsw-config.json"));
+  await copyFixed(path.join(TPL, "public"), path.join(out, "public"));
   await copyFixed(path.join(TPL, "src/polyfills.ts"), path.join(out, "src/polyfills.ts"));
   await copyFixed(path.join(TPL, "src/styles.scss"), path.join(out, "src/styles.scss"));
+
+  if (client.isMobile) {
+    await copyFixed(path.join(TPL, "res"), path.join(out, "res"));
+  }
 
   await renderToFile(path.join(TPL, "package.json.hbs"), path.join(out, "package.json"), data);
   await renderToFile(path.join(TPL, "src/main.ts.hbs"), path.join(out, "src/main.ts"), data);

@@ -38,6 +38,13 @@ describe("validateBeforePrompt", () => {
     await fsx.mkdir(join(dir, ".git"));
     await expect(validateBeforePrompt(dir)).resolves.toBeUndefined();
   });
+
+  it(".idea, .vscode, .logs 같은 점프리픽스 항목만 있는 디렉토리는 통과", async () => {
+    await fsx.mkdir(join(dir, ".idea"));
+    await fsx.mkdir(join(dir, ".vscode"));
+    await fsx.write(join(dir, ".logs"), "");
+    await expect(validateBeforePrompt(dir)).resolves.toBeUndefined();
+  });
 });
 
 describe("validateInput", () => {

@@ -111,4 +111,62 @@ describe("normalize", () => {
     });
     expect(r.firstMobileClientName).toBe("client-pda");
   });
+
+  it("DB=Y default → MainDbContext", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
+    expect(r.dbContextClassName).toBe("MainDbContext");
+  });
+
+  it("DB=Y dbContextName 자유 입력 → PascalCase + DbContext suffix", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "order",
+    });
+    expect(r.dbContextClassName).toBe("OrderDbContext");
+  });
+
+  it("DB=Y dbContextName 에 DbContext suffix 이미 포함 시 중복 제거", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "MainDbContext",
+    });
+    expect(r.dbContextClassName).toBe("MainDbContext");
+  });
+
+  it("DB=N 시 dbContextClassName 은 빈 문자열", () => {
+    expect(normalize(base).dbContextClassName).toBe("");
+  });
+
+  it("DB=Y default → dbContextNameUpper=MAIN", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
+    expect(r.dbContextNameUpper).toBe("MAIN");
+  });
+
+  it("DB=Y dbContextName=order → dbContextNameUpper=ORDER", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "order",
+    });
+    expect(r.dbContextNameUpper).toBe("ORDER");
+  });
+
+  it("DB=Y dbContextName=MainDbContext → dbContextNameUpper=MAIN (suffix 제거 후)", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "MainDbContext",
+    });
+    expect(r.dbContextNameUpper).toBe("MAIN");
+  });
 });

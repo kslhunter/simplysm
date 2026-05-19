@@ -14,9 +14,10 @@ export async function generateCommon(cwd: string, data: RenderData): Promise<voi
   await renderToFile(path.join(TPL, "src/index.ts.hbs"), path.join(out, "src/index.ts"), data);
 
   if (data.hasDb) {
-    await copyFixed(
-      path.join(TPL, "src/MainDbContext.ts"),
-      path.join(out, "src/MainDbContext.ts"),
+    await renderToFile(
+      path.join(TPL, "src/DbContext.ts.hbs"),
+      path.join(out, "src", `${data.dbContextClassName}.ts`),
+      data,
     );
   }
 }

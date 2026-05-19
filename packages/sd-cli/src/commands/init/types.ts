@@ -14,6 +14,7 @@ export interface InitInput {
   clients: ClientInputSpec[];
   hasDb: boolean;
   dbDialect?: DbDialect;
+  dbContextName?: string;
   mobileAppId?: string;
   serverPort?: number;
 }
@@ -36,6 +37,8 @@ export interface NormalizedInput {
   isMysql: boolean;
   isPostgres: boolean;
   isMssql: boolean;
+  dbContextClassName: string;
+  dbContextNameUpper: string;
   serverPort: number;
   mobileAppId?: string;
   firstMobileClientName?: string;
