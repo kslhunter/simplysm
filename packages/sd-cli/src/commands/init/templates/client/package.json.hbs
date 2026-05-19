@@ -1,0 +1,29 @@
+{
+  "name": "@{{workspaceName}}/{{client.name}}",
+  "version": "1.0.0",
+  "description": "{{description}} - {{client.name}}",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "@simplysm/angular": "^14.0.0",
+    "@simplysm/core-browser": "^14.0.0",
+    "@simplysm/core-common": "^14.0.0"{{#if hasClientCommon}},
+    "@{{workspaceName}}/client-common": "workspace:*"{{/if}}{{#if hasServer}},
+    "@simplysm/service-client": "^14.0.0",
+    "@simplysm/service-common": "^14.0.0"{{/if}}{{#if client.hasRouter}},
+    "@angular/router": "^21.2.0"{{/if}}{{#if hasDb}},
+    "@{{workspaceName}}/common": "workspace:*",
+    "@simplysm/orm-common": "^14.0.0"{{/if}}{{#if client.isMobile}},
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/device": "^7.0.0",
+    "@capacitor/haptics": "^7.0.0"{{/if}}
+  },
+  "devDependencies": {
+    "@angular/compiler": "^21.2.0",
+    "@angular/platform-browser-dynamic": "^21.2.0"
+  }
+}

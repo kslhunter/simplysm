@@ -1,0 +1,16 @@
+.claude
+
+.playwright-cli
+__pycache__
+
+.tmp
+.logs
+.coverage
+.cache
+node_modules
+packages/*/.*
+packages/*/dist
+tests/*/.*
+tests/*/dist
+*.~*
+~*.*

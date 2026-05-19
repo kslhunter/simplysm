@@ -1,0 +1,72 @@
+import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
+import { sdAngularPlugin } from "@simplysm/sd-cli";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+process.env["DEV"] = "true";
+process.env["VER"] = "1.0.0-test";
+
+export default defineConfig({
+  plugins: [tsconfigPaths()],
+  define: {
+    "import.meta.env.DEV": JSON.stringify("true"),
+    "import.meta.env.VER": JSON.stringify("1.0.0-test"),
+  },
+  test: {
+    testTimeout: 30000,
+    coverage: { provider: "v8", reportsDirectory: "./.coverage" },
+    projects: [
+{{#if hasServer}}
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: [
+            "packages/server/tests/**/*.spec.{ts,js,mjs,cjs}",
+{{#if hasCommon}}
+            "packages/common/tests/**/*.spec.{ts,js,mjs,cjs}",
+{{/if}}
+          ],
+        },
+      },
+{{/if}}
+{{#if hasClientCommon}}
+      {
+        extends: true,
+        plugins: [sdAngularPlugin({ pkg: "client-common" })],
+        test: {
+          name: "client-common",
+          setupFiles: ["packages/client-common/tests/vitest.setup.ts"],
+          include: ["packages/client-common/tests/**/*.spec.{ts,js,mjs,cjs}"],
+          browser: {
+            provider: playwright(),
+            enabled: true,
+            headless: true,
+            screenshotFailures: false,
+            instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }],
+          },
+        },
+      },
+{{/if}}
+{{#each clients}}
+      {
+        extends: true,
+        plugins: [sdAngularPlugin({ pkg: "{{name}}" })],
+        test: {
+          name: "{{name}}",
+          setupFiles: ["packages/{{name}}/tests/vitest.setup.ts"],
+          include: ["packages/{{name}}/tests/**/*.spec.{ts,js,mjs,cjs}"],
+          browser: {
+            provider: playwright(),
+            enabled: true,
+            headless: true,
+            screenshotFailures: false,
+            instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }],
+          },
+        },
+      },
+{{/each}}
+    ],
+  },
+});

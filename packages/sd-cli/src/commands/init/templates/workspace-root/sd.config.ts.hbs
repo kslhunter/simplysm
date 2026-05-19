@@ -1,0 +1,63 @@
+import type { SdConfigFn } from "@simplysm/sd-cli";
+
+const config: SdConfigFn = () => ({
+  packages: {
+{{#if hasServer}}
+    "server": {
+      target: "server",
+      env: {
+        SERVER_PORT: "{{serverPort}}",
+      },
+      configs: {
+{{#if hasDb}}
+        orm: {
+          MAIN: {
+            dialect: "{{dbDialect}}",
+            host: "localhost",
+            port: {{dbPort}},
+            username: "root",
+            password: "1234",
+            database: "{{workspaceNameUpper}}",
+            defaultIsolationLevel: "READ_UNCOMMITTED",
+          },
+        },
+{{/if}}
+        auth: {
+          jwtSecret: "{{jwtSecret}}",
+        },
+      },
+    },
+{{/if}}
+{{#if hasCommon}}
+    "common": {
+      target: "neutral",
+    },
+{{/if}}
+{{#if hasClientCommon}}
+    "client-common": {
+      target: "browser",
+    },
+{{/if}}
+{{#each clients}}
+    "{{name}}": {
+      target: "client",
+{{#if ../hasServer}}
+      server: "server",
+{{/if}}
+{{#if isMobile}}
+      capacitor: {
+        appId: "{{../mobileAppId}}",
+        appName: "{{../description}}",
+        plugins: {},
+        icon: "res/icon.png",
+        platform: {
+          android: {},
+        },
+      },
+{{/if}}
+    },
+{{/each}}
+  },
+});
+
+export default config;

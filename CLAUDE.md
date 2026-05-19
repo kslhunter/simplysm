@@ -90,5 +90,5 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 - 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **명시 첨부 없이는 읽지 않는다**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 참조 (자동 로드됨).
 - Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증을 수행한다. 훅 차단 시 우회하지 말고 원인을 해결한다.
-- ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/templates/**`.
+- ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
 - 기본 응답 언어는 한국어.

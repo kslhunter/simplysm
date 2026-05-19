@@ -1,0 +1,23 @@
+{
+  "name": "@{{workspaceName}}/server",
+  "version": "1.0.0",
+  "description": "{{description}} - Server",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@{{workspaceName}}/common": "workspace:*",
+    "@simplysm/core-common": "^14.0.0",
+    "@simplysm/core-node": "^14.0.0",
+    "@simplysm/service-common": "^14.0.0",
+    "@simplysm/service-server": "^14.0.0"{{#if hasDb}},
+    "@simplysm/orm-common": "^14.0.0",
+    "@simplysm/orm-node": "^14.0.0"{{#if isMysql}},
+    "mysql2": "^3.22.0"{{/if}}{{#if isPostgres}},
+    "pg": "^8.13.0"{{/if}}{{#if isMssql}},
+    "mssql": "^11.0.0"{{/if}}{{/if}}
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0"
+  }
+}

@@ -1,0 +1,18 @@
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+{{#if client.hasRouter}}
+import { RouterOutlet } from "@angular/router";
+{{/if}}
+
+@Component({
+  selector: "app-root",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+{{#if client.hasRouter}}
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
+{{else}}
+  template: `<div></div>`,
+{{/if}}
+})
+export class AppPage {}

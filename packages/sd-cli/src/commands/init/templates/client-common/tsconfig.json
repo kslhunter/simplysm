@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types"],
+    "customConditions": ["browser"]
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictStandalone": true,
+    "typeCheckHostBindings": true,
+    "enableI18nLegacyMessageIdFormat": false,
+    "extendedDiagnostics": {
+      "defaultCategory": "error"
+    }
+  }
+}

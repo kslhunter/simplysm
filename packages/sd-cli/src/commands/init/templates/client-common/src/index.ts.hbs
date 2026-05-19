@@ -1,0 +1,11 @@
+{{#if hasServer}}
+export { AppServiceProvider, APP_MAIN_SERVICE_KEY } from "./providers/AppServiceProvider";
+{{/if}}
+{{#if hasDb}}
+export { AppOrmProvider } from "./providers/AppOrmProvider";
+{{/if}}
+{{#unless hasServer}}
+{{#unless hasDb}}
+export {};
+{{/unless}}
+{{/unless}}

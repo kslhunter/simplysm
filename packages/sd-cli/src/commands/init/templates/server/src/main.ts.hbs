@@ -1,0 +1,25 @@
+import path from "node:path";
+import { env, num, parseBoolEnv } from "@simplysm/core-common";
+import { setupConsola } from "@simplysm/core-node";
+import { createServiceServer, getConfig{{#if hasDb}}, OrmService{{/if}} } from "@simplysm/service-server";
+
+setupConsola();
+
+const rootConfig = await getConfig<Record<string, unknown>>(
+  path.resolve(import.meta.dirname, ".config.json"),
+);
+const authConfig = rootConfig?.["auth"] as { jwtSecret: string } | undefined;
+if (authConfig?.jwtSecret == null) {
+  throw new Error("auth.jwtSecret 설정을 찾을 수 없습니다. .config.json을 확인하세요.");
+}
+
+export const server = createServiceServer({
+  rootPath: import.meta.dirname,
+  services: [{{#if hasDb}}OrmService{{/if}}],
+  port: num.parseInt(env("SERVER_PORT"))!,
+  auth: { jwtSecret: authConfig.jwtSecret },
+});
+
+if (!parseBoolEnv(env("DEV"))) {
+  await server.listen();
+}

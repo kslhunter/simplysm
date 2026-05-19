@@ -1,0 +1,43 @@
+{
+  "name": "{{workspaceName}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "workspaces": ["packages/*", "tests/*"],
+  "scripts": {
+    "dev": "sd-cli dev",
+    "build": "sd-cli build",
+    "pub": "sd-cli publish",
+    "pub:no-build": "sd-cli publish --no-build",
+    "---": "",
+    "check": "sd-cli check",
+    "typecheck": "sd-cli check --type typecheck",
+    "lint": "sd-cli check --type lint",
+    "test": "vitest run --reporter=dot --silent=passed-only",
+    "----": "",
+{{#if hasMobile}}
+    "run-device": "sd-cli device -t {{firstMobileClientName}}",
+    "-----": "",
+{{/if}}
+    "replace-deps": "sd-cli replace-deps",
+    "postinstall": "npx -y skills add angular/skills --skill angular-developer -a claude-code -y && playwright-cli install --skills && playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/cli": "^0.1.11",
+    "@simplysm/lint": "^14.0.0",
+    "@simplysm/sd-claude": "^14.0.0",
+    "@simplysm/sd-cli": "^14.0.0",
+    "@types/node": "^20.19.0",
+    "@vitest/browser-playwright": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "eslint": "^9.39.0",
+    "jiti": "^2.7.0",
+    "prettier": "^3.8.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.3.0",
+    "vite-tsconfig-paths": "^6.1.0",
+    "vitest": "^4.1.0"
+  }
+}

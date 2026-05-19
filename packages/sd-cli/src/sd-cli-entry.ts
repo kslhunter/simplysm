@@ -9,6 +9,7 @@ import { type CheckType, runCheck } from "./commands/check";
 import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
+import { runInit } from "./commands/init/init";
 import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
 import path from "path";
@@ -23,7 +24,16 @@ const logger = createLazyLogger("sd:cli:entry");
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
 
-const COMMAND_NAMES = ["check", "watch", "dev", "device", "build", "publish", "replace-deps"];
+const COMMAND_NAMES = [
+  "check",
+  "watch",
+  "dev",
+  "device",
+  "build",
+  "publish",
+  "replace-deps",
+  "init",
+];
 
 async function collectYargsHelp(argv: string[]): Promise<string> {
   const lines: string[] = [];
@@ -320,6 +330,14 @@ export function createCliParser(argv: string[]): Argv {
         await runReplaceDeps({
           options: args.opt,
         });
+      },
+    )
+    .command(
+      "init",
+      "Bootstrap a new SI workspace via interactive prompts",
+      (cmd) => cmd.version(false).hide("help"),
+      async () => {
+        await runInit({ cwd: process.cwd() });
       },
     )
     .demandCommand(1, "Please specify a command.")

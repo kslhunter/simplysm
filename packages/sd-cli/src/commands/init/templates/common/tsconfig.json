@@ -4,6 +4,5 @@
     "lib": ["ESNext"],
     "outDir": "./dist",
     "typeRoots": ["./node_modules/@types"]
-  },
-  "exclude": ["dist", "src/commands/init/templates"]
+  }
 }

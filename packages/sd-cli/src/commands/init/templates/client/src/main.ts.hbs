@@ -1,0 +1,28 @@
+import { enableProdMode } from "@angular/core";
+import { bootstrapApplication } from "@angular/platform-browser";
+import { provideHttpClient, withFetch } from "@angular/common/http";
+{{#if client.hasRouter}}
+import { provideRouter, withHashLocation } from "@angular/router";
+{{/if}}
+import { provideSdAngular } from "@simplysm/angular";
+import { AppPage } from "./AppPage";
+{{#if client.hasRouter}}
+import { routes } from "./routes";
+{{/if}}
+import "./styles.scss";
+
+if (typeof ngDevMode !== "undefined" && !ngDevMode) {
+  enableProdMode();
+}
+
+bootstrapApplication(AppPage, {
+  providers: [
+    provideHttpClient(withFetch()),
+{{#if client.hasRouter}}
+    provideRouter(routes, withHashLocation()),
+{{/if}}
+    provideSdAngular({ clientName: "{{client.name}}" }),
+  ],
+}).catch((err: unknown) => {
+  console.error(err);
+});
