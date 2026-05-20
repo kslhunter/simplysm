@@ -7,7 +7,9 @@ FTP/FTPS/SFTP 원격 스토리지에 동일 인터페이스(`StorageClient`)로 
 - **`StorageFactory.connect`** — FTP/FTPS/SFTP 어느 것이든 연결→작업→자동 종료를 한 번에 처리할 때 (권장 진입점).
 - **`StorageClient`** — 콜백 안에서 사용하는 공통 파일 작업 인터페이스(mkdir/list/readFile/put/uploadDir/remove/rename/exists).
 - **`FtpStorageClient` / `SftpStorageClient`** — 연결 생명주기를 직접 관리해야 할 때만 (장기 연결 풀 등). 그 외엔 `StorageFactory.connect` 사용.
-- **`StorageConnConfig`, `StorageProtocol`, `FileInfo`** — 위 API 호출 시 타입.
+- **`StorageConnConfig`** — `connect`/`StorageFactory.connect` 에 넘기는 접속 정보(host/port/user/password) 타입.
+- **`StorageProtocol`** — `StorageFactory.connect` 의 `type` 인자로 쓰는 프로토콜 리터럴(`"ftp" | "ftps" | "sftp"`).
+- **`FileInfo`** — `list` 결과 항목 타입(`{ name, isFile }`).
 
 ## StorageFactory.connect
 

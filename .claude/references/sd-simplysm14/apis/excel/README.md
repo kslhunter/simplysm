@@ -4,11 +4,25 @@ OOXML(xlsx) 워크북을 lazy-load 로 읽고 쓰는 클래스 묶음. ZIP 내�
 
 ## 사용 트리거 인덱스
 - **`ExcelWorkbook`** — xlsx 바이트/Blob 을 열거나 새 워크북을 만들 때. 사용 후 `close()` 필수.
-- **`ExcelWorksheet`** — 시트 단위로 셀/행/열 접근, 데이터테이블 입출력, 틀 고정/줌, 조건부 서식, 이미지 삽입.
-- **`ExcelCell` / `ExcelRow` / `ExcelCol`** — 단일 셀 값·수식·스타일·병합, 행/열 전체 셀 일괄 접근, 열 너비.
+- **`ExcelWorkbook.setDefaultStyle`** — 워크북 전역(폰트·정렬·numFmt 등) 셀 표준을 한번에 적용.
+- **`ExcelWorksheet`** — 시트 단위 셀 접근의 진입점. 이름·범위 조회.
+- **`getDataTable` / `setDataMatrix` / `setRecords`** — 시트와 레코드 배열(또는 2D 매트릭스) 간 입출력.
+- **`copyCell` / `copyRow` / `copyCellStyle` / `copyRowStyle` / `insertCopyRow`** — 셀/행 복제·삽입(템플릿 시트 채울 때).
+- **`setZoom` / `freezeAt`** — 시트 뷰 보기 설정(확대·틀 고정).
+- **`setTabColor`** — 시트 탭 색 ARGB 지정.
+- **`addConditionalFormat`** — 셀/범위에 조건부 서식 규칙 적용.
+- **`addImage`** — 시트에 이미지(png/jpg 등) 삽입.
+- **`ExcelCell`** — 단일 셀의 값·수식·스타일·병합.
+- **`ExcelRow`** — 행 단위 셀 일괄 접근.
+- **`ExcelCol`** — 열 단위 셀 접근 + 열 너비 설정.
 - **`ExcelWrapper`** — Zod 스키마로 헤더·타입을 정의해 레코드 배열로 read/write.
 - **`ExcelUtils`** — `"A1"`↔좌표, 범위 주소, Excel 직렬 날짜 ↔ 타임스탬프, numFmt 변환.
-- **타입 (`ExcelValueType`, `ExcelStyleOptions`, `ExcelFont`, `ExcelConditionalRule` 등)** — 입력 옵션·반환값 정의.
+- **`ExcelValueType`** — 셀에 넣고 뺄 수 있는 값의 union (number/string/boolean/DateOnly/DateTime/Time/undefined).
+- **`ExcelStyleOptions`** — `setStyle` / `setDefaultStyle` 입력 옵션 (배경·테두리·정렬·numFmt·폰트).
+- **`ExcelFont`** — `ExcelStyleOptions.font` 의 폰트 속성(크기·family·bold·italic·underline·color·strike).
+- **`ExcelConditionalRule` / `ExcelConditionalRuleStyle`** — `addConditionalFormat` 의 규칙·강조 스타일 타입.
+- **`ExcelAddressPoint` / `ExcelAddressRangePoint`** — 0 기반 좌표 / 범위 좌표.
+- **`ExcelNumberFormat` / `ExcelBorderPosition` / `ExcelHorizontalAlign` / `ExcelVerticalAlign` / `ExcelFontUnderline`** — 스타일 옵션의 enum literal 들.
 
 ## ExcelWorkbook
 ```typescript

@@ -19,7 +19,7 @@ await FileSystem.requestPermissions(): Promise<void>   // Android 11+: 설정 �
 
 // 경로/URI
 await FileSystem.getStoragePath(type: StorageType): Promise<string>
-await FileSystem.getUri(filePath: string): Promise<string>   // FileProvider URI
+await FileSystem.getUri(filePath: string): Promise<string>   // 네이티브: FileProvider URI / Web: Blob URL (사용 후 `URL.revokeObjectURL` 필수)
 
 // 디렉토리
 await FileSystem.readdir(dirPath: string): Promise<FileInfo[]>

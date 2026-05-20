@@ -4,13 +4,23 @@ Node.js 환경에서 `@simplysm/orm-common` 의 `DbContext` 를 실제 DB(MSSQL/
 
 ## 사용 트리거 인덱스
 
-- **`createOrm` / `Orm` / `OrmOptions`** — `DbContext` 서브클래스 + `DbConnConfig` 로 ORM 인스턴스를 만들고, 트랜잭션 유/무 콜백을 실행한다. 일반 ORM 사용의 진입점.
-- **`createDbConn`** — `DbConnConfig` 만으로 저수준 `DbConn` 인스턴스를 직접 만든다. `DbContext` 없이 raw SQL/bulk insert 가 필요할 때.
+- **`createOrm`** — `DbContext` 서브클래스 + `DbConnConfig` 로 ORM 인스턴스 생성. 일반 ORM 사용의 진입점.
+- **`Orm<T>`** — `createOrm` 반환 타입. 함수 시그니처·DI 토큰에서 참조하거나 `connect` / `connectWithoutTransaction` 호출 시.
+- **`OrmOptions`** — `createOrm` 3번째 인자. `DbConnConfig` 의 `database` / `schema` 를 런타임에 덮어쓸 때.
+- **`createDbConn`** — `DbConnConfig` 만으로 저수준 `DbConn` 인스턴스 직접 생성. `DbContext` 없이 raw SQL/bulk insert 가 필요할 때.
 - **`NodeDbContextExecutor`** — `DbContext` 의 executor 직접 주입이 필요할 때. 일반적으로는 `createOrm` 이 내부적으로 사용.
-- **`MysqlDbConn` / `MssqlDbConn` / `PostgresqlDbConn`** — dialect별 `DbConn` 구현. 직접 `new` 하지 말고 `createDbConn` 사용. 타입 참조용으로만 import.
-- **`DbConn` / `DbConnConfig` (+ `MysqlDbConnConfig` / `MssqlDbConnConfig` / `PostgresqlDbConnConfig`)** — 설정/연결 타입. 함수 시그니처·DI 토큰 등에서 참조.
+- **`MysqlDbConn`** — MySQL 용 `DbConn` 구현 클래스. 직접 `new` 하지 말고 `createDbConn` 사용. 타입 참조용 import.
+- **`MssqlDbConn`** — MSSQL/Azure SQL 용 `DbConn` 구현 클래스. 직접 `new` 하지 말고 `createDbConn` 사용. 타입 참조용 import.
+- **`PostgresqlDbConn`** — PostgreSQL 용 `DbConn` 구현 클래스. 직접 `new` 하지 말고 `createDbConn` 사용. 타입 참조용 import.
+- **`DbConn`** — 저수준 연결 인터페이스. 모든 dialect 공통 메서드(`connect`/`close`/트랜잭션/`execute`/`executeParametrized`/`bulkInsert`) 와 `close` 이벤트.
+- **`DbConnConfig`** — dialect 분기 union 타입. `createOrm`/`createDbConn` 입력.
+- **`MysqlDbConnConfig`** — `dialect: "mysql"` 한정 설정 타입.
+- **`MssqlDbConnConfig`** — `dialect: "mssql" | "mssql-azure"` 설정 타입. `schema?` 포함.
+- **`PostgresqlDbConnConfig`** — `dialect: "postgresql"` 설정 타입. `schema?` 포함.
 - **`getDialectFromConfig`** — `DbConnConfig` → `Dialect` 변환(`mssql-azure` → `mssql`). 쿼리 빌더 선택 시.
-- **`DB_CONN_CONNECT_TIMEOUT` (10s) / `DB_CONN_DEFAULT_TIMEOUT` (10m) / `DB_CONN_ERRORS`** — 타임아웃·에러 메시지 상수.
+- **`DB_CONN_CONNECT_TIMEOUT`** — DB 연결 수립 타임아웃 상수 (10초).
+- **`DB_CONN_DEFAULT_TIMEOUT`** — 쿼리/유휴 기본 타임아웃 상수 (10분).
+- **`DB_CONN_ERRORS`** — `NOT_CONNECTED` / `ALREADY_CONNECTED` 에러 메시지 리터럴.
 
 ## createOrm
 

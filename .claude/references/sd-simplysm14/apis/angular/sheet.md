@@ -25,7 +25,7 @@
 
 ## `<sd-sheet<TItem>>` 입력/출력
 
-- inputs: `key`, `items`, `trackByFn`, `selectMode`, `autoSelect: "click"|"focus"`, `getItemSelectableFn`, `getChildrenFn` (트리), `useAutoSort`, `visiblePageCount=10`, `totalPageCount`, `itemsPerPage`, `focusMode: "row"|"cell" = "cell"`, `inset`, `contentStyle`, `getItemCellClassFn`, `getItemCellStyleFn`, `hideConfigBar`, `columnControlsInput` (외부 정의된 컬럼 추가).
+- inputs: `key`, `items`, `trackByFn`, `selectMode`, `autoSelect: "click"|"focus"`, `getItemSelectableFn`, `getChildrenFn` (트리), `useAutoSort`, `visiblePageCount=10`, `totalPageCount`, `itemsPerPage`, `focusMode: "row"|"cell" = "cell"`, `inset`, `contentStyle`, `getItemCellClassFn`, `getItemCellStyleFn`, `hideConfigBar`, `columnControlsInput: readonly SdSheetColumn[]` (외부 정의된 컬럼 추가, `<sd-sheet-column>` 자식 + 이 입력을 합쳐 처리).
 - outputs: `itemKeydown: SdSheetItemKeydownEventParam<T> { item, event }`, `cellKeydown: SdSheetCellKeydownEventParam<T> { item, key, event }`.
 - models: `selectedKeys: unknown[]`, `expandedItems: TItem[]`, `sorts: SortingDef[]`, `currentPage: number`.
 - `key` 지정 시 설정 모달(`SdSheetConfigModal`)로 너비/숨김/고정/순서를 `SdSystemConfigProvider`에 영속화.

@@ -6,14 +6,45 @@
 
 ## 사용 트리거 인덱스
 
-- **DOM 탐색/가시성** (`Element` 확장: `findAll`/`findFirst`/`prependChild`/`getParents`/`isOffsetElement`/`isVisible`) — DOM 트리 탐색·삽입·가시성 판정 필요 시.
-- **포커스/탭 이동** (`Element` 확장: `findTabbableParent`/`findFirstTabbableChild`) — 키보드 포커스 흐름 제어 시.
-- **레이아웃/스크롤** (`HTMLElement` 확장: `repaint`/`getRelativeOffset`/`scrollIntoViewIfNeeded`) — 드롭다운/팝업 위치 계산, 고정 헤더 가림 스크롤 보정 시.
-- **클립보드/측정 헬퍼** (`copyElement`/`pasteToElement`/`getBounds`, `ElementBounds`) — copy/paste 이벤트 처리, 다수 요소 경계 일괄 측정 시.
-- **파일 다이얼로그/다운로드** (`openFileDialog`/`downloadBlob`) — 파일 선택 UI, Blob 다운로드 트리거 시.
-- **진행률 fetch** (`fetchUrlBytes`, `DownloadProgress`) — 큰 바이너리 다운로드 + 진행률 콜백 필요 시.
-- **IndexedDB 저장소** (`IndexedDbStore`, `StoreConfig`) — 브라우저 영속 키/값 저장소 (트랜잭션 보장).
-- **IndexedDB 가상 파일시스템** (`IndexedDbVirtualFs`, `VirtualFsEntry`) — `IndexedDbStore` 위에 경로(`/a/b/c`) 기반 파일/디렉토리 모델링.
+DOM 탐색/가시성 — `Element` 확장:
+
+- **`findAll`** — `el` 하위에서 선택자 일치 요소 전부 배열로 받을 때.
+- **`findFirst`** — `el` 하위에서 선택자 일치 첫 요소만 받을 때 (`querySelector` 의 `null` 대신 `undefined`).
+- **`prependChild`** — 자식 목록의 맨 앞으로 삽입할 때.
+- **`getParents`** — 가까운 부모부터 위로 거슬러 올라가는 조상 배열이 필요할 때.
+- **`isOffsetElement`** — 어떤 요소가 자식 absolute 의 기준이 되는지(`position: relative/absolute/fixed/sticky`) 판정할 때.
+- **`isVisible`** — 화면에 실제로 보이는지(클라이언트 영역 + `visibility` + `opacity`) 판정할 때.
+
+포커스/탭 이동 — `Element` 확장:
+
+- **`findTabbableParent`** — 현재 요소를 감싸는 가장 가까운 tabbable 부모를 찾을 때 (모달·툴팁의 포커스 트랩 호스트 추적).
+- **`findFirstTabbableChild`** — 컨테이너에 진입했을 때 처음 포커스할 자식을 찾을 때.
+
+레이아웃/스크롤 — `HTMLElement` 확장:
+
+- **`repaint`** — 스타일 변경 후 즉시 동기 reflow 가 필요할 때.
+- **`getRelativeOffset`** — 드롭다운/팝업을 부모 기준 absolute 좌표로 띄울 때 (스크롤·border·transform 보정 포함).
+- **`scrollIntoViewIfNeeded`** — 고정 헤더/컬럼에 가려진 셀을 위/왼쪽으로만 보정 스크롤할 때.
+
+클립보드/측정 헬퍼:
+
+- **`copyElement`** — `<el @copy>` 이벤트 핸들러로 내부 첫 input/textarea 값을 클립보드로 보낼 때.
+- **`pasteToElement`** — `<el @paste>` 이벤트 핸들러로 클립보드 값을 내부 첫 input/textarea 에 전체 교체할 때.
+- **`getBounds`** / **`ElementBounds`** — 다수 요소의 뷰포트 경계를 `IntersectionObserver` 로 한 번에 측정할 때 (입력 순서 유지·타임아웃 보장).
+
+파일 다이얼로그/다운로드:
+
+- **`openFileDialog`** — 사용자에게 파일 선택 UI 를 띄워 `File[]` 을 받을 때 (취소·빈 선택은 `undefined`).
+- **`downloadBlob`** — 메모리 상의 `Blob` 을 사용자 다운로드로 흘려보낼 때 (파일명 sanitize).
+
+진행률 fetch:
+
+- **`fetchUrlBytes`** / **`DownloadProgress`** — 큰 바이너리를 `Uint8Array` 로 받으며 진행률 콜백을 받을 때.
+
+IndexedDB:
+
+- **`IndexedDbStore`** / **`StoreConfig`** — 브라우저 영속 키/값 저장소가 필요할 때 (트랜잭션·재진입 안전 `open`).
+- **`IndexedDbVirtualFs`** / **`VirtualFsEntry`** — 위 저장소 위에 경로(`/a/b/c`) 기반 파일/디렉토리 트리를 올릴 때.
 
 ## DOM 탐색/가시성 — `Element` 확장
 

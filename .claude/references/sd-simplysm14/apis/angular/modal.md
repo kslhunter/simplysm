@@ -45,8 +45,8 @@ interface SdModalContentDef<O> {
 
 ```typescript
 const am = inject(SdActivatedModalProvider, { optional: true });
-am?.modalComponent();    // SdModal 인스턴스 (title() 등)
-am?.contentComponent();  // 컨텐츠 인스턴스
+am?.modalComponent();    // signal<SdModal> (title() 등)
+am?.contentComponent();  // signal<T> 컨텐츠 인스턴스
 am.canDeactivateFn = () => isClean();   // 닫기 차단 (false 반환 시)
 ```
 

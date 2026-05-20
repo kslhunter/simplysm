@@ -10,7 +10,7 @@
 
 ## `<sd-anchor>`
 
-링크형 클릭 요소. `disabled`, `theme`(`primary|secondary|...|blue-gray`, default `primary`). tabindex 자동.
+링크형 클릭 요소. `disabled`, `theme`(`primary|secondary|...|blue-gray`, default `primary`). 비활성 시 tabindex 제거.
 
 ```html
 <sd-anchor [theme]="'danger'" (click)="del()">삭제</sd-anchor>
@@ -18,7 +18,14 @@
 
 ## `<sd-additional-button>`
 
-본문 + 우측 부가 버튼 슬롯. `size`.
+본문 영역 + 우측 부가 버튼 슬롯(`<sd-anchor>`, `<sd-button>` projection). `size: "sm"|"lg"`, `inset`.
+
+```html
+<sd-additional-button>
+  본문 내용
+  <sd-button (click)="...">+</sd-button>
+</sd-additional-button>
+```
 
 ## `<sd-modal-select-button>`
 
@@ -32,6 +39,8 @@
   [modalOptions]="{ resizable: true }"
   [required]="true"
   [disabled]="false"
+  [size]="'sm'"
+  [inset]="false"
   [searchIcon]="customIcon">
   {{ displayLabel() }}
 </sd-modal-select-button>
@@ -39,4 +48,5 @@
 
 - `SdSelectModal<TKey>` = `SdModalContentDef<SelectModalOutputResult<TKey>>` + `selectMode: InputSignal<"single"|"multi"|undefined>` + `selectedKeys: InputSignal<TKey[]>`.
 - `SdSelectModalInfo<T>` = `SdModalInfo<T, "selectMode"|"selectedKeys">`.
-- erase 아이콘 클릭 시 `value` 초기화(`undefined` 또는 `[]`).
+- value 가 있고 required 가 아니면 좌측에 erase 아이콘 노출 → 클릭 시 초기화(single 은 `undefined`, multi 는 `[]`).
+- 검색 버튼 클릭 → `SdModalProvider.showAsync` 호출, 결과 `{ selectedKeys }` 를 `selectMode` 에 맞춰 `value` 에 반영.

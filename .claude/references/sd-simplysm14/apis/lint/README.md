@@ -6,6 +6,15 @@ Simplysm 컨벤션용 ESLint 플러그인 패키지. 커스텀 규칙 묶음(`./
 
 - **`./eslint-recommended` (default export)** — 프로젝트 `eslint.config.{js,mjs,cjs}` 에서 그대로 spread 해 simplysm 표준 lint 규칙을 적용할 때.
 - **`./eslint-plugin` (default export)** — recommended 를 사용하지 않고 개별 규칙만 골라 쓰거나, 다른 flat config 에서 `@simplysm/<rule>` 로 참조할 때.
+  - **`ng-no-async-effect`** — Angular `effect()` 콜백을 async 로 작성하지 않게 막을 때.
+  - **`ng-template-no-strict-null-check`** — Angular 템플릿에서 `=== null|undefined` 대신 `== null` 로 통일시킬 때.
+  - **`ng-template-no-todo-comments`** — Angular 템플릿 내 `<!-- TODO: ... -->` 를 빌드 경고로 남길 때.
+  - **`ng-template-sd-require-binding-attrs`** — `sd-*` 컴포넌트에 plain attribute 못 쓰게 하고 property binding 으로 강제할 때.
+  - **`no-hard-private`** — `#field` 대신 TypeScript `private _field` 스타일을 강제할 때.
+  - **`no-subpath-imports-from-simplysm`** — `@simplysm/<pkg>/src/...` 직접 import 를 차단할 때.
+  - **`ts-no-throw-not-implemented-error`** — `NotImplementedError` 잔존을 빌드 경고로 표면화할 때.
+  - **`ts-no-unused-injects`** — Angular `inject()` 로 받은 미사용 필드를 정리할 때.
+  - **`ts-no-unused-protected-readonly`** — Angular 컴포넌트 인라인 템플릿/클래스 어느 쪽에서도 안 쓰는 `protected readonly` 필드를 정리할 때.
 
 ## `./eslint-recommended`
 

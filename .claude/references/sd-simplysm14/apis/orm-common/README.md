@@ -9,16 +9,41 @@ Dialect 독립 ORM 코어. `DbContext` 상속으로 테이블/뷰/프로시저�
 - **`Queryable` / `queryable()`** — `DbContext` 에 등록된 테이블/뷰에서 SELECT/INSERT/UPDATE/DELETE/UPSERT 빌더 체이닝, JOIN/include/recursive CTE/UNION/search 할 때. 자세히: [queryable.md](./queryable.md)
 - **`Executable` / `executable()`** — 등록된 프로시저 호출 결과 받을 때. 자세히: [executable.md](./executable.md)
 - **`expr` namespace + `ExprUnit`/`WhereExprUnit`** — `where`/`select`/`groupBy`/`having`/`update` 콜백 안에서 비교·논리·문자열·날짜·집계·윈도우·CASE·subquery 등 SQL 표현식 만들 때. dialect 독립 AST. 자세히: [expr.md](./expr.md)
-- **`parseSearchQuery(text)`** — `Queryable.search()` 내부에서 쓰는 OR/`+`AND/`-`NOT/`"…"`/`*` 구문 파서. 직접 LIKE 패턴이 필요할 때만 외부 사용.
-- **`QueryBuilder` (`createQueryBuilder(dialect)`, `QueryBuilderBase`, `ExprRendererBase`, `*QueryBuilder`, `*ExprRenderer`)** — executor 측에서 `QueryDef` 를 dialect SQL 로 렌더할 때. 응용 코드는 직접 호출 X.
-- **`QueryDef` 타입군 (`./types/query-def`)** — executor·테스트에서 빌더가 만든 AST 를 직접 다룰 때. `QueryDef`, `SelectQueryDef`, `InsertQueryDef`, ..., `QueryDefObjectName`, `DDL_TYPES`, `DdlType`.
-- **`Expr` 타입군 (`./types/expr`)** — Expr AST 노드 타입(`ExprColumn`/`ExprValue`/`ExprRaw`/`ExprEq`/...`ExprWindow`/`ExprSubquery`). `DateUnit`. ExprRenderer 구현·검사에서 사용.
-- **`DataType` / `ColumnPrimitive*` (`./types/column`)** — SQL DataType union(`int`/`bigint`/`varchar`/`datetime`/`uuid`/...) 과 TS 타입 매핑(`ColumnPrimitiveMap`/`ColumnPrimitiveStr`/`ColumnPrimitive`/`ColumnMeta`). `dataTypeStrToColumnPrimitiveStr` 상수, `InferColumnPrimitiveFromDataType<T>` / `inferColumnPrimitiveStr(value)` 런타임 추론.
-- **`Dialect` / `dialects` / `DataRecord` / `DbContextExecutor` / `ResultMeta` / `IsolationLevel` / `Migration` / `QueryBuildResult` (`./types/db`)** — executor 구현·DbContext 외부 인터페이스. `Migration[]` 은 DbContext 서브클래스의 `migrations` 프로퍼티로 오버라이드해 `initialize()` 에서 적용.
-- **`DbContextBase` / `DbContextStatus` / `DbContextDdlMethods` (`./types/db-context-def`)** — 외부에서 DbContext 를 인터페이스로 다룰 때 (Queryable/Executable/ViewBuilder 가 의존).
-- **`DbTransactionError` / `DbErrorCode`** — executor 가 트랜잭션 에러를 표준화해 throw, 호출측은 `instanceof` 로 분기. 코드: `NO_ACTIVE_TRANSACTION`, `TRANSACTION_ALREADY_STARTED`, `DEADLOCK`, `LOCK_TIMEOUT`.
-- **`parseResults(rows, meta)` / `pickResultSets(rawResults, buildResult)` (`./utils/*`)** — executor 측 raw 결과 가공. `parseResults` 는 flat row → 중첩 객체(JOIN 그룹핑 + 타입 파싱). `pickResultSets(raw, { resultSetIndex, resultSetStride })` 는 다중 결과 셋에서 필요한 셋만 추출 (예: MySQL 배치 INSERT 의 OUTPUT SELECT).
-- **`_Migration` / `SD_BUILDER`** — 내부용. `_Migration` 은 `_migration(code PK)` 시스템 테이블, `SD_BUILDER` 는 `queryable()`/`executable()` 팩토리 함수에 붙는 메타 심볼 (`initialize()` 가 DbContext 의 프로퍼티에서 builder 를 회수할 때 사용).
+- **`parseSearchQuery(text)`** — `Queryable.search()` 내부에서 쓰는 OR/`+`AND/`-`NOT/`"…"`/`*` 구문 파서. 직접 LIKE 패턴이 필요할 때만 외부 사용. (`ParsedSearchQuery` = `{ or, must, not }`)
+- **`createQueryBuilder(dialect)`** — `Dialect` 문자열로 dialect 별 QueryBuilder 인스턴스 받을 때 (executor 진입점).
+- **`QueryBuilderBase` / `ExprRendererBase`** — 커스텀 dialect 구현을 위해 상속 베이스 필요할 때.
+- **`MysqlQueryBuilder` / `MssqlQueryBuilder` / `PostgresqlQueryBuilder`** (와 대응 `*ExprRenderer`) — 특정 dialect 인스턴스를 직접 new 하거나 `instanceof` 분기할 때. 일반은 `createQueryBuilder` 사용.
+- **`QueryDef` (union) + `QueryDefObjectName` (`./types/query-def`)** — executor 가 받는 query AST 의 union 타입 / 모든 DDL/DML 이 공통으로 쓰는 `{database?, schema?, name}` 형태의 DB 객체 식별자.
+- **`SelectQueryDef`, `InsertQueryDef`, `InsertIfNotExistsQueryDef`, `InsertIntoQueryDef`, `UpdateQueryDef`, `DeleteQueryDef`, `UpsertQueryDef`, `SelectQueryDefJoin`, `CudOutputDef`** — DML AST 노드를 직접 만들거나 검사할 때 (executor·테스트).
+- **DDL QueryDef (`Create*` / `Drop*` / `Rename*` / `Add*` / `Modify*` / `Truncate*` / `Clear*` / `Schema*` / `ExecProc*` 등)** — 스키마 변경/프로시저 호출 AST 를 직접 다룰 때 (`getXxxQueryDef()` 반환 타입과 일치).
+- **`DDL_TYPES` (배열) / `DdlType` (union)** — query 가 DDL 인지 런타임/타입 레벨에서 검사할 때. 트랜잭션 내 DDL 차단 가드에서 사용.
+- **`Expr` (union) / `WhereExpr` (union)** — SELECT·ORDER BY·SET 콜백이 모두 받는 일반 표현식 AST 와, WHERE·HAVING 전용 boolean 표현식 AST. ExprRenderer 가 dispatch 하는 대상.
+- **개별 Expr 노드 (`ExprColumn`, `ExprValue`, `ExprRaw`, `ExprEq`, `ExprLike`, `ExprConcat`, `ExprDateDiff`, `ExprSwitch`, `ExprCount`, `ExprWindow`, `ExprSubquery` …)** — Expr renderer 구현, AST 검사, 디버깅 시 개별 노드 타입 필요할 때. 응용 코드는 `expr.*` 헬퍼만 사용.
+- **`WinFn` (union) / `WinSpec` / `WinFn*` 개별 노드** — Window 함수 AST 분기 (`rowNumber`, `rank`, `lag`, `sumOver` 등) 를 직접 처리할 때.
+- **`DateUnit`** — `dateDiff`/`dateAdd` 의 단위 union (`"year" | "month" | "day" | "hour" | "minute" | "second"`). 동적으로 단위 선택할 때.
+- **`DataType` (`./types/column`)** — SQL 타입 union (`{type:"int"}` / `{type:"varchar",length}` / `{type:"decimal",precision,scale?}` ...). DDL/cast 의 타입 인자.
+- **`ColumnPrimitive` / `ColumnPrimitiveStr` / `ColumnPrimitiveMap`** — Column 값으로 허용되는 TS 타입 union (`string|number|boolean|DateTime|DateOnly|Time|Uuid|Bytes|undefined`), 그 키 이름 union, 키→타입 매핑. ExprUnit/ResultMeta 가 사용.
+- **`ColumnMeta`** — `ColumnBuilder.meta` 의 형태 (`{type, dataType, autoIncrement?, nullable?, default?, description?}`). 외부에서 column 정의를 읽어 DDL 만들 때.
+- **`dataTypeStrToColumnPrimitiveStr`** — `DataType.type` → `ColumnPrimitiveStr` 상수 매핑. cast 결과 dataType 추론에 사용.
+- **`InferColumnPrimitiveFromDataType<T>`** — `DataType` 타입에서 TS 값 타입 추론 (제네릭 타입 유틸).
+- **`inferColumnPrimitiveStr(value)`** — 런타임 값에서 `ColumnPrimitiveStr` 추론. NULL/unknown 이면 throw.
+- **`Dialect`** — `"mysql" | "mssql" | "postgresql"` union. dialect 분기/`createQueryBuilder` 인자.
+- **`dialects`** — `Dialect[]` 상수 배열. 테스트의 `it.each(dialects)` 또는 모든 dialect 순회용.
+- **`DataRecord`** — query 결과 row 의 재귀 타입 (`{ [key]: ColumnPrimitive | DataRecord | DataRecord[] }`). Queryable/Executable 의 결과 제약.
+- **`DbContextExecutor`** — 외부에서 DbContext 에 주입할 executor 인터페이스 (`connect`/`close`/`beginTransaction`/`commitTransaction`/`rollbackTransaction`/`executeDefs`). 신규 dialect/원격 executor 구현 시.
+- **`ResultMeta`** — `executeDefs` 가 받는 `{columns: Record<string,ColumnPrimitiveStr>, joins: Record<string,{isSingle}>}`. raw row → 타입 변환·JOIN 그룹핑에 필요.
+- **`IsolationLevel`** — `"READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE"`. `connect`/`transaction` 인자.
+- **`Migration`** — `{name, up(db)}`. DbContext 서브클래스의 `migrations` 프로퍼티 타입. `initialize()` 가 적용.
+- **`QueryBuildResult`** — `QueryBuilder.build()` 반환 (`{sql, resultSetIndex?, resultSetStride?}`). executor 가 `pickResultSets` 로 좁힐 때 필요.
+- **`DbContextBase` (`./types/db-context-def`)** — DbContext 의 코어 인터페이스 (`status`/`database`/`schema`/`executeDefs`/`getNextAlias` 등). Queryable·Executable·ViewBuilder 가 의존하므로 mock/대체 구현 시 사용.
+- **`DbContextStatus`** — `"ready" | "connect" | "transact"`. status 분기 시.
+- **`DbContextDdlMethods`** — `createTable`/`addColumn`/`addForeignKey` 등 DDL 메서드 집합 인터페이스. `Migration.up` 의 db 인자 타입.
+- **`DbTransactionError`** — executor 가 트랜잭션 에러를 표준화해 throw 하는 클래스. 호출측은 `instanceof DbTransactionError` 로 분기.
+- **`DbErrorCode`** — `NO_ACTIVE_TRANSACTION` / `TRANSACTION_ALREADY_STARTED` / `DEADLOCK` / `LOCK_TIMEOUT` enum. `err.code === DbErrorCode.DEADLOCK` 같은 분기에 사용.
+- **`parseQueryResult(rows, meta)` (`./utils/result-parser`)** — flat row 배열 + `ResultMeta` → 타입 변환 + JOIN 그룹핑된 중첩 객체 배열. async. 빈 결과면 undefined. executor 가 SELECT/OUTPUT 결과를 사용자 객체로 가공할 때.
+- **`pickResultSets(rawResults, buildResult)` (`./utils/pick-result-sets`)** — `QueryBuildResult` 의 `resultSetIndex`/`resultSetStride` 따라 여러 결과 셋 중 필요한 셋만 추출/concat. MySQL 배치 INSERT 의 OUTPUT SELECT 만 모을 때.
+- **`_Migration`** — `_migration(code PK varchar(255))` 시스템 테이블의 TableBuilder. DbContext 가 자동 등록, 사용자 직접 import 불필요.
+- **`SD_BUILDER`** — `queryable()`/`executable()` 팩토리 함수에 builder 를 부착하는 심볼. `initialize()` 가 DbContext 의 프로퍼티에서 builder 를 회수할 때 사용. 사용자 코드 직접 사용 X.
 
 ## QueryBuilder (인라인)
 

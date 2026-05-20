@@ -5,11 +5,12 @@ Angular Router 위에 페이지 코드(`a.b.c` 형식)·뷰 타입·새창 네�
 ## `SdRouterLink` 디렉티브
 
 ```html
-<a [sdRouterLink]="{ link: '/home/order/list', params: { id }, queryParams, outletName, window: { width, height } }">go</a>
+<a [sdRouterLink]="{ link: '/home/order/list', params: { id }, queryParams, outletName, window: { width: 800, height: 600 } }">go</a>
 ```
 
-- 일반 클릭 → `router.navigate`. Ctrl/Shift 클릭 또는 새창 모드(`isWindow`)일 때 → `SdNavigateWindowProvider.open` 으로 새 창. Alt+click 무시.
+- 일반 클릭 → `router.navigate`. Ctrl/Shift 클릭 또는 현재가 새창 컨텍스트(`SdNavigateWindowProvider.isWindow`)일 때 → `SdNavigateWindowProvider.open` 으로 새 창. Alt+click 무시.
 - `outletName` 지정 시 named outlet 으로 navigate.
+- `window: { width, height }` 옵션은 isWindow 컨텍스트에서 새 창 features 로만 사용 (Ctrl/Shift 새창에는 미적용).
 
 ## `SdNavigateWindowProvider`
 

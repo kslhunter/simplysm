@@ -15,12 +15,13 @@ const sm = useSelectionManager({
 sm.hasSelectable; sm.isAllSelected;
 sm.getSelectable(item);    // true | string(reason) | undefined
 sm.select(item); sm.deselect(item); sm.toggle(item); sm.toggleAll();
-sm.isSelected(item); sm.getCanChangeFn(item);
+sm.isSelected(item); sm.getCanChangeFn(item);   // () => boolean (체크박스 canChangeFn 으로 직결)
 ```
 
 - `single`이면 select 시 기존 키 대체. `multi` 면 추가.
 - 키 비교는 `obj.equal` (`@simplysm/core-common`).
 - `trackByFn` 반환이 `null`이면 선택 불가.
+- `hasSelectable`은 `selectMode != null` 여부 (선택 가능 모드인지). 선택 가능한 아이템 존재 여부는 `isAllSelected` 로직에서 자동 처리.
 
 ## `useExpandingManager<T>(binding)`
 
