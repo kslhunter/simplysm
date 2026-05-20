@@ -412,6 +412,25 @@ describe("ExcelWorksheet", () => {
       expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("0000FF00");
     });
 
+    it("should place sheetPr before dimension in XML child order after roundtrip", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+      await ws.cell(0, 0).setValue("A1");
+      await ws.setTabColor("00FF0000");
+
+      const bytes = await wb.toBytes();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      await wb2.getWorksheet("Test");
+
+      const wsData = await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml");
+      const keys = Object.keys(wsData.data.worksheet).filter((k) => k !== "$");
+      const sheetPrIdx = keys.indexOf("sheetPr");
+      const dimensionIdx = keys.indexOf("dimension");
+      expect(sheetPrIdx).toBeGreaterThanOrEqual(0);
+      expect(dimensionIdx).toBeGreaterThan(sheetPrIdx);
+    });
+
     it("should overwrite previously set tab color", async () => {
       const wb = new ExcelWorkbook();
       const ws = await wb.addWorksheet("Test");

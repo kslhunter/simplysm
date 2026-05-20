@@ -488,11 +488,14 @@ export class ExcelXmlWorksheet implements ExcelXml {
       if (key === "sheetFormatPr") continue;
       if (key === "conditionalFormatting") continue;
       if (key === "sheetPr") continue;
+      if (key === "dimension") continue;
 
       if (key === "sheetData") {
+        // OOXML CT_Worksheet 자식 순서: sheetPr → dimension → sheetViews → sheetFormatPr → cols → sheetData → mergeCells → conditionalFormatting
         if (this.data.worksheet.sheetPr != null) {
           result.sheetPr = this.data.worksheet.sheetPr;
         }
+        result.dimension = this.data.worksheet.dimension ?? [{ $: { ref: "A1" } }];
         if (this.data.worksheet.sheetViews != null) {
           result.sheetViews = this.data.worksheet.sheetViews;
         }
@@ -531,11 +534,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
 
     // dimension 값 적용
-    if (result.dimension != null) {
-      result.dimension[0].$.ref = ExcelUtils.stringifyRangeAddr(this.range);
-    } else {
-      result.dimension = [{ $: { ref: ExcelUtils.stringifyRangeAddr(this.range) } }];
-    }
+    const dimension = (result.dimension ??= [{ $: { ref: "A1" } }]);
+    dimension[0].$.ref = ExcelUtils.stringifyRangeAddr(this.range);
 
     this.data.worksheet = result;
   }
