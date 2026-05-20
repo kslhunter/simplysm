@@ -163,12 +163,16 @@ export class ExcelWorkbook {
   //#region Style Methods
 
   /**
-   * 워크북 default cell style 설정. `xl/styles.xml` 의 `cellXfs[0]` (OOXML default cell style 자리) 에
-   * 입력 옵션으로 새 xf 를 빌드해 덮어쓴다. 폰트뿐 아니라 background/border/horizontalAlign/
-   * verticalAlign/numberFormat/numberFormatCode/font 등 `ExcelStyleOptions` 의 모든 필드를 받는다.
+   * 워크북 default cell style 설정. `xl/styles.xml` 의 `fonts[0]` / `fills[0]` / `borders[0]`
+   * (OOXML default 자원 슬롯) 자체를 입력 옵션으로 덮어쓴다. 셀의 xf 가 해당 자원 id 를 명시하지 않으면
+   * 0번 슬롯이 자동 fallback 되므로, "표준" 셀 스타일이 워크북 전역(즉 fontId/fillId/borderId 를 별도로
+   * 박지 않은 모든 셀) 에 적용된다.
    *
-   * 미호출 시 `cellXfs[0]` 은 변경되지 않으며, 기존 워크북 read 시 원본 default 가 그대로 보존된다.
-   * font 미지정 시에는 `fonts[0]` 이 빈 `<font/>` (또는 원본) 으로 유지되어 Excel 자체 기본 폰트로 표시된다.
+   * 폰트/배경/테두리뿐 아니라 horizontalAlign/verticalAlign/numberFormat/numberFormatCode 도 받는다.
+   * 후자는 0번 자원 슬롯 개념이 없어 `cellXfs[0].xf[0]` 에 그대로 박힌다.
+   *
+   * 옵션이 없는 자원은 0번 슬롯이 빈 슬롯 (`{}` / patternType="none") 으로 reset 된다.
+   * 미호출 시 `cellXfs[0]` 과 0번 슬롯 모두 원본이 그대로 보존된다.
    *
    * @example
    * ```typescript

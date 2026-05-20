@@ -387,6 +387,44 @@ describe("ExcelWorksheet", () => {
     });
   });
 
+  describe("시트 탭 색", () => {
+    it("should set tab color", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.setTabColor("00FF0000");
+
+      const wsData = await ws["_getWsData"]();
+      expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("00FF0000");
+    });
+
+    it("should preserve tab color after roundtrip", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+      await ws.setTabColor("0000FF00");
+
+      const bytes = await wb.toBytes();
+
+      const wb2 = new ExcelWorkbook(bytes);
+      await wb2.getWorksheet("Test");
+
+      const wsData = await (wb2 as any).zipCache.get("xl/worksheets/sheet1.xml");
+      expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("0000FF00");
+    });
+
+    it("should overwrite previously set tab color", async () => {
+      const wb = new ExcelWorkbook();
+      const ws = await wb.addWorksheet("Test");
+
+      await ws.setTabColor("00FF0000");
+      await ws.setTabColor("000000FF");
+
+      const wsData = await ws["_getWsData"]();
+      expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("000000FF");
+      expect(wsData.data.worksheet.sheetPr?.length).toBe(1);
+    });
+  });
+
   describe("셀 병합", () => {
     it("should shift merge cells when inserting row", async () => {
       const wb = new ExcelWorkbook();

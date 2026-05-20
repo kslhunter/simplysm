@@ -17,6 +17,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당�
 
 - **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck + lint 일괄, 자동 수정 포함.
 - **보조**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제 났을 때 각각 따로 보기 위함. 단독 사용은 회피.
+- **`-t` 타겟 표기**: `sd.config.ts` 의 `packages` 키(`@simplysm/` 접두사 **제외** 한 짧은 이름. 예: `excel`, `core-node`, `sd-cli`) 임을 본문에 명시. 풀네임 사용을 막기 위해 예시도 짧은 이름으로 통일.
 
 ## 개발 매뉴얼
 

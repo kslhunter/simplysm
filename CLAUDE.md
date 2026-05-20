@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 타겟 한정·옵션 전달:
 
-- `pnpm sd-cli <cmd> -t <package> -t <package2>` — 특정 패키지만
+- `pnpm sd-cli <cmd> -t <package> -t <package2>` — 특정 패키지만. `<package>` 는 `sd.config.ts` 의 `packages` 키 (`@simplysm/` 접두사 **제외** 한 짧은 이름. 예: `excel`, `core-node`, `sd-cli`). 풀네임(`@simplysm/excel`) 사용 시 `Unknown target` 에러.
 - `pnpm sd-cli <cmd> -o <opt>` — `sd.config.ts` 함수에 전달되는 `opt[]`
 - `pnpm sd-cli check --type lint --fix` — 자동 수정 lint
 - `pnpm sd-cli --help` — 모든 서브커맨드 통합 도움말
@@ -91,4 +91,5 @@ docker compose -f tests/orm/docker-compose.test.yml down
 - 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **명시 첨부 없이는 읽지 않는다**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 참조 (자동 로드됨).
 - Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증을 수행한다. 훅 차단 시 우회하지 말고 원인을 해결한다.
 - ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
+- `@simplysm/*` 패키지의 공개 API/동작 변경 시 `.claude/references/sd-simplysm14/apis/<패키지>/README.md` 갱신 필요 여부 검토.
 - 기본 응답 언어는 한국어.

@@ -192,14 +192,16 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
         sheet_ranges[raw_name] = (last_row, last_col)
 
         data_range = ws.Range(ws.Cells(1, 1), ws.Cells(last_row, last_col))
-        # Range → 클립보드 비트맵 → 임시 ChartObject paste → Chart.Export("PNG").
-        # xlScreen=1, xlBitmap=2
+        # Range → 클립보드 EMF → 임시 ChartObject paste → Chart.Export("PNG").
+        # xlScreen=1, xlPicture=-4147
+        # Format=xlBitmap(2) 는 화면 픽셀 버퍼 캡처라 Excel.Visible=False headless 환경에서 빈/부분 비트맵 생성됨 → xlPicture(EMF) 사용.
+        # EMF 는 메타파일 명령으로 시트 콘텐츠 직접 직렬화 → 화면 렌더 의존 없음.
         # ChartObject pt 그대로. PNG 는 시각/레이아웃용, 정확한 텍스트는 .md 가 책임.
         # 사이즈 키우면 큰 시트가 Chart.Export PNG dimension 16-bit cap (65535px) 에 걸림.
         chart_w = data_range.Width
         chart_h = data_range.Height
         try:
-            data_range.CopyPicture(Appearance=1, Format=2)
+            data_range.CopyPicture(Appearance=1, Format=-4147)
             chart_obj = ws.ChartObjects().Add(0, 0, chart_w, chart_h)
             try:
                 chart_obj.Activate()

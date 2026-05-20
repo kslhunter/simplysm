@@ -296,6 +296,12 @@ export class ExcelWorksheet {
 
   //#region View Methods
 
+  /** 시트 탭 색 설정 (ARGB 8자리, 예: "00FF0000") */
+  async setTabColor(color: string): Promise<void> {
+    const wsXml = await this._getWsData();
+    wsXml.setTabColor(color);
+  }
+
   /** 워크시트 확대/축소 비율 설정 (퍼센트) */
   async setZoom(percent: number): Promise<void> {
     const wbXml = await this._getWbData();

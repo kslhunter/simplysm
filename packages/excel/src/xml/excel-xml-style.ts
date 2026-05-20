@@ -125,13 +125,51 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   /**
-   * 워크북 default cell style 설정. `cellXfs[0].xf[0]` (OOXML default cell style 자리) 을 새로 빌드해 덮어쓴다.
-   * fonts/fills/borders/numFmts 자원은 `_getSameOrCreate*` 로 누적·dedup 되고 인덱스가 cellXfs[0] 에 박힌다.
-   * 미호출 시 기존 cellXfs[0] 그대로 보존된다.
+   * 워크북 default cell style 설정. `fonts[0]` / `fills[0]` / `borders[0]` (OOXML default 자원 슬롯) 자체를
+   * 입력 옵션으로 덮어쓴다. 셀의 xf 가 fontId/fillId/borderId 를 명시하지 않으면 OOXML 스펙상 이 0번 슬롯이
+   * 자동 fallback 되므로, "표준" 셀 스타일이 워크북 전역에 적용된다.
+   *
+   * `cellXfs[0].xf[0]` 에는 numFmtId·alignment 만 박는다 (fontId/fillId/borderId 는 명시하지 않음).
+   * 옵션이 없는 자원은 0번 슬롯이 빈 슬롯 (`{}` / patternType="none") 으로 reset 된다.
+   * 미호출 시 기존 cellXfs[0]·0번 슬롯 모두 그대로 보존된다.
    */
   setDefaultStyle(style: ExcelStyle): void {
+    this.data.styleSheet.fonts[0].font[0] = {};
+    this.data.styleSheet.fills[0].fill[0] = { patternFill: [{ $: { patternType: "none" } }] };
+    this.data.styleSheet.borders[0].border[0] = {};
+
+    if (style.font != null) {
+      this._validateFont(style.font);
+      this.data.styleSheet.fonts[0].font[0] = this._buildFontXml(style.font);
+    }
+
+    if (style.background != null) {
+      this.data.styleSheet.fills[0].fill[0] = {
+        patternFill: [
+          {
+            $: { patternType: "solid" },
+            fgColor: [{ $: { rgb: style.background.toUpperCase() } }],
+          },
+        ],
+      };
+    }
+
+    if (style.border != null) {
+      this.data.styleSheet.borders[0].border[0] = this._createBorderFromPositions(style.border);
+    }
+
     const newXf: ExcelXmlStyleDataXf = { $: { numFmtId: "0" } };
-    this._applyStyleToXf(newXf, style);
+
+    if (style.numFmtId != null) {
+      newXf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.numFmtCode != null) {
+      newXf.$.numFmtId = this._setNumFmtCode(style.numFmtCode);
+      newXf.$.applyNumberFormat = "1";
+    }
+
+    this._applyAlignment(newXf, style);
     this.data.styleSheet.cellXfs[0].xf[0] = newXf;
   }
 

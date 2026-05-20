@@ -67,6 +67,15 @@ export interface ExcelXmlWorkbookData {
 export interface ExcelXmlWorksheetData {
   worksheet: {
     $: { "xmlns": string; "xmlns:r"?: string };
+    sheetPr?: [
+      {
+        tabColor?: [
+          {
+            $: { rgb: string };
+          },
+        ];
+      },
+    ];
     dimension?: [
       {
         $: {

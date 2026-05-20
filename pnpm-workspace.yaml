@@ -1,4 +1,15 @@
 packages:
   - packages/*
   - tests/*
-dangerouslyAllowAllBuilds: true
+allowBuilds:
+  '@parcel/watcher': true
+  bufferutil: true
+  core-js: true
+  cpu-features: true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  sharp: true
+  ssh2: true
+  unrs-resolver: true
+  utf-8-validate: true

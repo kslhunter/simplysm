@@ -370,6 +370,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
   }
 
+  setTabColor(rgb: string): void {
+    this.data.worksheet.sheetPr = this.data.worksheet.sheetPr ?? [{}];
+    this.data.worksheet.sheetPr[0].tabColor = [{ $: { rgb } }];
+  }
+
   setZoom(percent: number): void {
     this.data.worksheet.sheetViews = this.data.worksheet.sheetViews ?? [
       { sheetView: [{ $: { workbookViewId: "0" } }] },
@@ -482,8 +487,12 @@ export class ExcelXmlWorksheet implements ExcelXml {
       if (key === "sheetViews") continue;
       if (key === "sheetFormatPr") continue;
       if (key === "conditionalFormatting") continue;
+      if (key === "sheetPr") continue;
 
       if (key === "sheetData") {
+        if (this.data.worksheet.sheetPr != null) {
+          result.sheetPr = this.data.worksheet.sheetPr;
+        }
         if (this.data.worksheet.sheetViews != null) {
           result.sheetViews = this.data.worksheet.sheetViews;
         }

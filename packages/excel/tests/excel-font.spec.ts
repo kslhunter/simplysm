@@ -8,35 +8,38 @@ async function getStyleSheet(wb: ExcelWorkbook) {
 }
 
 describe("폰트 — workbook default style", () => {
-  it("setDefaultStyle 으로 폰트 default 지정 시 fonts 누적 + cellXfs[0] 갱신", async () => {
+  it("setDefaultStyle 으로 폰트 default 지정 시 fonts[0] 자체가 갱신된다", async () => {
     const wb = new ExcelWorkbook();
     await wb.setDefaultStyle({ font: { family: "맑은 고딕", size: 10 } });
 
     const ss = await getStyleSheet(wb);
     expect(ss).toBeDefined();
-    // 새 fonts 항목이 추가되어 cellXfs[0].xf[0].fontId 가 그 인덱스를 가리킨다.
-    const xf0 = ss!.cellXfs[0].xf[0];
-    expect(xf0.$.applyFont).toBe("1");
-    expect(xf0.$.fontId).toBeDefined();
-
-    const fontId = parseInt(xf0.$.fontId!);
-    const font = ss!.fonts[0].font[fontId];
+    // fonts[0] 자체가 새 폰트 정의로 덮어씌워진다 (누적 X).
+    expect(ss!.fonts[0].font.length).toBe(1);
+    const font = ss!.fonts[0].font[0];
     expect(font.name?.[0].$.val).toBe("맑은 고딕");
     expect(font.sz?.[0].$.val).toBe("10");
+
+    // cellXfs[0].xf[0] 에는 fontId/applyFont 미명시 → 모든 셀이 fonts[0] 자동 fallback.
+    const xf0 = ss!.cellXfs[0].xf[0];
+    expect(xf0.$.fontId).toBeUndefined();
+    expect(xf0.$.applyFont).toBeUndefined();
   });
 
-  it("setDefaultStyle 으로 폰트 외 필드(background/horizontalAlign) 도 default 처리된다", async () => {
+  it("setDefaultStyle 으로 background 지정 시 fills[0] 자체가 갱신된다", async () => {
     const wb = new ExcelWorkbook();
     await wb.setDefaultStyle({ background: "00FFFF00", horizontalAlign: "center" });
 
     const ss = await getStyleSheet(wb);
-    const xf0 = ss!.cellXfs[0].xf[0];
-    expect(xf0.$.applyFill).toBe("1");
-    expect(xf0.$.fillId).toBeDefined();
-    expect(xf0.alignment?.[0].$.horizontal).toBe("center");
+    // fills[0] 자체가 solid + fgColor 로 덮어씌워진다.
+    expect(ss!.fills[0].fill[0].patternFill[0].$.patternType).toBe("solid");
+    expect(ss!.fills[0].fill[0].patternFill[0].fgColor?.[0].$.rgb).toBe("00FFFF00");
 
-    const fillId = parseInt(xf0.$.fillId!);
-    expect(ss!.fills[0].fill[fillId].patternFill[0].fgColor?.[0].$.rgb).toBe("00FFFF00");
+    // cellXfs[0].xf[0] 에는 fillId/applyFill 미명시 + alignment 만 박힘.
+    const xf0 = ss!.cellXfs[0].xf[0];
+    expect(xf0.$.fillId).toBeUndefined();
+    expect(xf0.$.applyFill).toBeUndefined();
+    expect(xf0.alignment?.[0].$.horizontal).toBe("center");
   });
 
   it("setDefaultStyle 미호출 시 cellXfs[0] 은 현행대로 numFmtId='0' 만 유지된다", async () => {
@@ -46,14 +49,14 @@ describe("폰트 — workbook default style", () => {
     expect(ss).toBeUndefined();
   });
 
-  it("setDefaultStyle 을 두 번 호출하면 마지막 호출이 적용된다", async () => {
+  it("setDefaultStyle 을 두 번 호출하면 마지막 호출이 fonts[0] 에 적용된다", async () => {
     const wb = new ExcelWorkbook();
     await wb.setDefaultStyle({ font: { family: "Arial", size: 12 } });
     await wb.setDefaultStyle({ font: { family: "Calibri", size: 11 } });
 
     const ss = await getStyleSheet(wb);
-    const fontId = parseInt(ss!.cellXfs[0].xf[0].$.fontId!);
-    const font = ss!.fonts[0].font[fontId];
+    expect(ss!.fonts[0].font.length).toBe(1);
+    const font = ss!.fonts[0].font[0];
     expect(font.name?.[0].$.val).toBe("Calibri");
     expect(font.sz?.[0].$.val).toBe("11");
   });
@@ -117,8 +120,7 @@ describe("폰트 — 7속성 OOXML 매핑", () => {
     const wb = new ExcelWorkbook();
     await wb.setDefaultStyle({ font: fontOpts });
     const ss = await getStyleSheet(wb);
-    const fontId = parseInt(ss!.cellXfs[0].xf[0].$.fontId!);
-    return ss!.fonts[0].font[fontId];
+    return ss!.fonts[0].font[0];
   }
 
   it("size → <sz val='..'/>", async () => {
@@ -171,19 +173,19 @@ describe("폰트 — 7속성 OOXML 매핑", () => {
     expect(f.color).toBeUndefined();
   });
 
-  it("default 와 override 가 동일 폰트 입력에 대해 동일한 fonts 항목을 공유 (dedup)", async () => {
+  it("default 와 override 가 동일 폰트 입력에 대해 fonts[0] 을 공유 (dedup)", async () => {
     const wb = new ExcelWorkbook();
     await wb.setDefaultStyle({ font: { family: "Arial", size: 11 } });
     const ws = await wb.addWorksheet("Sheet1");
     await ws.cell(0, 0).setStyle({ font: { family: "Arial", size: 11 } });
 
     const ss = await getStyleSheet(wb);
-    // default 와 override 가 동일 폰트라 fonts 길이 2 (빈 default + 공유 폰트)
-    expect(ss!.fonts[0].font.length).toBe(2);
+    // default 가 fonts[0] 자체에 박혔고, override 는 동일 폰트라 fonts[0] 재사용 → 길이 1.
+    expect(ss!.fonts[0].font.length).toBe(1);
 
-    const defaultFontId = parseInt(ss!.cellXfs[0].xf[0].$.fontId!);
     const cellStyleId = await ws.cell(0, 0).getStyleId();
-    const cellFontId = parseInt(ss!.cellXfs[0].xf[parseInt(cellStyleId!)].$.fontId!);
-    expect(cellFontId).toBe(defaultFontId);
+    const cellXf = ss!.cellXfs[0].xf[parseInt(cellStyleId!)];
+    expect(cellXf.$.fontId).toBe("0");
+    expect(cellXf.$.applyFont).toBe("1");
   });
 });

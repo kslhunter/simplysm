@@ -361,10 +361,13 @@ def _run_worker(cmd: str, *args: str, timeout: float, capture_stdout: bool = Fal
 
     호출자는 com_lock 으로 sequential 보장. worker 자체는 단독 process 라 인스턴스 격리됨.
     """
+    # worker 는 동일 sys.executable 로 실행되므로 호출 전 호스트 환경에 pywin32 보장 → worker 가 import 가능.
+    _common.ensure_pip("pythoncom", "pywin32")
     import subprocess
+    # errors="replace": Windows COM 에러 메시지가 cp949 등 비-utf8 로 올 수 있음 → None 변환 회피.
     proc = subprocess.run(
         [sys.executable, str(_WORKER_PATH), cmd, *args],
-        capture_output=True, text=True, timeout=timeout, encoding="utf-8",
+        capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace",
     )
     if proc.returncode != 0:
         raise RuntimeError(

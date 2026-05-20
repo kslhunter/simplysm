@@ -16,7 +16,7 @@ new ExcelWorkbook(arg?: Blob | Bytes)
 getWorksheetNames(): Promise<string[]>
 addWorksheet(name): Promise<ExcelWorksheet>
 getWorksheet(nameOrIndex: string | number): Promise<ExcelWorksheet>  // 인덱스 0 기반
-setDefaultStyle(opts: ExcelStyleOptions): Promise<void>              // cellXfs[0] 덮어쓰기
+setDefaultStyle(opts: ExcelStyleOptions): Promise<void>              // fonts[0]/fills[0]/borders[0] 덮어쓰기, 모든 셀에 전역 적용
 toBytes(): Promise<Bytes>
 toBlob(): Promise<Blob>                                              // xlsx MIME
 close(): Promise<void>                                               // 멱등, 이후 모든 메서드는 throw
@@ -34,7 +34,7 @@ getDataTable(opt?: { headerRowIndex?; checkEndColIndex?; usableHeaderNameFn? })
 setDataMatrix(matrix: ExcelValueType[][])                            // 0,0 부터
 setRecords(records: Record<string, ExcelValueType>[])                // 첫 행 헤더 자동
 copyCell / copyRow / copyCellStyle / copyRowStyle / insertCopyRow
-setZoom(percent) / freezeAt({ r?, c? })
+setZoom(percent) / freezeAt({ r?, c? }) / setTabColor(color)         // color: ARGB 8자리
 addConditionalFormat({ ref, rules: ExcelConditionalRule[] })         // 호출마다 priority 누적
 addImage({ bytes, ext, from, to? })                                  // ext 는 mime lookup. to 생략 시 from+1,+1
 ```
