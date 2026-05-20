@@ -6,7 +6,10 @@ import {
   Injectable,
   isDevMode,
 } from "@angular/core";
+import consola from "consola";
 import { SdSystemLogProvider } from "../config/sd-system-log.provider";
+
+const logger = consola.withTag("angular:error-handler");
 
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
@@ -72,8 +75,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
         });
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err, event);
+      logger.error(err, event);
 
       document.body.textContent =
         `[에러 처리 실패]\n원본: ${String(event)}\n2차: ${String(err)}`;

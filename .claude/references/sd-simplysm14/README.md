@@ -33,6 +33,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당�
 | 새 앱 부트스트랩 또는 새 서비스·마스터 데이터 추가      | [client-setup.md](./manuals/client-setup.md)           |
 | DB 스키마 정의 또는 ORM 쿼리 작성                       | [orm.md](./manuals/orm.md)                             |
 | 이종 엔티티를 한 목록으로 합쳐 표시 (UNION)             | [orm-union.md](./manuals/orm-union.md)                 |
+| 콘솔 로깅 코드 작성/수정 (모든 패키지)                  | [logging.md](./manuals/logging.md)                     |
 
 ## 패키지 인덱스
 

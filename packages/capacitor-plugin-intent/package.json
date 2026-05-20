@@ -17,6 +17,9 @@
     "src",
     "android"
   ],
+  "dependencies": {
+    "consola": "^3.4.2"
+  },
   "devDependencies": {
     "@capacitor/core": "^7.6.5"
   },

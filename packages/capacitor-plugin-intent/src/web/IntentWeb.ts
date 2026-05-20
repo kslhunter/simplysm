@@ -1,4 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
+import consola from "consola";
 import type {
   IntentPlugin,
   IntentResult,
@@ -6,10 +7,10 @@ import type {
   StartActivityForResultResult,
 } from "../IntentPlugin";
 
+const logger = consola.withTag("capacitor:intent");
+
 export class IntentWeb extends WebPlugin implements IntentPlugin {
-  private static readonly _warn = () =>
-    // eslint-disable-next-line no-console
-    console.warn("[Intent] 웹 환경에서는 지원하지 않습니다.");
+  private static readonly _warn = () => logger.warn("웹 환경에서는 지원하지 않습니다.");
 
   subscribe(
     _options: { filters: string[] },

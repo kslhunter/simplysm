@@ -3,8 +3,11 @@ import { html, wait, path } from "@simplysm/core-common";
 import { fetchUrlBytes } from "@simplysm/core-browser";
 import type { ServiceClient } from "@simplysm/service-client";
 import type { AutoUpdateService } from "@simplysm/service-common";
+import consola from "consola";
 import semver from "semver";
 import { ApkInstaller } from "./ApkInstaller";
+
+const logger = consola.withTag("capacitor:auto-update");
 
 export abstract class AutoUpdate {
   private static readonly _BUTTON_CSS = `
@@ -59,8 +62,7 @@ export abstract class AutoUpdate {
       }
       granted = result.granted;
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("[AutoUpdate] checkPermissions manifest 확인 실패:", err);
+      logger.error("checkPermissions manifest 확인 실패:", err);
       this._throwAboutReinstall(2, targetHref);
       return; // 도달 불가 — _throwAboutReinstall은 항상 throw함
     }
@@ -125,8 +127,7 @@ export abstract class AutoUpdate {
 
       const serverVersionInfo = await autoUpdateServiceClient.getLastVersion("android");
       if (!serverVersionInfo) {
-        // eslint-disable-next-line no-console
-        console.log("서버에서 최신 버전 정보를 가져오지 못했습니다.");
+        logger.info("서버에서 최신 버전 정보를 가져오지 못했습니다.");
         return;
       }
 
@@ -144,8 +145,7 @@ export abstract class AutoUpdate {
         semver.valid(currentVersionInfo.versionName) == null ||
         semver.valid(serverVersionInfo.version) == null
       ) {
-        // eslint-disable-next-line no-console
-        console.log("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");
+        logger.info("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");
         return;
       }
       if (!semver.gt(serverVersionInfo.version, currentVersionInfo.versionName)) {
@@ -208,8 +208,7 @@ export abstract class AutoUpdate {
 
       // 유효한 semver 버전이 없으면 반환
       if (latestVersion == null) {
-        // eslint-disable-next-line no-console
-        console.log("유효한 semver 버전 파일을 찾을 수 없습니다.");
+        logger.info("유효한 semver 버전 파일을 찾을 수 없습니다.");
         return;
       }
 
@@ -221,8 +220,7 @@ export abstract class AutoUpdate {
         semver.valid(currentVersionInfo.versionName) == null ||
         semver.valid(latestVersion) == null
       ) {
-        // eslint-disable-next-line no-console
-        console.log("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");
+        logger.info("유효하지 않은 semver 버전이므로 업데이트 확인을 건너뜁니다");
         return;
       }
       if (!semver.gt(latestVersion, currentVersionInfo.versionName)) {

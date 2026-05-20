@@ -6,6 +6,7 @@ import { SdSystemLogProvider } from "../../../src/core/config/sd-system-log.prov
 
 describe("Feature 1.5 Slice 3: SdGlobalErrorHandlerPlugin", () => {
   let handler: SdGlobalErrorHandlerPlugin;
+  let systemLog: SdSystemLogProvider;
   let overlayElements: Element[];
 
   beforeEach(() => {
@@ -13,6 +14,7 @@ describe("Feature 1.5 Slice 3: SdGlobalErrorHandlerPlugin", () => {
       providers: [{ provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin }],
     });
     handler = TestBed.inject(ErrorHandler) as SdGlobalErrorHandlerPlugin;
+    systemLog = TestBed.inject(SdSystemLogProvider);
     overlayElements = [];
   });
 
@@ -25,34 +27,34 @@ describe("Feature 1.5 Slice 3: SdGlobalErrorHandlerPlugin", () => {
   });
 
   describe("Error 객체 처리", () => {
-    it("Error를 handleError에 전달하면 에러 오버레이가 생성된다", () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    it("Error를 handleError에 전달하면 에러 오버레이가 생성되고 SystemLog.writeAsync가 호출된다", () => {
+      const writeAsyncSpy = vi.spyOn(systemLog, "writeAsync").mockResolvedValue();
       const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
 
       handler.handleError(new Error("test error"));
 
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(writeAsyncSpy).toHaveBeenCalled();
       const overlay = document.querySelector("div[style*='position: fixed']");
       expect(overlay).not.toBeNull();
       expect(overlay!.textContent).toContain("test error");
 
-      consoleSpy.mockRestore();
+      writeAsyncSpy.mockRestore();
       destroySpy.mockRestore();
     });
   });
 
   describe("ErrorEvent 처리", () => {
-    it("error가 null인 ErrorEvent는 console.warn만 호출한다", () => {
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    it("error가 null인 ErrorEvent는 SystemLog.writeAsync(warn)을 호출한다", () => {
+      const writeAsyncSpy = vi.spyOn(systemLog, "writeAsync").mockResolvedValue();
 
       const errorEvent = new ErrorEvent("error", { message: "test warning" });
       handler.handleError(errorEvent);
 
-      expect(warnSpy).toHaveBeenCalledWith("test warning");
+      expect(writeAsyncSpy).toHaveBeenCalledWith("warn", "test warning");
       const overlay = document.querySelector("div[style*='position: fixed']");
       expect(overlay).toBeNull();
 
-      warnSpy.mockRestore();
+      writeAsyncSpy.mockRestore();
     });
   });
 });
@@ -206,7 +208,6 @@ describe("Feature 2.3 Slice 1: 에러 핸들러 수정", () => {
       const destroySpy = vi
         .spyOn(TestBed.inject(ApplicationRef), "destroy")
         .mockImplementation(() => {});
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const appendSpy = vi.spyOn(document.body, "append").mockImplementation(() => {
         throw new Error("DOM append failed");
       });
@@ -217,7 +218,6 @@ describe("Feature 2.3 Slice 1: 에러 핸들러 수정", () => {
       expect(document.body.textContent).toContain("DOM append failed");
 
       appendSpy.mockRestore();
-      consoleSpy.mockRestore();
       destroySpy.mockRestore();
     });
   });
