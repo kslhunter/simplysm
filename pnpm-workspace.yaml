@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - tests/*
+minimumReleaseAge: 0
 allowBuilds:
   '@parcel/watcher': true
   bufferutil: true
