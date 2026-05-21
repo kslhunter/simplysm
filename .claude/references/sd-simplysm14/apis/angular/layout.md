@@ -1,47 +1,92 @@
 # @simplysm/angular — layout
 
-## 사이드바
+앱 셸 레이아웃. 사이드바·탑바 컨테이너와 메뉴 위젯.
 
-```html
-<sd-sidebar-container>
-  <sd-sidebar>
-    <sd-sidebar-user [userMenu]="userMenu">유저영역 컨텐츠</sd-sidebar-user>
-    <sd-sidebar-menu [menus]="menus" [layout]="'accordion'" [getMenuIsSelectedFn]="isSel" />
-  </sd-sidebar>
-  <ng-content />
-</sd-sidebar-container>
+## SdSidebarContainer — `<sd-sidebar-container>`
+
+```ts
+toggle: WritableSignal<boolean>;     // 사이드바 표시 여부
 ```
 
-- `SdSidebarContainer`: `toggle = signal(false)`. 데스크탑은 토글 시 본문 left padding 제거, 모바일(`max-width:520px`)에서는 사이드바가 슬라이드. Router `NavigationStart` 이벤트에 자동 false (페이지 이동 시 자동 닫힘).
-- `SdSidebar`: 부모 container의 toggle 추종. content projection.
-- `SdSidebarMenu`: `menus: SdMenu[]`, `layout: "accordion"|"flat"` (미지정 시 `menus.length <= 3` 이면 `"flat"`, 아니면 `"accordion"` 자동), `getMenuIsSelectedFn?: (menu) => boolean`. 자식 메뉴는 항상 `"accordion"`. `menu.url != null` 이면 클릭 시 새창 open.
-- `SdSidebarUser`: `userMenu?: SdSidebarUserMenu` + 상단 영역 content projection. userMenu.title 클릭 시 메뉴 항목 펼침/접기.
+- 사이드바 + 메인 영역 컨테이너. `Router` 네비게이션 시작 시 `toggle` 자동 false(모바일에서 메뉴 자동 닫힘).
+- 자식: `<sd-sidebar>` + 본문 컨텐츠.
 
-```typescript
+## SdSidebar — `<sd-sidebar>`
+
+```ts
+toggle = computed(() => parent.toggle());
+```
+
+- 사이드바 패널. 부모 `SdSidebarContainer.toggle` 에 연동되어 슬라이드 표시.
+- `<ng-content>` 가 사이드바 내부 컨텐츠(보통 `<sd-sidebar-user>` + `<sd-sidebar-menu>`).
+
+## SdSidebarMenu — `<sd-sidebar-menu>`
+
+```ts
+menus = input<SdMenu[]>([]);
+layout = input<"accordion"|"flat">();
+getMenuIsSelectedFn = input<(menu: SdMenu) => boolean>();
+```
+
+- `menus` — 보통 `sdAppStructure.usableMenus()` 결과.
+- `layout` — `accordion`: 그룹 메뉴 펼침/접힘, `flat`: 상시 전개. 미지정 시 메뉴 ≤3 → `flat`, 초과 → `accordion`.
+- `getMenuIsSelectedFn` — 현재 선택 메뉴 판정 커스텀. 미지정 시 `fullPageCode === menu.codeChain.join(".")`.
+
+## SdSidebarUser — `<sd-sidebar-user>`
+
+```ts
+userMenu = input<SdSidebarUserMenu>();
+
 interface SdSidebarUserMenu {
   title: string;
   menus: { title: string; onClick: () => void }[];
 }
 ```
 
-## 탑바
+- 사이드바 상단 사용자 정보 + 드롭다운 메뉴(로그아웃 등). `<ng-content>` 가 사용자 표시 영역(아바타·이름).
 
-```html
-<sd-topbar-container>
-  <sd-topbar>
-    <h4>{{ title }}</h4>
-    <sd-topbar-menu [menus]="menus" />
-    <sd-topbar-user [menus]="userMenus">유저표시</sd-topbar-user>
-  </sd-topbar>
-  <ng-content />
-</sd-topbar-container>
+## SdTopbarContainer — `<sd-topbar-container>`
+
+- 탑바 + 본문 컨테이너. inputs 없음. 자식: `<sd-topbar>` + 본문.
+
+## SdTopbar — `<sd-topbar>`
+
+```ts
+sidebarContainer = input<SdSidebarContainer>();
 ```
 
-- `SdTopbarContainer`: flex-column 100% 컨테이너.
-- `SdTopbar`: `sidebarContainer?: SdSidebarContainer` 입력(미지정 시 inject 시도). 사이드바 있으면 햄버거 버튼 노출 → 클릭 시 `sc.toggle` 토글.
-- `SdTopbarMenu`: `menus: SdMenu[]`, `getMenuIsSelectedFn?`. 각 최상위 menu는 dropdown 으로 노출. leaf 클릭 후 dropdown 자동 닫힘.
-- `SdTopbarUser`: `menus: SdTopbarUserMenu[]` (required, `{ title, onClick }[]`) + 트리거 영역 content projection. dropdown 으로 menus 표시, 클릭 후 자동 close.
+- 상단 바. 햄버거 버튼 클릭 시 사이드바 토글. `sidebarContainer` 명시 안 하면 ancestor inject 자동 탐색.
 
-## 메뉴 데이터
+## SdTopbarMenu — `<sd-topbar-menu>`
 
-`SdMenu` (`./app-structure.md` 참조)을 그대로 입력. 선택 상태는 `getIsMenuSelected(menu, fullPageCode, customFn?)` 또는 `getMenuIsSelectedFn` 으로. leaf 메뉴는 `getMenuRouterLinkOption(menu)` 으로 `[sdRouterLink]` 옵션 자동 생성.
+```ts
+menus = input<SdMenu[]>([]);
+getMenuIsSelectedFn = input<(menu: SdMenu) => boolean>();
+```
+
+- 탑바 가로 메뉴. 그룹 메뉴는 드롭다운 자동.
+
+## SdTopbarUser — `<sd-topbar-user>`
+
+```ts
+menus = input.required<SdTopbarUserMenu[]>();
+
+interface SdTopbarUserMenu { title: string; onClick: () => void }
+```
+
+- 탑바 우측 사용자 드롭다운(아바타 → 메뉴). `<ng-content>` 가 트리거 표시 영역.
+
+## 사용 예
+
+```html
+<sd-sidebar-container>
+  <sd-sidebar>
+    <sd-sidebar-user [userMenu]="userMenu()">{{ user().name }}</sd-sidebar-user>
+    <sd-sidebar-menu [menus]="appStructure.usableMenus()" />
+  </sd-sidebar>
+  <sd-topbar-container>
+    <sd-topbar><h1>{{ viewTitle() }}</h1><sd-topbar-user [menus]="topbarMenus()" /></sd-topbar>
+    <router-outlet />
+  </sd-topbar-container>
+</sd-sidebar-container>
+```

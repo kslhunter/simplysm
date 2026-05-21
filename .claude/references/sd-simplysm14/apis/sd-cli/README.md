@@ -16,7 +16,7 @@
 - **`init`** — 인터랙티브 프롬프트로 SI 워크스페이스 골격 생성.
 
 공통 옵션:
-- `-t / --target <pkg>` (반복 가능) — 대상 패키지. `sd.config.ts.packages` 키 (= `@simplysm/` 접두사 **제외**한 짧은 이름). 미지정 시 전체.
+- `-t / --target <pkg>` (반복 가능) — 대상 패키지. `sd.config.ts.packages` 키 (= `@simplysm/` 접두사 **제외**한 짧은 이름). 미지정 시 전체. `check`/`watch`/`dev`/`build`/`publish` 에서 지원. `device` 는 단수(`-t <pkg>` 1회). `replace-deps`/`init` 미지원.
 - `-o / --opt <val>` (반복 가능) — `sd.config.ts` 함수의 `params.opt[]` 로 전달. `check` 와 `init` 제외 전 커맨드에서 지원.
 - `--debug` — 디버그 로그 출력 (모든 커맨드).
 - `--help / -h` — 단독 호출 시 모든 서브커맨드 종합 도움말.

@@ -1,131 +1,58 @@
 # @simplysm/core-common
-
-공통 유틸리티(타입·에러·큐·이벤트·변환·확장 메서드·환경변수). simplysm 모든 패키지의 공용 기반.
+브라우저·Node 공통 유틸·타입·에러·확장 메서드 패키지. import 시 Array/Map/Set 프로토타입 확장이 자동 적용됨.
 
 ## 사용 트리거 인덱스
+- **`env`, `parseBoolEnv`, `__DEV__`** — 환경변수 읽기/쓰기 또는 빌드 시점 dev 플래그 분기. (인라인)
+- **에러 클래스 (`SdError`, `ArgumentError`, `NotImplementedError`, `TimeoutError`)** — 도메인별 에러 throw 또는 instanceof 분기. (인라인)
+- **공통 타입 유틸 (`Bytes`, `Type<T>`, `DeepPartial<T>`, `PrimitiveType*`)** — 타입 시그니처 작성, 생성자/원시타입 타입화. (인라인)
+- **날짜·시간·UUID·LazyGcMap 클래스** — 도메인 값 객체 생성/파싱/연산. 자세히: [types.md](./types.md)
+- **이벤트·큐 클래스 (`EventEmitter`, `DebounceQueue`, `SerialQueue`)** — 입력 디바운싱, 작업 직렬화, 타입 안전 이벤트 발행. 자세히: [features.md](./features.md)
+- **Array/Map/Set 확장 메서드** — `single`/`first`/`groupBy`/`toMap`/`distinct`/`orderBy`/`diffs`/`merge`/`toTree`, `Map.getOrCreate`/`update`, `Set.adds`/`toggle` 등. 자세히: [extensions.md](./extensions.md)
+- **`obj`/`str`/`num`/`bytes`/`path`/`json`/`xml`/`wait`/`transfer`/`err`/`dt`/`primitive` 네임스페이스 + `js`/`ts`/`html`/`tsql`/`mysql`/`pgsql` 태그, `ZipArchive`** — 객체 복제·동등성·병합, 문자열 파싱·casing, JSON/XML 직렬화, Worker 전송, 날짜 포맷팅 등. 자세히: [utils.md](./utils.md)
 
-- **에러 클래스** — throw 시 트리 메시지/원인 체인 필요할 때. (자세히: 아래 [에러 클래스](#에러-클래스))
-  - `SdError` — 일반 에러 (cause 체인, "상위 => 하위" 메시지)
-  - `ArgumentError` — 인자 검증 실패 (인자 객체를 YAML 로 메시지에 첨부)
-  - `NotImplementedError` — 미구현 분기/추상 메서드
-  - `TimeoutError` — 대기 시간 초과 (`wait.until` 에서 자동 throw)
-- **날짜·시간·UUID·캐시 타입** (자세히: [types.md](./types.md))
-  - `DateTime` — 불변 날짜+시간 (밀리초 정밀도, 로컬 타임존). 변환·산술·포맷.
-  - `DateOnly` — 불변 날짜만 (`yyyy-MM-dd`). ISO 8601 주차(`getWeekSeqOfYear`/`Month`).
-  - `Time` — 불변 시간만 (`HH:mm:ss.fff`, 24h 순환).
-  - `Uuid` — UUID v4 (`Uuid.generate()`), bytes 변환.
-  - `LazyGcMap` — 마지막 접근 후 N ms 만료 LRU Map. **`dispose()` 필수**.
-- **큐·이벤트 features** (자세히: [features.md](./features.md))
-  - `EventEmitter<TEvents>` — 타입 안전 이벤트 (브라우저·Node 공용).
-  - `DebounceQueue` — 연속 호출 중 마지막만 실행 (입력 자동완성·일괄 상태 변경).
-  - `SerialQueue` — 순차 실행 (작업 사이 gap 옵션, 에러 발생 후에도 계속 실행).
-- **유틸리티 네임스페이스** (자세히: [utils.md](./utils.md))
-  - `obj` — 객체 깊은 복사/비교/병합(`clone`/`equal`/`merge`), 3-way merge, `omit`/`pick`/`map`, 체인 경로(`"a.b[0].c"`) get/set/delete, `unflatten`, `clearUndefined`.
-  - `str` — 한글 조사(`getKoreanSuffix`), 전각→반각(`replaceFullWidth`), case 변환(`toPascalCase`/`toCamelCase`/`toKebabCase`/`toSnakeCase`), `isNullOrEmpty`, `insert`.
-  - `num` — 비숫자 섞인 문자열 파싱(`parseInt`/`parseFloat`/`parseRoundedInt`), `isNullOrEmpty`(0 포함 타입 가드), 천 단위 + 소수점 포맷(`format`).
-  - `bytes` — `Uint8Array` 결합(`concat`), hex/base64 인코딩·디코딩.
-  - `path` — POSIX 경로 join/basename/extname (브라우저용, 슬래시 전용).
-  - `json` — 커스텀 타입(Date/DateTime/DateOnly/Time/Uuid/Set/Map/Error/Uint8Array) 마커 직렬화 `stringify`/`parse`, null→undefined 복원.
-  - `xml` — fast-xml-parser 래퍼 `parse`/`stringify`, `stripTagPrefix` 옵션.
-  - `wait` — `wait.time(ms)`, `wait.until(cond, interval, maxCount)` (초과 시 `TimeoutError`).
-  - `transfer` — Worker postMessage 용 `encode`/`decode`, `Uint8Array.buffer` zero-copy transferList.
-  - `err` — 미지의 에러를 메시지 문자열로(`err.message`).
-  - `dt` — date-format 저수준 `format`/`normalizeMonth`/`convert12To24` (`DateTime`/`DateOnly`/`Time` 내부용, 직접 사용 드묾).
-  - `primitive` — 런타임 값 타입 추론(`primitive.typeStr`) → `PrimitiveTypeStr`.
-- **Array/Set/Map 전역 확장 메서드** — `index.ts` import 시 자동 적용. (자세히: [extensions.md](./extensions.md))
-  - Array 조회: `.single()` (0/1개 단언), `.first()`/`.last()` (조건부 find), `.filterExists()` (null 제거), `.ofType()`.
-  - Array 비동기: `.filterAsync()`/`.mapAsync()`/`.mapManyAsync()` (순차), `.parallelAsync()` (`Promise.all`).
-  - Array 변환: `.groupBy()`, `.toMap()`, `.toArrayMap()`, `.toSetMap()`, `.toObject()`, `.toTree("id", "parentId")`.
-  - Array 중복·정렬: `.distinct({ keyFn })`, `.orderBy()`/`.orderByDesc()`, `.shuffle()`.
-  - Array 비교·병합: `.diffs(target, { keys })` (INSERT/DELETE/UPDATE), `.oneWayDiffs()`, `.merge()`.
-  - Array 집계: `.sum()`, `.min()`, `.max()`.
-  - Array mutable: `.distinctThis()`, `.orderByThis()`, `.insert()`, `.remove()`, `.toggle()`, `.clear()`.
-  - Set: `.adds(...)`, `.toggle(value, "add"|"del"?)`.
-  - Map: `.getOrCreate(key, defaultOrFactory)`, `.update(key, (v) => newV)`.
-- **환경변수** — `env(key)`/`env(key, value)`, `parseBoolEnv(v)`. `process.env` 우선, fallback `import.meta.env`. (자세히: 아래 [환경변수](#환경변수))
-- **템플릿 문자열 태그** — IDE 코드 하이라이팅 + indent trim. `js`/`ts`/`html`/`tsql`/`mysql`/`pgsql` (모두 동일 동작, 하이라이팅 차별화 목적). (자세히: 아래 [템플릿 문자열 태그](#템플릿-문자열-태그))
-- **ZIP 처리** — `ZipArchive(data?)`: 읽기·쓰기·압축·해제. `get/exists/write/extractAll/compress/close`. 사용 후 **`await archive.close()`** 필수. (자세히: 아래 [ZIP 처리](#zip-처리))
-- **공통 타입** (자세히: 아래 [공통 타입](#공통-타입))
-  - `Bytes` — `Uint8Array` 별칭 (Node `Buffer` 대체).
-  - `PrimitiveTypeMap`/`PrimitiveTypeStr`/`PrimitiveType` — string/number/boolean/DateTime/DateOnly/Time/Uuid/Bytes 매핑 (orm-common 공유).
-  - `DeepPartial<T>` — 재귀 optional (원시 타입은 그대로).
-  - `Type<T>` — 클래스 생성자 타입 (DI·팩토리 패턴).
+## env
+
+```ts
+env(key: string): string | undefined
+env(key: string, value: string): void   // process.env에 set
+parseBoolEnv(value: unknown): boolean   // "true"|"1"|"yes"|"on" (대소문자 무시) → true
+declare const __DEV__: boolean          // 빌드 시 define으로 치환 (라이브러리 빌드에선 미치환)
+```
+- `env(key)`: `process.env[key]` 우선, 없으면 `import.meta.env[key]`. 둘 다 없으면 `undefined`. Node/브라우저 양쪽 안전.
 
 ## 에러 클래스
 
-```typescript
-new SdError(cause: Error, ...messages: string[])
-new SdError(...messages: string[])
-// 메시지는 역순 결합: "상위 => 하위 => 원인". cause stack을 현재 stack에 append.
+모두 `SdError` 상속. ES2024 `cause` 사용. V8에서 `captureStackTrace` + cause stack 결합.
 
-new ArgumentError(argObj)
-new ArgumentError(message, argObj)
-// 인자 객체를 YAML 형식으로 메시지에 포함.
-
-new NotImplementedError(message?)   // "미구현: <message>"
-new TimeoutError(count?, message?)  // "대기 시간 초과(N회 시도): <message>". wait.until 에서 자동 throw.
+```ts
+new SdError(cause: Error, ...messages: string[])   // "상위msg => ... => cause.message"
+new SdError(...messages: string[])                  // 메시지 가변 인자, 역순 " => " join
+new ArgumentError(argObj)                           // "잘못된 인자입니다.\n\n<YAML>"
+new ArgumentError(message, argObj)                  // message + YAML 첨부
+new NotImplementedError(message?)                   // "미구현[: message]"
+new TimeoutError(count?, message?)                  // "대기 시간 초과[(N회 시도)][: message]"
 ```
+- `cause`: 원인 Error. 메시지·stack이 결합되어 디버깅 가능.
+- `messages`: 가변 인자, **역순으로** ` => ` join (상위 컨텍스트가 앞).
+- `ArgumentError.argObj`: 검사 실패한 인자 객체. `yaml` 라이브러리로 YAML 렌더되어 메시지 끝에 첨부.
 
-모두 `SdError` 상속. `name` 자동 설정.
+## 공통 타입 유틸 (`common.types.ts`)
 
-## 환경변수
+```ts
+type Bytes = Uint8Array                                    // 바이너리 표준 타입 (Buffer 대체)
+interface Type<T> extends Function { new (...args: unknown[]): T }   // 클래스 생성자 타입
+type DeepPartial<T>                                        // 재귀 Partial (원시타입은 그대로)
 
-```typescript
-env("PORT")             // string | undefined (process.env → import.meta.env)
-env("PORT", "3000")     // void (process.env 에 기록, process 없으면 무시)
-parseBoolEnv(v)         // "true"|"1"|"yes"|"on" → true (대소문자 무시)
-```
-
-## 템플릿 문자열 태그
-
-```typescript
-import { js, ts, html, tsql, mysql, pgsql } from "@simplysm/core-common";
-
-const code = ts`
-  interface User { name: string; }
-`;
-// → "interface User { name: string; }" (앞뒤 빈 줄·공통 들여쓰기 제거)
-```
-
-모두 동일 함수, IDE 하이라이팅 차별화 목적.
-
-## ZIP 처리
-
-```typescript
-import { ZipArchive } from "@simplysm/core-common";
-
-// 읽기
-const archive = new ZipArchive(zipBytes);   // Blob 또는 Uint8Array
-try {
-  const content = await archive.get("file.txt");           // Bytes | undefined
-  const exists = await archive.exists("file.txt");         // boolean
-  const all = await archive.extractAll(onProgress?);       // Map<fileName, Bytes|undefined>
-} finally {
-  await archive.close();                                   // 필수
+type PrimitiveTypeMap = {                                  // 원시 타입 ↔ 문자열 키 매핑
+  string, number, boolean, DateTime, DateOnly, Time, Uuid, Bytes
 }
-
-// 쓰기
-const archive = new ZipArchive();
-archive.write("file.txt", bytes);
-const zipBytes = await archive.compress();    // 내부적으로 extractAll → 전체 메모리 로드
-await archive.close();
+type PrimitiveTypeStr = keyof PrimitiveTypeMap             // "string"|"number"|...
+type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined   // 값 union
 ```
+- `Type<T>`: DI/팩토리/instanceof 체크용. `new ctor()` 호출 가능.
+- `DeepPartial<T>`: 객체·array는 재귀 Partial. 원시·`DateTime`/`DateOnly`/`Time`/`Uuid`/`Bytes`는 leaf로 유지.
+- `PrimitiveType*`: `@simplysm/orm-common`과 공유. `primitive.typeStr(value)` 런타임 추론과 한 쌍.
 
-`extractAll` 진행률 콜백: `{ fileName, totalSize, extractedSize }`. `compress()` 는 전체 파일을 메모리에 로드하므로 대용량 ZIP 주의.
+## 부수 효과 (import 시 자동 적용)
 
-## 공통 타입
-
-```typescript
-type Bytes = Uint8Array;                          // Buffer 대체
-
-type PrimitiveTypeMap = {                          // orm-common 공유
-  string: string; number: number; boolean: boolean;
-  DateTime: DateTime; DateOnly: DateOnly; Time: Time;
-  Uuid: Uuid; Bytes: Bytes;
-};
-type PrimitiveTypeStr = keyof PrimitiveTypeMap;
-type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
-
-type DeepPartial<T>;                              // 재귀 optional, 원시 타입 유지
-interface Type<T> extends Function { new (...args: unknown[]): T; }
-```
+`@simplysm/core-common`을 한 번이라도 import하면 `Array.prototype`·`Map.prototype`·`Set.prototype`에 확장 메서드가 enumerable=false로 추가됨. 글로벌 인터페이스(`Array<T>`, `ReadonlyArray<T>`, `Map<K,V>`, `Set<T>`)도 ambient declare됨.

@@ -1,114 +1,88 @@
 # @simplysm/core-common — types
 
-날짜·시간·UUID·만료 캐시 타입.
-
-## DateTime (불변)
-
-밀리초 정밀도, 로컬 타임존. 모든 변환/산술 메서드는 새 인스턴스 반환.
-
-```typescript
-new DateTime()                                    // 현재
-new DateTime(year, month, day, h?, m?, s?, ms?)   // month 는 1-12
-new DateTime(tick)                                // ms epoch
-new DateTime(date)                                // Date 복사
-DateTime.parse(str)                               // "yyyy-MM-dd HH:mm:ss" / "yyyyMMddHHmmss" /
-                                                  //   "yyyy-MM-dd AM|PM HH:mm:ss" / "오전|오후" / ISO 8601
-                                                  //   실패 시 ArgumentError
-```
-
-Getters: `year/month/day/hour/minute/second/millisecond/tick/dayOfWeek/timezoneOffsetMinutes/isValid` (month 는 1-12, dayOfWeek 는 0-6 일~토).
-
-변환: `setYear/setMonth/setDay/setHour/setMinute/setSecond/setMillisecond` — 새 인스턴스. `setMonth` 는 대상 월 일수 초과 시 마지막 일로 클램프. `setDay` 는 JS Date 동작에 따라 월 경계 자동 조정.
-
-산술: `addYears/addMonths/addDays/addHours/addMinutes/addSeconds/addMilliseconds`.
-
-포맷: `toFormatString(formatStr)` ([date-format 토큰](#date-format-토큰)). `toString()` = `"yyyy-MM-ddTHH:mm:ss.fffzzz"`.
-
-## DateOnly (불변)
-
-날짜만(yyyy-MM-dd), 로컬 타임존.
-
-```typescript
-new DateOnly()                       // 오늘
-new DateOnly(year, month, day)
-new DateOnly(tick) / new DateOnly(date)
-DateOnly.parse(str)                  // "yyyy-MM-dd" / "yyyyMMdd" (타임존 무관) /
-                                     //   ISO 8601 (UTC → 로컬 변환). 실패 시 ArgumentError
-```
-
-Getters: `year/month/day/tick/dayOfWeek/isValid`.
-변환·산술: `setYear/setMonth/setDay`, `addYears/addMonths/addDays`.
-포맷: `toFormatString`, `toString()` = `"yyyy-MM-dd"`.
-
-주차 API (ISO 8601 기본: 월요일 시작, 첫 주 최소 4일):
-
-```typescript
-d.getWeekSeqOfYear(weekStartDay=1, minDaysInFirstWeek=4)  // { year, weekSeq }
-d.getWeekSeqOfMonth(...)                                  // { year, monthSeq, weekSeq }
-d.getWeekSeqStartDate(...)                                // DateOnly
-d.getBaseYearMonthSeqForWeekSeq(...)                      // { year, monthSeq }
-DateOnly.getDateByYearWeekSeq({ year, month?, weekSeq }, ...) // 해당 주 시작일
-```
-
-## Time (불변)
-
-시간만(HH:mm:ss.fff). 24h 순환 — 음수/24h+ 자동 정규화.
-
-```typescript
-new Time()                              // 현재 시각의 시간 부분
-new Time(hour, minute, second?, ms?)
-new Time(tick) / new Time(date)
-Time.parse(str)                         // "HH:mm:ss[.fff]" / "AM|PM HH:mm:ss[.fff]" / ISO 8601 시간 부분
-```
-
-Getters/Setters/Add 메서드는 DateTime 시간부와 유사. `addHours/Minutes/Seconds/Milliseconds` 는 24h 순환.
-
 ## Uuid
 
-UUID v4, `crypto.getRandomValues` 기반.
-
-```typescript
-Uuid.generate()                  // 새 v4
-new Uuid("xxxxxxxx-...")         // 형식 검증, 실패 시 ArgumentError
-Uuid.fromBytes(bytes16)          // 16바이트 → Uuid (길이 ≠ 16 시 ArgumentError)
-u.toString()                     // "xxxxxxxx-xxxx-..."
-u.toBytes()                      // 16바이트 Uint8Array
+```ts
+class Uuid {
+  static generate(): Uuid                  // crypto.getRandomValues 기반 UUID v4
+  static fromBytes(bytes: Bytes): Uuid     // 16바이트 Uint8Array → Uuid (길이≠16이면 ArgumentError)
+  constructor(uuid: string)                // 형식 검증 (실패 시 ArgumentError)
+  toString(): string
+  toBytes(): Bytes
+}
 ```
+- 정규식 `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i` 로 검증.
+- v4 비트: byte[6]은 0x40 마스크, byte[8]은 0x80 마스크 적용.
 
-## LazyGcMap
+## DateTime (불변, 로컬 타임존, ms 정밀도)
 
-LRU 자동 만료 Map. **사용 후 반드시 `dispose()` 호출** — 안 하면 GC 타이머가 살아 메모리 누수.
-
-```typescript
-const m = new LazyGcMap<K, V>({
-  expireTime: 60_000,           // 마지막 접근 이후 ms
-  gcInterval?: 6_000,           // 기본: expireTime/10, 최소 1000ms
-  onExpire?: (k, v) => ... ,    // 비동기 가능, 에러는 로그
-});
-
-m.size; m.has(k); m.get(k); m.set(k, v); m.delete(k); m.clear(); m.dispose();
-m.getOrCreate(k, factory);                 // dispose 후 호출 시 throw
-m.keys() / m.values() / m.entries();       // Iterator
+```ts
+new DateTime()                              // 현재
+new DateTime(year, month, day, h?, m?, s?, ms?)
+new DateTime(tick: number)
+new DateTime(date: Date)
+static parse(str): DateTime                 // 'yyyy-MM-dd HH:mm:ss[.fff]', 'yyyyMMddHHmmss',
+                                            // 'yyyy-MM-dd AM/PM HH:mm:ss', '오전/오후', ISO 8601
 ```
+- 읽기 getter: `year`, `month` (1-12), `day`, `hour`, `minute`, `second`, `millisecond`, `tick`, `dayOfWeek` (0=일~6=토), `timezoneOffsetMinutes`, `isValid`, `date` (내부 Date 복사 X — readonly 참조).
+- 변환: `setYear/Month/Day/Hour/Minute/Second/Millisecond(n)` → 새 인스턴스. `setMonth`는 일수 초과 시 해당 월 말일로 보정 (예: 1월 31일 → 2월 28/29일).
+- 산술: `addYears/Months/Days` (캘린더 기반), `addHours/Minutes/Seconds/Milliseconds` (tick 가산).
+- 포맷: `toFormatString(fmt)` — `dt.format` 형식 문자열. `toString()` = `"yyyy-MM-ddTHH:mm:ss.fffzzz"`.
+- 파싱 실패 시 `ArgumentError`.
 
-`get`/`getOrCreate` 만 접근시간 갱신(LRU). `has` 는 갱신 X. GC 실행 중 같은 key 재등록 시 새 항목 보존.
+## DateOnly (불변, 시간 제외)
 
-## date-format 토큰
+```ts
+new DateOnly() | new DateOnly(y,m,d) | new DateOnly(tick) | new DateOnly(date)
+static parse(str): DateOnly                 // 'yyyy-MM-dd', 'yyyyMMdd' (타임존 무관),
+                                            // ISO 8601 (UTC→로컬 변환)
+static getDateByYearWeekSeq(
+  { year, month?, weekSeq },
+  weekStartDay = 1, minDaysInFirstWeek = 4,
+): DateOnly                                 // 지정 주차의 시작 날짜
+```
+- getter: `year`, `month`, `day`, `tick`, `dayOfWeek`, `isValid`.
+- `setYear/Month/Day`, `addYears/Months/Days` 동일 패턴 (월 보정 동일).
+- 주차 API (인스턴스):
+  - `getBaseYearMonthSeqForWeekSeq(weekStartDay=1, minDaysInFirstWeek=4)`: 이 날짜가 속한 주의 기준 연/월.
+  - `getWeekSeqStartDate(...)`: 이 날짜가 속한 주의 시작 날짜.
+  - `getWeekSeqOfYear(...)`: `{ year, weekSeq }`.
+  - `getWeekSeqOfMonth(...)`: `{ year, monthSeq, weekSeq }`.
+- `weekStartDay`: 주 시작 요일 (0=일~6=토). 기본 1=월.
+- `minDaysInFirstWeek`: 첫 주 최소 일수 (1~7). 4=ISO 8601, 1=미국식.
+- `toFormatString(fmt)` / `toString()` = `"yyyy-MM-dd"`.
 
-`DateTime/DateOnly/Time#toFormatString(formatStr)` 에서 사용. C# 호환.
+## Time (불변, 24시간 순환)
 
-| 토큰 | 의미 | 예 |
-|------|------|----|
-| `yyyy`/`yy` | 연도 4/2자리 | 2024 / 24 |
-| `MM`/`M` | 월 패딩/미패딩 | 01 / 1 |
-| `ddd` | 한글 요일 | 일~토 |
-| `dd`/`d` | 일 패딩/미패딩 | 01 / 1 |
-| `tt` | AM/PM | AM |
-| `hh`/`h` | 12시간 패딩/미패딩 | 01 / 1 |
-| `HH`/`H` | 24시간 패딩/미패딩 | 14 / 14 |
-| `mm`/`m` | 분 | 30 / 30 |
-| `ss`/`s` | 초 | 45 / 45 |
-| `fff`/`ff`/`f` | 밀리초 3/2/1자리 | 123 / 12 / 1 |
-| `zzz`/`zz`/`z` | 타임존 ±HH:mm / ±HH / ±H | +09:00 |
+```ts
+new Time() | new Time(h, m, s?, ms?) | new Time(tick) | new Time(date)
+static parse(str): Time                     // 'HH:mm:ss[.fff]', 'AM/PM HH:mm:ss', ISO 8601
+```
+- 24시간을 초과/음수인 tick 입력은 자동으로 `% MS_PER_DAY` 정규화.
+- getter: `hour`, `minute`, `second`, `millisecond`, `tick`, `isValid`.
+- `setHour/Minute/Second/Millisecond`, `addHours/Minutes/Seconds/Milliseconds` (24시간 순환).
+- `toFormatString(fmt)` / `toString()` = `"HH:mm:ss.fff"`.
 
-긴 토큰이 먼저 매칭 → 부분 매칭 방지.
+## LazyGcMap<TKey, TValue>
+
+LRU 접근 시간 갱신 + 주기 GC 로 자동 만료되는 `Map`.
+
+```ts
+new LazyGcMap({
+  expireTime: number,                       // 만료 ms (필수). 마지막 접근부터 경과 시 삭제
+  gcInterval?: number,                      // GC 주기 ms. 기본 = max(expireTime/10, 1000)
+  onExpire?: (key, value) => void|Promise<void>,   // 만료 시 콜백. 비동기 가능, throw하면 로그만
+})
+
+has(key)       // 접근 시간 갱신 X
+get(key)       // 접근 시간 갱신 O
+set(key, val)  // GC 타이머 시작
+delete(key)    // 비면 GC 중지
+clear()        // 전체 삭제 + GC 중지 (인스턴스 재사용 가능)
+dispose()      // 영구 정리 (이후 모든 작업 no-op, getOrCreate만 throw)
+getOrCreate(key, factory)
+size, keys(), values(), entries()
+```
+- **반드시 `dispose()` 호출 필요** — 안 하면 GC 타이머 leak.
+- GC 중복 실행 방지(`_isGcRunning`). `onExpire` 실행 도중 같은 key로 `set()`되면 새 값은 보존(참조 동일성 비교).
+- 비어있으면 자동 GC 중지 → 재 `set()` 시 자동 재시작.

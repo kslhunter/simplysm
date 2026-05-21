@@ -1,70 +1,54 @@
-# @simplysm/service-server — define-service
+# @simplysm/service-server — 서비스 정의
 
-서비스 정의 + 인증 래퍼 + 컨텍스트. `ServiceServerOptions.services` 에 들어갈 단위를 만든다.
+## `defineService(name, factory): ServiceDefinition<TMethods>`
 
-## `defineService(name, factory) → ServiceDefinition<TMethods>`
+- `name: string | string[]` — 단일 또는 별칭 목록. 첫 요소가 primary(`def.name`), 전체가 `def.names`. RPC 라우팅은 `names.includes(요청서비스명)` 매칭. 빈 배열이면 throw.
+- `factory: (ctx: ServiceContext) => TMethods` — 매 요청마다 호출되어 메서드 객체 생성(컨텍스트 캡처). factory 자체가 `auth(...)` 래핑이면 `authPermissions` 가 자동 추출돼 서비스 수준 인증으로 승격.
 
-```ts
-defineService<TMethods extends Record<string, (...args: any[]) => any>>(
-  name: string | string[],          // 다중 이름 = alias (예: ["Orm", "SdOrmService"])
-  factory: (ctx: ServiceContext) => TMethods,
-): ServiceDefinition<TMethods>;
-```
+반환 `ServiceDefinition<TMethods>`:
 
-`factory` 는 호출마다 실행돼 메서드 객체를 생성한다 (요청별 컨텍스트 캡처). `factory` 가 `auth(...)` 로 감싸져 있으면 서비스 수준 인증으로 승격된다.
-
-## `auth(...)` — 인증 래퍼
-
-```ts
-auth(fn)                           // 로그인 필요
-auth(["admin", "owner"], fn)       // 해당 역할 중 하나 필요 (OR)
-```
-
-- 서비스 수준: `defineService("X", auth((ctx) => ({ ... })))`
-- 메서드 수준: 팩토리 안에서 메서드를 `auth(["admin"], () => result)` 로 감싼다. 메서드 권한이 있으면 서비스 권한을 **덮어쓴다**.
-- `auth: false` 옵션 시 검증 스킵, `auth: undefined` 인데 auth 필요 서비스 등록 시 `listen()` throw, auth 설정됐는데 토큰 없거나 권한 부족 시 메서드 호출에서 throw (`로그인이 필요합니다.` / `권한이 부족합니다.`).
+- `name: string`
+- `names: string[]`
+- `factory`
+- `authPermissions?: string[]`
 
 ## `ServiceContext<TAuthInfo>`
 
-서비스 메서드가 받는 요청별 컨텍스트.
+서비스 factory 가 받는 요청별 컨텍스트.
+
+- `server: ServiceServer<TAuthInfo>`
+- `socket?: ServiceSocket` — WebSocket 경로일 때만.
+- `http?: { clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> }` — HTTP 경로.
+- `legacy?: { clientName?: string }` — V1 경로.
+- `get authInfo(): TAuthInfo | undefined` — socket 의 payload.data 우선, 없으면 http.
+- `get clientName(): string | undefined` — socket → http → legacy 순. 빈 문자/`..`/`/`/`\\` 포함 시 throw.
+- `get clientPath(): string | undefined` — `<rootPath>/www/<clientName>`. clientName 없으면 undefined.
+- `getConfig<T>(section: string): Promise<T>` — `<rootPath>/.config.json` + `<clientPath>/.config.json` 을 `obj.merge` 한 뒤 `section` 키 반환. 섹션 없으면 throw. 설정 파일은 `FsWatcher` 로 변경 감시되어 자동 리로드.
+
+## `ServiceMethods<TDefinition>` 타입
+
+`ServiceDefinition<M>` 에서 `M` 추출. 클라이언트의 `client.getService<MyServiceType>("MyService")` 에 사용.
 
 ```ts
-interface ServiceContext<TAuthInfo = unknown> {
-  server: ServiceServer<TAuthInfo>;
-  socket?: ServiceSocket;                            // WS 경로일 때만
-  http?: { clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> };
-  legacy?: { clientName?: string };                  // V1 레거시 경로
-
-  get authInfo(): TAuthInfo | undefined;             // payload.data
-  get clientName(): string | undefined;              // socket → http → legacy 순. 위험문자(.. / \) throw
-  get clientPath(): string | undefined;              // <rootPath>/www/<clientName>
-  getConfig<T>(section: string): Promise<T>;         // root + clientPath 의 .config.json merge, 누락 시 throw
-}
-```
-
-## `ServiceMethods<TDefinition>`
-
-클라이언트에서 메서드 시그니처만 공유하기 위한 추출 타입.
-
-```ts
-export const UserService = defineService("User", (ctx) => ({ ... }));
+export const UserService = defineService("User", (ctx) => ({
+  getProfile: () => ({ name: "kim" }),
+}));
 export type UserServiceType = ServiceMethods<typeof UserService>;
-// 클라이언트: client.getService<UserServiceType>("User")
 ```
 
-## 보조
+## 보조 export
 
-- `createServiceContext(server, socket?, http?, legacy?)` — 컨텍스트 직조 (커스텀 라우트용).
-- `getServiceAuthPermissions(fn)` — `auth()` 가 함수에 심볼로 심어둔 권한 배열을 읽는다 (내부 executor 가 사용).
+- `createServiceContext(server, socket?, http?, legacy?): ServiceContext` — 컨텍스트 직조. 커스텀 라우트/테스트용.
+- `getServiceAuthPermissions(fn): string[] | undefined` — `auth()` 가 함수에 심어둔 권한 배열 추출. 래핑 안 됐으면 undefined. 내부 executor 가 사용.
 
-## 예제
+## 예
 
 ```ts
 const HealthService = defineService("Health", () => ({
   check: () => ({ status: "ok" }),
 }));
 
-const UserService = defineService("User", auth((ctx) => ({
+const UserService = defineService(["User", "MyUser"], auth((ctx) => ({
   me: () => ctx.authInfo,
   adminOnly: auth(["admin"], () => "ok"),
 })));

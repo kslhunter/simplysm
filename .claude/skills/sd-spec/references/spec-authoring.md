@@ -193,7 +193,7 @@ list·detail 동일. 새 버튼은 해당 그룹 끝에 추가.
 
 ### 와이어프레임 (텍스트)
 
-ASCII 그림 공통 규칙은 `sd-base-rules.md` 의 "ASCII 그림" 절 참조.
+ASCII 그림 공통 규칙은 output-style `sd-tone` 의 "ASCII 그림" 절 참조.
 
 **원칙**: 영역 배치·구획만 잡는다. 디테일(필드·시트 컬럼·실제 값·아이콘 placeholder·fixed 경계·비활성 행 등 시각 표현)은 와이어에 X — 항목 표·동작 절·도메인 규칙 절이 단일 출처.
 

@@ -1,72 +1,71 @@
 # @simplysm/capacitor-plugin-auto-update
 
-Android Capacitor 앱의 APK 자동 업데이트 플러그인 (서버 또는 외부 저장소 기반).
+Android Capacitor 앱의 APK 자동 업데이트 흐름(버전 비교 → 다운로드 → 권한 확인 → 설치)과 APK 설치 네이티브 플러그인 래퍼.
 
 ## 사용 트리거 인덱스
 
-- **AutoUpdate** — 앱 부팅 시 최신 APK 확인·다운로드·설치 전 과정을 한 번에 실행할 때.
-- **ApkInstaller** — APK 설치 권한 체크/요청, 임의 APK 파일 설치, 현재 앱 버전 조회 등 저수준 단위 동작이 필요할 때.
-- **VersionInfo / ApkInstallerPlugin** — 위 두 API 호출 결과 타입을 참조할 때.
+- **`AutoUpdate`** — 앱 부팅 직후 서버 또는 외부 저장소에서 최신 APK 버전을 확인·다운로드·설치하는 전체 흐름을 한 번에 실행할 때.
+- **`ApkInstaller`** — 자체 UI/흐름을 만들면서 APK 설치 권한·설치·현재 앱 버전 조회를 개별로 호출할 때.
+- **`ApkInstallerPlugin`, `VersionInfo`** — Capacitor 플러그인 인터페이스 타입을 참조하거나 모킹할 때.
 
-## AutoUpdate
-
-`abstract class AutoUpdate` (static 메서드만). Android 전용. 호출 시 권한 확인 → 버전 비교 → 다운로드 → 설치 → 무한 대기(freeze)까지 자동 처리. 오류는 catch 후 `log` 로 메시지 노출 후 freeze.
+## `AutoUpdate`
 
 ```ts
-AutoUpdate.run(opt: {
-  log: (messageHtml: string) => void;
-  serviceClient: ServiceClient;     // @simplysm/service-client
-}): Promise<void>
-```
-서버의 `AutoUpdateService` 에 `getLastVersion("android")` 호출 → `{ version, downloadPath }` 수신 → `serviceClient.hostUrl + downloadPath` 에서 APK 다운로드 → `appCache/latest.apk` 로 저장 후 설치. 다운로드 진행률은 `log` 로 갱신.
-
-```ts
-AutoUpdate.runByExternalStorage(opt: {
-  log: (messageHtml: string) => void;
-  dirPath: string;                  // external 스토리지 기준 상대 경로
-}): Promise<void>
-```
-외부 저장소 `external/<dirPath>` 폴더의 `<semver>.apk` 파일 중 가장 높은 버전을 골라 설치. 파일명이 semver 가 아니거나 없으면 조용히 반환.
-
-공통:
-- 현재 앱 버전(`ApkInstaller.getVersionInfo().versionName`) 보다 높은 버전만 설치.
-- semver 유효성 실패 시 업데이트 스킵.
-- 설치 권한이 없으면 설정 화면 이동 + "재시도" 버튼 HTML 을 `log` 로 표시하고 최대 5분 대기.
-- 설치 후 `_freezeApp()` 으로 무한 대기 — 호출측에서 별도 후속 처리 불필요.
-- `log` 인자에는 HTML 문자열이 전달됨 (innerHTML 로 렌더링하도록 구성할 것).
-
-## ApkInstaller
-
-`abstract class ApkInstaller` (static 메서드만). Capacitor 플러그인 `"ApkInstaller"` 래퍼. Web 환경에서는 알림만 표시 후 정상 반환.
-
-```ts
-ApkInstaller.checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>
-```
-`granted` = REQUEST_INSTALL_PACKAGES 승인 여부, `manifest` = AndroidManifest 에 권한 선언 여부. `manifest=false` 면 APK 재설치 필요.
-
-```ts
-ApkInstaller.requestPermissions(): Promise<void>
-```
-설정 화면으로 이동시켜 사용자에게 권한 요청. 사용자 응답을 await 하지 않으므로 호출측에서 polling 필요 (`checkPermissions` 반복).
-
-```ts
-ApkInstaller.install(apkUri: string): Promise<void>
-```
-`apkUri` 는 FileProvider 의 `content://` URI. `@simplysm/capacitor-plugin-file-system` 의 `FileSystem.getUri(path)` 로 변환해 전달.
-
-```ts
-ApkInstaller.getVersionInfo(): Promise<VersionInfo>
-```
-현재 설치된 앱 자체의 버전을 반환.
-
-## 타입
-
-```ts
-interface VersionInfo {
-  versionName: string;  // 예: "1.2.3"
-  versionCode: string;
+abstract class AutoUpdate {
+  static run(opt: { log: (messageHtml: string) => void; serviceClient: ServiceClient }): Promise<void>;
+  static runByExternalStorage(opt: { log: (messageHtml: string) => void; dirPath: string }): Promise<void>;
 }
+```
 
+- `run` — `serviceClient.getService<AutoUpdateService>("AutoUpdate").getLastVersion("android")` 호출 → semver 비교 후 더 큰 버전이면 `serviceClient.hostUrl + downloadPath` 에서 APK 다운로드 → `appCache/latest.apk` 저장 → 설치. 서버 기반 배포용.
+- `runByExternalStorage` — `FileSystem.getStoragePath("external")` 하위 `dirPath` 폴더에서 파일명이 `^[0-9.]*$` 인 `.apk` 들을 후보로 모아 semver 최댓값을 골라 설치. 서버 없이 사이드로드 배포용.
+- `opt.log` — 진행/오류를 HTML 문자열로 받는 콜백. 다운로드 버튼·재시도 버튼 등 HTML 마크업이 포함되므로 호출측이 innerHTML 로 렌더해야 함.
+- `opt.serviceClient` — `@simplysm/service-client` 의 `ServiceClient` 연결 인스턴스. 서버에 `AutoUpdateService` 가 등록되어 있어야 함.
+- `opt.dirPath` — external 저장소 루트 기준 상대 경로.
+
+동작 주의:
+
+- UA 가 android 가 아니면 throw.
+- 현재 또는 비교 대상 버전이 invalid semver 이거나 서버에서 버전 정보를 못 받으면 silent return (로그만 남김).
+- 권한 미부여 시 `ApkInstaller.requestPermissions()` 호출 후 1초 간격 최대 300회(5분) polling.
+- manifest 에 `REQUEST_INSTALL_PACKAGES` 미선언이거나 권한 확인 자체가 실패하면 "APK 재다운로드/재설치" 안내를 throw — `run` 의 경우 다운로드 링크 버튼 HTML 을 메시지에 포함.
+- try/catch 종료 후 항상 `_freezeApp()`(무한 await) — 정상 경로·에러 경로 모두 호출부의 후속 코드는 실행되지 않음 전제로 사용.
+
+사용 예:
+
+```ts
+await AutoUpdate.run({ log: (h) => (document.body.innerHTML = h), serviceClient });
+```
+
+## `ApkInstaller`
+
+```ts
+abstract class ApkInstaller {
+  static checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>;
+  static requestPermissions(): Promise<void>;
+  static install(apkUri: string): Promise<void>;
+  static getVersionInfo(): Promise<VersionInfo>;
+}
+```
+
+- `checkPermissions` — `granted` 는 사용자의 `REQUEST_INSTALL_PACKAGES` 승인 여부, `manifest` 는 AndroidManifest 에 권한이 선언돼 있는지. `manifest=false` 면 APK 자체를 재빌드/재설치 해야 함.
+- `requestPermissions` — 시스템 설정의 "알 수 없는 앱 설치" 화면으로 이동. 결과를 await 하지 않으므로 호출측에서 `checkPermissions` polling 필요.
+- `install` — `apkUri` 는 `content://` FileProvider URI. `@simplysm/capacitor-plugin-file-system` 의 `FileSystem.getUri(path)` 로 변환해 넘김. 설치 인텐트 실행 후 즉시 반환 — 실제 설치 완료를 await 하지 않음.
+- `getVersionInfo` — 현재 설치된 앱 자체의 `versionName`/`versionCode` 반환.
+- 웹(비-android) 환경에서는 `ApkInstallerWeb` 폴백이 알림만 표시하고 정상 반환(no-op).
+
+사용 예:
+
+```ts
+const { granted } = await ApkInstaller.checkPermissions();
+if (!granted) await ApkInstaller.requestPermissions();
+await ApkInstaller.install(await FileSystem.getUri(apkFilePath));
+```
+
+## `ApkInstallerPlugin`, `VersionInfo`
+
+```ts
+interface VersionInfo { versionName: string; versionCode: string }
 interface ApkInstallerPlugin {
   install(options: { uri: string }): Promise<void>;
   checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>;
@@ -74,3 +73,7 @@ interface ApkInstallerPlugin {
   getVersionInfo(): Promise<VersionInfo>;
 }
 ```
+
+- `VersionInfo.versionName` — `build.gradle` 의 versionName 문자열. `AutoUpdate` 가 semver 비교에 사용하므로 semver 형식 권장.
+- `VersionInfo.versionCode` — versionCode 를 문자열로 반환(정수 증가값).
+- `ApkInstallerPlugin` — `registerPlugin<ApkInstallerPlugin>("ApkInstaller", ...)` 의 타입 파라미터. 직접 호출하지 말고 `ApkInstaller` 정적 메서드 사용. 타입 참조/모킹 시에만 import.

@@ -1,46 +1,51 @@
 # @simplysm/core-common — features
 
-비동기 큐와 타입 안전 이벤트 이미터.
+## EventEmitter<TEvents>
 
-## EventEmitter\<TEvents\>
+EventTarget 기반의 타입 안전 이벤트 이미터. 브라우저·Node 공통.
 
-브라우저·Node 공용 (내부 `EventTarget`). 타입 안전.
+```ts
+class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>> {
+  on<E extends keyof TEvents & string>(type: E, listener: (data: TEvents[E]) => void): void
+  off<E>(type: E, listener: ...): void
+  emit<E>(type: E, ...args: TEvents[E] extends void ? [] : [data: TEvents[E]]): void
+  listenerCount(type): number
+  dispose(): void                            // 모든 리스너 제거
+}
+```
+- `TEvents`: `{ eventName: dataType }` 맵. `void` 타입이면 `emit("done")` 인자 생략.
+- 같은 `(type, listener)` 쌍 중복 등록 시 무시.
+- 내부적으로 `CustomEvent.detail`로 데이터 전송. listener는 wrapper로 감싸져 등록되며, listenerMap이 원본 ↔ wrapper 매핑 보관.
 
-```typescript
-interface MyEvents { data: string; error: Error; done: void; }
-class MyEmitter extends EventEmitter<MyEvents> {}
-
-const e = new MyEmitter();
-e.on("data", (d) => ...);       // d: string
-e.emit("data", "hello");
-e.emit("done");                 // void 이벤트는 인자 없이
-e.off("data", handler);
-e.listenerCount("data");        // 등록된 수
-e.dispose();                    // 모든 리스너 제거
+```ts
+interface MyEvents { data: string; done: void }
+class M extends EventEmitter<MyEvents> {}
+const m = new M();
+m.on("data", s => ...);
+m.emit("data", "hi");
+m.emit("done");
 ```
 
-같은 이벤트에 같은 리스너 중복 등록은 무시.
+## DebounceQueue extends EventEmitter<{ error: SdError }>
 
-## DebounceQueue extends EventEmitter\<{ error: SdError }\>
+마지막 요청만 실행. 짧은 시간 내 다중 호출 → 마지막 1건만 처리.
 
-연속 호출 중 마지막 작업만 실행.
-
-```typescript
-const q = new DebounceQueue(300);   // 300ms 지연 (생략 시 다음 이벤트 루프)
-q.run(fn);                          // 이전 대기 함수 교체
-q.on("error", (e) => ...);          // 작업 throw 시. 리스너 없으면 logger.error
-q.dispose();                        // 타이머·대기 함수 정리
+```ts
+new DebounceQueue(delay?: number)            // ms. 생략 시 다음 이벤트 루프 (setTimeout(_, undefined))
+run(fn: () => void | Promise<void>): void
+dispose(): void                              // 타이머·pending 정리
 ```
+- `delay` ms 지난 뒤 가장 최근 `fn` 실행. 실행 중 도착한 추가 `run()`은 디바운스 지연 없이 현재 실행 직후 즉시 처리 (요청 누락 방지).
+- fn throw 시 `SdError`로 감싸 `"error"` 이벤트 발행. 리스너 없으면 `consola` 로그.
 
-실행 도중 들어온 새 요청은 지연 없이 실행 완료 직후 즉시 처리 (놓침 방지).
+## SerialQueue extends EventEmitter<{ error: SdError }>
 
-## SerialQueue extends EventEmitter\<{ error: SdError }\>
+큐에 추가된 함수들을 순차 실행.
 
-순차 실행, 작업 사이 간격 옵션.
-
-```typescript
-const q = new SerialQueue(0);       // gap ms (기본 0)
-q.run(asyncFn);                     // 큐에 추가, 자동 실행
-q.on("error", ...);                 // 에러는 다음 작업에 영향 X (계속 실행)
-q.dispose();                        // 대기 큐 비움 (현재 작업은 완료됨)
+```ts
+new SerialQueue(gap: number = 0)             // 각 작업 사이 ms 간격
+run(fn: () => void | Promise<void>): void
+dispose(): void                              // 대기 큐 비우기 (실행 중은 완료됨)
 ```
+- 하나 완료 후 다음 시작. 에러 발생해도 후속 작업 계속 실행. throw는 `SdError` 감싸서 `"error"` 이벤트 (리스너 없으면 `consola.error`).
+- `gap>0` 이면 작업 간 `wait.time(gap)` 대기.

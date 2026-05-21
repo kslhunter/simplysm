@@ -1,52 +1,44 @@
 ## @simplysm/core-node — cpx
 
-`import { cpx } from "@simplysm/core-node"` — 자식 프로세스 spawn + 시스템 인코딩 감지. Windows `chcp` 코드 페이지 또는 POSIX `LANG/LC_ALL` 의 charset 부분을 보고 stdout/stderr 를 적절히 디코딩.
+`import { cpx } from "@simplysm/core-node"`. 자식 프로세스 spawn 래퍼. stdout/stderr 를 시스템 인코딩으로 자동 디코딩, 실패 시 stderr 포함 에러 throw.
 
 ### 인코딩 감지
 
-```ts
-cpx.getSystemEncoding(): string                   // 최초 1회 감지 후 모듈 캐시
-cpx.resetEncodingCache(): void
-cpx.codePageToEncoding(codePage: number): string  // 65001→utf-8, 949→euc-kr, 932→shift-jis, 936→gbk, 950→big5, 1252/1251/1250/874→windows-* / 그 외 utf-8
-```
+- `getSystemEncoding(): string` — Windows 는 `chcp` 결과 코드 페이지를, POSIX 는 `LANG`/`LC_ALL` 의 `.<enc>` 부분을 파싱. 실패 시 `"utf-8"`. **결과는 모듈 캐시**.
+- `resetEncodingCache(): void` — 캐시 초기화. 환경 변경 후 강제 재감지 시.
+- `codePageToEncoding(codePage): string` — Windows 코드 페이지 번호→IANA 인코딩명(65001/949/932/936/950/1252/1251/1250/874 지원, 그 외 `"utf-8"`).
+- `decodeBytes(raw: Uint8Array, systemEncoding?: string): string` — UTF-8 fatal decode 시도 → 실패 시 지정 인코딩으로 fallback.
 
-감지 실패 시 `utf-8` fallback.
-
-### 디코딩
+### spawn
 
 ```ts
-cpx.decodeBytes(raw: Uint8Array, systemEncoding?: string): string
-// utf-8 이면 바로 디코딩.
-// 그 외 인코딩이면 먼저 utf-8 strict 시도 → 실패 시 systemEncoding 으로 fallback.
+spawn(cmd, args, options?): SpawnProcess
+spawnSync(cmd, args, options?): SpawnResult
 ```
 
-### spawn / spawnSync
+- `options`: Node `SpawnOptions`/`SpawnSyncOptions` + `reject?: boolean`.
+  - `stdio` 기본 `"pipe"`. pipe 인 스트림만 캡처되며 비-pipe 스트림은 결과 문자열이 빈 문자열.
+  - `env`: `process.env` 와 병합되어 자식에 전달.
+  - `reject` (기본 `true`): exitCode≠0 일 때 `false` 면 결과 객체 반환, `true` 면 throw. 에러 메시지는 `Command failed (exit N): <cmd> <args>` + stderr/stdout 마지막 4000자.
+- `SpawnResult`: `{ stdout: string; stderr: string; exitCode: number }`. 종료 코드가 없고 시그널만 있으면 exitCode=1.
 
-```ts
-interface SpawnResult { stdout: string; stderr: string; exitCode: number; }
+### SpawnProcess
 
-cpx.spawn(cmd, args, opts?: SpawnOptions & { reject?: boolean }): SpawnProcess
-cpx.spawnSync(cmd, args, opts?: SpawnSyncOptions & { reject?: boolean }): SpawnResult
-```
+`spawn()` 반환값. `PromiseLike<SpawnResult>`.
 
-- 기본 `stdio: "pipe"`. `process.env` 와 `opts.env` 머지해 자식에 전달.
-- stdout/stderr 가 pipe 면 모아서 `decodeBytes` 로 문자열화.
-- `exitCode !== 0` 이고 `reject !== false` 면 throw (`Command failed: <cmd> <args>`).
-- `cpx.spawn` 은 `SpawnProcess` 반환 (PromiseLike + `pid` + `kill(signal?)`).
-
-```ts
-const r = await cpx.spawn("git", ["status", "--porcelain"]);
-console.log(r.stdout);
-
-const proc = cpx.spawn("pnpm", ["watch"], { reject: false });
-process.on("SIGINT", () => proc.kill());
-const { exitCode } = await proc;
-```
+- `pid: number | undefined` — 자식 PID.
+- `then / catch` — `SpawnResult` resolve 또는 에러 reject.
+- `kill(signal?): boolean` — 자식 프로세스에 시그널 전송.
 
 ### resolveStdioPipe
 
-```ts
-cpx.resolveStdioPipe(stdio): { stdout: boolean; stderr: boolean }
-```
+- `resolveStdioPipe(stdio): { stdout: boolean; stderr: boolean }` — `SpawnOptions["stdio"]` 가 각 스트림에 대해 pipe 인지 판정. 배열·`"pipe"`·`undefined` 모두 처리.
 
-stdio 값(`"pipe"`, `"inherit"`, 배열, `undefined`)에서 stdout/stderr 각각 pipe 여부 판정. spawn 자체가 내부 사용하므로 사용자 호출 거의 없음.
+### 예
+
+```ts
+import { cpx } from "@simplysm/core-node";
+const { stdout } = await cpx.spawn("git", ["rev-parse", "HEAD"]);
+const proc = cpx.spawn("node", ["server.js"], { reject: false });
+proc.kill("SIGTERM");
+```

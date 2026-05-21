@@ -1,49 +1,92 @@
 # @simplysm/angular — app-structure
 
-서버의 `AppStructureService`에서 받은 메뉴/권한 트리(`AppStructureItem<TModule>[]`)를 클라이언트 측에서 사용 가능 형태로 변환.
+서버 `AppStructureService` 에서 받은 메뉴·권한 트리(`AppStructureItem<TModule>[]`)를 클라이언트에서 사용 가능 형태로 변환·캐시.
 
-## `SdAppStructureProvider<TModule>`
+## SdAppStructureProvider<TModule> (root)
 
-```typescript
-const sas = inject<SdAppStructureProvider<MyModule>>(SdAppStructureProvider);
-await sas.initialize("main");                // 서비스 키 → AppStructureService.getItems()
-sas.usableModules.set(myModules);            // 활성 모듈
-sas.permRecord.set({ "order.list.use": true });
+```ts
+usableModules: WritableSignal<TModule[]|undefined>;
+permRecord: WritableSignal<Record<string, boolean>|undefined>;
+items: WritableSignal<AppStructureItem<TModule>[]>;
 
-sas.usableMenus();        // Signal<SdMenu[]>          (트리)
-sas.usableFlatMenus();    // Signal<SdFlatMenu[]>      (flat)
-sas.getTitleByFullCode("order.list");
-sas.getPermsByFullCode(["order.list"], ["use","edit"]);
-sas.getPermissionsByStructure(items, codeChain);
+usableMenus: Signal<SdMenu[]>;                // items × modules × perms 필터된 트리 메뉴
+usableFlatMenus: Signal<SdFlatMenu<TModule>[]>;  // 평탄화된 메뉴 리스트 (검색 등)
+
+initialize(serviceKey: string): Promise<void>;
+getPermissionsByStructure(items, codeChain?): SdPermission<TModule>[];
+getTitleByFullCode(fullCode: string): string;       // 부모 chain 포함 타이틀("[A > B] C")
+getItemChainByFullCode(fullCode: string): AppStructureItem<TModule>[];
+getPermsByFullCode<K extends string>(fullCodes: string[], permKeys: K[]): K[];
 ```
 
-내부적으로 `SdAppStructureUtils.getMenus/getFlatMenus/getPermissions/...` 위임.
+- `initialize` — `SdServiceClientFactoryProvider.get(serviceKey)` 에서 `AppStructureService.getItems()` 호출, `clientName` (`SdAngularConfigProvider`) 키로 트리 적재.
+- `usableModules` — 활성 모듈 식별자 배열. 메뉴/권한 필터링에 사용. 미세팅(`undefined`) 이면 모듈 체크 통과(전체 허용).
+- `permRecord` — `<fullCode>.<permKey>` (예: `sales.invoice.use`) → boolean. `undefined` 면 권한 체크 통과.
+- `usableMenus` — 그룹 메뉴는 표시 가능한 leaf 자식이 있어야 포함. leaf 는 `<code>.use` 권한 검사.
+- `usableFlatMenus` — leaf 만 평탄화. modulesChain 정보 포함.
+- `getPermsByFullCode` — 해당 화면들에 대해 사용자가 가진 권한키들 추출(`perms` 자체가 정의 안된 화면은 모든 permKey 통과).
 
-## `injectPermsSignal<K>(viewCodes, keys)`
+## SdAppStructureUtils (abstract static class)
 
-```typescript
-const perms = injectPermsSignal(["order.list"], ["use", "edit"] as const);
-perms(); // 갖고 있는 권한만 필터된 배열
+```ts
+static getTitleByFullCode/getPermsByFullCode/getItemChainByFullCode
+static getMenus(items, codeChain, usableModules, permRecord): SdMenu[]
+static getFlatMenus(items, usableModules, permRecord): SdFlatMenu<TModule>[]
+static getPermissions(items, codeChain, usableModules): SdPermission<TModule>[]
+static getFlatPermissions(items, usableModules)        // service-common 의 동명 함수 위임
 ```
+
+- 프로바이더가 내부적으로 호출. 트리 변환 로직 직접 쓰고 싶으면 호출 가능.
+
+## injectPermsSignal
+
+```ts
+function injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]>
+```
+
+- 컴포넌트/페이지에서 자기 화면 코드들과 검사할 권한키 배열을 주면, 현재 사용자가 가진 키만 담은 signal 반환. 버튼 enable 조건 등에 사용.
+
+```ts
+readonly perms = injectPermsSignal(["sales.invoice"], ["use", "edit"]);
+// 템플릿: @if (perms().includes("edit")) { <sd-button>편집</sd-button> }
+```
+
+## SdPermissionTable — `<sd-permission-table>`
+
+```ts
+class SdPermissionTable<TModule>
+value = model<Record<string, boolean>>({});      // permRecord 형태(key: <fullCode>.<permKey>)
+items = input<SdPermission<TModule>[]>([]);
+disabled = input(false);
+```
+
+- 권한 트리를 표 형태로 표시·편집. `value` 양방향. 관리자 권한 설정 화면용.
 
 ## 타입
 
-```typescript
-interface SdMenu      { title; codeChain: string[]; url?; icon?; children? }
-interface SdFlatMenu  { titleChain; codeChain; modulesChain: TModule[][] }
-interface SdPermission { title; codeChain; modules; perms: ("use"|"edit")[]?; children? }
+```ts
+interface SdMenu {
+  title: string; codeChain: string[]; url?: string; icon?: string; children?: SdMenu[];
+}
+interface SdFlatMenu<TModule = unknown> {
+  titleChain: string[]; codeChain: string[]; modulesChain: TModule[][];
+}
+interface SdPermission<TModule = unknown> {
+  title: string; codeChain: string[]; modules: TModule[]|undefined;
+  perms: ("use"|"edit")[]|undefined;
+  children: SdPermission<TModule>[]|undefined;
+}
 ```
 
-## `SdAppStructureUtils` 정적 메서드
+- `SdMenu` — `url` 또는 `children` 중 하나. 라우터 링크 분기는 `getMenuRouterLinkOption` 이 담당 ([routing.md](./routing.md)).
+- `SdFlatMenu.modulesChain` — 조상부터 자신까지 누적된 modules 배열 묶음. 모듈 활성 여부 검사 시 사용.
+- `SdPermission.perms` — 해당 화면이 정의한 권한 키들. undefined 면 권한 개념 없음(모두 허용).
 
-- `getMenus(items, codeChain, usableModules, permRecord)` — `isNotMenu` 제외, 모듈 활성·`.use` 권한 통과한 항목.
-- `getFlatMenus(items, usableModules, permRecord)` — 평탄화 + 부모 modules 누적 검사.
-- `getPermissions(items, codeChain, usableModules)` — 권한 트리 (`SdPermissionTable` 입력용).
-- `getFlatPermissions(items, usableModules)` — `@simplysm/service-common` 재노출.
-- `getTitleByFullCode`, `getItemChainByFullCode`, `getPermsByFullCode`.
+## 부트스트랩 순서
 
-## 주의
-
-- `permRecord` 키는 `"<code>.<perm>"` (예: `"order.list.use"`).
-- 그룹 메뉴는 자식 중 하나라도 표시 가능해야 노출.
-- Leaf 가 `perms`를 가지면 `.use` 권한 필수, `perms`가 없거나 권한 자체가 없으면 통과.
+```ts
+const sdAppStructure = inject(SdAppStructureProvider);
+sdAppStructure.usableModules.set(myActiveModules);
+sdAppStructure.permRecord.set(myPermRecord);
+await sdAppStructure.initialize("main");   // serviceKey = SdServiceClientFactoryProvider 의 등록 key
+```

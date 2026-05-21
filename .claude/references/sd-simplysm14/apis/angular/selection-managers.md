@@ -1,51 +1,82 @@
 # @simplysm/angular — selection-managers
 
-`<sd-sheet>`/`<sd-select>` 등이 내부에서 쓰는 선택·확장·정렬 로직을 외부 컴포넌트에서도 재사용할 수 있도록 추출된 함수 훅들. signal 바인딩.
+리스트 컴포넌트 내부에서 쓰는 선택·확장·정렬 로직 함수 훅. signal 바인딩.
 
-## `useSelectionManager<TItem, TKey>(options)`
+## useSelectionManager
 
-```typescript
-const sm = useSelectionManager({
-  displayItems,                                // Signal<TItem[]>
-  selectedKeys,                                // WritableSignal<TKey[]>
-  selectMode,                                  // Signal<"single"|"multi"|undefined>
-  getItemSelectableFn,                         // Signal<((item) => boolean|string) | undefined>
-  trackByFn,                                   // Signal<(item, idx) => TKey>
-});
-sm.hasSelectable; sm.isAllSelected;
-sm.getSelectable(item);    // true | string(reason) | undefined
-sm.select(item); sm.deselect(item); sm.toggle(item); sm.toggleAll();
-sm.isSelected(item); sm.getCanChangeFn(item);   // () => boolean (체크박스 canChangeFn 으로 직결)
+```ts
+function useSelectionManager<TItem, TKey>(options: {
+  displayItems: Signal<TItem[]>;
+  selectedKeys: WritableSignal<TKey[]>;
+  selectMode: Signal<"single"|"multi"|undefined>;
+  getItemSelectableFn: Signal<((item: TItem) => boolean|string)|undefined>;
+  trackByFn: Signal<(item, index) => TKey>;
+}): {
+  hasSelectable: Signal<boolean>;
+  isAllSelected: Signal<boolean>;
+  getSelectable(item): true|string|undefined;
+  getCanChangeFn(item): () => boolean;
+  select(item): void;
+  deselect(item): void;
+  toggle(item): void;
+  toggleAll(): void;
+  isSelected(item): boolean;
+};
 ```
 
-- `single`이면 select 시 기존 키 대체. `multi` 면 추가.
-- 키 비교는 `obj.equal` (`@simplysm/core-common`).
-- `trackByFn` 반환이 `null`이면 선택 불가.
-- `hasSelectable`은 `selectMode != null` 여부 (선택 가능 모드인지). 선택 가능한 아이템 존재 여부는 `isAllSelected` 로직에서 자동 처리.
+- `selectMode=single` 이면 `select` 가 기존 키 덮어씀, `multi` 면 추가.
+- `getItemSelectableFn` — true: 선택 가능, false: 불가, string: 불가 + 사유.
+- `getSelectable` 반환 → `true` (선택 가능), `string` (사유), `undefined` (해당 없음).
+- `isAllSelected` — selectable 항목 전체가 선택된 상태.
+- 키 비교는 `obj.equal` (deep equal).
 
-## `useExpandingManager<T>(binding)`
+## useExpandingManager
 
-```typescript
-interface ExpandItemDef<T> { item; parentDef?; hasChildren; depth }
-const em = useExpandingManager({
-  items, expandedItems,
-  getChildrenFn,    // Signal<((item, idx) => T[] | undefined) | undefined>
-  sort,             // (items: T[]) => T[]
-});
-em.displayItems; em.hasExpandable; em.isAllExpanded;
-em.toggle(item); em.toggleAll(); em.isVisible(item); em.def(item);
+```ts
+function useExpandingManager<T>(binding: {
+  items: Signal<T[]>;
+  expandedItems: WritableSignal<T[]>;
+  getChildrenFn: Signal<((item: T, index: number) => T[]|undefined)|undefined>;
+  sort: (items: T[]) => T[];
+}): {
+  displayItems: Signal<T[]>;     // 트리 평탄화 + 정렬 적용
+  hasExpandable: Signal<boolean>;
+  isAllExpanded: Signal<boolean>;
+  toggle(item): void;
+  toggleAll(): void;
+  isVisible(item): boolean;       // 조상 모두 expanded 인지
+  def(item): ExpandItemDef<T>;
+};
+
+interface ExpandItemDef<T> {
+  item: T;
+  parentDef: ExpandItemDef<T>|undefined;
+  hasChildren: boolean;
+  depth: number;
+}
 ```
 
-부모가 collapsed면 자식은 `isVisible=false`.
+- `getChildrenFn` 으로 트리 워킹 → 깊이·부모 정보 포함한 def 배열 생성.
+- `sort` — 각 depth 별 자식들에 적용할 정렬 함수(보통 `useSortingManager.sort`).
+- `isVisible` — 항목이 화면에 보일 조건(모든 조상이 expanded).
 
-## `useSortingManager(options)`
+## useSortingManager
 
-```typescript
-interface SortingDef { key: string; desc: boolean }
-const sm = useSortingManager({ sorts });
-sm.defMap;     // Signal<Map<key, { indexText?, desc }>>
-sm.toggle(key, multiple);  // multiple=true면 multi-key sort, 아니면 단일
-sm.sort(items);            // null < non-null, string localeCompare
+```ts
+function useSortingManager(options: { sorts: WritableSignal<SortingDef[]> }): {
+  defMap: Signal<Map<string, { indexText?: string; desc: boolean }>>;
+  toggle(key: string, multiple: boolean): void;
+  sort<T>(items: T[]): T[];
+};
+
+interface SortingDef { key: string; desc: boolean; }
 ```
 
-`toggle` 토글 순서: 없음 → asc → desc → 제거.
+- 컬럼 클릭 시 `toggle(key, ctrlKey)`. 단일 정렬은 `asc → desc → 없음` 순환, 다중(`multiple=true`)은 같은 키 누적 + 마지막에 제거.
+- `defMap.indexText` — 다중 정렬일 때 컬럼 헤더에 표시할 순번 ("1", "2"…). 단일이면 undefined.
+- `sort` — `key` 별 prop 값 비교. string 은 localeCompare, number 는 산술, 그 외는 String 변환 localeCompare. null/undefined 는 최소값.
+
+## 주의
+
+- 세 훅 모두 컴포넌트의 inject 컨텍스트 없이 호출 가능(순수 함수). 단 signal 바인딩이므로 reactive 컨텍스트에서 사용.
+- `<sd-sheet>` 가 내부적으로 셋 다 사용. 새 리스트 컴포넌트 만들 때 같은 동작 원하면 재사용.

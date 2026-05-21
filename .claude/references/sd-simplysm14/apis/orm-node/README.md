@@ -66,4 +66,4 @@ dialect 분기 union. 공통 필드: `host`, `port?`, `username`, `password`, `d
 new NodeDbContextExecutor(config: DbConnConfig)
 ```
 
-`DbContextExecutor` 구현. `connect` 시 내부에서 `createDbConn` + `conn.connect()` 수행. `executeDefs(defs, resultMetas?)` 는 `@simplysm/orm-common` 의 `createQueryBuilder` + `parseQueryResult` 를 사용해 `QueryDef[]` → SQL → 파싱 결과. `resultMetas` 가 전부 `null` 인 경우 단일 결합 SQL 1회로 묶어 실행. 미연결 상태에서 메서드 호출 시 `DB_CONN_ERRORS.NOT_CONNECTED` SdError throw.
+`DbContextExecutor` 구현. `connect` 시 내부에서 `createDbConn` + `conn.connect()` 수행. `executeDefs(defs, resultMetas?)` 는 `@simplysm/orm-common` 의 `createQueryBuilder` + `parseQueryResult` 를 사용해 `QueryDef[]` → SQL → 파싱 결과. `resultMetas` 가 전부 `null` 인 경우 단일 결합 SQL 1회로 묶어 실행하고 `defs.length` 개의 빈 배열 반환(결과 불필요 케이스 최적화). 미연결 상태에서 메서드 호출 시 `DB_CONN_ERRORS.NOT_CONNECTED` SdError throw.

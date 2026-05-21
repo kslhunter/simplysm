@@ -1,4 +1,5 @@
 {
+  "outputStyle": "sd-tone",
   "hooks": {
     "PreToolUse": [
       {

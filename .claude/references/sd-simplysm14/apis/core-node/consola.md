@@ -1,64 +1,59 @@
-## @simplysm/core-node — consola
+## @simplysm/core-node — consola 설정
 
-`consola` 전역 인스턴스 셋업 + 컬러 콘솔 리포터 + JSON 파일 회전 리포터. Node 앱(서버·CLI) 진입점에서 `setupConsola()` 1회 호출하면 환경에 맞게 reporter 가 구성됨.
+전역 `consola` 인스턴스에 reporter 를 일괄 부착하는 헬퍼와 reporter 구현체.
 
 ### setupConsola
 
 ```ts
-interface SetupConsolaOptions { cli?: boolean; }
-setupConsola(opts?: SetupConsolaOptions): void;
+setupConsola(opts?: { cli?: boolean }): void
 ```
 
-- `cli: true` 또는 `env.DEV` 가 truthy → dev 모드.
-  - `SD_DEBUG` truthy: `PrettyReporter` 하나만, debug 까지.
-  - 아니면: `createFileReporter()` + `withMaxLevel(new PrettyReporter(), LogLevels.info)` — 파일에는 debug 까지, 콘솔에는 info 이상만.
-- 그 외 (prod): `createFileReporter()` 하나만, debug 까지.
+전역 `consola.level = LogLevels.debug` 로 설정 후 환경에 따라 reporter 구성:
 
-모든 경로에서 `consola.level = LogLevels.debug`.
+- `opts.cli !== true` && `env("DEV")` falsy → **프로덕션**: `createFileReporter()` 만 (JSONL 파일, 콘솔 X).
+- 그 외 → **개발**:
+  - `env("SD_DEBUG")` truthy → `PrettyReporter()` 만 (debug 포함 콘솔).
+  - 그 외 → `createFileReporter()`(debug 포함 파일) + `PrettyReporter()`(info 이상만 콘솔, `withMaxLevel` 적용).
 
-### PrettyReporter
-
-```ts
-class PrettyReporter implements ConsolaReporter {}
-```
-
-- 색상 자동 감지: `NO_COLOR` 있으면 off, `FORCE_COLOR` 있으면 on, TTY 면 on, win32 면 on.
-- 타입별 아이콘/색 (info=cyan, success/ready=green, warn=yellow, error/fatal/fail=red, start=magenta, debug=gear, trace=arrow).
-- `logObj.type === "box"` 면 `> tag`, `> title`, `> 각 줄` 형태로 박스 렌더.
-- `logObj.tag !== ""` 면 `[tag]` 가 회색으로 prefix.
-- level < 2 (error/fatal/warn) 는 `stderr`, 그 외 `stdout` 으로 출력. 추가로 badge 처리(앞뒤 빈 줄).
-- args 중 `Error.stack` 가진 객체는 재귀적으로 cause 체인까지 풀어서 stack 정리 (cwd 제거, `file://` 제거, 들여쓰기).
-- `type === "trace"` 면 즉시 stack 첨부.
-
-### createFileReporter
-
-```ts
-interface FileReporterOptions {
-  maxSize?: number;   // default 20MB
-  maxDays?: number;   // default 14
-}
-createFileReporter(options?: FileReporterOptions): ConsolaReporter;
-```
-
-- 출력 디렉토리: `<cwd>/.logs` (자동 mkdir).
-- 파일명: `app.<YYYY-MM-DD>.log` → 크기 초과 시 `app.<YYYY-MM-DD>.<n>.log` 로 순번.
-- 로그 1줄 = JSON: `{ time(ISO), level, tag?, err?: {message,stack}, msg? }`. `Error` arg 는 `err` 필드로, 그 외는 모두 `String` 화 후 공백 조인되어 `msg`.
-- 날짜 바뀌면 회전 + 그날 첫 write 에서 `maxDays` 이전 `app.YYYY-MM-DD.*.log` 정리.
+`opts.cli`: CLI 프로세스(`sd-cli` 등) 여부. true 면 파일 출력 없이 콘솔만 사용하도록 분기.
 
 ### withMaxLevel
 
 ```ts
-withMaxLevel(reporter: ConsolaReporter, maxLevel: number): ConsolaReporter;
+withMaxLevel(reporter: ConsolaReporter, maxLevel: number): ConsolaReporter
 ```
 
-`logObj.level > maxLevel` 인 항목을 drop. `setupConsola` 가 dev 콘솔 리포터에 `LogLevels.info` 로 적용.
+기존 reporter 를 감싸 `logObj.level > maxLevel` 인 항목을 버린다. consola `LogLevels` 는 낮을수록 심각(0=fatal/error, 1=warn, 2=log, 3=info, 4=debug, 5=trace).
 
-### 사용 예
+### PrettyReporter
+
+`class PrettyReporter implements ConsolaReporter` — ANSI 컬러 콘솔 출력.
+
+- 색상 활성화: `env("NO_COLOR")` 있으면 비활성, `env("FORCE_COLOR")` 있으면 강제, TTY 또는 win32 면 활성.
+- level<2 (fatal/error/warn) → `stderr`, 그 외 → `stdout`.
+- `type === "box"` → 박스 포맷, `type === "trace"` → 스택 첨부, level<2 또는 `badge: true` → 위아래 빈 줄.
+- `Error` args → message + cwd prefix 제거된 스택 + `cause` 재귀 indent.
+- `ctx.options.formatOptions.date: true` → 시각 `HH:mm:ss.SSS` 부착.
+
+### createFileReporter
 
 ```ts
-import { setupConsola } from "@simplysm/core-node";
+createFileReporter(options?: { maxSize?: number; maxDays?: number }): ConsolaReporter
+```
 
-setupConsola({ cli: true });   // 진입점 1회
-consola.info("server started");
-consola.withTag("db").debug({ sql, params });
+- `maxSize` (기본 20MB): 파일 1개 최대 크기. 초과 시 `app.<YYYY-MM-DD>.<seq>.log` 시퀀스로 회전.
+- `maxDays` (기본 14): cutoff 일자 이전 로그 파일 자동 삭제. 매일 첫 로그 시 1회 실행.
+- 출력 위치: `${process.cwd()}/.logs/app.<YYYY-MM-DD>.log` (필요시 `.<seq>` 부착).
+- 라인 형식: `{ time, level, tag?, err?: {message,stack}, msg? }` JSONL. `Error` arg 는 `err` 필드로 분리, 나머지는 `msg` 로 공백 연결.
+- 날짜 바뀌면 자동 로테이트. `.logs` 디렉토리는 첫 쓰기 시 생성.
+
+### 예
+
+```ts
+import { setupConsola, PrettyReporter, createFileReporter } from "@simplysm/core-node";
+import consola from "consola";
+setupConsola({ cli: true });
+
+// 커스텀
+consola.options.reporters = [new PrettyReporter(), createFileReporter({ maxDays: 30 })];
 ```

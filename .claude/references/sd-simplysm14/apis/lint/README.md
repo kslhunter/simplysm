@@ -41,6 +41,11 @@ export default [...recommended, { /* overrides */ }];
 - `process.env`/`import.meta.env` 직접 접근 금지 → `env("...")` 호출 강제. `env("NODE_ENV")` 자체 금지.
 - `=== undefined` / `!== undefined` 금지 → `== null` / `!= null` 통일.
 - TS 블록 전용: `naming-convention` 으로 `private` 멤버에 leading underscore(`_foo`) 강제, `strict-boolean-expressions` (nullable boolean/object 허용), `ban-ts-comment` (`ts-expect-error` 는 3자 이상 설명 필수), `only-throw-error`, `no-floating-promises` 등.
+- `unused-imports/no-unused-imports` error, `unused-imports/no-unused-vars` error (vars=all, args=after-used, 둘 다 `^_` 시작 식별자는 제외).
+- `@typescript-eslint/no-misused-promises`: `checksVoidReturn.arguments=false`, `inheritedMethods=false` (Angular 이벤트 핸들러 패턴 허용).
+- TS 블록에 등록되는 `@simplysm/*` 룰: `ng-no-async-effect`, `no-hard-private`, `no-subpath-imports-from-simplysm`, `ts-no-unused-injects`, `ts-no-unused-protected-readonly` 는 error, `ts-no-throw-not-implemented-error` 는 warn.
+- HTML 블록에 등록되는 `@simplysm/*` 룰: `ng-template-no-strict-null-check` error, `ng-template-sd-require-binding-attrs` error, `ng-template-no-todo-comments` warn.
+- JS 블록에 등록되는 `@simplysm/*` 룰: `no-subpath-imports-from-simplysm`, `no-hard-private` (둘 다 error).
 
 ## `./eslint-plugin`
 

@@ -528,7 +528,9 @@ async onSubmit(): Promise<void> {
 - 단, **숫자 셀은 `tx-right` 기본 적용** (수량·금액·단가·합계 등 숫자값 컬럼).
 - `[cell]="items()"` 는 타입 추론용 더미 — 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 들고 있다.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
-- 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등)를 토글할 때는 빈 값 자리에 `&nbsp;` 등을 채워 div 가 셀 높이를 유지하게 한다. (table cell 자식 div 가 콘텐츠 없을 때 높이 0 → bg 가 셀에 차지 않음.)
+- 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등)를 토글할 때는 빈 값 자리에 `&nbsp;`를 채워 div 가 셀 높이를 유지하게 한다. (table cell 자식 div 가 콘텐츠 없을 때 높이 0 → bg 가 셀에 차지 않음.)
+  - 좋은 예: `{{ item.surveyLocationCode ?? "&nbsp" }}`
+  - 나쁜 예: `{{ item.surveyLocationCode }}`, `{{ item.surveyLocationCode ?? " " }}`, `{{ item.surveyLocationCode ?? " " }}`
 
 **list 안에서**: `<sd-crud-list>` 의 직속 자식으로 `<sd-sheet-column>` 을 두면 내부 시트로 자동 투영된다.
 

@@ -1,158 +1,189 @@
 # @simplysm/core-common — utils
 
-네임스페이스 import: `import { obj, str, num, bytes, path, json, xml, wait, transfer, err, dt, primitive } from "@simplysm/core-common";`
+`utils/` 네임스페이스 일괄 export. import는 `import { obj, str, ..., js, ZipArchive } from "@simplysm/core-common"`.
 
-## obj — 객체 조작
+## `obj` — 객체 조작
 
-### 복사·비교·병합
+```ts
+obj.clone<T>(source): T
+  // 깊은 복사. 순환 참조 지원. Date/DateTime/DateOnly/Time/Uuid/RegExp/Error/Uint8Array/Array/Map/Set 모두 별도 처리.
+  // 프로토타입 체인 유지(Object.setPrototypeOf). 함수·Symbol은 참조 유지. WeakMap/WeakSet 미지원. getter/setter는 현재 값으로 평가.
 
-```typescript
-obj.clone(src)                                        // 깊은 복사. 순환 참조·DateTime/DateOnly/Time/Uuid/
-                                                      //   Uint8Array/Date/RegExp/Error(cause)/Map/Set 지원.
-                                                      //   함수/Symbol 은 참조 유지, WeakMap/WeakSet 미지원.
-obj.equal(a, b, opt?)                                 // 깊은 동등. opt: { topLevelIncludes?, topLevelExcludes?,
-                                                      //   ignoreArrayIndex?, shallow? }
-                                                      //   include/exclude 는 최상위 객체 키에만 적용. shallow=true 면 1단계 참조 비교.
-obj.merge(source, target, opt?)                       // 깊은 병합 (불변, 새 객체). opt:
-                                                      //   { arrayProcess?: "replace"|"concat", useDelTargetNull? }
-obj.merge3(source, origin, target, optionsObj?)       // 3-way merge. { conflict, result }
-                                                      //   optionsObj 는 key별 { keys?, excludes?, ignoreArrayIndex? }
+obj.equal(source, target, options?: EqualOptions): boolean
+interface EqualOptions {
+  topLevelIncludes?: string[]   // 지정한 key만 비교 (최상위만, 객체 속성에만 적용)
+  topLevelExcludes?: string[]   // 지정한 key 제외 (최상위만)
+  ignoreArrayIndex?: boolean    // array 순서 무시. true면 O(n²) (permutation 매칭)
+  shallow?: boolean             // 1단계 참조 비교
+}
+  // null != null 분기, custom 타입은 tick/toString 기반 비교.
+
+obj.merge<S, T>(source, target, opt?: MergeOptions): S & T
+interface MergeOptions {
+  arrayProcess?: "replace" | "concat"   // 기본 "replace"(target으로 교체). "concat"=합집합(Set 중복 제거)
+  useDelTargetNull?: boolean            // target이 null이면 결과 key 삭제
+}
+  // 불변 (새 객체 반환). 타입 다르면 target으로 덮어씀. Map은 재귀 머지.
+
+obj.merge3(source, origin, target, optionsObj?: Record<key, Merge3KeyOptions>):
+  { conflict: boolean; result: O & S & T }
+  // 3-way merge. source==origin → target 채택, target==origin → source 채택,
+  // source==target → 채택, 셋 다 다름 → conflict=true + origin 유지
+interface Merge3KeyOptions { keys?; excludes?; ignoreArrayIndex? }   // equal과 동일
+
+obj.omit(item, omitKeys[]): Omit<T, K>
+obj.omitByFilter(item, (key) => boolean): T          // @internal
+obj.pick(item, keys[]): Pick<T, K>
+
+obj.getChainValue(o, "a.b[0].c", optional?: true): unknown
+obj.getChainValueByDepth(o, key, depth, optional?): T[K]   // 같은 key로 depth회 하강
+obj.setChainValue(o, chain, value): void
+obj.deleteChainValue(o, chain): void
+
+obj.clearUndefined(o): T                              // @mutates null/undefined key 삭제
+obj.clear(o): {}                                      // @mutates 전체 비우기
+obj.nullToUndefined(o): T                             // @mutates null→undefined (재귀, 순환 안전)
+obj.unflatten({ "a.b.c": 1 }): { a: { b: { c: 1 } } }   // @internal
+
+obj.keys(o): (keyof T)[]                              // 타입 안전 Object.keys
+obj.entries(o): [K, V][]                              // 타입 안전 Object.entries
+obj.fromEntries(pairs): Record
+obj.map(o, (key, value) => [newKey | null, newValue]): Record
+  // null newKey → 기존 key 유지. key/value 동시 변환
+
+type UndefToOptional<T>                               // { a, b: T|undefined } → { a, b?: T }
+type OptionalToUndef<T>                               // { a, b? } → { a, b: T|undefined }
 ```
 
-### 키 조작
+## `str` — 문자열
 
-```typescript
-obj.omit(o, ["k1","k2"])
-obj.omitByFilter(o, (k) => k.startsWith("_"))
-obj.pick(o, ["k1","k2"])
-obj.keys(o) / obj.entries(o) / obj.fromEntries(pairs)  // 타입 안전 Object.* 래퍼
-obj.map(o, (k, v) => [newK | null, newV])              // entry 변환 (newK=null 이면 원래 키 유지)
+```ts
+str.getKoreanSuffix(text, type: "을"|"은"|"이"|"와"|"랑"|"로"|"라"): string
+  // 받침 유무로 조사 자동. "로"는 ㄹ 받침 예외(받침 있어도 "로"). 한글 외 문자→무받침 취급.
+str.replaceFullWidth(str): string                    // 전각 영숫자/공백/괄호 → 반각
+str.toPascalCase(s) / toCamelCase / toKebabCase / toSnakeCase
+  // PascalCase: 하이픈/언더/점 + 소문자 → 대문자. 첫글자 대문자화.
+  // kebab/snake: 대문자/대문자그룹 분리. 기존 구분자는 유지 (혼합 시 "hello-_world").
+str.isNullOrEmpty(s): s is "" | undefined            // 타입 가드
+str.insert(s, index, insertString): string
 ```
 
-### 체인 경로 (`"a.b[0].c"` 형식)
+## `num` — 숫자
 
-```typescript
-obj.getChainValue(o, "a.b[0].c")
-obj.getChainValue(o, "a.b[0].c", true)   // optional: 중간 null 만나면 undefined
-obj.setChainValue(o, "a.b.c", v)         // 중간 객체 자동 생성
-obj.deleteChainValue(o, "a.b.c")
-obj.getChainValueByDepth(o, key, depth, optional?)  // 같은 key 로 N단계 하강
+```ts
+num.parseInt(text): number | undefined               // 숫자 외 문자 제거. 선행 - 만 음수, 중간 - 제거. "010-1234-5678"→1012345678
+num.parseFloat(text): number | undefined
+num.parseRoundedInt(text): number | undefined        // parseFloat 후 Math.round
+num.isNullOrEmpty(n): n is 0 | undefined             // 타입 가드 (0/null/undefined)
+num.format(val, digit?: { max?, min? }): string      // toLocaleString. min 부족분은 0 패딩
 ```
 
-### 변환 (원본 변형 — `@mutates`)
+## `bytes` — Uint8Array
 
-```typescript
-obj.clearUndefined(o)     // null/undefined 값 키 제거
-obj.clear(o)              // 모든 키 제거
-obj.nullToUndefined(o)    // 재귀, null → undefined
-obj.unflatten({ "a.b.c": 1 })  // → { a: { b: { c: 1 } } }
+```ts
+bytes.concat(arrs: Bytes[]): Bytes
+bytes.toHex(b): string                               // 소문자
+bytes.fromHex(hex): Bytes                            // 홀수 길이/무효 문자 → ArgumentError
+bytes.toBase64(b): string
+bytes.fromBase64(s): Bytes                           // 공백·패딩 정규화. 무효 문자/길이 → ArgumentError
 ```
 
-### 타입 유틸
+## `path` — POSIX 경로 (브라우저용, `/` 만 지원)
 
-```typescript
-obj.UndefToOptional<T>    // { a: string|undefined } → { a?: string|undefined }
-obj.OptionalToUndef<T>    // { a?: string } → { a: string|undefined }
+```ts
+path.join(...segments): string                       // 슬래시 정규화
+path.basename(filePath, ext?): string                // ext 제거 옵션
+path.extname(filePath): string                       // 숨김파일(.gitignore)은 "" (Node 동일)
 ```
 
-## str — 문자열
+## `json` — 커스텀 타입 지원 JSON
 
-```typescript
-str.getKoreanSuffix(text, "을"|"은"|"이"|"와"|"랑"|"로"|"라")
-                                  // 받침 유무로 조사 결정. "로" 는 ㄹ 받침이면 "로".
-str.replaceFullWidth(s)           // 전각 영숫자/공백/괄호 → 반각
-str.toPascalCase(s) / toCamelCase(s) / toKebabCase(s) / toSnakeCase(s)
-                                  // case 함수는 기존 -/_ 구분자 보존, 연속 대문자 개별 분리 ("XMLParser" → "x-m-l-parser")
-str.isNullOrEmpty(s)              // null|undefined|"" 타입 가드
-str.insert(s, idx, insertStr)
+```ts
+json.stringify(obj, options?: {
+  space?: number | string,
+  replacer?: (key, value) => unknown,
+  redactBytes?: boolean,                             // Uint8Array → "__hidden__" (로깅용, parse 시 throw)
+}): string
+json.parse<T>(str): T
+```
+- 사전 변환으로 `{ __type__, data }` 태그 객체 생성: Date/DateTime/DateOnly/Time/Uuid/Set/Map/Error(cause·code·detail 포함)/Uint8Array(hex). `Date.prototype.toJSON` 미수정 → Worker 안전.
+- 순환 참조 → `TypeError`.
+- `parse`는 `nullToUndefined` 적용 (모든 JSON `null` → `undefined`, simplysm null-free 규칙).
+- 파싱 실패 시 `__DEV__` 환경에서는 메시지에 전체 JSON 포함, 아니면 길이만.
+
+## `xml` — XML (fast-xml-parser 래퍼)
+
+```ts
+xml.parse(str, options?: { stripTagPrefix?: boolean }): unknown
+xml.stringify(obj, options?: XmlBuilderOptions): string
+```
+- 속성은 `$` 그룹, 텍스트 노드는 `_` key. 1단계 깊이 미만은 단일 객체, 이상은 array.
+- `stripTagPrefix`: `"ns:tag"`에서 접두사 제거 (속성은 유지).
+
+## `wait` — 타이밍
+
+```ts
+wait.time(ms): Promise<void>                         // setTimeout Promise화
+wait.until(forwarder, ms = 100, maxCount?): Promise<void>
+  // forwarder가 true 반환할 때까지 ms 간격 폴링. maxCount 초과 시 TimeoutError(count)
 ```
 
-## num — 숫자
+## `transfer` — Worker 직렬화
 
-```typescript
-num.parseInt(text)        // 비숫자 제거 후 정수 파싱. 선행 - 만 음수 부호, 중간 - 제거. 소수점은 trunc.
-num.parseFloat(text)
-num.parseRoundedInt(text) // float 후 반올림
-num.isNullOrEmpty(v)      // null|undefined|0 타입 가드
-num.format(v, { max?, min? })  // 천 단위 + 소수점 자릿수. toLocaleString 기반
+```ts
+transfer.encode(obj): { result: unknown; transferList: ArrayBuffer[] }
+transfer.decode(obj): unknown
+```
+- `worker.postMessage(result, transferList)` 패턴. Uint8Array는 zero-copy 전송, SharedArrayBuffer는 transferList 제외.
+- 지원: Date/DateTime/DateOnly/Time/Uuid/RegExp, Error(cause·code·detail), Array/Map/Set/일반 객체. 그 외 TypedArray는 일반 객체로 처리됨.
+- 순환 참조 → `TypeError("순환 참조 감지됨: <path>")`. 같은 객체 다중 참조는 캐시 재사용.
+
+## `err` — 에러 메시지
+
+```ts
+err.message(err: unknown): string                    // Error.message 또는 String(err)
 ```
 
-## bytes — Uint8Array
+## `dt` — 날짜·시간 포맷 내부 헬퍼
 
-```typescript
-bytes.concat([a, b, ...])
-bytes.toHex(u8) / bytes.fromHex(hex)            // 소문자 hex. 홀수 길이/잘못된 문자 시 ArgumentError
-bytes.toBase64(u8) / bytes.fromBase64(b64)      // 표준 base64 (+/, = 패딩). 공백 자동 제거
+```ts
+dt.format(formatStr, args: { year?, month?, day?, hour?, minute?, second?, millisecond?, timezoneOffsetMinutes? }): string
+dt.normalizeMonth(year, month, day): { year, month, day }   // 월 오버플로 + 일수 보정
+dt.convert12To24(rawHour, isPM): number                     // 12 AM=0, 12 PM=12
+```
+- format 토큰: `yyyy yy`, `MM M`, `ddd`(요일 한글), `dd d`, `tt`(AM/PM), `hh h`(12시간), `HH H`(24시간), `mm m`, `ss s`, `fff ff f`(밀리초), `zzz zz z`(타임존 ±HH:mm/±HH/±H). 긴 토큰 우선.
+
+## `primitive` — PrimitiveType 런타임
+
+```ts
+primitive.typeStr(value): PrimitiveTypeStr           // 값 → "string"|"number"|"boolean"|"DateTime"|"DateOnly"|"Time"|"Uuid"|"Bytes"
+```
+- 미지원 타입 → `ArgumentError`.
+
+## 직접 export — 템플릿 태그
+
+`js`, `ts`, `html`, `tsql`, `mysql`, `pgsql` — 모두 같은 동작 (IDE 코드 하이라이팅용). 들여쓰기 정규화: 앞뒤 빈 줄 제거 + 모든 줄에서 공통 최소 들여쓰기만큼 dedent.
+
+```ts
+const sql = mysql`
+  SELECT * FROM users
+  LIMIT 10
+`;
 ```
 
-## path — POSIX 경로 (브라우저용)
+## 직접 export — `ZipArchive` (`@zip.js/zip.js` 래퍼)
 
-```typescript
-path.join(...segs)            // 슬래시만 지원, 백슬래시 X
-path.basename(p, ext?)
-path.extname(p)               // 숨김 파일(".gitignore")은 빈 문자열
+```ts
+class ZipArchive {
+  constructor(data?: Blob | Bytes)                   // 없으면 새 아카이브
+  extractAll(progressCb?: (p: { fileName, totalSize, extractedSize }) => void): Promise<Map<string, Bytes>>
+  get(fileName): Promise<Bytes | undefined>          // 캐싱됨
+  exists(fileName): Promise<boolean>
+  write(fileName, bytes): void                       // 캐시에만 저장
+  compress(): Promise<Bytes>                         // 캐시된 모든 파일을 ZIP으로 (extractAll 호출 → 전체 메모리 적재)
+  close(): Promise<void>                             // reader 닫고 캐시 비움
+}
+interface ZipArchiveProgress { fileName, totalSize, extractedSize }
 ```
-
-## json — 커스텀 타입 지원 JSON
-
-```typescript
-json.stringify(obj, { space?, replacer?, redactBytes? })
-                              // Date/DateTime/DateOnly/Time/Uuid/Set/Map/Error/Uint8Array 를 { __type__, data } 로.
-                              //   redactBytes=true 면 Uint8Array 내용을 "__hidden__"로 (parse 복원 불가).
-                              //   순환 참조 시 TypeError. 전역 prototype 미수정 (Worker 안전).
-json.parse<T>(str)            // __type__ 마커 복원. 모든 null → undefined (simplysm null-free 규칙).
-                              //   에러 시 SdError. DEV 환경에서만 메시지에 전체 JSON 포함.
-```
-
-## xml — fast-xml-parser 래퍼
-
-```typescript
-xml.parse(str, { stripTagPrefix? })
-   // 결과: 속성은 `$` 객체, 텍스트는 `_` 키, 자식 요소는 배열 (루트 제외).
-   //   stripTagPrefix=true 면 "ns:tag" → "tag" (속성은 유지).
-xml.stringify(obj, options?)  // fast-xml-parser XmlBuilderOptions
-```
-
-## wait — 대기
-
-```typescript
-await wait.time(ms)
-await wait.until(() => cond, intervalMs=100, maxCount?)   // maxCount 초과 시 TimeoutError
-```
-
-## transfer — Worker 전송
-
-`structuredClone` 미지원 타입 처리. Date/DateTime/DateOnly/Time/Uuid/RegExp/Error(cause/code/detail)/Uint8Array/Map/Set/Array/Object.
-
-```typescript
-const { result, transferList } = transfer.encode(data);
-worker.postMessage(result, transferList);          // Uint8Array.buffer 가 transferList 에 zero-copy
-const decoded = transfer.decode(event.data);
-```
-
-순환 참조 시 `TypeError("순환 참조 감지됨: <path>")`. 같은 객체 다중 참조는 인코딩 결과 캐싱.
-
-## err — 에러 메시지
-
-```typescript
-err.message(unknownErr)   // Error 면 .message, 아니면 String(err)
-```
-
-## dt — date-format 저수준
-
-`DateTime/DateOnly/Time#toFormatString` 내부에서 사용. 직접 사용 드묾.
-
-```typescript
-dt.format(formatStr, { year?, month?, day?, hour?, minute?, second?, millisecond?, timezoneOffsetMinutes? })
-   // 토큰은 types.md 의 "date-format 토큰" 참조
-dt.normalizeMonth(year, month, day)    // 월 1-12 정규화 + 일 클램프
-dt.convert12To24(rawHour, isPM)        // 12시간 → 24시간
-```
-
-## primitive — 런타임 타입 추론
-
-```typescript
-primitive.typeStr(value)
-// string/number/boolean/DateTime/DateOnly/Time/Uuid/Bytes 중 하나 반환.
-// 미지원 타입은 ArgumentError.
-```
+- 같은 파일 재추출 방지를 위해 내부 `_cache: Map<filename, Bytes>` 사용.
+- 대용량 ZIP 의 `compress()` 는 메모리 주의 (스트리밍 X).

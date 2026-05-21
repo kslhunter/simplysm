@@ -10,7 +10,7 @@ USB Mass Storage 접근용 Capacitor 플러그인 (Android: libaums, Browser: In
 
 ## UsbStorage
 
-모든 메서드 `static async`. 장치 식별은 `{ vendorId, productId }` (`UsbDeviceFilter`)로 한다.
+모든 메서드 `static async`. 장치 식별은 `{ vendorId, productId }` (`UsbDeviceFilter`) 로 한다.
 
 ```ts
 import { UsbStorage } from "@simplysm/capacitor-plugin-usb-storage";
@@ -27,13 +27,23 @@ const data = await UsbStorage.readFile(filter, "/a.txt");      // Bytes | undefi
 ```
 
 - `getDevices()` — 연결된 USB 장치 전체 반환.
-- `requestPermissions(filter)` / `checkPermissions(filter)` — 권한 승인/보유 여부 `boolean`.
-- `readdir(filter, dirPath)` — 디렉토리 항목 목록 (`name`, `isDirectory`).
+- `requestPermissions(filter)` — 해당 장치 접근 권한 요청. `true` = 사용자가 승인, `false` = 거부. 사용자 인터랙션 유발.
+- `checkPermissions(filter)` — 현재 권한 보유 여부 조회. 인터랙션 없음. `true` 면 곧바로 read 호출 가능.
+- `readdir(filter, dirPath)` — 디렉토리 항목 목록 (`UsbFileInfo[]`).
 - `readFile(filter, filePath)` — 파일 바이트. 없으면 `undefined`. 내부에서 base64 → `Bytes`(@simplysm/core-common) 변환.
 
 ## 타입
 
-- `UsbDeviceInfo` — `deviceName`, `manufacturerName`, `productName`, `vendorId`, `productId`.
-- `UsbDeviceFilter` — `vendorId`, `productId`.
-- `UsbFileInfo` — `name`, `isDirectory`.
-- `UsbStoragePlugin` — Capacitor `registerPlugin` 원시 인터페이스. 메서드 반환이 `{ devices }`/`{ granted }`/`{ files }`/`{ data: string | null }` 형태의 base64 raw 응답.
+`UsbDeviceInfo` — `getDevices()` 반환 원소.
+- `deviceName` — OS 가 부여한 장치 노드 이름 (예: `/dev/bus/usb/001/002`).
+- `manufacturerName` — 제조사 문자열.
+- `productName` — 제품명 문자열.
+- `vendorId` / `productId` — USB VID/PID 정수. 다른 메서드의 `filter` 로 그대로 사용.
+
+`UsbDeviceFilter` — 장치 식별 인자. `vendorId`, `productId` 두 정수만.
+
+`UsbFileInfo` — `readdir` 반환 원소.
+- `name` — 항목 이름 (디렉토리 내 상대명, 경로 X).
+- `isDirectory` — `true` = 하위 디렉토리(다시 `readdir` 호출 대상), `false` = 파일(`readFile` 호출 대상).
+
+`UsbStoragePlugin` — Capacitor `registerPlugin` 원시 인터페이스. 메서드 반환이 `{ devices }`/`{ granted }`/`{ files }`/`{ data: string | null }` 형태의 base64 raw 응답. `UsbStorage` 가 이를 풀어 `Bytes`·`boolean` 등으로 변환해 노출.
