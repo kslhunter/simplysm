@@ -1,6 +1,7 @@
 ---
 name: sd-commit
 description: 워크스페이스의 모든 변경을 단일 커밋으로 묶는 스킬. Use when 여러 변경 사항을 한 번에 커밋해야 할 때
+model: haiku
 ---
 
 # 총괄 커밋
