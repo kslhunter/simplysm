@@ -17,7 +17,7 @@
  */
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";
-import consola from "consola";
+import { createLogger } from "./logger";
 import { time } from "../utils/wait";
 
 interface SerialQueueEvents {
@@ -25,7 +25,7 @@ interface SerialQueueEvents {
 }
 
 export class SerialQueue extends EventEmitter<SerialQueueEvents> {
-  private static readonly _logger = consola.withTag("SerialQueue");
+  private static readonly _logger = createLogger("SerialQueue");
 
   private readonly _queue: (() => void | Promise<void>)[] = [];
   private _isQueueRunning = false;

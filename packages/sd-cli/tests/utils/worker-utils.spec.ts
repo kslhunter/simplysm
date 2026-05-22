@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { setupWorkerConsola, createOnceGuard, registerCleanupHandlers } from "../../src/runtime/worker-utils";
 import consola, { LogLevels } from "consola";
+import { createLogger } from "@simplysm/core-common";
 
 describe("setupWorkerConsola", () => {
   const originalLevel = consola.level;
@@ -64,7 +65,7 @@ describe("registerCleanupHandlers", () => {
     );
 
     const cleanup = vi.fn().mockResolvedValue(undefined);
-    const logger = consola.withTag("test");
+    const logger = createLogger("test");
 
     registerCleanupHandlers(cleanup, logger);
 
@@ -97,7 +98,7 @@ describe("registerCleanupHandlers", () => {
     );
 
     const cleanup = vi.fn().mockRejectedValue(new Error("cleanup error"));
-    const logger = consola.withTag("test");
+    const logger = createLogger("test");
 
     registerCleanupHandlers(cleanup, logger);
 

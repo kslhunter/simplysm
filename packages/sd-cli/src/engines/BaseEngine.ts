@@ -3,13 +3,13 @@ import { err as errNs } from "@simplysm/core-common";
 import type { BuildResult, ResultCollector } from "../runtime/ResultCollector";
 import { stopEngineWorker } from "../runtime/engine-stop";
 import { setupWatchEvents } from "../runtime/engine-watch-events";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { BuildEngine, BuildOutput, EngineResult, PackageInfo } from "./types";
 
-const logger = createLazyLogger("sd:cli:engine");
+const logger = createLogger("sd:cli:engine");
 
 /**
  * 모든 빌드 워커가 공유하는 공통 빌드 워커 이벤트

@@ -14,7 +14,7 @@ function createLogger() {
     error: vi.fn(),
     warn: vi.fn(),
     withTag: vi.fn(),
-  } as unknown as ReturnType<typeof import("consola").consola.withTag>;
+  } as unknown as ReturnType<typeof import("@simplysm/core-common").createLogger>;
 }
 
 describe("ensureCleanWorkingTree", () => {

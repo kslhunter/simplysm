@@ -22,14 +22,14 @@
  */
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";
-import consola from "consola";
+import { createLogger } from "./logger";
 
 interface DebounceQueueEvents {
   error: SdError;
 }
 
 export class DebounceQueue extends EventEmitter<DebounceQueueEvents> {
-  private static readonly _logger = consola.withTag("DebounceQueue");
+  private static readonly _logger = createLogger("DebounceQueue");
 
   private _pendingFn: (() => void | Promise<void>) | undefined;
   private _isRunning = false;

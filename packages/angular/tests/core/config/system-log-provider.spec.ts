@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TestBed } from "@angular/core/testing";
-import type { ConsolaInstance } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { SdSystemLogProvider } from "../../../src/core/config/sd-system-log.provider";
+
+type Logger = ReturnType<typeof createLogger>;
 
 describe("Feature 1.8 Slice 1: SdSystemLogProvider", () => {
   let provider: SdSystemLogProvider;
-  let logger: ConsolaInstance;
+  let logger: Logger;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     provider = TestBed.inject(SdSystemLogProvider);
-    logger = (provider as unknown as { _logger: ConsolaInstance })._logger;
+    logger = (provider as unknown as { _logger: Logger })._logger;
   });
 
   describe("severity별 로그 기록", () => {

@@ -4,16 +4,16 @@
 
 ## 원칙
 
-- 모든 로그는 `consola.withTag(<tag>)` 인스턴스로 출력. `console.*` 직접 호출 금지.
+- 모든 로그는 `createLogger(tag)` (`@simplysm/core-common`) 로 생성한 인스턴스로 출력. `console.*` 직접 호출 금지.
 - ESLint `no-console` 규칙은 의도된 게이트 — `eslint-disable`/`eslint-disable-next-line no-console` 우회 금지.
 - 메시지에 `[패키지]` 같은 수동 prefix 금지. tag 가 그 역할.
 
 ## 권장 패턴
 
 ```ts
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("capacitor:auto-update");
+const logger = createLogger("capacitor:auto-update");
 
 // ...
 logger.info("최신 버전 확인 중");
@@ -40,19 +40,20 @@ const logger = {
 console.error("[X] 실패:", err);
 ```
 
-→ 모두 `consola.withTag("x")` 1줄로 대체.
+→ 모두 `createLogger("x")` 1줄로 대체.
 
 ## 환경별 셋업
 
 - **Node 진입점(서버·CLI)**: 진입점에서 `setupConsola()` 1회. 자세히 [apis/core-node/consola.md](../apis/core-node/consola.md).
 - **Browser·Capacitor 진입점**: `setupConsola` 호출 X (Node 전용). consola 기본 reporter 가 브라우저 콘솔로 출력. tag/level/통일된 호출면 충족.
 
-## 모듈-레벨 logger 주의 (Node 진입점)
+## 모듈-레벨 logger 주의
 
-Node 진입점에서 `setupConsola` 호출 **전** 에 모듈 레벨에서 `consola.withTag()` 를 호출하면 호출 시점의 옵션(level/reporters)이 스냅샷으로 고정되어 이후 setupConsola 변경이 반영되지 않는다.
+모듈 레벨에서 `consola.withTag()` 를 직접 호출하면 호출 시점의 options(level/reporters)가 스냅샷으로 고정되어, 이후 `setupConsola()` 가 reporters 를 갱신해도 child instance 에 반영되지 않는다.
 
-- 해결: `@simplysm/sd-cli` 의 `createLazyLogger(tag)` (`src/runtime/lazy-logger.ts`) 처럼 첫 접근 시점까지 `withTag` 생성을 지연.
-- 브라우저·Capacitor 는 setupConsola 가 없어 이 문제 없음 — 그냥 모듈 레벨 `consola.withTag()` OK.
+- **해결**: `createLogger(tag)` 사용 (`@simplysm/core-common`, 내부 구현은 lazy Proxy — 첫 메서드 접근 시점까지 `withTag` 생성을 지연).
+- 모든 환경(Node·브라우저·Capacitor)에서 위치(모듈 레벨·함수 내부·class field)에 관계없이 `createLogger` 로 통일.
+- `consola.withTag()` 직접 호출 금지.
 
 ## 예외 — `eslint-disable no-console` 가 정당화되는 자리
 

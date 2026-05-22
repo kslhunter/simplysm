@@ -4,9 +4,9 @@ import type { ServiceEventDef, ServiceClientMessage } from "@simplysm/service-co
 import { createServiceSocket, type ServiceSocket } from "./service-socket";
 import { verifyJwt } from "../../auth/jwt-manager";
 import type { FastifyRequest } from "fastify";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:WebSocketHandler");
+const logger = createLogger("service-server:WebSocketHandler");
 
 /**
  * WebSocket 핸들러 인터페이스

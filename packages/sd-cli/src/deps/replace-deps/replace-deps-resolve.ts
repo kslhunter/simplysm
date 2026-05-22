@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { glob } from "glob";
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import { pathx } from "@simplysm/core-node";
 
 /**
@@ -137,7 +137,7 @@ async function collectSearchRoots(projectRoot: string): Promise<string[]> {
 export async function resolveAllReplaceDepEntries(
   projectRoot: string,
   replaceDeps: Record<string, string>,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
 ): Promise<ReplaceDepEntry[]> {
   const entries: ReplaceDepEntry[] = [];
   const seenTargetPaths = new Set<string>();

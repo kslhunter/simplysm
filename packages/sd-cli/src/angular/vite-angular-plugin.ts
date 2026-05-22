@@ -2,12 +2,12 @@ import type { Plugin } from "vite";
 import path from "path";
 import ts from "typescript";
 import { pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler.js";
 import { AngularSourceFileCache } from "./angular-compiler.js";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization.js";
 
-const logger = createLazyLogger("sd:cli:angular");
+const logger = createLogger("sd:cli:angular");
 
 /** sdAngularPlugin 옵션 */
 export interface SdAngularPluginOptions {

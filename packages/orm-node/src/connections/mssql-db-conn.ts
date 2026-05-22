@@ -1,4 +1,4 @@
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import {
   DateOnly,
   DateTime,
@@ -21,7 +21,7 @@ import {
 import type tediousType from "tedious";
 import type { DataType as TediousDataType } from "tedious/lib/data-type";
 
-const logger = consola.withTag("mssql-db-conn");
+const logger = createLogger("mssql-db-conn");
 
 /**
  * MSSQL 데이터베이스 연결 클래스

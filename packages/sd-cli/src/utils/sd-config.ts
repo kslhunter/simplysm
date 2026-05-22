@@ -1,10 +1,10 @@
 import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
 import { fsx, pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type { SdConfig, SdConfigParams } from "../sd-config.types";
 
-const logger = createLazyLogger("sd:cli:sd-config");
+const logger = createLogger("sd:cli:sd-config");
 
 /**
  * sd.config.ts를 로드한다.

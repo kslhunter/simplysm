@@ -1,5 +1,5 @@
 import path from "path";
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import type { SdPublishConfig } from "../../sd-config.types";
 import { publishNpm } from "./npm-publisher";
 import { publishToStorage } from "./storage-publisher";
@@ -21,7 +21,7 @@ async function publishPackage(
   publishConfig: SdPublishConfig,
   version: string,
   projectPath: string,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   const pkgName = path.basename(pkgPath);
@@ -43,7 +43,7 @@ export async function runDeployment(
   publishPackages: DeploymentPackage[],
   version: string,
   projectPath: string,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   const levels = await computePublishLevels(publishPackages);

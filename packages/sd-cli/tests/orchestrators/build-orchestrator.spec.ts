@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 
 import * as sdConfig from "../../src/utils/sd-config";
 import * as buildEnv from "../../src/utils/build-env";
@@ -78,7 +78,7 @@ beforeEach(() => {
   mockEngines.length = 0;
   process.exitCode = undefined;
 
-  vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
+  vi.spyOn(coreCommon, "createLogger").mockReturnValue(mockLogger as any);
   Object.values(mockLogger).forEach((m) => m.mockReset());
 
   mockCapacitorInstance.initialize.mockReset().mockResolvedValue(undefined);

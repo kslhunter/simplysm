@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { hasFileAddOrRemove, shouldSkipRebuild } from "../../src/workers/build-change-filter";
 
 describe("hasFileAddOrRemove", () => {
@@ -21,7 +21,7 @@ describe("hasFileAddOrRemove", () => {
 });
 
 describe("shouldSkipRebuild", () => {
-  const logger = consola.withTag("test");
+  const logger = createLogger("test");
 
   it("logs debug message when skipping rebuild", () => {
     const debugSpy = vi.spyOn(logger, "debug");

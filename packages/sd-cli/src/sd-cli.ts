@@ -11,12 +11,12 @@ import { cpx, setupConsola } from "@simplysm/core-node";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createLazyLogger } from "./runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isDev = path.extname(__filename) === ".ts";
-const logger = createLazyLogger("sd:cli");
+const logger = createLogger("sd:cli");
 
 if (isDev) {
   // 개발 모드 (.ts): affinity 적용 후 직접 실행

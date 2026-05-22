@@ -1,7 +1,7 @@
 import ts from "typescript";
 import { err as errNs } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { deserializeDiagnostic } from "../typecheck/typecheck-serialization";
 import { createTypecheckEngine } from "../engines/engine-factory";
 import { typecheckNonPackageFiles } from "../typecheck/typecheck-non-package";
@@ -80,7 +80,7 @@ function extractTargetPackageNames(targets: string[]): Set<string> {
 export class TypecheckOrchestrator implements OrchestratorLifecycle<TypecheckResult> {
   private readonly _cwd: string;
   private readonly _options: TypecheckOptions;
-  private readonly _logger = consola.withTag("sd:cli:typecheck");
+  private readonly _logger = createLogger("sd:cli:typecheck");
 
   // initialize()에서 설정되는 내부 상태
   private readonly _typecheckTasks: Array<{ name: string; dir: string; config: any; env: TypecheckEnv }> =

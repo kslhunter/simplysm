@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { createLazyLogger } from "../../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { generateClient } from "./generators/client";
 import { generateClientCommon } from "./generators/client-common";
 import { generateCommon } from "./generators/common";
@@ -10,7 +10,7 @@ import { promptInit } from "./prompts";
 import type { RenderData } from "./types";
 import { validateBeforePrompt, validateInput } from "./validate";
 
-const logger = createLazyLogger("sd:cli:init");
+const logger = createLogger("sd:cli:init");
 
 export interface InitOptions {
   cwd: string;

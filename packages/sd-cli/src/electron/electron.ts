@@ -4,13 +4,13 @@ import module from "module";
 import { fsx, pathx } from "@simplysm/core-node";
 import type { cpx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { shellSpawn } from "../utils/shell-spawn";
 import type { NpmConfig, SdElectronConfig } from "../sd-config.types.js";
 import { createEnvBanner } from "../esbuild/esbuild-config.js";
 
 export class Electron {
-  private static readonly _logger = createLazyLogger("sd:cli:electron");
+  private static readonly _logger = createLogger("sd:cli:electron");
 
   private readonly _electronPath: string;
   private readonly _srcPath: string;

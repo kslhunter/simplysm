@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 import * as coreNode from "@simplysm/core-node";
 
 // setupConsola는 consola 글로벌 상태를 변경하므로 spy로 차단
@@ -14,19 +14,19 @@ beforeEach(() => {
 describe("setupWorkerLifecycle logger tag", () => {
   // Scenario: 각 워커별 고유 태그가 생성된다
   it("creates logger with 'sd:cli:{workerName}:worker' tag pattern", () => {
-    const withTagSpy = vi.spyOn(consola, "withTag");
+    const createLoggerSpy = vi.spyOn(coreCommon, "createLogger");
 
     setupWorkerLifecycle("server-build", vi.fn());
 
-    expect(withTagSpy).toHaveBeenCalledWith("sd:cli:server-build:worker");
+    expect(createLoggerSpy).toHaveBeenCalledWith("sd:cli:server-build:worker");
   });
 
   it("uses different tag for different worker names", () => {
-    const withTagSpy = vi.spyOn(consola, "withTag");
+    const createLoggerSpy = vi.spyOn(coreCommon, "createLogger");
 
     setupWorkerLifecycle("client", vi.fn());
 
-    expect(withTagSpy).toHaveBeenCalledWith("sd:cli:client:worker");
+    expect(createLoggerSpy).toHaveBeenCalledWith("sd:cli:client:worker");
   });
 });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 
 import * as sdConfigMod from "../../src/utils/sd-config";
 import * as typecheckSerialization from "../../src/typecheck/typecheck-serialization";
@@ -77,7 +77,7 @@ beforeEach(() => {
     if (typeof m === "function" && "mockReset" in m) (m as any).mockReset();
   });
 
-  vi.spyOn(consola, "withTag").mockImplementation((tag: string) => {
+  vi.spyOn(coreCommon, "createLogger").mockImplementation((tag: string) => {
     if (tag === "sd:cli:typecheck") return mockTypecheckLogger as any;
     return {
       debug: vi.fn(),

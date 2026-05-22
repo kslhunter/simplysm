@@ -6,9 +6,9 @@ import { fsx } from "@simplysm/core-node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 import { verifyJwt } from "../../auth/jwt-manager";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:UploadHandler");
+const logger = createLogger("service-server:UploadHandler");
 
 export async function handleUpload(
   req: FastifyRequest,

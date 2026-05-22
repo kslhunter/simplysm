@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import type {
   IntentPlugin,
   IntentResult,
@@ -7,7 +7,7 @@ import type {
   StartActivityForResultResult,
 } from "../IntentPlugin";
 
-const logger = consola.withTag("capacitor:intent");
+const logger = createLogger("capacitor:intent");
 
 export class IntentWeb extends WebPlugin implements IntentPlugin {
   private static readonly _warn = () => logger.warn("웹 환경에서는 지원하지 않습니다.");

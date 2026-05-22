@@ -1,8 +1,13 @@
-"""MSG (Outlook) 핸들러. extract-msg 라이브러리 사용."""
+"""MSG (Outlook) 핸들러. extract-msg 라이브러리 사용.
+
+본문·CID·envelope 헤더 규약은 eml_handler 와 동일.
+"""
 from __future__ import annotations
 
+import email as stdemail
 import json
 import os
+import re
 from pathlib import Path
 
 from . import _common
@@ -15,17 +20,59 @@ def run(input_path: Path, out_dir: Path) -> None:
 
     msg = extract_msg.Message(str(input_path))
     try:
-        headers = {
-            "From": msg.sender or "",
-            "To": msg.to or "",
-            "Cc": msg.cc or "",
-            "Subject": msg.subject or "",
-            "Date": str(msg.date) if msg.date else "",
-        }
+        raw_header = getattr(msg, "header", None) or ""
+        # extract-msg 일부 버전 header 는 EmailMessage 객체 — str() 로 정규화
+        if not isinstance(raw_header, str):
+            raw_header = str(raw_header)
+
+        # 모든 헤더 보존: msg.header 의 raw RFC822 파싱 + extract-msg 의 정형 필드 보강
+        headers: dict = {}
+        if raw_header:
+            parsed = stdemail.message_from_string(raw_header)
+            for key, val in parsed.items():
+                if key in headers:
+                    existing = headers[key]
+                    if isinstance(existing, list):
+                        existing.append(val)
+                    else:
+                        headers[key] = [existing, val]
+                else:
+                    headers[key] = val
+        # extract-msg 정형 필드 (raw header 없을 때 fallback)
+        if not headers:
+            headers = {
+                "From": msg.sender or "",
+                "To": msg.to or "",
+                "Cc": msg.cc or "",
+                "Bcc": getattr(msg, "bcc", "") or "",
+                "Subject": msg.subject or "",
+                "Date": str(msg.date) if msg.date else "",
+            }
         _common.write_text(
             out_dir / "headers.json",
             json.dumps(headers, ensure_ascii=False, indent=2),
         )
+
+        envelope_keys = [
+            "From", "To", "Cc", "Bcc", "Subject", "Date", "Message-ID",
+            "Reply-To", "In-Reply-To", "References",
+        ]
+        readme_headers: dict = {}
+        for k in envelope_keys:
+            v = headers.get(k)
+            if v:
+                readme_headers[k] = v
+        # extract-msg 정형 필드로 envelope 보강 (raw header 에 없을 때)
+        if not readme_headers.get("From"):
+            readme_headers["From"] = msg.sender or ""
+        if not readme_headers.get("To"):
+            readme_headers["To"] = msg.to or ""
+        if not readme_headers.get("Cc"):
+            readme_headers["Cc"] = msg.cc or ""
+        if not readme_headers.get("Subject"):
+            readme_headers["Subject"] = msg.subject or ""
+        if not readme_headers.get("Date"):
+            readme_headers["Date"] = str(msg.date) if msg.date else ""
 
         body_text = msg.body or ""
         body_html_raw = getattr(msg, "htmlBody", None)
@@ -36,21 +83,10 @@ def run(input_path: Path, out_dir: Path) -> None:
             else:
                 body_html = body_html_raw
 
-        body_inline = None
-        body_file_link = None
-        body_html_link = None
-        if body_text:
-            if len(body_text) < 1000:
-                body_inline = body_text
-            else:
-                _common.write_text(out_dir / "body.md", body_text)
-                body_file_link = "body.md"
-        if body_html:
-            _common.write_text(out_dir / "body.html", body_html)
-            body_html_link = "body.html"
-
         attachments_dir = out_dir / "attachments"
         attachment_links: list[str] = []
+        cid_map: dict[str, str] = {}
+
         for att in msg.attachments:
             _common.mkdir(attachments_dir)
             filename = (
@@ -58,6 +94,13 @@ def run(input_path: Path, out_dir: Path) -> None:
                 or getattr(att, "shortFilename", None)
                 or "attachment.bin"
             )
+            cid = (
+                getattr(att, "cid", None)
+                or getattr(att, "contentId", None)
+                or ""
+            )
+            if cid:
+                cid = str(cid).strip("<>")
             data = att.data
             if isinstance(data, str):
                 data = data.encode("utf-8")
@@ -65,24 +108,94 @@ def run(input_path: Path, out_dir: Path) -> None:
                 data = b""
             dst = _common.unique_path(attachments_dir, filename)
             _common.write_bytes(dst, data)
+            size = dst.stat().st_size
+            if cid:
+                cid_map[cid] = dst.name
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
                 os.unlink(_common.long_str(dst))
-                attachment_links.append(f"attachments/{recursed.name}/")
+                attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
             else:
-                attachment_links.append(f"attachments/{dst.name}")
+                attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
+
+        # body.md: text 우선, 없으면 HTML→평문
+        # body.from_html.md: text·HTML 둘 다 있을 때 HTML→평문 변환본 별도 (이미지 위치 placeholder)
+        if body_text:
+            body_md = body_text
+        elif body_html:
+            body_md = _html_to_md(body_html, cid_map)
+        else:
+            body_md = ""
+
+        body_file_link = None
+        body_html_link = None
+        body_from_html_link = None
+        if body_md:
+            _common.write_text(out_dir / "body.md", body_md)
+            body_file_link = "body.md"
+        if body_html:
+            _common.write_text(out_dir / "body.html", body_html)
+            body_html_link = "body.html"
+            if body_text:
+                from_html_md = _html_to_md(body_html, cid_map)
+                _common.write_text(out_dir / "body.from_html.md", from_html_md)
+                body_from_html_link = "body.from_html.md"
+
+        if cid_map:
+            rels = {cid: f"attachments/{fname}" for cid, fname in cid_map.items()}
+            _common.write_text(
+                out_dir / "images.rels.json",
+                json.dumps(rels, ensure_ascii=False, indent=2),
+            )
 
         _common.write_readme(
             out_dir,
             source_name=input_path.name,
             source_size=input_path.stat().st_size,
-            tool="extract-msg",
-            loss_notes="없음 (Outlook 본문 + 헤더 + 첨부 보존)",
-            body_inline=body_inline,
+            tool="extract-msg + html2text",
+            loss_notes=(
+                "본문은 body.md (text 우선, 없으면 HTML→평문). "
+                "text·HTML 둘 다 있을 때 HTML→평문(인라인 이미지 위치 placeholder 포함)은 body.from_html.md 별도. "
+                "원본 HTML 은 body.html, CID↔첨부 매핑은 images.rels.json (인라인 이미지 있을 때)."
+            ),
             body_file_link=body_file_link,
             body_html_link=body_html_link,
-            headers=headers,
+            body_from_html_link=body_from_html_link,
+            headers=readme_headers,
             attachments=attachment_links,
         )
     finally:
         msg.close()
+
+
+def _header_field(raw_header: str, key: str) -> str:
+    """raw rfc822 header 문자열에서 특정 키 추출. 없으면 빈 문자열."""
+    if not raw_header:
+        return ""
+    try:
+        parsed = stdemail.message_from_string(raw_header)
+        return parsed.get(key, "") or ""
+    except Exception:
+        return ""
+
+
+def _html_to_md(html: str, cid_map: dict[str, str]) -> str:
+    """HTML 본문 → 평문 md 변환. cid: 이미지 src 는 첨부 파일명 placeholder 로 치환."""
+    _common.ensure_pip("html2text")
+    import html2text
+
+    h = html2text.HTML2Text()
+    h.body_width = 0
+    h.ignore_links = False
+    h.ignore_images = False
+    md = h.handle(html)
+
+    def replace_cid_img(m: re.Match) -> str:
+        alt, cid_value = m.group(1), m.group(2).strip()
+        fname = cid_map.get(cid_value) or cid_map.get(cid_value.split("@")[0])
+        if fname:
+            return f"![{fname}](attachments/{fname})"
+        return f"![{alt}](cid:{cid_value})"
+
+    md = re.sub(r"!\[([^\]]*)\]\(cid:([^)]+)\)", replace_cid_img, md)
+    return md

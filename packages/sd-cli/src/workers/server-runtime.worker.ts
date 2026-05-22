@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "path";
 import { createWorker } from "@simplysm/core-node";
 import { env, err as errNs } from "@simplysm/core-common";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import proxy from "@fastify/http-proxy";
 import net from "net";
 import { pathToFileURL } from "url";
@@ -46,7 +46,7 @@ export interface ServerRuntimeWorkerEvents extends Record<string, unknown> {
 
 setupWorkerConsola();
 
-const logger = consola.withTag("sd:cli:server-runtime:worker");
+const logger = createLogger("sd:cli:server-runtime:worker");
 
 /** 서버 인스턴스 (정리 대상) */
 let serverInstance: { close: () => Promise<void> } | undefined;

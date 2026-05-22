@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { hasFileAddOrRemove, shouldSkipRebuild } from "../../src/workers/build-change-filter";
 
 beforeEach(() => {
@@ -7,7 +7,7 @@ beforeEach(() => {
 });
 
 describe("hasFileAddOrRemove + shouldSkipRebuild integration", () => {
-  const logger = consola.withTag("test");
+  const logger = createLogger("test");
 
   // Scenario: 관련 없는 파일 변경은 리빌드를 건너뛴다
   it("skips rebuild when changed files are not in source file paths", () => {

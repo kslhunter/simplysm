@@ -1,5 +1,5 @@
 import { fsx, pathx } from "@simplysm/core-node";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import type {
   SdConfig,
   SdBuildPackageConfig,
@@ -119,7 +119,7 @@ async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<vo
 export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
   private readonly _cwd: string;
   private readonly _options: BuildOrchestratorOptions;
-  private readonly _logger = consola.withTag("sd:cli:build");
+  private readonly _logger = createLogger("sd:cli:build");
 
   private _sdConfig: SdConfig | undefined;
   private _classified: ClassifiedPackages | undefined;

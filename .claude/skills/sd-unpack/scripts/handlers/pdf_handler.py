@@ -1,6 +1,10 @@
-"""PDF 핸들러. PyMuPDF (fitz) 로 페이지별 PNG + MD + embedded files 추출."""
+"""PDF 핸들러. PyMuPDF (fitz) 로 페이지별 PNG + 블록 단위 JSONL + 표 셀 단위 노드.
+
+블록 단위 (text_block·image_block) 는 bbox 좌표 보존. 표는 find_tables() 로 셀 단위 노드.
+"""
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -12,6 +16,7 @@ def run(input_path: Path, out_dir: Path) -> None:
     import fitz  # PyMuPDF
 
     pages_dir = out_dir / "pages"
+    images_dir = out_dir / "images"
     _common.mkdir(pages_dir)
 
     doc = fitz.open(_common.long_str(input_path))
@@ -19,11 +24,19 @@ def run(input_path: Path, out_dir: Path) -> None:
         page_summaries: list[str] = []
         for i, page in enumerate(doc, start=1):
             idx = f"{i:03d}"
-            text = page.get_text("text") or ""
-            _common.write_text(pages_dir / f"{idx}.md", text)
             pix = page.get_pixmap(dpi=300)
             pix.save(_common.long_str(pages_dir / f"{idx}.png"))
-            page_summaries.append(f"`pages/{idx}.png` (시각) — `.md` ({len(text)}자)")
+
+            jsonl_lines, counts = _pdf_page_to_jsonl(page, i, images_dir)
+            _common.write_text(pages_dir / f"{idx}.jsonl", "\n".join(jsonl_lines))
+
+            parts = [
+                f"`pages/{idx}.png` `.jsonl`",
+                f"blocks {counts['text_blocks'] + counts['image_blocks']}",
+            ]
+            if counts["tables"]:
+                parts.append(f"tables {counts['tables']} (cells {counts['table_cells']})")
+            page_summaries.append(" — ".join([parts[0], ", ".join(parts[1:])]))
 
         # 임베드된 첨부 (embedded files)
         attachment_links: list[str] = []
@@ -36,12 +49,13 @@ def run(input_path: Path, out_dir: Path) -> None:
             _common.mkdir(attachments_dir)
             dst = _common.unique_path(attachments_dir, filename)
             _common.write_bytes(dst, data)
+            size = dst.stat().st_size
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
                 os.unlink(_common.long_str(dst))
-                attachment_links.append(f"attachments/{recursed.name}/")
+                attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
             else:
-                attachment_links.append(f"attachments/{dst.name}")
+                attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
     finally:
         doc.close()
 
@@ -50,7 +64,115 @@ def run(input_path: Path, out_dir: Path) -> None:
         source_name=input_path.name,
         source_size=input_path.stat().st_size,
         tool="PyMuPDF (fitz)",
-        loss_notes="PDF 양식 필드(form field)는 텍스트 추출에 포함되지 않을 수 있음. 의심 시 _source.pdf 직접 확인.",
-        sections={f"페이지 (총 {len(page_summaries)}개)": page_summaries[:50]} if page_summaries else None,
+        loss_notes=(
+            "PDF 양식 필드(form field)·서명·OCR 미적용(스캔 PDF). "
+            "구조는 pages/<NNN>.jsonl (블록 bbox + 표 셀 단위 노드), 시각은 .png. "
+            "이미지 블록은 images/ 로 별도 저장."
+        ),
+        sections={f"페이지 (총 {len(page_summaries)}개)": page_summaries} if page_summaries else None,
         attachments=attachment_links,
     )
+
+
+def _pdf_page_to_jsonl(
+    page, page_num: int, images_dir: Path,
+) -> tuple[list[str], dict[str, int]]:
+    """한 PDF 페이지 → jsonl 라인 list + counts.
+
+    추출:
+    1. get_text("dict") 의 모든 블록 (text_block·image_block) — 표 영역 겹쳐도 그대로 보존
+    2. find_tables() 로 표 셀 단위 노드 추가 (블록과 중복 가능, Claude 가 양쪽 비교 판단)
+    """
+    counts = {"text_blocks": 0, "image_blocks": 0, "tables": 0, "table_cells": 0}
+
+    # 블록 추출 (모든 블록 보존)
+    page_dict = page.get_text("dict")
+    blocks = page_dict.get("blocks", [])
+
+    node_lines: list[dict] = []
+    block_idx = 0
+    for blk in blocks:
+        btype = blk.get("type", 0)
+        bbox = blk.get("bbox", [0, 0, 0, 0])
+
+        if btype == 0:
+            text_lines: list[str] = []
+            for line in blk.get("lines", []):
+                spans = line.get("spans", [])
+                line_text = "".join(span.get("text", "") for span in spans)
+                if line_text.strip():
+                    text_lines.append(line_text)
+            text = "\n".join(text_lines).strip()
+            if not text:
+                continue
+            node_lines.append({
+                "page": page_num,
+                "block": block_idx,
+                "type": "text_block",
+                "bbox": [round(c, 2) for c in bbox],
+                "text": text,
+            })
+            counts["text_blocks"] += 1
+            block_idx += 1
+        elif btype == 1:
+            img_bytes = blk.get("image")
+            ext = (blk.get("ext") or "bin").lstrip(".")
+            ref = ""
+            if img_bytes:
+                _common.mkdir(images_dir)
+                img_filename = f"p{page_num:03d}_b{block_idx:03d}.{ext}"
+                _common.write_bytes(images_dir / img_filename, img_bytes)
+                ref = f"images/{img_filename}"
+            node_lines.append({
+                "page": page_num,
+                "block": block_idx,
+                "type": "image_block",
+                "bbox": [round(c, 2) for c in bbox],
+                "ref": ref,
+            })
+            counts["image_blocks"] += 1
+            block_idx += 1
+
+    # 표 셀 노드 (find_tables, 블록과 중복 가능 — 양쪽 다 보존)
+    tables: list = []
+    try:
+        finder = page.find_tables()
+        tables = list(finder.tables) if hasattr(finder, "tables") else list(finder)
+    except Exception:
+        tables = []
+    counts["tables"] = len(tables)
+
+    for t_idx, tab in enumerate(tables, start=1):
+        try:
+            rows = tab.extract()
+            t_bbox = [round(c, 2) for c in tab.bbox]
+        except Exception:
+            continue
+        for r_idx, row in enumerate(rows, start=1):
+            for c_idx, cell_text in enumerate(row, start=1):
+                if cell_text is None:
+                    continue
+                node_lines.append({
+                    "page": page_num,
+                    "type": "table_cell",
+                    "table_idx": t_idx,
+                    "table_bbox": t_bbox,
+                    "row": r_idx,
+                    "col": c_idx,
+                    "text": str(cell_text).strip(),
+                })
+                counts["table_cells"] += 1
+
+    meta = {
+        "_meta": {
+            "page": page_num,
+            "size": [round(page.rect.width, 2), round(page.rect.height, 2)],
+            "blocks": counts["text_blocks"] + counts["image_blocks"],
+            "tables": counts["tables"],
+            "table_cells": counts["table_cells"],
+        }
+    }
+    lines = [json.dumps(meta, ensure_ascii=False)]
+    for n in node_lines:
+        lines.append(json.dumps(n, ensure_ascii=False))
+    return lines, counts

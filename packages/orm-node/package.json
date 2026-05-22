@@ -19,8 +19,7 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
-    "@simplysm/orm-common": "workspace:*",
-    "consola": "^3.4.2"
+    "@simplysm/orm-common": "workspace:*"
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",

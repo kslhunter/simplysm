@@ -20,8 +20,7 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "@simplysm/orm-common": "workspace:*",
-    "@simplysm/service-common": "workspace:*",
-    "consola": "^3.4.2"
+    "@simplysm/service-common": "workspace:*"
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",

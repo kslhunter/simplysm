@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
 @Injectable({ providedIn: "root" })
 export class SdSystemLogProvider {
-  private readonly _logger = consola.withTag("angular:system-log");
+  private readonly _logger = createLogger("angular:system-log");
 
   writeFn?: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void;
 

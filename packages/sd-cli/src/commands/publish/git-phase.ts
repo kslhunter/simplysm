@@ -1,4 +1,4 @@
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import { cpx } from "@simplysm/core-node";
 
 /**
@@ -7,7 +7,7 @@ import { cpx } from "@simplysm/core-node";
  */
 export async function ensureCleanWorkingTree(
   hasGit: boolean,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
 ): Promise<void> {
   if (!hasGit) return;
 
@@ -57,7 +57,7 @@ export async function commitTagAndPush(
   hasGit: boolean,
   version: string,
   changedFiles: string[],
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   if (!hasGit) return;

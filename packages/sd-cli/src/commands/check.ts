@@ -1,7 +1,6 @@
-import { err as errNs } from "@simplysm/core-common";
+import { err as errNs, createLogger } from "@simplysm/core-common";
 import { executeTypecheck, type TypecheckResult } from "../orchestrators/TypecheckOrchestrator";
 import { executeLint, type LintResult } from "../lint/lint-core";
-import { consola } from "consola";
 import { validateTargets, discoverWorkspacePackages } from "../utils/package-utils";
 import { runLintInWorker } from "../lint/lint-utils";
 
@@ -29,7 +28,7 @@ interface CheckResult {
 
 export async function runCheck(options: CheckOptions): Promise<void> {
   const { targets, types } = options;
-  const logger = consola.withTag("sd:cli:check");
+  const logger = createLogger("sd:cli:check");
 
   logger.debug("체크 시작", { targets, types });
 

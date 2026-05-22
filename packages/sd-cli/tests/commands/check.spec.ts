@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 
 import * as typecheckOrchestrator from "../../src/orchestrators/TypecheckOrchestrator";
 import * as lintCore from "../../src/lint/lint-core";
@@ -42,7 +42,7 @@ describe("runCheck", () => {
     savedExitCode = process.exitCode;
     process.exitCode = undefined;
 
-    vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
+    vi.spyOn(coreCommon, "createLogger").mockReturnValue(mockLogger as any);
     Object.values(mockLogger).forEach((m) => m.mockReset());
 
     mocks.executeTypecheck = vi.spyOn(typecheckOrchestrator, "executeTypecheck");

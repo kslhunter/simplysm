@@ -1,5 +1,5 @@
 import path from "path";
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import { fsx } from "@simplysm/core-node";
 
 /**
@@ -9,7 +9,7 @@ export async function publishToLocal(
   pkgPath: string,
   pkgName: string,
   targetPath: string,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   const distPath = path.resolve(pkgPath, "dist");

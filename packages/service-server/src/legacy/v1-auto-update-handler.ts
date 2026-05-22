@@ -1,8 +1,8 @@
 import type { WebSocket } from "ws";
 import type { ServiceContext } from "../core/define-service";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:V1AutoUpdateHandler");
+const logger = createLogger("service-server:V1AutoUpdateHandler");
 
 export interface V1Request {
   uuid: string;

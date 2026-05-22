@@ -12,9 +12,9 @@ import {
 import { defineService, auth, type ServiceMethods } from "../core/define-service";
 import type { DbConnOptions } from "@simplysm/service-common";
 import type { ServiceSocket } from "../transport/socket/service-socket";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:OrmService");
+const logger = createLogger("service-server:OrmService");
 
 // 정적 상태는 팩토리 외부에 존재해야 함 (호출 간 공유)
 const socketConns = new WeakMap<ServiceSocket, Map<number, DbConn>>();

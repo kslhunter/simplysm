@@ -3,12 +3,12 @@ import http from "node:http";
 import path from "path";
 import { pathx } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { loadSdConfig } from "../utils/sd-config";
 import { Capacitor } from "../capacitor/capacitor";
 import { Electron } from "../electron/electron";
 
-const logger = createLazyLogger("sd:cli:device");
+const logger = createLogger("sd:cli:device");
 
 export interface DeviceOptions {
   target?: string;

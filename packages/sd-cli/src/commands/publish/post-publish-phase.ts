@@ -1,4 +1,4 @@
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import type { SdPostPublishScriptConfig } from "../../sd-config.types";
 import { cpx } from "@simplysm/core-node";
 import { replaceEnvVariables } from "./env-utils";
@@ -11,7 +11,7 @@ export async function runPostPublish(
   scripts: SdPostPublishScriptConfig[],
   version: string,
   projectPath: string,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   if (scripts.length === 0) return;

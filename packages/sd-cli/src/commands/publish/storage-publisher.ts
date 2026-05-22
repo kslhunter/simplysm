@@ -5,7 +5,7 @@ import ssh2 from "ssh2";
 import { password as passwordPrompt } from "@inquirer/prompts";
 import { StorageFactory } from "@simplysm/storage";
 import { env } from "@simplysm/core-common";
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import type { SdPublishConfig, SdStoragePublishConfig } from "../../sd-config.types";
 
 const { Client: SshClient, utils } = ssh2;
@@ -17,7 +17,7 @@ export async function publishToStorage(
   pkgPath: string,
   pkgName: string,
   config: SdStoragePublishConfig,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   const distPath = path.resolve(pkgPath, "dist");
@@ -51,7 +51,7 @@ export async function publishToStorage(
  */
 export async function ensureSshAuth(
   publishPackages: Array<{ name: string; config: SdPublishConfig }>,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
 ): Promise<void> {
   // 비밀번호 없는 SFTP 서버 수집 (user@host 기준 중복 제거)
   const sshTargets = new Map<string, { host: string; port?: number; user: string }>();

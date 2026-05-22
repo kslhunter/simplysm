@@ -1,11 +1,11 @@
 import path from "path";
 import fs from "fs";
 import { err as errNs } from "@simplysm/core-common";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { compileScssFile, compileScssString } from "./scss-compiler";
 import { createOutputPathRewriter, rewriteScssImports } from "../utils/output-path-rewriter";
 
-const logger = createLazyLogger("sd:cli:ngtsc-build");
+const logger = createLogger("sd:cli:ngtsc-build");
 
 /**
  * 정방향 의존성 맵(소유파일→의존성 Set)에서 역방향 인덱스(의존성→소유파일 Set)를 구축한다.

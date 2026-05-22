@@ -1,9 +1,9 @@
 import { Uuid } from "@simplysm/core-common";
 import type { ServiceEventDef } from "@simplysm/service-common";
 import type { ServiceTransport } from "../transport/service-transport";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-client:EventClient");
+const logger = createLogger("service-client:EventClient");
 
 export interface ClientEventProxy<TEventDef extends ServiceEventDef> {
   addListener(

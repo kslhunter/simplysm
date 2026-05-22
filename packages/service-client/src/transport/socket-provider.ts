@@ -1,6 +1,6 @@
 import type { Bytes } from "@simplysm/core-common";
 import { EventEmitter, Uuid, wait } from "@simplysm/core-common";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
 // Node.js 환경에서 글로벌 WebSocket이 없으면 ws 패키지로 polyfill
 if (typeof globalThis.WebSocket === "undefined") {
@@ -8,7 +8,7 @@ if (typeof globalThis.WebSocket === "undefined") {
   globalThis.WebSocket = WebSocket as never;
 }
 
-const logger = consola.withTag("service-client:SocketProvider");
+const logger = createLogger("service-client:SocketProvider");
 
 export interface SocketProviderEvents {
   message: Bytes;

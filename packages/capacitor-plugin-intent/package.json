@@ -18,7 +18,7 @@
     "android"
   ],
   "dependencies": {
-    "consola": "^3.4.2"
+    "@simplysm/core-common": "workspace:*"
   },
   "devDependencies": {
     "@capacitor/core": "^7.6.5"

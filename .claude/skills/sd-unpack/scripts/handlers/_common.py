@@ -170,6 +170,17 @@ def now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def format_size(num_bytes: int) -> str:
+    """파일 크기 human-readable. 분석 진입 비용 예측용."""
+    if num_bytes < 1024:
+        return f"{num_bytes} B"
+    if num_bytes < 1024 * 1024:
+        return f"{num_bytes / 1024:.1f} KB"
+    if num_bytes < 1024 * 1024 * 1024:
+        return f"{num_bytes / (1024 * 1024):.1f} MB"
+    return f"{num_bytes / (1024 * 1024 * 1024):.1f} GB"
+
+
 def write_readme(
     out_dir: Path,
     *,
@@ -180,6 +191,7 @@ def write_readme(
     body_inline: Optional[str] = None,
     body_file_link: Optional[str] = None,
     body_html_link: Optional[str] = None,
+    body_from_html_link: Optional[str] = None,
     headers: Optional[dict] = None,
     sections: Optional[dict] = None,
     attachments: Optional[list] = None,
@@ -202,7 +214,7 @@ def write_readme(
             lines.append(f"- {w}")
         lines.append("")
 
-    if body_inline or body_file_link or body_html_link:
+    if body_inline or body_file_link or body_html_link or body_from_html_link:
         lines.append("## 본문")
         lines.append("")
         if body_inline:
@@ -211,8 +223,11 @@ def write_readme(
         elif body_file_link:
             lines.append(f"→ [{body_file_link}]({body_file_link})")
             lines.append("")
+        if body_from_html_link:
+            lines.append(f"→ [{body_from_html_link}]({body_from_html_link}) (HTML→평문, 인라인 이미지 위치 placeholder 포함)")
+            lines.append("")
         if body_html_link:
-            lines.append(f"→ [{body_html_link}]({body_html_link})")
+            lines.append(f"→ [{body_html_link}]({body_html_link}) (원본 HTML)")
             lines.append("")
 
     if headers:

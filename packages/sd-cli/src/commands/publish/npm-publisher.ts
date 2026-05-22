@@ -1,5 +1,5 @@
 import semver from "semver";
-import type { consola } from "consola";
+import type { ConsolaInstance } from "consola";
 import { shellSpawn } from "../../utils/shell-spawn";
 
 /**
@@ -9,7 +9,7 @@ export async function publishNpm(
   pkgPath: string,
   pkgName: string,
   version: string,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
   dryRun: boolean,
 ): Promise<void> {
   const prereleaseInfo = semver.prerelease(version);

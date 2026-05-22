@@ -20,7 +20,7 @@ function pkgPath(name: string): string {
   return path.resolve(CWD, `packages/${name}`);
 }
 
-function createLogger() {
+function createMockLogger() {
   return {
     info: vi.fn(),
     debug: vi.fn(),
@@ -29,7 +29,7 @@ function createLogger() {
     start: vi.fn(),
     success: vi.fn(),
     fail: vi.fn(),
-  } as unknown as ReturnType<typeof import("consola").consola.withTag>;
+  } as unknown as ReturnType<typeof import("@simplysm/core-common").createLogger>;
 }
 
 describe("runDeployment", () => {
@@ -52,7 +52,7 @@ describe("runDeployment", () => {
       return { name: "@simplysm/pkg-a", version: "14.0.1", dependencies: {} };
     }) as never);
 
-    const logger = createLogger();
+    const logger = createMockLogger();
     await runDeployment(
       [
         { name: "pkg-a", path: pkgPath("pkg-a"), config: { type: "npm" } },
@@ -81,7 +81,7 @@ describe("runDeployment", () => {
       dependencies: {},
     });
 
-    const logger = createLogger();
+    const logger = createMockLogger();
     await runDeployment(
       [{ name: "pkg-a", path: pkgPath("pkg-a"), config: { type: "npm" } }],
       "14.0.1",
@@ -110,7 +110,7 @@ describe("runDeployment", () => {
       }) as never,
     );
 
-    const logger = createLogger();
+    const logger = createMockLogger();
     await runDeployment(
       [
         { name: "pkg-a", path: pkgPath("pkg-a"), config: { type: "npm" } },

@@ -4,12 +4,12 @@ import path from "path";
 import os from "os";
 import { pathx } from "@simplysm/core-node";
 import { resolveAllReplaceDepEntries } from "../../../src/deps/replace-deps/replace-deps-resolve";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 
 describe("resolveAllReplaceDepEntries", () => {
   let tmpDir: string;
   let projectRoot: string;
-  const logger = consola.withTag("test");
+  const logger = createLogger("test");
 
   beforeEach(async () => {
     tmpDir = pathx.posix(await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-resolve-deps-")));

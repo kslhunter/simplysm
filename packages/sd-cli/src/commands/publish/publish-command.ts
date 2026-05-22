@@ -1,5 +1,5 @@
 import path from "path";
-import { consola } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { fsx } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../../sd-config.types";
@@ -50,7 +50,7 @@ export interface PublishOptions {
 export async function runPublish(options: PublishOptions): Promise<void> {
   const { targets, noBuild, dryRun } = options;
   const cwd = process.cwd();
-  const logger = consola.withTag("sd:cli:publish");
+  const logger = createLogger("sd:cli:publish");
 
   if (dryRun) {
     logger.info("[DRY-RUN] 시뮬레이션 모드 - 실제 배포 없음");

@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { consola } from "consola";
+import { type ConsolaInstance } from "consola";
 
 interface RebuildManagerEvents {
   batchComplete: [completedKeys: string[]];
@@ -11,9 +11,9 @@ export class RebuildManager extends EventEmitter<RebuildManagerEvents> {
     string,
     { title: string; promise: Promise<void>; resolver: () => void }
   >();
-  private readonly _logger: ReturnType<typeof consola.withTag>;
+  private readonly _logger: ConsolaInstance;
 
-  constructor(logger: ReturnType<typeof consola.withTag>) {
+  constructor(logger: ConsolaInstance) {
     super();
     this._logger = logger;
   }

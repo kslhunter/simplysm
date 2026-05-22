@@ -1,4 +1,4 @@
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { EventEmitter } from "@simplysm/core-common";
 import type { ServiceEventDef } from "@simplysm/service-common";
 import { createServiceProtocol } from "@simplysm/service-common";
@@ -12,7 +12,7 @@ import { createEventClient, type ClientEventProxy, type EventClient } from "./fe
 import { createFileClient, type FileClient } from "./features/file-client";
 import { createClientProtocolWrapper, type ClientProtocolWrapper } from "./protocol/client-protocol-wrapper";
 
-const logger = consola.withTag("service-client:ServiceClient");
+const logger = createLogger("service-client:ServiceClient");
 
 interface ServiceClientEvents {
   "request-progress": ServiceProgressState;

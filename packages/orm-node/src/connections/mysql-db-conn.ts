@@ -3,7 +3,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import {
   bytes,
   str,
@@ -22,7 +22,7 @@ import {
   type MysqlDbConnConfig,
 } from "../types/db-conn";
 
-const logger = consola.withTag("mysql-db-conn");
+const logger = createLogger("mysql-db-conn");
 
 /**
  * MySQL 데이터베이스 연결 클래스

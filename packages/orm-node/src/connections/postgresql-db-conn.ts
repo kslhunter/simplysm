@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import {
   bytes,
   str,
@@ -20,7 +20,7 @@ import {
 } from "../types/db-conn";
 import type { Client } from "pg";
 
-const logger = consola.withTag("postgresql-db-conn");
+const logger = createLogger("postgresql-db-conn");
 
 /**
  * PostgreSQL 데이터베이스 연결 클래스

@@ -1,8 +1,8 @@
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { loadSdConfig } from "../utils/sd-config";
 import { setupReplaceDeps } from "../deps/replace-deps/replace-deps";
 
-const logger = createLazyLogger("sd:cli:replace-deps");
+const logger = createLogger("sd:cli:replace-deps");
 
 /**
  * replace-deps 명령어 옵션

@@ -6,10 +6,10 @@ import {
   Injectable,
   isDevMode,
 } from "@angular/core";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { SdSystemLogProvider } from "../config/sd-system-log.provider";
 
-const logger = consola.withTag("angular:error-handler");
+const logger = createLogger("angular:error-handler");
 
 @Injectable({ providedIn: null })
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {

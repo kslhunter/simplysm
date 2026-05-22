@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 import type { BuildResult } from "../../src/runtime/ResultCollector";
 import type { PartialMessage } from "esbuild";
 
-// output-utils.ts가 모듈 로드 시 consola.withTag("sd:cli:output")로 로거를 생성하므로,
-// 동적 import 전에 spy 등록하여 withTag가 consola 자체를 반환하게 한다
-vi.spyOn(consola, "withTag").mockReturnValue(consola);
+// output-utils.ts가 모듈 로드 시 createLogger("sd:cli:output")로 로거를 생성하므로,
+// 동적 import 전에 spy 등록하여 createLogger가 consola 자체를 반환하게 한다
+vi.spyOn(coreCommon, "createLogger").mockReturnValue(consola as any);
 vi.spyOn(consola, "error").mockImplementation(() => {});
 vi.spyOn(consola, "warn").mockImplementation(() => {});
 vi.spyOn(consola, "info").mockImplementation(() => {});

@@ -1,6 +1,6 @@
 import { DebounceQueue } from "@simplysm/core-common";
 import * as chokidar from "chokidar";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { minimatch } from "minimatch";
 import * as nodeFs from "node:fs";
 import path from "path";
@@ -100,7 +100,7 @@ export class FsWatcher {
     }
   }
 
-  private readonly _logger = consola.withTag("sd-fs-watcher");
+  private readonly _logger = createLogger("sd-fs-watcher");
   private readonly _paths: readonly string[];
   private readonly _options: chokidar.ChokidarOptions;
   private readonly _debounceQueues: DebounceQueue[] = [];

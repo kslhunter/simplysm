@@ -4,10 +4,10 @@ import fs from "fs";
 import YAML from "yaml";
 import TOML from "smol-toml";
 import { cpx } from "@simplysm/core-node";
-import { createLazyLogger } from "../../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { collectAllDependencyExternals } from "../../esbuild/esbuild-config";
 
-const logger = createLazyLogger("sd:cli:server-production-files");
+const logger = createLogger("sd:cli:server-production-files");
 
 /**
  * 외부 모듈을 두 용도로 분리하여 수집한다.

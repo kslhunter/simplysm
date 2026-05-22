@@ -3,9 +3,9 @@ import type { ResultCollector } from "../runtime/ResultCollector";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, BuildPackageInfo, EngineResult } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = createLazyLogger("sd:cli:engine:tsc");
+const logger = createLogger("sd:cli:engine:tsc");
 
 /**
  * TscEngine 옵션

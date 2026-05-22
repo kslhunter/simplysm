@@ -2,7 +2,7 @@ import type { Bytes } from "@simplysm/core-common";
 import { DateTime } from "@simplysm/core-common";
 import type { FastifyRequest } from "fastify";
 import { clearInterval } from "node:timers";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { WebSocket } from "ws";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
 import { createServerProtocolWrapper } from "../../protocol/protocol-wrapper";
@@ -12,7 +12,7 @@ import type {
   ServiceServerRawMessage,
 } from "@simplysm/service-common";
 
-const logger = consola.withTag("service-server:ServiceSocket");
+const logger = createLogger("service-server:ServiceSocket");
 
 /**
  * 서비스 소켓 인터페이스

@@ -2,8 +2,7 @@ import { ESLint } from "eslint";
 import { createJiti } from "jiti";
 import path from "path";
 import { fsx, pathx } from "@simplysm/core-node";
-import { env, SdError } from "@simplysm/core-common";
-import { consola } from "consola";
+import { env, SdError, createLogger } from "@simplysm/core-common";
 
 //#region Types
 
@@ -120,7 +119,7 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
 export async function executeLint(options: LintOptions): Promise<LintResult> {
   const { targets, fix, timing } = options;
   const cwd = process.cwd();
-  const logger = consola.withTag("sd:cli:lint");
+  const logger = createLogger("sd:cli:lint");
 
   logger.debug("린트 시작", { targets, fix, timing });
 

@@ -1,6 +1,6 @@
 import path from "path";
 import { pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type {
   BuildTarget,
   SdBuildPackageConfig,
@@ -10,7 +10,7 @@ import type {
   SdServerPackageConfig,
 } from "../sd-config.types";
 
-const logger = createLazyLogger("sd:cli:package-classify");
+const logger = createLogger("sd:cli:package-classify");
 
 /**
  * 패키지 config를 순회하며 null 필터링 + target 필터링을 수행한다.

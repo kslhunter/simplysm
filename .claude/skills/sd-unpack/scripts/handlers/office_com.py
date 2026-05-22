@@ -1,22 +1,26 @@
 """Office (docx/pptx/xlsx) + 레거시 (doc/ppt/xls/xlsb) COM 핸들러.
 
-시각 산출물은 PNG, 텍스트 산출물은 MD 로 분리:
+시각 산출물은 PNG, 텍스트/구조 산출물은 형식별로:
 - docx → pages/<NNN>.png + pages/<NNN>.md (페이지별)
 - pptx → slides/<NN>_<title>.png + .md + .notes.md (슬라이드별)
-- xlsx → sheets/<NN>_<name>.png + .md + .formulas.json (시트별)
+- xlsx → sheets/<NN>_<name>.png + .jsonl (시트별) + workbook.meta.json
+
+xlsx jsonl 한 줄 = 한 행. 좌표는 행번호(`r`)·열문자 키로 명시. 값·수식·시트 메타 통합.
 
 Office COM 호출은 office_worker.py subprocess 로 격리 (cleanup race 회피).
-이 모듈 (office_com.py) 은 호출자 + Office 외 작업 (.md, ZIP strip, 매크로 추출, README 생성).
+이 모듈 (office_com.py) 은 호출자 + Office 외 작업 (jsonl 직렬화, ZIP strip, 매크로 추출, README 생성).
 원칙: 처리 실패는 묻지 않고 그대로 throw. try/finally 는 락/임시 폴더 cleanup 에만 사용.
 """
 from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import zipfile
+from datetime import date, datetime, time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from . import _common
 from .dispatch import maybe_recurse_attachment
@@ -39,20 +43,25 @@ def run(input_path: Path, out_dir: Path) -> None:
 
 
 def run_legacy(input_path: Path, out_dir: Path) -> None:
+    """레거시 (.doc/.ppt/.xls/.xlsb) → 신형 변환 후 처리.
+
+    `_converted.<ext>` 는 임시 폴더에서만 처리하고 산출 폴더(out_dir)에는 잔존시키지 않음.
+    """
     ext = input_path.suffix.lower()
     target_ext_map = {".doc": ".docx", ".ppt": ".pptx", ".xls": ".xlsx", ".xlsb": ".xlsx"}
     target_ext = target_ext_map[ext]
 
-    converted_in_out = out_dir / f"_converted{target_ext}"
-    _convert_legacy(input_path, converted_in_out)
-
     tool_extra = f"(레거시 {ext} → {target_ext} 변환 후 처리)"
-    if target_ext == ".docx":
-        _run_docx(converted_in_out, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
-    elif target_ext == ".pptx":
-        _run_pptx(converted_in_out, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
-    elif target_ext == ".xlsx":
-        _run_xlsx(converted_in_out, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
+    with _common.temp_workdir() as tmp:
+        converted_path = tmp / f"_converted{target_ext}"
+        _convert_legacy(input_path, converted_path)
+
+        if target_ext == ".docx":
+            _run_docx(converted_path, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
+        elif target_ext == ".pptx":
+            _run_pptx(converted_path, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
+        elif target_ext == ".xlsx":
+            _run_xlsx(converted_path, out_dir, source_name_override=input_path.name, tool_extra=tool_extra)
 
 
 # ====================================================================
@@ -66,15 +75,30 @@ def _run_docx(
     source_name_override: Optional[str] = None,
     tool_extra: str = "",
 ) -> None:
+    """python-docx 로 구조 추출 → content.jsonl 단일 시퀀스. 페이지 단위 폐기.
+
+    PNG 는 fitz PDF 경유로 시각 검증용 유지. pages.meta.json 으로 페이지↔노드 best-effort 매핑.
+    """
+    _common.ensure_pip("docx", "python-docx")
+
     pages_dir = out_dir / "pages"
     images_dir = out_dir / "images"
 
-    # COM Word → 임시 PDF → PyMuPDF 로 페이지별 PNG + MD.
+    # 1. python-docx 구조 추출
+    nodes, counts = _docx_extract_nodes(input_path)
+
+    # content.jsonl
+    lines: list[str] = [json.dumps({"_meta": counts}, ensure_ascii=False)]
+    for n in nodes:
+        lines.append(json.dumps(n, ensure_ascii=False, default=_json_default))
+    _common.write_text(out_dir / "content.jsonl", "\n".join(lines))
+
+    # 2. fitz PDF 경유 PNG + pages.meta.json (페이지↔노드 매핑 best-effort)
     with _common.com_lock(), _common.temp_workdir() as tmp:
         tmp_pdf = tmp / "out.pdf"
         _word_export_pdf(input_path, tmp_pdf)
         _common.mkdir(pages_dir)
-        page_summaries = _render_pdf_pages(tmp_pdf, pages_dir)
+        page_count = _docx_pages_from_pdf(tmp_pdf, pages_dir, out_dir, nodes)
 
     attachment_links = _extract_zip_media(
         input_path,
@@ -88,8 +112,15 @@ def _run_docx(
     macro_modules = _extract_macros(_source_path(out_dir, source_name), out_dir)
 
     sections: dict[str, list[str]] = {}
-    if page_summaries:
-        sections[f"페이지 (총 {len(page_summaries)}개)"] = page_summaries
+    summary = (
+        f"노드 {counts['nodes']}개 "
+        f"(heading {counts['headings']}·para {counts['paragraphs_plain']}·"
+        f"bullet {counts['bullets']}·table_cell {counts['table_cells']}·image {counts['images']})"
+    )
+    content_items = [f"`content.jsonl` — {summary}"]
+    if page_count:
+        content_items.append(f"`pages.meta.json` — PNG ↔ 노드 매핑 ({page_count}페이지)")
+    sections["콘텐츠"] = content_items
     if macro_modules:
         sections[f"VBA 매크로 (총 {len(macro_modules)}개)"] = [f"`macros/{m}`" for m in macro_modules]
 
@@ -97,11 +128,259 @@ def _run_docx(
         out_dir,
         source_name=source_name,
         source_size=source_size,
-        tool=("COM Word + PyMuPDF + ZIP " + tool_extra).strip(),
-        loss_notes="서식(폰트/색/볼드)·정확한 페이지 레이아웃은 PNG 안에서만 보존. 매크로(VBA)는 macros/ 로 별도 추출.",
+        tool=("python-docx + COM Word + PyMuPDF + ZIP " + tool_extra).strip(),
+        loss_notes=(
+            "서식(폰트/색/볼드)·정확한 페이지 레이아웃은 PNG 안에서만 보존. "
+            "구조는 content.jsonl 단일 시퀀스(heading/para/bullet/table_cell/image), "
+            "PNG↔노드 매핑은 pages.meta.json. 매크로(VBA)는 macros/ 로 별도 추출."
+        ),
         sections=sections or None,
         attachments=attachment_links,
     )
+
+
+def _docx_extract_nodes(input_path: Path) -> tuple[list[dict], dict[str, int]]:
+    """python-docx 로 body 시퀀스(paragraph/table) 순회 → jsonl 노드 리스트."""
+    from docx import Document
+    from docx.oxml.ns import qn
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
+
+    IMG_RELTYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+    doc = Document(_common.long_str(input_path))
+
+    # image relationship: rid → 'images/<basename>'
+    img_rels: dict[str, str] = {}
+    for rid, rel in doc.part.rels.items():
+        if rel.reltype == IMG_RELTYPE:
+            try:
+                basename = Path(rel.target_ref).name
+                img_rels[rid] = f"images/{basename}"
+            except Exception:
+                continue
+
+    nodes: list[dict] = []
+    counts = {
+        "nodes": 0,
+        "headings": 0,
+        "paragraphs_plain": 0,
+        "bullets": 0,
+        "tables": 0,
+        "table_cells": 0,
+        "images": 0,
+    }
+    table_idx = 0
+    node_idx = 0
+
+    for elem in doc.element.body.iterchildren():
+        tag = elem.tag
+        if tag == qn("w:p"):
+            para = Paragraph(elem, doc)
+            text = para.text or ""
+            style_name = para.style.name if para.style else ""
+            heading_level = _docx_heading_level(style_name)
+            bullet_level = _docx_bullet_level(para)
+            image_rids = _docx_inline_image_rids(para)
+            hyperlinks = _docx_paragraph_hyperlinks(para, doc)
+
+            node: dict
+            if heading_level is not None:
+                node = {"node": node_idx, "type": "heading", "level": heading_level, "text": text}
+                counts["headings"] += 1
+            elif bullet_level is not None:
+                node = {"node": node_idx, "type": "bullet", "level": bullet_level, "text": text}
+                counts["bullets"] += 1
+            else:
+                # 빈 paragraph 도 원본 정보 → 노드로 보존 (text="")
+                node = {"node": node_idx, "type": "para", "text": text}
+                counts["paragraphs_plain"] += 1
+
+            if hyperlinks:
+                node["hyperlinks"] = hyperlinks
+
+            nodes.append(node)
+            node_idx += 1
+
+            for rid in image_rids:
+                ref = img_rels.get(rid)
+                if ref:
+                    nodes.append({"node": node_idx, "type": "image", "ref": ref})
+                    counts["images"] += 1
+                    node_idx += 1
+
+        elif tag == qn("w:tbl"):
+            table_obj = Table(elem, doc)
+            table_idx += 1
+            counts["tables"] += 1
+            seen_tc: set[int] = set()
+            for r, row in enumerate(table_obj.rows, start=1):
+                for c, cell in enumerate(row.cells, start=1):
+                    tc_id = id(cell._tc)
+                    if tc_id in seen_tc:
+                        # gridSpan 으로 같은 row 안 colspan 중복 노출 — origin 의 colspan 에 표기됨
+                        continue
+                    seen_tc.add(tc_id)
+                    vm = _docx_cell_vmerge(cell)
+                    if vm == "continue":
+                        # vMerge continue cell — origin 의 rowspan 영역. skip.
+                        continue
+                    cell_text = (cell.text or "").strip()
+                    colspan = _docx_cell_colspan(cell)
+                    cell_node = {
+                        "node": node_idx,
+                        "type": "table_cell",
+                        "table_idx": table_idx,
+                        "row": r,
+                        "col": c,
+                        "text": cell_text,
+                    }
+                    if colspan > 1:
+                        cell_node["colspan"] = colspan
+                    nodes.append(cell_node)
+                    counts["table_cells"] += 1
+                    node_idx += 1
+
+    counts["nodes"] = node_idx
+    return nodes, counts
+
+
+def _docx_heading_level(style_name: str) -> Optional[int]:
+    """python-docx 스타일명 → heading level. heading 아니면 None."""
+    if not style_name:
+        return None
+    if style_name.startswith("Heading "):
+        try:
+            return int(style_name.split(" ")[1])
+        except (ValueError, IndexError):
+            return None
+    if style_name == "Title":
+        return 0
+    return None
+
+
+def _docx_bullet_level(para) -> Optional[int]:
+    """paragraph 의 numbering ilvl 추출. bullet/numbered 아니면 None."""
+    from docx.oxml.ns import qn
+
+    pPr = para._element.find(qn("w:pPr"))
+    if pPr is None:
+        return None
+    numPr = pPr.find(qn("w:numPr"))
+    if numPr is None:
+        return None
+    ilvl_elem = numPr.find(qn("w:ilvl"))
+    if ilvl_elem is None:
+        return 0
+    try:
+        return int(ilvl_elem.get(qn("w:val")) or 0)
+    except (ValueError, TypeError):
+        return 0
+
+
+_DRAWING_EMBED_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed"
+_DRAWING_BLIP_TAG = "{http://schemas.openxmlformats.org/drawingml/2006/main}blip"
+
+
+def _docx_inline_image_rids(para) -> list[str]:
+    """paragraph 안 inline image relationship IDs."""
+    from docx.oxml.ns import qn
+
+    rids: list[str] = []
+    for drawing in para._element.iter(qn("w:drawing")):
+        for blip in drawing.iter(_DRAWING_BLIP_TAG):
+            rid = blip.get(_DRAWING_EMBED_NS)
+            if rid:
+                rids.append(rid)
+    return rids
+
+
+_DOCX_R_ID_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"
+_DOCX_HYPERLINK_RELTYPE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+
+
+def _docx_paragraph_hyperlinks(para, doc) -> list[dict]:
+    """paragraph 안 hyperlink list: [{"text":"...", "url":"..."}, ...]"""
+    from docx.oxml.ns import qn
+
+    rels = doc.part.rels
+    result: list[dict] = []
+    for hl_elem in para._element.iter(qn("w:hyperlink")):
+        rid = hl_elem.get(_DOCX_R_ID_NS)
+        url = ""
+        if rid and rid in rels:
+            rel = rels[rid]
+            if rel.reltype == _DOCX_HYPERLINK_RELTYPE:
+                url = rel.target_ref
+        # hyperlink 안 모든 w:t 텍스트 join
+        hl_text = "".join((t.text or "") for t in hl_elem.iter(qn("w:t")))
+        if hl_text or url:
+            result.append({"text": hl_text, "url": url})
+    return result
+
+
+def _docx_cell_colspan(cell) -> int:
+    """docx 표 셀의 colspan (gridSpan val). 기본 1."""
+    from docx.oxml.ns import qn
+
+    tcPr = cell._tc.find(qn("w:tcPr"))
+    if tcPr is None:
+        return 1
+    gridSpan = tcPr.find(qn("w:gridSpan"))
+    if gridSpan is None:
+        return 1
+    val = gridSpan.get(qn("w:val"))
+    try:
+        return int(val) if val else 1
+    except (ValueError, TypeError):
+        return 1
+
+
+def _docx_cell_vmerge(cell) -> Optional[str]:
+    """docx 표 셀의 vMerge 상태. 'restart' | 'continue' | None."""
+    from docx.oxml.ns import qn
+
+    tcPr = cell._tc.find(qn("w:tcPr"))
+    if tcPr is None:
+        return None
+    vMerge = tcPr.find(qn("w:vMerge"))
+    if vMerge is None:
+        return None
+    val = vMerge.get(qn("w:val"))
+    return val if val else "continue"  # vMerge 요소 있고 val 없으면 continue
+
+
+def _docx_pages_from_pdf(
+    pdf_path: Path,
+    pages_dir: Path,
+    out_dir: Path,
+    nodes: list[dict],
+) -> int:
+    """fitz PDF 경유 페이지별 PNG + pages.meta.json (페이지별 raw text 보존).
+
+    nodes 와의 매핑은 fitz·python-docx 간 텍스트 분할 차이로 자동 추정 시 오매핑 위험 →
+    raw text 만 보존. Claude 가 분석 시 페이지 text 와 content.jsonl 노드 text 를 직접 비교.
+    """
+    _common.ensure_pip("fitz", "PyMuPDF")
+    import fitz
+
+    pages_meta: dict[str, dict] = {}
+    fdoc = fitz.open(_common.long_str(pdf_path))
+    try:
+        for i, page in enumerate(fdoc, start=1):
+            idx = f"{i:03d}"
+            pix = page.get_pixmap(dpi=300)
+            pix.save(_common.long_str(pages_dir / f"{idx}.png"))
+            text = page.get_text("text") or ""
+            pages_meta[idx] = {"text": text}
+    finally:
+        fdoc.close()
+
+    if pages_meta:
+        _common.write_text(
+            out_dir / "pages.meta.json",
+            json.dumps(pages_meta, ensure_ascii=False, indent=2),
+        )
+    return len(pages_meta)
 
 
 # ====================================================================
@@ -115,39 +394,56 @@ def _run_pptx(
     source_name_override: Optional[str] = None,
     tool_extra: str = "",
 ) -> None:
+    """python-pptx 로 구조 추출 → 슬라이드별 jsonl. 시각 순서 정렬 + pos EMU 좌표.
+
+    노드 type: title·heading·para·bullet·table_cell·image·chart·shape.
+    PNG 은 COM PowerPoint 의 Slide.Export 로 슬라이드별 직접 출력.
+    """
     _common.ensure_pip("pptx", "python-pptx")
     from pptx import Presentation
 
     slides_dir = out_dir / "slides"
     charts_dir = out_dir / "charts"
+    images_dir = out_dir / "images"
 
     prs = Presentation(_common.long_str(input_path))
+    slide_w = int(prs.slide_width or 0)
+    slide_h = int(prs.slide_height or 0)
+
     slide_titles: list[tuple[str, str]] = []  # (idx, safe_title)
     slide_summaries: list[str] = []
     slide_has_notes: dict[str, bool] = {}
     slide_charts: dict[str, list[str]] = {}  # idx -> chart filenames
+    slide_cores: dict[str, str] = {}  # idx -> 핵심 텍스트 (title 또는 첫 텍스트)
 
     _common.mkdir(slides_dir)
     for i, slide in enumerate(prs.slides, start=1):
         idx = f"{i:02d}"
-        title = ""
-        if slide.shapes.title and slide.shapes.title.text:
-            title = slide.shapes.title.text.strip()
-        if not title:
-            title = f"슬라이드{i}"
-        safe_title = _common.slugify_filename(title, max_len=40)
+        title = _pptx_slide_title(slide)
+        safe_title = _common.slugify_filename(title or f"슬라이드{i}", max_len=40)
         slide_titles.append((idx, safe_title))
 
-        # 슬라이드 텍스트 (python-pptx)
-        text_lines: list[str] = []
-        for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
-                line = "".join(run_.text for run_ in para.runs)
-                if line.strip():
-                    text_lines.append(line)
-        _common.write_text(slides_dir / f"{idx}_{safe_title}.md", "\n".join(text_lines))
+        nodes, chart_refs = _pptx_extract_slide_nodes(
+            slide, i, charts_dir, images_dir,
+        )
+        # 원본 XML 순서 (shape_idx 순) 그대로 보존. 시각 순서는 pos 가 보존되어 있어
+        # Claude 가 필요시 직접 정렬 가능.
+
+        meta = {
+            "_meta": {
+                "slide": i,
+                "title": title,
+                "size": [slide_w, slide_h],
+                "shapes": len(nodes),
+            }
+        }
+        lines = [json.dumps(meta, ensure_ascii=False, default=_json_default)]
+        for n in nodes:
+            lines.append(json.dumps(n, ensure_ascii=False, default=_json_default))
+        _common.write_text(slides_dir / f"{idx}_{safe_title}.jsonl", "\n".join(lines))
+
+        if chart_refs:
+            slide_charts[idx] = chart_refs
 
         if slide.has_notes_slide:
             notes_text = slide.notes_slide.notes_text_frame.text or ""
@@ -158,25 +454,18 @@ def _run_pptx(
                 )
                 slide_has_notes[idx] = True
 
-        for shape_idx, shape in enumerate(slide.shapes, start=1):
-            if shape.has_chart:
-                data = _extract_pptx_chart_data(shape.chart)
-                _common.mkdir(charts_dir)
-                chart_filename = f"slide{i:02d}_chart{shape_idx:02d}.data.json"
-                _common.write_text(
-                    charts_dir / chart_filename,
-                    json.dumps(data, ensure_ascii=False, indent=2),
-                )
-                slide_charts.setdefault(idx, []).append(chart_filename)
+        core = title or _pptx_first_text(nodes)
+        if core:
+            slide_cores[idx] = core[:60]
 
-        # 슬라이드별 산출물 풀목록
-        parts = [f"`slides/{idx}_{safe_title}.png`", "`.md`"]
+        parts = [f"`slides/{idx}_{safe_title}.png`", "`.jsonl`"]
         if slide_has_notes.get(idx):
             parts.append("`.notes.md`")
-        chart_refs = slide_charts.get(idx, [])
         if chart_refs:
             chart_str = ", ".join(f"`charts/{c}`" for c in chart_refs)
             parts.append(f"(차트: {chart_str})")
+        if slide_cores.get(idx):
+            parts.append(f"— {slide_cores[idx]}")
         slide_summaries.append(" ".join(parts))
 
     # COM PowerPoint 의 Slide.Export 로 슬라이드별 PNG 직접 출력. 임시 폴더에서 만든 후 long-path-safe copy.
@@ -187,7 +476,8 @@ def _run_pptx(
             if tmp_png.exists():
                 _common.copy(tmp_png, slides_dir / f"{idx}_{safe_title}.png")
 
-    # pptx 의 시각은 슬라이드 PNG 에 모두 포함 → images/ 는 만들지 않음 (embeddings 만 추출).
+    # pptx 의 시각은 슬라이드 PNG 에 모두 포함 → ZIP media 전체 복제 skip
+    # (개별 picture shape 은 _pptx_extract_slide_nodes 에서 image ref 와 함께 저장됨).
     attachment_links = _extract_zip_media(
         input_path,
         out_dir,
@@ -209,10 +499,211 @@ def _run_pptx(
         source_name=source_name,
         source_size=source_size,
         tool=("python-pptx + COM PowerPoint + ZIP " + tool_extra).strip(),
-        loss_notes="애니메이션·슬라이드 전환·정확한 폰트는 미보존. 시각은 슬라이드별 PNG 로, 차트 데이터는 charts/*.data.json 으로 보존.",
+        loss_notes=(
+            "애니메이션·슬라이드 전환·정확한 폰트는 미보존. "
+            "시각은 슬라이드별 PNG, 구조는 슬라이드별 .jsonl(시각 순서·pos EMU 좌표), "
+            "차트 데이터는 charts/*.data.json, picture shape 의 image 는 images/."
+        ),
         sections=sections or None,
         attachments=attachment_links,
     )
+
+
+def _pptx_slide_title(slide) -> str:
+    """슬라이드 title placeholder 텍스트. 없으면 빈 문자열."""
+    try:
+        title_shape = slide.shapes.title
+        if title_shape is not None and title_shape.text:
+            return title_shape.text.strip()
+    except (AttributeError, ValueError):
+        pass
+    return ""
+
+
+def _pptx_first_text(nodes: list[dict]) -> str:
+    """노드 리스트 중 첫 비어있지 않은 text. 없으면 빈 문자열."""
+    for n in nodes:
+        t = (n.get("text") or "").strip()
+        if t:
+            return t
+    return ""
+
+
+def _pptx_extract_slide_nodes(
+    slide,
+    slide_num: int,
+    charts_dir: Path,
+    images_dir: Path,
+) -> tuple[list[dict], list[str]]:
+    """슬라이드 안 shape → 노드 list + chart 파일 list.
+
+    text_frame 의 paragraph 별로 노드 분리 (heading·para·bullet).
+    표·차트·이미지는 각각 별도 노드.
+    그 외 (autoshape·SmartArt·group) 은 shape 노드.
+    """
+    nodes: list[dict] = []
+    chart_refs: list[str] = []
+
+    title_shape = None
+    try:
+        title_shape = slide.shapes.title
+    except (AttributeError, ValueError):
+        title_shape = None
+
+    for shape_idx, shape in enumerate(slide.shapes):
+        pos = _pptx_shape_pos(shape)
+        common = {
+            "slide": slide_num,
+            "pos": pos,
+            "shape_idx": shape_idx,
+        }
+
+        # 표
+        if getattr(shape, "has_table", False):
+            try:
+                table = shape.table
+            except Exception:
+                table = None
+            if table is not None:
+                table_idx = shape_idx + 1
+                for r_idx, row in enumerate(table.rows, start=1):
+                    for c_idx, cell in enumerate(row.cells, start=1):
+                        cell_text = (cell.text or "").strip()
+                        nodes.append({
+                            **common,
+                            "type": "table_cell",
+                            "table_idx": table_idx,
+                            "row": r_idx,
+                            "col": c_idx,
+                            "text": cell_text,
+                        })
+                continue
+
+        # 차트
+        if getattr(shape, "has_chart", False):
+            try:
+                data = _extract_pptx_chart_data(shape.chart)
+            except Exception:
+                data = None
+            chart_filename = f"slide{slide_num:02d}_chart{shape_idx + 1:02d}.data.json"
+            if data is not None:
+                _common.mkdir(charts_dir)
+                _common.write_text(
+                    charts_dir / chart_filename,
+                    json.dumps(data, ensure_ascii=False, indent=2),
+                )
+                chart_refs.append(chart_filename)
+            nodes.append({
+                **common,
+                "type": "chart",
+                "ref": f"charts/{chart_filename}",
+            })
+            continue
+
+        # 그림 (picture)
+        if _pptx_is_picture(shape):
+            ref = _pptx_save_picture(shape, slide_num, shape_idx, images_dir)
+            node = {**common, "type": "image"}
+            if ref:
+                node["ref"] = ref
+            nodes.append(node)
+            continue
+
+        # text_frame 보유 shape (placeholder·text box·autoshape with text)
+        if getattr(shape, "has_text_frame", False):
+            is_title = (title_shape is not None and shape == title_shape)
+            for p_idx, para in enumerate(shape.text_frame.paragraphs):
+                text = "".join(run.text for run in para.runs)
+                hyperlinks = _pptx_run_hyperlinks(para)
+                bullet_lvl = getattr(para, "level", 0) or 0
+
+                base_node: dict
+                if is_title and p_idx == 0:
+                    base_node = {**common, "type": "title", "para_idx": p_idx, "text": text}
+                elif bullet_lvl > 0:
+                    base_node = {**common, "type": "bullet", "para_idx": p_idx,
+                                 "level": bullet_lvl, "text": text}
+                else:
+                    base_node = {**common, "type": "para", "para_idx": p_idx, "text": text}
+                if hyperlinks:
+                    base_node["hyperlinks"] = hyperlinks
+                nodes.append(base_node)
+            continue
+
+        # 그 외 (group·SmartArt·connector·autoshape 등)
+        subtype = ""
+        try:
+            subtype = str(shape.shape_type)
+        except Exception:
+            pass
+        nodes.append({
+            **common,
+            "type": "shape",
+            "subtype": subtype,
+        })
+
+    return nodes, chart_refs
+
+
+def _pptx_shape_pos(shape) -> list[int]:
+    """shape 의 [left, top, width, height] EMU. 누락 시 0."""
+    try:
+        return [
+            int(shape.left or 0),
+            int(shape.top or 0),
+            int(shape.width or 0),
+            int(shape.height or 0),
+        ]
+    except (AttributeError, TypeError, ValueError):
+        return [0, 0, 0, 0]
+
+
+def _pptx_is_picture(shape) -> bool:
+    """python-pptx shape 이 picture 인지. shape_type 또는 image 속성으로 판별."""
+    try:
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+        if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+            return True
+    except Exception:
+        pass
+    # placeholder picture 인 경우 shape_type 이 PLACEHOLDER 라 image 속성으로 보완
+    try:
+        _ = shape.image
+        return True
+    except Exception:
+        return False
+
+
+def _pptx_run_hyperlinks(para) -> list[dict]:
+    """pptx paragraph 안 run 별 hyperlink list. 텍스트·URL."""
+    result: list[dict] = []
+    for run in para.runs:
+        try:
+            hl = run.hyperlink
+            url = getattr(hl, "address", None)
+        except Exception:
+            url = None
+        if url:
+            result.append({"text": run.text or "", "url": url})
+    return result
+
+
+def _pptx_save_picture(
+    shape, slide_num: int, shape_idx: int, images_dir: Path,
+) -> Optional[str]:
+    """shape.image.blob 을 images/ 에 저장하고 ref(상대경로) 반환. 실패 시 None."""
+    try:
+        img = shape.image
+        ext = (img.ext or "bin").lstrip(".")
+        blob = img.blob
+    except Exception:
+        return None
+    if not blob:
+        return None
+    _common.mkdir(images_dir)
+    filename = f"slide{slide_num:02d}_shape{shape_idx + 1:02d}.{ext}"
+    _common.write_bytes(images_dir / filename, blob)
+    return f"images/{filename}"
 
 
 # ====================================================================
@@ -254,9 +745,10 @@ def _run_xlsx(
             sheet_names.append((idx, safe_name, name))
 
         # COM Excel 호출: 데이터 영역 → ChartObject + Range.CopyPicture → 시트별 PNG.
-        # 시트별 (last_row, last_col) 도 같이 반환되어 .md/.formulas.json 이 같은 데이터 영역으로 통일됨.
+        # 시트별 (last_row, last_col) 도 같이 반환되어 .jsonl 이 같은 데이터 영역으로 통일됨.
+        # PNG export 실패한 시트는 sheet_png_skipped 에 사유 (silent skip 금지).
         with _common.com_lock():
-            sheet_ranges = _excel_export_sheet_pngs(input_path, sheets_dir, sheet_names)
+            sheet_ranges, sheet_png_skipped = _excel_export_sheet_pngs(input_path, sheets_dir, sheet_names)
 
         for idx, safe_name, raw_name in sheet_names:
             ws_v = wb_values[raw_name]
@@ -266,24 +758,9 @@ def _run_xlsx(
             last_row, last_col = sheet_ranges.get(raw_name, (ws_v.max_row, ws_v.max_column))
             sheet_dims[idx] = (last_row, last_col)
 
-            md_lines = _sheet_to_md(ws_v, last_row, last_col)
-            _common.write_text(sheets_dir / f"{idx}_{safe_name}.md", "\n".join(md_lines))
-
-            formulas: dict[str, str] = {}
-            if last_row >= 1 and last_col >= 1:
-                for row in ws_f.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col):
-                    for cell in row:
-                        if cell.data_type != "f":
-                            continue
-                        v = cell.value
-                        # 일반·shared formula 는 str, array formula 는 ArrayFormula(.text 보유)
-                        formulas[cell.coordinate] = v if isinstance(v, str) else getattr(v, "text", str(v))
-            if formulas:
-                _common.write_text(
-                    sheets_dir / f"{idx}_{safe_name}.formulas.json",
-                    json.dumps(formulas, ensure_ascii=False, indent=2),
-                )
-            sheet_formula_count[idx] = len(formulas)
+            jsonl_lines, formula_n = _sheet_to_jsonl(ws_v, ws_f, last_row, last_col)
+            _common.write_text(sheets_dir / f"{idx}_{safe_name}.jsonl", "\n".join(jsonl_lines))
+            sheet_formula_count[idx] = formula_n
 
             for chart_idx, chart in enumerate(getattr(ws_f, "_charts", []), start=1):
                 data = _extract_openpyxl_chart_data(chart)
@@ -294,6 +771,21 @@ def _run_xlsx(
                     json.dumps(data, ensure_ascii=False, indent=2),
                 )
                 sheet_charts.setdefault(idx, []).append(chart_filename)
+
+        # 워크북 단위 메타 (defined names 등) — 시트 jsonl 외부 분리.
+        wb_meta = _workbook_meta(wb_formulas)
+        if wb_meta:
+            _common.write_text(
+                out_dir / "workbook.meta.json",
+                json.dumps(wb_meta, ensure_ascii=False, indent=2),
+            )
+
+        # VBA 시트 객체명 ↔ raw 시트명 매핑 (시트 codeName 기반)
+        sheet_code_map: dict[str, str] = {}
+        for ws in wb_formulas.worksheets:
+            code = getattr(ws.sheet_properties, "codeName", None)
+            if code:
+                sheet_code_map[code] = ws.title
     finally:
         wb_values.close()
         wb_formulas.close()
@@ -312,9 +804,13 @@ def _run_xlsx(
     for idx, safe_name, raw_name in sheet_names:
         last_row, last_col = sheet_dims.get(idx, (0, 0))
         formula_n = sheet_formula_count.get(idx, 0)
-        parts = [f"`sheets/{idx}_{safe_name}.png`", "`.md`"]
-        if formula_n:
-            parts.append("`.formulas.json`")
+        png_path = sheets_dir / f"{idx}_{safe_name}.png"
+        if png_path.exists():
+            parts = [f"`sheets/{idx}_{safe_name}.png`", "`.jsonl`"]
+        else:
+            # PNG 미생성 — worker 가 사유 전달 (16-bit cap / COM 실패 등)
+            reason = sheet_png_skipped.get(raw_name, "사유 미상")
+            parts = [f"`sheets/{idx}_{safe_name}.jsonl`", f"(PNG 미생성 — {reason})"]
         chart_refs = sheet_charts.get(idx, [])
         if chart_refs:
             parts.append("(차트: " + ", ".join(f"`charts/{c}`" for c in chart_refs) + ")")
@@ -328,7 +824,9 @@ def _run_xlsx(
         sheet_summaries.append(" ".join(parts) + " " + meta)
 
     source_name, source_size = _source_meta(input_path, out_dir, source_name_override)
-    macro_modules = _extract_macros(_source_path(out_dir, source_name), out_dir)
+    macro_modules = _extract_macros(
+        _source_path(out_dir, source_name), out_dir, sheet_code_map=sheet_code_map,
+    )
 
     sections: dict[str, list[str]] = {}
     if sheet_summaries:
@@ -341,7 +839,11 @@ def _run_xlsx(
         source_name=source_name,
         source_size=source_size,
         tool=("openpyxl + COM Excel + ZIP " + tool_extra).strip(),
-        loss_notes="셀 서식·조건부 서식·데이터 검증 규칙은 미보존. 시각은 시트별 PNG 로, 표 구조는 .md 로, 셀 수식은 .formulas.json 으로 보존.",
+        loss_notes=(
+            "셀 서식·조건부 서식·데이터 검증 규칙은 미보존. "
+            "시각은 시트별 PNG, 데이터·수식·시트 메타는 시트별 .jsonl 한 줄=한 행(좌표 명시), "
+            "워크북 단위 메타(defined names 등)는 workbook.meta.json."
+        ),
         sections=sections or None,
         attachments=attachment_links,
     )
@@ -396,11 +898,13 @@ def _excel_export_sheet_pngs(
     input_path: Path,
     sheets_dir: Path,
     sheet_names: list[tuple[str, str, str]],
-) -> dict[str, tuple[int, int]]:
-    """시트별 PNG 생성 + (last_row, last_col) 매핑 반환.
+) -> tuple[dict[str, tuple[int, int]], dict[str, str]]:
+    """시트별 PNG 생성 + (last_row, last_col) 매핑 + skipped 사유 반환.
 
     호출자에서 sheetProtection strip 사본 만들고 worker 에 그 사본 path 만 넘김.
     Excel COM 자체 작업은 worker subprocess.
+
+    반환: (sheet_ranges, skipped) — skipped 는 PNG export 실패한 시트의 사유 dict (raw_name → reason).
     """
     with _common.temp_workdir() as tmp:
         unprotected = tmp / "_unprotected.xlsx"
@@ -409,8 +913,13 @@ def _excel_export_sheet_pngs(
             "excel_sheets", str(unprotected), str(sheets_dir), json.dumps(sheet_names),
             timeout=600, capture_stdout=True,
         )
-    raw = json.loads(result) if result.strip() else {}
-    return {k: tuple(v) for k, v in raw.items()}
+    if not result.strip():
+        return {}, {}
+    parsed = json.loads(result)
+    ranges_raw = parsed.get("sheet_ranges", {})
+    sheet_ranges = {k: tuple(v) for k, v in ranges_raw.items()}
+    skipped = parsed.get("skipped", {})
+    return sheet_ranges, skipped
 
 
 def _xlsx_strip_protection(src: Path, dst: Path) -> None:
@@ -493,11 +1002,18 @@ def _source_path(out_dir: Path, source_name: str) -> Path:
     return out_dir / f"_source.{ext}"
 
 
-def _extract_macros(input_path: Path, out_dir: Path) -> list[str]:
+def _extract_macros(
+    input_path: Path,
+    out_dir: Path,
+    sheet_code_map: Optional[dict[str, str]] = None,
+) -> list[str]:
     """OLE/OOXML 파일에서 VBA 매크로 추출. macros/<모듈명>.vba 로 저장.
 
     추출된 모듈 파일명 list 반환 (예: ["Module1.vba", "ThisWorkbook.vba"]).
     매크로 없으면 빈 list.
+
+    sheet_code_map: VBA 시트 객체 codeName → raw 시트명 (예: {"Sheet1": "BOA"}).
+    매크로 파일 첫 줄에 코멘트로 매핑 정보 prepend (시트 모듈만).
     """
     _common.ensure_pip("oletools")
     from oletools.olevba import VBA_Parser
@@ -512,8 +1028,11 @@ def _extract_macros(input_path: Path, out_dir: Path) -> list[str]:
         for (_filename, stream_path, vba_filename, vba_code) in parser.extract_macros():
             module_name = vba_filename or stream_path or "module"
             stem = Path(module_name).stem or "module"
+            prefix = ""
+            if sheet_code_map and stem in sheet_code_map:
+                prefix = f'\' (object: {stem}, sheet: "{sheet_code_map[stem]}")\n\n'
             dst = _common.unique_path(macros_dir, f"{stem}.vba")
-            _common.write_text(dst, vba_code or "")
+            _common.write_text(dst, prefix + (vba_code or ""))
             module_files.append(dst.name)
         return module_files
     finally:
@@ -617,40 +1136,112 @@ def _extract_zip_media(
                 dst = _common.unique_path(attachments_dir, base)
                 with zf.open(info) as f:
                     _common.write_bytes(dst, f.read())
+                size = dst.stat().st_size
                 recursed = maybe_recurse_attachment(dst, attachments_dir)
                 if recursed is not None:
                     os.unlink(_common.long_str(dst))
-                    attachment_links.append(f"attachments/{recursed.name}/")
+                    attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
                 else:
-                    attachment_links.append(f"attachments/{dst.name}")
+                    attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
     return attachment_links
 
 
-def _sheet_to_md(ws, last_row: int, last_col: int) -> list[str]:
-    """openpyxl Worksheet 의 (1,1)~(last_row,last_col) 범위를 마크다운 표 라인으로."""
+def _json_default(obj: Any) -> str:
+    """JSON 직렬화 fallback. openpyxl datetime → ISO 8601. 그 외는 throw."""
+    if isinstance(obj, (datetime, date, time)):
+        return obj.isoformat()
+    raise TypeError(f"not JSON serializable: {type(obj).__name__}")
+
+
+def _sheet_to_jsonl(ws_v, ws_f, last_row: int, last_col: int) -> tuple[list[str], int]:
+    """openpyxl Worksheet 의 (1,1)~(last_row,last_col) 범위를 행 단위 JSONL 라인으로.
+
+    한 줄 = 한 행. 빈 셀 키 생략. 좌표는 `r`(1-based 행번호) + 열문자 키(`A`·`B`·...·`AA`·...).
+    같은 행 수식은 `_f` 맵 (열문자 → 수식문자열). 빈 행도 `{"r":N}` 한 줄 유지 → Read offset = 행번호.
+    첫 줄은 `{"_meta":{...}}` (시트 dims·merges·frozen·hyperlinks·comments).
+    값 타입은 JSON 네이티브(int·float·bool) + datetime ISO 8601.
+
+    반환: (lines, formula_count)
+    """
+    from openpyxl.utils import get_column_letter
+
     if last_row < 1 or last_col < 1:
-        return ["(빈 시트)"]
+        meta = {"_meta": {"dims": [0, 0]}}
+        return [json.dumps(meta, ensure_ascii=False)], 0
 
-    rows: list[list[str]] = []
-    for row in ws.iter_rows(
-        min_row=1, max_row=last_row, min_col=1, max_col=last_col, values_only=True
-    ):
-        rows.append(["" if v is None else str(v) for v in row])
-    if not rows or not any(any(c for c in r) for r in rows):
-        return ["(빈 시트)"]
+    # 메타 수집: 머지·frozen·hyperlinks·comments
+    meta: dict[str, Any] = {"dims": [last_row, last_col]}
+    merges = [str(r) for r in ws_v.merged_cells.ranges]
+    if merges:
+        meta["merges"] = merges
+    frozen = ws_v.freeze_panes
+    if frozen:
+        meta["frozen"] = frozen
 
-    header = rows[0]
-    md_lines: list[str] = []
-    md_lines.append("| " + " | ".join(_md_escape(c) for c in header) + " |")
-    md_lines.append("| " + " | ".join("---" for _ in header) + " |")
-    for row in rows[1:]:
-        padded = list(row) + [""] * (len(header) - len(row))
-        md_lines.append("| " + " | ".join(_md_escape(c) for c in padded[: len(header)]) + " |")
-    return md_lines
+    hyperlinks: dict[str, str] = {}
+    comments: dict[str, str] = {}
+    number_formats: dict[str, str] = {}  # General(기본) 외 셀의 표시 형식
+    for row in ws_v.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col):
+        for cell in row:
+            hl = getattr(cell, "hyperlink", None)
+            if hl is not None and getattr(hl, "target", None):
+                hyperlinks[cell.coordinate] = hl.target
+            cm = getattr(cell, "comment", None)
+            if cm is not None and getattr(cm, "text", None):
+                comments[cell.coordinate] = cm.text
+            nf = getattr(cell, "number_format", None)
+            if nf and nf != "General":
+                number_formats[cell.coordinate] = nf
+    if hyperlinks:
+        meta["hyperlinks"] = hyperlinks
+    if comments:
+        meta["comments"] = comments
+    if number_formats:
+        meta["number_formats"] = number_formats
+
+    lines: list[str] = [json.dumps({"_meta": meta}, ensure_ascii=False, default=_json_default)]
+    formula_count = 0
+
+    rows_v = ws_v.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col, values_only=True)
+    rows_f = ws_f.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col)
+    for r_idx, (row_v, row_f) in enumerate(zip(rows_v, rows_f), start=1):
+        row_data: dict[str, Any] = {"r": r_idx}
+        fmap: dict[str, str] = {}
+        for c_idx, (v, fcell) in enumerate(zip(row_v, row_f), start=1):
+            col_letter = get_column_letter(c_idx)
+            if v is not None:
+                row_data[col_letter] = v
+            if fcell.data_type == "f":
+                fv = fcell.value
+                # 일반·shared formula 는 str, array formula 는 ArrayFormula(.text 보유)
+                fmap[col_letter] = fv if isinstance(fv, str) else getattr(fv, "text", str(fv))
+                formula_count += 1
+        if fmap:
+            row_data["_f"] = fmap
+        lines.append(json.dumps(row_data, ensure_ascii=False, default=_json_default))
+
+    return lines, formula_count
 
 
-def _md_escape(s: str) -> str:
-    return s.replace("|", "\\|").replace("\n", " ")
+def _workbook_meta(wb) -> dict[str, Any]:
+    """워크북 단위 메타 (defined names 등). 비어있으면 빈 dict 반환."""
+    meta: dict[str, Any] = {}
+    defined_names: dict[str, list[str]] = {}
+    # openpyxl 3.x: wb.defined_names 는 DefinedNameDict (dict-like)
+    try:
+        for name, dn in wb.defined_names.items():
+            try:
+                dests = [f"'{sheet}'!{addr}" for sheet, addr in dn.destinations]
+            except Exception:
+                # destinations 파싱 불가 시 raw value 보존 (예: 워크북-수식 형태)
+                dests = [str(getattr(dn, "value", ""))]
+            defined_names[name] = dests
+    except Exception:
+        # defined_names 자체 접근 실패 → 워크북에 없는 것으로 처리
+        pass
+    if defined_names:
+        meta["defined_names"] = defined_names
+    return meta
 
 
 def _extract_pptx_chart_data(chart) -> dict:

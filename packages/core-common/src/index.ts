@@ -29,6 +29,7 @@ export * from "./types/time";
 export * from "./features/debounce-queue";
 export * from "./features/serial-queue";
 export * from "./features/event-emitter";
+export * from "./features/logger";
 //#endregion
 
 //#region utils (네임스페이스 내보내기)

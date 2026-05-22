@@ -17,9 +17,9 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { EventEmitter } from "node:events";
 import { setupConsola } from "@simplysm/core-node";
-import { createLazyLogger } from "./runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = createLazyLogger("sd:cli:entry");
+const logger = createLogger("sd:cli:entry");
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;

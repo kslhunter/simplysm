@@ -20,9 +20,9 @@ import type { AuthTokenPayload } from "./auth/auth-token-payload";
 import type { ServiceServerOptions } from "./types/server-options";
 import { handleV1Connection, type V1AutoUpdateMethods } from "./legacy/v1-auto-update-handler";
 import { createServiceContext } from "./core/define-service";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:ServiceServer");
+const logger = createLogger("service-server:ServiceServer");
 
 export interface ServerEventProxy<TEventDef extends ServiceEventDef> {
   emit(

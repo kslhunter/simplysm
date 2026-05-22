@@ -1,9 +1,9 @@
 import type ts from "typescript";
 import { ESLint } from "eslint";
 import { pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = createLazyLogger("sd:cli:lint-with-program");
+const logger = createLogger("sd:cli:lint-with-program");
 
 /**
  * LintWithProgramRunner.lint()가 반환하는 lint 결과

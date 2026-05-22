@@ -3,11 +3,11 @@ import { existsSync } from "node:fs";
 import { createRequire } from "module";
 import { consola, LogLevels } from "consola";
 import { fsx, pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { shellSpawn } from "../utils/shell-spawn";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 
-const logger = createLazyLogger("sd:cli:capacitor:npm-config");
+const logger = createLogger("sd:cli:capacitor:npm-config");
 
 /**
  * .capacitor/package.json을 구성하고 의존성 변경 여부를 반환한다.

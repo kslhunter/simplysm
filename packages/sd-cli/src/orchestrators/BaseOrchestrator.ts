@@ -1,4 +1,5 @@
-import { consola, type ConsolaInstance } from "consola";
+import { type ConsolaInstance } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import type { SdConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
@@ -35,7 +36,7 @@ export abstract class BaseOrchestrator {
 
   constructor(logTag: string) {
     this._cwd = process.cwd();
-    this._logger = consola.withTag(logTag);
+    this._logger = createLogger(logTag);
   }
 
   async initialize(params: {

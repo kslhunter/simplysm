@@ -1,5 +1,5 @@
 import type { ResultCollector } from "../runtime/ResultCollector";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import { hasAngularCoreDependency } from "../utils/package-utils";
 import { NgtscEngine } from "./NgtscEngine";
@@ -8,7 +8,7 @@ import { TscEngine } from "./TscEngine";
 import { EsbuildClientEngine } from "./EsbuildClientEngine";
 import type { BuildEngine, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "./types";
 
-const logger = createLazyLogger("sd:cli:engine");
+const logger = createLogger("sd:cli:engine");
 
 
 /**

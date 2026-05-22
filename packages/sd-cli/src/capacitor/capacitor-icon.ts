@@ -1,8 +1,8 @@
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const _logger = createLazyLogger("sd:cli:capacitor");
+const _logger = createLogger("sd:cli:capacitor");
 
 /**
  * 앱 아이콘 처리 (소스 이미지 → 멀티 해상도 아이콘 + 스플래시)

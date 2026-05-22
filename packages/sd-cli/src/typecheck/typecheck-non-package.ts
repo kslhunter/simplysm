@@ -1,11 +1,11 @@
 import path from "path";
 import ts from "typescript";
 import { pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import { parseTsconfig } from "../utils/tsconfig";
 import { serializeDiagnostic, type SerializedDiagnostic } from "./typecheck-serialization";
 
-const logger = createLazyLogger("sd:cli:typecheck-non-pkg");
+const logger = createLogger("sd:cli:typecheck-non-pkg");
 
 export interface NonPackageTypecheckResult {
   success: boolean;

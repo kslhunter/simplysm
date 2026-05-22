@@ -3,11 +3,11 @@ import { html, wait, path } from "@simplysm/core-common";
 import { fetchUrlBytes } from "@simplysm/core-browser";
 import type { ServiceClient } from "@simplysm/service-client";
 import type { AutoUpdateService } from "@simplysm/service-common";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 import semver from "semver";
 import { ApkInstaller } from "./ApkInstaller";
 
-const logger = consola.withTag("capacitor:auto-update");
+const logger = createLogger("capacitor:auto-update");
 
 export abstract class AutoUpdate {
   private static readonly _BUTTON_CSS = `

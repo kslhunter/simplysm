@@ -4,7 +4,7 @@ import os from "os";
 import ts from "typescript";
 import type esbuild from "esbuild";
 import { JavaScriptTransformer, Cache as AngularCache } from "@angular/build/private";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type { AngularSourceFileCache } from "../angular/angular-compiler";
 import type {
   SerializedDiagnostic,
@@ -18,7 +18,7 @@ import { createCachedLoad, type LoadResultCache } from "./load-result-cache";
 import { collectHmrCandidates, HMR_MODIFIED_FILE_LIMIT } from "../angular/hmr-candidates";
 import { transformWorkerPatterns } from "./esbuild-worker-plugin";
 
-const logger = createLazyLogger("sd:cli:angular-plugin");
+const logger = createLogger("sd:cli:angular-plugin");
 
 //#region Types
 

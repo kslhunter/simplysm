@@ -2,9 +2,9 @@ import path from "path";
 import fs from "fs";
 import ts from "typescript";
 import { pathx } from "@simplysm/core-node";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = createLazyLogger("sd:cli:tsconfig");
+const logger = createLogger("sd:cli:tsconfig");
 
 //#region TypecheckEnv
 

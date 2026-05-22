@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { consola } from "consola";
+import { type ConsolaInstance } from "consola";
+import { createLogger } from "@simplysm/core-common";
 import { fsx, pathx, FsWatcher } from "@simplysm/core-node";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -90,7 +91,7 @@ async function copyWithUnlink(
  */
 async function runPostinstall(
   entry: ReplaceDepEntry,
-  logger: ReturnType<typeof consola.withTag>,
+  logger: ConsolaInstance,
 ): Promise<void> {
   const sourcePkgJsonPath = pathx.posix(path.join(entry.resolvedSourcePath, "package.json"));
   try {
@@ -170,7 +171,7 @@ export async function setupReplaceDeps(
   projectRoot: string,
   replaceDeps: Record<string, string>,
 ): Promise<void> {
-  const logger = consola.withTag("sd:cli:replace-deps");
+  const logger = createLogger("sd:cli:replace-deps");
 
   logger.start("replace-deps 설정 중...");
 
@@ -221,7 +222,7 @@ export async function watchReplaceDeps(
   replaceDeps: Record<string, string>,
   options?: { onChanged?: () => void },
 ): Promise<WatchReplaceDepResult> {
-  const logger = consola.withTag("sd:cli:replace-deps:watch");
+  const logger = createLogger("sd:cli:replace-deps:watch");
 
   const entries = await resolveAllReplaceDepEntries(projectRoot, replaceDeps, logger);
 

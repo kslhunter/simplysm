@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 import { watchReplaceDeps } from "../../src/deps/replace-deps/replace-deps";
 import type { WatchReplaceDepResult } from "../../src/deps/replace-deps/replace-deps";
 
@@ -33,7 +33,7 @@ describe("watchReplaceDeps onChanged", () => {
       success: vi.fn(),
       debug: vi.fn(),
     };
-    vi.spyOn(consola, "withTag").mockReturnValue(mockLogger as any);
+    vi.spyOn(coreCommon, "createLogger").mockReturnValue(mockLogger as any);
 
     // 소스 패키지 생성
     const sourcePkg = path.join(tmpDir, "source-pkg");

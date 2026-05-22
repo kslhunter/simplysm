@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 import { fsx, cpx } from "@simplysm/core-node";
 
 // esbuild는 외부 npm으로 ESM namespace immutable이라 vi.mock 유지
@@ -42,14 +42,14 @@ const mockFsxGlob = vi.spyOn(fsx, "glob");
 const mockCpxSpawn = vi.spyOn(cpx, "spawn").mockResolvedValue({ stdout: "", stderr: "", exitCode: 0 });
 vi.spyOn(cpx, "spawnSync").mockReturnValue({ stdout: "", stderr: "", exitCode: 0 });
 
-// consola spy
+// createLogger spy
 const mockLoggerDebug = vi.fn();
 const mockLoggerWarn = vi.fn();
 const mockLoggerInfo = vi.fn();
 const mockLoggerStart = vi.fn();
 const mockLoggerSuccess = vi.fn();
 const mockLoggerError = vi.fn();
-vi.spyOn(consola, "withTag").mockReturnValue({ debug: mockLoggerDebug, warn: mockLoggerWarn, info: mockLoggerInfo, start: mockLoggerStart, success: mockLoggerSuccess, error: mockLoggerError } as any);
+vi.spyOn(coreCommon, "createLogger").mockReturnValue({ debug: mockLoggerDebug, warn: mockLoggerWarn, info: mockLoggerInfo, start: mockLoggerStart, success: mockLoggerSuccess, error: mockLoggerError } as any);
 
 //#endregion
 

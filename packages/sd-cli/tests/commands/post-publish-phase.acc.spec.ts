@@ -13,7 +13,7 @@ function createLogger() {
     debug: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-  } as unknown as ReturnType<typeof import("consola").consola.withTag>;
+  } as unknown as ReturnType<typeof import("@simplysm/core-common").createLogger>;
 }
 
 describe("runPostPublish", () => {

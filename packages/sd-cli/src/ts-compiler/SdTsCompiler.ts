@@ -1,8 +1,8 @@
 import path from "path";
 import { createHash } from "crypto";
 import ts from "typescript";
-import { consola, type ConsolaInstance } from "consola";
-import { SdError } from "@simplysm/core-common";
+import { type ConsolaInstance } from "consola";
+import { SdError, createLogger } from "@simplysm/core-common";
 import { pathx } from "@simplysm/core-node";
 import type { ISdTsCompilerOptions, ISdTsCompilerEmitOptions } from "./sd-ts-compiler-options";
 import type { ISdTsCompilerResult } from "./sd-ts-compiler-result";
@@ -82,11 +82,7 @@ export class SdTsCompiler {
   // ── 크래시 디버깅용 컨텍스트 (compileAsync 내 단계/파일 진입 시 갱신) ──
   private _crashContext?: { stage: string; file?: string };
 
-  // ── Logger ──
-  // NOTE: 모듈 레벨이 아닌 인스턴스 레벨에서 생성해야 한다.
-  // consola.withTag는 호출 시점의 consola.level/reporters를 스냅샷 복사하므로,
-  // setupConsola 이전(모듈 import 시점)에 만들면 debug 레벨이 반영되지 않는다.
-  private readonly _logger: ConsolaInstance = consola.withTag("sd:cli:SdTsCompiler");
+  private readonly _logger: ConsolaInstance = createLogger("sd:cli:SdTsCompiler");
 
   constructor(options: ISdTsCompilerOptions) {
     this._options = options;

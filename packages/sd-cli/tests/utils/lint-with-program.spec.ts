@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { consola } from "consola";
+import * as coreCommon from "@simplysm/core-common";
 
 // eslint은 외부 npm으로 ESM namespace immutable — vi.mock 유지
 const { mockLintFiles, mockLoadFormatter, MockESLintClass } = vi.hoisted(() => {
@@ -25,7 +25,7 @@ const mockLintLogger = {
   error: vi.fn(),
 };
 
-vi.spyOn(consola, "withTag").mockReturnValue(mockLintLogger as any);
+vi.spyOn(coreCommon, "createLogger").mockReturnValue(mockLintLogger as any);
 
 import { LintWithProgramRunner } from "../../src/lint/lint-with-program";
 

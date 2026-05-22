@@ -1,4 +1,4 @@
-import consola from "consola";
+import { createLogger } from "../features/logger";
 
 /**
  * 자동 만료 기능이 있는 Map
@@ -16,7 +16,7 @@ import consola from "consola";
  * }
  */
 export class LazyGcMap<TKey, TValue> {
-  private static readonly _logger = consola.withTag("LazyGcMap");
+  private static readonly _logger = createLogger("LazyGcMap");
 
   // 실제 데이터와 마지막 접근 시간을 함께 저장
   private readonly _map = new Map<TKey, { value: TValue; lastAccess: number }>();

@@ -1,8 +1,8 @@
 import { formatMessagesSync, type PartialMessage } from "esbuild";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 import type { BuildResult } from "../runtime/ResultCollector";
 
-const logger = createLazyLogger("sd:cli:output");
+const logger = createLogger("sd:cli:output");
 
 /**
  * esbuild Message 배열을 포맷된 문자열 배열로 변환한다.

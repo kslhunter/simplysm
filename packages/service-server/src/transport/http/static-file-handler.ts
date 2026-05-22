@@ -1,9 +1,9 @@
 import path from "path";
 import { fsx, pathx } from "@simplysm/core-node";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import consola from "consola";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = consola.withTag("service-server:StaticFileHandler");
+const logger = createLogger("service-server:StaticFileHandler");
 
 export async function handleStaticFile(
   req: FastifyRequest,

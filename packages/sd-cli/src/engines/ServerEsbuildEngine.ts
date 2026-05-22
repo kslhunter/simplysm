@@ -3,9 +3,9 @@ import type { ResultCollector } from "../runtime/ResultCollector";
 import type { RebuildManager } from "../runtime/rebuild-manager";
 import type { BuildOutput, EngineResult, ServerPackageInfo } from "./types";
 import { BaseEngine, type CommonBuildWorkerModule } from "./BaseEngine";
-import { createLazyLogger } from "../runtime/lazy-logger";
+import { createLogger } from "@simplysm/core-common";
 
-const logger = createLazyLogger("sd:cli:engine:server");
+const logger = createLogger("sd:cli:engine:server");
 
 /**
  * ServerEsbuildEngine 옵션
