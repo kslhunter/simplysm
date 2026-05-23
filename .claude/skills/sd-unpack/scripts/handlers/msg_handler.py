@@ -111,6 +111,17 @@ def run(input_path: Path, out_dir: Path) -> None:
             size = dst.stat().st_size
             if cid:
                 cid_map[cid] = dst.name
+
+            # TNEF (winmail.dat) 풀이 — Outlook 첨부 패키지 안 내부 첨부 추출
+            for tnef_ap in _common.unpack_tnef(dst, attachments_dir):
+                t_size = tnef_ap.stat().st_size
+                t_recursed = maybe_recurse_attachment(tnef_ap, attachments_dir)
+                if t_recursed is not None:
+                    os.unlink(_common.long_str(tnef_ap))
+                    attachment_links.append(f"attachments/{t_recursed.name}/ ({_common.format_size(t_size)})")
+                else:
+                    attachment_links.append(f"attachments/{tnef_ap.name} ({_common.format_size(t_size)})")
+
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
                 os.unlink(_common.long_str(dst))

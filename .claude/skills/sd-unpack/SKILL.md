@@ -49,10 +49,10 @@ meeting_eml/
     embedded_xlsx/
       README.md
       _source.xlsx
-      workbook.meta.json     ← defined names 등 (있을 때)
+      workbook.meta.json     ← defined names·sheet_code_map (있을 때)
       sheets/
-        01_Sheet1.png
-        01_Sheet1.jsonl
+        01_Sheet1.png        ← 시각 (서식·바탕색·border 모두)
+        01_Sheet1.jsonl      ← 분석 데이터 (값·number_format·수식·merges 등)
 ```
 
 형식별 산출물 매트릭스:
@@ -61,7 +61,7 @@ meeting_eml/
 |---|---|---|---|
 | pptx/ppt | `slides/<idx>_<title>.png` | `slides/<idx>_<title>.jsonl` (슬라이드별 노드) | `charts/*.data.json`, `images/`, `attachments/`, `macros/` |
 | docx/doc | `pages/<NNN>.png` (시각 검증용) | `content.jsonl` (단일 시퀀스), `pages.meta.json` (PNG↔노드 매핑) | `images/`, `attachments/`, `macros/` |
-| xlsx/xlsb/xls | `sheets/<idx>_<name>.png` | `sheets/<idx>_<name>.jsonl` (값·수식·시트 메타 통합), `workbook.meta.json` | `charts/*.data.json`, `images/<sheet>_<cell>`, `attachments/`, `macros/` |
+| xlsx/xlsb/xls | `sheets/<idx>_<name>.png` (일반 시트만) | `sheets/<idx>_<name>.jsonl` (값·수식·시트 메타), `workbook.meta.json` | `charts/sheet<idx>_chart*.data.json` (일반 시트 안 차트 + Chartsheet 의 차트), `images/<sheet>_<cell>`, `attachments/`, `macros/` |
 | pdf | `pages/<NNN>.png` | `pages/<NNN>.jsonl` (블록 bbox + 표 셀 단위) | `images/p<NNN>_b<bid>.<ext>`, `attachments/` (PDF 임베드) |
 | eml/msg | — | `body.md` (평문 본문), `headers.json`, `images.rels.json` | `body.html` (원본), `attachments/` (컨테이너면 재귀) |
 
@@ -78,11 +78,14 @@ meeting_eml/
 
 ## xlsx jsonl 규약
 
-시트별 `.jsonl`. 좌표 명시로 위치 셈 오차 차단.
+시트별 `.jsonl` — 분석 핵심 (값·number_format·수식·merges·hyperlinks·comments). 시각 표시 (바탕색·border·폰트)·frozen·dims 는 미보존 (PNG 가 시각 보조, 필요 시 `_source.xlsx` 직접 추출).
 
-- 첫 줄: `{"_meta":{"dims":[행수,열수], "merges":["A1:C1",...], "frozen":"A4", "hyperlinks":{"D5":"http://..."}, "comments":{"E3":"메모"}, "number_formats":{"H4":"#,##0", "E1":"yyyy-mm-dd"}}}`
-  - 비어있는 메타 키는 생략
-  - `number_formats`: General(기본) 외 셀의 표시 형식 (통화·날짜·% 등)
+- 첫 줄: `{"_meta":{"merges":["A1:C1",...], "number_formats":{"E1":"yyyy-mm-dd",...}, "hyperlinks":{"D5":"http://..."}, "comments":{"E3":"메모"}}}`
+  - `merges`: 머지된 셀 영역 (셀 좌표 해석에 필수 — 머지 영역 안 빈 셀 오해 차단)
+  - `number_formats`: General(기본) 외 셀 표시 형식 — Date·통화·% 등 셀 값 의미 단서
+  - `hyperlinks`: 셀 URL (URL 자체가 셀 정보)
+  - `comments`: 셀 메모
+  - 비어있는 메타 키는 생략 (모두 비면 `{"_meta":{}}`)
 - 데이터 줄: `{"r":11, "A":"P001", "I":7800, "J":12.5, "_f":{"I":"=SUM(...)", "J":"=I11*1.5"}}`
   - `r`: 1-based 행번호 (Excel 동일)
   - 열문자 키 (`A`·`B`·...·`AA`·...): 셀 값. 빈 셀은 키 생략
@@ -90,8 +93,22 @@ meeting_eml/
 - 빈 행도 `{"r":N}` 한 줄 유지 → Read offset = 행번호 (오프바이원 차단)
 - 값 타입: JSON 네이티브 (`int`·`float`·`bool`·`str`), datetime 은 ISO 8601 문자열
 
-워크북 단위 메타 (시트 외) 는 `workbook.meta.json`:
+### Chartsheet (시트 자체가 차트)
+
+xlsx 안 시트는 일반 Worksheet 외에 **Chartsheet** (셀 없이 차트 1개) 도 있을 수 있음.
+
+- Chartsheet 는 `sheets/<idx>_<name>.jsonl` 미생성 (셀 없음)
+- Chartsheet 의 차트 데이터: `charts/sheet<idx>_chart.data.json`
+- README sheet_summaries 에 `(chart sheet — "...")` 명시
+- 일반 시트·Chartsheet 통합 시트 순서 (idx) 대로 보존
+
+### 워크북 단위 `workbook.meta.json`
+
+시트 외 워크북 공통 정보 (있을 때만 생성):
+
 - `defined_names`: `{"이름":["'Sheet1'!$A$1:$C$10", ...]}` (다중 destination 시 list 다수 항목)
+- `sheet_code_map`: `{"Sheet1":"BOA", ...}` (VBA codeName → raw 시트명. 매크로 모듈 파일명과 매칭용)
+- `pivots`: pivot table 정의 list. 각 항목 `{name, source, location, rowFields, colFields, pageFields, dataFields}`. 결과 셀은 시트별 jsonl 에 일반 셀로 들어감
 
 ## pptx jsonl 규약
 
@@ -146,15 +163,17 @@ paragraph 안 hyperlink 가 있으면 `hyperlinks`: `[{"text":"...", "url":"..."
 
 페이지별 `pages/<NNN>.jsonl`. PDF 페이지는 원본 단위.
 
-- 첫 줄: `{"_meta":{"page":N, "size":[w,h], "blocks":B, "tables":T, "table_cells":C}}`
+- 첫 줄: `{"_meta":{"page":N, "size":[w,h], "blocks":B, "tables":T, "table_cells":C, "form_fields":F, "annotations":A}}`
 - 노드 줄:
   - `text_block`: `{"page":N, "block":B, "type":"text_block", "bbox":[x0,y0,x1,y1], "text":"..."}`
   - `image_block`: `{"page":N, "block":B, "type":"image_block", "bbox":[...], "ref":"images/p001_b03.png"}`
   - `table_cell`: `{"page":N, "type":"table_cell", "table_idx":T, "table_bbox":[...], "row":R, "col":C, "text":"..."}`
+  - `form_field`: `{"page":N, "type":"form_field", "name":"...", "field_type":"text", "value":"...", "bbox":[...]}` (PDF 양식 입력란)
+  - `annotation`: `{"page":N, "type":"annotation", "subtype":"Highlight", "bbox":[...], "content":"...", "author":"..."}` (주석·highlight·sticky note)
 - 모든 블록 보존 (표 영역과 겹쳐도 skip 안 함) — find_tables 정확도 100% 가정 시 정보 손실 위험 회피. text_block·image_block·table_cell 노드가 동일 영역에 중복 출력될 수 있음. Claude 가 양쪽 비교 판단
-- bbox 는 PDF 기준 좌표 (left-top, pt 단위, 소수점 2자리)
+- bbox 는 PDF 기준 좌표 (left-top, pt 단위, raw float)
 
-heading 추출은 미적용 (PDF 는 style 정보 없음). 필요 시 본문 grep 으로 패턴 검출.
+heading 추출은 미적용 (PDF 는 style 정보 없음). OCR 미적용 (스캔 PDF 는 image_block 만 추출).
 
 ## 인라인 이미지 매핑 (eml/msg)
 
@@ -165,6 +184,12 @@ heading 추출은 미적용 (PDF 는 style 정보 없음). 필요 시 본문 gre
   - text/plain 만 있을 때 → `body.md` 자체가 변환본 → placeholder 포함
   - text/plain·HTML 둘 다 있을 때 → `body.md` 는 plain (placeholder 없음), `body.from_html.md` 가 변환본 (placeholder 포함)
 - 인라인 이미지 없으면 `images.rels.json` 미생성
+
+## TNEF (winmail.dat) 풀이
+
+Outlook RTF 메일이 첨부를 `winmail.dat` 단일 binary (TNEF 형식) 로 패키징한 경우, `tnefparse` 로 내부 첨부 추출하여 `attachments/` 에 같이 풀어 둠. 원본 `winmail.dat` 도 유지 (원본 보존).
+
+내부 첨부도 컨테이너 (xlsx·pptx 등) 면 재귀 풀이 (다른 첨부와 동일).
 
 ## eml/msg 본문 규약
 
@@ -183,8 +208,8 @@ heading 추출은 미적용 (PDF 는 style 정보 없음). 필요 시 본문 gre
 ## xlsb 클린업
 
 - legacy → xlsx 변환 시 `_converted.xlsx` 는 임시 폴더에서만 처리 (산출 폴더에 미잔존)
-- VBA 매크로 파일 첫 줄에 시트 객체명↔raw 시트명 매핑 코멘트 추가
-  - 예: `Sheet1.vba` 첫 줄 `' (object: Sheet1, sheet: "BOA")`
+- VBA 매크로는 원본 코드 그대로 `macros/<모듈명>.vba` 저장 (변형 X)
+- VBA 시트 객체명↔raw 시트명 매핑은 `workbook.meta.json` 의 `sheet_code_map` 키 (예: `{"Sheet1":"BOA","Sheet3":"Mapping"}`)
 
 ## 산출물 사용
 

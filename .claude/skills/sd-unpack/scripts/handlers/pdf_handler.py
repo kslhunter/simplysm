@@ -36,6 +36,10 @@ def run(input_path: Path, out_dir: Path) -> None:
             ]
             if counts["tables"]:
                 parts.append(f"tables {counts['tables']} (cells {counts['table_cells']})")
+            if counts["form_fields"]:
+                parts.append(f"form_fields {counts['form_fields']}")
+            if counts["annotations"]:
+                parts.append(f"annotations {counts['annotations']}")
             page_summaries.append(" — ".join([parts[0], ", ".join(parts[1:])]))
 
         # 임베드된 첨부 (embedded files)
@@ -82,8 +86,17 @@ def _pdf_page_to_jsonl(
     추출:
     1. get_text("dict") 의 모든 블록 (text_block·image_block) — 표 영역 겹쳐도 그대로 보존
     2. find_tables() 로 표 셀 단위 노드 추가 (블록과 중복 가능, Claude 가 양쪽 비교 판단)
+    3. page.widgets() 로 form field 노드 (양식 입력란)
+    4. page.annots() 로 annotation 노드 (주석·highlight·sticky note)
     """
-    counts = {"text_blocks": 0, "image_blocks": 0, "tables": 0, "table_cells": 0}
+    counts = {
+        "text_blocks": 0,
+        "image_blocks": 0,
+        "tables": 0,
+        "table_cells": 0,
+        "form_fields": 0,
+        "annotations": 0,
+    }
 
     # 블록 추출 (모든 블록 보존)
     page_dict = page.get_text("dict")
@@ -100,16 +113,13 @@ def _pdf_page_to_jsonl(
             for line in blk.get("lines", []):
                 spans = line.get("spans", [])
                 line_text = "".join(span.get("text", "") for span in spans)
-                if line_text.strip():
-                    text_lines.append(line_text)
-            text = "\n".join(text_lines).strip()
-            if not text:
-                continue
+                text_lines.append(line_text)
+            text = "\n".join(text_lines)
             node_lines.append({
                 "page": page_num,
                 "block": block_idx,
                 "type": "text_block",
-                "bbox": [round(c, 2) for c in bbox],
+                "bbox": list(bbox),
                 "text": text,
             })
             counts["text_blocks"] += 1
@@ -127,7 +137,7 @@ def _pdf_page_to_jsonl(
                 "page": page_num,
                 "block": block_idx,
                 "type": "image_block",
-                "bbox": [round(c, 2) for c in bbox],
+                "bbox": list(bbox),
                 "ref": ref,
             })
             counts["image_blocks"] += 1
@@ -159,17 +169,75 @@ def _pdf_page_to_jsonl(
                     "table_bbox": t_bbox,
                     "row": r_idx,
                     "col": c_idx,
-                    "text": str(cell_text).strip(),
+                    "text": str(cell_text),
                 })
                 counts["table_cells"] += 1
+
+    # form fields (양식 입력란)
+    try:
+        widgets = page.widgets() or []
+        for widget in widgets:
+            try:
+                rect = list(widget.rect)
+            except Exception:
+                rect = [0, 0, 0, 0]
+            value = widget.field_value
+            if value is None:
+                value = ""
+            field_type = widget.field_type_string or str(widget.field_type)
+            name = widget.field_name or ""
+            node_lines.append({
+                "page": page_num,
+                "type": "form_field",
+                "name": name,
+                "field_type": field_type,
+                "value": str(value),
+                "bbox": rect,
+            })
+            counts["form_fields"] += 1
+    except Exception:
+        pass
+
+    # annotations (주석·highlight·sticky note 등)
+    try:
+        annots = page.annots() or []
+        for annot in annots:
+            try:
+                rect = list(annot.rect)
+            except Exception:
+                rect = [0, 0, 0, 0]
+            atype = annot.type
+            subtype = atype[1] if isinstance(atype, (tuple, list)) and len(atype) > 1 else str(atype)
+            info = annot.info or {}
+            node = {
+                "page": page_num,
+                "type": "annotation",
+                "subtype": subtype,
+                "bbox": rect,
+            }
+            content = info.get("content")
+            if content:
+                node["content"] = content
+            author = info.get("title")  # info["title"] = author
+            if author:
+                node["author"] = author
+            subject = info.get("subject")
+            if subject:
+                node["subject"] = subject
+            node_lines.append(node)
+            counts["annotations"] += 1
+    except Exception:
+        pass
 
     meta = {
         "_meta": {
             "page": page_num,
-            "size": [round(page.rect.width, 2), round(page.rect.height, 2)],
+            "size": [page.rect.width, page.rect.height],
             "blocks": counts["text_blocks"] + counts["image_blocks"],
             "tables": counts["tables"],
             "table_cells": counts["table_cells"],
+            "form_fields": counts["form_fields"],
+            "annotations": counts["annotations"],
         }
     }
     lines = [json.dumps(meta, ensure_ascii=False)]

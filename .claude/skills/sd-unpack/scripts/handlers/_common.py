@@ -160,6 +160,65 @@ def temp_workdir():
         shutil.rmtree(d, ignore_errors=True)
 
 
+def is_tnef(path: Path) -> bool:
+    """TNEF (winmail.dat) 형식인지 검사. filename 또는 magic bytes."""
+    if path.name.lower() in ("winmail.dat", "win.dat"):
+        return True
+    try:
+        with open(long_str(path), "rb") as f:
+            magic = f.read(4)
+        return magic == b"\x78\x9f\x3e\x22"
+    except Exception:
+        return False
+
+
+def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
+    """TNEF (winmail.dat) 내부 첨부 추출. 추출된 path list 반환.
+
+    TNEF 아니거나 실패 시 빈 list. 원본 winmail.dat 은 유지 (원본 보존).
+    """
+    if not is_tnef(path):
+        return []
+    ensure_pip("tnefparse")
+    try:
+        from tnefparse import TNEF
+        with open(long_str(path), "rb") as f:
+            t = TNEF(f.read())
+    except Exception:
+        return []
+
+    saved: list[Path] = []
+    for att in getattr(t, "attachments", []):
+        try:
+            name = None
+            lf = getattr(att, "long_filename", None)
+            if callable(lf):
+                try:
+                    name = lf()
+                except Exception:
+                    name = None
+            if not name:
+                name = getattr(att, "name", None)
+            if isinstance(name, bytes):
+                try:
+                    name = name.decode("utf-8")
+                except UnicodeDecodeError:
+                    name = name.decode("cp949", errors="replace")
+            if not name:
+                name = "tnef_attachment.bin"
+            data = att.data
+            if not data:
+                continue
+        except Exception:
+            continue
+        if not isinstance(name, str):
+            name = "tnef_attachment.bin"
+        dst = unique_path(attachments_dir, name)
+        write_bytes(dst, data)
+        saved.append(dst)
+    return saved
+
+
 def save_source(input_path: Path, out_dir: Path) -> None:
     ext = input_path.suffix.lstrip(".")
     dst = out_dir / f"_source.{ext}"

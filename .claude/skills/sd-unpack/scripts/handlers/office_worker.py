@@ -106,8 +106,9 @@ def cmd_ppt_png(args) -> None:
                     if i - 1 < len(slide_titles):
                         idx, safe_title = slide_titles[i - 1]
                     else:
-                        idx, safe_title = f"{i:02d}", f"슬라이드{i}"
-                    out_png = out_dir / f"{idx}_{safe_title}.png"
+                        idx, safe_title = f"{i:02d}", ""
+                    stem = f"{idx}_{safe_title}" if safe_title else idx
+                    out_png = out_dir / f"{stem}.png"
                     slide.Export(short_str(out_png), "PNG", width_px, height_px)
             finally:
                 pres.Close()

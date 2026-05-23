@@ -136,6 +136,13 @@ def run(input_path: Path, out_dir: Path) -> None:
             json.dumps(rels, ensure_ascii=False, indent=2),
         )
 
+    # TNEF (winmail.dat) 풀이 — Outlook RTF 메일의 첨부 패키지 안 내부 첨부 추출
+    tnef_saved: list[Path] = []
+    for ap in saved_attachments:
+        extra = _common.unpack_tnef(ap, attachments_dir)
+        tnef_saved.extend(extra)
+    saved_attachments.extend(tnef_saved)
+
     attachment_links: list[str] = []
     for ap in saved_attachments:
         size = ap.stat().st_size

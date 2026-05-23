@@ -51,6 +51,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.playwright-cli" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.tasks" />
+      <excludeFolder url="file://$MODULE_DIR$/.playwright" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

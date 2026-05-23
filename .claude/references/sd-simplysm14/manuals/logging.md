@@ -53,7 +53,7 @@ console.error("[X] 실패:", err);
 
 - **해결**: `createLogger(tag)` 사용 (`@simplysm/core-common`, 내부 구현은 lazy Proxy — 첫 메서드 접근 시점까지 `withTag` 생성을 지연).
 - 모든 환경(Node·브라우저·Capacitor)에서 위치(모듈 레벨·함수 내부·class field)에 관계없이 `createLogger` 로 통일.
-- `consola.withTag()` 직접 호출 금지.
+- `consola.withTag()` 직접 호출 금지. 발견 시 **`createLogger` 로의 코드 교체가 무조건 의무**. tag 인자 유지·재선정 여부는 그 후의 부수 결정이며, "tag 그대로 쓸 수 있다" 같은 판단으로 *교체 행위 자체* 를 생략 금지.
 
 ## 예외 — `eslint-disable no-console` 가 정당화되는 자리
 

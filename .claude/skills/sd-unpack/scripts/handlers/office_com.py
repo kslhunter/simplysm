@@ -224,7 +224,7 @@ def _docx_extract_nodes(input_path: Path) -> tuple[list[dict], dict[str, int]]:
                     if vm == "continue":
                         # vMerge continue cell — origin 의 rowspan 영역. skip.
                         continue
-                    cell_text = (cell.text or "").strip()
+                    cell_text = cell.text or ""  # 원본 그대로 (strip X)
                     colspan = _docx_cell_colspan(cell)
                     cell_node = {
                         "node": node_idx,
@@ -414,13 +414,13 @@ def _run_pptx(
     slide_summaries: list[str] = []
     slide_has_notes: dict[str, bool] = {}
     slide_charts: dict[str, list[str]] = {}  # idx -> chart filenames
-    slide_cores: dict[str, str] = {}  # idx -> 핵심 텍스트 (title 또는 첫 텍스트)
 
     _common.mkdir(slides_dir)
     for i, slide in enumerate(prs.slides, start=1):
         idx = f"{i:02d}"
         title = _pptx_slide_title(slide)
-        safe_title = _common.slugify_filename(title or f"슬라이드{i}", max_len=40)
+        # title 없으면 idx 만 (자체 한국어 라벨 부착 X)
+        safe_title = _common.slugify_filename(title, max_len=40) if title else ""
         slide_titles.append((idx, safe_title))
 
         nodes, chart_refs = _pptx_extract_slide_nodes(
@@ -440,41 +440,37 @@ def _run_pptx(
         lines = [json.dumps(meta, ensure_ascii=False, default=_json_default)]
         for n in nodes:
             lines.append(json.dumps(n, ensure_ascii=False, default=_json_default))
-        _common.write_text(slides_dir / f"{idx}_{safe_title}.jsonl", "\n".join(lines))
+        stem = _pptx_slide_stem(idx, safe_title)
+        _common.write_text(slides_dir / f"{stem}.jsonl", "\n".join(lines))
 
         if chart_refs:
             slide_charts[idx] = chart_refs
 
         if slide.has_notes_slide:
             notes_text = slide.notes_slide.notes_text_frame.text or ""
-            if notes_text.strip():
+            if notes_text:
                 _common.write_text(
-                    slides_dir / f"{idx}_{safe_title}.notes.md",
+                    slides_dir / f"{stem}.notes.md",
                     notes_text,
                 )
                 slide_has_notes[idx] = True
 
-        core = title or _pptx_first_text(nodes)
-        if core:
-            slide_cores[idx] = core[:60]
-
-        parts = [f"`slides/{idx}_{safe_title}.png`", "`.jsonl`"]
+        parts = [f"`slides/{stem}.png`", "`.jsonl`"]
         if slide_has_notes.get(idx):
             parts.append("`.notes.md`")
         if chart_refs:
             chart_str = ", ".join(f"`charts/{c}`" for c in chart_refs)
             parts.append(f"(차트: {chart_str})")
-        if slide_cores.get(idx):
-            parts.append(f"— {slide_cores[idx]}")
         slide_summaries.append(" ".join(parts))
 
     # COM PowerPoint 의 Slide.Export 로 슬라이드별 PNG 직접 출력. 임시 폴더에서 만든 후 long-path-safe copy.
     with _common.com_lock(), _common.temp_workdir() as tmp:
         _powerpoint_export_slides(input_path, tmp, slide_titles)
         for idx, safe_title in slide_titles:
-            tmp_png = tmp / f"{idx}_{safe_title}.png"
+            stem = _pptx_slide_stem(idx, safe_title)
+            tmp_png = tmp / f"{stem}.png"
             if tmp_png.exists():
-                _common.copy(tmp_png, slides_dir / f"{idx}_{safe_title}.png")
+                _common.copy(tmp_png, slides_dir / f"{stem}.png")
 
     # pptx 의 시각은 슬라이드 PNG 에 모두 포함 → ZIP media 전체 복제 skip
     # (개별 picture shape 은 _pptx_extract_slide_nodes 에서 image ref 와 함께 저장됨).
@@ -509,23 +505,19 @@ def _run_pptx(
     )
 
 
+def _pptx_slide_stem(idx: str, safe_title: str) -> str:
+    """슬라이드 파일 stem. safe_title 빈 문자열이면 idx 만 (자체 라벨 부착 X)."""
+    return f"{idx}_{safe_title}" if safe_title else idx
+
+
 def _pptx_slide_title(slide) -> str:
-    """슬라이드 title placeholder 텍스트. 없으면 빈 문자열."""
+    """슬라이드 title placeholder 텍스트. 없으면 빈 문자열. 원본 그대로 (strip X)."""
     try:
         title_shape = slide.shapes.title
         if title_shape is not None and title_shape.text:
-            return title_shape.text.strip()
+            return title_shape.text
     except (AttributeError, ValueError):
         pass
-    return ""
-
-
-def _pptx_first_text(nodes: list[dict]) -> str:
-    """노드 리스트 중 첫 비어있지 않은 text. 없으면 빈 문자열."""
-    for n in nodes:
-        t = (n.get("text") or "").strip()
-        if t:
-            return t
     return ""
 
 
@@ -568,7 +560,7 @@ def _pptx_extract_slide_nodes(
                 table_idx = shape_idx + 1
                 for r_idx, row in enumerate(table.rows, start=1):
                     for c_idx, cell in enumerate(row.cells, start=1):
-                        cell_text = (cell.text or "").strip()
+                        cell_text = cell.text or ""  # 원본 그대로 (strip X)
                         nodes.append({
                             **common,
                             "type": "table_cell",
@@ -724,7 +716,8 @@ def _run_xlsx(
     sheets_dir = out_dir / "sheets"
     charts_dir = out_dir / "charts"
     sheet_summaries: list[str] = []
-    sheet_names: list[tuple[str, str, str]] = []  # (idx, safe_name, raw_name)
+    sheet_names: list[tuple[str, str, str]] = []  # (idx, safe_name, raw_name) — 일반 Worksheet
+    chart_sheet_names: list[tuple[str, str, str]] = []  # (idx, safe_name, raw_name) — Chartsheet
     sheet_charts: dict[str, list[str]] = {}  # idx -> chart filenames
     sheet_formula_count: dict[str, int] = {}
     sheet_dims: dict[str, tuple[int, int]] = {}
@@ -733,16 +726,20 @@ def _run_xlsx(
     wb_formulas = load_workbook(_common.long_str(input_path), data_only=False)
     try:
         _common.mkdir(sheets_dir)
-        # openpyxl 의 sheetnames 는 chart sheet 도 포함하지만 COM Worksheets() 는 일반 시트만.
-        # 양쪽 인덱스 mismatch 피하려면 일반 Worksheet 만 처리하고, lookup 은 raw name 으로.
+        # openpyxl 의 sheetnames 는 일반 Worksheet 와 Chartsheet 둘 다 포함.
+        # 시트 순서 그대로 idx 통합 부여 (사용자 워크북 순서 보존).
+        # 일반 Worksheet 만 COM Excel PNG export 대상, Chartsheet 는 차트 데이터만 추출.
         idx_counter = 0
         for name in wb_values.sheetnames:
-            if not isinstance(wb_values[name], Worksheet):
-                continue
+            obj = wb_values[name]
             idx_counter += 1
             idx = f"{idx_counter:02d}"
             safe_name = _common.slugify_filename(name, max_len=40)
-            sheet_names.append((idx, safe_name, name))
+            if isinstance(obj, Worksheet):
+                sheet_names.append((idx, safe_name, name))
+            else:
+                # Chartsheet 등 비-worksheet
+                chart_sheet_names.append((idx, safe_name, name))
 
         # COM Excel 호출: 데이터 영역 → ChartObject + Range.CopyPicture → 시트별 PNG.
         # 시트별 (last_row, last_col) 도 같이 반환되어 .jsonl 이 같은 데이터 영역으로 통일됨.
@@ -772,20 +769,56 @@ def _run_xlsx(
                 )
                 sheet_charts.setdefault(idx, []).append(chart_filename)
 
-        # 워크북 단위 메타 (defined names 등) — 시트 jsonl 외부 분리.
-        wb_meta = _workbook_meta(wb_formulas)
-        if wb_meta:
-            _common.write_text(
-                out_dir / "workbook.meta.json",
-                json.dumps(wb_meta, ensure_ascii=False, indent=2),
-            )
+        # Chartsheet 처리: 차트 데이터를 charts/sheet<idx>_chart.data.json 으로 저장
+        chart_sheet_chart_files: dict[str, str] = {}  # idx -> chart filename
+        for idx, safe_name, raw_name in chart_sheet_names:
+            cs = wb_formulas[raw_name]
+            chart = None
+            # Chartsheet.charts 또는 _charts 속성 (openpyxl 버전 따라 다름)
+            for attr in ("charts", "_charts"):
+                v = getattr(cs, attr, None)
+                if v:
+                    if hasattr(v, "__iter__"):
+                        try:
+                            chart = next(iter(v), None)
+                        except Exception:
+                            chart = None
+                    else:
+                        chart = v
+                    if chart is not None:
+                        break
+            if chart is None:
+                # 단일 chart 속성 fallback
+                chart = getattr(cs, "chart", None)
+            if chart is not None:
+                try:
+                    data = _extract_openpyxl_chart_data(chart)
+                except Exception:
+                    data = None
+                if data is not None:
+                    _common.mkdir(charts_dir)
+                    chart_filename = f"sheet{idx}_chart.data.json"
+                    _common.write_text(
+                        charts_dir / chart_filename,
+                        json.dumps(data, ensure_ascii=False, indent=2),
+                    )
+                    chart_sheet_chart_files[idx] = chart_filename
 
+        # 워크북 단위 메타 (defined names·pivots·sheet codeName 등) — 시트 jsonl 외부 분리.
+        wb_meta = _workbook_meta(wb_formulas, input_path)
         # VBA 시트 객체명 ↔ raw 시트명 매핑 (시트 codeName 기반)
         sheet_code_map: dict[str, str] = {}
         for ws in wb_formulas.worksheets:
             code = getattr(ws.sheet_properties, "codeName", None)
             if code:
                 sheet_code_map[code] = ws.title
+        if sheet_code_map:
+            wb_meta["sheet_code_map"] = sheet_code_map
+        if wb_meta:
+            _common.write_text(
+                out_dir / "workbook.meta.json",
+                json.dumps(wb_meta, ensure_ascii=False, indent=2),
+            )
     finally:
         wb_values.close()
         wb_formulas.close()
@@ -800,7 +833,8 @@ def _run_xlsx(
         embed_zip_prefix="xl/embeddings/",
     )
 
-    # 시트별 산출물 풀목록 (모든 시트 처리 끝난 뒤 sheet_images 매핑까지 합쳐서)
+    # 시트별 산출물 풀목록 — 일반 시트 + chart sheet 통합, 시트 순서 (idx) 대로
+    sheet_summary_map: dict[str, str] = {}
     for idx, safe_name, raw_name in sheet_names:
         last_row, last_col = sheet_dims.get(idx, (0, 0))
         formula_n = sheet_formula_count.get(idx, 0)
@@ -821,12 +855,21 @@ def _run_xlsx(
         if formula_n:
             meta += f", 수식 {formula_n}개"
         meta += ")"
-        sheet_summaries.append(" ".join(parts) + " " + meta)
+        sheet_summary_map[idx] = " ".join(parts) + " " + meta
+
+    for idx, safe_name, raw_name in chart_sheet_names:
+        chart_filename = chart_sheet_chart_files.get(idx)
+        if chart_filename:
+            sheet_summary_map[idx] = f"`charts/{chart_filename}` (chart sheet — \"{raw_name}\")"
+        else:
+            sheet_summary_map[idx] = f"(chart sheet — \"{raw_name}\", 차트 데이터 추출 실패)"
+
+    # idx 순서대로 통합
+    for idx in sorted(sheet_summary_map.keys()):
+        sheet_summaries.append(sheet_summary_map[idx])
 
     source_name, source_size = _source_meta(input_path, out_dir, source_name_override)
-    macro_modules = _extract_macros(
-        _source_path(out_dir, source_name), out_dir, sheet_code_map=sheet_code_map,
-    )
+    macro_modules = _extract_macros(_source_path(out_dir, source_name), out_dir)
 
     sections: dict[str, list[str]] = {}
     if sheet_summaries:
@@ -840,9 +883,9 @@ def _run_xlsx(
         source_size=source_size,
         tool=("openpyxl + COM Excel + ZIP " + tool_extra).strip(),
         loss_notes=(
-            "셀 서식·조건부 서식·데이터 검증 규칙은 미보존. "
-            "시각은 시트별 PNG, 데이터·수식·시트 메타는 시트별 .jsonl 한 줄=한 행(좌표 명시), "
-            "워크북 단위 메타(defined names 등)는 workbook.meta.json."
+            "셀 서식(바탕색·border·폰트)·frozen·dims 미보존 (필요 시 _source.xlsx 직접 추출). "
+            "시각은 시트별 PNG, 분석 데이터(셀값·number_format·수식·merges·hyperlinks·comments) 는 "
+            "시트별 .jsonl 한 줄=한 행(좌표 명시), 워크북 단위 메타(defined names 등) 는 workbook.meta.json."
         ),
         sections=sections or None,
         attachments=attachment_links,
@@ -1002,18 +1045,13 @@ def _source_path(out_dir: Path, source_name: str) -> Path:
     return out_dir / f"_source.{ext}"
 
 
-def _extract_macros(
-    input_path: Path,
-    out_dir: Path,
-    sheet_code_map: Optional[dict[str, str]] = None,
-) -> list[str]:
-    """OLE/OOXML 파일에서 VBA 매크로 추출. macros/<모듈명>.vba 로 저장.
+def _extract_macros(input_path: Path, out_dir: Path) -> list[str]:
+    """OLE/OOXML 파일에서 VBA 매크로 추출. macros/<모듈명>.vba 로 저장 (원본 코드 그대로).
 
     추출된 모듈 파일명 list 반환 (예: ["Module1.vba", "ThisWorkbook.vba"]).
     매크로 없으면 빈 list.
 
-    sheet_code_map: VBA 시트 객체 codeName → raw 시트명 (예: {"Sheet1": "BOA"}).
-    매크로 파일 첫 줄에 코멘트로 매핑 정보 prepend (시트 모듈만).
+    시트 객체명↔raw 시트명 매핑은 호출자(_run_xlsx)가 workbook.meta.json 에 별도 보관.
     """
     _common.ensure_pip("oletools")
     from oletools.olevba import VBA_Parser
@@ -1028,11 +1066,8 @@ def _extract_macros(
         for (_filename, stream_path, vba_filename, vba_code) in parser.extract_macros():
             module_name = vba_filename or stream_path or "module"
             stem = Path(module_name).stem or "module"
-            prefix = ""
-            if sheet_code_map and stem in sheet_code_map:
-                prefix = f'\' (object: {stem}, sheet: "{sheet_code_map[stem]}")\n\n'
             dst = _common.unique_path(macros_dir, f"{stem}.vba")
-            _common.write_text(dst, prefix + (vba_code or ""))
+            _common.write_text(dst, vba_code or "")
             module_files.append(dst.name)
         return module_files
     finally:
@@ -1153,34 +1188,38 @@ def _json_default(obj: Any) -> str:
     raise TypeError(f"not JSON serializable: {type(obj).__name__}")
 
 
-def _sheet_to_jsonl(ws_v, ws_f, last_row: int, last_col: int) -> tuple[list[str], int]:
-    """openpyxl Worksheet 의 (1,1)~(last_row,last_col) 범위를 행 단위 JSONL 라인으로.
+def _sheet_to_jsonl(
+    ws_v, ws_f, last_row: int, last_col: int,
+) -> tuple[list[str], int]:
+    """openpyxl Worksheet 의 (1,1)~(last_row,last_col) → 행 단위 JSONL.
 
-    한 줄 = 한 행. 빈 셀 키 생략. 좌표는 `r`(1-based 행번호) + 열문자 키(`A`·`B`·...·`AA`·...).
-    같은 행 수식은 `_f` 맵 (열문자 → 수식문자열). 빈 행도 `{"r":N}` 한 줄 유지 → Read offset = 행번호.
-    첫 줄은 `{"_meta":{...}}` (시트 dims·merges·frozen·hyperlinks·comments).
-    값 타입은 JSON 네이티브(int·float·bool) + datetime ISO 8601.
+    분석 핵심: 데이터·number_format·수식. 시각 표시(바탕색·border·폰트·frozen)·dims 는 미보존
+    (필요 시 Claude 가 _source.xlsx 직접 추출).
+
+    데이터 jsonl (한 줄=한 행. 빈 셀 키 생략):
+    - 첫 줄: `{"_meta":{"merges":[...], "number_formats":{...}, "hyperlinks":{...}, "comments":{...}}}`
+      - merges: 셀 좌표 해석 필수 (머지 영역 안 빈 셀 오해 차단)
+      - number_formats: Date·통화·% 등 셀 값 의미 단서
+      - hyperlinks·comments: 셀 부가 정보
+      - 비어있는 키는 생략
+    - 데이터 줄: `{"r":N, "<col>":value, ..., "_f":{<col>:formula}}`
+    - 빈 행도 `{"r":N}` 한 줄 유지
 
     반환: (lines, formula_count)
     """
     from openpyxl.utils import get_column_letter
 
     if last_row < 1 or last_col < 1:
-        meta = {"_meta": {"dims": [0, 0]}}
-        return [json.dumps(meta, ensure_ascii=False)], 0
+        return [json.dumps({"_meta": {}}, ensure_ascii=False)], 0
 
-    # 메타 수집: 머지·frozen·hyperlinks·comments
-    meta: dict[str, Any] = {"dims": [last_row, last_col]}
+    meta: dict[str, Any] = {}
     merges = [str(r) for r in ws_v.merged_cells.ranges]
     if merges:
         meta["merges"] = merges
-    frozen = ws_v.freeze_panes
-    if frozen:
-        meta["frozen"] = frozen
 
     hyperlinks: dict[str, str] = {}
     comments: dict[str, str] = {}
-    number_formats: dict[str, str] = {}  # General(기본) 외 셀의 표시 형식
+    number_formats: dict[str, str] = {}
     for row in ws_v.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col):
         for cell in row:
             hl = getattr(cell, "hyperlink", None)
@@ -1192,12 +1231,12 @@ def _sheet_to_jsonl(ws_v, ws_f, last_row: int, last_col: int) -> tuple[list[str]
             nf = getattr(cell, "number_format", None)
             if nf and nf != "General":
                 number_formats[cell.coordinate] = nf
+    if number_formats:
+        meta["number_formats"] = number_formats
     if hyperlinks:
         meta["hyperlinks"] = hyperlinks
     if comments:
         meta["comments"] = comments
-    if number_formats:
-        meta["number_formats"] = number_formats
 
     lines: list[str] = [json.dumps({"_meta": meta}, ensure_ascii=False, default=_json_default)]
     formula_count = 0
@@ -1223,8 +1262,8 @@ def _sheet_to_jsonl(ws_v, ws_f, last_row: int, last_col: int) -> tuple[list[str]
     return lines, formula_count
 
 
-def _workbook_meta(wb) -> dict[str, Any]:
-    """워크북 단위 메타 (defined names 등). 비어있으면 빈 dict 반환."""
+def _workbook_meta(wb, input_path: Path) -> dict[str, Any]:
+    """워크북 단위 메타 (defined names·pivot tables 등). 비어있으면 빈 dict 반환."""
     meta: dict[str, Any] = {}
     defined_names: dict[str, list[str]] = {}
     # openpyxl 3.x: wb.defined_names 는 DefinedNameDict (dict-like)
@@ -1241,7 +1280,177 @@ def _workbook_meta(wb) -> dict[str, Any]:
         pass
     if defined_names:
         meta["defined_names"] = defined_names
+
+    pivots = _extract_pivots(input_path)
+    if pivots:
+        meta["pivots"] = pivots
+
     return meta
+
+
+_XLSX_NS = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+_XLSX_REL_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+_PKG_REL_NS = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+
+
+def _extract_pivots(input_path: Path) -> list[dict]:
+    """xlsx 의 pivot table 정의 list. ZIP 안 `xl/pivotTables/*.xml` + `xl/pivotCache/*.xml` 파싱.
+
+    cacheId 매핑은 workbook.xml 의 pivotCaches + workbook.xml.rels 통해 정확히 해결.
+    - workbook.xml 의 pivotCaches: cacheId → r:id
+    - workbook.xml.rels: Id → Target (cache xml 파일)
+
+    각 pivot 의 정보:
+    - name: pivot table 이름
+    - location: 펼쳐진 위치 (예: "A1:E20")
+    - source: 원본 데이터 위치 (예: "'Sheet1'!A1:D100")
+    - rowFields/colFields/pageFields: 행·열·필터 필드명 list
+    - dataFields: 값 필드 [{name, field, subtotal}, ...] (subtotal = sum/count/average/...)
+    """
+    import xml.etree.ElementTree as ET
+
+    pivots: list[dict] = []
+    try:
+        with zipfile.ZipFile(_common.long_str(input_path), "r") as zf:
+            namelist = zf.namelist()
+            pivot_files = sorted(
+                n for n in namelist
+                if n.startswith("xl/pivotTables/pivotTable") and n.endswith(".xml")
+            )
+            if not pivot_files:
+                return pivots
+
+            # 1. workbook.xml.rels 에서 Id → Target 매핑
+            rid_to_target: dict[str, str] = {}
+            try:
+                rels_root = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+                for rel in rels_root.findall(f"{_PKG_REL_NS}Relationship"):
+                    rid_to_target[rel.get("Id", "")] = rel.get("Target", "")
+            except Exception:
+                pass
+
+            # 2. workbook.xml 의 pivotCaches 에서 cacheId → cache 파일 경로 매핑
+            cache_id_to_file: dict[str, str] = {}
+            try:
+                wb_root = ET.fromstring(zf.read("xl/workbook.xml"))
+                pcs = wb_root.find(f"{_XLSX_NS}pivotCaches")
+                if pcs is not None:
+                    for pc in pcs:
+                        cid = pc.get("cacheId")
+                        rid = pc.get(f"{_XLSX_REL_NS}id")
+                        if not cid or not rid:
+                            continue
+                        target = rid_to_target.get(rid, "")
+                        if not target:
+                            continue
+                        # target 의 상대 경로 → ZIP 안 절대 경로
+                        if target.startswith("/"):
+                            cache_path = target.lstrip("/")
+                        else:
+                            cache_path = "xl/" + target
+                        cache_id_to_file[cid] = cache_path
+            except Exception:
+                pass
+
+            # 3. cache 파일 파싱: cacheId → {source, field_names}
+            cache_info: dict[str, dict] = {}
+            for cid, cf in cache_id_to_file.items():
+                try:
+                    root = ET.fromstring(zf.read(cf))
+                except Exception:
+                    continue
+                info: dict = {}
+                cs = root.find(f"{_XLSX_NS}cacheSource")
+                if cs is not None:
+                    ws = cs.find(f"{_XLSX_NS}worksheetSource")
+                    if ws is not None:
+                        sheet = ws.get("sheet", "")
+                        ref = ws.get("ref", "")
+                        named = ws.get("name", "")
+                        if sheet and ref:
+                            info["source"] = f"'{sheet}'!{ref}"
+                        elif named:
+                            info["source"] = named
+                fields_elem = root.find(f"{_XLSX_NS}cacheFields")
+                if fields_elem is not None:
+                    field_names: list[str] = []
+                    for f in fields_elem:
+                        if f.tag == f"{_XLSX_NS}cacheField":
+                            field_names.append(f.get("name", ""))
+                    info["field_names"] = field_names
+                cache_info[cid] = info
+
+            # pivot table 파일 파싱
+            for pf in pivot_files:
+                try:
+                    root = ET.fromstring(zf.read(pf))
+                except Exception:
+                    continue
+                pivot: dict = {"name": root.get("name", "")}
+                cache_id = root.get("cacheId", "")
+                field_names: list[str] = []
+                if cache_id and cache_id in cache_info:
+                    ci = cache_info[cache_id]
+                    if "source" in ci:
+                        pivot["source"] = ci["source"]
+                    field_names = ci.get("field_names", [])
+
+                loc = root.find(f"{_XLSX_NS}location")
+                if loc is not None:
+                    pivot["location"] = loc.get("ref", "")
+
+                # row·col·page fields (인덱스 → 이름)
+                for tag, key in (
+                    ("rowFields", "rowFields"),
+                    ("colFields", "colFields"),
+                    ("pageFields", "pageFields"),
+                ):
+                    elem = root.find(f"{_XLSX_NS}{tag}")
+                    if elem is None:
+                        continue
+                    names: list[str] = []
+                    for child in elem:
+                        x = child.get("x") or child.get("fld")
+                        if x is None:
+                            continue
+                        try:
+                            idx = int(x)
+                        except (TypeError, ValueError):
+                            continue
+                        if 0 <= idx < len(field_names) and field_names[idx]:
+                            names.append(field_names[idx])
+                        else:
+                            names.append(f"field_{idx}")
+                    if names:
+                        pivot[key] = names
+
+                # dataFields (값 필드 + 집계 함수)
+                df_elem = root.find(f"{_XLSX_NS}dataFields")
+                if df_elem is not None:
+                    df_list: list[dict] = []
+                    for df in df_elem:
+                        if df.tag != f"{_XLSX_NS}dataField":
+                            continue
+                        fld = df.get("fld", "")
+                        field_name = ""
+                        try:
+                            idx = int(fld)
+                            if 0 <= idx < len(field_names):
+                                field_name = field_names[idx]
+                        except (TypeError, ValueError):
+                            pass
+                        df_list.append({
+                            "name": df.get("name", ""),
+                            "field": field_name,
+                            "subtotal": df.get("subtotal", "sum"),
+                        })
+                    if df_list:
+                        pivot["dataFields"] = df_list
+
+                pivots.append(pivot)
+    except (zipfile.BadZipFile, Exception):
+        pass
+    return pivots
 
 
 def _extract_pptx_chart_data(chart) -> dict:

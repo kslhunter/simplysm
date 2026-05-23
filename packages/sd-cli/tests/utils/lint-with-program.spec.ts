@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as coreCommon from "@simplysm/core-common";
 
-// eslint은 외부 npm으로 ESM namespace immutable — vi.mock 유지
-const { mockLintFiles, mockLoadFormatter, MockESLintClass } = vi.hoisted(() => {
+// lint-with-program.ts 가 module-level 에서 createLogger 를 호출하므로
+// import 평가 전에 mock 이 적용되어야 한다 — vi.mock 사용 (hoist 됨).
+const { mockLintFiles, mockLoadFormatter, MockESLintClass, mockLintLogger } = vi.hoisted(() => {
   const lintFilesFn = vi.fn();
   const loadFormatterFn = vi.fn();
   const ESLintCls = vi.fn().mockImplementation(function () {
@@ -11,21 +11,31 @@ const { mockLintFiles, mockLoadFormatter, MockESLintClass } = vi.hoisted(() => {
       loadFormatter: loadFormatterFn,
     };
   });
-  return { mockLintFiles: lintFilesFn, mockLoadFormatter: loadFormatterFn, MockESLintClass: ESLintCls };
+  const logger = {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  };
+  return {
+    mockLintFiles: lintFilesFn,
+    mockLoadFormatter: loadFormatterFn,
+    MockESLintClass: ESLintCls,
+    mockLintLogger: logger,
+  };
 });
 
 vi.mock("eslint", () => ({
   ESLint: MockESLintClass,
 }));
 
-const mockLintLogger = {
-  debug: vi.fn(),
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-};
-
-vi.spyOn(coreCommon, "createLogger").mockReturnValue(mockLintLogger as any);
+vi.mock("@simplysm/core-common", async () => {
+  const actual = await vi.importActual<typeof import("@simplysm/core-common")>("@simplysm/core-common");
+  return {
+    ...actual,
+    createLogger: vi.fn(() => mockLintLogger),
+  };
+});
 
 import { LintWithProgramRunner } from "../../src/lint/lint-with-program";
 
