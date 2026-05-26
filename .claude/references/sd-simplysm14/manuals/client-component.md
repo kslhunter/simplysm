@@ -2,7 +2,7 @@
 
 ## 파일명·역할·위치
 
-화면 파일은 `<domain>.<역할>.ts` 형식, 역할 접미사로 책임을 표시한다.
+화면 파일은 `<domain>.<역할>.ts` 형식, 역할 접미사로 책임을 표시함.
 
 | 파일명 형식                  | 역할                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------- |
@@ -17,15 +17,15 @@
 - 모든 파일명은 dash-case.
 - 라이브러리(`@simplysm/angular`)는 `sd-` prefix 가 붙음 (`sd-button.ts`, `sd-crud-list.ts`).
 
-**위치**: 도메인이 있는 파일은 도메인 폴더 안에 둔다. 도메인이 없는(범용) 파일은 `src/<역할>s/` 하위에 둔다. 예: `src/controls/`, `src/modals/`.
+**위치**: 도메인이 있는 파일은 도메인 폴더 안에 둠. 도메인이 없는(범용) 파일은 `src/<역할>s/` 하위에 둠. 예: `src/controls/`, `src/modals/`.
 
-**변형 파일**: 한 도메인 폴더 안에 같은 역할 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식으로 prefix 를 붙여 갈래를 둔다. 예 (`outbound-instruction/` 폴더):
+**변형 파일**: 한 도메인 폴더 안에 같은 역할 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식으로 prefix 를 붙여 갈래를 둠. 예 (`outbound-instruction/` 폴더):
 
-- `outbound-instruction.list.ts` (헤더 목록)
-- `outbound-instruction-item.list.ts` (품목 목록)
-- `outbound-instruction-box.list.ts` (박스 목록)
-- `outbound-instruction.detail.ts`
-- `outbound-instruction-header.detail.ts`
+- `outbound-instruction.list.ts` (헤더 목록).
+- `outbound-instruction-item.list.ts` (품목 목록).
+- `outbound-instruction-box.list.ts` (박스 목록).
+- `outbound-instruction.detail.ts`.
+- `outbound-instruction-header.detail.ts`.
 
 ## 컴포넌트 데코레이터 기본값
 
@@ -50,18 +50,18 @@ Angular 기본과 다른 부분만 명시:
 
 **`styles`** (선택) — 다음 두 가지만 simplysm 약속:
 
-- 첫 줄에 `/* language=SCSS */` 주석을 둬 IDE 가 SCSS 로 인식하게 한다.
+- 첫 줄에 `/* language=SCSS */` 주석을 둬 IDE 가 SCSS 로 인식하게 함.
 - 내부 전용 클래스는 `_` prefix (예: `._content`, `._button`).
 
 ## 화면 합성 패턴
 
-화면은 list / detail / view 단위로 책임을 분리해 합성한다.
+화면은 list / detail / view 단위로 책임을 분리해 합성함.
 
 - **`*.list.ts`** — 자기 검색·페이지·정렬·재조회를 자체 책임. 외부에 `selectMode` 같은 입력을 받아 부모가 선택 동작을 제어.
 - **`*.detail.ts`** — 식별자(`input.required`)를 받아 자체 로드/저장. 변경·삭제 후 `submitted` output 으로 부모에게 알림.
-- **`*.view.ts`** — list/detail 합성 + 자식 간 트리거 중계. 데이터 페치는 view 가 하지 않는다.
+- **`*.view.ts`** — list/detail 합성 + 자식 간 트리거 중계. 데이터 페치는 view 가 하지 않음.
 
-화면이 list 또는 detail 하나로 끝나면 view 를 만들지 않고 list/detail 자체가 라우팅 진입 단위가 된다.
+화면이 list 또는 detail 하나로 끝나면 view 를 만들지 않고 list/detail 자체가 라우팅 진입 단위가 됨.
 
 ### list + detail 합성
 
@@ -89,9 +89,9 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
 핵심 약속:
 
-- view 는 list 컴포넌트를 템플릿 변수(`#headerSheet`)로 잡아 `selectedKeys()` 를 읽고 `doRefresh()` 를 호출한다.
-- detail 의 단건 변경·삭제는 list 가 표시하는 같은 데이터에 반영돼야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화한다.
-- view 는 `sd-base-container` 를 루트로 두고, 내부 컨텐츠는 `#contentTpl` 슬롯에 둔다.
+- view 는 list 컴포넌트를 템플릿 변수(`#headerSheet`)로 잡아 `selectedKeys()` 를 읽고 `doRefresh()` 를 호출함.
+- detail 의 단건 변경·삭제는 list 가 표시하는 같은 데이터에 반영돼야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화함.
+- view 는 `sd-base-container` 를 루트로 두고, 내부 컨텐츠는 `#contentTpl` 슬롯에 둠.
 
 ### list + list 합성 (마스터-라인)
 
@@ -126,7 +126,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
 ## 화면 컴포넌트의 표준 시그널
 
-화면 컴포넌트(view/list/detail/modal) 가 공통으로 쓰는 시그널 4종. **필요한 것만 채택**하되, 채택할 때는 아래 약속된 이름·의미·전파를 그대로 따른다.
+화면 컴포넌트(view/list/detail/modal) 가 공통으로 쓰는 시그널 4종. **필요한 것만 채택**하되, 채택할 때는 아래 약속된 이름·의미·전파를 그대로 따름.
 
 | 이름          | 종류                     | 의미                                                                                                                                  |
 | ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -135,7 +135,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 | `busyCount`   | `signal(0)`              | 진행 중인 비동기 작업 수. 시작 시 `+1`, 끝나면 `-1`. > 0 이면 화면이 busy 표시.                                                       |
 | `viewType`    | `injectViewTypeSignal()` | 화면이 page / control / modal 어느 컨텍스트에서 동작 중인지. 라우팅 진입이면 `'page'`, view 자식이면 `'control'`, 모달이면 `'modal'`. |
 
-**전파**: 부모가 자식에게 위 시그널들을 그대로 흘려보낸다. `sd-base-container` / `sd-crud-list` / `sd-crud-detail` 가 이들을 입력으로 받는 표준.
+**전파**: 부모가 자식에게 위 시그널들을 그대로 흘려보냄. `sd-base-container` / `sd-crud-list` / `sd-crud-detail` 가 이들을 입력으로 받는 표준.
 
 **`busyCount` 사용 패턴**:
 
@@ -149,7 +149,7 @@ this.busyCount.update((v) => v - 1);
 
 ## 권한 (perms)
 
-화면 컴포넌트는 권한을 `injectPermsSignal(<paths>, <actions>)` 로 받는다.
+화면 컴포넌트는 권한을 `injectPermsSignal(<paths>, <actions>)` 로 받음.
 
 ```ts
 perms = injectPermsSignal(
@@ -163,9 +163,9 @@ perms = injectPermsSignal(
 
 **사용 약속**:
 
-- 단순한 권한 체크는 `this.perms().includes("use")` 를 템플릿·코드에 인라인으로 쓴다. 별도 computed 로 묶지 않는다.
-- `restricted` 입력은 `[restricted]="!perms().includes('use')"` 형태로 인라인 전달. (별도 `canUse` / `restricted` computed 만들지 않는다.)
-- 권한 체크 뒤에 추가 조건(데이터 상태 등)이 결합되어 **같은 결합이 2회 이상 참조될 때만** computed 로 묶는다.
+- 단순한 권한 체크는 `this.perms().includes("use")` 를 템플릿·코드에 인라인으로 씀. 별도 computed 로 묶지 않음.
+- `restricted` 입력은 `[restricted]="!perms().includes('use')"` 형태로 인라인 전달. (별도 `canUse` / `restricted` computed 만들지 않음.)
+- 권한 체크 뒤에 추가 조건(데이터 상태 등)이 결합되어 **같은 결합이 2회 이상 참조될 때만** computed 로 묶음.
 
 ```ts
 canEdit = computed(() => this.perms().includes("edit") && this.data().state === "작성");
@@ -185,7 +185,7 @@ effect(() => {
 
 ## 에러·토스트
 
-비동기 작업은 `_sdToast.try(async () => { ... })` 로 감싼다. 안에서 throw 된 에러는 토스트로 표시되고 외부로 전파되지 않는다.
+비동기 작업은 `_sdToast.try(async () => { ... })` 로 감쌈. 안에서 throw 된 에러는 토스트로 표시되고 외부로 전파되지 않음.
 
 ```ts
 private readonly _sdToast = inject(SdToastProvider);
@@ -201,12 +201,12 @@ this.busyCount.update((v) => v - 1);
 
 **메시지 직접 표시**:
 
-- `_sdToast.success("저장되었습니다.")`
-- `_sdToast.warning("...")`
-- `_sdToast.info("...")`
-- `_sdToast.danger("...")`
+- `_sdToast.success("저장되었습니다.")`.
+- `_sdToast.warning("...")`.
+- `_sdToast.info("...")`.
+- `_sdToast.danger("...")`.
 
-**중복 작업 가드**: 진행 중인 작업이 있으면 새 작업은 건너뛴다.
+**중복 작업 가드**: 진행 중인 작업이 있으면 새 작업은 건너뜀.
 
 ```ts
 if (this.busyCount() > 0) return;
@@ -214,7 +214,7 @@ if (this.busyCount() > 0) return;
 
 ## DI 명명
 
-`inject()` 한 의존은 외부 노출 멤버(시그널·output·공개 메서드 등)와 구분하기 위해 `_` prefix 를 붙인다.
+`inject()` 한 의존은 외부 노출 멤버(시그널·output·공개 메서드 등)와 구분하기 위해 `_` prefix 를 붙임.
 
 ```ts
 private readonly _sdToast = inject(SdToastProvider);
@@ -252,7 +252,7 @@ if (!result) return;
 
 ## `mark` 헬퍼
 
-`@simplysm/angular` 의 `mark(signal)` 은 시그널 값은 그대로 두고 **변경 알림만** 발행한다. effect 가 의존하는 시그널을 강제로 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 쓴다.
+`@simplysm/angular` 의 `mark(signal)` 은 시그널 값은 그대로 두고 **변경 알림만** 발행함. effect 가 의존하는 시그널을 강제로 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 씀.
 
 **1. 외부 트리거로 effect 다시 돌리기** — 값은 같지만 effect 를 다시 발화시켜야 할 때.
 
@@ -262,7 +262,7 @@ doRefresh(): void {
 }
 ```
 
-**2. 객체/배열 시그널 내부 변경 알리기** — 시그널이 들고 있는 객체의 _필드만_ 바뀌면 시그널은 변경 알림을 보내지 않는다. 양방향 바인딩 자식의 변경 이벤트에 묶어 호출.
+**2. 객체/배열 시그널 내부 변경 알리기** — 시그널이 들고 있는 객체의 _필드만_ 바뀌면 시그널은 변경 알림을 보내지 않음. 양방향 바인딩 자식의 변경 이벤트에 묶어 호출.
 
 ```ts
 filter = signal<IFilter>({ name: "", state: "" });
@@ -279,7 +279,7 @@ mark(this.data);
 
 ## list 데이터 흐름
 
-list 컴포넌트는 자체 검색·페이지·정렬·재조회를 책임진다.
+list 컴포넌트는 자체 검색·페이지·정렬·재조회를 책임짐.
 
 ### 시그널 구성
 
@@ -296,7 +296,7 @@ lastFilter = signal<IFilter>({ ... });      // 마지막 조회 시점 — effec
 trackByFn = (item: IItem) => item.id;
 ```
 
-**`filter` vs `lastFilter` 분리**: 폼을 만지는 동안 매번 재조회되지 않게 하기 위해. 사용자가 조회 버튼을 눌러야 `lastFilter` 가 갱신되고 effect 가 발화한다.
+**`filter` vs `lastFilter` 분리**: 폼을 만지는 동안 매번 재조회되지 않게 하기 위해. 사용자가 조회 버튼을 눌러야 `lastFilter` 가 갱신되고 effect 가 발화함.
 
 ### 자동 재조회 effect
 
@@ -325,7 +325,7 @@ constructor() {
 ```
 
 - `lastFilter` / `page` / `sortingDefs` 변경 시 자동 재조회.
-- 비동기 본체는 `untracked` 안에서 실행해 자기 자신이 의존성에 들어가지 않게 한다.
+- 비동기 본체는 `untracked` 안에서 실행해 자기 자신이 의존성에 들어가지 않게 함.
 
 ### 조회 트리거
 
@@ -374,7 +374,7 @@ private async _refresh(): Promise<void> {
 
 ### 외부 input 을 filter 에 반영
 
-list 가 다른 화면 안에 임베드되어 외부에서 filter 의 일부를 input 으로 받을 때, effect 로 input → filter → lastFilter 흐름을 만든다.
+list 가 다른 화면 안에 임베드되어 외부에서 filter 의 일부를 input 으로 받을 때, effect 로 input → filter → lastFilter 흐름을 만듦.
 
 ```ts
 constructor() {
@@ -403,7 +403,7 @@ constructor() {
 
 ## detail 데이터 흐름
 
-detail 컴포넌트는 식별자를 받아 자체 로드/저장하고, 변경·삭제 후 `submitted` 로 부모에게 알린다.
+detail 컴포넌트는 식별자를 받아 자체 로드/저장하고, 변경·삭제 후 `submitted` 로 부모에게 알림.
 
 ### 시그널 구성
 
@@ -442,7 +442,7 @@ constructor() {
 ```
 
 - 식별자(`dataId`) 변경이 effect 의존성. 부모가 다른 항목으로 전환하면 자동 재로드.
-- `setupCanDeactivate(fn)` (`@simplysm/angular`) 는 라우터 이탈 시점에 `fn()` 이 false 면 이탈을 막는다.
+- `setupCanDeactivate(fn)` (`@simplysm/angular`) 는 라우터 이탈 시점에 `fn()` 이 false 면 이탈을 막음.
 
 ### `_refresh` + 원본 스냅샷
 
@@ -500,11 +500,11 @@ async onSubmit(): Promise<void> {
 
 **핵심 약속**:
 
-- 식별자는 `input.required<>` 로 받는다.
+- 식별자는 `input.required<>` 로 받음.
 - 로드 후 `_orgData = obj.clone(loaded)` 로 원본 보관.
 - 페이지 이탈 가드는 `setupCanDeactivate` + `obj.equal` 비교.
 - 저장 끝나면 `_refresh()` 로 다시 로드 → `submitted.emit(true)`.
-- 삭제·취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list)가 새로고침할 수 있게 한다.
+- 삭제·취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list)가 새로고침할 수 있게 함.
 
 ## 시트 컬럼·셀 표준
 
@@ -526,13 +526,13 @@ async onSubmit(): Promise<void> {
 - 시트 셀에는 패딩이 없으므로 본문 div 에 `p-xs-sm` 클래스를 붙이는 게 기본.
 - 정렬 클래스(`tx-right` / `tx-center` / `tx-left`)는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정(브라우저 기본 left). "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
 - 단, **숫자 셀은 `tx-right` 기본 적용** (수량·금액·단가·합계 등 숫자값 컬럼).
-- `[cell]="items()"` 는 타입 추론용 더미 — 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 들고 있다.
+- `[cell]="items()"` 는 타입 추론용 더미 — 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 들고 있음.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
-- 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등)를 토글할 때는 빈 값 자리에 `&nbsp;`를 채워 div 가 셀 높이를 유지하게 한다. (table cell 자식 div 가 콘텐츠 없을 때 높이 0 → bg 가 셀에 차지 않음.)
-  - 좋은 예: `{{ item.surveyLocationCode ?? "&nbsp" }}`
-  - 나쁜 예: `{{ item.surveyLocationCode }}`, `{{ item.surveyLocationCode ?? " " }}`, `{{ item.surveyLocationCode ?? " " }}`
+- 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등)를 토글할 때는 빈 값 자리에 `&nbsp;`를 채워 div 가 셀 높이를 유지하게 함. (table cell 자식 div 가 콘텐츠 없을 때 높이 0 → bg 가 셀에 차지 않음.)
+  - 좋은 예: `{{ item.surveyLocationCode ?? "&nbsp" }}`.
+  - 나쁜 예: `{{ item.surveyLocationCode }}`, `{{ item.surveyLocationCode ?? " " }}`, `{{ item.surveyLocationCode ?? " " }}`.
 
-**list 안에서**: `<sd-crud-list>` 의 직속 자식으로 `<sd-sheet-column>` 을 두면 내부 시트로 자동 투영된다.
+**list 안에서**: `<sd-crud-list>` 의 직속 자식으로 `<sd-sheet-column>` 을 두면 내부 시트로 자동 투영됨.
 
 ```html
 <sd-crud-list ...>
@@ -546,7 +546,7 @@ async onSubmit(): Promise<void> {
 
 ### 요약 행
 
-컬럼에 `<ng-template #summaryTpl>` 을 두면 시트의 헤더 영역 하단(`thead` 내부)에 요약 행이 렌더된다. 스크롤 시 헤더와 함께 상단 고정되며, 배경은 warning 계열로 자동 강조된다.
+컬럼에 `<ng-template #summaryTpl>` 을 두면 시트의 헤더 영역 하단(`thead` 내부)에 요약 행이 렌더됨. 스크롤 시 헤더와 함께 상단 고정되며, 배경은 warning 계열로 자동 강조됨.
 
 ```html
 <sd-sheet-column [key]="'quantity'" [header]="'수량'">
@@ -559,9 +559,9 @@ async onSubmit(): Promise<void> {
 </sd-sheet-column>
 ```
 
-- 컬럼 중 하나라도 `#summaryTpl` 을 가지면 요약 행 전체가 활성화된다. 정의 없는 컬럼은 빈 셀.
+- 컬럼 중 하나라도 `#summaryTpl` 을 가지면 요약 행 전체가 활성화됨. 정의 없는 컬럼은 빈 셀.
 - 셀 본문 약속(`p-xs-sm`, 정렬 클래스 등)은 요약 셀에도 동일하게 적용.
-- 합계·평균 등 집계 값은 시트가 계산해주지 않는다. 화면 컴포넌트에서 `computed` 로 직접 만들어 노출한다.
+- 합계·평균 등 집계 값은 시트가 계산해주지 않음. 화면 컴포넌트에서 `computed` 로 직접 만들어 노출함.
 
 ```ts
 totalQuantity = computed(() => this.items().sum((i) => i.quantity) ?? 0);
@@ -591,7 +591,7 @@ label + 입력 그룹을 묶는 전용 클래스 3종:
 
 ### 양방향 바인딩 + `mark`
 
-객체 시그널 내부 필드를 양방향으로 묶고, 변경 시 [`mark` 헬퍼] 로 알린다.
+객체 시그널 내부 필드를 양방향으로 묶고, 변경 시 [`mark` 헬퍼] 로 알림.
 
 ```html
 <sd-textfield [(value)]="data().name" (valueChange)="mark(data)" />
@@ -621,7 +621,7 @@ label + 입력 그룹을 묶는 전용 클래스 3종:
 
 ### `<sd-form>` 으로 감싸기
 
-폼 안 입력에서 enter 키 → submit 자동 처리되게 하려면 `<sd-form>` 으로 감싸고 `(formSubmit)` 로 받는다. `sd-crud-list` / `sd-crud-detail` 는 내부에 이미 `sd-form` 을 갖고 있어 별도 래핑 불필요.
+폼 안 입력에서 enter 키 → submit 자동 처리되게 하려면 `<sd-form>` 으로 감싸고 `(formSubmit)` 로 받음. `sd-crud-list` / `sd-crud-detail` 는 내부에 이미 `sd-form` 을 갖고 있어 별도 래핑 불필요.
 
 ## 서비스 호출 (`AppServiceProvider`)
 
@@ -649,7 +649,7 @@ await this._appOrm.connectAsync(async (db) => {
 
 ## 공유 데이터 (`useSharedSignal`)
 
-마스터 데이터(고객사·품목 등)는 `AppSharedDataProvider` 에 등록되어 있고, 화면에서는 `useSharedSignal(name)` 으로 접근한다.
+마스터 데이터(고객사·품목 등)는 `AppSharedDataProvider` 에 등록되어 있고, 화면에서는 `useSharedSignal(name)` 으로 접근함.
 
 ```ts
 sharedCustomers = useSharedSignal("고객사");
@@ -710,7 +710,7 @@ sharedCustomers = useSharedSignal("고객사");
 
 ## 아이콘
 
-`@ng-icons/core` 의 `NgIcon` + `@ng-icons/tabler-icons` 의 `tabler*` 셋트를 사용한다.
+`@ng-icons/core` 의 `NgIcon` + `@ng-icons/tabler-icons` 의 `tabler*` 셋트를 사용함.
 
 ```ts
 import { NgIcon } from "@ng-icons/core";
@@ -736,4 +736,4 @@ export class SomeComponent {
 
 ## sd-crud-* 컴포넌트
 
-목록 화면 표준 골격 `sd-crud-list`, 단건 편집 화면 표준 골격 `sd-crud-detail`. 화면 작성 시 이 둘을 채택할지 결정한다. 채택 시 사용법은 [client-crud.md](./client-crud.md).
+목록 화면 표준 골격 `sd-crud-list`, 단건 편집 화면 표준 골격 `sd-crud-detail`. 화면 작성 시 이 둘을 채택할지 결정함. 채택 시 사용법은 [client-crud.md](./client-crud.md).

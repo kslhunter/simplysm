@@ -48,7 +48,7 @@
 | `#commandTpl`       | 상단(또는 modal/control 모드의 명령 영역) 추가 액션 버튼.                  |
 | `#bottomCommandTpl` | modal 하단 좌측 영역. modal + selectMode 면 "선택 해제/확인" 과 함께 표시. |
 
-`<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영된다.
+`<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
 ### viewType 별 동작
 

@@ -1,10 +1,10 @@
 # 클라이언트 환경 셋업 매뉴얼
 
-화면 작성 시점에는 거의 건드리지 않으며, 새 앱 부트스트랩이나 새 서비스/마스터 데이터 추가 시에만 본다.
+화면 작성 시점에는 거의 건드리지 않으며, 새 앱 부트스트랩이나 새 서비스/마스터 데이터 추가 시에만 봄.
 
 ## AppServiceProvider
 
-`@simplysm/service-client` 위에 앱이 만드는 root provider. 서비스/이벤트 프록시와 ORM 커넥터를 lazy 캐싱으로 노출한다.
+`@simplysm/service-client` 위에 앱이 만드는 root provider. 서비스/이벤트 프록시와 ORM 커넥터를 lazy 캐싱으로 노출함.
 
 ```ts
 @Injectable({ providedIn: "root" })

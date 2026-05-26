@@ -1,6 +1,6 @@
 # 클라이언트 데모 작성 매뉴얼
 
-`@simplysm/angular` v14 로 spec.md §4.x 화면을 **데모** 로 옮길 때의 추가 처방. 컴포넌트 일반 규약(파일명·시그널·DI·핸들러·시트·폼·버튼·모달 호출·합성 패턴 등)은 [client-component.md](./client-component.md). 본 문서는 spec § → 산출물 매핑과 데모 한정 패턴만 다룬다.
+`@simplysm/angular` v14 로 spec.md §4.x 화면을 **데모** 로 옮길 때의 추가 처방. 컴포넌트 일반 규약(파일명·시그널·DI·핸들러·시트·폼·버튼·모달 호출·합성 패턴 등)은 [client-component.md](./client-component.md). 본 문서는 spec § → 산출물 매핑과 데모 한정 패턴만 다룸.
 
 ## §4.x 화면 유형 → 파일 역할
 

@@ -1,13 +1,13 @@
 # 테스트 작성
 
-`@simplysm/*` v14 모노레포의 패키지 테스트(`packages/<pkg>/tests/`)와 통합 테스트(`tests/<name>/`) 작성 시 따른다. Vitest project 구성·실행 명령은 루트 `CLAUDE.md` 의 "Vitest 프로젝트 구조" 참조 — 여기서는 작성 규약만 다룬다.
+`@simplysm/*` v14 모노레포의 패키지 테스트(`packages/<pkg>/tests/`)와 통합 테스트(`tests/<name>/`) 작성 시 따름. Vitest project 구성·실행 명령은 루트 `CLAUDE.md` 의 "Vitest 프로젝트 구조" 참조 — 여기서는 작성 규약만 다룸.
 
 ## 파일 규약
 
-- 위치
-  - 패키지: `packages/<pkg>/tests/**/*.spec.ts`
-  - 통합: `tests/<name>/src/**/*.spec.ts`
-- 확장자
+- 위치.
+  - 패키지: `packages/<pkg>/tests/**/*.spec.ts`.
+  - 통합: `tests/<name>/src/**/*.spec.ts`.
+- 확장자.
   - `*.spec.ts` — vitest 실행 대상.
   - `*.acc.spec.ts` — Acceptance 단위 spec. 동일 project 에서 함께 실행.
   - `*.verify.md` — LLM 수동 검증 항목. vitest 실행 대상 아님. 자동화로 잡기 어려운 검증(JSDoc 표현·문서 일관성 등)에만.
@@ -29,8 +29,8 @@
 1. `tests/<name>/package.json` — `name: "@simplysm-test/<name>"`, `"private": true`, `"type": "module"`. 필요한 `@simplysm/*` 는 `workspace:*` 로 devDependency 등재.
 2. `tests/<name>/tsconfig.json` — `extends: "../../tsconfig.json"`, `compilerOptions.typeRoots: ["./node_modules/@types"]`.
 3. `tests/<name>/src/**/*.spec.ts` — 스펙.
-4. `vitest.config.ts` `projects[]` 에 entry 추가
-   - `name: "<name>"`, `include: ["tests/<name>/**/*.spec.ts"]`
+4. `vitest.config.ts` `projects[]` 에 entry 추가.
+   - `name: "<name>"`, `include: ["tests/<name>/**/*.spec.ts"]`.
    - 외부 자원 기동 필요시 `globalSetup: "./tests/<name>/vitest.setup.ts"` + `setup`/`teardown` export.
    - 외부 자원이 단일 인스턴스 공유면 `fileParallelism: false` (스펙 파일 직렬 실행).
    - 브라우저 런타임 필요시 `browser: { provider: playwright(), enabled: true, headless: true, instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }] }`.
@@ -43,7 +43,7 @@
 
 - `setup({ provide })` 에서 외부 자원 기동(DB 컨테이너·테스트 서버 등). 동적 값(랜덤 포트 등)은 `provide("key", value)` 로 스펙에 전달.
 - `teardown()` 에서 정리. 실패해도 다음 실행이 망가지지 않도록 best-effort.
-- 타입 보강: 파일 상단에
+- 타입 보강: 파일 상단에.
   ```ts
   declare module "vitest" {
     export interface ProvidedContext { key: T }

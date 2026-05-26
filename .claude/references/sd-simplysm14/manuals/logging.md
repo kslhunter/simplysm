@@ -49,7 +49,7 @@ console.error("[X] 실패:", err);
 
 ## 모듈-레벨 logger 주의
 
-모듈 레벨에서 `consola.withTag()` 를 직접 호출하면 호출 시점의 options(level/reporters)가 스냅샷으로 고정되어, 이후 `setupConsola()` 가 reporters 를 갱신해도 child instance 에 반영되지 않는다.
+모듈 레벨에서 `consola.withTag()` 를 직접 호출하면 호출 시점의 options(level/reporters)가 스냅샷으로 고정되어, 이후 `setupConsola()` 가 reporters 를 갱신해도 child instance 에 반영되지 않음.
 
 - **해결**: `createLogger(tag)` 사용 (`@simplysm/core-common`, 내부 구현은 lazy Proxy — 첫 메서드 접근 시점까지 `withTag` 생성을 지연).
 - 모든 환경(Node·브라우저·Capacitor)에서 위치(모듈 레벨·함수 내부·class field)에 관계없이 `createLogger` 로 통일.
@@ -57,9 +57,9 @@ console.error("[X] 실패:", err);
 
 ## 예외 — `eslint-disable no-console` 가 정당화되는 자리
 
-다음 경우에 한해 `/* eslint-disable no-console */` 파일 헤더를 허용한다. 그 외는 모두 consola 로 교체.
+다음 경우에 한해 `/* eslint-disable no-console */` 파일 헤더를 허용함. 그 외는 모두 consola 로 교체.
 
 - **CLI 도움말·yargs help 텍스트** 처럼 stdout 그 자체를 사용자 출력으로 쓰는 경우 (예: `packages/sd-cli/src/sd-cli-entry.ts` 의 `collectYargsHelp`).
 - **ErrorHandler 마지막 안전망** 등 consola 자체가 죽었을 가능성이 있는 catch 블록 — 해당 자리만 `eslint-disable-next-line no-console` + 이유 주석.
 
-예외 적용 시 disable 주석 위에 사유를 1줄로 남긴다.
+예외 적용 시 disable 주석 위에 사유를 1줄로 남김.
