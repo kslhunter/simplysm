@@ -1,7 +1,8 @@
 import json, sys, os
 
 data = json.load(sys.stdin)
-file_path = data["tool_input"]["file_path"].replace("\\", "/")
+tool_input = data["tool_input"]
+file_path = tool_input["file_path"].replace("\\", "/")
 root = os.getcwd().replace("\\", "/")
 
 BLOCKED_FILES = [

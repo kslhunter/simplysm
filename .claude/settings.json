@@ -1,5 +1,4 @@
 {
-  "outputStyle": "sd-tone",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/sd-check-forbidden-files.py"
+            "command": "python .claude/sd-check-edit.py"
           }
         ]
       },
@@ -21,11 +20,11 @@
         ]
       },
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/sd-check-bash.py"
+            "command": "python .claude/sd-check-shell.py"
           }
         ]
       }

@@ -3,8 +3,8 @@ import json, re, sys
 data = json.load(sys.stdin)
 cmd = data["tool_input"].get("command", "")
 
-# Command position prefix: start of line or after command separator (&&, ||, ;)
-CMD_POS = r"(^|&&|\|\||;)\s*"
+# Command position prefix: start of line or after command separator (&&, ||, ;, |)
+CMD_POS = r"(^|&&|\|\||;|\|)\s*"
 
 BLOCKED = [
     # Blocked git commands
