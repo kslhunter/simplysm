@@ -20,8 +20,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `pnpm pub`          | 빌드 후 배포 (`sd.config.ts`의 `publish` 설정 따름)                                             |
 | `pnpm pub:no-build` | 기존 빌드 산출물로 배포                                                                         |
 | `pnpm check --fix`  | **기본 검증 명령** — typecheck + lint 한꺼번에, 자동수정 포함, -t 옵션으로 타겟프로젝트 선택    |
-| `pnpm typecheck`    | `pnpm check` 에서 문제 났을 때 타입만 따로 보기 위함 (직접 `npx tsc` 호출은 hook 으로 차단)     |
-| `pnpm lint`         | `pnpm check` 에서 문제 났을 때 lint 만 따로 보기 위함 (직접 `npx eslint` 호출은 hook 으로 차단) |
+| `pnpm typecheck`    | `pnpm check` 에서 문제 났을 때 타입만 따로 보기 위함 (직접 `npx tsc` 호출은 훅으로 차단)        |
+| `pnpm lint`         | `pnpm check` 에서 문제 났을 때 lint 만 따로 보기 위함 (직접 `npx eslint` 호출은 훅으로 차단)    |
 | `pnpm test`         | Vitest 전체 (`--reporter=dot --silent=passed-only`)                                             |
 
 타겟 한정·옵션 전달:
@@ -42,9 +42,9 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## 환경
 
-- Node 20, pnpm 11, Python 3 (`mise.toml` 참조). `.claude/` 훅이 Python을 사용함.
+- Node 20, pnpm 11, Python 3 (`mise.toml` 참조). `.claude/` 훅이 Python 사용.
 - TypeScript 경로 alias: `@simplysm/*` → `packages/*/src/index.ts`. 워크스페이스 내부 의존성은 빌드 없이 곧바로 소스 import 됨.
-- ESM 전용 (`"type": "module"`), `verbatimModuleSyntax` 활성. type-only import 는 반드시 `import type` 로.
+- ESM 전용 (`"type": "module"`), `verbatimModuleSyntax` 활성. type-only import 는 반드시 `import type` 로 작성.
 
 ## 아키텍처 핵심
 
@@ -88,8 +88,8 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## 개발 시 주의사항
 
-- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **명시 첨부 없이는 읽지 않음**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 및 `.claude/rules/sd-design-rules.md` 참조 (자동 로드됨).
-- Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증을 수행함. 훅 차단 시 우회하지 말고 원인을 해결함.
+- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **사용자가 명시적으로 첨부하지 않는 한 읽지 않음**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 및 `.claude/rules/sd-design-rules.md` 참조 (자동 로드됨).
+- Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증 수행. 훅 차단 시 우회하지 말고 원인 해결.
 - ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
 - `@simplysm/*` 패키지의 공개 API/동작 변경 시 `.claude/references/sd-simplysm14/apis/<패키지>/README.md` 갱신 필요 여부 검토.
 - 기본 응답 언어는 한국어.

@@ -4,7 +4,7 @@
 
 ## `sd-crud-list`
 
-목록 화면의 표준 골격. 시트 + 검색 폼 + 등록/삭제/복구 버튼 + CTRL+S 저장 + 모달 선택 모드를 한꺼번에 처리.
+목록 화면의 표준 골격. 다음 기능을 일괄 제공: 시트, 검색 폼, 등록/삭제/복구 버튼, CTRL+S 단축키 저장, 모달 선택 모드.
 
 ### 표준 호출
 
@@ -39,14 +39,14 @@
 </sd-crud-list>
 ```
 
-### 슬롯 약속
+### 슬롯 규약
 
 | 슬롯                | 용도                                                                       |
 | ------------------- | -------------------------------------------------------------------------- |
 | `#filterTpl`        | 검색 폼 필드. 있으면 상단에 조회 버튼과 함께 노출.                         |
 | `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                          |
-| `#commandTpl`       | 상단(또는 modal/control 모드의 명령 영역) 추가 액션 버튼.                  |
-| `#bottomCommandTpl` | modal 하단 좌측 영역. modal + selectMode 면 "선택 해제/확인" 과 함께 표시. |
+| `#commandTpl`       | 상단 명령 영역(viewType 이 `modal`·`control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼. |
+| `#bottomCommandTpl` | modal 하단 좌측 영역. modal + selectMode 인 경우 "선택 해제/확인" 버튼과 함께 표시. |
 
 `<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
@@ -54,20 +54,20 @@
 
 - **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
 - **`'control'`** — view 안에 임베드. 명령 영역에 저장 버튼.
-- **`'modal'`** — 모달. `selectMode` 와 함께 쓰면 close 페이로드 `{ selectedKeys }` 자동 처리.
+- **`'modal'`** — 모달. `selectMode` 와 함께 쓰면 close 시 `{ selectedKeys }` 페이로드를 자동 전달.
 
 ### 모달 선택 모드
 
 `viewType="modal"` + `selectMode` 지정 시:
 
 - `single` — 행 클릭 즉시 modal close.
-- `multi` — 하단 "확인(N)" 버튼이 close 발생.
+- `multi` — 하단 "확인(N)" 버튼 클릭으로 modal close.
 
-호출측은 `_sdModal.showAsync(...)` 결과로 `{ selectedKeys }` 페이로드 회수.
+호출측은 `_sdModal.showAsync(...)` 결과로 `{ selectedKeys }` 페이로드 수신.
 
 ## `sd-crud-detail`
 
-단일 레코드 편집 화면의 표준 골격. 폼 래핑 + CTRL+S/저장 버튼 + 모달의 "확인" 버튼 자동 처리.
+단일 레코드 편집 화면의 표준 골격. 다음 기능을 일괄 제공: 폼 래핑, CTRL+S 단축키 저장, 저장 버튼, 모달의 "확인" 버튼 자동 처리.
 
 ### 표준 호출
 
@@ -87,11 +87,11 @@
 </sd-crud-detail>
 ```
 
-### 슬롯 약속
+### 슬롯 규약
 
 | 슬롯                 | 용도                                                              |
 | -------------------- | ----------------------------------------------------------------- |
-| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그냥 표시된다.       |
+| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.         |
 | `#commandTpl`        | 상단/명령 영역 추가 버튼.                                         |
 | `#bottomCommandTpl`  | modal 하단 좌측. modal 일 때 우측 "확인" 버튼이 항상 자동 추가됨. |
 
@@ -99,4 +99,4 @@
 
 - **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
 - **`'control'`** — view 안에 임베드. 명령 영역에 저장 버튼.
-- **`'modal'`** — 모달. 하단 우측 "확인" 버튼이 자동.
+- **`'modal'`** — 모달. 하단 우측에 "확인" 버튼이 자동으로 추가.

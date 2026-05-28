@@ -1,18 +1,18 @@
 ---
 name: sd-docs
-description: `@simplysm/*` 라이브러리 패키지의 API 문서를 `.claude/references/sd-simplysm14/apis/<패키지명>/` 자리에 사용 트리거 기준으로 산출·갱신. Use when 라이브러리 API 문서를 새로 작성하거나 코드 변경을 반영해 갱신할 때.
+description: `@simplysm/*` 라이브러리 패키지의 API 문서를 `.claude/references/sd-simplysm14/apis/<패키지명>/` 위치에 사용 트리거 기준으로 작성·갱신. Use when 라이브러리 API 문서를 새로 작성하거나 코드 변경을 반영해 갱신할 때.
 effort: "low"
 ---
 
 # sd-docs
 
-`@simplysm/*` 라이브러리 패키지의 API 문서를 코드 진실에 맞춰 산출·갱신함. 메인 에이전트가 패키지 목록 추출과 상위 README 인덱스 갱신을 담당하고, 패키지별 산출은 subagent 1개씩 병렬 위임함.
+`@simplysm/*` 라이브러리 패키지의 API 문서를 코드를 근거로 작성·갱신. 메인 에이전트가 패키지 목록 추출과 상위 README 인덱스 갱신을 담당하고, 패키지별 문서 작성은 패키지 1개당 subagent 1개를 호출해 병렬 위임.
 
-## 산출 자리
+## 산출물 위치
 
 - `.claude/references/sd-simplysm14/apis/<패키지명>/README.md` — 패키지당 1개, 필수.
-- `.claude/references/sd-simplysm14/apis/<패키지명>/<군명>.md` — 사용 트리거 군이 본질적으로 커서 README 한 장에 풀어쓰면 다른 컨텍스트 정보까지 끌려나오는 경우에만 분할 산출.
-- `.claude/references/sd-simplysm14/README.md` 의 "패키지 인덱스" 섹션 — 메인이 자동 갱신.
+- `.claude/references/sd-simplysm14/apis/<패키지명>/<군명>.md` — 사용 트리거 군이 커서 README 한 장에 풀어쓰면 같은 README 의 다른 군 정보까지 함께 읽혀 부담이 커지는 경우에만 분할 산출.
+- `.claude/references/sd-simplysm14/README.md` 의 "패키지 인덱스" 섹션 — 메인 에이전트가 갱신.
 
 ## 워크플로
 
@@ -25,7 +25,7 @@ effort: "low"
 
 ### 2. 패키지별 subagent 병렬 호출
 
-`public 리스트` 의 패키지 수만큼 `general-purpose` subagent 호출을 **단일 메시지 안에서 병렬**로 보냄. 각 호출 프롬프트는 [references/subagent-prompt.md](references/subagent-prompt.md) 의 양식을 그대로 사용하고, `<PACKAGE_NAME>` 과 `<PACKAGE_DIR>` 만 치환함.
+`public 리스트` 의 패키지 수만큼 `general-purpose` subagent 호출을 **단일 메시지 안에서 병렬**로 보냄. 각 호출 프롬프트는 [references/subagent-prompt.md](references/subagent-prompt.md) 양식의 "프롬프트" 마커 아래 본문을 그대로 사용하고, `<PACKAGE_NAME>` 과 `<PACKAGE_DIR>` 만 치환.
 
 각 subagent 의 산출 (풀 재작성 모드 — 기존 파일 참고 없이 처음부터 작성):
 
@@ -33,7 +33,7 @@ effort: "low"
 - 필요 시 `apis/<패키지명>/<군명>.md` 재작성. 코드에서 사라진 군의 파일은 삭제.
 - 결과 보고 1단락 (산출 파일 목록, 분할 발생 여부, 한 줄 트리거 요약).
 
-**범위 한정**: subagent 는 `apis/<패키지명>/` 자리만 다룸. 상위 `.claude/references/sd-simplysm14/README.md` 는 건드리지 않음 (메인 에이전트가 §3 에서 처리).
+**범위 한정**: subagent 는 `apis/<패키지명>/` 위치만 다룸. 상위 `.claude/references/sd-simplysm14/README.md` 는 건드리지 않음 (다음 단계의 "패키지 인덱스 섹션 갱신" 에서 메인 에이전트가 처리).
 
 ### 3. 상위 README 의 "패키지 인덱스" 섹션 갱신 (파일 보존 + 섹션 내 항목만 갱신)
 

@@ -1,31 +1,31 @@
 # @simplysm/* v14 행동 지침
 
-Claude 에이전트가 반드시 지켜야 할 행동 지침. (@simplysm/\* v14 포함시)
+Claude 에이전트가 `@simplysm/*` v14 패키지를 사용·변경하는 작업에서 반드시 지켜야 할 행동 지침.
 
-## 코드 위치 원칙
+## 코드 작성 위치 원칙
 
-기본 위치는 **클라이언트**. 서버(`service-server`)는 다음 두 경우에만 둠:
+업무 로직 코드의 기본 작성 위치는 **클라이언트 패키지**. 서버 패키지(`@simplysm/service-server` 기반)에는 다음 두 경우에만 코드를 둠:
 
-- **보안**: 클라이언트에 노출 불가한 자격증명/키, 권한 우회 위험, 외부에 직접 노출하면 안 되는 연산.
-- **클라이언트 미지원**: 브라우저/모바일 런타임에서 실행 불가한 기능(특정 네이티브 API, 서버 측 자원 접근 등).
+- **보안 필요**: 클라이언트에 노출 불가한 자격증명·키, 권한 우회 위험이 있는 처리, 외부에 직접 노출하면 안 되는 연산.
+- **클라이언트 실행 불가**: 브라우저·모바일 런타임에서 실행 불가능한 기능 (특정 네이티브 API, 서버 측 자원 접근 등).
 
-ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 사유에 해당하지 않는 한 클라이언트 코드에 직접 둠. "서버에 두는 게 관행"이라는 이유로 service 로 이관하지 않음.
+ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당하지 않는 한 클라이언트 코드에 직접 둠. "서버에 두는 게 관행"이라는 이유로 서버 패키지로 이관 금지.
 
-## CLAUDE.md 명령어 표기
+## 프로젝트 `CLAUDE.md` 명령어 표기 규칙
 
-`CLAUDE.md` 작성 시, 검증 명령은 다음 역할로 표기함.
+`@simplysm/*` v14 기반 프로젝트의 `CLAUDE.md` 작성 시, 검증 명령 표기 규칙:
 
-- **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck + lint 일괄, 자동 수정 포함.
-- **보조**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제 났을 때 각각 따로 보기 위함. 단독 사용은 회피.
-- **`-t` 타겟 표기**: `sd.config.ts` 의 `packages` 키(`@simplysm/` 접두사 **제외** 한 짧은 이름. 예: `excel`, `core-node`, `sd-cli`) 임을 본문에 명시. 풀네임 사용을 막기 위해 예시도 짧은 이름으로 통일.
+- **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck 와 lint 를 일괄 수행, 자동 수정 포함.
+- **보조 명령**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제가 났을 때 각각 따로 확인하는 용도. 단독 사용 회피.
+- **`-t` 타겟 인자 표기**: `-t` 인자 값은 `sd.config.ts` 의 `packages` 키 (`@simplysm/` 접두사를 **제외** 한 짧은 이름. 예: `excel`, `core-node`, `sd-cli`) 임을 본문에 명시. 풀네임 사용을 막기 위해 예시도 짧은 이름으로 통일.
 
 ## 개발 매뉴얼
 
-트리거 조건이 처음 충족될 때 해당 자료를 Read.
+아래 표의 트리거 조건이 현재 작업에서 처음 충족되는 시점에 해당 매뉴얼 파일을 Read 도구로 읽기.
 
 | 트리거                                                  | 매뉴얼                                                 |
 | ------------------------------------------------------- | ------------------------------------------------------ |
-| 클라이언트 코드(앱·`@simplysm/angular`) 작성 — 항상     | [client-rules.md](./manuals/client-rules.md)           |
+| 클라이언트 코드 (앱 패키지·`@simplysm/angular`) 를 작성·수정하는 모든 작업 | [client-rules.md](./manuals/client-rules.md)           |
 | 화면 컴포넌트(`<domain>.<역할>.ts`) 작성/수정           | [client-component.md](./manuals/client-component.md)   |
 | `sd-crud-list` / `sd-crud-detail` 채택한 목록·단건 화면 | [client-crud.md](./manuals/client-crud.md)             |
 | 클라이언트 데모 컴포넌트 작성                           | [client-demo.md](./manuals/client-demo.md)             |
