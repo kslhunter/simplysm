@@ -88,7 +88,7 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## 개발 시 주의사항
 
-- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **사용자가 명시적으로 첨부하지 않는 한 읽지 않음**. 자세한 행동 지침은 `.claude/rules/sd-base-rules.md` 및 `.claude/rules/sd-design-rules.md` 참조 (자동 로드됨).
+- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **사용자가 명시적으로 첨부하지 않는 한 읽지 않음**. 자세한 행동 지침은 시스템 프롬프트의 "행동 규칙" 및 `.claude/rules/sd-design-rules.md`(자동 로드됨) 참조.
 - Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증 수행. 훅 차단 시 우회하지 말고 원인 해결.
 - ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
 - `@simplysm/*` 패키지의 공개 API/동작 변경 시 `.claude/references/sd-simplysm14/apis/<패키지>/README.md` 갱신 필요 여부 검토.

@@ -1,7 +1,7 @@
 ---
 name: sd-unpack
 description: 메일·문서(eml/msg/pdf/docx/pptx/xlsx/xlsb, 레거시 doc/ppt/xls)를 첨부 포함 재귀적으로 풀어 평문 트리로 펼치기. Use when 위 형식 파일의 본문·첨부 전반을 훑어야 할 때 (분석·요약·정리·검토 등). 단순 단답 조회(특정 값/셀 확인)나 옆에 이미 펼친 `<basename>_<ext>/` 폴더가 있으면 호출 금지.
-
+model: haiku
 ---
 
 # sd-unpack

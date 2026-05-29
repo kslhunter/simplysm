@@ -1,7 +1,7 @@
 ---
 name: sd-docs
 description: `@simplysm/*` 라이브러리 패키지의 API 문서를 `.claude/references/sd-simplysm14/apis/<패키지명>/` 위치에 사용 트리거 기준으로 작성·갱신. Use when 라이브러리 API 문서를 새로 작성하거나 코드 변경을 반영해 갱신할 때.
-effort: "low"
+model: haiku
 ---
 
 # sd-docs
