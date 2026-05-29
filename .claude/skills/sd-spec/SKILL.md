@@ -12,7 +12,7 @@ description: SI/업무시스템 요구사항을 분석해 spec.md 로 구조화.
 - **Input**: Requirement Source (회의록·메일·문서·PDF·발화 등 비정형 자료) + 사용자와의 대화 + (재진입 시) 기존 spec.md.
 - **Output**: spec.md 1개 (후속 도구 sd-impl·sd-demo 의 입력 계약).
 - **폴더**: `.specs/{yyMMddHHmmss}_{slug}/`.
-  - `yyMMddHHmmss`: Bash `date +%y%m%d%H%M%S` 명령으로 생성 (예: `260513204500` = 2026-05-13 20:45:00).
+  - `yyMMddHHmmss`: PowerShell `Get-Date -Format "yyMMddHHmmss"` 명령으로 생성 (예: `260513204500` = 2026-05-13 20:45:00).
   - `slug`: 짧은 한·두 단어. 허용 문자는 한글·영문·`_`·`-`·공백 (그 외 문자는 금지).
 
 ## 사이클 (본체)
@@ -97,7 +97,7 @@ sd-base-rules 의 "묶음 채택 금지" 적용 — 사용자가 한 번에 yes/
 
 #### 확정 → Write
 
-헤더 마커 `[확정: YYYY-MM-DD]` 부착 (날짜는 Bash `date +%Y-%m-%d` 로 생성).
+헤더 마커 `[확정: YYYY-MM-DD]` 부착 (날짜는 PowerShell `Get-Date -Format "yyyy-MM-dd"` 로 생성).
 
 #### 수정 → 재작성
 
@@ -858,4 +858,3 @@ sub-section 헤더 레벨은 `## spec.md 형식` 의 "sub-section 헤더 레벨"
 | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [references/example-spec.md](references/example-spec.md)                                                   | spec.md 형식 모범 (WMS 예시 1건). 각 § 작성법의 "모범" 표기에서 참조               |
 | [.claude/references/sd-requirement-source-handling.md](../../references/sd-requirement-source-handling.md) | Requirement Source 부정확성 처리 (STT 오타·화자 모호·발화 모호·도메인 용어 다의성) |
-| [.claude/rules/sd-base-rules.md](../../rules/sd-base-rules.md)                                             | 결정 근거·초안 단위·발언 의도 파악·표현 톤 등 상위 룰 (자동 로드, 중복 명시 금지)     |

@@ -702,6 +702,70 @@ def _pptx_save_picture(
 # XLSX
 # ====================================================================
 
+def _xlsx_clean_nonfinite(src: Path, dst: Path) -> None:
+    """xlsx 시트 XML 안 `<v>NaN</v>`/`<v>Infinity</v>`/`<v>-Infinity</v>` 를 제거한 사본을 dst 에 생성.
+
+    원인: 일부 third-party 라이브러리가 만든 xlsx 가 비유한 부동소수점(NaN/Inf) 을 numeric 셀에
+    문자열 그대로 기록 → openpyxl 의 `_cast_number → int('NaN')` 에서 ValueError.
+    대응: 시트 XML 의 해당 `<v>` 요소만 제거(해당 셀은 빈 셀 처리). 다른 part(images·drawings·
+    styles·shared strings) 는 그대로 복사.
+    """
+    pat = re.compile(rb"<v>(?:NaN|Infinity|-Infinity|INF|-INF)</v>")
+    with zipfile.ZipFile(_common.long_str(src), "r") as zin, \
+            zipfile.ZipFile(_common.long_str(dst), "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename.startswith("xl/worksheets/") and item.filename.endswith(".xml"):
+                data = pat.sub(b"", data)
+            zout.writestr(item, data)
+
+
+def _safe_load_xlsx_workbooks(
+    input_path: Path,
+    cleanup_paths: list[Path],
+) -> tuple[Any, Any, Path]:
+    """openpyxl 로 wb_values(data_only=True) + wb_formulas(data_only=False) 둘 다 로드.
+
+    비표준 셀값(NaN/Infinity 문자열을 numeric 셀에 담은 xlsx) 은 openpyxl 의 strict int cast 로
+    ValueError throw. 이 경우 시트 XML 의 비유한값만 제거한 정제본을 임시 파일로 만들어 재시도.
+    정제 발생시 임시 파일을 `cleanup_paths` 에 등록(호출자가 finally 에서 unlink).
+
+    반환: (wb_values, wb_formulas, openpyxl_input_path). openpyxl_input_path 는 후속 openpyxl
+    호출(이미지 추출 등) 이 같은 정제본을 재사용하도록 path 노출. 정제 불필요시 input_path 그대로.
+    """
+    import tempfile
+    from openpyxl import load_workbook
+
+    def _is_nonfinite_error(e: BaseException) -> bool:
+        cur: Optional[BaseException] = e
+        while cur is not None:
+            msg = str(cur)
+            if "NaN" in msg or "Infinity" in msg:
+                return True
+            cur = cur.__cause__
+        return False
+
+    src_str = _common.long_str(input_path)
+    try:
+        wb_values = load_workbook(src_str, data_only=True)
+        wb_formulas = load_workbook(src_str, data_only=False)
+        return wb_values, wb_formulas, input_path
+    except ValueError as e:
+        if not _is_nonfinite_error(e):
+            raise
+
+    base = _common._ensure_tmp_base()
+    fd, tmp_str = tempfile.mkstemp(prefix="sd-unpack-xlsx-clean-", suffix=".xlsx", dir=str(base))
+    os.close(fd)
+    cleaned = Path(tmp_str)
+    # 등록을 정제·로드 전에 수행 → 도중 throw 해도 호출자 finally 가 unlink.
+    cleanup_paths.append(cleaned)
+    _xlsx_clean_nonfinite(input_path, cleaned)
+    wb_values = load_workbook(_common.long_str(cleaned), data_only=True)
+    wb_formulas = load_workbook(_common.long_str(cleaned), data_only=False)
+    return wb_values, wb_formulas, cleaned
+
+
 def _run_xlsx(
     input_path: Path,
     out_dir: Path,
@@ -722,174 +786,185 @@ def _run_xlsx(
     sheet_formula_count: dict[str, int] = {}
     sheet_dims: dict[str, tuple[int, int]] = {}
 
-    wb_values = load_workbook(_common.long_str(input_path), data_only=True)
-    wb_formulas = load_workbook(_common.long_str(input_path), data_only=False)
+    # 비표준 셀값(NaN/Infinity) 사전 정제 + openpyxl 로드. 정제본 임시파일은 마지막에 unlink.
+    _xlsx_cleanups: list[Path] = []
     try:
-        _common.mkdir(sheets_dir)
-        # openpyxl 의 sheetnames 는 일반 Worksheet 와 Chartsheet 둘 다 포함.
-        # 시트 순서 그대로 idx 통합 부여 (사용자 워크북 순서 보존).
-        # 일반 Worksheet 만 COM Excel PNG export 대상, Chartsheet 는 차트 데이터만 추출.
-        idx_counter = 0
-        for name in wb_values.sheetnames:
-            obj = wb_values[name]
-            idx_counter += 1
-            idx = f"{idx_counter:02d}"
-            safe_name = _common.slugify_filename(name, max_len=40)
-            if isinstance(obj, Worksheet):
-                sheet_names.append((idx, safe_name, name))
-            else:
-                # Chartsheet 등 비-worksheet
-                chart_sheet_names.append((idx, safe_name, name))
+        wb_values, wb_formulas, openpyxl_input = _safe_load_xlsx_workbooks(input_path, _xlsx_cleanups)
+        try:
+            _common.mkdir(sheets_dir)
+            # openpyxl 의 sheetnames 는 일반 Worksheet 와 Chartsheet 둘 다 포함.
+            # 시트 순서 그대로 idx 통합 부여 (사용자 워크북 순서 보존).
+            # 일반 Worksheet 만 COM Excel PNG export 대상, Chartsheet 는 차트 데이터만 추출.
+            idx_counter = 0
+            for name in wb_values.sheetnames:
+                obj = wb_values[name]
+                idx_counter += 1
+                idx = f"{idx_counter:02d}"
+                safe_name = _common.slugify_filename(name, max_len=40)
+                if isinstance(obj, Worksheet):
+                    sheet_names.append((idx, safe_name, name))
+                else:
+                    # Chartsheet 등 비-worksheet
+                    chart_sheet_names.append((idx, safe_name, name))
 
-        # COM Excel 호출: 데이터 영역 → ChartObject + Range.CopyPicture → 시트별 PNG.
-        # 시트별 (last_row, last_col) 도 같이 반환되어 .jsonl 이 같은 데이터 영역으로 통일됨.
-        # PNG export 실패한 시트는 sheet_png_skipped 에 사유 (silent skip 금지).
-        with _common.com_lock():
-            sheet_ranges, sheet_png_skipped = _excel_export_sheet_pngs(input_path, sheets_dir, sheet_names)
+            # COM Excel 호출: 데이터 영역 → ChartObject + Range.CopyPicture → 시트별 PNG.
+            # 시트별 (last_row, last_col) 도 같이 반환되어 .jsonl 이 같은 데이터 영역으로 통일됨.
+            # PNG export 실패한 시트는 sheet_png_skipped 에 사유 (silent skip 금지).
+            with _common.com_lock():
+                # openpyxl_input 사용: 정제본(NaN 제거) 이 있으면 COM Excel 도 정제본을 열어야 함
+                # (Excel 역시 `<v>NaN</v>` 가 있는 xlsx 의 Open 에 실패).
+                sheet_ranges, sheet_png_skipped = _excel_export_sheet_pngs(openpyxl_input, sheets_dir, sheet_names)
 
-        for idx, safe_name, raw_name in sheet_names:
-            ws_v = wb_values[raw_name]
-            ws_f = wb_formulas[raw_name]
+            for idx, safe_name, raw_name in sheet_names:
+                ws_v = wb_values[raw_name]
+                ws_f = wb_formulas[raw_name]
 
-            # COM Find 결과가 있으면 그 범위, 없으면 openpyxl max_row/max_column fallback.
-            last_row, last_col = sheet_ranges.get(raw_name, (ws_v.max_row, ws_v.max_column))
-            sheet_dims[idx] = (last_row, last_col)
+                # COM Find 결과가 있으면 그 범위, 없으면 openpyxl max_row/max_column fallback.
+                last_row, last_col = sheet_ranges.get(raw_name, (ws_v.max_row, ws_v.max_column))
+                sheet_dims[idx] = (last_row, last_col)
 
-            jsonl_lines, formula_n = _sheet_to_jsonl(ws_v, ws_f, last_row, last_col)
-            _common.write_text(sheets_dir / f"{idx}_{safe_name}.jsonl", "\n".join(jsonl_lines))
-            sheet_formula_count[idx] = formula_n
+                jsonl_lines, formula_n = _sheet_to_jsonl(ws_v, ws_f, last_row, last_col)
+                _common.write_text(sheets_dir / f"{idx}_{safe_name}.jsonl", "\n".join(jsonl_lines))
+                sheet_formula_count[idx] = formula_n
 
-            for chart_idx, chart in enumerate(getattr(ws_f, "_charts", []), start=1):
-                data = _extract_openpyxl_chart_data(chart)
-                _common.mkdir(charts_dir)
-                chart_filename = f"sheet{idx}_chart{chart_idx:02d}.data.json"
-                _common.write_text(
-                    charts_dir / chart_filename,
-                    json.dumps(data, ensure_ascii=False, indent=2),
-                )
-                sheet_charts.setdefault(idx, []).append(chart_filename)
-
-        # Chartsheet 처리: 차트 데이터를 charts/sheet<idx>_chart.data.json 으로 저장
-        chart_sheet_chart_files: dict[str, str] = {}  # idx -> chart filename
-        for idx, safe_name, raw_name in chart_sheet_names:
-            cs = wb_formulas[raw_name]
-            chart = None
-            # Chartsheet.charts 또는 _charts 속성 (openpyxl 버전 따라 다름)
-            for attr in ("charts", "_charts"):
-                v = getattr(cs, attr, None)
-                if v:
-                    if hasattr(v, "__iter__"):
-                        try:
-                            chart = next(iter(v), None)
-                        except Exception:
-                            chart = None
-                    else:
-                        chart = v
-                    if chart is not None:
-                        break
-            if chart is None:
-                # 단일 chart 속성 fallback
-                chart = getattr(cs, "chart", None)
-            if chart is not None:
-                try:
+                for chart_idx, chart in enumerate(getattr(ws_f, "_charts", []), start=1):
                     data = _extract_openpyxl_chart_data(chart)
-                except Exception:
-                    data = None
-                if data is not None:
                     _common.mkdir(charts_dir)
-                    chart_filename = f"sheet{idx}_chart.data.json"
+                    chart_filename = f"sheet{idx}_chart{chart_idx:02d}.data.json"
                     _common.write_text(
                         charts_dir / chart_filename,
                         json.dumps(data, ensure_ascii=False, indent=2),
                     )
-                    chart_sheet_chart_files[idx] = chart_filename
+                    sheet_charts.setdefault(idx, []).append(chart_filename)
 
-        # 워크북 단위 메타 (defined names·pivots·sheet codeName 등) — 시트 jsonl 외부 분리.
-        wb_meta = _workbook_meta(wb_formulas, input_path)
-        # VBA 시트 객체명 ↔ raw 시트명 매핑 (시트 codeName 기반)
-        sheet_code_map: dict[str, str] = {}
-        for ws in wb_formulas.worksheets:
-            code = getattr(ws.sheet_properties, "codeName", None)
-            if code:
-                sheet_code_map[code] = ws.title
-        if sheet_code_map:
-            wb_meta["sheet_code_map"] = sheet_code_map
-        if wb_meta:
-            _common.write_text(
-                out_dir / "workbook.meta.json",
-                json.dumps(wb_meta, ensure_ascii=False, indent=2),
-            )
+            # Chartsheet 처리: 차트 데이터를 charts/sheet<idx>_chart.data.json 으로 저장
+            chart_sheet_chart_files: dict[str, str] = {}  # idx -> chart filename
+            for idx, safe_name, raw_name in chart_sheet_names:
+                cs = wb_formulas[raw_name]
+                chart = None
+                # Chartsheet.charts 또는 _charts 속성 (openpyxl 버전 따라 다름)
+                for attr in ("charts", "_charts"):
+                    v = getattr(cs, attr, None)
+                    if v:
+                        if hasattr(v, "__iter__"):
+                            try:
+                                chart = next(iter(v), None)
+                            except Exception:
+                                chart = None
+                        else:
+                            chart = v
+                        if chart is not None:
+                            break
+                if chart is None:
+                    # 단일 chart 속성 fallback
+                    chart = getattr(cs, "chart", None)
+                if chart is not None:
+                    try:
+                        data = _extract_openpyxl_chart_data(chart)
+                    except Exception:
+                        data = None
+                    if data is not None:
+                        _common.mkdir(charts_dir)
+                        chart_filename = f"sheet{idx}_chart.data.json"
+                        _common.write_text(
+                            charts_dir / chart_filename,
+                            json.dumps(data, ensure_ascii=False, indent=2),
+                        )
+                        chart_sheet_chart_files[idx] = chart_filename
+
+            # 워크북 단위 메타 (defined names·pivots·sheet codeName 등) — 시트 jsonl 외부 분리.
+            wb_meta = _workbook_meta(wb_formulas, input_path)
+            # VBA 시트 객체명 ↔ raw 시트명 매핑 (시트 codeName 기반)
+            sheet_code_map: dict[str, str] = {}
+            for ws in wb_formulas.worksheets:
+                code = getattr(ws.sheet_properties, "codeName", None)
+                if code:
+                    sheet_code_map[code] = ws.title
+            if sheet_code_map:
+                wb_meta["sheet_code_map"] = sheet_code_map
+            if wb_meta:
+                _common.write_text(
+                    out_dir / "workbook.meta.json",
+                    json.dumps(wb_meta, ensure_ascii=False, indent=2),
+                )
+        finally:
+            wb_values.close()
+            wb_formulas.close()
+
+        # 시트 PNG 는 데이터 영역(Find 범위) 만 캡처 → 데이터 영역 밖 이미지는 누락될 수 있음 →
+        # raw 이미지를 시트+셀 위치 정보 포함해서 별도 보존.
+        # openpyxl_input 사용: 정제본이 있으면 같은 정제본으로 로드(원본은 openpyxl 가 못 읽음).
+        sheet_images = _extract_xlsx_images_with_position(openpyxl_input, out_dir, sheet_names)
+        attachment_links = _extract_zip_media(
+            input_path,
+            out_dir,
+            media_zip_prefix="xl/media/",
+            embed_zip_prefix="xl/embeddings/",
+        )
+
+        # 시트별 산출물 풀목록 — 일반 시트 + chart sheet 통합, 시트 순서 (idx) 대로
+        sheet_summary_map: dict[str, str] = {}
+        for idx, safe_name, raw_name in sheet_names:
+            last_row, last_col = sheet_dims.get(idx, (0, 0))
+            formula_n = sheet_formula_count.get(idx, 0)
+            png_path = sheets_dir / f"{idx}_{safe_name}.png"
+            if png_path.exists():
+                parts = [f"`sheets/{idx}_{safe_name}.png`", "`.jsonl`"]
+            else:
+                # PNG 미생성 — worker 가 사유 전달 (16-bit cap / COM 실패 등)
+                reason = sheet_png_skipped.get(raw_name, "사유 미상")
+                parts = [f"`sheets/{idx}_{safe_name}.jsonl`", f"(PNG 미생성 — {reason})"]
+            chart_refs = sheet_charts.get(idx, [])
+            if chart_refs:
+                parts.append("(차트: " + ", ".join(f"`charts/{c}`" for c in chart_refs) + ")")
+            img_refs = sheet_images.get(raw_name, [])
+            if img_refs:
+                parts.append("(이미지: " + ", ".join(f"`images/{n}`" for n in img_refs) + ")")
+            meta = f"({last_row}행×{last_col}열"
+            if formula_n:
+                meta += f", 수식 {formula_n}개"
+            meta += ")"
+            sheet_summary_map[idx] = " ".join(parts) + " " + meta
+
+        for idx, safe_name, raw_name in chart_sheet_names:
+            chart_filename = chart_sheet_chart_files.get(idx)
+            if chart_filename:
+                sheet_summary_map[idx] = f"`charts/{chart_filename}` (chart sheet — \"{raw_name}\")"
+            else:
+                sheet_summary_map[idx] = f"(chart sheet — \"{raw_name}\", 차트 데이터 추출 실패)"
+
+        # idx 순서대로 통합
+        for idx in sorted(sheet_summary_map.keys()):
+            sheet_summaries.append(sheet_summary_map[idx])
+
+        source_name, source_size = _source_meta(input_path, out_dir, source_name_override)
+        macro_modules = _extract_macros(_source_path(out_dir, source_name), out_dir)
+
+        sections: dict[str, list[str]] = {}
+        if sheet_summaries:
+            sections[f"시트 (총 {len(sheet_summaries)}개)"] = sheet_summaries
+        if macro_modules:
+            sections[f"VBA 매크로 (총 {len(macro_modules)}개)"] = [f"`macros/{m}`" for m in macro_modules]
+
+        _common.write_readme(
+            out_dir,
+            source_name=source_name,
+            source_size=source_size,
+            tool=("openpyxl + COM Excel + ZIP " + tool_extra).strip(),
+            loss_notes=(
+                "셀 서식(바탕색·border·폰트)·frozen·dims 미보존 (필요 시 _source.xlsx 직접 추출). "
+                "시각은 시트별 PNG, 분석 데이터(셀값·number_format·수식·merges·hyperlinks·comments) 는 "
+                "시트별 .jsonl 한 줄=한 행(좌표 명시), 워크북 단위 메타(defined names 등) 는 workbook.meta.json."
+            ),
+            sections=sections or None,
+            attachments=attachment_links,
+        )
     finally:
-        wb_values.close()
-        wb_formulas.close()
-
-    # 시트 PNG 는 데이터 영역(Find 범위) 만 캡처 → 데이터 영역 밖 이미지는 누락될 수 있음 →
-    # raw 이미지를 시트+셀 위치 정보 포함해서 별도 보존.
-    sheet_images = _extract_xlsx_images_with_position(input_path, out_dir, sheet_names)
-    attachment_links = _extract_zip_media(
-        input_path,
-        out_dir,
-        media_zip_prefix="xl/media/",
-        embed_zip_prefix="xl/embeddings/",
-    )
-
-    # 시트별 산출물 풀목록 — 일반 시트 + chart sheet 통합, 시트 순서 (idx) 대로
-    sheet_summary_map: dict[str, str] = {}
-    for idx, safe_name, raw_name in sheet_names:
-        last_row, last_col = sheet_dims.get(idx, (0, 0))
-        formula_n = sheet_formula_count.get(idx, 0)
-        png_path = sheets_dir / f"{idx}_{safe_name}.png"
-        if png_path.exists():
-            parts = [f"`sheets/{idx}_{safe_name}.png`", "`.jsonl`"]
-        else:
-            # PNG 미생성 — worker 가 사유 전달 (16-bit cap / COM 실패 등)
-            reason = sheet_png_skipped.get(raw_name, "사유 미상")
-            parts = [f"`sheets/{idx}_{safe_name}.jsonl`", f"(PNG 미생성 — {reason})"]
-        chart_refs = sheet_charts.get(idx, [])
-        if chart_refs:
-            parts.append("(차트: " + ", ".join(f"`charts/{c}`" for c in chart_refs) + ")")
-        img_refs = sheet_images.get(raw_name, [])
-        if img_refs:
-            parts.append("(이미지: " + ", ".join(f"`images/{n}`" for n in img_refs) + ")")
-        meta = f"({last_row}행×{last_col}열"
-        if formula_n:
-            meta += f", 수식 {formula_n}개"
-        meta += ")"
-        sheet_summary_map[idx] = " ".join(parts) + " " + meta
-
-    for idx, safe_name, raw_name in chart_sheet_names:
-        chart_filename = chart_sheet_chart_files.get(idx)
-        if chart_filename:
-            sheet_summary_map[idx] = f"`charts/{chart_filename}` (chart sheet — \"{raw_name}\")"
-        else:
-            sheet_summary_map[idx] = f"(chart sheet — \"{raw_name}\", 차트 데이터 추출 실패)"
-
-    # idx 순서대로 통합
-    for idx in sorted(sheet_summary_map.keys()):
-        sheet_summaries.append(sheet_summary_map[idx])
-
-    source_name, source_size = _source_meta(input_path, out_dir, source_name_override)
-    macro_modules = _extract_macros(_source_path(out_dir, source_name), out_dir)
-
-    sections: dict[str, list[str]] = {}
-    if sheet_summaries:
-        sections[f"시트 (총 {len(sheet_summaries)}개)"] = sheet_summaries
-    if macro_modules:
-        sections[f"VBA 매크로 (총 {len(macro_modules)}개)"] = [f"`macros/{m}`" for m in macro_modules]
-
-    _common.write_readme(
-        out_dir,
-        source_name=source_name,
-        source_size=source_size,
-        tool=("openpyxl + COM Excel + ZIP " + tool_extra).strip(),
-        loss_notes=(
-            "셀 서식(바탕색·border·폰트)·frozen·dims 미보존 (필요 시 _source.xlsx 직접 추출). "
-            "시각은 시트별 PNG, 분석 데이터(셀값·number_format·수식·merges·hyperlinks·comments) 는 "
-            "시트별 .jsonl 한 줄=한 행(좌표 명시), 워크북 단위 메타(defined names 등) 는 workbook.meta.json."
-        ),
-        sections=sections or None,
-        attachments=attachment_links,
-    )
+        for _p in _xlsx_cleanups:
+            try:
+                _p.unlink()
+            except Exception:
+                pass
 
 
 # ====================================================================
