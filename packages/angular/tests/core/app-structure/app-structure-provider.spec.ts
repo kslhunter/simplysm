@@ -1,13 +1,11 @@
 import "@simplysm/core-browser";
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import {
   SdAppStructureProvider,
   injectPermsSignal,
 } from "../../../src/core/app-structure/sd-app-structure.provider";
 import type { AppStructureItem } from "@simplysm/service-common";
-import { SdServiceClientFactoryProvider } from "../../../src/core/service-client/sd-service-client-factory.provider";
-import { SdAngularConfigProvider } from "../../../src/core/config/sd-angular-config.provider";
 
 const TEST_ITEMS: AppStructureItem<string>[] = [
   {
@@ -41,27 +39,11 @@ const TEST_ITEMS: AppStructureItem<string>[] = [
   },
 ];
 
-function createMockClientFactory(itemsMap: Record<string, AppStructureItem[]> = {}) {
-  return {
-    get: vi.fn().mockReturnValue({
-      getService: vi.fn().mockReturnValue({
-        getItems: vi.fn().mockResolvedValue(itemsMap),
-      }),
-    }),
-  };
-}
-
 describe("SdAppStructureProvider", () => {
   let structure: SdAppStructureProvider<string>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        SdAppStructureProvider,
-        { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
-        { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-      ],
-    });
+    TestBed.configureTestingModule({ providers: [SdAppStructureProvider] });
     structure = TestBed.inject(SdAppStructureProvider) as SdAppStructureProvider<string>;
     structure.items.set(TEST_ITEMS);
   });
@@ -224,81 +206,34 @@ describe("SdAppStructureProvider", () => {
   describe("Feature 1.3: items signal 및 initialize", () => {
     it("Provider 생성 직후 items는 빈 배열이다", () => {
       TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          SdAppStructureProvider,
-          { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
-          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-        ],
-      });
+      TestBed.configureTestingModule({ providers: [SdAppStructureProvider] });
       const fresh = TestBed.inject(SdAppStructureProvider);
       expect(fresh.items()).toEqual([]);
     });
 
-    it("initialize 후 clientName에 해당하는 items가 설정된다", async () => {
+    it("initialize 후 주입한 items가 설정된다", () => {
       TestBed.resetTestingModule();
-      const mockFactory = createMockClientFactory({
-        "testApp": TEST_ITEMS,
-        "other": [{ code: "x", title: "x" }],
-      });
-      TestBed.configureTestingModule({
-        providers: [
-          SdAppStructureProvider,
-          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
-          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-        ],
-      });
+      TestBed.configureTestingModule({ providers: [SdAppStructureProvider] });
       const fresh = TestBed.inject(SdAppStructureProvider);
 
-      await fresh.initialize("test");
+      fresh.initialize(TEST_ITEMS);
 
       expect(fresh.items()).toEqual(TEST_ITEMS);
-      expect(mockFactory.get).toHaveBeenCalledWith("test");
-    });
-
-    it("clientName에 해당하는 항목이 없으면 빈 배열이다", async () => {
-      TestBed.resetTestingModule();
-      const mockFactory = createMockClientFactory({ "other": TEST_ITEMS });
-      TestBed.configureTestingModule({
-        providers: [
-          SdAppStructureProvider,
-          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
-          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-        ],
-      });
-      const fresh = TestBed.inject(SdAppStructureProvider);
-
-      await fresh.initialize("test");
-
-      expect(fresh.items()).toEqual([]);
     });
 
     it("initialize 전 usableMenus는 빈 배열이다", () => {
       TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          SdAppStructureProvider,
-          { provide: SdServiceClientFactoryProvider, useValue: createMockClientFactory() },
-          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-        ],
-      });
+      TestBed.configureTestingModule({ providers: [SdAppStructureProvider] });
       const fresh = TestBed.inject(SdAppStructureProvider);
       expect(fresh.usableMenus()).toEqual([]);
     });
 
-    it("initialize 후 usableMenus가 items에 따라 계산된다", async () => {
+    it("initialize 후 usableMenus가 items에 따라 계산된다", () => {
       TestBed.resetTestingModule();
-      const mockFactory = createMockClientFactory({ "testApp": TEST_ITEMS });
-      TestBed.configureTestingModule({
-        providers: [
-          SdAppStructureProvider,
-          { provide: SdServiceClientFactoryProvider, useValue: mockFactory },
-          { provide: SdAngularConfigProvider, useValue: { clientName: "testApp" } },
-        ],
-      });
-      const fresh = TestBed.inject(SdAppStructureProvider);
+      TestBed.configureTestingModule({ providers: [SdAppStructureProvider] });
+      const fresh = TestBed.inject(SdAppStructureProvider) as SdAppStructureProvider<string>;
 
-      await fresh.initialize("test");
+      fresh.initialize(TEST_ITEMS);
       fresh.usableModules.set(["moduleA"]);
 
       const menus = fresh.usableMenus();

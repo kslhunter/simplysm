@@ -14,15 +14,15 @@ export interface ServiceEventDef<TInfo = unknown, TData = unknown> {
  * 타입 안전한 info와 data를 가진 서비스 이벤트를 정의한다.
  *
  * @example
- * // 서버에서 이벤트 정의 + 타입 export
+ * // 서버·클라이언트 공통 패키지에서 이벤트 정의 + export
  * export const OrderUpdated = defineEvent<{ orderId: number }, { status: string }>("OrderUpdated");
  *
- * // 서버에서 이벤트 발생
- * await server.emitEvent<typeof OrderUpdated>("OrderUpdated", (info) => info.orderId === 123, { status: "shipped" });
+ * // 서버에서 이벤트 발생 (정의 객체를 그대로 전달, 이름·타입 자동 추론)
+ * await server.emitEvent(OrderUpdated, (info) => info.orderId === 123, { status: "shipped" });
  *
- * // 클라이언트에서 구독 (import type으로 타입만 가져옴)
- * import type { OrderUpdated } from "@server-package";
- * await client.addListener<typeof OrderUpdated>("OrderUpdated", { orderId: 123 }, async (data) => {
+ * // 클라이언트에서 구독
+ * import { OrderUpdated } from "@common-package";
+ * await client.addListener(OrderUpdated, { orderId: 123 }, async (data) => {
  *   console.log(data.status); // typed
  * });
  */

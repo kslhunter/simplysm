@@ -24,7 +24,6 @@ export * from "./protocol/protocol-wrapper";
 // 서비스
 export * from "./services/orm-service";
 export * from "./services/auto-update-service";
-export * from "./services/app-structure-service";
 // 유틸리티
 export * from "./utils/config-manager";
 

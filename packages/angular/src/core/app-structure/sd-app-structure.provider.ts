@@ -1,10 +1,8 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import type { Signal } from "@angular/core";
-import type { AppStructureItem, AppStructureService } from "@simplysm/service-common";
+import type { AppStructureItem } from "@simplysm/service-common";
 import type { SdFlatMenu } from "./sd-app-structure.types";
 import { SdAppStructureUtils } from "./sd-app-structure.utils";
-import { SdServiceClientFactoryProvider } from "../service-client/sd-service-client-factory.provider";
-import { SdAngularConfigProvider } from "../config/sd-angular-config.provider";
 
 export function injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]> {
   const sdAppStructure = inject(SdAppStructureProvider);
@@ -15,20 +13,12 @@ export function injectPermsSignal<K extends string>(viewCodes: string[], keys: K
 // 메뉴는 모듈/권한 모두 체크함
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider<TModule = unknown> {
-  private readonly _sdServiceClientFactory = inject(SdServiceClientFactoryProvider);
-  private readonly _sdAngularConfig = inject(SdAngularConfigProvider);
-
   readonly usableModules = signal<TModule[] | undefined>(undefined);
   readonly permRecord = signal<Record<string, boolean> | undefined>(undefined);
   readonly items = signal<AppStructureItem<TModule>[]>([]);
 
-  async initialize(serviceKey: string): Promise<void> {
-    const client = this._sdServiceClientFactory.get(serviceKey);
-    const svc = client.getService<AppStructureService>("AppStructure");
-    const itemsMap = await svc.getItems();
-    this.items.set(
-      (itemsMap[this._sdAngularConfig.clientName] ?? []) as AppStructureItem<TModule>[],
-    );
+  initialize(items: AppStructureItem<TModule>[]): void {
+    this.items.set(items);
   }
 
   usableMenus = computed(() =>

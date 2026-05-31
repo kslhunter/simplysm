@@ -4,13 +4,9 @@ import { ActivatedRoute, Router, UrlSegment } from "@angular/router";
 import { BehaviorSubject, Subject } from "rxjs";
 import { describe, it, expect, vi } from "vitest";
 import { SdAppStructureProvider } from "../../../src/core/app-structure/sd-app-structure.provider";
-import { SdServiceClientFactoryProvider } from "../../../src/core/service-client/sd-service-client-factory.provider";
 import { injectViewTitleSignal } from "../../../src/core/routing/injectViewTitleSignal";
 import { injectViewTypeSignal, type SdViewType } from "../../../src/core/routing/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../src/core/routing/setupCanDeactivate";
-
-// SdServiceClientFactoryProvider stub — SdAppStructureProvider가 inject하지만 본 테스트에선 미사용
-const stubServiceClientFactory = { get: () => undefined };
 
 // reflectComponentType가 읽는 ɵcmp 메타데이터를 수동 설정하여 테스트용 컴포넌트 생성
 function createTestComponent(selector: string) {
@@ -34,7 +30,6 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
     it("앱 구조에서 제목을 반환한다", () => {
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/main/sub" },
@@ -67,7 +62,6 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
     it("currPageCode 우선, fullPageCode 폴백한다", () => {
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/page1" },
@@ -90,7 +84,6 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
     it("getTitleByFullCode가 throw하면 빈 문자열을 반환한다", () => {
       TestBed.configureTestingModule({
         providers: [
-          { provide: SdServiceClientFactoryProvider, useValue: stubServiceClientFactory },
           {
             provide: Router,
             useValue: { events: new Subject(), url: "/app/page1" },

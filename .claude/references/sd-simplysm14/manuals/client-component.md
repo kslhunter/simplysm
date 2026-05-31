@@ -245,7 +245,7 @@ if (!result) return;
 // result 처리
 ```
 
-- **`type`** — `SdModal` 을 구현(상속) 한 컴포넌트 클래스.
+- **`type`** — `SdModalContentDef<O>` 를 구현한 컴포넌트 클래스 (`initialized` 시그널 + `close` output 보유. `O` 는 close 페이로드 타입). `SdModal` 은 라이브러리 모달 셸 컴포넌트이므로 상속 대상이 아님.
 - **`title`** — 모달 헤더 제목.
 - **`inputs`** — 모달 컴포넌트가 받을 input 시그널 값. 없으면 `{}`.
 - **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 닫기(X)·취소로 닫으면 `undefined`.
@@ -629,10 +629,11 @@ label 과 입력 그룹을 묶는 전용 클래스 3종:
 private readonly _appService = inject(AppServiceProvider);
 
 await this._appService.user.someMethod(...);
-this._appService.authInfoEvent.subscribe(...);
+
+const listenerKey = await this._appService.authInfoEvent.addListener(info, async (data) => { ... });
 ```
 
-Provider 정의·서비스 추가 컨벤션은 [client-setup.md#appserviceprovider](./client-setup.md#appserviceprovider) 참조.
+Provider 정의·서비스·이벤트 호출 추가 컨벤션은 [client-service.md](./client-service.md) 참조.
 
 ## ORM 호출 (`AppOrmProvider`)
 
@@ -645,7 +646,7 @@ await this._appOrm.connectAsync(async (db) => {
 ```
 
 - 기본은 `connectAsync` (트랜잭션). `connectWithoutTransAsync` 는 트랜잭션 안에서 동작하지 않는 작업용 헬퍼.
-- 쿼리 작성법은 [orm.md](./orm.md), Provider 정의 컨벤션은 [client-setup.md#appormprovider](./client-setup.md#appormprovider) 참조.
+- 쿼리 작성법은 [orm.md](./orm.md), Provider 정의 컨벤션은 [client-orm.md](./client-orm.md) 참조.
 
 ## 공유 데이터 (`useSharedSignal`)
 
@@ -662,7 +663,7 @@ sharedCustomers = useSharedSignal("고객사");
 <sd-shared-data-select [items]="sharedCustomers.items()" [(value)]="data().customerId" ... />
 ```
 
-새 마스터 데이터 등록·Provider 정의 컨벤션은 [client-setup.md#appshareddataprovider](./client-setup.md#appshareddataprovider) 참조.
+Provider 정의·새 마스터 데이터 등록 컨벤션은 [client-shared-data.md](./client-shared-data.md) 참조.
 
 ## 레이아웃·유틸 클래스
 

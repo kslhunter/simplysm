@@ -78,7 +78,7 @@ import { NgTemplateOutlet } from "@angular/common";
   `,
 })
 export class SdBaseContainer {
-  private readonly _sdSharedData = inject(SdSharedDataProvider);
+  private readonly _sdSharedData = inject(SdSharedDataProvider, { optional: true });
   private readonly _sdToast = inject(SdToastProvider);
 
   viewTitle = injectViewTitleSignal();
@@ -104,11 +104,13 @@ export class SdBaseContainer {
       }
 
       void untracked(async () => {
-        this.busyCount.update((v) => v + 1);
-        await this._sdToast.try(async () => {
-          await this._sdSharedData.wait();
-        });
-        this.busyCount.update((v) => v - 1);
+        if (this._sdSharedData) {
+          this.busyCount.update((v) => v + 1);
+          await this._sdToast.try(async () => {
+            await this._sdSharedData!.wait();
+          });
+          this.busyCount.update((v) => v - 1);
+        }
         this.ready.set(true);
       });
     });

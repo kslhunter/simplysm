@@ -131,18 +131,18 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 
   getEvent<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
   ): ClientEventProxy<TEventDef> {
-    return this._eventClient.getEvent<TEventDef>(eventName);
+    return this._eventClient.getEvent<TEventDef>(eventDef);
   }
 
   async addListener<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     info: TEventDef["$info"],
     cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     if (!this.connected) throw new Error("서버에 연결되지 않았습니다.");
-    return this._eventClient.addListener<TEventDef>(eventName, info, cb);
+    return this._eventClient.addListener<TEventDef>(eventDef, info, cb);
   }
 
   async removeListener(key: string): Promise<void> {
@@ -150,11 +150,11 @@ export class ServiceClient extends EventEmitter<ServiceClientEvents> {
   }
 
   async emitEvent<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     infoSelector: (item: TEventDef["$info"]) => boolean,
     data: TEventDef["$data"],
   ): Promise<void> {
-    await this._eventClient.emit<TEventDef>(eventName, infoSelector, data);
+    await this._eventClient.emit<TEventDef>(eventDef, infoSelector, data);
   }
 
   async uploadFile(files: File[] | FileCollection | { name: string; data: BlobInput }[]) {

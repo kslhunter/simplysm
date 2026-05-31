@@ -19,16 +19,16 @@ export interface ClientEventProxy<TEventDef extends ServiceEventDef> {
 
 export interface EventClient {
   getEvent<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
   ): ClientEventProxy<TEventDef>;
   addListener<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     info: TEventDef["$info"],
     cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string>;
   removeListener(key: string): Promise<void>;
   emit<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     infoSelector: (item: TEventDef["$info"]) => boolean,
     data: TEventDef["$data"],
   ): Promise<void>;
@@ -46,11 +46,12 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   });
 
   async function addListener<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     info: TEventDef["$info"],
     cb: (data: TEventDef["$data"]) => PromiseLike<void>,
   ): Promise<string> {
     const key = Uuid.generate().toString();
+    const eventName = eventDef.eventName;
 
     // 서버에 등록 요청 전송
     await transport.send({
@@ -78,10 +79,11 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   }
 
   async function emit<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
     infoSelector: (item: TEventDef["$info"]) => boolean,
     data: TEventDef["$data"],
   ): Promise<void> {
+    const eventName = eventDef.eventName;
 
     // 서버에 'gets' 요청을 보내 대상 목록 조회
     const listenerInfos = (await transport.send({
@@ -132,12 +134,12 @@ export function createEventClient(transport: ServiceTransport): EventClient {
   }
 
   function getEvent<TEventDef extends ServiceEventDef>(
-    eventName: string,
+    eventDef: TEventDef,
   ): ClientEventProxy<TEventDef> {
     return {
-      addListener: (info, cb) => addListener<TEventDef>(eventName, info, cb),
+      addListener: (info, cb) => addListener<TEventDef>(eventDef, info, cb),
       removeListener,
-      emit: (infoSelector, data) => emit<TEventDef>(eventName, infoSelector, data),
+      emit: (infoSelector, data) => emit<TEventDef>(eventDef, infoSelector, data),
     };
   }
 

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createEventClient, type EventClient } from "../../src/features/event-client";
 import type { ServiceTransport } from "../../src/transport/service-transport";
-import type { ServiceEventDef } from "@simplysm/service-common";
+import { defineEvent } from "@simplysm/service-common";
 import { EventEmitter } from "@simplysm/core-common";
 
-/** 테스트용 이벤트 타입 (소비앱에서는 서버에서 import type으로 가져옴) */
-type TestEventDef = ServiceEventDef<{ channel: string }, string>;
+/** 테스트용 이벤트 정의 (소비앱에서는 공통 패키지에서 import) */
+const TestEvent = defineEvent<{ channel: string }, string>("TestEvent");
 
 /** ServiceTransport 최소 모의 객체 */
 function createMockTransport(): ServiceTransport & { triggerEvent(keys: string[], data: unknown): void } {
@@ -35,7 +35,7 @@ describe("EventClient getEvent() 프록시", () => {
   });
 
   it("getEvent()로 프록시를 생성하고 addListener를 호출하면 이벤트 이름이 자동 바인딩된다", async () => {
-    const proxy = eventClient.getEvent<TestEventDef>("TestEvent");
+    const proxy = eventClient.getEvent(TestEvent);
     const cb = vi.fn().mockResolvedValue(undefined);
 
     const key = await proxy.addListener({ channel: "test-channel" }, cb);
@@ -58,7 +58,7 @@ describe("EventClient getEvent() 프록시", () => {
       return Promise.resolve(undefined);
     });
 
-    const proxy = eventClient.getEvent<TestEventDef>("TestEvent");
+    const proxy = eventClient.getEvent(TestEvent);
     await proxy.emit((item) => item.channel === "test-channel", "hello");
 
     expect(transport.send).toHaveBeenCalledWith({
@@ -72,7 +72,7 @@ describe("EventClient getEvent() 프록시", () => {
   });
 
   it("동일 프록시로 여러 리스너를 등록할 수 있다", async () => {
-    const proxy = eventClient.getEvent<TestEventDef>("TestEvent");
+    const proxy = eventClient.getEvent(TestEvent);
     const cb1 = vi.fn().mockResolvedValue(undefined);
     const cb2 = vi.fn().mockResolvedValue(undefined);
 
@@ -84,7 +84,7 @@ describe("EventClient getEvent() 프록시", () => {
   });
 
   it("getEvent()로 프록시를 생성하고 removeListener를 호출하면 리스너가 제거된다", async () => {
-    const proxy = eventClient.getEvent<TestEventDef>("TestEvent");
+    const proxy = eventClient.getEvent(TestEvent);
     const cb = vi.fn().mockResolvedValue(undefined);
 
     const key = await proxy.addListener({ channel: "ch" }, cb);
@@ -106,10 +106,10 @@ describe("EventClient 시그니처 통일", () => {
     eventClient = createEventClient(transport);
   });
 
-  it("addListener<EventDef>(eventName, info, cb)로 리스너를 등록하면 evt:add 메시지가 전송된다", async () => {
+  it("addListener(eventDef, info, cb)로 리스너를 등록하면 evt:add 메시지가 전송된다", async () => {
     const cb = vi.fn().mockResolvedValue(undefined);
-    const key = await eventClient.addListener<TestEventDef>(
-      "TestEvent",
+    const key = await eventClient.addListener(
+      TestEvent,
       { channel: "test-channel" },
       cb,
     );
@@ -122,7 +122,7 @@ describe("EventClient 시그니처 통일", () => {
     });
   });
 
-  it("emit<EventDef>(eventName, selector, data)로 이벤트를 발행하면 evt:gets와 evt:emit 메시지가 전송된다", async () => {
+  it("emit(eventDef, selector, data)로 이벤트를 발행하면 evt:gets와 evt:emit 메시지가 전송된다", async () => {
     // evt:gets 응답 모킹
     (transport.send as ReturnType<typeof vi.fn>).mockImplementation((msg: any) => {
       if (msg.name === "evt:gets") {
@@ -134,8 +134,8 @@ describe("EventClient 시그니처 통일", () => {
       return Promise.resolve(undefined);
     });
 
-    await eventClient.emit<TestEventDef>(
-      "TestEvent",
+    await eventClient.emit(
+      TestEvent,
       (item) => item.channel === "test-channel",
       "hello",
     );
@@ -155,8 +155,8 @@ describe("EventClient 시그니처 통일", () => {
 
   it("서버에서 evt:on 이벤트를 수신하면 등록된 콜백이 호출된다", async () => {
     const cb = vi.fn().mockResolvedValue(undefined);
-    const key = await eventClient.addListener<TestEventDef>(
-      "TestEvent",
+    const key = await eventClient.addListener(
+      TestEvent,
       { channel: "test-channel" },
       cb,
     );

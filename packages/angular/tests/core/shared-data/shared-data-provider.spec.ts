@@ -15,17 +15,17 @@ class MockServiceClient {
   private _listenerKeyCounter = 0;
   connected = true;
 
-  getEvent(_eventName: string) {
+  getEvent(_eventDef: any) {
     return {
       addListener: (info: any, cb: (data: any) => PromiseLike<void>) =>
-        this.addListener(_eventName, info, cb),
+        this.addListener(_eventDef, info, cb),
       removeListener: (key: string) => this.removeListener(key),
       emit: (infoSelector: (item: any) => boolean, data: any) =>
-        this.emitEvent(_eventName, infoSelector, data),
+        this.emitEvent(_eventDef, infoSelector, data),
     };
   }
 
-  addListener(_eventName: string, info: any, cb: (data: any) => PromiseLike<void>): Promise<string> {
+  addListener(_eventDef: any, info: any, cb: (data: any) => PromiseLike<void>): Promise<string> {
     const key = `listener-${++this._listenerKeyCounter}`;
     this._listeners.set(key, { info, cb });
     return Promise.resolve(key);
@@ -36,7 +36,7 @@ class MockServiceClient {
     return Promise.resolve();
   }
 
-  async emitEvent(_eventName: string, infoSelector: (item: any) => boolean, data: any): Promise<void> {
+  async emitEvent(_eventDef: any, infoSelector: (item: any) => boolean, data: any): Promise<void> {
     for (const [, entry] of this._listeners) {
       if (infoSelector(entry.info)) {
         await entry.cb(data);

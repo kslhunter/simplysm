@@ -24,10 +24,10 @@
     }
   },
   "dependencies": {
-    "@angular/build": "^21.2.12",
-    "@angular/compiler-cli": "^21.2.14",
+    "@angular/build": "^21.2.13",
+    "@angular/compiler-cli": "^21.2.15",
     "@fastify/http-proxy": "^11.4.4",
-    "@inquirer/prompts": "^8.4.3",
+    "@inquirer/prompts": "^8.5.1",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
     "@simplysm/storage": "workspace:*",

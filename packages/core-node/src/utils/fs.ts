@@ -202,10 +202,11 @@ export async function copy(
   if (stats.isDirectory()) {
     await mkdir(targetPath);
     const children = await glob(path.resolve(sourcePath, "*"), { dot: true });
-    await collectCopyEntries(sourcePath, targetPath, children, filter)
-      .parallelAsync(async (entry) => {
+    await collectCopyEntries(sourcePath, targetPath, children, filter).parallelAsync(
+      async (entry) => {
         await copy(entry.sourcePath, entry.targetPath, filter);
-      });
+      },
+    );
   } else {
     await mkdir(path.dirname(targetPath));
 
@@ -578,9 +579,7 @@ export async function findAllParentChildPaths(
     current = next;
   }
 
-  const results = await Promise.all(
-    dirs.map((dir) => glob(path.resolve(dir, childGlob))),
-  );
+  const results = await Promise.all(dirs.map((dir) => glob(path.resolve(dir, childGlob))));
 
   return results.flat();
 }

@@ -110,7 +110,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
     }
 
     const client = this._sdServiceClientFactory.get(entry.info.serviceKey);
-    const event = client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange");
+    const event = client.getEvent(SdSharedDataChangeEvent);
     await event.emit(
       (item) => item.name === (name as string) && obj.equal(item.filter, entry.info.filter),
       changeKeys,
@@ -138,7 +138,7 @@ export abstract class SdSharedDataProvider<T extends Record<string, SharedDataBa
         // 이벤트 리스너 등록
         if (entry.listenerKey == null) {
           const client = this._sdServiceClientFactory.get(entry.info.serviceKey);
-          const event = client.getEvent<typeof SdSharedDataChangeEvent>("SdSharedDataChange");
+          const event = client.getEvent(SdSharedDataChangeEvent);
           entry.listenerKey = await event.addListener(
             { name, filter: entry.info.filter },
             async (changeKeys) => {
