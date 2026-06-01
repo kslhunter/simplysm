@@ -41,7 +41,7 @@ describe("SdStatePreset 프리셋 이름 중복 검사", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset;
+    const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset<any>;
 
     // 첫 번째 프리셋 추가: "필터A"
     mockModal.showAsync.mockResolvedValueOnce("필터A");
@@ -67,7 +67,7 @@ describe("SdStatePreset 프리셋 이름 중복 검사", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset;
+    const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset<any>;
 
     // "필터A" 추가
     mockModal.showAsync.mockResolvedValueOnce("필터A");

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
+import { SdOptionEventPlugin } from "../../../src/core/events/sd-option-event.plugin";
 import {
   SdBusyTestDefault,
   SdBusyTestMessage,
@@ -8,7 +10,10 @@ import {
 } from "./sd-busy-test.fixture";
 
 function setup<T>(component: Type<T>) {
-  TestBed.configureTestingModule({ imports: [component] });
+  TestBed.configureTestingModule({
+    imports: [component],
+    providers: [{ provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true }],
+  });
   const fixture = TestBed.createComponent(component);
   fixture.detectChanges();
   TestBed.flushEffects();

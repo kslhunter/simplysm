@@ -1,6 +1,6 @@
 import { computed, ErrorHandler, inject, Injectable, signal, type Signal, type WritableSignal } from "@angular/core";
 import { defineEvent } from "@simplysm/service-common";
-import { obj, wait as waitUtil } from "@simplysm/core-common";
+import { DateOnly, DateTime, obj, Time, wait as waitUtil } from "@simplysm/core-common";
 import { SdServiceClientFactoryProvider } from "../service-client/sd-service-client-factory.provider";
 import "@simplysm/core-common";
 
@@ -15,7 +15,7 @@ export interface SharedDataInfo<T extends SharedDataBase<string | number>> {
   serviceKey: string;
   getter: (changeKeys?: (string | number)[]) => Promise<T[]>;
   filter?: unknown;
-  orderBy?: (item: T) => any;
+  orderBy?: (item: T) => string | number | DateOnly | DateTime | Time | undefined;
 }
 
 export interface SharedDataHandle<T extends SharedDataBase<string | number>> {

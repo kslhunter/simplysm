@@ -3,11 +3,10 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
-  effect,
   input,
   model,
-  signal,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
@@ -70,27 +69,23 @@ export class SdSharedDataSelectButton<
   inset = input(false, { transform: booleanAttribute });
   size = input<"sm" | "lg">();
 
-  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  itemTplRef = contentChild.required<SdItemOfTemplate<TItem>, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplate,
     { read: TemplateRef },
   );
 
-  protected readonly _selectedItems = signal<TItem[]>([]);
+  _selectedItems = computed<TItem[]>(() => {
+    const v = this.value();
+    const items = this.items();
+    const mode = this.selectMode();
 
-  constructor() {
-    effect(() => {
-      const v = this.value();
-      const items = this.items();
-      const mode = this.selectMode();
-
-      if (mode === "multi" && Array.isArray(v) && v.filterExists().length > 0) {
-        const keys = v.filterExists() as (string | number)[];
-        this._selectedItems.set(items.filter((it) => keys.includes(it.__valueKey)));
-      } else if (mode === "single" && !Array.isArray(v) && v != null) {
-        this._selectedItems.set(items.filter((it) => it.__valueKey === v));
-      } else {
-        this._selectedItems.set([]);
-      }
-    });
-  }
+    if (mode === "multi" && Array.isArray(v) && v.filterExists().length > 0) {
+      const keys = v.filterExists() as (string | number)[];
+      return items.filter((it) => keys.includes(it.__valueKey));
+    } else if (mode === "single" && !Array.isArray(v) && v != null) {
+      return items.filter((it) => it.__valueKey === v);
+    } else {
+      return [];
+    }
+  });
 }

@@ -25,7 +25,25 @@ export interface ServiceProtocol {
   encode(uuid: string, message: ServiceMessage): { chunks: Bytes[]; totalSize: number };
 
   /**
-   * 메시지를 디코딩한다 (청크 패킷 자동 재조립)
+   * 청크 패킷을 누적한다 (재조립 전용, stateful).
+   *
+   * 한 메시지(uuid)의 모든 청크를 동일 누적기에 모은다. 아직 미완성이면 `progress`,
+   * 모든 청크가 도착하면 재조립된 raw 바이트를 담은 `complete` 를 반환한다.
+   * JSON 파싱은 수행하지 않는다 (파싱은 {@link parseMessage} 가 담당).
+   */
+  accumulate(bytes: Bytes): ServiceAccumulateResult;
+
+  /**
+   * 재조립 완료된 raw 바이트를 메시지로 파싱한다 (stateless).
+   *
+   * 누적기 상태에 의존하지 않으므로 worker 등 다른 실행 컨텍스트에 위임할 수 있다.
+   */
+  parseMessage(resultBytes: Bytes): ServiceMessage;
+
+  /**
+   * 메시지를 디코딩한다 (청크 패킷 자동 재조립).
+   *
+   * {@link accumulate} 로 누적한 뒤 완료 시 {@link parseMessage} 로 파싱하는 통합 동작이다.
    */
   decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T>;
 
@@ -46,6 +64,16 @@ export interface ServiceProtocol {
  */
 export type ServiceMessageDecodeResult<TMessage extends ServiceMessage> =
   | { type: "complete"; uuid: string; message: TMessage }
+  | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
+
+/**
+ * 청크 누적({@link ServiceProtocol.accumulate}) 결과 타입 (유니언)
+ *
+ * - `type: "complete"`: 모든 청크를 수신하여 재조립이 완료됨 (파싱 전 raw 바이트)
+ * - `type: "progress"`: 청크 메시지 진행 중 (일부 청크만 도착)
+ */
+export type ServiceAccumulateResult =
+  | { type: "complete"; uuid: string; resultBytes: Bytes }
   | { type: "progress"; uuid: string; totalSize: number; completedSize: number };
 
 /**
@@ -159,7 +187,7 @@ export function createServiceProtocol(): ServiceProtocol {
       return { chunks, totalSize };
     },
 
-    decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T> {
+    accumulate(bytes: Bytes): ServiceAccumulateResult {
       if (bytes.length < 28) {
         throw new ArgumentError("버퍼 크기가 헤더 크기보다 작습니다.", {
           bufferSize: bytes.length,
@@ -210,19 +238,10 @@ export function createServiceProtocol(): ServiceProtocol {
         accumulator.delete(uuid); // 메모리 해제
 
         const resultBytes = bytesU.concat(accItem.chunks.filterExists());
-        let messageArr: [string, unknown];
-        try {
-          messageArr = json.parse<[string, unknown]>(new TextDecoder().decode(resultBytes));
-        } catch (err) {
-          throw new ArgumentError("메시지 디코딩에 실패했습니다.", { uuid, cause: err });
-        }
         return {
           type: "complete",
           uuid: uuid,
-          message: {
-            name: messageArr[0],
-            body: messageArr[1],
-          } as T,
+          resultBytes,
         };
       } else {
         accumulator.delete(uuid);
@@ -232,6 +251,31 @@ export function createServiceProtocol(): ServiceProtocol {
           totalSize: accItem.totalSize,
         });
       }
+    },
+
+    parseMessage(resultBytes: Bytes): ServiceMessage {
+      let messageArr: [string, unknown];
+      try {
+        messageArr = json.parse<[string, unknown]>(new TextDecoder().decode(resultBytes));
+      } catch (err) {
+        throw new ArgumentError("메시지 디코딩에 실패했습니다.", { cause: err });
+      }
+      return {
+        name: messageArr[0],
+        body: messageArr[1],
+      } as ServiceMessage;
+    },
+
+    decode<T extends ServiceMessage>(bytes: Bytes): ServiceMessageDecodeResult<T> {
+      const acc = this.accumulate(bytes);
+      if (acc.type === "progress") {
+        return acc;
+      }
+      return {
+        type: "complete",
+        uuid: acc.uuid,
+        message: this.parseMessage(acc.resultBytes) as T,
+      };
     },
 
     dispose(): void {

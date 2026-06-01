@@ -100,6 +100,16 @@ describe("ServiceClient 브라우저 테스트", () => {
       const lastProgress = progressStates[progressStates.length - 1];
       expect(lastProgress.completedSize).toBe(lastProgress.totalSize);
     });
+
+    it("마지막 청크가 임계값(30KB) 이하인 대용량 응답도 hang 없이 완료된다 (#35)", async () => {
+      const svc = client.getService<TestServiceMethods>("TestService");
+
+      // 3310KB ≈ 3.23MB: 청킹(>3MB) 발생 + 마지막 청크 ≈10KB(≤30KB SIZE_THRESHOLD)
+      // 기존 구조에서는 큰 청크는 worker, 작은 마지막 청크는 메인으로 분기되어
+      // 서로 다른 누적기로 흩어져 재조립이 완성되지 못하고 영구 hang 되던 케이스
+      const result = await svc.getLargeData(3310);
+      expect(result.length).toBe(3310 * 1024);
+    });
   });
 
   describe("인증 및 권한 부여", () => {

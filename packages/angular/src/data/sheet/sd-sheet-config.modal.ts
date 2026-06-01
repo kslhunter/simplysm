@@ -1,14 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  effect,
   forwardRef,
+  inject,
   input,
+  linkedSignal,
   output,
   signal,
   ViewEncapsulation,
 } from "@angular/core";
-import type { SdModalContentDef } from "../../core/modal/sd-modal.provider";
+import { SdModalProvider, type SdModalContentDef } from "../../core/modal/sd-modal.provider";
+import { SdConfirmModal } from "../../core/modal/sd-confirm-modal";
 import type { SdSheetConfig } from "./types";
 import type { SdSheetColumn } from "./sd-sheet-column";
 import { SdSheet } from "./sd-sheet";
@@ -178,14 +180,36 @@ interface ConfigItem {
   `,
 })
 export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | undefined> {
-  initialized = signal(false);
+  private readonly _sdModal = inject(SdModalProvider);
+
+  initialized = signal(true);
   close = output<SdSheetConfig | undefined>();
 
   sheetKey = input.required<string>();
   controls = input.required<readonly SdSheetColumn[]>();
   config = input.required<SdSheetConfig | undefined>();
 
-  items = signal<ConfigItem[]>([]);
+  items = linkedSignal<ConfigItem[]>(() => {
+    const cfg = this.config();
+    return this.controls()
+      .map((ctrl): ConfigItem => {
+        const key = ctrl.key();
+        const cfgCol = cfg?.columnRecord[key];
+        return {
+          key,
+          header: Array.isArray(ctrl.header())
+            ? (ctrl.header() as string[]).join(" > ")
+            : (ctrl.header() as string),
+          disableResizing: ctrl.disableResizing(),
+          fixed: cfgCol?.fixed ?? ctrl.fixed(),
+          hidden: cfgCol?.hidden ?? ctrl.hidden(),
+          width: cfgCol?.width ?? ctrl.width(),
+          ordering: cfgCol?.ordering ?? ctrl.ordering(),
+        };
+      })
+      .orderBy((i) => i.ordering ?? 0)
+      .orderBy((i) => (i.fixed ? 0 : 1));
+  });
 
   trackByFn = (item: ConfigItem): string => item.key;
 
@@ -193,33 +217,6 @@ export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | und
   protected readonly tablerChevronDown = tablerChevronDown;
   protected readonly tablerX = tablerX;
   protected readonly mark = mark;
-
-  constructor() {
-    effect(() => {
-      const cfg = this.config();
-      const items = this.controls()
-        .map((ctrl): ConfigItem => {
-          const key = ctrl.key();
-          const cfgCol = cfg?.columnRecord[key];
-          return {
-            key,
-            header: Array.isArray(ctrl.header())
-              ? (ctrl.header() as string[]).join(" > ")
-              : (ctrl.header() as string),
-            disableResizing: ctrl.disableResizing(),
-            fixed: cfgCol?.fixed ?? ctrl.fixed(),
-            hidden: cfgCol?.hidden ?? ctrl.hidden(),
-            width: cfgCol?.width ?? ctrl.width(),
-            ordering: cfgCol?.ordering ?? ctrl.ordering(),
-          };
-        })
-        .orderBy((i) => i.ordering ?? 0)
-        .orderBy((i) => (i.fixed ? 0 : 1));
-
-      this.items.set(items);
-      this.initialized.set(true);
-    });
-  }
 
   onMoveUp(item: ConfigItem): void {
     this.items.update((v) => {
@@ -264,9 +261,16 @@ export class SdSheetConfigModal implements SdModalContentDef<SdSheetConfig | und
     this.close.emit(undefined);
   }
 
-  onResetClick(): void {
-    if (confirm("설정값이 모두 초기화 됩니다.")) {
-      this.close.emit({ columnRecord: {} });
-    }
+  async onResetClick(): Promise<void> {
+    const confirmed = await this._sdModal.showAsync(
+      {
+        title: "설정 초기화",
+        type: SdConfirmModal,
+        inputs: { message: "설정값이 모두 초기화 됩니다." },
+      },
+      { useCloseByBackdrop: false },
+    );
+    if (confirmed !== true) return;
+    this.close.emit({ columnRecord: {} });
   }
 }

@@ -21,7 +21,7 @@ import {
   `,
 })
 export class SdForm {
-  formElRef = viewChild.required<any, ElementRef<HTMLFormElement>>("formEl", {
+  formElRef = viewChild.required<unknown, ElementRef<HTMLFormElement>>("formEl", {
     read: ElementRef,
   });
 

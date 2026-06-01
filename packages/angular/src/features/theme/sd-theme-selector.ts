@@ -10,8 +10,8 @@ import { SdDropdownPopup } from "../../controls/dropdown/sd-dropdown-popup";
 import { SdButton } from "../../controls/button/sd-button";
 import { SdSwitch } from "../../controls/checkbox/sd-switch";
 import { NgIcon } from "@ng-icons/core";
-import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
 import { SdThemeProvider } from "./sd-theme-provider";
+import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
 
 @Component({
   selector: "sd-theme-selector",
@@ -22,7 +22,7 @@ import { SdThemeProvider } from "./sd-theme-provider";
   template: `
     <sd-dropdown>
       <sd-button [inline]="true" [theme]="'link-gray'">
-        <ng-icon [svg]="icons.tablerPalette" />
+        <ng-icon [svg]="tablerPalette" />
       </sd-button>
       <sd-dropdown-popup>
         <div class="p-default">
@@ -34,25 +34,25 @@ import { SdThemeProvider } from "./sd-theme-provider";
                 [theme]="'link-gray'"
                 [size]="'sm'"
                 [disabled]="isMinFontSize()"
-                (click)="sdTheme.decreaseFontSize()"
+                (click)="_sdTheme.decreaseFontSize()"
               >
-                <ng-icon [svg]="icons.tablerMinus" />
+                <ng-icon [svg]="tablerMinus" />
               </sd-button>
-              <span>{{ sdTheme.fontSize() }}px</span>
+              <span>{{ _sdTheme.fontSize() }}px</span>
               <sd-button
                 [inline]="true"
                 [theme]="'link-gray'"
                 [size]="'sm'"
                 [disabled]="isMaxFontSize()"
-                (click)="sdTheme.increaseFontSize()"
+                (click)="_sdTheme.increaseFontSize()"
               >
-                <ng-icon [svg]="icons.tablerPlus" />
+                <ng-icon [svg]="tablerPlus" />
               </sd-button>
             </div>
           </div>
           <div class="flex-row gap-sm cross-align-center">
             <span>다크 모드</span>
-            <sd-switch [(value)]="sdTheme.dark" />
+            <sd-switch [(value)]="_sdTheme.dark" />
           </div>
         </div>
       </sd-dropdown-popup>
@@ -61,15 +61,17 @@ import { SdThemeProvider } from "./sd-theme-provider";
   styles: [],
 })
 export class SdThemeSelector {
-  protected readonly icons = { tablerPalette, tablerMinus, tablerPlus };
-  protected readonly sdTheme = inject(SdThemeProvider);
+  protected readonly _sdTheme = inject(SdThemeProvider);
 
-  protected readonly isMinFontSize = computed(
-    () => this.sdTheme.fontSize() <= this.sdTheme.fontSizePresets[0],
-  );
+  isMinFontSize = computed(() => this._sdTheme.fontSize() <= this._sdTheme.fontSizePresets[0]);
 
-  protected readonly isMaxFontSize = computed(
+  isMaxFontSize = computed(
     () =>
-      this.sdTheme.fontSize() >= this.sdTheme.fontSizePresets[this.sdTheme.fontSizePresets.length - 1],
+      this._sdTheme.fontSize() >=
+      this._sdTheme.fontSizePresets[this._sdTheme.fontSizePresets.length - 1],
   );
+
+  protected readonly tablerPlus = tablerPlus;
+  protected readonly tablerMinus = tablerMinus;
+  protected readonly tablerPalette = tablerPalette;
 }

@@ -213,7 +213,7 @@ describe("SdAddressSearchModal", () => {
       expect(closeSpy).toHaveBeenCalledWith({
         postNumber: "06141",
         address: "서울특별시 강남구 테헤란로 427 (삼성동)",
-        buildingName: "",
+        buildingName: undefined,
       });
     });
 
@@ -259,7 +259,7 @@ describe("SdAddressSearchModal", () => {
       expect(closeSpy).toHaveBeenCalledWith({
         postNumber: "12345",
         address: "경기도 성남시 분당구 판교역로 235",
-        buildingName: "",
+        buildingName: undefined,
       });
     });
 
@@ -282,7 +282,7 @@ describe("SdAddressSearchModal", () => {
       expect(closeSpy).toHaveBeenCalledWith({
         postNumber: "06141",
         address: "서울특별시 강남구 삼성동 159",
-        buildingName: "",
+        buildingName: undefined,
       });
     });
   });

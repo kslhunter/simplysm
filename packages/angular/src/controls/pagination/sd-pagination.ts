@@ -108,6 +108,7 @@ export class SdPagination {
   }
 
   goToNextGroup(): void {
+    if (!this.hasNext()) return;
     this.currentPage.set((this._groupIndex() + 1) * Math.max(this.visiblePageCount(), 1));
   }
 

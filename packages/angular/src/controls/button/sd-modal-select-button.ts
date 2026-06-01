@@ -184,7 +184,7 @@ export class SdModalSelectButton<
   }
 
   onEraseClick(): void {
-    this.value.set((this.selectMode() === "multi" ? [] : undefined) as any);
+    this.value.set((this.selectMode() === "multi" ? [] : undefined) as SelectModeValue<K>[M]);
   }
 
   async onSearchClick(event: MouseEvent): Promise<void> {

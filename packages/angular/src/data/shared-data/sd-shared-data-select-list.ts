@@ -146,17 +146,17 @@ export class SdSharedDataSelectList<
 
   header = input<string>();
 
-  headerTplRef = contentChild<any, TemplateRef<void>>("headerTpl", {
+  headerTplRef = contentChild<unknown, TemplateRef<void>>("headerTpl", {
     read: TemplateRef,
   });
-  filterTplRef = contentChild<any, TemplateRef<void>>("filterTpl", {
+  filterTplRef = contentChild<unknown, TemplateRef<void>>("filterTpl", {
     read: TemplateRef,
   });
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  itemTplRef = contentChild<SdItemOfTemplate<TItem>, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplate,
     { read: TemplateRef },
   );
-  undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", {
+  undefinedTplRef = contentChild<unknown, TemplateRef<void>>("undefinedTpl", {
     read: TemplateRef,
   });
 

@@ -409,10 +409,10 @@ function createTimeHandler(withSeconds: boolean): TextfieldTypeHandler {
       }
     },
     toControlValue(value) {
-      return (value as DateTime | Time).toFormatString(controlFormat);
+      return (value as Time).toFormatString(controlFormat);
     },
     toDisplayText(value) {
-      return (value as DateTime | Time).toFormatString(displayFormat);
+      return (value as Time).toFormatString(displayFormat);
     },
     validate(value, opts) {
       const errors: string[] = [];

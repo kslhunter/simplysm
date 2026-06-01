@@ -28,24 +28,7 @@ export function useSheetCellStyling<T>(options: {
     return `left: ${leftValue}px`;
   }
 
-  const headerColumnStyles = computed(() => {
-    const map = new Map<string, string | null>();
-    const defs = options.columnDefs();
-    for (let i = 0; i < defs.length; i++) {
-      const colDef = defs[i];
-      const parts: string[] = [];
-      const colStyle = getColDefStyle(colDef);
-      if (colStyle != null) parts.push(colStyle);
-      if (colDef.fixed) {
-        const fixedStyle = getFixedLeftStyle(i);
-        if (fixedStyle != null) parts.push(fixedStyle);
-      }
-      map.set(colDef.key, parts.length > 0 ? parts.join("; ") : null);
-    }
-    return map;
-  });
-
-  const dataColumnBaseStyles = computed(() => {
+  const columnBaseStyles = computed(() => {
     const map = new Map<string, string | null>();
     const defs = options.columnDefs();
     for (let i = 0; i < defs.length; i++) {
@@ -65,14 +48,14 @@ export function useSheetCellStyling<T>(options: {
   function getHeaderCellStyle(cell: SdSheetHeaderDef): string | null {
     if (cell.colDef == null) return null;
     const parts: string[] = [];
-    const baseStyle = headerColumnStyles().get(cell.colDef.key);
+    const baseStyle = columnBaseStyles().get(cell.colDef.key);
     if (baseStyle != null) parts.push(baseStyle);
     if (cell.colDef.headerStyle != null) parts.push(cell.colDef.headerStyle);
     return parts.length > 0 ? parts.join("; ") : null;
   }
 
   function getCellStyle(item: T, colDef: SdSheetColumnDef): string | null {
-    const baseStyle = dataColumnBaseStyles().get(colDef.key) ?? null;
+    const baseStyle = columnBaseStyles().get(colDef.key) ?? null;
     const styleFn = options.getItemCellStyleFn();
     const customStyle = styleFn != null ? styleFn(item, colDef.key) : undefined;
     if (baseStyle != null && customStyle != null) return `${baseStyle}; ${customStyle}`;

@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from "@angular/common";
+import type { DateOnly, DateTime, Time } from "@simplysm/core-common";
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -170,13 +171,13 @@ export class SdSharedDataSelect<
   getSearchTextFn = input<(item: TItem, index: number) => string>(
     (item) => item.__searchText,
   );
-  displayOrderKeyProp = input<string>();
+  displayOrderByFn = input<(item: TItem) => string | number | DateOnly | DateTime | Time | undefined>();
 
-  itemTplRef = contentChild<any, TemplateRef<SdItemOfTemplateContext<TItem>>>(
+  itemTplRef = contentChild<SdItemOfTemplate<TItem>, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplate,
     { read: TemplateRef },
   );
-  undefinedTplRef = contentChild<any, TemplateRef<void>>("undefinedTpl", {
+  undefinedTplRef = contentChild<unknown, TemplateRef<void>>("undefinedTpl", {
     read: TemplateRef,
   });
 
@@ -219,9 +220,9 @@ export class SdSharedDataSelect<
       return true;
     });
 
-    const orderProp = this.displayOrderKeyProp();
-    if (orderProp != null) {
-      result = result.orderBy((item) => (item as any)[orderProp]);
+    const orderBy = this.displayOrderByFn();
+    if (orderBy != null) {
+      result = result.orderBy(orderBy);
     }
 
     return result;
@@ -316,15 +317,12 @@ export class SdSharedDataSelect<
     const parentMap = this.itemByParentKeyMap();
     if (parentMap == null) return undefined;
 
-    const orderProp = this.displayOrderKeyProp();
-    if (orderProp == null) return parentMap;
+    const orderBy = this.displayOrderByFn();
+    if (orderBy == null) return parentMap;
 
     const sorted = new Map<TItem["__valueKey"] | undefined, TItem[]>();
     for (const [key, children] of parentMap) {
-      sorted.set(
-        key,
-        children.orderBy((item) => (item as any)[orderProp]),
-      );
+      sorted.set(key, children.orderBy(orderBy));
     }
     return sorted;
   });

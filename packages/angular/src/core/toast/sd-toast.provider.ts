@@ -45,6 +45,7 @@ export class SdToastProvider {
   private _containerRef: ComponentRef<SdToastContainer> | undefined;
   private readonly _toastRefs: ComponentRef<SdToast>[] = [];
   private readonly _contentRefs = new Map<ComponentRef<SdToast>, ComponentRef<any>>();
+  private readonly _autoDismissCleanups = new Map<ComponentRef<SdToast>, () => void>();
 
   constructor() {
     effect(() => {
@@ -234,19 +235,30 @@ export class SdToastProvider {
     onDismiss?: () => void,
   ): void {
     const el = toastRef.location.nativeElement as HTMLElement;
+    const ac = new AbortController();
+    let timerId: ReturnType<typeof setTimeout> | undefined;
     let isHovering = false;
     let dismissPending = false;
     let dismissed = false;
 
+    // 타이머·리스너 정리. 외부 파괴 경로(_dismissToast/_destroyToast)에서도 호출되어
+    // 죽은 toastRef 에 대해 타이머가 깨어나는 race 와 리스너 누수를 막는다.
+    const cleanup = () => {
+      dismissed = true;
+      if (timerId != null) clearTimeout(timerId);
+      ac.abort();
+      this._autoDismissCleanups.delete(toastRef);
+    };
+    this._autoDismissCleanups.set(toastRef, cleanup);
+
     const dismiss = () => {
       if (dismissed) return;
-      dismissed = true;
       onDismiss?.();
       this._dismissToast(toastRef);
     };
 
     const dismissAfterDelay = (ms: number) => {
-      setTimeout(() => {
+      timerId = setTimeout(() => {
         if (dismissed) return;
         if (isHovering) {
           dismissPending = true;
@@ -256,21 +268,30 @@ export class SdToastProvider {
       }, ms);
     };
 
-    el.addEventListener("mouseenter", () => {
-      isHovering = true;
-    });
-    el.addEventListener("mouseleave", () => {
-      isHovering = false;
-      if (dismissPending) {
-        dismissPending = false;
-        dismissAfterDelay(1000);
-      }
-    });
+    el.addEventListener(
+      "mouseenter",
+      () => {
+        isHovering = true;
+      },
+      { signal: ac.signal },
+    );
+    el.addEventListener(
+      "mouseleave",
+      () => {
+        isHovering = false;
+        if (dismissPending) {
+          dismissPending = false;
+          dismissAfterDelay(1000);
+        }
+      },
+      { signal: ac.signal },
+    );
 
     dismissAfterDelay(delayMs);
   }
 
   private _dismissToast(toastRef: ComponentRef<SdToast>): void {
+    this._autoDismissCleanups.get(toastRef)?.();
     toastRef.instance.open.set(false);
 
     const el = toastRef.location.nativeElement as HTMLElement;
@@ -292,6 +313,8 @@ export class SdToastProvider {
   }
 
   private _destroyToast(toastRef: ComponentRef<SdToast>): void {
+    this._autoDismissCleanups.get(toastRef)?.();
+
     const idx = this._toastRefs.indexOf(toastRef);
     if (idx === -1) return; // 이미 파괴됨
 

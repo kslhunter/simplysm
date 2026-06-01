@@ -9,10 +9,22 @@ import type { SdMenu, SdFlatMenu, SdPermission } from "./sd-app-structure.types"
 export abstract class SdAppStructureUtils {
   //---------- Info
 
-  static getTitleByFullCode<TModule>(items: AppStructureItem<TModule>[], fullCode: string) {
+  static getTitleByFullCode<TModule>(items: AppStructureItem<TModule>[], fullCode: string): string {
+    const title = this.findTitleByFullCode(items, fullCode);
+    if (title == null) {
+      throw new Error(`Item not found for fullCode: ${fullCode}`);
+    }
+    return title;
+  }
+
+  /** 항목을 못 찾으면 throw 대신 undefined 반환 (결측 보존). */
+  static findTitleByFullCode<TModule>(
+    items: AppStructureItem<TModule>[],
+    fullCode: string,
+  ): string | undefined {
     const itemChain = this.getItemChainByFullCode(items, fullCode);
     if (itemChain.length === 0) {
-      throw new Error(`Item not found for fullCode: ${fullCode}`);
+      return undefined;
     }
     const parent = itemChain
       .slice(0, -1)

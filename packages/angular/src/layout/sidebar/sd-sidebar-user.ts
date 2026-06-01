@@ -21,17 +21,15 @@ import { SdListItem } from "../../controls/list/sd-list-item";
     <div class="p-lg">
       <ng-content />
     </div>
-    @if (userMenu()?.title) {
+    @if (userMenu(); as _userMenu) {
       <div class="_menu-button" tabindex="0" (click)="onMenuOpenButtonClick()" (keydown.enter)="onMenuOpenButtonClick()" [sdRipple]="true">
-        {{ userMenu()?.title }}
+        {{ _userMenu.title }}
         <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
       </div>
-    }
 
-    @if (userMenu()?.title) {
       <sd-collapse [open]="menuOpen()">
         <sd-list [inset]="true">
-          @for (menu of userMenu()?.menus; track menu.title) {
+          @for (menu of _userMenu.menus; track menu.title) {
             <sd-list-item (click)="menu.onClick()">
               {{ menu.title }}
             </sd-list-item>

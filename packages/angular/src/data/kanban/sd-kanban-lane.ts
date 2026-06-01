@@ -133,8 +133,8 @@ export class SdKanbanLane<L, T> implements SdKanbanDropTarget<L, T> {
 
   kanbanControls = contentChildren<SdKanban<L, T>>(SdKanban, { descendants: true });
 
-  toolTplRef = contentChild<any, TemplateRef<void>>("toolTpl", { read: TemplateRef });
-  titleTplRef = contentChild<any, TemplateRef<void>>("titleTpl", { read: TemplateRef });
+  toolTplRef = contentChild<unknown, TemplateRef<void>>("toolTpl", { read: TemplateRef });
+  titleTplRef = contentChild<unknown, TemplateRef<void>>("titleTpl", { read: TemplateRef });
 
   isAllSelected = computed(() => {
     const selectableControls = this.kanbanControls().filter((ctrl) => ctrl.selectable());

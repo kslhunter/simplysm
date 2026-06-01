@@ -8,6 +8,7 @@ import { injectViewTitleSignal } from "../../../src/core/routing/injectViewTitle
 import { injectViewTypeSignal, type SdViewType } from "../../../src/core/routing/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../src/core/routing/setupCanDeactivate";
 import { SdActivatedModalProvider } from "../../../src/core/modal/sd-activated-modal.provider";
+import type { SdModal } from "../../../src/core/modal/sd-modal";
 import "@simplysm/core-browser";
 
 function mockUrlRoute(path: string) {
@@ -176,7 +177,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
       const mockModalComponent = {
         title: () => "주문 상세",
       };
-      activatedModal.modalComponent.set(mockModalComponent);
+      activatedModal.modalComponent.set(mockModalComponent as unknown as SdModal);
 
       const mockAppStructure = {
         getTitleByFullCode: vi.fn().mockReturnValue("무시될 제목"),
@@ -206,7 +207,7 @@ describe("Feature 3.2.1 Slice 1: 뷰 시그널 + 라우터 가드 모달 통합"
 
     it("Scenario: 페이지에서 호출 -> 기존 동작 유지", () => {
       const mockAppStructure = {
-        getTitleByFullCode: vi.fn().mockReturnValue("[메인] 서브"),
+        findTitleByFullCode: vi.fn().mockReturnValue("[메인] 서브"),
         items: [],
         usableModules: () => undefined,
         permRecord: () => undefined,

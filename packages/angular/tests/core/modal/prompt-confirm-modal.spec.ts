@@ -41,7 +41,7 @@ describe("Feature 5.3 Slice 2: SdPromptModal", () => {
     const modal = getModalInBody();
     expect(modal).not.toBeNull();
 
-    const messageEl = modal!.querySelector("sd-prompt-modal > p");
+    const messageEl = modal!.querySelector("sd-prompt-modal p");
     expect(messageEl).not.toBeNull();
     expect(messageEl!.textContent).toContain("이름을 입력하세요");
 
@@ -70,15 +70,15 @@ describe("Feature 5.3 Slice 2: SdPromptModal", () => {
 
     const modal = getModalInBody();
     // input에 값 입력
-    const inputEl = modal!.querySelector("sd-textfield input") as HTMLInputElement;
+    const inputEl = modal!.querySelector("sd-textfield input:not(.sd-invalid-input)") as HTMLInputElement;
     expect(inputEl).not.toBeNull();
     inputEl.value = "테스트 이름";
     inputEl.dispatchEvent(new Event("input", { bubbles: true }));
     await tick(fixture);
 
-    // 확인 버튼 클릭
-    const confirmBtn = modal!.querySelectorAll("sd-button button")[0] as HTMLButtonElement;
-    confirmBtn.click();
+    // 폼 제출(확인 버튼 submit / Enter 가 일으키는 경로)
+    const formEl = modal!.querySelector("sd-prompt-modal form") as HTMLFormElement;
+    formEl.requestSubmit();
     await tick(fixture);
 
     const result = await promise;

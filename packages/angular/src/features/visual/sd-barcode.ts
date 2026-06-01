@@ -32,15 +32,11 @@ export class SdBarcode {
     if (text == null || text === "") {
       return "";
     }
-    try {
-      const svg = bwipjs.toSVG({
-        bcid: this.type(),
-        text,
-      });
-      return this._sanitizer.bypassSecurityTrustHtml(svg);
-    } catch {
-      return "";
-    }
+    const svg = bwipjs.toSVG({
+      bcid: this.type(),
+      text,
+    });
+    return this._sanitizer.bypassSecurityTrustHtml(svg);
   });
 }
 

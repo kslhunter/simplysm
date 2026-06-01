@@ -927,11 +927,16 @@ export class SdSheet<TItem> {
   }
 
   async onConfigButtonClick(): Promise<void> {
+    const key = this.key();
+    if (key == null) {
+      throw new Error("시트 설정을 사용하려면 'key'가 지정되어야 합니다.");
+    }
+
     const result = await this._sdModal.showAsync({
       title: "시트 설정",
       type: SdSheetConfigModal,
       inputs: {
-        sheetKey: this.key()!,
+        sheetKey: key,
         controls: this._effectiveColumnControls(),
         config: this._configResource.value(),
       },

@@ -36,6 +36,10 @@ export class SdAppStructureProvider<TModule = unknown> {
     return SdAppStructureUtils.getTitleByFullCode(this.items(), fullCode);
   }
 
+  findTitleByFullCode(fullCode: string) {
+    return SdAppStructureUtils.findTitleByFullCode(this.items(), fullCode);
+  }
+
   getItemChainByFullCode(fullCode: string) {
     return SdAppStructureUtils.getItemChainByFullCode(this.items(), fullCode);
   }

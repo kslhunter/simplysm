@@ -9,9 +9,11 @@ import {
 } from "@angular/core";
 import type { DirectiveInputSignals, WithOptional } from "../directive-input-signals";
 import { SdBusyProvider } from "../busy/sd-busy.provider";
-import { wait } from "@simplysm/core-common";
+import { createLogger, wait } from "@simplysm/core-common";
 import { jsPDF } from "jspdf";
 import * as htmlToImage from "html-to-image";
+
+const logger = createLogger("angular:print");
 
 export interface SdPrint {
   initialized: Signal<boolean>;
@@ -175,6 +177,7 @@ export class SdPrintProvider {
 
   private async _waitForAllImagesLoadedAsync(container: HTMLElement): Promise<void> {
     const imgs = Array.from(container.querySelectorAll("img"));
+    const failedSrcs: string[] = [];
 
     await Promise.all(
       imgs.map((img) => {
@@ -182,16 +185,28 @@ export class SdPrintProvider {
           if (img.complete && img.naturalWidth !== 0) {
             resolve();
           } else {
-            const onDone = () => {
-              img.removeEventListener("load", onDone);
-              img.removeEventListener("error", onDone);
+            const cleanup = () => {
+              img.removeEventListener("load", onLoad);
+              img.removeEventListener("error", onError);
+            };
+            const onLoad = () => {
+              cleanup();
               resolve();
             };
-            img.addEventListener("load", onDone);
-            img.addEventListener("error", onDone);
+            const onError = () => {
+              failedSrcs.push(img.src);
+              cleanup();
+              resolve();
+            };
+            img.addEventListener("load", onLoad);
+            img.addEventListener("error", onError);
           }
         });
       }),
     );
+
+    if (failedSrcs.length > 0) {
+      logger.error(`인쇄/PDF: 이미지 ${failedSrcs.length}건 로드 실패`, failedSrcs);
+    }
   }
 }

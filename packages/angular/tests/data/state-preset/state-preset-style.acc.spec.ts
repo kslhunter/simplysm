@@ -48,7 +48,7 @@ describe("Feature 2.3: sd-state-preset 스타일 복원", () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset;
+      const presetComp = fixture.debugElement.children[0].componentInstance as SdStatePreset<any>;
       mockModal.showAsync.mockResolvedValueOnce("테스트");
       await presetComp.onAddClick();
       fixture.detectChanges();

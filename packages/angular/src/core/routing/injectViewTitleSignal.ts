@@ -16,10 +16,6 @@ export function injectViewTitleSignal(): Signal<string> {
       return sdActivatedModal.modalComponent()?.title() ?? "";
     }
 
-    try {
-      return sdAppStructure.getTitleByFullCode(currPageCode?.() ?? fullPageCode());
-    } catch {
-      return "";
-    }
+    return sdAppStructure.findTitleByFullCode(currPageCode?.() ?? fullPageCode()) ?? "";
   });
 }

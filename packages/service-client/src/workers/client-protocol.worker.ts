@@ -7,7 +7,7 @@ const protocol = createServiceProtocol();
 
 interface WorkerRequest {
   id: string;
-  type: "encode" | "decode";
+  type: "encode" | "parseMessage";
   data: unknown;
 }
 
@@ -28,9 +28,10 @@ function handleRequest(msg: WorkerRequest): {
       result = chunks;
       transferList = chunks.map((chunk) => chunk.buffer as ArrayBuffer);
     } else {
-      const bytes = new Uint8Array(msg.data as ArrayBuffer);
-      const decodeResult = protocol.decode(bytes);
-      const encoded = transfer.encode(decodeResult);
+      // 재조립 완료된 raw 바이트의 무거운 JSON 파싱만 worker 에서 수행 (stateless)
+      const resultBytes = new Uint8Array(msg.data as ArrayBuffer);
+      const message = protocol.parseMessage(resultBytes);
+      const encoded = transfer.encode(message);
       result = encoded.result;
       transferList = encoded.transferList;
     }

@@ -134,7 +134,7 @@ export class SdCalendar<T> {
 
   yearMonth = input(new DateOnly().setDay(1));
 
-  itemTplRef = contentChild.required<any, TemplateRef<SdItemOfTemplateContext<T>>>(
+  itemTplRef = contentChild.required<SdItemOfTemplate<T>, TemplateRef<SdItemOfTemplateContext<T>>>(
     SdItemOfTemplate,
     { read: TemplateRef },
   );

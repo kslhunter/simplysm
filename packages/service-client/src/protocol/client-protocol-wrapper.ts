@@ -149,7 +149,7 @@ async function getWorker(): Promise<BrowserWorker | undefined> {
 }
 
 async function runWorker(
-  type: "encode" | "decode",
+  type: "encode" | "parseMessage",
   data: unknown,
   transferables: ArrayBuffer[] = [],
 ): Promise<unknown | undefined> {
@@ -200,18 +200,32 @@ export function createClientProtocolWrapper(protocol: ServiceProtocol): ClientPr
   }
 
   async function decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
-    const totalSize = bytes.length;
-
-    // Worker가 없거나 데이터가 작으면 메인 스레드에서 처리
-    if (!isWorkerAvailable() || totalSize <= SIZE_THRESHOLD) {
-      return protocol.decode(bytes);
+    // 청크 재조립(stateful)은 항상 메인 스레드 단일 누적기에서 수행한다.
+    // 청크별로 worker/메인을 분기하면 한 메시지의 청크가 서로 다른 누적기로 흩어져
+    // 재조립이 영원히 완성되지 못한다 (#35).
+    const acc = protocol.accumulate(bytes);
+    if (acc.type === "progress") {
+      return acc;
     }
 
-    const rawResult = await runWorker("decode", bytes, [bytes.buffer as ArrayBuffer]);
+    // 재조립 완료. 무거운 JSON 파싱(stateless)만 크기 기준으로 worker 에 위임한다.
+    const resultBytes = acc.resultBytes;
+    if (!isWorkerAvailable() || resultBytes.length <= SIZE_THRESHOLD) {
+      return { type: "complete", uuid: acc.uuid, message: protocol.parseMessage(resultBytes) };
+    }
+
+    const rawResult = await runWorker("parseMessage", resultBytes, [
+      resultBytes.buffer as ArrayBuffer,
+    ]);
     if (rawResult == null) {
-      return protocol.decode(bytes);
+      // worker 미가용: 메인 스레드에서 파싱 (이 경우 buffer 가 transfer 되지 않았음)
+      return { type: "complete", uuid: acc.uuid, message: protocol.parseMessage(resultBytes) };
     }
-    return transfer.decode(rawResult) as ServiceMessageDecodeResult<ServiceMessage>;
+    return {
+      type: "complete",
+      uuid: acc.uuid,
+      message: transfer.decode(rawResult) as ServiceMessage,
+    };
   }
 
   return {

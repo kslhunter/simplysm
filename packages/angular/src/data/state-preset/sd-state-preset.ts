@@ -17,9 +17,9 @@ import { NgIcon } from "@ng-icons/core";
 import { tablerStar, tablerDeviceFloppy, tablerX } from "@ng-icons/tabler-icons";
 import { obj } from "@simplysm/core-common";
 
-export interface SdStatePresetDef {
+export interface SdStatePresetDef<TState> {
   name: string;
-  state: any;
+  state: TState;
 }
 
 @Component({
@@ -112,19 +112,19 @@ export interface SdStatePresetDef {
     "[attr.data-sd-size]": "size()",
   },
 })
-export class SdStatePreset {
+export class SdStatePreset<TState> {
   private readonly _sdModal = inject(SdModalProvider);
   private readonly _sdToast = inject(SdToastProvider);
 
   key = input.required<string>();
-  state = model<any>();
+  state = model.required<TState>();
   size = input<"sm" | "lg">();
 
   protected readonly tablerStar = tablerStar;
   protected readonly tablerDeviceFloppy = tablerDeviceFloppy;
   protected readonly tablerX = tablerX;
 
-  private readonly _configResource = injectSdSystemConfigResource<SdStatePresetDef[]>({
+  private readonly _configResource = injectSdSystemConfigResource<SdStatePresetDef<TState>[]>({
     key: this.key,
   });
 
@@ -149,31 +149,31 @@ export class SdStatePreset {
       return;
     }
 
-    const newPreset: SdStatePresetDef = {
+    const newPreset: SdStatePresetDef<TState> = {
       name,
       state: obj.clone(this.state()),
     };
 
     this._configResource.set([...currentPresets, newPreset]);
-    this._sdToast.info(`현재 상태가 '${name}'에 저장되었습니다.`);
+    this._sdToast.success(`현재 상태가 '${name}'에 저장되었습니다.`);
   }
 
-  onPresetClick(preset: SdStatePresetDef): void {
+  onPresetClick(preset: SdStatePresetDef<TState>): void {
     const currentState = this.state();
     if (obj.equal(currentState, preset.state)) return;
     this.state.set(obj.clone(preset.state));
   }
 
-  onSaveClick(preset: SdStatePresetDef): void {
+  onSaveClick(preset: SdStatePresetDef<TState>): void {
     const currentPresets = this._presets();
     const updated = currentPresets.map((p) =>
       p.name === preset.name ? { ...p, state: obj.clone(this.state()) } : p,
     );
     this._configResource.set(updated);
-    this._sdToast.info(`현재 상태가 ${preset.name}에 저장되었습니다.`);
+    this._sdToast.success(`현재 상태가 ${preset.name}에 저장되었습니다.`);
   }
 
-  async onDeleteClick(preset: SdStatePresetDef): Promise<void> {
+  async onDeleteClick(preset: SdStatePresetDef<TState>): Promise<void> {
     const confirmed = await this._sdModal.showAsync(
       {
         title: "프리셋 삭제",

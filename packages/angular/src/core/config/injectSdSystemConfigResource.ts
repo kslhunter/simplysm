@@ -20,7 +20,7 @@ export function injectSdSystemConfigResource<T>(options: { key: Signal<string | 
     const key = options.key();
     if (key == null) return;
     queueMicrotask(() => {
-      sdSystemConfig.setAsync(`${elTag}.${key}`, value as T).catch((err) => {
+      sdSystemConfig.setAsync(`${elTag}.${key}`, value).catch((err) => {
         errorHandler.handleError(err);
       });
     });

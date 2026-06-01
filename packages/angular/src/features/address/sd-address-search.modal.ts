@@ -151,7 +151,7 @@ export class SdAddressSearchModal implements SdModalContentDef<Address>, OnInit 
         this.close.emit({
           postNumber: data.zonecode,
           address: addr + extraAddr,
-          buildingName: data.buildingName,
+          buildingName: data.buildingName !== "" ? data.buildingName : undefined,
         });
       },
       onresize: (size: { height: number }): void => {

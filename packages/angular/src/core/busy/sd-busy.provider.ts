@@ -44,6 +44,10 @@ export class SdBusyProvider {
   constructor() {
     effect(() => {
       const busy = this.globalBusyCount() > 0;
+
+      // busy 가 처음 true 가 되기 전엔 컨테이너를 생성하지 않음 (lazy)
+      if (!busy && this._containerRef == null) return;
+
       const ref = this.containerRef;
       const el = ref.location.nativeElement as HTMLElement;
 

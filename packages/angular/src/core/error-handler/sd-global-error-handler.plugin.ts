@@ -17,7 +17,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   private readonly _sdSystemLog = inject(SdSystemLogProvider);
   private _hasDisplayedError = false;
 
-  handleError(event: any) {
+  handleError(event: unknown) {
     try {
       if (event instanceof PromiseRejectionEvent) {
         const reason = event.reason;

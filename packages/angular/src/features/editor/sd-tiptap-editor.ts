@@ -323,8 +323,9 @@ export class SdTiptapEditor {
         }
       }
 
-      if (this.validatorFn()) {
-        const message = this.validatorFn()!(this.value());
+      const validatorFn = this.validatorFn();
+      if (validatorFn != null) {
+        const message = validatorFn(this.value());
         if (message != null) {
           errorMessages.push(message);
         }

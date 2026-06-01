@@ -404,7 +404,7 @@ export class SdSelect<M extends "single" | "multi", T> {
     } else {
       this.value.update((v) => {
         const arr: T[] = Array.isArray(v) ? v : [];
-        if (arr.includes(itemValue as T)) {
+        if (arr.some((x) => x === itemValue)) {
           return arr.filter((item) => item !== itemValue);
         } else {
           return [...arr, itemValue];

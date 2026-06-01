@@ -135,14 +135,14 @@ describe("SdSharedDataSelect", () => {
       expect(ctrl.rootDisplayItems().map((i) => i.__valueKey)).toEqual([1]);
     });
 
-    it("displayOrderKeyProp이 설정되면 해당 속성으로 정렬한다", () => {
+    it("displayOrderByFn이 설정되면 해당 selector로 정렬한다", () => {
       const { fixture, host } = createFixture();
       host.items.set([
         item(1, "C", { order: 3 }),
         item(2, "A", { order: 1 }),
         item(3, "B", { order: 2 }),
       ]);
-      host.displayOrderKeyProp.set("order");
+      host.displayOrderByFn.set((i) => i.order);
       fixture.detectChanges();
 
       const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;

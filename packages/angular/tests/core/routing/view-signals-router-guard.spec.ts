@@ -48,7 +48,7 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
         ],
       });
       const appStructure = TestBed.inject(SdAppStructureProvider);
-      const getTitleSpy = vi.spyOn(appStructure, "getTitleByFullCode").mockReturnValue("[메인] 서브");
+      const getTitleSpy = vi.spyOn(appStructure, "findTitleByFullCode").mockReturnValue("[메인] 서브");
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
@@ -70,7 +70,7 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
         ],
       });
       const appStructure = TestBed.inject(SdAppStructureProvider);
-      const getTitleSpy = vi.spyOn(appStructure, "getTitleByFullCode").mockReturnValue("페이지1 제목");
+      const getTitleSpy = vi.spyOn(appStructure, "findTitleByFullCode").mockReturnValue("페이지1 제목");
 
       let signal: Signal<string> | undefined;
       TestBed.runInInjectionContext(() => {
@@ -81,27 +81,6 @@ describe("Feature 1.11 Slice 2: 뷰 상태 시그널 + 라우터 가드", () => 
       expect(getTitleSpy).toHaveBeenCalledWith("page1");
     });
 
-    it("getTitleByFullCode가 throw하면 빈 문자열을 반환한다", () => {
-      TestBed.configureTestingModule({
-        providers: [
-          {
-            provide: Router,
-            useValue: { events: new Subject(), url: "/app/page1" },
-          },
-        ],
-      });
-      const appStructure = TestBed.inject(SdAppStructureProvider);
-      vi.spyOn(appStructure, "getTitleByFullCode").mockImplementation(() => {
-        throw new Error("Item not found for fullCode: page1");
-      });
-
-      let titleSignal: Signal<string> | undefined;
-      TestBed.runInInjectionContext(() => {
-        titleSignal = injectViewTitleSignal();
-      });
-
-      expect(titleSignal!()).toBe("");
-    });
   });
 
   describe("Rule: 뷰 타입 시그널을 이관한다", () => {

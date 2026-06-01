@@ -52,6 +52,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/.tasks" />
       <excludeFolder url="file://$MODULE_DIR$/.playwright" />
+      <excludeFolder url="file://$MODULE_DIR$/.docs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

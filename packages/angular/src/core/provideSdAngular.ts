@@ -28,6 +28,9 @@ import { SdThemeProvider } from "../features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "./config/sd-local-storage.provider";
 import { SdGlobalErrorHandlerPlugin } from "./error-handler/sd-global-error-handler.plugin";
 import { SdOptionEventPlugin } from "./events/sd-option-event.plugin";
+import { createLogger } from "@simplysm/core-common";
+
+const logger = createLogger("angular:sw-update");
 
 export function provideSdAngular(opt: { clientName: string }): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -131,8 +134,9 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
             }
           }
           failCount = 0;
-        } catch {
+        } catch (err) {
           failCount++;
+          logger.error(err);
         } finally {
           const interval = Math.min(
             BASE_INTERVAL * Math.pow(2, Math.max(0, failCount - 1)),

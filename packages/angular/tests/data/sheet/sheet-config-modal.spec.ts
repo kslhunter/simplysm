@@ -4,6 +4,7 @@ import { TestBed } from "@angular/core/testing";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { SdOptionEventPlugin } from "../../../src/core/events/sd-option-event.plugin";
 import { SdSheetConfigModal } from "../../../src/data/sheet/sd-sheet-config.modal";
+import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
 import type { SdSheetColumn } from "../../../src/data/sheet/sd-sheet-column";
 import type { SdSheetConfig } from "../../../src/data/sheet/types";
 import "@simplysm/core-browser";
@@ -130,12 +131,13 @@ describe("Feature 6.2 Slice 4: SdSheetConfigModal", () => {
       emitted = v;
     });
 
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(TestBed.inject(SdModalProvider), "showAsync").mockResolvedValue(true as any);
 
     const host = fixture.nativeElement as HTMLElement;
     const actionBtns = host.querySelectorAll(".p-sm-default sd-button");
     const resetBtn = actionBtns[0] as HTMLElement;
     resetBtn.click();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(emitted).toEqual({ columnRecord: {} });

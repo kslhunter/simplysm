@@ -98,12 +98,20 @@ export function createServerProtocolWrapper(): ServerProtocolWrapper {
     },
 
     async decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>> {
-      const totalSize = bytes.length;
-      if (totalSize > SIZE_THRESHOLD) {
-        return getWorker().decode(bytes);
-      } else {
-        return protocol.decode(bytes);
+      // 청크 재조립(stateful)은 항상 메인 스레드 단일 누적기에서 수행한다.
+      // 청크별로 worker/메인을 분기하면 한 메시지의 청크가 서로 다른 누적기로 흩어져
+      // 재조립이 영원히 완성되지 못한다 (#35).
+      const acc = protocol.accumulate(bytes);
+      if (acc.type === "progress") {
+        return acc;
       }
+
+      // 재조립 완료. 무거운 JSON 파싱(stateless)만 크기 기준으로 worker 에 위임한다.
+      const resultBytes = acc.resultBytes;
+      if (resultBytes.length > SIZE_THRESHOLD) {
+        return { type: "complete", uuid: acc.uuid, message: await getWorker().parseMessage(resultBytes) };
+      }
+      return { type: "complete", uuid: acc.uuid, message: protocol.parseMessage(resultBytes) };
     },
 
     dispose(): void {

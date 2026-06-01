@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ElementRef,
   inject,
   input,
   ViewEncapsulation,
@@ -18,6 +17,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
   host: {
     "[attr.data-sd-busy]": "busy() || undefined",
     "[attr.data-sd-type]": "currType()",
+    "(keydown.capture)": "onKeydownCapture($event)",
   },
   template: `
     <div class="_screen">
@@ -339,17 +339,10 @@ export class SdBusyContainer {
 
   currType = computed(() => this.type() ?? this._sdBusy.type());
 
-  constructor() {
-    const el = inject(ElementRef).nativeElement as HTMLElement;
-    el.addEventListener(
-      "keydown",
-      (event) => {
-        if (this.busy()) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      },
-      true,
-    );
+  onKeydownCapture(event: Event): void {
+    if (this.busy()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 }

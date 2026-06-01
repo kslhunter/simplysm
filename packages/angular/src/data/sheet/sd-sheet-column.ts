@@ -32,7 +32,7 @@ export class SdSheetColumn<T = unknown> {
   disableResizing = input(false, { transform: booleanAttribute });
   ordering = input(0);
 
-  cellTplRef = contentChild.required<any, TemplateRef<SdSheetCellContext<T>>>(
+  cellTplRef = contentChild.required<SdSheetColumnCellTemplate<T>, TemplateRef<SdSheetCellContext<T>>>(
     SdSheetColumnCellTemplate,
     { read: TemplateRef },
   );

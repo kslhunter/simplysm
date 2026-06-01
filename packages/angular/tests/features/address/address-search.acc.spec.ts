@@ -182,7 +182,7 @@ describe("SdAddressSearchModal (Acceptance)", () => {
     expect(closeSpy).toHaveBeenCalledWith({
       postNumber: "06141",
       address: "서울특별시 강남구 삼성동 159",
-      buildingName: "",
+      buildingName: undefined,
     });
   });
 });

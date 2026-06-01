@@ -6,13 +6,15 @@ export class SdSystemConfigProvider<T> {
   private readonly _sdLocalStorage = inject<SdLocalStorageProvider<T>>(SdLocalStorageProvider);
 
   fn?: {
-    set<K extends keyof T & string>(key: K, data: T[K]): Promise<void> | void;
-    get(key: keyof T & string): PromiseLike<any>;
+    set<K extends keyof T & string>(key: K, data: T[K] | undefined): Promise<void> | void;
+    get(key: keyof T & string): PromiseLike<unknown>;
   };
 
-  async setAsync<K extends keyof T & string>(key: K, data: T[K]) {
+  async setAsync<K extends keyof T & string>(key: K, data: T[K] | undefined) {
     if (this.fn) {
       await this.fn.set(key, data);
+    } else if (data == null) {
+      this._sdLocalStorage.remove(key);
     } else {
       this._sdLocalStorage.set(key, data);
     }

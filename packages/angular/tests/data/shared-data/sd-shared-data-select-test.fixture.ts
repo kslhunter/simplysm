@@ -40,7 +40,7 @@ export function item(
       [disabled]="disabled()"
       [required]="required()"
       [filterFn]="filterFn()"
-      [displayOrderKeyProp]="displayOrderKeyProp()"
+      [displayOrderByFn]="displayOrderByFn()"
       [modal]="modal()"
     >
       <ng-template [itemOf]="items()" let-item>
@@ -56,6 +56,6 @@ export class SharedDataSelectTestHost {
   disabled = signal(false);
   required = signal(false);
   filterFn = signal<((item: TestSharedItem, index: number) => boolean) | undefined>(undefined);
-  displayOrderKeyProp = signal<string | undefined>(undefined);
+  displayOrderByFn = signal<((item: TestSharedItem) => number | undefined) | undefined>(undefined);
   modal = signal<SdSelectModalInfo<SdSelectModal<any>> | undefined>(undefined);
 }

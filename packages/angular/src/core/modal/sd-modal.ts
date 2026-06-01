@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   effect,
@@ -323,7 +324,9 @@ import "@simplysm/core-browser";
 export class SdModal {
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _sdActivatedModal = inject(SdActivatedModalProvider, { optional: true });
-  private readonly _sdSystemConfig = inject(SdSystemConfigProvider, { optional: true });
+  private readonly _sdSystemConfig = inject<
+    SdSystemConfigProvider<Record<string, Record<string, string>>>
+  >(SdSystemConfigProvider, { optional: true });
   private readonly _errorHandler = inject(ErrorHandler);
   private readonly _focusTrap = injectFocusTrap();
 
@@ -359,7 +362,7 @@ export class SdModal {
 
   constructor() {
     // data-sd-init: 첫 렌더 후 설정하여 CSS transition 트리거 허용
-    effect(() => {
+    afterNextRender(() => {
       this._elRef.nativeElement.setAttribute("data-sd-init", "");
     });
 
@@ -508,7 +511,7 @@ export class SdModal {
     if (dialogEl.style.left !== "") config["left"] = dialogEl.style.left;
     if (dialogEl.style.top !== "") config["top"] = dialogEl.style.top;
 
-    await this._sdSystemConfig.setAsync(`sd-modal.${k}` as any, config as any);
+    await this._sdSystemConfig.setAsync(`sd-modal.${k}`, config);
   }
 
   private async _restoreConfig(k: string): Promise<void> {

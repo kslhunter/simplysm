@@ -101,7 +101,7 @@ export class SdSelectItem<T> {
     const itemValue = this.value();
     if (this._parentControl.selectMode() === "multi") {
       const arr = parentValue as T[] | undefined;
-      return arr != null && arr.includes(itemValue as T);
+      return arr != null && arr.some((x) => x === itemValue);
     }
     return parentValue === itemValue;
   });

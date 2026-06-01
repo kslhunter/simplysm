@@ -23,7 +23,11 @@ export class SdFileDialogProvider {
       }
       inputEl.onchange = (event: Event): void => {
         cleanup();
-        const files = (event.target as HTMLInputElement).files!;
+        const files = (event.target as HTMLInputElement).files;
+        if (files == null) {
+          resolve(undefined);
+          return;
+        }
         resolve(multiple ? Array.from(files) : files[0]);
       };
 

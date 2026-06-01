@@ -329,4 +329,85 @@ describe("ServiceProtocol", () => {
       }
     });
   });
+
+  describe("누적/파싱 분리 (accumulate/parseMessage)", () => {
+    it("단일 메시지를 누적하면 complete + resultBytes 를 반환하고, parseMessage 로 메시지를 복원한다", () => {
+      const uuid = Uuid.generate().toString();
+      const message: ServiceMessage = { name: "test.method", body: [{ value: 123 }] };
+
+      const encoded = protocol.encode(uuid, message);
+      const acc = protocol.accumulate(encoded.chunks[0]);
+
+      expect(acc.type).toBe("complete");
+      if (acc.type === "complete") {
+        expect(acc.uuid).toBe(uuid);
+        const parsed = protocol.parseMessage(acc.resultBytes);
+        expect(parsed.name).toBe("test.method");
+        expect(parsed.body).toEqual([{ value: 123 }]);
+      }
+    });
+
+    it("청크 메시지를 순서대로 누적하면 마지막에만 complete 되고 resultBytes 가 전체 메시지를 담는다", () => {
+      const uuid = Uuid.generate().toString();
+      const largeData = "x".repeat(4 * 1024 * 1024);
+      const message: ServiceMessage = { name: "test.method", body: [largeData] };
+
+      const encoded = protocol.encode(uuid, message);
+      expect(encoded.chunks.length).toBeGreaterThan(1);
+
+      let acc!: ReturnType<typeof protocol.accumulate>;
+      for (let i = 0; i < encoded.chunks.length; i++) {
+        acc = protocol.accumulate(encoded.chunks[i]);
+        if (i < encoded.chunks.length - 1) {
+          expect(acc.type).toBe("progress");
+        }
+      }
+
+      expect(acc.type).toBe("complete");
+      if (acc.type === "complete") {
+        const parsed = protocol.parseMessage(acc.resultBytes);
+        expect(parsed.body).toEqual([largeData]);
+      }
+    });
+
+    it("청크를 역순으로 누적해도 complete 후 parseMessage 로 복원된다", () => {
+      const uuid = Uuid.generate().toString();
+      const largeData = "y".repeat(4 * 1024 * 1024);
+      const message: ServiceMessage = { name: "test.method", body: [largeData] };
+
+      const encoded = protocol.encode(uuid, message);
+      const reversed = [...encoded.chunks].reverse();
+
+      let acc!: ReturnType<typeof protocol.accumulate>;
+      for (const chunk of reversed) {
+        acc = protocol.accumulate(chunk);
+      }
+
+      expect(acc.type).toBe("complete");
+      if (acc.type === "complete") {
+        const parsed = protocol.parseMessage(acc.resultBytes);
+        expect(parsed.body).toEqual([largeData]);
+      }
+    });
+
+    it("accumulate+parseMessage 조합 결과가 decode 와 동일하다", () => {
+      const uuid = Uuid.generate().toString();
+      const message: ServiceMessage = { name: "test.method", body: [{ a: 1, b: "x" }] };
+
+      const encoded = protocol.encode(uuid, message);
+      const decoded = protocol.decode(encoded.chunks[0]);
+
+      const protocol2 = createServiceProtocol();
+      try {
+        const acc = protocol2.accumulate(encoded.chunks[0]);
+        expect(acc.type).toBe("complete");
+        if (acc.type === "complete" && decoded.type === "complete") {
+          const parsed = protocol2.parseMessage(acc.resultBytes);
+          expect(parsed).toEqual(decoded.message);
+        }
+      } finally {
+        protocol2.dispose();
+      }
+    });
+  });
 });
