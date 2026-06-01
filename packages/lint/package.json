@@ -31,7 +31,7 @@
     "@typescript-eslint/utils": "^8.60.0",
     "angular-eslint": "^21.4.0",
     "eslint": "^9.39.4",
-    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.6.0",
