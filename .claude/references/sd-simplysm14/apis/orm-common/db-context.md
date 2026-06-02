@@ -1,80 +1,111 @@
-# @simplysm/orm-common — DbContext / 연결·DDL·마이그레이션
+# @simplysm/orm-common — DbContext / 연결·트랜잭션·DDL·마이그레이션
 
-테이블/뷰/프로시저 빌더를 class 프로퍼티로 등록하고, 연결·트랜잭션·DDL·초기화·마이그레이션을 제공하는 추상 클래스. 서브클래스로 확장해 사용. 실제 DB I/O 는 생성자에 주입한 `DbContextExecutor` 가 담당.
+`DbContext` 추상 클래스를 상속해 테이블·뷰·프로시저를 프로퍼티로 등록하고, 연결·트랜잭션·DDL·마이그레이션을 실행하는 묶음. executor(`DbContextExecutor`) 구현체와 `{ database, schema? }` 옵션을 생성자로 주입한다. 트랜잭션 롤백 에러는 `DbTransactionError` 로 표준화된다.
 
-## DbContext (추상 클래스)
+## DbContext (정의·등록)
 
-- `new DbContext(executor: DbContextExecutor, opt: { database: string; schema? })` — 생성자(서브클래스가 호출). `executor` 는 DB I/O 구현, `opt.database`/`opt.schema` 는 기본 네임스페이스.
-- `status: DbContextStatus` — 현재 상태(`"ready"`|`"connect"`|`"transact"`). 연결/트랜잭션 가드에 사용.
-- `database` / `schema` — 주입한 기본 database/schema.
-- 등록 메서드(protected, 서브클래스 프로퍼티 초기화에서 호출):
-  - `queryable(builder): () => Queryable` — Table/View 빌더를 Queryable 팩토리로 등록. 호출할 때마다 새 alias 부여.
-  - `executable(builder): () => Executable` — Procedure 빌더를 Executable 팩토리로 등록.
-- `migrations: Migration[]` — 마이그레이션 정의(서브클래스에서 오버라이드). 기본 빈 배열.
+`abstract class DbContext implements DbContextBase`. 서브클래스에서 `this.queryable(...)`/`this.executable(...)` 로 멤버를 만들고 `migrations` 를 오버라이드한다.
+
+- `constructor(executor: DbContextExecutor, opt: { database: string; schema?: string })` — executor 와 대상 DB 옵션 주입.
+- `protected queryable(builder): () => Queryable` — Table/View 빌더를 Queryable 팩토리로 등록. 호출 시마다 새 alias 부여(View 는 viewFn 실행). 반환 함수에 `SD_BUILDER` 심볼로 원본 빌더를 부착.
+- `protected executable(builder): () => Executable` — Procedure 빌더를 Executable 팩토리로 등록. 마찬가지로 `SD_BUILDER` 부착.
+- `migrations: Migration[]` — 마이그레이션 정의 배열. 서브클래스에서 오버라이드. `initialize()` 가 미적용분만 순서대로 실행.
+- `_migration` — 내부 시스템 마이그레이션 테이블(`_Migration`) Queryable. 적용 이력 저장용.
 
 ```typescript
 class MainDb extends DbContext {
   user = this.queryable(User);
   post = this.queryable(Post);
   getUserById = this.executable(GetUserById);
-  migrations = [{ name: "001", up: async (db) => { await db.createTable(User); } }];
+  override migrations = [{ name: "001", up: async (db) => { await db.createTable(User); } }];
 }
 const db = new MainDb(executor, { database: "mydb" });
-await db.connect(async () => { await db.user().execute(); });
 ```
 
-## 연결 / 트랜잭션
+## 상태·내부 (DbContextBase / DbContextStatus)
 
-- `connect<T>(fn, isolationLevel?): Promise<T>` — 연결 + 트랜잭션 1개를 감싸 `fn` 실행. 성공 시 commit, 예외 시 rollback 후 throw, 종료 시 항상 close. `ready` 가 아니면 throw. 최초 호출 시 관계 정합성 검증. `isolationLevel` 은 격리 수준(선택).
-- `connectWithoutTransaction<T>(callback): Promise<T>` — 트랜잭션 없이 연결만 잡고 `callback` 실행, 종료 시 close. 내부에서 별도 `transaction()` 을 직접 호출할 때 사용.
-- `transaction<T>(fn, isolationLevel?): Promise<T>` — 이미 연결된 상태에서 트랜잭션만 시작/commit/rollback. `transact` 상태면 throw. (DDL 은 transact 상태에서 실행 불가 — `executeDefs` 가 throw)
+`interface DbContextBase` — Queryable/Executable/View 가 의존하는 핵심 면. DbContext 가 구현. executor·어댑터 작성 시 참조.
 
-## DbContextBase 내부 인터페이스 메서드
+- `status: DbContextStatus` — `"ready"`(미연결) / `"connect"`(연결됨, 트랜잭션 밖) / `"transact"`(트랜잭션 중). `transact` 상태에서 DDL 실행 시 throw.
+- `readonly database` / `readonly schema` — 주입된 옵션 값(`string | undefined`).
+- `getNextAlias(): string` — 다음 테이블 alias(`T1`, `T2`...) 발급. 카운터 증가.
+- `resetAliasCounter(): void` — alias 카운터 0 으로. connect 시작 시 호출됨.
+- `executeDefs<T>(defs, resultMetas?): Promise<T[][]>` — QueryDef 배열 실행 위임. `transact` 중 DDL 포함 시 throw. 모든 쿼리 실행의 단일 통로.
+- `getQueryDefObjectName(tableOrView): QueryDefObjectName` — 빌더에서 `{database, schema, name}` 추출.
+- `switchFk(table, enabled): Promise<void>` — FK 제약 on/off(트랜잭션 내 허용).
 
-executor·Queryable 이 의존하는 저수준 메서드(직접 호출은 드묾):
-- `getNextAlias(): string` — 다음 테이블 alias(`T1`, `T2`...) 발급.
-- `resetAliasCounter(): void` — alias 카운터 초기화(연결 시작 시 호출).
-- `executeDefs<T>(defs: QueryDef[], resultMetas?): Promise<T[][]>` — QueryDef 배열을 executor 로 실행. transact 상태에서 DDL 포함 시 throw.
-- `getQueryDefObjectName(tableOrView): QueryDefObjectName` — 빌더 → DB 객체 이름(database/schema/name) 해석.
-- `switchFk(table, enabled): Promise<void>` — FK 제약 활성/비활성(트랜잭션 내 가능).
+`type DbContextStatus = "ready" | "connect" | "transact"`. `interface DbContextDdlMethods` 는 아래 DDL 메서드들의 시그니처 모음(`Migration.up` 의 인자 타입).
 
-## DDL 실행 메서드 (await 후 즉시 실행)
+## 연결·트랜잭션
 
-각각 해당 DDL 을 `executeDefs` 로 즉시 실행. `table`/`view`/`procedure` 인자는 `QueryDefObjectName` 또는 빌더.
-- `createTable(table)` / `dropTable(table)` / `renameTable(table, newName)` — 테이블 생성/삭제/이름변경.
-- `createView(view)` / `dropView(view)` — 뷰 생성/삭제.
-- `createProc(procedure)` / `dropProc(procedure)` — 프로시저 생성/삭제.
-- `addColumn(table, columnName, column)` — column 추가(`column` 은 `ColumnBuilder`).
-- `dropColumn(table, column)` — column 삭제.
-- `modifyColumn(table, columnName, column)` — column 타입/속성 변경.
-- `renameColumn(table, column, newName)` — column 이름 변경.
-- `addPrimaryKey(table, columns)` / `dropPrimaryKey(table)` — PK 추가/삭제.
-- `addForeignKey(table, relationName, relationDef)` — FK 추가(`relationDef` 는 `ForeignKeyBuilder`).
-- `dropForeignKey(table, relationName)` — FK 삭제.
-- `addIndex(table, indexBuilder)` / `dropIndex(table, columns)` — index 추가/삭제.
-- `clearSchema(params: { database; schema? })` — 스키마 내 모든 객체 삭제.
-- `schemaExists(database, schema?): Promise<boolean>` — 스키마 존재 확인.
-- `truncate(table)` — 테이블 비우기.
+- `connect<T>(fn, isolationLevel?): Promise<T>` — 연결+트랜잭션으로 `fn` 실행. 최초 1회 관계 검증(`validateRelations`) 후 alias 리셋, beginTransaction → fn → commit, 예외 시 rollback 후 rethrow, 끝에 항상 close. `ready` 상태 아니면 throw. 일반적인 "한 작업=한 트랜잭션" 경로.
+- `connectWithoutTransaction<T>(callback): Promise<T>` — 연결만(트랜잭션 없이) `callback` 실행 후 close. DDL·여러 독립 트랜잭션을 그 안에서 직접 열 때.
+- `transaction<T>(fn, isolationLevel?): Promise<T>` — 이미 연결된 상태에서 트랜잭션 1개 실행(begin→fn→commit, 실패 시 rollback). `transact` 중 재호출하면 throw. `connectWithoutTransaction` 안에서 트랜잭션을 나눠 쓸 때.
+- `isolationLevel` — `"READ_UNCOMMITTED"|"READ_COMMITTED"|"REPEATABLE_READ"|"SERIALIZABLE"`. 미지정 시 DB 기본값. 동시성 요구에 따라 선택.
 
-## DDL QueryDef 생성기 (실행 없이 def 만 반환)
+롤백 중 발생한 에러가 `DbTransactionError` 이고 코드가 `NO_ACTIVE_TRANSACTION` 이면 무시(원 에러 보존), 그 외엔 원 에러의 `cause` 로 부착.
 
-위 DDL 들의 `get*QueryDef(...)` 버전. 즉시 실행하지 않고 `QueryDef` 만 반환해 배치·검사용으로 모을 때 사용. 예: `getCreateTableQueryDef(table)`, `getDropTableQueryDef(table)`, `getAddColumnQueryDef(table, columnName, column)`, `getAddForeignKeyQueryDef(...)`, `getTruncateQueryDef(table)`, `getSwitchFkQueryDef(table, enabled)` 등. `getCreateObjectQueryDef(builder)` 는 Table/View/Procedure 중 무엇이든 받아 알맞은 CREATE def 반환.
+```typescript
+await db.connect(async () => {
+  const user = await db.user().where((u) => [expr.eq(u.id, 1)]).lock().single();
+  await db.user().where((u) => [expr.eq(u.id, 1)]).update((u) => ({ name: expr.val("string", "X") }));
+}, "REPEATABLE_READ");
+```
 
-## 초기화 / 마이그레이션
+## DDL 실행 메서드
 
-- `initialize(options?: { dbs?: string[]; force?: boolean }): Promise<boolean>` — 스키마 동기화/마이그레이션 실행.
-  - `dbs?: string[]` — 대상 database 한정(미지정 시 전체).
-  - `force?: boolean` — true 면 기존 스키마를 강제 재생성. 운영 데이터 손실 위험이 있어 개발/초기 셋업에서만.
-  - 반환 boolean — 초기화 수행 여부.
-- `interface Migration` — 마이그레이션 1건.
-  - `name: string` — 고유 이름(타임스탬프 권장, 적용 여부 추적 키).
-  - `up: (db) => Promise<void>` — 적용 함수. `db` 는 DDL 메서드를 갖춘 컨텍스트.
+각 메서드는 해당 QueryDef 1개를 `executeDefs` 로 실행한다(`transact` 중 호출 시 throw). 대상 `table`/`view`/`procedure` 인자는 빌더 또는 `QueryDefObjectName`.
 
-## 관련 타입
+- `createTable(table)` / `dropTable(table)` / `renameTable(table, newName)` — 테이블 생성·삭제·이름변경.
+- `createView(view)` / `dropView(view)` — 뷰 생성·삭제.
+- `createProc(procedure)` / `dropProc(procedure)` — 프로시저 생성·삭제.
+- `addColumn(table, columnName, column)` / `dropColumn(table, column)` / `modifyColumn(table, columnName, column)` / `renameColumn(table, column, newName)` — 컬럼 추가·삭제·변경·이름변경. `column` 은 `ColumnBuilder`.
+- `addPrimaryKey(table, columns)` / `dropPrimaryKey(table)` — PK 추가·삭제.
+- `addForeignKey(table, relationName, relationDef)` / `dropForeignKey(table, relationName)` — FK 추가·삭제. `relationDef` 는 `ForeignKeyBuilder`.
+- `addIndex(table, indexBuilder)` / `dropIndex(table, columns)` — 인덱스 추가·삭제.
+- `truncate(table)` — 데이터 전체 삭제(DDL 취급).
+- `clearSchema(params: { database, schema? })` — 스키마 내 모든 객체 삭제. 초기화·테스트 정리에.
+- `schemaExists(database, schema?): Promise<boolean>` — 스키마 존재 여부.
+- `switchFk(table, enabled): Promise<void>` — FK 제약 일시 on/off(트랜잭션 내 허용, DDL 아님).
 
-- `type DbContextStatus = "ready" | "connect" | "transact"`.
-- `interface DbContextBase` — Queryable/Executable/ViewBuilder 가 의존하는 핵심 인터페이스(위 저수준 메서드 + database/schema/status).
-- `interface DbContextDdlMethods` — DDL 실행+생성기 메서드 시그니처 모음(Migration.up 의 db 타입).
-- `interface DbContextExecutor` — 주입할 실행기 인터페이스. `connect()`/`close()`/`beginTransaction(isolationLevel?)`/`commitTransaction()`/`rollbackTransaction()`/`executeDefs(defs, resultMetas?)`.
-- `const SD_BUILDER: symbol` — 등록된 팩토리 함수에 원본 빌더를 매달아두는 심볼 키(내부 메타 조회용).
-- `_Migration` — 시스템 마이그레이션 테이블 빌더(`_migration`, PK `code: varchar(255)`). initialize 가 적용 이력 저장에 사용.
+`get...QueryDef(...)` 형태의 생성기(`getCreateTableQueryDef` 등 위 메서드 1:1 대응 + `getCreateObjectQueryDef`)는 실행 없이 `QueryDef` 만 반환 — 여러 DDL 을 모아 한 번에 실행하거나 SQL 을 미리 확인할 때.
+
+## 초기화 / Migration
+
+- `initialize(options?: { dbs?: string[]; force?: boolean }): Promise<boolean>` — 스키마·마이그레이션 적용. `dbs`=대상 DB 한정, `force`=강제 재생성. 적용 여부 반환.
+- `interface Migration` — `{ name: string; up: (db: DbContextBase & DbContextDdlMethods) => Promise<void> }`. `name` 은 고유(타임스탬프 권장), `up` 안에서 DDL 호출. `initialize` 가 미적용 `name` 만 순서대로 실행.
+
+```typescript
+override migrations: Migration[] = [
+  { name: "20260105_001_create_user", up: async (db) => { await db.createTable(User); } },
+  { name: "20260105_002_add_email", up: async (db) => { await db.addColumn(User, "email", c.varchar(200).nullable()); } },
+];
+```
+
+## 트랜잭션 에러 (DbTransactionError / DbErrorCode)
+
+DBMS 네이티브 트랜잭션 에러를 표준 코드로 래핑. `connect`/`transaction` 의 롤백 경로에서 던져진다(주로 executor 구현이 생성).
+
+- `class DbTransactionError extends Error`
+  - `code: DbErrorCode` — 표준 에러 코드(생성자 1번째 인자).
+  - `message: string` — 메시지(생성자 2번째 인자).
+  - `originalError?: unknown` — 원본 DBMS 에러(생성자 3번째, 디버깅용).
+  - `name` — 항상 `"DbTransactionError"`.
+- `enum DbErrorCode` (문자열 값)
+  - `NO_ACTIVE_TRANSACTION` — 활성 트랜잭션 없는데 ROLLBACK 시도. 롤백 중 이 코드면 컨텍스트가 무시하고 원 에러를 보존.
+  - `TRANSACTION_ALREADY_STARTED` — 이미 트랜잭션 시작됨.
+  - `DEADLOCK` — 데드락.
+  - `LOCK_TIMEOUT` — 잠금 타임아웃.
+
+```typescript
+try {
+  await db.rollbackTransaction();
+} catch (err) {
+  if (err instanceof DbTransactionError && err.code === DbErrorCode.NO_ACTIVE_TRANSACTION) return;
+  throw err;
+}
+```
+
+## SD_BUILDER
+
+- `const SD_BUILDER: unique symbol` — `queryable()`/`executable()` 가 반환한 팩토리 함수에 원본 빌더(TableBuilder/ViewBuilder/ProcedureBuilder)를 부착하는 심볼 키. 컨텍스트 멤버에서 정의 빌더를 역으로 꺼낼 때(예: 전체 테이블 순회·DDL 자동화) 사용.

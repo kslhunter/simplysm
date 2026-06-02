@@ -1,74 +1,74 @@
-# @simplysm/angular — 설정·로깅·서비스 인프라
+# @simplysm/angular — 부트스트랩·설정·로깅·서비스 인프라
 
-앱 부트스트랩과 함께 읽히는 인프라 묶음. `provideSdAngular()` 로 전역 프로바이더를 등록하고, 클라이언트명·테마영속화·시스템로그·로컬스토리지·시스템설정·서비스 클라이언트 연결·전역 에러 처리를 담당.
+앱 시작 시 1회 설정하는 부트스트랩 함수와 전역 프로바이더 묶음. 앱 부팅 코드(`appConfig`/`main.ts`)·전역 에러·서버 연결·시스템 설정 저장을 다룰 때 함께 읽힘.
 
 ## provideSdAngular
 
-`provideSdAngular(opt: { clientName: string }): EnvironmentProviders` — 앱 부트스트랩 시 `providers` 에 넣는 핵심 프로바이더 묶음.
+`provideSdAngular(opt: { clientName: string }): EnvironmentProviders` — 앱 `providers` 에 1개 추가하면 다음을 일괄 설정. zoneless 변경감지 활성, 전역 에러 핸들러(`SdGlobalErrorHandlerPlugin`) 등록, 옵션 이벤트 플러그인(`SdOptionEventPlugin`) 등록, ng-icons 기본설정(strokeWidth 1.5, size 1.33em), `IMAGE_CONFIG` 경고 비활성, 테마 dark/fontSize 를 로컬스토리지(`sd-theme-dark`/`sd-theme-font-size`)에 자동 영속, service worker 업데이트 폴링(5분~최대1시간 지수 백오프, 갱신 감지 시 새로고침 확인), 라우터 네비게이션 동안 글로벌 busy 카운트 증감.
 
-- `opt.clientName` — 클라이언트 식별명. `SdAngularConfigProvider.clientName` 에 주입되어 로컬스토리지 키 prefix·서비스 클라이언트 생성에 사용. 앱마다 고유해야 함.
+- opt.clientName: string — 이 클라이언트 식별자. 로컬스토리지 키 prefix·service-client 연결 이름으로 사용. 앱마다 고유 문자열.
 
-등록 내용(본문 기준): 이미지 경고 비활성화, ng-icon 기본 설정, 다크모드/폰트크기 localStorage 영속화 effect, `window` 의 `error`/`unhandledrejection` → ErrorHandler 위임, `SdOptionEventPlugin`(이벤트 옵션 플러그인), `SdGlobalErrorHandlerPlugin`(ErrorHandler), zoneless 변경감지, Service Worker 업데이트 폴링(지수 백오프, 발견 시 confirm 후 reload), 라우터 내비게이션 중 `SdBusyProvider.globalBusyCount` 증감.
-
-```typescript
+```ts
 bootstrapApplication(AppComponent, {
   providers: [provideRouter(routes), provideSdAngular({ clientName: "my-app" })],
 });
 ```
 
-## setupBgTheme
-
-`setupBgTheme(options?: { theme?: ..., lightness?: "lightest" | "lighter" }): void` — 컴포넌트 활성 동안 `document.body` 의 `--background-color` 를 테마 색으로 지정(effect, cleanup 시 복원). 컴포넌트 생성자/필드에서 호출.
-
-- `options.theme` — `"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"`. 배경 테마 색. 미지정 시 변수 비움(`""`).
-- `options.lightness` — `"lightest"|"lighter"`. 밝기 단계. 기본 `"lightest"`.
-
 ## SdAngularConfigProvider
 
-`class SdAngularConfigProvider { clientName!: string }` — `provideSdAngular` 가 설정하는 클라이언트명 보관 루트 프로바이더. 다른 프로바이더가 inject 해 prefix 로 사용.
-
-- `clientName` — 클라이언트 식별명. 직접 set 하지 말고 `provideSdAngular({clientName})` 로 주입됨.
+`@Injectable({providedIn:"root"})`. `clientName: string` 필드 1개. `provideSdAngular` 가 채워줌. 다른 프로바이더가 clientName 을 참조할 때 inject.
 
 ## SdSystemLogProvider
 
-`class SdSystemLogProvider` — 시스템 로그 기록 루트 프로바이더. 콘솔 로깅 + 선택적 외부 전송.
+전역 로그 기록 프로바이더. 콘솔 로그 + 선택적 서버 전송.
 
-- `writeFn?: (severity, ...data) => Promise<void> | void` — 외부 로그 싱크. 지정 시 `writeAsync` 가 콘솔 출력 후 이 함수도 호출. 미지정이면 콘솔만.
-- `writeAsync(severity: "error"|"warn"|"log", ...data): Promise<void>` — 로그 기록. `severity` 로 로거 메서드 선택 후 `writeFn` 있으면 await(실패 시 내부 로깅만, throw 안 함).
+- writeFn?: (severity, ...data) => Promise<void> | void — 외부(서버) 전송 훅. 지정하면 매 로그마다 호출. 서버 로그 적재가 필요하면 앱 초기화 때 할당.
+- writeAsync(severity: "error"|"warn"|"log", ...data): Promise<void> — 로그 기록. 콘솔에 먼저 출력 후 writeFn 호출. writeFn 이 throw 해도 로깅 자체는 실패하지 않음(내부 logger.error 로 기록).
 
-## SdLocalStorageProvider
+## SdLocalStorageProvider<T>
 
-`class SdLocalStorageProvider<T>` — `clientName.{key}` prefix 로 localStorage 에 JSON 저장하는 타입드 래퍼.
+`clientName.<key>` 형태로 localStorage 에 JSON 저장/조회. T 는 `{ key: 값타입 }` 맵.
 
-- `set<K>(key, value)` — `JSON.stringify` 후 저장. `key` 는 `T` 의 키.
-- `get<K>(key): T[K] | undefined` — 파싱 반환. 없거나 파싱 실패 시 `undefined`(결측 보존).
-- `remove(key)` — 항목 제거.
+- set<K>(key, value) — JSON.stringify 후 저장.
+- get<K>(key): T[K] | undefined — 없거나 파싱 실패 시 undefined(결측 보존).
+- remove(key) — 삭제.
 
-## SdSystemConfigProvider
+## SdSystemConfigProvider<T>
 
-`class SdSystemConfigProvider<T>` — 시스템 설정 저장소. 외부 `fn` 이 있으면 서버, 없으면 localStorage 폴백.
+화면별 설정(시트 컬럼 상태, 모달 위치, 상태 프리셋 등) 영속 프로바이더. `fn` 미지정 시 로컬스토리지로 폴백.
 
-- `fn?: { set(key, data): ...; get(key): PromiseLike<unknown> }` — 외부 저장 핸들러. 지정 시 서버 영속, 미지정 시 `SdLocalStorageProvider` 사용.
-- `setAsync<K>(key, data: T[K] | undefined)` — 저장. `fn` 있으면 위임, 없고 `data==null` 이면 remove, 아니면 localStorage set.
-- `getAsync(key)` — 조회. `fn` 있으면 위임, 없으면 localStorage get.
+- fn?: { set(key, data): Promise|void; get(key): PromiseLike<unknown> } — 서버 영속 훅. 지정하면 서버에 저장/조회, 미지정이면 `SdLocalStorageProvider` 로 폴백. 서버 동기화가 필요하면 앱 초기화 때 할당.
+- setAsync<K>(key, data) — data 가 null 이면 제거(폴백 시), 아니면 저장.
+- getAsync(key) — 저장된 값 조회.
 
-## injectSdSystemConfigResource
+## injectSdSystemConfigResource<T>
 
-`injectSdSystemConfigResource<T>(options: { key: Signal<string | undefined> })` — 호스트 엘리먼트 태그명 + `key` 로 시스템 설정을 읽고 쓰는 Angular `resource` 래퍼. 시트/상태프리셋이 컬럼·프리셋 영속화에 사용.
+`injectSdSystemConfigResource<T>({ key: Signal<string|undefined> })` — 컴포넌트 내에서 호출. 호스트 엘리먼트 태그명 + key 를 합친 키로 `SdSystemConfigProvider` 에 연동되는 resource 핸들 반환. key 가 undefined 면 로드/저장 안 함.
 
-- `options.key` — 설정 키 시그널. `undefined` 면 로드 안 함(결측). 실제 키는 `{태그명}.{key}`.
-- 반환: `{ value, isLoading, status, hasValue(), reload(), set(value), update(fn) }` — `set` 은 즉시 resource 갱신 + 마이크로태스크로 `setAsync` 영속화(실패 시 ErrorHandler 위임).
+- key: Signal<string|undefined> — 설정 키 signal. 빈 값이면 비활성.
+- 반환: `{ value, isLoading, status, hasValue(), reload(), set(v), update(fn) }`. set/update 는 즉시 로컬 반영 후 microtask 로 비동기 영속(실패 시 errorHandler 로 전달). 시트/상태프리셋이 내부적으로 사용.
 
 ## SdServiceClientFactoryProvider
 
-`class SdServiceClientFactoryProvider` — 키별 `ServiceClient` 연결 풀. 요청/응답 진행률을 토스트 progress 로 표시.
+`@simplysm/service-client` 연결을 key 단위로 관리하는 팩토리. 요청/응답 진행률을 토스트로 표시.
 
-- `connectAsync(key, options?: Partial<ServiceConnectionOptions>)` — `key` 로 클라이언트 연결. 호스트/포트/ssl 은 `location` 기본값 + `options` 머지. 이미 연결/이미 끊긴 키면 throw.
-- `closeAsync(key)` — 연결 종료 후 풀에서 제거(미연결 키면 throw).
-- `get(key): ServiceClient` — 연결된 클라이언트 반환. 미연결/끊긴 키면 throw.
+- connectAsync(key: string, options?: Partial<ServiceConnectionOptions>): Promise<void> — 연결 생성. host/port/ssl 미지정 시 현재 location 기준 기본값. 같은 key 재연결·끊긴 key 재사용 시 throw.
+- closeAsync(key): Promise<void> — 연결 종료. 미연결 key 면 throw.
+- get(key): ServiceClient — 연결된 클라이언트 반환. 미연결/끊김이면 throw. 서비스 호출 시 이걸로 ServiceClient 획득.
 
 ## SdGlobalErrorHandlerPlugin
 
-`class SdGlobalErrorHandlerPlugin implements ErrorHandler` — `provideSdAngular` 가 `ErrorHandler` 로 등록하는 전역 에러 핸들러.
+`ErrorHandler` 구현. `provideSdAngular` 가 등록하므로 직접 쓸 일은 드묾. 처리되지 않은 에러/Promise 거부를 시스템 로그에 기록하고 전체화면 오류 오버레이를 1회 표시 후 앱을 destroy(클릭 시 새로고침). 직접 inject 하지 말고 `throw` 로 위임.
 
-- `handleError(event)` — `PromiseRejectionEvent`/`ErrorEvent`/`Error`/기타를 분기해 메시지 구성 → 시스템 로그 기록 + 앱 파괴 후 전체화면 에러 오버레이 표시(클릭 시 reload). 최초 1회만 오버레이 노출. 직접 호출보다 Angular 가 자동 호출.
+## SdThemeProvider
+
+`@Injectable({providedIn:"root"})`. 다크모드·폰트크기 전역 상태.
+
+- dark: WritableSignal<boolean> — 다크모드. true 면 body 에 `sd-theme-dark` 클래스 토글.
+- fontSize: WritableSignal<number> — 루트 폰트 크기(px). 변경 시 `documentElement.style.fontSize` 반영.
+- fontSizePresets: readonly number[] — `[12,14,16,20,24,28]`. 증감 단계.
+- increaseFontSize() / decreaseFontSize() — 프리셋 내 다음/이전 단계로 이동.
+
+## SdThemeSelector
+
+`<sd-theme-selector />` — 폰트크기 증감·다크모드 스위치를 드롭다운으로 제공하는 컴포넌트. input 없음. `SdThemeProvider` 를 직접 조작. 탑바 등에 배치.

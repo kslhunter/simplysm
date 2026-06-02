@@ -1,3 +1,0 @@
-# @simplysm/foo
-
-OLD_FOO_DOC_PLACEHOLDER_MUST_BE_REWRITTEN

@@ -1,83 +1,70 @@
 # @simplysm/core-browser
 
-브라우저 전용 유틸리티. DOM `Element`/`HTMLElement` 프로토타입 확장(import 시 사이드 이펙트로 등록)과 클립보드·다운로드·파일선택·fetch·IndexedDB 헬퍼를 제공.
+브라우저 전용 유틸리티. `Element`/`HTMLElement` 프로토타입 확장(사이드 이펙트)과 파일 다운로드·업로드, IndexedDB 래퍼를 제공.
+
+> 패키지의 어떤 심볼이든 import 하면 `index.ts` 가 `import "./extensions/..."` 를 실행해 프로토타입 확장이 자동 등록됨(`element-ext`, `html-element-ext` 의 사이드 이펙트). 별도 초기화 호출 없이 `el.findAll(...)` 식으로 사용 가능.
 
 ## 사용 트리거 인덱스
 
-- **Element 확장 메서드** — DOM 요소 탐색·삽입·가시성/탭이동 판정을 프로토타입 메서드로 호출할 때. 패키지를 import 하면 자동 등록됨. (아래 인라인)
-- **HTMLElement 확장 메서드** — 리페인트 강제, 부모 기준 상대 좌표 계산, offset 가림 보정 스크롤이 필요할 때. (아래 인라인)
-- **clipboard / bounds 정적 함수** (`copyElement`, `pasteToElement`, `getBounds`) — copy/paste 이벤트 핸들러를 붙이거나 여러 요소의 화면 경계를 한 번에 측정할 때. (아래 인라인)
-- **다운로드·파일선택·fetch** (`downloadBlob`, `openFileDialog`, `fetchUrlBytes`) — Blob 저장, 파일 선택 다이얼로그, 진행률 포함 바이너리 다운로드가 필요할 때. (아래 인라인)
-- **IndexedDB 저장소/가상 파일시스템** (`IndexedDbStore`, `IndexedDbVirtualFs`) — 브라우저 IndexedDB 에 KV 저장하거나 경로 기반 가상 파일트리를 다룰 때. 자세히: [indexed-db.md](./indexed-db.md)
+- **DOM 요소 확장** — DOM 조회(`findAll`/`findFirst`), 부모/탭이동 가능 요소 탐색, 가시성·offset 판정, 부모 기준 상대 좌표 계산, 가림 보정 스크롤, 강제 리페인트, 클립보드 복사/붙여넣기 핸들러, 다중 요소 경계 측정이 필요할 때. 자세히: [dom-element.md](./dom-element.md)
+- **IndexedDB 저장소/가상 파일시스템** (`IndexedDbStore`, `IndexedDbVirtualFs`) — 브라우저 IndexedDB 에 KV 영구 저장하거나, 그 위에 경로 키 기반 가상 파일트리를 올릴 때. 자세히: [indexed-db.md](./indexed-db.md)
+- **파일 다운로드/업로드** (`downloadBlob`, `fetchUrlBytes`/`DownloadProgress`, `openFileDialog`) — Blob 을 파일로 내려받거나, URL 바이너리를 진행률과 함께 받거나, 파일 선택 대화상자를 코드에서 띄울 때. (아래 인라인 섹션)
 
-## Element 확장 메서드
+## 파일 다운로드/업로드
 
-`import "@simplysm/core-browser"`(또는 패키지 내 어떤 심볼이든 import) 시 `index.ts` 가 `import "./extensions/..."` 로 `Element.prototype` 에 등록함. 별도 초기화 호출 불필요.
+브라우저에서 파일을 내려받거나, URL 에서 바이너리를 받거나, 사용자가 파일을 고르게 할 때 쓰는 독립 함수 묶음.
 
-- `findAll<TEl>(selector: string): TEl[]` — 선택자 일치 하위 요소를 배열로 반환. 선택자를 trim 한 결과가 빈 문자열이면 `[]`. `querySelectorAll` 을 NodeList 대신 배열로 받고 빈 선택자 예외를 회피할 때.
-- `findFirst<TEl>(selector: string): TEl | undefined` — 첫 일치 하위 요소 또는 `undefined`. 빈 선택자면 `undefined`, 미일치도 `undefined`. `querySelector` 의 `null` 을 `undefined` 로 정규화한 형태.
-- `prependChild<TEl>(child: TEl): TEl` — 자식을 첫 번째 위치(`insertBefore(child, firstElementChild)`)로 삽입하고 그 요소 반환. 맨 앞에 끼울 때.
-- `getParents(): Element[]` — 모든 조상 요소를 가까운 것부터 먼 순서로 배열 반환. 조상 체인 순회·특정 조상 포함 판정에.
-- `findTabbableParent(): HTMLElement | undefined` — `tabbable` 기준 첫 탭 이동 가능 조상. 포커스 위임 대상을 위로 탐색할 때.
-- `findFirstTabbableChild(): HTMLElement | undefined` — TreeWalker 로 순회한 첫 탭 이동 가능 하위 요소. 컨테이너 진입 시 자동 포커스 대상 찾을 때.
-- `isOffsetElement(): boolean` — `position` 이 relative/absolute/fixed/sticky 중 하나면 true. offset parent(절대배치 기준) 역할 여부 판정에.
-- `isVisible(): boolean` — `getClientRects().length > 0` + `visibility !== "hidden"` + `opacity !== "0"` 를 모두 만족하면 true. 화면 표시 여부 판정에(display:none 은 clientRects 가 비어 false).
+### downloadBlob
 
 ```ts
-import "@simplysm/core-browser";
-const rows = containerEl.findAll<HTMLElement>("tr");
-const first = containerEl.findFirstTabbableChild();
+function downloadBlob(blob: Blob, fileName: string): void;
 ```
 
-## HTMLElement 확장 메서드
+Blob 을 objectURL 로 만들어 동적 `a[download]` 클릭으로 저장. objectURL 은 1초 뒤 revoke. 화면 다운로드 버튼 핸들러에서 즉시 저장할 때.
 
-`HTMLElement.prototype` 에 등록되는 메서드. 위와 동일하게 import 만으로 활성화.
-
-- `repaint(): void` — `offsetHeight` 접근으로 강제 동기 레이아웃(reflow)을 유발해 즉시 리페인트. 스타일 변경 직후 반영을 강제할 때.
-- `getRelativeOffset(parent: HTMLElement | string): { top: number; left: number }` — 부모 기준 CSS top/left 좌표 계산. 뷰포트 위치·부모 스크롤·중간 요소 border·CSS transform 까지 반영. 드롭다운/팝업 위치 지정에. 부모를 못 찾으면 `ArgumentError` throw.
-  - parent: `HTMLElement | string` — 기준 부모. 문자열이면 `this.closest(parent)` 로 조상 탐색, 요소면 직접 사용. `document.body` 나 `".container"` 식으로 지정.
-- `scrollIntoViewIfNeeded(target, offset?): void` — 대상이 스크롤 영역의 상단/좌측 경계를 벗어났을 때만 스크롤하여 보이게 함. 하단/우측은 처리하지 않고 브라우저 기본 포커스 스크롤에 위임. 고정 헤더/컬럼 테이블의 포커스 처리에.
-  - target: `{ top: number; left: number }` — 컨테이너 내 대상 위치(offsetTop/offsetLeft).
-  - offset: `{ top: number; left: number }` — 가려지면 안 되는 영역 크기(고정 헤더 높이·고정 컬럼 너비). 기본 `{ top: 0, left: 0 }`.
+- `blob: Blob` — 저장할 데이터.
+- `fileName: string` — 저장 파일명. `sanitize-filename` 으로 OS 금지 문자·예약어를 제거한 뒤 추가로 `[`·`]` 도 제거하며, 결과가 빈 문자열이면 `"download"` 로 대체. 사용자 입력 파일명을 그대로 넣어도 안전.
 
 ```ts
-const { top, left } = popupEl.getRelativeOffset(".container");
-scrollEl.scrollIntoViewIfNeeded({ top: cellTop, left: cellLeft }, { top: headerH, left: fixedW });
+downloadBlob(new Blob([buf], { type: "application/pdf" }), "보고서[2026].pdf");
 ```
 
-## clipboard / bounds 정적 함수
-
-- `copyElement(event: ClipboardEvent): void` — copy 이벤트 핸들러용. 이벤트 타겟 내 첫 `input/textarea` 의 `value` 를 클립보드 `text/plain` 으로 기록하고 `preventDefault`. clipboardData 없거나 타겟이 Element 아니거나 input 없으면 무동작.
-  - event: `ClipboardEvent` — copy 이벤트 객체. `el.addEventListener("copy", copyElement)` 로 등록.
-- `pasteToElement(event: ClipboardEvent): void` — paste 이벤트 핸들러용. 타겟 내 첫 `input/textarea` 의 전체 `value` 를 클립보드 텍스트로 교체하고 `input` 이벤트 dispatch 후 `preventDefault`. 커서 위치·선택 영역은 무시(전체 치환).
-  - event: `ClipboardEvent` — paste 이벤트 객체.
-- `getBounds(els: Element[], timeout?: number): Promise<ElementBounds[]>` — `IntersectionObserver` 로 여러 요소의 뷰포트 기준 경계를 한 번에 측정. 중복 제거 후 입력 순서대로 정렬해 반환. 빈 배열이면 즉시 `[]`. 모든 요소 관측 완료 시 resolve, 제한시간 초과 시 `TimeoutError` throw.
-  - els: `Element[]` — 측정 대상. 중복은 제거되고 입력 순서로 정렬됨.
-  - timeout: `number` — 제한시간(ms). 기본 `5000`. 초과 시 `TimeoutError`.
-- `ElementBounds`(반환 타입) — `target: Element`(측정 요소), `top`/`left`(뷰포트 기준 위치), `width`/`height`(요소 크기). 모두 `boundingClientRect` 값.
+### fetchUrlBytes / DownloadProgress
 
 ```ts
-inputEl.addEventListener("copy", copyElement);
-const bounds = await getBounds([elA, elB], 3000);
+interface DownloadProgress { receivedLength: number; contentLength: number }
+function fetchUrlBytes(
+  url: string,
+  options?: { onProgress?: (progress: DownloadProgress) => void },
+): Promise<Uint8Array>;
 ```
 
-## 다운로드·파일선택·fetch
+URL 바이너리를 스트림 reader 로 다운로드. 큰 파일을 진행률과 함께 받을 때.
 
-- `downloadBlob(blob: Blob, fileName: string): void` — Blob 을 objectURL 로 만들어 동적 `a[download]` 클릭으로 저장. objectURL 은 1초 뒤 revoke. fileName 은 `sanitize-filename` 으로 금지문자·예약어 제거 후 `[`,`]` 도 제거하며, 결과가 비면 `"download"` 로 대체.
-  - blob: `Blob` — 저장할 데이터.
-  - fileName: `string` — 저장 파일명. 파일시스템 금지 문자·예약어는 자동 정리됨.
-- `openFileDialog(options?): Promise<File[] | undefined>` — 동적 `input[type=file]` 을 클릭해 파일 선택 다이얼로그 표시. 선택하면 `File[]`, 취소(cancel 이벤트)하거나 빈 선택이면 `undefined`.
-  - options.accept: `string` — 허용 MIME/확장자 필터(input `accept`). 미지정 시 제한 없음. 예: `".png,.jpg"`.
-  - options.multiple: `boolean` — 다중 선택 허용. 기본 `false`. 여러 파일 받을 때 `true`.
-- `fetchUrlBytes(url, options?): Promise<Uint8Array>` — URL 바이너리를 스트림으로 다운로드. `response.ok` 아니거나 본문 없으면 Error throw. Content-Length 가 있으면 그 크기로 사전 할당하며 수신량이 그보다 초과/미달이면 Error, 없으면 청크를 모아 `bytes.concat` 으로 병합(chunked encoding).
-  - url: `string` — 다운로드 대상 URL.
-  - options.onProgress: `(progress: DownloadProgress) => void` — 청크 수신마다 호출(Content-Length 가 있는 경로에서만).
-- `DownloadProgress`(콜백 인자 타입) — `receivedLength`(누적 수신 바이트), `contentLength`(전체 바이트, Content-Length).
+- `url: string` — 다운로드 대상 URL. `response.ok` 가 아니면 `Error("다운로드 실패: <status> <statusText>")`, 본문 reader 가 없으면 `Error("응답 본문을 읽을 수 없습니다")` throw.
+- `options.onProgress: (progress: DownloadProgress) => void` — 청크 수신마다 호출되는 진행 콜백. `Content-Length` 헤더가 있는 경로에서만 호출됨(없으면 청크를 모아 `bytes.concat` 으로 마지막에 한 번에 병합 → chunked encoding 이라 중간 보고 없음). 진행 바 갱신에.
+- `DownloadProgress.receivedLength: number` — 누적 수신 바이트 수.
+- `DownloadProgress.contentLength: number` — 전체 바이트(`Content-Length` 헤더 값, 없으면 0). 헤더가 있으면 그 크기로 버퍼를 사전 할당하고, 수신량이 헤더 값을 초과하거나 미달하면 무결성 위반으로 Error throw.
 
 ```ts
-downloadBlob(new Blob([buf]), "보고서.xlsx");
-const files = await openFileDialog({ accept: ".csv", multiple: true });
 const data = await fetchUrlBytes("/api/file", {
   onProgress: (p) => setPct(p.receivedLength / p.contentLength),
 });
+```
+
+### openFileDialog
+
+```ts
+function openFileDialog(options?: { accept?: string; multiple?: boolean }): Promise<File[] | undefined>;
+```
+
+동적 `input[type=file]` 을 만들어 클릭, 파일 선택 대화상자를 표시. 업로드 버튼 핸들러에서 호출.
+
+- `options.accept: string` — 허용 MIME/확장자 필터(input `accept` 에 그대로 전달). 미지정 시 제한 없음. 특정 형식만 받을 때(예: `".png,.jpg"`, `"image/*"`).
+- `options.multiple: boolean` — 다중 선택 허용. true 면 여러 파일 선택 가능, 기본 `false`(단일). 여러 파일 업로드 화면이면 true.
+- 반환: 선택 파일이 있으면 `File[]`, 사용자가 취소하거나(`cancel` 이벤트) 0개 선택이면 `undefined`. 결측을 빈 배열로 뭉개지 않으므로 `== null` 로 취소를 구분.
+
+```ts
+const files = await openFileDialog({ accept: ".csv", multiple: true });
+if (files == null) return; // 취소
 ```

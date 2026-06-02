@@ -1,44 +1,34 @@
-# @simplysm/angular — 호스트 디렉티브·동작 셋업
+# @simplysm/angular — 호스트 디렉티브·동작 셋업·템플릿
 
-엘리먼트에 부착하는 동작 디렉티브와, 컴포넌트 생성자에서 호출해 호스트 엘리먼트에 동작을 주입하는 `setup*` 함수, 타입 안전 템플릿 디렉티브. 다른 컴포넌트들이 ripple/검증/리사이즈 감지 등에 내부적으로 사용하며 단독으로도 쓸 수 있음.
+엘리먼트/컴포넌트에 동작을 부착하는 디렉티브와, 컴포넌트 constructor 에서 호출하는 `setup*` 훅, 타입드 ng-template 묶음. 컴포넌트 동작을 직접 조립할 때 함께 읽힘.
 
-## 이벤트 옵저버 디렉티브
+## 이벤트 디렉티브
 
-- `[sdResize]` (`SdResizeDirective`) — `ResizeObserver` 로 크기 변화 감지. `sdResize = output<SdResizeEvent>()`. `SdResizeEvent = { heightChanged; widthChanged; target: HTMLElement; contentRect: DOMRectReadOnly }`. requestAnimationFrame 디바운스.
-- `[sdIntersection]` (`SdIntersectionDirective`) — `IntersectionObserver` 로 가시성 감지. `sdIntersection = output<SdIntersectionEvent>()`. `SdIntersectionEvent = { entry: IntersectionObserverEntry }`.
+옵션 이벤트(`.capture`/`.passive`/`.once`)는 `provideSdAngular` 가 등록한 `SdOptionEventPlugin` 으로 동작. 직접 inject 안 함.
 
-## SdEvents
+- **SdEvents** — 표준 이벤트의 옵션 변형을 output 으로 노출하는 디렉티브. `(click.capture)`, `(scroll.passive)`, `(touchstart.passive)`, `(wheel.capture.passive)`, `(transitionend.once)` 등(셀렉터에 열거된 조합만). 버블링 안 되는 focus/blur 를 capture 로 받거나 성능상 passive 스크롤이 필요할 때 사용.
+- **SdResizeDirective** — `(sdResize)` 출력. ResizeObserver 기반, requestAnimationFrame 디바운스. 이벤트 `SdResizeEvent = { heightChanged; widthChanged; target: HTMLElement; contentRect: DOMRectReadOnly }`. 크기 변화에 반응할 때.
+- **SdIntersectionDirective** — `(sdIntersection)` 출력. IntersectionObserver 기반. 이벤트 `SdIntersectionEvent = { entry: IntersectionObserverEntry }`. 화면 진입 감지(지연 로드 등)에.
+- **SdCommandDirective** — `(sdRefreshCommand)`(Ctrl+Alt+L), `(sdSaveCommand)`(Ctrl+S), `(sdInsertCommand)`(Insert) 출력(`KeyboardEvent`). 최상위로 열린 모달 안에서만 동작(가려진 화면 단축키 차단). 새로고침/저장/추가 단축키 바인딩에.
 
-`SdEvents` 디렉티브 — capture/passive/once 옵션 이벤트를 output 으로 노출(Angular 기본 바인딩이 지원 않는 리스너 옵션용). 셀렉터에 해당하는 속성을 호스트에 쓰면 동작. 예: `(click.capture)`, `(scroll.passive)`, `(wheel.capture.passive)`, `(touchstart.passive)`, `(transitionend.once)` 등. 각 output 은 대응 DOM 이벤트 타입(MouseEvent/WheelEvent/TouchEvent 등) emit.
+## 표시 효과 디렉티브 + 셋업 훅
 
-`SdOptionEventPlugin` — `provideSdAngular` 가 등록하는 `EventManagerPlugin`. `.capture`/`.passive`/`.once` 접미사 이벤트 바인딩을 실제 리스너 옵션으로 변환. 직접 사용 불필요.
+- **SdRipple** / **setupRipple** — `[sdRipple]="enabled"` 디렉티브 또는 `setupRipple(enableFn?: () => boolean)` 훅. 포인터 다운 위치에서 퍼지는 물결 효과. enabled/enableFn false 면 비활성. 버튼류에 부착.
+- **SdShowEffect** / **setupRevealOnShow** — `[sdShowEffect]="enabled"` + `sdShowEffectType`("l2r"|"t2b", 기본 t2b) 디렉티브, 또는 `setupRevealOnShow(optFn?: () => { type?; enabled? })` 훅. 화면 진입 시 페이드+슬라이드로 나타남. type 은 슬라이드 방향(t2b=위→아래, l2r=왼→오). 진입 애니메이션에.
+- **SdInvalid** / **setupInvalid** — `[sdInvalid]="message"` 디렉티브, 또는 `setupInvalid(getInvalidMessage: () => string)` 훅. 메시지가 빈 문자열이 아니면 호스트 좌상단에 빨간 점 표시 + 숨김 input 의 `setCustomValidity` 로 폼 검증 연동(폼 submit 시 메시지 노출). 커스텀 컨트롤의 유효성 표시에. (sd-textfield 등 내장 컨트롤이 이미 사용)
 
-## SdCommandDirective
+## 기타 셋업 훅·유틸
 
-`[sdRefreshCommand],[sdSaveCommand],[sdInsertCommand]` — 전역 단축키를 명령 이벤트로 변환(최상위 모달 컨텍스트에서만 발동).
+- **setupModelHook<T>(model, canFn: Signal<(item) => boolean | Promise<boolean>>)** — model 의 set/update 를 가로채 canFn 결과가 false 면 변경 차단(Promise 면 비동기 허용). 체크박스/스위치/리스트 선택의 변경 가드(`canChangeFn`)에 사용.
+- **setupBgTheme(options?: { theme?; lightness? })** — body 배경색 CSS 변수를 테마색으로 설정(컴포넌트 파괴 시 복원). theme = `"primary"|...|"gray"|"blue-gray"`, lightness = `"lightest"|"lighter"`(기본 lightest). 화면 배경 톤 지정에.
+- **setSafeStyle(renderer: Renderer2, el, style: Partial<CSSStyleDeclaration>)** — Renderer2 로 여러 스타일 일괄 적용. 디렉티브에서 DOM 스타일 직접 조작 시.
+- **mark(sig: WritableSignal<any>)** — in-place 변경(배열 push 등) 후 shallow copy 새 참조로 set 하여 signal 소비자에게 변경 통지. 배열/객체를 직접 변형했을 때.
 
-- `sdRefreshCommand = output<KeyboardEvent>()` — Ctrl+Alt+L.
-- `sdSaveCommand = output<KeyboardEvent>()` — Ctrl+S.
-- `sdInsertCommand = output<KeyboardEvent>()` — Ctrl+Insert.
+## 타입드 템플릿 디렉티브
 
-CRUD 컨테이너가 `sdSaveCommand` 를 저장에 연결.
+- **SdTypedTemplate<T>** — `<ng-template [typed]="typeToken" let-x="...">`. ng-template 컨텍스트에 타입을 부여(타입 가드). 재귀 메뉴 템플릿 등에서 컨텍스트 타입 보장에 사용.
+- **SdItemOfTemplate<TItem>** / **SdItemOfTemplateContext<TItem>** — `<ng-template [itemOf]="items" let-item="item" let-index="index" let-depth="depth">`. 컨텍스트 `{ $implicit; item; index; depth }`. select/shared-data/calendar 등이 항목 렌더 템플릿 규약으로 사용.
 
-## ripple / show-effect / invalid 디렉티브·셋업
+## SdOptionEventPlugin
 
-부착형 디렉티브와 동치 셋업 함수 쌍.
-
-- `[sdRipple]` (`SdRipple`) — 클릭 ripple 효과. `sdRipple = input.required(booleanAttribute)`(활성 여부). `setupRipple(enableFn?: () => boolean)` 는 컴포넌트 생성자에서 호스트에 ripple 주입(버튼/체크박스가 사용).
-- `[sdShowEffect]` (`SdShowEffect`) — 스크롤 진입 시 페이드/슬라이드 인. `sdShowEffect = input.required(booleanAttribute)`(활성), `sdShowEffectType: "l2r"|"t2b"`(슬라이드 방향, 기본 `"t2b"`). `setupRevealOnShow(optFn?)` 가 동치 셋업.
-- `[sdInvalid]` (`SdInvalid`) — 임의 엘리먼트에 폼 검증 메시지 부착. `sdInvalid = input.required<string>()`(메시지, 빈 문자열이면 유효). `setupInvalid(getInvalidMessage: () => string)` 가 동치 셋업(숨김 input + `setCustomValidity` 로 네이티브 검증 연동, `<sd-form>` 제출 시 표시). 모든 `required` 컨트롤이 내부 사용.
-
-## setupModelHook
-
-`setupModelHook<T, S extends WritableSignal<T>>(model: S, canFn: Signal<(item: T) => boolean | Promise<boolean>>): void` — `model` 의 set/update 를 가로채 `canFn` 통과 시에만 값 적용. 체크박스/스위치/공유선택리스트의 `canChangeFn` 구현.
-
-- `model` — 가로챌 WritableSignal.
-- `canFn` — 변경 허용 판정 시그널. `false` 반환 시 무시, `true` 면 즉시 set, Promise 면 resolve 가 `false` 아닐 때 set(에러는 ErrorHandler 위임).
-
-## 타입 안전 템플릿 디렉티브
-
-- `ng-template[typed]` (`SdTypedTemplate<T>`) — `typed = input.required<T>()` 로 템플릿 컨텍스트 타입을 명시(재귀 메뉴 등 `let-x` 타입 추론용). 값은 타입 토큰일 뿐.
-- `ng-template[itemOf]` (`SdItemOfTemplate<TItem>`) — `itemOf = input.required<TItem[]>()` 로 항목 반복 템플릿의 컨텍스트 타입 제공. select/calendar/공유선택이 항목 슬롯에 사용. 컨텍스트 `SdItemOfTemplateContext<TItem> = { $implicit; item; index; depth }`.
+`provideSdAngular` 가 등록하는 `EventManagerPlugin`. `.capture`/`.passive`/`.once` 접미 이벤트를 해석. 직접 사용 안 함.

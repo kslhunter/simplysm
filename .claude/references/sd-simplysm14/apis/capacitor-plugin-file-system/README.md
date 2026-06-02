@@ -1,17 +1,17 @@
 # @simplysm/capacitor-plugin-file-system
 
-Capacitor 기반 네이티브 파일 시스템 접근 플러그인. Android 는 외부/앱 저장소 직접 접근(11+ 는 `MANAGE_EXTERNAL_STORAGE`, 10- 는 `READ/WRITE_EXTERNAL_STORAGE` 권한), Browser 는 IndexedDB 기반 에뮬레이션으로 동작.
+Capacitor 기반 파일 시스템 접근 플러그인. 네이티브(Android)에서 외부/앱 저장소를 직접 다루고(Android 11+ 는 `MANAGE_EXTERNAL_STORAGE`, 10- 는 `READ/WRITE_EXTERNAL_STORAGE` 권한), 브라우저에서는 IndexedDB 기반 에뮬레이션으로 동일 API 를 제공.
 
 ## 사용 트리거 인덱스
 
-- **FileSystem** — 파일 읽기/쓰기, 디렉토리 조회/생성, 삭제, 권한 확인/요청, 저장소 경로 조회가 필요할 때 쓰는 정적(static) 진입점 클래스(주 사용처).
-- **StorageType** — `FileSystem.getStoragePath` 인자로 넘기는 저장소 위치 유형 리터럴을 고를 때.
+- **FileSystem** — 파일 읽기/쓰기, 디렉토리 조회/생성, 삭제, 존재 확인, 권한 확인/요청, 저장소 경로/URI 조회가 필요할 때 쓰는 static 진입점 클래스(주 사용처).
+- **StorageType** — `FileSystem.getStoragePath` 인자로 넘길 저장소 위치 유형 리터럴을 고를 때.
 - **FileInfo** — `FileSystem.readdir` 가 반환하는 항목 정보(이름 + 디렉토리 여부). 디렉토리 순회 시.
-- **FileSystemPlugin** — Capacitor 네이티브 브릿지 원형 인터페이스 타입. 보통 `FileSystem` 가 래핑하므로 직접 호출 불필요. 커스텀 web 구현 작성이나 타입 참조 시에만.
+- **FileSystemPlugin** — Capacitor 네이티브 브릿지 원형 인터페이스 타입. 보통 `FileSystem` 가 래핑하므로 직접 호출 불필요. 커스텀 web 구현 작성·타입 참조 시에만.
 
 ## FileSystem (static 클래스)
 
-모든 메서드 `static async`. 인스턴스 생성 없이 `FileSystem.xxx()` 호출. 내부적으로 `registerPlugin<FileSystemPlugin>("FileSystem")` 으로 얻은 네이티브/web 구현에 위임하고, 플러그인의 `{ ... }` 래퍼 결과를 평탄화해 반환.
+`abstract class`, 모든 멤버 `static async`. 인스턴스 생성 없이 `FileSystem.xxx()` 호출. 내부적으로 `registerPlugin<FileSystemPlugin>("FileSystem")` 으로 얻은 네이티브/web 구현에 위임하고, 플러그인의 `{ ... }` 래퍼 결과를 평탄화해 반환.
 
 - `checkPermissions(): Promise<boolean>` — 파일 접근 권한 보유 여부. true 면 권한 있음. 읽기/쓰기 전 사전 확인용. 플러그인의 `{ granted }` 를 boolean 으로 풀어 반환.
 - `requestPermissions(): Promise<void>` — 권한 요청. Android 11+ 는 설정 화면으로 이동, Android 10- 는 권한 대화상자 표시. `checkPermissions()` 가 false 일 때 호출.
@@ -58,8 +58,8 @@ for (const f of await FileSystem.readdir(`${base}/notes`)) {
   - `readdir(options: { path: string }): Promise<{ files: FileInfo[] }>` — `path` 디렉토리 항목 목록을 `files` 로 반환.
   - `getStoragePath(options: { type: StorageType }): Promise<{ path: string }>` — `type` 저장소의 실제 경로를 `path` 로 반환.
   - `getUri(options: { path: string }): Promise<{ uri: string }>` — `path` 파일의 FileProvider URI 를 `uri` 로 반환.
-  - `writeFile(options: { path: string; data: string; encoding?: "utf8" | "base64" }): Promise<void>` — `data`(문자열)를 `encoding`(`"utf8"`=텍스트, `"base64"`=바이너리 디코드, 생략 시 구현 기본)으로 `path` 에 기록.
-  - `readFile(options: { path: string; encoding?: "utf8" | "base64" }): Promise<{ data: string }>` — `path` 내용을 `encoding`(`"utf8"`=텍스트, `"base64"`=바이너리 인코딩 문자열)으로 읽어 `data` 로 반환.
+  - `writeFile(options: { path: string; data: string; encoding?: "utf8" | "base64" }): Promise<void>` — `data`(문자열)를 `encoding`(`"utf8"`=텍스트 그대로, `"base64"`=base64 문자열을 바이너리로 디코드해 기록, 생략 시 구현 기본)으로 `path` 에 기록.
+  - `readFile(options: { path: string; encoding?: "utf8" | "base64" }): Promise<{ data: string }>` — `path` 내용을 `encoding`(`"utf8"`=텍스트, `"base64"`=바이너리를 base64 문자열로 인코딩)으로 읽어 `data` 로 반환. 플러그인 레벨에서 바이너리는 항상 base64 문자열로 주고받음(`FileSystem` 가 `Bytes` ↔ base64 변환 담당).
   - `remove(options: { path: string }): Promise<void>` — `path` 파일/디렉토리 재귀 삭제.
   - `mkdir(options: { path: string }): Promise<void>` — `path` 디렉토리 재귀 생성.
   - `exists(options: { path: string }): Promise<{ exists: boolean }>` — `path` 존재 여부를 `exists` 로 반환.

@@ -1,50 +1,39 @@
 # @simplysm/service-server — v1-legacy
 
-ver≠2(구버전) WebSocket 클라이언트를 받기 위한 레거시 핸들러. 주로 구버전 앱의 자동업데이트(`SdAutoUpdateService.getLastVersion`) 요청을 처리한다. `ServiceServer` 는 ver=2 가 아닌 연결을 자동으로 이 핸들러로 넘긴다(`AutoUpdate` 서비스나 `legacyV1Handlers` 가 있을 때만, 둘 다 없으면 연결 거부).
+`ver !== "2"`(구버전) WebSocket 클라이언트를 받기 위한 레거시 핸들러. 주로 구버전 앱의 자동 업데이트(`SdAutoUpdateService.getLastVersion`) 요청을 처리한다. `ServiceServer` 는 ver=2 가 아닌 연결을 자동으로 이 핸들러로 넘긴다(`AutoUpdate` 서비스나 `legacyV1Handlers` 가 있을 때만, 둘 다 없으면 연결 거부). `ServiceServerOptions.legacyV1Handlers` 로 커스텀 핸들러를 끼울 때만 직접 다룬다.
 
 ## handleV1Connection
 
-- `handleV1Connection(socket, autoUpdateMethods: V1AutoUpdateMethods, clientNameSetter?): void`
-- `handleV1Connection(socket, options: V1ConnectionOptions): void`
+V1 소켓 연결을 처리한다. 두 가지 시그니처:
 
-연결 즉시 `{ name: "connected" }` 전송 후, JSON 메시지(`V1Request`)를 받아 처리:
+- `handleV1Connection(socket, autoUpdateMethods: V1AutoUpdateMethods, clientNameSetter?)` — 자동 업데이트 메서드만 넘기는 단축형.
+- `handleV1Connection(socket, options: V1ConnectionOptions)` — 전체 옵션형.
 
-1. 등록된 `handlers` 를 순서대로 실행, `handled: true` 면 그 결과로 응답.
-2. 미처리이고 command 가 `"SdAutoUpdateService.getLastVersion"` 이면 자동업데이트 fallback 실행.
-3. 그 외엔 `{ message: "앱 업그레이드가 필요합니다.", code: "UPGRADE_REQUIRED" }` 에러 응답.
+연결 즉시 `{ name: "connected" }` 전송. 메시지 수신 시: ① `clientNameSetter` 호출 → ② 사용자 `handlers` 순회(처리되면 그 응답) → ③ 미처리이고 command 가 `"SdAutoUpdateService.getLastVersion"` 이면 자동 업데이트 메서드 실행 → ④ 그래도 미처리면 `{ message: "앱 업그레이드가 필요합니다.", code: "UPGRADE_REQUIRED" }` 에러 응답. 메시지 파싱 에러는 warn 로그.
 
-## 타입
+## V1ConnectionOptions
 
-- `V1Request` — `{ uuid: string; command: string; params: unknown[]; clientName?: string }`. 클라이언트 요청.
-- `V1Response` — `{ name: "response"; reqUuid: string; state: "success" | "error"; body: unknown }`. 서버 응답 형식. `state` = 처리 결과("success" = 정상, "error" = 실패).
-- `V1AutoUpdateMethods` — `{ getLastVersion(platform): Promise<unknown> | unknown }`. 자동업데이트 fallback 구현.
-- `V1RequestHandlerResult` — `{ handled: true; state?: "success"|"error"; body }`(처리함, state 기본 success) 또는 `{ handled: false }`(다음 핸들러로 넘김).
-- `V1RequestHandlerContext` — `{ request: V1Request; serviceContext: ServiceContext }`. 핸들러 인자.
-- `V1RequestHandler` — `(ctx: V1RequestHandlerContext) => V1RequestHandlerResult | Promise<V1RequestHandlerResult>`. 커스텀 처리 함수. `ServiceServerOptions.legacyV1Handlers` 에 등록.
-- `V1ConnectionOptions`:
-  - `serviceContext?: ServiceContext` — 핸들러에 넘길 고정 컨텍스트.
-  - `serviceContextFactory?: (request) => ServiceContext` — 요청별 컨텍스트 생성(고정 대신 요청마다 만들 때).
-  - `handlers?: V1RequestHandler[]` — 커스텀 핸들러 체인.
-  - `autoUpdateMethods?: V1AutoUpdateMethods` — 자동업데이트 fallback 고정 구현.
-  - `autoUpdateMethodsFactory?: (ctx) => V1AutoUpdateMethods` — 요청별 fallback 생성.
-  - `clientNameSetter?: (clientName) => void` — 메시지마다 clientName 통지 콜백.
+- `serviceContext?: ServiceContext` — 핸들러에 넘길 고정 컨텍스트.
+- `serviceContextFactory?: (request: V1Request) => ServiceContext` — 요청별 컨텍스트 생성(고정 컨텍스트보다 우선 적용). `ServiceServer` 는 이걸로 clientName 만 담은 컨텍스트를 만든다.
+- `handlers?: V1RequestHandler[]` — 사용자 정의 처리기 목록. 하나라도 `handled: true` 면 그 응답으로 종료. 핸들러가 있는데 컨텍스트가 없으면 throw.
+- `autoUpdateMethods?: V1AutoUpdateMethods` — getLastVersion fallback 의 고정 구현.
+- `autoUpdateMethodsFactory?: (ctx: V1RequestHandlerContext) => V1AutoUpdateMethods` — 요청별 fallback 생성(있으면 고정 구현보다 우선). 컨텍스트 없으면 throw.
+- `clientNameSetter?: (clientName: string | undefined) => void` — 매 메시지의 `clientName` 을 외부로 전달하는 콜백.
 
-## 사용 예
+## V1RequestHandler
 
-```ts
-createServiceServer({
-  // ...
-  services: [AutoUpdateService], // ver≠2 연결의 getLastVersion fallback 자동 연결
-  legacyV1Handlers: [
-    (ctx) =>
-      ctx.request.command === "Legacy.ping"
-        ? { handled: true, body: "pong" }
-        : { handled: false },
-  ],
-});
-```
+`V1RequestHandler` — `(ctx: V1RequestHandlerContext) => V1RequestHandlerResult | Promise<...>`. 동기/비동기 모두 허용.
 
-## 주의사항
+`V1RequestHandlerContext` — `{ request: V1Request; serviceContext: ServiceContext }`.
 
-- `handlers` 가 있는데 `serviceContext`(또는 factory)가 없으면 핸들러 실행 시 "serviceContext가 필요합니다." throw — 핸들러를 쓰려면 컨텍스트를 함께 제공.
-- 메시지 처리 중 예외는 warn 로그만 남기고 응답하지 않음(레거시 한정 동작).
+`V1RequestHandlerResult` — `{ handled: true; state?: "success" | "error"; body: unknown }`(이 핸들러가 처리; `state` 미지정 시 `"success"`) 또는 `{ handled: false }`(다음 핸들러/fallback 으로 위임).
+
+## V1Request / V1Response
+
+`V1Request` — 클라이언트 요청. `{ uuid: string; command: string; params: unknown[]; clientName?: string }`. `command` 는 `"<service>.<method>"` 형태.
+
+`V1Response` — 서버 응답. `{ name: "response"; reqUuid: string; state: "success" | "error"; body: unknown }`. `state` 가 `"success"` 면 정상 결과, `"error"` 면 오류 본문.
+
+## V1AutoUpdateMethods
+
+`V1AutoUpdateMethods` — `{ getLastVersion: (platform: string) => Promise<unknown> | unknown }`. V1 자동 업데이트 fallback 의 최소 인터페이스. `ServiceServer` 는 등록된 `AutoUpdate` 서비스의 `getLastVersion` 을 여기에 어댑트해 넘긴다.

@@ -1,43 +1,28 @@
-# @simplysm/angular — 선택·정렬·확장 매니저
+# @simplysm/angular — 선택·정렬·확장 매니저(use* 컴포저블)
 
-리스트/시트류 컴포넌트 내부에서 signal 바인딩으로 선택·다중정렬·트리확장 상태를 다루는 컴포저블 함수. 컴포넌트 클래스 필드 초기화 시 호출하며, signal 입력(items/selectedKeys/sorts 등)과 메서드 묶음을 반환. `sd-sheet` 가 셋 모두 사용.
+커스텀 리스트/그리드 컴포넌트에 선택·정렬·트리 확장 로직을 붙이는 함수형 컴포저블. signal 바인딩을 넘기면 파생 signal 과 조작 메서드를 돌려줌. `sd-sheet` 가 내부적으로 이들을 조합함.
 
-## useSelectionManager
+## useSelectionManager<TItem, TKey>
 
-`useSelectionManager<TItem, TKey>(options): { ... }` — 단일/다중 선택 상태 관리.
-
-options(모두 Signal/WritableSignal):
-- `displayItems: Signal<TItem[]>` — 현재 표시 항목.
-- `selectedKeys: WritableSignal<TKey[]>` — 선택 키 배열(양방향).
-- `selectMode: Signal<"single"|"multi"|undefined>` — 선택 모드. `undefined` 면 선택 비활성.
-- `getItemSelectableFn: Signal<((item) => boolean | string) | undefined>` — 선택 가능 판정. `string` 이면 비활성 + 사유.
-- `trackByFn: Signal<(item, index) => TKey>` — 키 추출.
-
-반환: `hasSelectable`/`isAllSelected: Signal<boolean>`, `getSelectable(item): true | string | undefined`, `getCanChangeFn(item): () => boolean`, `select`/`deselect`/`toggle`/`toggleAll`/`isSelected(item)`. single 모드 select 는 단일 키로 교체, multi 는 추가/제거.
+다중/단일 선택 상태 관리.
+- options: `{ displayItems: Signal<TItem[]>; selectedKeys: WritableSignal<TKey[]>; selectMode: Signal<"single"|"multi"|undefined>; getItemSelectableFn: Signal<((item) => boolean|string)|undefined>; trackByFn: Signal<(item,index) => TKey> }` — selectMode 미지정이면 선택 비활성, getItemSelectableFn 이 string 반환 시 그 사유로 불가, trackByFn 으로 키 비교(`obj.equal` 깊은 비교).
+- 반환: `hasSelectable`/`isAllSelected`(Signal), `getSelectable(item): true|string|undefined`, `getCanChangeFn(item)`, `select`/`deselect`/`toggle`/`toggleAll`/`isSelected`. single 은 1개로 교체, multi 는 누적.
 
 ## useSortingManager
 
-`useSortingManager(options: { sorts: WritableSignal<SortingDef[]> }): { ... }` — 다중 정렬 토글·적용.
+헤더 클릭 정렬 상태 + 정렬 실행.
+- options: `{ sorts: WritableSignal<SortingDef[]> }`.
+- 반환: `defMap: Signal<Map<key, { indexText?; desc }>>`(다중 정렬 시 순번 표시), `toggle(key, multiple)`(단일/다중 토글: 없음→오름차순→내림차순→해제 순환), `sort<T>(items): T[]`(null 은 앞, 문자열 localeCompare, 숫자 차이 기준).
+- **SortingDef** — `{ key: string; desc: boolean }`. 정렬 1건.
 
-- `options.sorts` — 정렬 정의 배열(양방향). `SortingDef = { key: string; desc: boolean }`.
-- 반환:
-  - `defMap: Signal<Map<key, { indexText?; desc }>>` — 컬럼별 정렬 상태(다중 시 순번 indexText).
-  - `toggle(key, multiple)` — 정렬 토글. `multiple=true`(Shift) 면 누적, 동일 키 재클릭 시 asc→desc→해제 순환.
-  - `sort<T>(items): T[]` — 현재 정렬 정의로 배열 정렬(null 은 먼저, 문자열은 localeCompare).
+## useExpandingManager<T>
 
-## useExpandingManager
+트리 펼침 상태 + 가시 항목 평탄화.
+- binding: `{ items: Signal<T[]>; expandedItems: WritableSignal<T[]>; getChildrenFn: Signal<((item,index) => T[]|undefined)|undefined>; sort: (items) => T[] }` — getChildrenFn 으로 자식 조회, sort 로 각 레벨 정렬.
+- 반환: `displayItems`/`hasExpandable`/`isAllExpanded`(Signal), `toggle(item)`/`toggleAll()`, `isVisible(item)`(조상이 모두 펼쳐졌는지), `def(item): ExpandItemDef<T>`(못 찾으면 throw).
+- **ExpandItemDef<T>** — `{ item; parentDef: ExpandItemDef<T>|undefined; hasChildren; depth }`. 항목의 트리 위치 정의.
 
-`useExpandingManager<T>(binding): { ... }` — 트리 펼침/접힘 상태 관리.
-
-binding:
-- `items: Signal<T[]>` — 루트 항목.
-- `expandedItems: WritableSignal<T[]>` — 펼친 항목(양방향).
-- `getChildrenFn: Signal<((item, index) => T[] | undefined) | undefined>` — 자식 추출.
-- `sort: (items) => T[]` — 각 레벨 정렬 함수.
-- 반환:
-  - `displayItems: Signal<T[]>` — 펼침 반영된 평탄 표시 목록.
-  - `hasExpandable`/`isAllExpanded: Signal<boolean>`.
-  - `toggle(item)`/`toggleAll()` — 펼침 토글.
-  - `isVisible(item): boolean` — 모든 조상이 펼쳐졌는지.
-  - `def(item): ExpandItemDef<T>` — 항목 메타(없으면 throw).
-- `ExpandItemDef<T>` — `{ item; parentDef?; hasChildren; depth }`.
+```ts
+const sorting = useSortingManager({ sorts });
+const selection = useSelectionManager({ displayItems, selectedKeys, selectMode, getItemSelectableFn, trackByFn });
+```

@@ -1,119 +1,51 @@
 # @simplysm/angular — 폼 컨트롤·버튼·선택 컨트롤
 
-폼·입력·선택·버튼·드롭다운·리스트류 standalone 컴포넌트. 공통 패턴: 값은 `model()` 양방향, `disabled`/`inset`/`size`(`"sm"|"lg"`)/`inline`/`required` 다수 공유. 공통 theme literal = `"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"`. `required` 컨트롤은 내부 `setupInvalid` 로 네이티브 폼 검증과 연동되어 `<sd-form>` 안에서 동작.
+폼 화면을 구성하는 입력/버튼/선택 컴포넌트 묶음. 대부분 `value = model()` 양방향 바인딩과 `theme`/`size`/`inline`/`inset`/`disabled` 공통 input 을 가짐. 공통 enum:
+- theme(기본 8색): `"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"` — 색상 테마.
+- size: `"sm"|"lg"` — 작게/크게(미지정=기본).
+- inline: boolean — inline-block 으로 배치(폭 자동).
+- inset: boolean — 테두리·라운드 제거(셀/그룹 내부 삽입용).
+- disabled: boolean — 비활성.
 
-## SdButton / SdAnchor / SdAdditionalButton
+## 버튼류
 
-- `<sd-button>` — 버튼. `type: "button"|"submit"`(폼 제출 트리거 여부), `theme`(공통 8색 + `"link"`/`"link-{색}"`/`"link-rev"` 텍스트버튼), `inline`(인라인폭), `inset`(테두리 없는 삽입형), `size`, `disabled`, `buttonStyle`/`buttonClass`(내부 `<button>` 에 적용). 클릭 ripple 내장.
-- `<sd-anchor>` — 텍스트 링크형 클릭 요소. `disabled`, `theme`(공통 8색, 기본 `"primary"`). disabled 면 tabindex 제거.
-- `<sd-additional-button>` — 콘텐츠 + 우측 버튼(`sd-anchor`/`sd-button` 투영) 결합 박스. `size`, `inset`.
+- **SdButton** `<sd-button>` — 버튼. `type`("button"|"submit", 기본 button), `theme`(8색 + `"link"`/`"link-<색>"`/`"link-rev"` 텍스트형), `inline`/`inset`/`size`/`disabled`, `buttonStyle`/`buttonClass`(내부 button 엘리먼트 스타일/클래스). 폼 제출 버튼이면 `type="submit"`.
+- **SdAnchor** `<sd-anchor>` — 텍스트 링크. `theme`(8색, 기본 primary), `disabled`. 인라인 클릭 요소(아이콘 버튼 등)에.
+- **SdAdditionalButton** `<sd-additional-button>` — 내용 + 우측 부속 버튼(`sd-anchor`/`sd-button` 투영) 컨테이너. `size`/`inset`.
+- **SdModalSelectButton** `<sd-modal-select-button>` — 클릭 시 선택 모달을 띄워 값 선택. `modal = input.required<SdSelectModalInfo<...>>()`, `value = model()`, `selectMode`("single"|"multi", 기본 single — single 이면 단일 키, multi 면 키 배열), `required`(미선택 시 검증 오류 + 지우개 숨김), `disabled`/`inset`/`size`, `modalOptions`, `searchIcon`. required 아니고 값 있으면 지우개 표시. 타입: `SdSelectModal<TKey>`(선택모달이 구현, `SdModalContentDef<SelectModalOutputResult<TKey>>` + `selectMode`/`selectedKeys` input), `SdSelectModalInfo<T>`(selectMode/selectedKeys 제외한 모달 정보).
 
-## SdModalSelectButton
+## 텍스트·숫자 입력
 
-`<sd-modal-select-button>` — 모달로 선택하는 값 입력 버튼(검색 아이콘 → 선택모달, 지우개 → 초기화).
+- **SdTextfield<K>** `<sd-textfield [type]="...">` — 타입별 단일 입력. `type = input.required<K>()`(K = `SdTextfieldTypes` 키), `value = model<SdTextfieldTypes[K]>()`. 추가 input: `placeholder`/`title`, `min`/`max`(타입에 맞는 값), `minlength`/`maxlength`/`pattern`(문자형 검증), `validatorFn`(커스텀 검증, 메시지 반환), `format`(format 타입의 X 마스크), `step`, `autocomplete`, `useNumberComma`(숫자 천단위 콤마, 기본 true), `minDigits`(숫자 소수 최소 자릿수), `required`, `readonly`, `inline`/`inset`/`size`/`theme`. 검증 실패 시 `setupInvalid` 로 폼 연동.
+- **SdTextfieldTypes / sdTextfieldTypes** — 타입→값 매핑: `number`:number, `text`/`password`/`color`/`email`/`format`:string, `date`/`month`/`year`:DateOnly, `datetime`/`datetime-sec`:DateTime, `time`/`time-sec`:Time. `sdTextfieldTypes` 는 키 배열(예: select 옵션 생성).
+- **SdTextarea** `<sd-textarea>` — 여러 줄 텍스트. `value = model<string>()`, `minRows`(기본 1, 내용 줄 수만큼 자동 확장), `placeholder`/`title`/`required`/`readonly`/`validatorFn`/`inline`/`inset`/`size`/`theme`/`inputStyle`/`inputClass`.
+- **SdNumpad** `<sd-numpad>` — 화면 숫자 키패드. `value = model<number>()`, `placeholder`, `required`, `inputDisabled`(상단 입력칸 직접입력 막기), `useEnterButton`/`useMinusButton`(ENT/− 버튼 표시), `enterButtonClick = output()`.
+- **SdRange<K>** `<sd-range [type]="...">` — 동일 타입 두 값의 범위(`from ~ to`). `type = input.required<K>()`, `from`/`to` = model<SdTextfieldTypes[K]>(), `required`/`disabled`/`inputStyle`. to 의 min 은 from 으로 자동 제한.
+- **SdDateRangePicker** `<sd-date-range-picker>` — 일/월/범위 선택. `periodType = model<"일"|"월"|"범위">("범위")`(일=from=to 동기화, 월=해당 월 1일~말일 자동, 범위=from~to 자유), `from`/`to` = model<DateOnly>(), `required`.
 
-- `modal = input.required<SdSelectModalInfo<SdSelectModal<K>>>()` — 띄울 선택 모달 정보(`selectMode`/`selectedKeys` 제외 inputs).
-- `value = model<...>()` — 선택 결과 키(single=단일, multi=배열).
-- `selectMode: "single"|"multi"` — 선택 모드. 기본 `"single"`.
-- `disabled`/`required`(필수검증)/`inset`/`size` — 공통.
-- `modalOptions` — `SdModalOptions` 전달.
-- `searchIcon` — 검색 버튼 아이콘(기본 tablerSearch).
+## 체크·스위치
 
-타입: `SdSelectModal<TKey>`(선택모달 인터페이스, `selectMode`/`selectedKeys` input 추가), `SdSelectModalInfo<T>`(`SdModalInfo` 에서 `selectMode`/`selectedKeys` 제외).
+- **SdCheckbox** `<sd-checkbox>` — 체크박스/라디오. `value = model(false)`, `canChangeFn`(변경 가드, boolean|Promise), `icon`(체크 아이콘), `radio`(라디오 모양·해제 불가), `disabled`/`size`/`inline`/`inset`, `theme`(8색 + `"white"`), `contentStyle`.
+- **SdSwitch** `<sd-switch>` — 토글 스위치. `value = model(false)`, `canChangeFn`, `disabled`/`inline`/`inset`/`size`/`theme`(8색).
+- **SdCheckboxGroup<T>** / **SdCheckboxGroupItem<T>** — 그룹 다중선택. group: `value = model<T[]>([])`, `disabled`. item: `value = input.required<T>()`, `inline`. 항목 클릭 시 그룹 value 배열에 추가/제거.
 
-## SdTextfield
+## 선택(드롭다운)
 
-`<sd-textfield>` — 타입별 단일값 입력. 제네릭 `K extends keyof SdTextfieldTypes` 로 값 타입이 결정됨.
+- **SdSelect<M, T>** `<sd-select>` — 드롭다운 선택. `selectMode = input("single" as M)`("single"|"multi" — multi 면 value 가 배열·전체선택 바 표시), `value = model<...>()`, `placeholder`, `required`(미선택 시 검증오류), `disabled`/`inline`/`inset`/`size`, `hideSelectAll`(multi 전체선택 바 숨김), `multiSelectionDisplayDirection`("vertical" 이면 선택 항목 세로 표시), `items`/`trackByFn`/`getChildrenFn`(items 지정 시 `itemOf` 템플릿으로 렌더·트리 지원), `contentClass`/`contentStyle`, `dropdownOpen = model(false)`. 메서드: selectItem/toggleItem/openDropdown/closeDropdown/onSelectAll/onDeselectAll. 키보드 ↑↓ 로 항목 이동. 타입 `SelectModeValue<T> = { multi: T[]; single: T }`.
+- **SdSelectItem<T>** `<sd-select-item [value]="...">` — 선택 항목. `value`, `disabled`, `hidden`(검색 필터 등으로 숨김). multi 모드면 좌측 체크박스 표시. Enter/Space 로 선택·토글.
+- **SdSelectButton** `<sd-select-button>` — sd-select 우측에 붙는 부속 버튼(검색/편집 등 트리거). input 없음, 클릭 이벤트는 투영된 내용에서 처리.
 
-- `type = input.required<K>()` — 입력 타입(아래 `SdTextfieldTypes` 키). 값 타입·검증·표시 포맷을 결정.
-- `value = model<SdTextfieldTypes[K]>()` — 값(타입별 number/string/DateOnly/DateTime/Time).
-- `placeholder`/`title`/`inputStyle`/`inputClass` — 표시 부가.
-- `disabled`/`readonly` — 비활성/읽기전용(둘 다 input 숨기고 텍스트만).
-- `required`/`min`/`max`/`minlength`/`maxlength`/`pattern`/`validatorFn`/`format` — 검증 옵션. `validatorFn(value) => string | undefined` 는 커스텀 메시지, `format` 은 `type: "format"` 마스킹.
-- `step`/`autocomplete` — 네이티브 속성.
-- `useNumberComma` — number 타입 천단위 콤마. 기본 true.
-- `minDigits` — number 표시 시 최소 소수 자릿수.
-- `inline`/`inset`/`size`/`theme` — 공통 레이아웃.
+## 드롭다운(저수준)
 
-`SdTextfieldTypes`(타입 키 → 값 타입): `number`→number, `text`/`password`/`color`/`email`/`format`→string, `date`/`month`/`year`→DateOnly, `datetime`/`datetime-sec`→DateTime, `time`/`time-sec`→Time. `sdTextfieldTypes` 는 이 키들의 배열.
+- **SdDropdown** `<sd-dropdown>` — 트리거 + `sd-dropdown-popup` 팝업. `open = model(false)`, `disabled`. 화면 위치 자동 배치, 모바일(≤520px)에선 하단 시트 + backdrop. 키보드 ↓ 로 열고 ↑/ESC 로 닫음. `popupElRef`(contentChild)로 팝업 엘리먼트 접근.
+- **SdDropdownPopup** `<sd-dropdown-popup>` — 드롭다운 내용. input 없음. 내용 높이 300px 초과 시 자동 스크롤 캡.
 
-```html
-<sd-textfield [type]="'number'" [(value)]="qty" [min]="0" [required]="true" />
-<sd-textfield [type]="'date'" [(value)]="orderDate" />
-```
+## 폼·접기·탭·리스트·여백·페이지
 
-## SdTextarea
-
-`<sd-textarea>` — 여러 줄 문자열 입력. `value = model<string>()`, `minRows`(최소 줄수, 내용 따라 자동 확장), `placeholder`/`title`/`disabled`/`readonly`/`required`/`inline`/`inset`/`size`/`theme`/`validatorFn`/`inputStyle`/`inputClass`.
-
-## SdNumpad
-
-`<sd-numpad>` — 터치 숫자패드. `value = model<number>()`, `placeholder`, `required`, `inputDisabled`(상단 입력칸 비활성), `useEnterButton`(ENT 버튼 표시), `useMinusButton`(부호 토글), `enterButtonClick = output()`(ENT 클릭).
-
-## SdRange
-
-`<sd-range>` — from~to 범위 입력(textfield 2개). 제네릭 `K extends keyof SdTextfieldTypes`. `type = input.required<K>()`, `from`/`to = model<SdTextfieldTypes[K]>()`(to 의 min 은 from 자동), `inputStyle`, `required`, `disabled`.
-
-## SdDateRangePicker
-
-`<sd-date-range-picker>` — 일/월/범위 기간 선택. `periodType = model<"일"|"월"|"범위">()`(기본 `"범위"`), `from`/`to = model<DateOnly>()`, `required`. 월 선택 시 from/to 를 해당 월 1일~말일로 동기화, 일 선택 시 to=from.
-
-## SdCheckbox / SdSwitch / SdCheckboxGroup(Item)
-
-- `<sd-checkbox>` — 체크박스/라디오. `value = model(false)`, `canChangeFn`(변경 허용 함수, `(boolean) => boolean|Promise<boolean>`), `radio`(라디오 외형·체크만 가능), `icon`(체크 아이콘), `disabled`/`size`/`inline`/`inset`/`theme`(공통 8색 + `"white"`), `contentStyle`. Space 키 토글.
-- `<sd-switch>` — 토글 스위치. `value = model(false)`, `canChangeFn`, `disabled`/`inline`/`inset`/`size`/`theme`. on 시 success 색.
-- `<sd-checkbox-group>` — 다중선택 그룹. `value = model<T[]>([])`(선택값 배열), `disabled`.
-- `<sd-checkbox-group-item>` — 그룹 항목. `value = input.required<T>()`(항목 값), `inline`. 부모 group 의 배열에 포함되면 체크.
-
-## SdSelect / SdSelectItem / SdSelectButton
-
-- `<sd-select>` — 드롭다운 선택. 제네릭 `<M, T>`.
-  - `selectMode: M("single"|"multi")` — 선택 모드. 기본 `"single"`.
-  - `value = model<SelectModeValue<any>[M]>()` — single=단일값, multi=배열.
-  - `placeholder`/`disabled`/`inline`/`inset`/`size`/`required` — 공통.
-  - `hideSelectAll` — multi 의 전체선택/해제 바 숨김.
-  - `multiSelectionDisplayDirection: "vertical"` — multi 선택 표시 줄바꿈.
-  - `items`/`trackByFn`/`getChildrenFn` — 데이터 바인딩 방식(템플릿 `[itemOf]` 와 병행). `getChildrenFn` 지정 시 트리.
-  - `contentClass`/`contentStyle`, `dropdownOpen = model(false)`.
-  - `SelectModeValue<T>` = `{ multi: T[]; single: T }`.
-- `<sd-select-item>` — 선택 항목. `value = input<T>()`, `disabled`, `hidden`. multi 면 체크박스 표시. 콘텐츠 HTML 이 선택 표시에 사용됨.
-- `<sd-select-button>` — select 내부 우측 액션 버튼(ripple).
-
-```html
-<sd-select [(value)]="deptId" [required]="true">
-  <sd-select-item [value]="undefined">미지정</sd-select-item>
-  @for (d of depts) { <sd-select-item [value]="d.id">{{ d.name }}</sd-select-item> }
-</sd-select>
-```
-
-## SdDropdown / SdDropdownPopup
-
-- `<sd-dropdown>` — 트리거 + 팝업 래퍼. `open = model(false)`, `disabled`. 팝업은 body 로 이동·위치 자동 계산(상/하·좌/우), 모바일은 하단 시트 + 백드롭. ArrowDown/Up/Space/ESC 키 처리.
-- `<sd-dropdown-popup>` — 팝업 콘텐츠. content 투영, 높이 300px 초과 시 스크롤 캡.
-
-## SdForm
-
-`<sd-form>` — 네이티브 검증 연동 폼 래퍼. `formSubmit = output<SubmitEvent>()`(검증 통과 시), `formInvalid = output()`(실패 시 `reportValidity` 후). `requestSubmit()` 메서드로 외부 제출. 내부 컨트롤의 `setupInvalid` 검증과 함께 동작.
-
-## SdCollapse / SdCollapseIcon
-
-- `<sd-collapse>` — 높이 애니메이션 접기. `open = input(false)`. 콘텐츠 높이 측정해 margin-top 으로 접음.
-- `<sd-collapse-icon>` — 회전 화살표 아이콘. `icon`(기본 chevronDown), `open = input(false)`, `openRotate = input(90)`(열림 시 회전각).
-
-## SdTab / SdTabItem
-
-- `<sd-tab>` — 탭 바. `value = model<any>()` — 선택된 탭 값.
-- `<sd-tab-item>` — 탭 항목. `value = input<any>()`. 부모 value 와 같으면 선택 표시, 클릭 시 부모 value set.
-
-## SdList / SdListItem
-
-- `<sd-list>` — 리스트 컨테이너. `inset = input(false)`(배경 투명).
-- `<sd-list-item>` — 리스트 항목. `layout: "accordion"|"flat"`(기본 accordion; flat 은 그룹헤더+상시펼침), `open = model(false)`(아코디언 펼침), `selected`, `selectedIcon`(선택 표시 아이콘), `readonly`, `contentStyle`/`contentClass`. 자식 `<sd-list>` 투영 시 하위 트리. `#toolTpl` 로 우측 도구 영역.
-
-## SdGap
-
-`<sd-gap>` — 빈 간격. `height`/`width: "xxs"|"xs"|"sm"|"default"|"lg"|"xl"|"xxl"`(CSS 변수 기반), `heightPx`/`widthPx`/`widthEm`(수치). 0 이면 `display:none`, width 계열이면 inline-block, height 면 block.
-
-## SdPagination
-
-`<sd-pagination>` — 페이지 네비. `currentPage = model(0)`(0-base 현재 페이지), `totalPageCount = input(0)`(전체 페이지 수), `visiblePageCount = input(10)`(한 그룹에 보일 페이지 버튼 수). 처음/이전그룹/페이지번호/다음그룹/마지막 버튼.
+- **SdForm** `<sd-form>` — `(formSubmit)`(검증 통과 시 SubmitEvent), `(formInvalid)`(검증 실패 시, 네이티브 메시지·포커스 자동). `requestSubmit()` 메서드, `formElRef`/`formEl`(폼 엘리먼트 접근). 내부 컨트롤들의 `setupInvalid` 검증을 모아 제출 제어.
+- **SdCollapse** `<sd-collapse [open]="...">` — 높이 애니메이션 접기. `open`(boolean). 내용 높이 자동 측정.
+- **SdCollapseIcon** `<sd-collapse-icon [open]="...">` — 펼침 상태 회전 아이콘. `icon`(기본 chevronDown), `open`, `openRotate`(펼칠 때 회전각도, 기본 90).
+- **SdTab<any>** / **SdTabItem** — 탭. tab: `value = model<any>()`. item: `value = input<any>()`(클릭 시 부모 value 설정, 일치하면 선택 표시).
+- **SdList** / **SdListItem** — 리스트(트리). list: `inset`. item: `layout`("accordion"|"flat", 기본 accordion — accordion 은 클릭 시 자식 접기/펼치기, flat 은 항상 펼침·헤더 비클릭), `open = model(false)`, `selected`(선택 강조), `selectedIcon`(선택 아이콘 표시), `readonly`(클릭 비활성), `contentStyle`/`contentClass`, `toolTpl`(우측 도구 템플릿). 자식 `sd-list` 투영 시 하위 트리.
+- **SdGap** `<sd-gap>` — 여백 스페이서. `height`/`width`("xxs"|"xs"|"sm"|"default"|"lg"|"xl"|"xxl" CSS 변수 단위), `heightPx`/`widthPx`/`widthEm`(숫자, 0 이면 display:none). width 계열 지정 시 inline-block, height 계열이면 block.
+- **SdPagination** `<sd-pagination>` — 페이지 네비게이션. `currentPage = model(0)`(0 기반), `totalPageCount`(전체 페이지 수), `visiblePageCount`(한 그룹 표시 수, 기본 10). 처음/이전그룹/페이지번호/다음그룹/끝 버튼.

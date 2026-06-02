@@ -1,1 +1,0 @@
-{"id": "sum-add", "input": "/sd-dev sum 함수 추가해줘. a + b 반환.", "rubric": ["tree.json 에 sum 함수 구현 파일이 src/ 하위 (위치 자유) 에 존재하는가", "tree.json 에 sum 함수 테스트 파일 (위치 자유) 이 존재하는가", "events 에 테스트 러너 실행 흔적 (Bash 의 node --test 또는 동등 명령) 이 1회 이상 있는가", "구현 파일 내용에 sum 함수 정의 및 export 가 포함되는가", "테스트 파일 내용에 sum 호출 + 결과 검증 assertion 이 1개 이상 있는가"], "fixture": "minimal-ts-pkg"}

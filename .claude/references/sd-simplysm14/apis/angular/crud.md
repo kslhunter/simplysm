@@ -1,50 +1,53 @@
-# @simplysm/angular — CRUD 화면 골격
+# @simplysm/angular — CRUD 화면 골격·상태프리셋·권한표
 
-목록·상세 화면의 표준 레이아웃(타이틀바·커맨드 영역·콘텐츠·하단 커맨드)과 busy·권한제한·뷰타입(page/modal/control)별 분기·모달 선택 모드를 제공하는 컨테이너. 콘텐츠는 `<ng-template #...>` 슬롯으로 주입. `viewType` 은 `injectViewTypeSignal()`(routing 군) 결과를 넣는 것이 일반적.
+업무 목록/상세 화면의 공통 골격(탑바·busy·권한 제한·도구바)과 보조 컴포넌트. 모두 `viewType = input.required<SdViewType>()` 로 page/modal/control 맥락을 받음(`injectViewTypeSignal()` 결과 전달). 화면 진입 시 공유 데이터 준비를 대기하고 `ready` 로 알림.
 
 ## SdBaseContainer
 
-`<sd-base-container>` — 모든 CRUD 컨테이너의 기반. busy·권한제한·뷰타입 분기·공유데이터 로드 대기 처리.
-
-- `viewType = input.required<SdViewType>()` — `"page"|"modal"|"control"`. page 면 탑바+제목 표시, 그 외엔 콘텐츠만.
-- `initialized = input(false)` — 초기화 완료 여부. false 면 busy 표시.
-- `restricted = input(false)` — 권한 제한. true 면 콘텐츠 대신 "사용권한 없음" 안내.
-- `ready = model(false)` — 준비 완료 신호(공유데이터 대기 후 set).
-- `busyCount = model(0)` — busy 카운트(0 초과 시 busy).
-- 슬롯: `#topbarTpl`(탑바 액션), `#commandTpl`(상단 커맨드 바), `#contentTpl`(본문), `#bottomCommandTpl`(하단 커맨드). `viewTitle` 은 라우팅 군의 제목 신호 자동 사용.
+`<sd-base-container [viewType]="...">` — 가장 단순한 화면 컨테이너(탑바 + busy + 권한제한 + 도구바).
+- ready = model(false) — 공유 데이터 대기 완료 시 true. 화면 본문 표시 조건에.
+- initialized: boolean — 데이터 로드 완료 여부(false 면 busy).
+- busyCount = model(0) — busy 카운트(>0 면 오버레이).
+- restricted: boolean — true 면 "사용권한 없음" 안내만 표시.
+- viewType: input.required<SdViewType> — page 면 탑바(제목+topbarTpl) 감싸고, 아니면 본문만.
+- (contentChild) topbarTpl/commandTpl/contentTpl/bottomCommandTpl — 탑바 우측/상단 명령/본문/하단 명령 영역.
 
 ## SdCrudDetail
 
-`<sd-crud-detail>` — 단일 레코드 상세/편집 화면. 저장 버튼·CTRL+S·폼 검증 연동.
+`<sd-crud-detail [viewType]="...">` — 단건 상세/편집 화면(폼 포함).
+- ready/initialized/busyCount/restricted/viewType — 위와 동일.
+- readonly: boolean — 읽기 전용.
+- (viewChild) formCtrl: SdForm — 내부 폼.
+- (output) submit — 폼 제출(검증 통과).
+- (contentChild) commandTpl/contentTpl/bottomCommandTpl.
 
-- `viewType = input.required<SdViewType>()` — 뷰 타입. page=탑바 저장버튼, control=상단 저장버튼, modal=하단 확인버튼.
-- `initialized`/`restricted`/`busyCount`/`ready` — `SdBaseContainer` 와 동일 의미.
-- `readonly = input(false)` — 읽기전용(폼·저장버튼 숨김).
-- `submit = output()` — 저장(폼 검증 통과) 시 emit. CTRL+S/저장버튼 → 폼 제출 → 이 이벤트.
-- 슬롯: `#commandTpl`/`#contentTpl`/`#bottomCommandTpl`. contentTpl 은 readonly 가 아니면 `<sd-form>` 으로 감싸짐.
+## SdCrudList<TItem, TKey>
 
-## SdCrudList
+`<sd-crud-list [viewType]="...">` — 목록 화면(필터 폼 + 시트 + 페이징 + 선택/삭제/복원).
+- ready/initialized/busyCount/restricted/viewType/readonly — 위와 동일.
+- selectMode?: "single"|"multi" — 행 선택 모드.
+- key: input.required<string> — 시트 설정 영속 키.
+- (viewChild) formCtrl: SdForm.
+- (output) filterSubmit — 필터 폼 제출. submit — 일반 제출. create — 추가 버튼. delete: TItem[] — 삭제 대상. restore: TItem[] — 복원 대상.
+- items: TItem[] — 목록 데이터.
+- selectedKeys = model<NonNullable<TKey>[]>([]) — 선택 키.
+- currDeletedItems: TItem[] — 현재 삭제표시된 항목(복원 대상 표시).
+- currentPage = model(0) / totalPageCount / itemsPerPage / visiblePageCount(기본 10) — 페이징(시트로 위임).
+- sorts = model<SortingDef[]>([]) — 정렬 상태.
+- trackByFn: input.required<(item) => TKey> — 행 키.
+- (contentChild) commandTpl/filterTpl/toolTpl/bottomCommandTpl, `sd-sheet-column` 들 — 명령/필터/도구/하단 명령 영역과 시트 컬럼.
 
-`<sd-crud-list>` — 목록 화면(필터 폼 + 시트 + 등록/삭제/복구/선택). 제네릭 `<TItem, TKey>`.
+## SdStatePreset<TState>
 
-- `viewType = input.required<SdViewType>()` / `initialized`/`restricted`/`busyCount`/`ready`/`readonly` — 기반 동일.
-- `key = input.required<string>()` — 시트 설정 키(`{key}-sheet`).
-- `selectMode: "single"|"multi"` — 모달 선택 모드. modal 뷰에서 single 은 행 선택 즉시 확정 close, multi 는 확인 버튼.
-- `items = input<TItem[]>([])` — 목록 데이터.
-- `selectedKeys = model<NonNullable<TKey>[]>([])` — 선택 키.
-- `trackByFn = input.required<(item) => TKey>()` — 행 키 추출.
-- `currDeletedItems = input<TItem[]>([])` — 삭제 표시(취소선) 항목 집합.
-- `currentPage = model(0)`/`totalPageCount`/`itemsPerPage`/`visiblePageCount`/`sorts = model<SortingDef[]>()` — 페이징·정렬(시트로 전달).
-- outputs: `filterSubmit`(조회 버튼), `submit`(저장/CTRL+S), `create`(등록 버튼), `delete = output<TItem[]>()`(선택/행 삭제), `restore = output<TItem[]>()`(선택/행 복구).
-- 슬롯: `#filterTpl`(필터 폼 필드), `#commandTpl`/`#toolTpl`/`#bottomCommandTpl`. `<sd-sheet-column>` 자식은 시트 컬럼으로 합쳐짐(삭제 컬럼은 자동 주입).
+`<sd-state-preset [key]="..." [(state)]="...">` — 화면 상태(필터 등) 프리셋 저장/적용 바.
+- key: input.required<string> — 프리셋 영속 키(`SdSystemConfigProvider`).
+- state = model.required<TState> — 현재 상태(저장·적용 대상).
+- size?: "sm"|"lg".
+- ★ 버튼으로 현재 상태를 이름 붙여 저장, 프리셋 클릭 시 상태 적용, 각 프리셋 저장(덮어쓰기)·삭제. 타입 `SdStatePresetDef<TState> = { name: string; state: TState }`.
 
-```html
-<sd-crud-list [viewType]="viewType()" key="user" [items]="users()"
-              [(selectedKeys)]="sel" [trackByFn]="trackById"
-              (create)="onCreate()" (delete)="onDelete($event)" (submit)="onSave()">
-  <ng-template #filterTpl><sd-textfield [type]="'text'" [(value)]="filter.name" /></ng-template>
-  <sd-sheet-column key="name" header="이름">
-    <ng-template [cell]="users()" let-item="item">{{ item.name }}</ng-template>
-  </sd-sheet-column>
-</sd-crud-list>
-```
+## SdPermissionTable<TModule>
+
+`<sd-permission-table [items]="...">` — 권한(use/edit) 편집 테이블.
+- value = model<Record<string, boolean>>({}) — `<코드>.<use|edit>` → 허용 맵.
+- items: SdPermission<TModule>[] — 권한 트리(`SdAppStructureProvider.getPermissionsByStructure` 결과).
+- disabled: boolean — 편집 비활성.
