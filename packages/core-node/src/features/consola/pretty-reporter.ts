@@ -90,6 +90,15 @@ export class PrettyReporter implements ConsolaReporter {
     writeStream(line + "\n", stream);
   }
 
+  /**
+   * 색·날짜·뱃지 여백 없이 한 로그 엔트리를 평문(멀티라인 가능)으로 포맷.
+   * 파일 reporter 등에서 콘솔과 동일한 표현(아이콘·tag·객체 inspect·스택)을 재사용하기 위한 진입점.
+   * `formatOptions` 에 콘솔과 같은 `ctx.options.formatOptions` 를 넘기면 객체 펼침(compact) 등이 콘솔과 일치.
+   */
+  formatPlain(logObj: LogObject, formatOptions?: Partial<FormatOpts>): string {
+    return this._formatLogObj(logObj, { ...formatOptions, colors: false, date: false }).trim();
+  }
+
   private _formatLogObj(logObj: LogObject, opts: FormatOpts): string {
     const formattedArgs = this._formatArgs(logObj.args, opts);
     const [message, ...additional] = formattedArgs.split("\n");

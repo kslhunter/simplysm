@@ -1,0 +1,114 @@
+# @simplysm/storage
+
+FTP/FTPS/SFTP 원격 스토리지에 연결해 파일·디렉토리를 업로드·다운로드·조회·삭제하는 Node 전용 클라이언트. 프로토콜별 구현을 동일 인터페이스(`StorageClient`)로 통일하고, 팩토리(`StorageFactory.connect`)로 연결/종료를 자동 관리.
+
+## 사용 트리거 인덱스
+
+- **StorageFactory.connect** — 원격 스토리지에 접속해 파일 작업을 한 뒤 자동으로 연결을 닫고 싶을 때. 권장 진입점.
+- **StorageClient** — `connect` 콜백 안에서 받는 파일 조작 인터페이스. mkdir/list/readFile/put/remove 등 호출 시 참조.
+- **FileInfo** — `list()` 가 돌려주는 항목 구조(이름·파일여부)를 확인할 때.
+- **StorageConnConfig** — 접속 호스트/계정/비밀번호를 구성할 때.
+- **StorageProtocol** — 프로토콜 종류(`ftp`/`ftps`/`sftp`)를 지정할 때.
+- **FtpStorageClient / SftpStorageClient** — 팩토리 없이 클라이언트를 직접 인스턴스화·재연결 제어해야 할 때(비권장).
+
+## StorageProtocol
+
+```ts
+type StorageProtocol = "ftp" | "ftps" | "sftp";
+```
+
+- `"ftp"` — 평문 FTP. 보안 채널 없이 접속(`basic-ftp` `secure: false`). 내부망·테스트 환경에서만 권장.
+- `"ftps"` — TLS 로 암호화된 FTP(`basic-ftp` `secure: true`). 외부망 FTP 접속 시.
+- `"sftp"` — SSH 기반 SFTP. password 미지정 시 `~/.ssh/id_ed25519` 키 + SSH agent 로 인증.
+
+## StorageConnConfig
+
+```ts
+interface StorageConnConfig { host: string; port?: number; user?: string; password?: string; }
+```
+
+- `host: string` — 접속 대상 서버 호스트명 또는 IP. 필수.
+- `port?: number` — 접속 포트. 미지정 시 각 라이브러리 기본값(FTP 21, SFTP 22) 사용.
+- `user?: string` — 로그인 사용자명. 미지정 시 익명/기본 사용자.
+- `password?: string` — 로그인 비밀번호. **SFTP 에서 이 값이 `null`/미지정이면** password 인증 대신 `~/.ssh/id_ed25519` 개인키와 SSH agent(`SSH_AUTH_SOCK`) 로 인증 시도하고, 키 파싱 실패(암호화 키 등) 시 agent 단독으로 재시도.
+
+## StorageFactory
+
+스토리지 접속 진입점. 연결 생성 → 콜백 실행 → 자동 종료를 묶어 처리한다.
+
+```ts
+static connect<R>(type: StorageProtocol, config: StorageConnConfig, fn: (storage: StorageClient) => R | Promise<R>): Promise<R>
+```
+
+- `type: StorageProtocol` — 사용할 프로토콜. `"sftp"` → `SftpStorageClient`, `"ftps"` → `FtpStorageClient(secure=true)`, `"ftp"` → `FtpStorageClient(secure=false)` 를 내부 생성.
+- `config: StorageConnConfig` — 접속 설정.
+- `fn` — 연결된 `StorageClient` 를 받아 파일 작업을 수행하는 콜백. 반환값이 그대로 `connect` 의 결과(`Promise<R>`) 가 됨.
+- 동작: `client.connect()` 후 `fn` 실행, `finally` 에서 `client.close()` 호출하며 종료 오류는 무시. 콜백에서 예외가 나도 연결은 반드시 닫히고 예외는 그대로 전파됨. 직접 클라이언트를 다루는 것보다 권장.
+
+```ts
+const names = await StorageFactory.connect("sftp", { host: "10.0.0.1", user: "u", password: "p" }, async (s) => {
+  await s.mkdir("/upload");
+  await s.put(buffer, "/upload/a.txt");
+  return (await s.list("/upload")).map((f) => f.name);
+});
+```
+
+## StorageClient
+
+`connect` 콜백 안에서 받는 파일 조작 인터페이스. `FtpStorageClient`·`SftpStorageClient` 가 구현한다. 모든 메서드는 `Promise` 반환.
+
+```ts
+interface StorageClient {
+  connect(config: StorageConnConfig): Promise<void>;
+  mkdir(dirPath: string): Promise<void>;
+  rename(fromPath: string, toPath: string): Promise<void>;
+  list(dirPath: string): Promise<FileInfo[]>;
+  readFile(filePath: string): Promise<Bytes>;
+  exists(filePath: string): Promise<boolean>;
+  put(localPathOrBuffer: string | Bytes, storageFilePath: string): Promise<void>;
+  uploadDir(fromPath: string, toPath: string): Promise<void>;
+  remove(filePath: string): Promise<void>;
+  close(): Promise<void>;
+}
+```
+
+- `connect(config)` — 서버에 연결. 이미 연결된 인스턴스에서 재호출하면 `SdError` throw(먼저 `close()` 필요). `StorageFactory.connect` 사용 시 직접 호출 불필요.
+- `mkdir(dirPath)` — 디렉토리 생성. 부모 디렉토리가 없으면 함께 생성(FTP `ensureDir`, SFTP 재귀 `mkdir`).
+- `rename(fromPath, toPath)` — 파일/디렉토리 경로 이동·이름 변경.
+- `list(dirPath)` — 디렉토리 내 항목을 `FileInfo[]` 로 반환.
+- `readFile(filePath)` — 원격 파일 전체를 `Bytes`(Uint8Array) 로 다운로드. SFTP 는 응답이 예상 타입(Buffer/string) 이 아니면 `SdError` throw.
+- `exists(filePath)` — 파일/디렉토리 존재 여부. **모든 예외(부모 없음·권한·네트워크 오류 포함) 에 대해 `false` 반환** — true/false 외 throw 없음. FTP 는 `size()` 로 파일을 O(1) 확인 후 실패 시 부모 디렉토리 목록으로 디렉토리 확인(슬래시 없는 경로는 루트 `/` 기준).
+- `put(localPathOrBuffer, storageFilePath)` — 업로드. 첫 인자가 `string` 이면 로컬 파일 경로, `Bytes` 면 메모리 바이트를 업로드 대상으로 사용.
+- `uploadDir(fromPath, toPath)` — 로컬 디렉토리 전체를 원격 디렉토리로 업로드.
+- `remove(filePath)` — 원격 파일 삭제.
+- `close()` — 연결 종료. 이미 종료된 상태에서 호출해도 오류 없음. 종료 후 같은 인스턴스에서 `connect()` 로 재연결 가능.
+
+미연결 상태에서 작업 메서드를 호출하면 모든 구현체가 `SdError`("연결되어 있지 않습니다") throw.
+
+## FileInfo
+
+```ts
+interface FileInfo { name: string; isFile: boolean; }
+```
+
+- `name: string` — 항목 이름(파일명 또는 디렉토리명).
+- `isFile: boolean` — 파일이면 `true`, 디렉토리면 `false`. SFTP 는 항목 type 이 `"-"` 인 경우만 `true`(디렉토리·심볼릭 링크는 `false`).
+
+## FtpStorageClient / SftpStorageClient (직접 사용, 비권장)
+
+`StorageClient` 직접 구현체. 보통은 `StorageFactory.connect` 로 충분하며, 연결 수명을 수동으로 다뤄야 할 때만 직접 생성한다.
+
+```ts
+new FtpStorageClient(secure?: boolean)  // secure=true → FTPS, 생략/false → 평문 FTP
+new SftpStorageClient()
+```
+
+- `FtpStorageClient` 의 `secure` 생성자 인자 — `true` 면 TLS(FTPS), 생략/`false` 면 평문 FTP. (팩토리는 `ftps`→`true`, `ftp`→`false` 로 매핑.)
+- `SftpStorageClient` 는 생성자 인자 없음. password 미지정 시 키/agent 인증 경로를 탄다(StorageConnConfig 의 `password` 풀이 참조).
+- 직접 사용 시 `connect()` → 작업 → `close()` 순으로 호출하고 호출 측이 종료를 책임져야 함(연결 누수 주의).
+
+```ts
+const client = new SftpStorageClient();
+await client.connect({ host: "10.0.0.1", user: "u", password: "p" });
+try { await client.put(buf, "/x.txt"); } finally { await client.close(); }
+```

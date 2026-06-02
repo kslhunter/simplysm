@@ -1,6 +1,18 @@
 import type { ConsolaOptions, ConsolaReporter, LogObject } from "consola";
 import fs from "fs";
 import path from "path";
+import { PrettyReporter } from "./pretty-reporter";
+
+const pretty = new PrettyReporter();
+
+function formatTimestamp(date: Date): string {
+  const p2 = (n: number): string => String(n).padStart(2, "0");
+  const p3 = (n: number): string => String(n).padStart(3, "0");
+  return (
+    `${date.getFullYear()}-${p2(date.getMonth() + 1)}-${p2(date.getDate())} ` +
+    `${p2(date.getHours())}:${p2(date.getMinutes())}:${p2(date.getSeconds())}.${p3(date.getMilliseconds())}`
+  );
+}
 
 export interface FileReporterOptions {
   /** @default 20MB */
@@ -46,28 +58,10 @@ export function createFileReporter(options?: FileReporterOptions): ConsolaReport
   }
 
   return {
-    log(logObj: LogObject, _ctx: { options: ConsolaOptions }) {
-      const entry: Record<string, unknown> = {
-        time: logObj.date.toISOString(),
-        level: logObj.type.toUpperCase(),
-      };
-      if (logObj.tag) {
-        entry["tag"] = logObj.tag;
-      }
-
-      const msgs: string[] = [];
-      for (const a of logObj.args) {
-        if (a instanceof Error) {
-          entry["err"] = { message: a.message, stack: a.stack };
-        } else {
-          msgs.push(typeof a === "string" ? a : String(a));
-        }
-      }
-      if (msgs.length > 0) {
-        entry["msg"] = msgs.join(" ");
-      }
-
-      const line = JSON.stringify(entry) + "\n";
+    log(logObj: LogObject, ctx: { options: ConsolaOptions }) {
+      const line =
+        `${formatTimestamp(logObj.date)} [${logObj.type.toUpperCase()}] ` +
+        `${pretty.formatPlain(logObj, ctx.options.formatOptions)}\n`;
 
       const date = logObj.date;
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
