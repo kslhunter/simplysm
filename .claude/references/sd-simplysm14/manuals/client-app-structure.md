@@ -111,15 +111,8 @@ permissions = computed(() =>
 this._sdAppStructure.permRecord.set(this.authInfo()!.user.permissionRecord);
 ```
 
-**화면 안에서 권한 체크** — `injectPermsSignal` 로 현재 사용자의 활성 권한을 읽음.
+**화면 안에서 권한 체크** — 화면 컴포넌트에서 `injectPermsSignal(<path>, <actions>)` 로 정의된 권한을 읽어 체크함. 첫 인자(권한 path)는 이 구조의 화면 fullCode(들). 체크 작성 관례(단순 체크는 인라인, `computed` 사용 기준)는 [client-component.md](./client-component.md) 의 '권한' 참조.
 
-```ts
-perms = injectPermsSignal(["base.user-permission"], ["use", "edit"]);
-canEdit = computed(() => this.perms().includes("edit"));
-// → 권한 없으면 빈 배열. 예: ["use"]
-```
-
-- 첫 인자는 화면의 fullCode(들), 둘째 인자는 확인할 권한 종류.
 - `perms` 를 정의하지 않은 화면은 제약이 없으므로 항상 모든 권한이 활성으로 나옴.
 
 ## 5. 기능 모듈로 메뉴 on/off

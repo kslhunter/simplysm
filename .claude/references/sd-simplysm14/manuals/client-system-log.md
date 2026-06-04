@@ -39,6 +39,10 @@ export const SystemLog = Table("SystemLog")
 `provideAppInitializer` 안에서 `SdSystemLogProvider.writeFn` 에 적재 함수를 할당.
 
 ```ts
+import { inject, provideAppInitializer } from "@angular/core";
+import { DateTime, json } from "@simplysm/core-common";
+import { SdSystemLogProvider } from "@simplysm/angular";
+
 provideAppInitializer(() => {
   const appService = inject(AppServiceProvider);
   const appOrm = inject(AppOrmProvider);
@@ -50,7 +54,7 @@ provideAppInitializer(() => {
         {
           dateTime: new DateTime(),
           severity,
-          message: logs
+          message: data
             .map((l) =>
               typeof l === "string"
                 ? l
@@ -71,7 +75,7 @@ provideAppInitializer(() => {
 ```
 
 - `CLIENT_NAME` 은 `provideSdAngular({ clientName: CLIENT_NAME })` 에 넘긴 값과 동일하게 두어 어느 앱에서 난 로그인지 구분.
-- `data` 는 가변 인자 배열이므로 `JSON.stringify(data)` 로 통째로 저장.
+- `data` 는 가변 인자 배열. 각 인자를 string→그대로 / Error→`stack` / 객체→`json.stringify` 로 문자열화해 공백으로 join 하여 저장(Error 의 `stack` 보존).
 - `writeFn` 미설정 시 외부 적재는 일어나지 않고 콘솔 출력만 수행됨. DB 적재가 필요한 앱에서만 배선.
 
 ## 자동으로 적재되는 로그

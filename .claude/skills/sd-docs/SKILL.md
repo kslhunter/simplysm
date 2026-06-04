@@ -25,7 +25,9 @@ model: haiku
 
 ### 2. 패키지별 subagent 병렬 호출
 
-`public 리스트` 의 패키지 수만큼 `general-purpose` subagent 호출을 **단일 메시지 안에서 병렬**로 보냄. 각 호출 프롬프트는 [references/subagent-prompt.md](references/subagent-prompt.md) 양식의 "프롬프트" 마커 아래 본문을 그대로 사용하고, `<PACKAGE_NAME>` 과 `<PACKAGE_DIR>` 만 치환.
+`public 리스트` 의 패키지 수만큼 `general-purpose` subagent 호출을 **단일 메시지 안에서 병렬**로 보냄. 각 호출 프롬프트는 [references/subagent-prompt.md](references/subagent-prompt.md) 본문을 그대로 사용하고, `<패키지명>` 과 `<패키지 디렉토리>` 와 `<매뉴얼 인덱스>` 를 치환.
+
+- `<매뉴얼 인덱스>`: `.claude/references/sd-simplysm14/README.md` 의 "개발 매뉴얼" 섹션(트리거 표) 본문을 그대로 추출해 주입. 모든 subagent 에 동일 값. subagent 가 자기 패키지에 걸리는 매뉴얼을 골라 읽어 예시·사용법을 매뉴얼 패턴에 맞추는 데 사용.
 
 각 subagent 의 산출 (풀 재작성 모드 — 기존 파일 참고 없이 처음부터 작성):
 
