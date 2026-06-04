@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@simplysm/core-common": "^14.0.0"{{#if hasDb}},
-    "@simplysm/orm-common": "^14.0.0"{{/if}}
+    "@simplysm/orm-common": "^14.0.0"{{/if}}{{#if hasAuth}},
+    "@simplysm/service-common": "^14.0.0"{{/if}}
   }
 }

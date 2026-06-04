@@ -1,18 +1,42 @@
 # @simplysm/excel — ExcelWrapper
 
-Zod 스키마 1개로 레코드 배열 ↔ Excel 파일을 타입 안전하게 매핑할 때 읽는다. 스키마 각 필드의 `.describe()` 가 Excel 헤더(표시명)가 되고, 필드 타입으로 읽기 시 값 변환·검증을 수행한다. 저수준 셀 조작 없이 "정형 데이터의 import/export" 용도일 때 사용.
+Zod 스키마로 엑셀 헤더 ↔ 필드 매핑, 셀 값 타입 변환, 행 단위 유효성 검사를 자동화해 "레코드 배열 ↔ 엑셀" 변환을 한 번에 처리할 때 쓰는 고수준 래퍼. 헤더 텍스트는 각 필드의 `.describe()` 로 지정하며, 미지정 필드는 키 이름을 헤더로 쓴다. 표준 입력 양식 업로드/다운로드 같은 정형 변환에 적합.
 
-## 시그니처
+## 생성자
 
 ```typescript
 new ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>>(schema: TSchema)
+```
 
+- `schema: TSchema` — 레코드 구조를 정의하는 Zod 객체 스키마. 각 필드에 `.describe("헤더이름")` 으로 엑셀 헤더 표시명을 지정한다. optional/nullable/default/boolean 여부가 읽기 기본값·필수 강조·타입 변환 동작을 결정한다.
+
+## read
+
+```typescript
 read(
   file: Bytes | Blob,
   wsNameOrIndex: string | number = 0,
   options?: { excludes?: (keyof z.infer<TSchema>)[] },
 ): Promise<z.infer<TSchema>[]>
+```
 
+- `file: Bytes | Blob` — 읽을 .xlsx 데이터.
+- `wsNameOrIndex: string | number` — 읽을 시트 이름 또는 0 기반 인덱스. 기본 `0`(첫 시트).
+- `options.excludes?: (keyof Schema)[]` — 매핑에서 제외할 필드 키 배열. 해당 헤더는 읽지 않음.
+
+동작: 스키마 표시명 집합에 해당하는 헤더만 골라 데이터 테이블을 읽고, 각 행을 필드 키로 역매핑한 뒤 값 변환 → Zod `safeParse` 검증한다. 빈/누락 값은 스키마 기본값 규칙(아래)으로 채우고, 한 행의 모든 매핑 값이 비면 그 행은 건너뛴다. 데이터가 0건이거나 검증 실패면 시트명을 포함해 throw(부분 반영 없이 전체 중단). 워크북은 내부에서 열고 finally 로 닫는다.
+
+값 변환 규칙:
+
+- `ZodString` → 문자열(비문자열은 `String()`).
+- `ZodNumber` → `num.parseFloat`.
+- `ZodBoolean` → `"1"`/`"true"`→`true`, `"0"`/`"false"`→`false`, 그 외 `Boolean()`.
+- `DateOnly`/`DateTime`/`Time` 인스턴스 → 그대로 보존.
+- 빈/누락 값(`null`/`""`) → 스키마 기본값: `ZodDefault` 면 그 기본값, optional/nullable 면 `undefined`, 필수 boolean 이면 `false`, 그 외 `undefined`.
+
+## write
+
+```typescript
 write(
   wsName: string,
   records: Partial<z.infer<TSchema>>[],
@@ -20,56 +44,29 @@ write(
 ): Promise<ExcelWorkbook>
 ```
 
-- `schema: z.ZodObject` — 레코드 구조. 각 필드의 `.describe("표시명")` 이 Excel 헤더명. 미지정 시 필드 키를 헤더로 사용.
-- `read.file: Bytes | Blob` — 읽을 .xlsx 데이터.
-- `read.wsNameOrIndex: string | number` — 대상 시트(기본 0번). 이름 또는 0 기반 인덱스.
-- `read.options.excludes?: (keyof ...)[]` — 매핑에서 제외할 필드 키 목록.
-- `write.wsName: string` — 생성할 시트 이름.
-- `write.records: Partial<...>[]` — 기록할 부분 레코드 배열. 누락 필드는 빈 셀.
-- `write.options.excludes?: (keyof ...)[]` — 출력에서 제외할 필드 키 목록.
+- `wsName: string` — 만들 시트 이름.
+- `records: Partial<Schema>[]` — 출력할 레코드 배열(부분 객체 허용 — 누락 키는 빈 셀).
+- `options.excludes?: (keyof Schema)[]` — 출력에서 제외할 필드 키 배열.
 
-## read 동작
-
-- 헤더명↔필드 역매핑 후 `ws.getDataTable({ usableHeaderNameFn })` 로 표시명에 일치하는 컬럼만 추출.
-- 각 셀 값을 필드 타입별로 변환 후, 행마다 `schema.safeParse` 로 검증. 실패하면 그 행에서 throw(부분 반영 없음).
-- 모든 필드가 null/`""` 인 행은 skip.
-- 데이터가 한 건도 없으면 기대 헤더 목록을 담은 메시지로 throw.
-- 내부에서 워크북을 열고 `finally` 로 `close()` 하므로 호출자 정리 불필요.
-
-### 값 변환 규칙
-
-- 빈값(null/`""`) → 스키마 기본값: `ZodDefault` 면 그 기본값, optional/nullable 이면 `undefined`, 필수 boolean 이면 `false`, 그 외 `undefined`.
-- `ZodString` → 문자열(아니면 `String()` 캐스팅).
-- `ZodNumber` → number(문자열은 `num.parseFloat`).
-- `ZodBoolean` → `"1"`/`"true"` → `true`, `"0"`/`"false"` → `false`, 그 외 `Boolean()`.
-- `DateOnly`/`DateTime`/`Time` 인스턴스는 그대로 통과.
-
-## write 동작
-
-- 0행에 헤더(제외 후 필드 순서), 1행부터 레코드 값 기록.
-- 전 셀에 4변 테두리 적용.
-- **필수**(optional/nullable/default 아님)이며 boolean 이 아닌 필드의 헤더 셀은 노란색(`00FFFF00`) 강조.
-- zoom 85%, 0행 틀고정 적용.
-- 반환된 `ExcelWorkbook` 의 리소스 관리는 **호출자 책임** — 사용 후 `close()` 필수. write 중 예외 발생 시 내부에서 close 후 rethrow.
+동작: 새 워크북에 시트 1개를 만들고, 0행에 표시명 헤더, 1행부터 각 레코드 값을 스키마 키 순서대로 쓴다. 전체 표에 4변 테두리, 필수(non-optional·non-nullable·non-default)이며 boolean 이 아닌 필드의 헤더 셀에 노란 배경(`"00FFFF00"`) 강조, zoom 85%, 0행 틀고정을 적용한다. **반환된 워크북의 close 는 호출자 책임** — 사용 후 반드시 `close()`.
 
 ## 사용 예
 
 ```typescript
-import { z } from "zod";
-
 const schema = z.object({
-  name: z.string().describe("이름"),
-  age: z.number().optional().describe("나이"),
+  code: z.string().describe("코드"),
+  qty: z.number().describe("수량"),
+  note: z.string().optional().describe("비고"),
 });
 const wrapper = new ExcelWrapper(schema);
 
-// 읽기 ("이름"/"나이" 헤더를 0번 시트에서 매칭)
-const rows = await wrapper.read(bytes);
+// 읽기
+const records = await wrapper.read(bytes, "입력", { excludes: ["note"] });
 
-// 쓰기 (호출자가 close 책임)
-const wb = await wrapper.write("회원", [{ name: "홍길동", age: 30 }]);
+// 쓰기 (워크북 close 는 호출자 책임)
+const wb = await wrapper.write("결과", records);
 try {
-  const out = await wb.toBytes();
+  const bytes = await wb.toBytes();
 } finally {
   await wb.close();
 }
@@ -77,7 +74,7 @@ try {
 
 ## 주의사항
 
-- `.describe()` 표시명이 실제 Excel 헤더와 일치해야 `read` 가 컬럼을 인식. 일치 헤더가 전혀 없으면 데이터 0건으로 throw.
-- 표시명 미지정 필드는 필드 키 그대로 헤더로 쓰이므로, 한글 헤더가 필요하면 반드시 `.describe()` 지정.
-- `read` 행 검증은 전부-성공 전제: 한 행이라도 `safeParse` 실패 시 전체 throw.
-- `write` 반환 워크북 미`close` 시 리소스 누수.
+- 헤더 매핑은 `.describe()` 값(미지정 시 키)이 엑셀 헤더 텍스트와 정확히 일치해야 한다. 매핑되는 헤더가 한 행 내 중복이거나 데이터가 0건이면 throw.
+- `read` 는 행 단위 Zod 검증을 거치므로, 한 행이라도 스키마 위반이면 전체가 throw(부분 결과 없음).
+- `write` 의 필수 헤더 노랑 강조는 "필수 입력 칸" 안내 목적 — optional/nullable/default 또는 boolean 필드는 강조되지 않는다.
+- 결측 보존: optional/nullable 필드의 빈 값은 `undefined` 로 유지된다(임의 치환 없음). 필수 boolean 만 `false` 로 채워진다.

@@ -1,0 +1,63 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  output,
+  signal,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  SdBusyContainer,
+  SdButton,
+  type SdModalContentDef,
+  SdToastProvider,
+} from "@simplysm/angular";
+import { NgIcon } from "@ng-icons/core";
+import { tablerDatabase, tablerRefresh } from "@ng-icons/tabler-icons";
+import { AppServiceProvider } from "@{{workspaceName}}/client-common";
+
+@Component({
+  selector: "app-dev-modal",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdBusyContainer, SdButton, NgIcon],
+  template: `
+    <sd-busy-container [busy]="busyCount() > 0">
+      <div class="p-default flex-column gap-sm">
+        <div class="flex-row gap-sm">
+          <sd-button (click)="onInitDbButtonClick()"><ng-icon [svg]="tablerDatabase" /> DB 초기화</sd-button>
+        </div>
+        <div class="flex-row gap-sm">
+          <sd-button [theme]="'gray'" (click)="onRefreshButtonClick()"><ng-icon [svg]="tablerRefresh" /> 새로고침</sd-button>
+        </div>
+      </div>
+    </sd-busy-container>
+  `,
+})
+export class DevModal implements SdModalContentDef<void> {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _appService = inject(AppServiceProvider);
+
+  initialized = signal(true);
+  busyCount = signal(0);
+
+  close = output<void | undefined>();
+
+  async onInitDbButtonClick() {
+    if (this.busyCount() > 0) return;
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      await this._appService.dev.initDb();
+      this._sdToast.success("DB 초기화가 완료되었습니다.");
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  onRefreshButtonClick() {
+    location.reload();
+  }
+
+  protected readonly tablerDatabase = tablerDatabase;
+  protected readonly tablerRefresh = tablerRefresh;
+}

@@ -1,0 +1,16 @@
+import { Table } from "@simplysm/orm-common";
+import { Role } from "./role";
+
+export const RolePermission = Table("RolePermission")
+  .description("역할 권한")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    roleId: c.bigint(),
+    code: c.varchar(200),
+    valueJson: c.text(),
+  }))
+  .primaryKey("id")
+  .indexes((i) => [i.index("roleId", "code").unique()])
+  .relations((r) => ({
+    role: r.foreignKey(["roleId"], () => Role),
+  }));

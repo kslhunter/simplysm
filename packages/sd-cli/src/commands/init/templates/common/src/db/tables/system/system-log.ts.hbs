@@ -1,0 +1,21 @@
+import { Table } from "@simplysm/orm-common";
+{{#if hasAuth}}
+import { {{userEntityPascal}} } from "../master/{{userEntityKebab}}";
+{{/if}}
+
+export const SystemLog = Table("SystemLog")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    dateTime: c.datetime(),
+    severity: c.varchar(50),
+    message: c.text(),
+    clientName: c.varchar(200),
+{{#if hasAuth}}
+    {{userEntityCamel}}Id: c.bigint().nullable(),
+{{/if}}
+  }))
+  .primaryKey("id")
+  .indexes((i) => [i.index("dateTime").orderBy("DESC")]){{#if hasAuth}}
+  .relations((r) => ({
+    {{userEntityCamel}}: r.foreignKey(["{{userEntityCamel}}Id"], () => {{userEntityPascal}}),
+  })){{/if}};

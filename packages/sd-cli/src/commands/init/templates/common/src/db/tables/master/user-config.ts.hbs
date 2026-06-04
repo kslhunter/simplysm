@@ -1,0 +1,15 @@
+import { Table } from "@simplysm/orm-common";
+import { {{userEntityPascal}} } from "./{{userEntityKebab}}";
+
+export const {{userEntityPascal}}Config = Table("{{userEntityPascal}}Config")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    {{userEntityCamel}}Id: c.bigint(),
+    code: c.varchar(200),
+    valueJson: c.text(),
+  }))
+  .primaryKey("id")
+  .indexes((i) => [i.index("{{userEntityCamel}}Id", "code").unique()])
+  .relations((r) => ({
+    {{userEntityCamel}}: r.foreignKey(["{{userEntityCamel}}Id"], () => {{userEntityPascal}}),
+  }));

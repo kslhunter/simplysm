@@ -1,0 +1,20 @@
+import { DbContext } from "@simplysm/orm-common";
+{{#if hasAuth}}
+import { {{userEntityPascal}} } from "./tables/master/{{userEntityKebab}}";
+import { {{userEntityPascal}}Config } from "./tables/master/{{userEntityKebab}}-config";
+import { Role } from "./tables/system/role";
+import { RolePermission } from "./tables/system/role-permission";
+{{/if}}
+import { SystemDataLog } from "./tables/system/system-data-log";
+import { SystemLog } from "./tables/system/system-log";
+
+export class {{dbContextClassName}} extends DbContext {
+{{#if hasAuth}}
+  {{userEntityCamel}} = this.queryable({{userEntityPascal}});
+  {{userEntityCamel}}Config = this.queryable({{userEntityPascal}}Config);
+  role = this.queryable(Role);
+  rolePermission = this.queryable(RolePermission);
+{{/if}}
+  dataLog = this.queryable(SystemDataLog);
+  systemLog = this.queryable(SystemLog);
+}

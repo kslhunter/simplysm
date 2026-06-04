@@ -2,6 +2,7 @@ import { OrmClientDbContextExecutor } from "./orm-client-db-context-executor";
 import type { OrmConnectOptions } from "./orm-connect-options";
 import { type DbContext } from "@simplysm/orm-common";
 import type { ServiceClient } from "../../service-client";
+import { SdError } from "@simplysm/core-common";
 
 export interface OrmClientConnector {
   connect<T extends DbContext, R>(
@@ -41,10 +42,14 @@ export function createOrmClientConnector(serviceClient: ServiceClient): OrmClien
       } catch (err) {
         if (
           err instanceof Error &&
-          (err.message.includes("a parent row: a foreign key constraint") ||
-            err.message.includes("conflicted with the REFERENCE"))
+          (err.message.includes("a parent row: a foreign key constraint") || // MySQL
+            err.message.includes("conflicted with the REFERENCE") || // MSSQL
+            err.message.includes("violates foreign key constraint")) // PostgreSQL
         ) {
-          throw new Error("경고! 연관된 작업으로 인해 작업이 거부되었습니다. 후속 작업을 확인해 주세요.", { cause: err });
+          throw new SdError(
+            err,
+            "경고! 연관된 작업으로 인해 작업이 거부되었습니다. 후속 작업을 확인해 주세요.",
+          );
         }
 
         throw err;

@@ -6,6 +6,6 @@ export interface OrmConnectOptions<T extends DbContext> {
   connOpt: DbConnOptions & { configName: string };
   dbContextOpt?: {
     database: string;
-    schema: string;
+    schema?: string;
   };
 }

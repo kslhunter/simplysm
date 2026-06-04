@@ -76,7 +76,7 @@ describe("normalize", () => {
       normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" }).dbPort,
     ).toBe(3306);
     expect(
-      normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "postgres" }).dbPort,
+      normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "postgresql" }).dbPort,
     ).toBe(5432);
     expect(
       normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mssql" }).dbPort,
@@ -143,6 +143,26 @@ describe("normalize", () => {
     expect(normalize(base).dbContextClassName).toBe("");
   });
 
+  it("DB=Y default → dbContextFileName=main.db-context", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
+    expect(r.dbContextFileName).toBe("main.db-context");
+  });
+
+  it("DB=Y dbContextName=userOrder → dbContextFileName=user-order.db-context", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "userOrder",
+    });
+    expect(r.dbContextFileName).toBe("user-order.db-context");
+  });
+
+  it("DB=N 시 dbContextFileName 은 빈 문자열", () => {
+    expect(normalize(base).dbContextFileName).toBe("");
+  });
+
   it("DB=Y default → dbContextNameUpper=MAIN", () => {
     const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
     expect(r.dbContextNameUpper).toBe("MAIN");
@@ -168,5 +188,79 @@ describe("normalize", () => {
       dbContextName: "MainDbContext",
     });
     expect(r.dbContextNameUpper).toBe("MAIN");
+  });
+
+  it("DB=Y default → dbFolderName=db-main", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
+    expect(r.dbFolderName).toBe("db-main");
+  });
+
+  it("DB=Y dbContextName=userOrder → dbFolderName=db-user-order", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      dbContextName: "userOrder",
+    });
+    expect(r.dbFolderName).toBe("db-user-order");
+  });
+
+  it("DB=N 시 dbFolderName 은 빈 문자열", () => {
+    expect(normalize(base).dbFolderName).toBe("");
+  });
+
+  it("DB=N 이면 hasAuth=Y 입력해도 강제 false", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: false, hasAuth: true });
+    expect(r.hasAuth).toBe(false);
+  });
+
+  it("DB=Y + hasAuth 미입력 → hasAuth=false", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql" });
+    expect(r.hasAuth).toBe(false);
+    expect(r.userEntityPascal).toBe("");
+    expect(r.userEntityCamel).toBe("");
+    expect(r.userEntityKebab).toBe("");
+    expect(r.userEntityLabel).toBe("");
+  });
+
+  it("hasAuth=Y default → user/사용자 파생", () => {
+    const r = normalize({ ...base, hasServer: true, hasDb: true, dbDialect: "mysql", hasAuth: true });
+    expect(r.hasAuth).toBe(true);
+    expect(r.userEntityPascal).toBe("User");
+    expect(r.userEntityCamel).toBe("user");
+    expect(r.userEntityKebab).toBe("user");
+    expect(r.userEntityLabel).toBe("사용자");
+  });
+
+  it("hasAuth=Y + userEntityName=employee/직원 → Employee/employee 파생", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      hasAuth: true,
+      userEntityName: "employee",
+      userEntityLabel: "직원",
+    });
+    expect(r.userEntityPascal).toBe("Employee");
+    expect(r.userEntityCamel).toBe("employee");
+    expect(r.userEntityKebab).toBe("employee");
+    expect(r.userEntityLabel).toBe("직원");
+  });
+
+  it("hasAuth=Y + 복합어 userEntityName=staff-member → StaffMember/staffMember 파생", () => {
+    const r = normalize({
+      ...base,
+      hasServer: true,
+      hasDb: true,
+      dbDialect: "mysql",
+      hasAuth: true,
+      userEntityName: "staff-member",
+      userEntityLabel: "직원",
+    });
+    expect(r.userEntityPascal).toBe("StaffMember");
+    expect(r.userEntityCamel).toBe("staffMember");
+    expect(r.userEntityKebab).toBe("staff-member");
   });
 });

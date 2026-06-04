@@ -1,0 +1,29 @@
+import type { Routes } from "@angular/router";
+
+{{#if hasAuth}}
+export const routes: Routes = [
+  { path: "", redirectTo: "/login", pathMatch: "full" },
+  {
+    path: "login",
+    loadComponent: () => import("./app/login/login.view").then((m) => m.LoginView),
+  },
+  {
+    path: "home",
+    loadComponent: () => import("./app/home/home.view").then((m) => m.HomeView),
+    children: [
+      { path: "", redirectTo: "main", pathMatch: "full" },
+      {
+        path: "main",
+        loadComponent: () => import("./app/home/main/main.view").then((m) => m.MainView),
+      },
+      {
+        path: "my-info",
+        loadComponent: () =>
+          import("./app/home/my-info/my-info.detail").then((m) => m.MyInfoDetail),
+      },
+    ],
+  },
+];
+{{else}}
+export const routes: Routes = [];
+{{/if}}

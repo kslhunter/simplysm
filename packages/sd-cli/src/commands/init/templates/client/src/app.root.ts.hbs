@@ -1,0 +1,64 @@
+{{#if hasDb}}
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
+{{else}}
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+{{/if}}
+{{#if client.hasRouter}}
+import { RouterOutlet } from "@angular/router";
+{{/if}}
+{{#if hasDb}}
+import { env, parseBoolEnv } from "@simplysm/core-common";
+import { SdModalProvider } from "@simplysm/angular";
+import { DevModal } from "./modals/dev.modal";
+{{/if}}
+
+@Component({
+  selector: "app-root",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+{{#if hasDb}}
+  host: { "(document:keydown)": "onKeydown($event)" },
+{{/if}}
+{{#if client.hasRouter}}
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
+{{else}}
+  template: `<div></div>`,
+{{/if}}
+})
+{{#if hasDb}}
+export class AppRoot {
+  private readonly _sdModal = inject(SdModalProvider);
+
+  private _preservedKeys: string[] = [];
+
+  // 글로벌 키 시퀀스(Ctrl+Alt+Shift 누른 채 F12 → F11 → F12 → F12)로 개발자 도구 모달 호출
+  async onKeydown(event: KeyboardEvent) {
+    if (
+      parseBoolEnv(env("DEV")) &&
+      event.ctrlKey &&
+      event.altKey &&
+      event.shiftKey &&
+      (event.key === "F11" || event.key === "F12")
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this._preservedKeys.push(event.key);
+      this._preservedKeys = this._preservedKeys.slice(-4);
+
+      if (
+        this._preservedKeys[0] === "F12" &&
+        this._preservedKeys[1] === "F11" &&
+        this._preservedKeys[2] === "F12" &&
+        this._preservedKeys[3] === "F12"
+      ) {
+        await this._sdModal.showAsync({ type: DevModal, title: "개발자 도구", inputs: {} });
+      }
+    }
+  }
+}
+{{else}}
+export class AppRoot {}
+{{/if}}

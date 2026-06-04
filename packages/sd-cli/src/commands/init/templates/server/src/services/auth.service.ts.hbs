@@ -1,0 +1,284 @@
+import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
+import { expr } from "@simplysm/orm-common";
+import { AuthInfoChangedEvent, {{userEntityPascal}}Config, RolePermission } from "@{{workspaceName}}/common";
+import bcrypt from "bcrypt";
+import { getOrm } from "../utils/orm.utils";
+
+export interface I{{userEntityPascal}}ConfigMap {
+  "first-router-link"?: string;
+}
+
+export interface IAuthData {
+  {{userEntityCamel}}Id: number;
+  name: string;
+  roleName: string;
+  loginId: string;
+  permissions: Record<string, boolean>;
+  configs: I{{userEntityPascal}}ConfigMap;
+}
+
+export interface IAuthResult extends IAuthData {
+  token: string;
+}
+
+export const AuthService = defineService("AuthService", (ctx) => {
+  async function buildAuthResult({{userEntityCamel}}: {
+    id: number;
+    name: string;
+    loginId: string;
+    role?: { id: number; name: string };
+    permissions?: { code: string; valueJson: string }[];
+    configs?: { code: string; valueJson: string }[];
+  }): Promise<IAuthResult> {
+    const permissions: Record<string, boolean> = {};
+    for (const rp of {{userEntityCamel}}.permissions ?? []) {
+      permissions[rp.code] = JSON.parse(rp.valueJson) as boolean;
+    }
+
+    const configs: I{{userEntityPascal}}ConfigMap = {};
+    for (const cfg of {{userEntityCamel}}.configs ?? []) {
+      (configs as Record<string, unknown>)[cfg.code] = JSON.parse(cfg.valueJson);
+    }
+
+    const authData: IAuthData = {
+      {{userEntityCamel}}Id: {{userEntityCamel}}.id,
+      name: {{userEntityCamel}}.name,
+      roleName: {{userEntityCamel}}.role!.name,
+      loginId: {{userEntityCamel}}.loginId,
+      permissions,
+      configs,
+    };
+
+    const token = await ctx.server.signAuthToken({
+      roles: [],
+      data: authData,
+    });
+
+    return { token, ...authData };
+  }
+
+  return {
+    login: async (loginId: string, password: string): Promise<IAuthResult> => {
+      if (loginId.length === 0 || loginId.length > 50) {
+        throw new Error("아이디는 1~50자의 문자열이어야 합니다.");
+      }
+
+      if (password.length === 0 || password.length > 500) {
+        throw new Error("비밀번호는 1~500자의 문자열이어야 합니다.");
+      }
+
+      const orm = await getOrm(ctx);
+      return orm.connect(async (db) => {
+        const {{userEntityCamel}} = await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.eq(c.loginId, loginId)])
+          .join("permissions", (qr, e) =>
+            qr
+              .from(RolePermission)
+              .where((rp) => [expr.eq(rp.roleId, e.roleId)])
+              .select((rp) => ({ code: rp.code, valueJson: rp.valueJson })),
+          )
+          .join("configs", (qr, e) =>
+            qr
+              .from({{userEntityPascal}}Config)
+              .where((cfg) => [expr.eq(cfg.{{userEntityCamel}}Id, e.id)])
+              .select((cfg) => ({ code: cfg.code, valueJson: cfg.valueJson })),
+          )
+          .include((item) => item.role)
+          .select((item) => ({
+            id: item.id,
+            name: item.name,
+            loginId: item.loginId,
+            encryptedPassword: item.encryptedPassword,
+            role: item.role,
+            permissions: item.permissions?.map((it) => ({
+              code: it.code,
+              valueJson: it.valueJson,
+            })),
+            configs: item.configs?.map((it) => ({
+              code: it.code,
+              valueJson: it.valueJson,
+            })),
+          }))
+          .single();
+
+        if (!{{userEntityCamel}}) {
+          throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        if ({{userEntityCamel}}.encryptedPassword == null || {{userEntityCamel}}.encryptedPassword === "") {
+          throw new Error("비밀번호가 설정되지 않은 계정입니다.");
+        }
+
+        if ({{userEntityCamel}}.role == null) {
+          throw new Error("권한이 부여되지 않은 계정입니다.");
+        }
+
+        const isValid = await bcrypt.compare(password, {{userEntityCamel}}.encryptedPassword);
+        if (!isValid) {
+          throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        return buildAuthResult({{userEntityCamel}});
+      });
+    },
+
+    refresh: auth(async (): Promise<IAuthResult> => {
+      const currentAuth = ctx.authInfo as IAuthData | undefined;
+      if (!currentAuth) {
+        throw new Error("인증 정보가 없습니다.");
+      }
+
+      const orm = await getOrm(ctx);
+      return orm.connect(async (db) => {
+        const {{userEntityCamel}} = await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.eq(c.id, currentAuth.{{userEntityCamel}}Id)])
+          .join("permissions", (qr, e) =>
+            qr
+              .from(RolePermission)
+              .where((rp) => [expr.eq(rp.roleId, e.roleId)])
+              .select((rp) => ({ code: rp.code, valueJson: rp.valueJson })),
+          )
+          .join("configs", (qr, e) =>
+            qr
+              .from({{userEntityPascal}}Config)
+              .where((cfg) => [expr.eq(cfg.{{userEntityCamel}}Id, e.id)])
+              .select((cfg) => ({ code: cfg.code, valueJson: cfg.valueJson })),
+          )
+          .include((item) => item.role)
+          .select((item) => ({
+            id: item.id,
+            name: item.name,
+            loginId: item.loginId,
+            encryptedPassword: item.encryptedPassword,
+            role: item.role,
+            permissions: item.permissions?.map((it) => ({
+              code: it.code,
+              valueJson: it.valueJson,
+            })),
+            configs: item.configs?.map((it) => ({
+              code: it.code,
+              valueJson: it.valueJson,
+            })),
+          }))
+          .single();
+
+        if (!{{userEntityCamel}}) {
+          throw new Error("유효하지 않은 {{userEntityLabel}}입니다.");
+        }
+
+        if ({{userEntityCamel}}.encryptedPassword == null || {{userEntityCamel}}.encryptedPassword === "") {
+          throw new Error("비밀번호가 설정되지 않은 계정입니다.");
+        }
+
+        if ({{userEntityCamel}}.role == null) {
+          throw new Error("권한이 부여되지 않은 계정입니다.");
+        }
+
+        return buildAuthResult({{userEntityCamel}});
+      });
+    }),
+
+    update: auth(
+      async (input: {
+        configs: I{{userEntityPascal}}ConfigMap;
+        currentPassword?: string;
+        newPassword?: string;
+      }): Promise<void> => {
+        const currentAuth = ctx.authInfo as IAuthData | undefined;
+        if (!currentAuth) {
+          throw new Error("인증 정보가 없습니다.");
+        }
+        const {{userEntityCamel}}Id = currentAuth.{{userEntityCamel}}Id;
+
+        const isChangingPassword = !(input.newPassword == null || input.newPassword === "");
+        if (isChangingPassword) {
+          if (input.newPassword!.length > 500) {
+            throw new Error("비밀번호는 1~500자의 문자열이어야 합니다.");
+          }
+          if (input.currentPassword == null || input.currentPassword === "") {
+            throw new Error("기존 비밀번호를 입력하세요.");
+          }
+        }
+
+        const orm = await getOrm(ctx);
+        await orm.connect(async (db) => {
+          // 1) 비밀번호 변경(입력 시): 기존 비밀번호 검증 후 해시 갱신
+          if (isChangingPassword) {
+            const target = await db
+              .{{userEntityCamel}}()
+              .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+              .select((item) => ({ encryptedPassword: item.encryptedPassword }))
+              .single();
+            if (!target) {
+              throw new Error("유효하지 않은 {{userEntityLabel}}입니다.");
+            }
+            if (target.encryptedPassword == null || target.encryptedPassword === "") {
+              throw new Error("비밀번호가 설정되지 않은 계정입니다.");
+            }
+
+            const isValid = await bcrypt.compare(input.currentPassword!, target.encryptedPassword);
+            if (!isValid) {
+              throw new Error("기존 비밀번호가 올바르지 않습니다.");
+            }
+
+            const newEncryptedPassword = await bcrypt.hash(input.newPassword!, 10);
+            await db
+              .{{userEntityCamel}}()
+              .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+              .update(() => ({ encryptedPassword: newEncryptedPassword }));
+          }
+
+          // 2) 시스템설정 동기화: input.configs 에 없는 코드는 삭제, 있는 코드는 upsert
+          const codes = Object.keys(input.configs).filter(
+            (code) => (input.configs as Record<string, unknown>)[code] != null,
+          );
+          const existingConfigs = await db
+            .{{userEntityCamel}}Config()
+            .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id)])
+            .select((c) => ({ code: c.code }))
+            .execute();
+          for (const existing of existingConfigs) {
+            if (!codes.includes(existing.code)) {
+              await db
+                .{{userEntityCamel}}Config()
+                .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.eq(c.code, existing.code)])
+                .delete();
+            }
+          }
+          for (const code of codes) {
+            const valueJson = JSON.stringify((input.configs as Record<string, unknown>)[code]);
+            await db
+              .{{userEntityCamel}}Config()
+              .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.eq(c.code, code)])
+              .upsert(
+                () => ({ valueJson }),
+                (up) => ({
+                  ...up,
+                  {{userEntityCamel}}Id,
+                  code,
+                }),
+              );
+          }
+
+          // 3) 데이터 변경이력
+          await db.{{userEntityCamel}}().insertDataLog({
+            action: "수정(내정보수정)",
+            itemId: {{userEntityCamel}}Id,
+            {{userEntityCamel}}Id,
+          });
+        });
+
+        // 4) 인증정보 변경 이벤트 발생 → 본인 세션 포함 구독자가 authInfo 재로드
+        await ctx.server.emitEvent(
+          AuthInfoChangedEvent,
+          (info) => info.{{userEntityCamel}}Id === {{userEntityCamel}}Id,
+          undefined,
+        );
+      },
+    ),
+  };
+});
+
+export type AuthServiceMethods = ServiceMethods<typeof AuthService>;

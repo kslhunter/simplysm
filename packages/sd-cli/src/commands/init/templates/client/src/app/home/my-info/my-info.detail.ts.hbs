@@ -1,0 +1,265 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import { type DateTime, json, obj } from "@simplysm/core-common";
+import {
+  FormatPipe,
+  injectViewTypeSignal,
+  mark,
+  SdAppStructureProvider,
+  SdCrudDetail,
+  SdSelect,
+  SdSelectItem,
+  SdTextfield,
+  SdToastProvider,
+  setupCanDeactivate,
+} from "@simplysm/angular";
+import { expr } from "@simplysm/orm-common";
+import { AppAuthProvider, AppOrmProvider, AppServiceProvider } from "@{{workspaceName}}/client-common";
+import { {{userEntityPascal}}Config } from "@{{workspaceName}}/common";
+import type { I{{userEntityPascal}}ConfigMap } from "@{{workspaceName}}/server";
+
+@Component({
+  selector: "app-my-info-detail",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdCrudDetail, SdTextfield, SdSelect, SdSelectItem, FormatPipe],
+  template: `
+    <sd-crud-detail
+      [initialized]="initialized()"
+      [(busyCount)]="busyCount"
+      [viewType]="viewType()"
+      (submit)="onSubmit()"
+    >
+      <ng-template #contentTpl>
+        <div class="p-default">
+          <table class="form-table">
+            <tbody>
+              <tr><th colspan="2" class="form-table-header">기본정보</th></tr>
+              <tr>
+                <th>이름</th>
+                <td>
+                  <sd-textfield [type]="'text'" [disabled]="true" [value]="data().name" />
+                </td>
+              </tr>
+              <tr>
+                <th>아이디</th>
+                <td>
+                  <sd-textfield [type]="'text'" [disabled]="true" [value]="data().loginId" />
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody>
+              <tr><th colspan="2" class="form-table-header">비밀번호 변경</th></tr>
+              <tr>
+                <th>기존 비밀번호</th>
+                <td>
+                  <sd-textfield
+                    [type]="'password'"
+                    [placeholder]="'기존 비밀번호를 입력하세요.'"
+                    [required]="!!data().newPassword"
+                    [(value)]="data().currentPassword"
+                    (valueChange)="mark(data)"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>신규 비밀번호</th>
+                <td>
+                  <sd-textfield
+                    [type]="'password'"
+                    [placeholder]="'신규 비밀번호를 입력하세요.'"
+                    [(value)]="data().newPassword"
+                    (valueChange)="mark(data)"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>비밀번호 확인</th>
+                <td>
+                  <sd-textfield
+                    [type]="'password'"
+                    [placeholder]="'확인을 위해 한번 더 입력하세요.'"
+                    [required]="!!data().newPassword"
+                    [(value)]="data().newPasswordConfirm"
+                    (valueChange)="mark(data)"
+                  />
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody>
+              <tr><th colspan="2" class="form-table-header">시스템설정</th></tr>
+              <tr>
+                <th>로그인시 표시할 화면</th>
+                <td>
+                  <sd-select
+                    [(value)]="data().configRecord['first-router-link']"
+                    (valueChange)="mark(data)"
+                  >
+                    <sd-select-item [value]="undefined">
+                      <span class="tx-theme-gray-default">미지정</span>
+                    </sd-select-item>
+                    @for (flatMenu of flatMenus(); track flatMenu.codeChain.join(".")) {
+                      <sd-select-item [value]="'/home/' + flatMenu.codeChain.join('/')">
+                        \{{ flatMenu.titleChain.join("» ") }}
+                      </sd-select-item>
+                    }
+                  </sd-select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          @if (data().lastModifiedAt != null || data().lastModifiedBy != null) {
+            <div class="p-sm-default tx-theme-gray-default">
+              최종수정:
+              @if (data().lastModifiedAt != null) {
+                \{{ data().lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}
+              }
+              @if (data().lastModifiedBy != null) {
+                (\{{ data().lastModifiedBy }})
+              }
+            </div>
+          }
+        </div>
+      </ng-template>
+    </sd-crud-detail>
+  `,
+})
+export class MyInfoDetail {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _appAuth = inject(AppAuthProvider);
+  private readonly _appOrm = inject(AppOrmProvider);
+  private readonly _appService = inject(AppServiceProvider);
+  private readonly _sdAppStructure = inject(SdAppStructureProvider);
+
+  viewType = injectViewTypeSignal();
+
+  initialized = signal(false);
+  busyCount = signal(0);
+
+  flatMenus = computed(() => this._sdAppStructure.usableFlatMenus());
+
+  data = signal<IData>({ name: "", loginId: "", configRecord: {} });
+  private _orgData?: IData;
+
+  constructor() {
+    effect(() => {
+      this._appAuth.authInfo();
+
+      void untracked(async () => {
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+
+    setupCanDeactivate(() => this._checkIgnoreChanges());
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.busyCount() > 0) return;
+
+    const data = this.data();
+
+    if (this._orgData != null && obj.equal(data, this._orgData)) {
+      this._sdToast.info("변경사항이 없습니다.");
+      return;
+    }
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      if (Boolean(data.newPassword) && data.newPassword !== data.newPasswordConfirm) {
+        throw new Error("신규 비밀번호의 확인값이 서로 다릅니다.");
+      }
+
+      await this._appService.auth.update({
+        configs: data.configRecord,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+
+      this._sdToast.success("저장되었습니다.");
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  private async _refresh(): Promise<void> {
+    const {{userEntityCamel}}Id = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
+    if ({{userEntityCamel}}Id == null) return;
+
+    const loaded = await this._appOrm.connectAsync(async (db) => {
+      return db
+        .{{userEntityCamel}}()
+        .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+        .joinLastDataLog()
+        .join("configs", (qr, e) =>
+          qr
+            .from({{userEntityPascal}}Config)
+            .where((ec) => [expr.eq(ec.{{userEntityCamel}}Id, e.id)])
+            .select((ec) => ({ code: ec.code, valueJson: ec.valueJson })),
+        )
+        .select((item) => ({
+          name: item.name,
+          loginId: item.loginId,
+          lastModifiedAt: item.lastDataLog?.dateTime,
+          lastModifiedBy: item.lastDataLog?.{{userEntityCamel}}Name,
+          configs: item.configs?.map((it) => ({ code: it.code, valueJson: it.valueJson })),
+        }))
+        .single();
+    });
+
+    if (loaded == null) {
+      throw new Error("{{userEntityLabel}} 정보를 찾을 수 없습니다.");
+    }
+
+    const configRecord = (loaded.configs ?? []).toObject(
+      (c) => c.code,
+      (c) => json.parse(c.valueJson),
+    ) as I{{userEntityPascal}}ConfigMap;
+
+    this.data.set({
+      name: loaded.name,
+      loginId: loaded.loginId,
+      configRecord,
+      lastModifiedAt: loaded.lastModifiedAt,
+      lastModifiedBy: loaded.lastModifiedBy,
+    });
+    this._orgData = obj.clone(this.data());
+  }
+
+  private _checkIgnoreChanges(): boolean {
+    return (
+      this._orgData == null ||
+      obj.equal(this.data(), this._orgData) ||
+      confirm("변경사항이 있습니다. 무시하고 진행하시겠습니까?")
+    );
+  }
+
+  protected readonly mark = mark;
+}
+
+interface IData {
+  name: string;
+  loginId: string;
+  configRecord: I{{userEntityPascal}}ConfigMap;
+  currentPassword?: string;
+  newPassword?: string;
+  newPasswordConfirm?: string;
+  lastModifiedAt?: DateTime;
+  lastModifiedBy?: string;
+}

@@ -1,0 +1,26 @@
+import type { AppStructureItem } from "@simplysm/service-common";
+
+{{#each appStructureNames}}
+export const {{this}}: AppStructureItem[] = [
+  { title: "메인화면", code: "main", isNotMenu: true },
+  { title: "내 정보 수정", code: "my-info", isNotMenu: true },
+
+  {
+    code: "base",
+    title: "기준정보",
+    children: [
+      { code: "role-permission", title: "역할/권한", perms: ["use", "edit"] },
+      { code: "{{../userEntityKebab}}", title: "{{../userEntityLabel}}", perms: ["use", "edit"] },
+    ],
+  },
+  {
+    code: "system",
+    title: "시스템",
+    children: [
+      { code: "data-log", title: "데이터 변경내역", perms: ["use"] },
+      { code: "system-log", title: "시스템 로그", perms: ["use"] },
+    ],
+  },
+];
+
+{{/each}}

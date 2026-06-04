@@ -1,121 +1,77 @@
-# @simplysm/core-common — Array 확장 메서드
+# @simplysm/core-common — 배열 확장 메서드
 
-패키지를 import 하면 부수효과로 `Array.prototype` 에 메서드가 주입된다(`enumerable: false`, `for...in` 비노출). 함수 호출이 아니라 배열 인스턴스 메서드로 직접 사용. 조회/그룹/정렬/diff 등 읽기 메서드(`ReadonlyArrayExt`)는 새 배열을 반환하고, 변형 메서드(`MutableArrayExt`, 이름에 `This` 가 붙거나 insert/remove/toggle/clear)는 원본을 직접 수정한다.
+`@simplysm/core-common` import 시 `Array.prototype` 에 설치되는 확장 메서드. 배열을 조회·그룹화·정렬·중복제거·Map/객체/트리 변환·diff/merge·집계할 때 함께 읽힘. 모두 `array.method(...)` 로 직접 호출. enumerable=false 로 설치되어 `for...in`·`Object.keys` 에 노출되지 않음.
 
-## 조회·필터
+표기: **읽기 전용**(원본 불변, 새 배열/값 반환) vs **@mutates**(원본 직접 수정). 정렬/중복제거는 두 버전(예: `orderBy` vs `orderByThis`)이 있음.
 
-```typescript
-single(predicate?): TItem | undefined;       // 조건 일치 1건. 2건 이상이면 ArgumentError
-first(predicate?): TItem | undefined;         // 첫 일치(없으면 undefined)
-last(predicate?): TItem | undefined;          // 마지막 일치
-filterExists(): NonNullable<TItem>[];          // null/undefined 제거
-ofType(type: PrimitiveTypeStr | Type<T>): T[]; // 타입별 필터
-filterAsync(predicate: (item, i) => Promise<boolean>): Promise<TItem[]>; // 순차 비동기 필터
+## 조회 / 필터
+
+- `single(predicate?)`: → `T | undefined` — 조건에 맞는 단 하나 반환. **2개 이상이면 ArgumentError throw**. 0개면 undefined. "유일해야 한다"는 불변식 검증에 사용.
+- `first(predicate?)`: → `T | undefined` — 첫 요소(predicate 있으면 첫 매칭). 없으면 undefined.
+- `last(predicate?)`: → `T | undefined` — 마지막 요소(predicate 있으면 뒤에서 첫 매칭).
+- `filterExists()`: → `NonNullable<T>[]` — null/undefined 제거(타입도 좁혀짐).
+- `ofType(type)`: → 좁혀진 배열 — PrimitiveTypeStr(`"string"`·`"number"`·`"boolean"`·`"DateTime"`·`"DateOnly"`·`"Time"`·`"Uuid"`·`"Bytes"`) 또는 생성자(`Type<N>`)로 필터. 문자열이면 typeof/instanceof, 생성자면 `instanceof` 또는 `constructor` 일치. 혼합 배열에서 특정 타입만 뽑을 때.
+- `filterAsync(predicate)`: → `Promise<T[]>` — 비동기 조건 필터(**순차** 실행).
+
+## 비동기 매핑
+
+- `mapAsync(selector)`: → `Promise<R[]>` — 비동기 매핑(**순차** 실행, 순서 보존).
+- `parallelAsync(fn)`: → `Promise<R[]>` — `Promise.all` 기반 **병렬** 실행. 하나라도 reject 면 전체 reject. 독립 IO 를 동시에 돌릴 때.
+- `mapMany(selector?)`: → 평탄화 배열 — selector 매핑 후 1단계 flat + `filterExists`. selector 없으면 자신을 flat. 중첩 배열 펼칠 때.
+- `mapManyAsync(selector?)`: → `Promise<...>` — 비동기 매핑 후 평탄화(순차).
+
+## 그룹화 / Map·객체 변환
+
+- `groupBy(keySelector, valueSelector?)`: → `{ key, values }[]` — key 별 그룹. 원시 key 는 O(n), 객체 key 는 깊은 비교 O(n²). 객체 key 가 불필요하면 `toArrayMap` 권장.
+- `toMap(keySelector, valueSelector?)`: → `Map<K, V|T>` — key→단일값. **중복 key 면 ArgumentError**. 1:1 인덱싱에 사용.
+- `toMapAsync(keySelector, valueSelector?)`: → `Promise<Map>` — 위의 비동기(순차) 버전(selector 가 Promise 반환 허용).
+- `toArrayMap(keySelector, valueSelector?)`: → `Map<K, (V|T)[]>` — key→값 배열(중복 허용). O(n) 그룹화의 기본 선택지.
+- `toSetMap(keySelector, valueSelector?)`: → `Map<K, Set<V|T>>` — key→Set(중복 자동 제거).
+- `toMapValues(keySelector, valueSelector)`: → `Map<K, V>` — key 별로 모은 **항목 배열 전체**를 valueSelector(items)→집계값으로 변환. 그룹별 합계 등.
+- `toObject(keySelector, valueSelector?)`: → `Record<string, V|T>` — key(string)→값 객체. 중복 key(둘 다 non-null)면 ArgumentError.
+
+## 트리화
+
+- `toTree(keyProp, parentKey)`: → `TreeArray<T>[]` — 평면 배열을 트리로. `parentKey` 값이 null/undefined 인 항목이 루트, 각 노드에 `children` 추가(항목은 clone 됨). 내부 `toArrayMap` 으로 O(n). `TreeArray<T> = T & { children: TreeArray<T>[] }`.
+
+```ts
+items.toTree("id", "parentId");
+// [{ id: 1, name: "root", children: [{ id: 2, ..., children: [] }] }]
 ```
 
-- `single(predicate)` — "정확히 1건" 보장이 필요할 때. 조건 일치가 2건 이상이면 `ArgumentError` throw, 0건이면 `undefined`. predicate 생략 시 배열 전체 대상.
-- `first`/`last` — predicate 생략 시 각각 `[0]`/마지막 요소.
-- `ofType(type)` — `"string"|"number"|"boolean"|"DateTime"|"DateOnly"|"Time"|"Uuid"|"Bytes"` 문자열이면 해당 원시 타입으로, 생성자(`Type<N>`)면 `instanceof`/constructor 일치로 필터. 혼합 배열에서 특정 타입만 뽑을 때.
-- `filterAsync` — predicate 가 Promise 인 경우. 병렬이 아니라 **순차** 실행(부수효과 순서 보장).
+## 정렬 / 중복제거
 
-## 매핑·평탄화
+- `orderBy(selector?)` / `orderByDesc(selector?)`: → `T[]` (새 배열) — selector 가 반환한 string/number/boolean/DateTime/DateOnly/Time/undefined 로 정렬. null/undefined 는 오름차순 앞·내림차순 뒤. 날짜타입은 tick 비교, 문자열은 `localeCompare`. selector 없으면 요소 자체.
+- `orderByThis(selector?)` / `orderByDescThis(selector?)`: → `T[]` @mutates — 원본을 in-place 정렬.
+- `distinct(options?)`: → `T[]` (새 배열) — 중복 제거. options: `true`/`{ matchAddress: true }`=참조 비교 O(n), `{ keyFn }`=커스텀 key O(n), 미지정=원시는 값·객체는 깊은 비교 O(n²). 대량 객체 배열엔 `keyFn` 권장.
+- `distinctThis(options?)`: → `T[]` @mutates — 원본에서 중복 제거(첫 등장만 유지).
 
-```typescript
-mapAsync(selector: (item, i) => Promise<R>): Promise<R[]>;       // 순차
-parallelAsync(fn: (item, i) => Promise<R>): Promise<R[]>;         // Promise.all 병렬
-mapMany(): U[];                                                   // 중첩 배열 1단 평탄화
-mapMany(selector: (item, i) => R[]): R[];                          // 매핑 후 평탄화
-mapManyAsync(selector: (item, i) => Promise<R[]>): Promise<R[]>;   // 순차 매핑 후 평탄화
-```
+## diff / merge
 
-- `mapAsync` vs `parallelAsync` — 둘 다 비동기 매핑이나 `mapAsync` 는 한 건씩 순차, `parallelAsync` 는 `Promise.all` 동시 실행. `parallelAsync` 는 하나라도 reject 되면 전체 즉시 reject.
-- `mapMany` — 평탄화 시 내부적으로 `filterExists` 가 적용되어 null/undefined 도 제거됨. selector 없으면 자신을 1단 flat.
+- `diffs(target, options?)`: → `ArrayDiffsResult<T,P>[]` — 두 배열 비교. 결과 항목은 `{ source: undefined, target }`(INSERT) / `{ source, target: undefined }`(DELETE) / `{ source, target }`(UPDATE). options: `keys`=동일성 판정 key(없으면 전체 깊은 비교), `excludes`=비교 제외 속성. target 에 중복 key 면 첫 매칭만.
+- `oneWayDiffs(orgItems, keyPropNameOrGetValFn, options?)`: → `ArrayOneWayDiffResult<T>[]` — 현재 배열을 원본(배열 또는 `Map<key, item>`) 대비 분류. 결과 type: `"create"`(key 값 없거나 원본에 없음)·`"update"`(값 다름)·`"same"`(같음, `includeSame: true` 일 때만 포함). keyPropNameOrGetValFn 은 key 속성명 또는 `(item)=>키값` 함수. options.excludes/includes 로 비교 범위 조정. 저장 시 INSERT/UPDATE 판정에 사용.
+- `merge(target, options?)`: → `(T|P|(T&P))[]` (새 배열) — `diffs` 결과로 source 를 기준 삼아 병합. UPDATE 는 `obj.merge` 로 깊은 병합, INSERT 는 추가, DELETE 는 유지(원본 보존). options 는 `diffs` 와 동일.
 
-## 그룹화·Map/객체 변환
-
-```typescript
-groupBy(keySelector, valueSelector?): { key; values }[];
-toMap(keySelector, valueSelector?): Map<K, V>;
-toMapAsync(keySelector, valueSelector?): Promise<Map<K, V>>;
-toArrayMap(keySelector, valueSelector?): Map<K, V[]>;
-toSetMap(keySelector, valueSelector?): Map<K, Set<V>>;
-toMapValues(keySelector, valueSelector: (items) => V): Map<K, V>;
-toObject(keySelector: (item, i) => string, valueSelector?): Record<string, V>;
-```
-
-- `groupBy(keySelector)` — `{ key, values }` 배열. 원시 key 는 Map 으로 O(n), 객체 key 는 깊은 비교로 O(n²). 원시 key 만 필요하면 `toArrayMap` 이 항상 O(n).
-- `toMap` — key→단일 값. key 중복 시 뒤 값이 덮어씀. `toArrayMap`/`toSetMap` — key→배열/Set(다대일 집계).
-- `toMapValues(keySelector, valueSelector)` — 같은 key 의 항목 배열을 받아 단일 값으로 집계(`(items) => items.sum(...)` 등).
-- `toObject` — key 가 반드시 string. `valueSelector` 생략 시 값은 원소 자체.
-
-## 트리·중복·정렬
-
-```typescript
-toTree(keyProp: K, parentKey: P): TreeArray<TItem>[]; // TreeArray<T> = T & { children: TreeArray<T>[] }
-distinct(options?: boolean | { matchAddress?: boolean; keyFn?: (item) => string | number }): TItem[];
-orderBy(selector?): TItem[];
-orderByDesc(selector?): TItem[];
-```
-
-- `toTree(keyProp, parentKey)` — 평면 배열을 `children` 트리로. `parentKey` 값이 null/undefined 인 항목이 루트. 내부 `toArrayMap` 사용 O(n), 원본은 복사되고 `children` 추가.
-- `distinct(options)` — 중복 제거. `true`/`{matchAddress:true}` 면 참조(Set) 비교, `keyFn` 지정 시 key 기준 O(n). 객체 배열을 옵션 없이 쓰면 깊은 비교 O(n²)(대량 데이터엔 `keyFn` 권장).
-- `orderBy`/`orderByDesc(selector)` — selector 반환 타입은 `string|number|DateOnly|DateTime|Time|undefined`. 새 배열 반환. 결측은 비교에서 그대로 처리.
-
-```typescript
-const tree = items.toTree("id", "parentId");
-const uniq = users.distinct({ keyFn: (u) => u.id });
-```
-
-## diff·merge
-
-```typescript
-type ArrayDiffsResult<O, T> =
-  | { source: undefined; target: T }  // INSERT
-  | { source: O; target: undefined }  // DELETE
-  | { source: O; target: T };          // UPDATE
-type ArrayOneWayDiffResult<T> =
-  | { type: "create"; item: T; orgItem: undefined }
-  | { type: "update"; item: T; orgItem: T }
-  | { type: "same";   item: T; orgItem: T };
-
-diffs(target, options?): ArrayDiffsResult<TItem, TOther>[];
-oneWayDiffs(orgItems, keyPropNameOrGetValFn, options?): ArrayOneWayDiffResult<TItem>[];
-merge(target, options?): (TItem | TOther | (TItem & TOther))[];
-```
-
-- `diffs(target, options)` — 두 배열을 비교해 INSERT/DELETE/UPDATE 분류. `options.keys` 매칭 key 목록, `options.excludes` 비교 제외 속성. target 에 중복 key 가 있으면 첫 매칭만 사용. 서버 동기화 대상 산출에 사용.
-- `oneWayDiffs(orgItems, keyPropNameOrGetValFn, options)` — 현재(this) 배열을 원본(`orgItems`, 배열 또는 `Map`) 대비 create/update/same 으로 분류. `keyPropNameOrGetValFn` 은 key 속성명 또는 key 추출 함수. `options.includeSame` 동일건 포함 여부, `excludes`/`includes` 비교 속성 제한.
-- `merge(target, options)` — 두 배열을 key 기준 병합(없으면 추가, 있으면 속성 합침). `options.keys`/`excludes` 는 `diffs` 와 동일 의미.
+`ArrayDiffsResult`·`ArrayOneWayDiffResult`·`TreeArray`·`ComparableType`(=`string | number | boolean | DateTime | DateOnly | Time | undefined`) 타입이 함께 export 됨.
 
 ## 집계
 
-```typescript
-sum(selector?: (item, i) => number): number;        // 빈 배열이면 0
-min(selector?): TProp | undefined;
-max(selector?): TProp | undefined;
-shuffle(): TItem[];
-```
+- `sum(selector?)`: → number — 합계(빈 배열 0). 숫자 아닌 값이면 ArgumentError.
+- `min(selector?)` / `max(selector?)`: → `string | number | undefined` — 최소/최대. 숫자·문자열만 허용(아니면 ArgumentError). 빈 배열 undefined.
 
-- `sum` — selector 생략 시 원소를 숫자로 더함. 빈 배열은 0.
-- `min`/`max` — selector 없으면 원소가 `number|string` 일 때만. 비면 `undefined`.
-- `shuffle` — 무작위 순서의 새 배열.
+## 그 외 @mutates
 
-## 변형 메서드 (@mutates 원본 직접 수정)
+- `insert(index, ...items)`: → this — index 위치에 삽입.
+- `remove(item)` / `remove(selector)`: → this — 일치 항목(또는 조건 매칭) 모두 제거(역순 순회 O(n)).
+- `toggle(item)`: → this — 있으면 제거·없으면 push.
+- `clear()`: → this — 전체 비움.
 
-```typescript
-distinctThis(options?): TItem[];      // distinct 의 in-place 판
-orderByThis(selector?): TItem[];      // 오름차순 in-place
-orderByDescThis(selector?): TItem[];  // 내림차순 in-place
-insert(index: number, ...items: TItem[]): this;
-remove(item: TItem): this;
-remove(selector: (item, i) => boolean): this;
-toggle(item: TItem): this;            // 있으면 제거, 없으면 추가
-clear(): this;                         // 비우기
-```
+## shuffle
 
-- `*This` 계열·`insert`/`remove`/`toggle`/`clear` 는 원본 배열을 직접 바꾸고 `this`(또는 배열)를 반환해 체이닝 가능. 새 배열이 필요하면 `This` 없는 `orderBy`/`distinct` 사용.
-- `remove` — 값 또는 조건 함수 오버로드. `toggle` — 멤버십 토글로 선택 상태 관리에 사용.
+- `shuffle()`: → `T[]` (새 배열) — Fisher–Yates 무작위 섞기. 원본 불변.
 
-```typescript
-list.remove((x) => x.deleted).orderByThis((x) => x.seq);
+```ts
+const grouped = users.toArrayMap((u) => u.teamId);     // Map<teamId, User[]>
+const sorted = items.orderBy((x) => x.createdAt);       // DateTime 기준 오름차순
+const diff = next.oneWayDiffs(prev, "id");              // create/update/same 분류
 ```

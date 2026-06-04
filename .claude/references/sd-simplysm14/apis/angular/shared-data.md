@@ -1,57 +1,74 @@
-# @simplysm/angular — 공유 데이터(shared-data)
+# @simplysm/angular — 공유 마스터 데이터 + 선택 컨트롤
 
-서버의 마스터 데이터(코드·거래처 등)를 클라이언트 전역에서 캐시·구독하고, 그 데이터를 고른 select/list/button UI 로 노출하는 묶음. 데이터 변경은 서비스 이벤트로 전파되어 자동 갱신됨.
+고객사·품목 등 자주 참조하는 마스터 데이터를 한 번 등록해 어느 화면에서든 공유 signal 로 쓰고, 그 데이터를 선택하는 드롭다운/버튼/리스트 컨트롤을 제공하는 군. 등록·항목 추가 절차는 `client-shared-data.md` 참조.
 
-## 데이터 규약 타입
+## SdSharedDataProvider<T> (abstract)
 
-- **SharedDataBase<TKey>** — 공유 데이터 항목의 베이스. `{ __valueKey: TKey; __searchText: string; __isHidden: boolean; __parentKey?: TKey }`. `__searchText` 로 검색, `__isHidden` 으로 목록 숨김, `__parentKey` 있으면 트리 구성. 도메인 타입이 이 인터페이스를 확장.
-- **SharedDataInfo<T>** — 등록 정보. `{ serviceKey: string; getter: (changeKeys?) => Promise<T[]>; filter?: unknown; orderBy?: (item) => 비교키 }`. getter 는 전체/부분(changeKeys) 로드, filter 는 이벤트 매칭, orderBy 는 정렬키.
-- **SharedDataHandle<T>** — `{ items: Signal<T[]>; get(key): T | undefined }`. 화면에서 데이터 소비 핸들.
+마스터 데이터를 이름별로 등록·로드·이벤트 동기화하는 root provider. 앱은 이걸 상속한 `AppSharedDataProvider` 를 만들고 `useSharedSignal` 헬퍼를 함께 export(client-shared-data.md).
 
-## SdSharedDataProvider<T>
+- `abstract initialize(): void` — 여기서 `register(name, info)` 로 항목 등록(앱이 구현).
+- `register<K>(name: K, info: SharedDataInfo<T[K]>): void` — 항목 등록. 재호출 시 기존 리스너 정리 + generation 증가로 이전 결과 무시 후 재로드.
+- `getHandle<K>(name: K): SharedDataHandle<T[K]>` — 항목 핸들 반환(첫 접근 시 lazy 로드 + 변경 이벤트 리스너 등록). 미등록 이름이면 throw. `useSharedSignal` 이 이걸 감쌈.
+- `emitAsync<K>(name: K, changeKeys?: (string|number)[]): Promise<void>` — 변경 브로드캐스트. `changeKeys` 주면 해당 키만 부분 갱신, 없으면 전체 리로드(다른 클라이언트 포함).
+- `wait(): Promise<void>` — 진행 중 로드가 끝날 때까지 대기. `sd-base-container` 가 ready 전에 호출.
+- `loadingCount: WritableSignal<number>` — 진행 중 로드 수.
 
-`@Injectable()` abstract. 앱별로 상속해 `initialize()` 구현. T 는 `{ name: SharedDataBase 파생 }` 맵.
-- loadingCount: WritableSignal<number> — 로딩 중 카운트.
-- abstract initialize(): void — 앱 시작 시 각 데이터 register.
-- register<K>(name, info: SharedDataInfo<T[K]>) — 데이터 등록(재호출 시 generation 증가로 이전 이벤트 무시·재로드).
-- getHandle<K>(name): SharedDataHandle<T[K]> — 핸들 획득(첫 호출 시 lazy 로드 + 이벤트 리스너 등록). 미등록이면 throw.
-- emitAsync<K>(name, changeKeys?) — 변경 이벤트 발행(같은 name·filter 구독자 갱신). changeKeys 지정 시 부분 갱신.
-- wait(): Promise<void> — loadingCount 가 0 이 될 때까지 대기(화면 진입 전 데이터 준비).
+### 타입
 
-**SdSharedDataChangeEvent** — `defineEvent` 로 정의된 서비스 이벤트(`{ name; filter }`, 페이로드 `(string|number)[] | undefined`). provider 가 내부 사용.
+- `SharedDataBase<TKey extends string|number>` — 모든 공유 항목이 상속할 베이스. 매직 필드: `__valueKey: TKey`(항목 키), `__searchText: string`(검색용 텍스트), `__isHidden: boolean`(숨김), `__parentKey?: TKey`(트리 부모). getter 의 select 결과에 빠짐없이 포함.
+- `SharedDataInfo<T>` — 등록 정보. `serviceKey: string`(이벤트 채널), `getter: (changeKeys?) => Promise<T[]>`(조회; changeKeys 주면 부분), `filter?: unknown`(이벤트 필터 매칭), `orderBy?: (item) => string|number|DateOnly|DateTime|Time|undefined`(정렬 키).
+- `SharedDataHandle<T>` — `{ items: Signal<T[]>; get(key): T | undefined }`. 화면이 `useSharedSignal(name)` 으로 받아 `.items()`·`.get(id)` 사용.
+- `SdSharedDataChangeEvent` — 변경 동기화에 쓰이는 `defineEvent`. payload `{ name; filter }`, data `(string|number)[] | undefined`.
 
-## SdSharedDataSelect<TItem, TMode, TModal>
+사용(화면): `sharedCustomers = useSharedSignal("고객사"); sharedCustomers.items(); sharedCustomers.get(id)`.
 
-`<sd-shared-data-select [items]="...">` — 공유 데이터 드롭다운 선택(검색·트리·모달 연동).
-- value = model<...>() — 선택값(single=키, multi=키 배열). 키는 `TItem["__valueKey"] | undefined`.
-- items: input.required<TItem[]> — 후보(보통 handle.items()).
-- selectMode: "single"|"multi"(기본 single).
-- disabled/required/inset/inline/size — 컨트롤 공통.
-- useUndefined: boolean — multi 에서도 "미지정" 항목 노출.
-- filterFn?/filterFnParams? — 후보 필터(item,index,...params).
-- modal?: SdSelectModalInfo — 우측 검색 버튼으로 띄울 선택 모달.
-- editModal?: SdModalInfo<SdModalContentDef<boolean>> — 편집 버튼으로 띄울 모달.
-- selectClass?/multiSelectionDisplayDirection?("vertical").
-- getIsHiddenFn?(item,index)/getSearchTextFn?(item,index)/displayOrderByFn?(item) — 기본은 `__isHidden`/`__searchText`/없음. 검색·표시·정렬 재정의.
-- (contentChild) `itemOf` 템플릿 — 항목 렌더. `undefinedTpl` 로 "미지정" 표시 커스텀.
-- `__parentKey` 있으면 자동 트리(자식은 부모 펼침 시 노출).
+## 선택 컨트롤
 
-## SdSharedDataSelectButton<TItem, TMode, TModal>
+공유 데이터(또는 `SharedDataBase` 호환 배열)를 항목으로 받아 선택. 매직 필드(`__searchText`/`__isHidden`/`__parentKey`)를 자동 활용(검색·숨김·트리).
 
-`<sd-shared-data-select-button [modal]="...">` — 모달 선택 버튼 + 선택 항목 인라인 표시(`SdModalSelectButton` 래퍼).
-- value = model<...>(), items: TItem[](선택값→표시용 매핑), modal: input.required<SdSelectModalInfo>, selectMode(기본 single), disabled/required/inset/size.
-- (contentChild) `itemOf` 템플릿 필수 — 선택된 항목 표시.
+### SdSharedDataSelect (`sd-shared-data-select`)
 
-## SdSharedDataSelectList<TItem, TModal>
+드롭다운 셀렉트(검색창·트리·미지정 항목·모달 연동 내장).
 
-`<sd-shared-data-select-list [items]="...">` — 단일 선택 리스트(검색·페이징·모달 연동).
-- selectedItem = model<TItem>(), canChangeFn?(item) — 선택 변경 가드.
-- items: input.required<TItem[]>, selectedIcon?, useUndefined(미지정 항목), filterFn?(item,index).
-- modal? — 우상단 외부창 버튼으로 띄울 선택 모달.
-- header?: string — 상단 헤더 텍스트.
-- pageItemCount?: number — >0 이면 페이지당 항목 수로 페이징.
-- (contentChild) `itemOf`/`headerTpl`/`filterTpl`/`undefinedTpl` 템플릿.
+- `value: model<...>` — 선택 키(single) 또는 키 배열(multi). 미지정은 `undefined`.
+- `items: input.required<TItem[]>` — 공유 항목 배열(`SharedDataBase` 상속).
+- `selectMode: "single"|"multi"` — 선택 모드(기본 single).
+- `required: boolean` — 빈 값이면 invalid.
+- `useUndefined: boolean` — multi 에서도 "미지정" 항목 노출(single 은 required 아니면 자동 노출).
+- `filterFn: (item, index, ...params) => boolean` + `filterFnParams: any[]` — 표시 항목 필터.
+- `getIsHiddenFn: (item, index) => boolean` — 숨김 판정(기본 `__isHidden`; 숨김 항목은 취소선 + 검색 시에만 표시).
+- `getSearchTextFn: (item, index) => string` — 검색 대상 텍스트(기본 `__searchText`).
+- `displayOrderByFn: (item) => ...` — 표시 정렬 키.
+- `modal: SdSelectModalInfo<TModal>` — 검색 버튼으로 띄울 선택 모달. `editModal: SdModalInfo<...>` — 편집 버튼 모달.
+- `multiSelectionDisplayDirection: "vertical"` — multi 표시 세로 나열.
+- `disabled`/`inset`/`inline`/`size`/`selectClass` — 공통/스타일.
+- 항목 템플릿: `<ng-template [itemOf]="items()" let-item="item">`, 미지정 표시 `#undefinedTpl`.
+- 사용: `<sd-shared-data-select [items]="sharedCustomers.items()" [(value)]="data().customerId"><ng-template [itemOf]="sharedCustomers.items()" let-item="item">{{ item.name }}</ng-template></sd-shared-data-select>`.
+
+### SdSharedDataSelectButton (`sd-shared-data-select-button`)
+
+값 표시 + 모달 검색 버튼(드롭다운 없이 모달 전용). 항목 수가 많아 드롭다운이 부적합할 때.
+
+- `value: model<...>` — 선택 키/키배열.
+- `items: TItem[]` — 표시명 매핑용 항목 배열.
+- `modal: input.required<SdSelectModalInfo<TModal>>` — 띄울 선택 모달.
+- `selectMode: "single"|"multi"` / `disabled` / `required` / `inset` / `size` — 공통.
+- 선택 항목 표시 템플릿: `<ng-template [itemOf]>`(필수).
+
+### SdSharedDataSelectList (`sd-shared-data-select-list`)
+
+검색창 + 리스트로 단건 선택(좌측 마스터 리스트 패널 등). `flex-column fill`.
+
+- `selectedItem: model<TItem>` — 선택된 항목(키 아닌 항목 객체). `canChangeFn: (item|undefined) => boolean|Promise<boolean>` — 변경 가드.
+- `items: input.required<TItem[]>` — 항목 배열(`__isHidden` 항목 자동 제외).
+- `useUndefined: boolean` — "미지정" 항목 노출.
+- `filterFn: (item, index) => boolean` — 추가 필터.
+- `selectedIcon: string` — 선택 표시 아이콘.
+- `pageItemCount: number` — 페이지당 항목 수(지정 시 페이지네이션).
+- `modal: SdSelectModalInfo<TModal>` — 우상단 외부 링크로 띄울 모달.
+- `header: string` — 상단 헤더 텍스트.
+- 템플릿: `#headerTpl`(헤더 우측), `#filterTpl`(검색창 대체), `<ng-template [itemOf]>`(항목), `#undefinedTpl`(미지정).
 
 ## matchesSearchText
 
-`matchesSearchText(itemText: string, searchQuery: string | undefined): boolean` — 검색어를 공백으로 나눈 모든 토큰이 itemText(소문자)에 포함되면 true(AND 매칭). 빈 검색어면 true. 위 select/list 가 내부 사용하나 커스텀 검색에도 활용 가능.
+- `function matchesSearchText(itemText: string, searchQuery: string | undefined): boolean` — 공백 구분 다중 검색어 AND 매칭(대소문자 무시). 빈 쿼리면 true. 위 선택 컨트롤들이 내부 검색에 사용. 커스텀 목록에서 동일 검색 동작이 필요할 때 직접 호출.

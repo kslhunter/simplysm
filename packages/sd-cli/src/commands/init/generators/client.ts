@@ -24,10 +24,49 @@ export async function generateClient(
 
   await renderToFile(path.join(TPL, "package.json.hbs"), path.join(out, "package.json"), data);
   await renderToFile(path.join(TPL, "src/main.ts.hbs"), path.join(out, "src/main.ts"), data);
-  await renderToFile(path.join(TPL, "src/AppPage.ts.hbs"), path.join(out, "src/AppPage.ts"), data);
+  await renderToFile(path.join(TPL, "src/app.root.ts.hbs"), path.join(out, "src/app.root.ts"), data);
   await renderToFile(path.join(TPL, "src/index.html.hbs"), path.join(out, "src/index.html"), data);
 
+  if (data.hasDb) {
+    await renderToFile(
+      path.join(TPL, "src/modals/dev.modal.ts.hbs"),
+      path.join(out, "src/modals/dev.modal.ts"),
+      data,
+    );
+  }
+
   if (client.hasRouter) {
-    await copyFixed(path.join(TPL, "src/routes.ts"), path.join(out, "src/routes.ts"));
+    await renderToFile(path.join(TPL, "src/routes.ts.hbs"), path.join(out, "src/routes.ts"), data);
+  }
+
+  if (data.hasAuth && client.hasRouter) {
+    await renderToFile(
+      path.join(TPL, "src/app/login/login.view.ts.hbs"),
+      path.join(out, "src/app/login/login.view.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/home.view.ts.hbs"),
+      path.join(out, "src/app/home/home.view.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/main/main.view.ts.hbs"),
+      path.join(out, "src/app/home/main/main.view.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/my-info/my-info.detail.ts.hbs"),
+      path.join(out, "src/app/home/my-info/my-info.detail.ts"),
+      data,
+    );
+    await copyFixed(
+      path.join(TPL, "login-public/assets/logo.png"),
+      path.join(out, "public/assets/logo.png"),
+    );
+    await copyFixed(
+      path.join(TPL, "login-public/assets/logo-landscape.png"),
+      path.join(out, "public/assets/logo-landscape.png"),
+    );
   }
 }

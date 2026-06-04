@@ -1,0 +1,3 @@
+import { defineEvent } from "@simplysm/service-common";
+
+export const AuthInfoChangedEvent = defineEvent<{ {{userEntityCamel}}Id: number }, void>("AuthInfoChanged");

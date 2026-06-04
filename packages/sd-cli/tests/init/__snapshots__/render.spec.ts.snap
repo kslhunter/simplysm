@@ -1,50 +1,68 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`client/src/main.ts.hbs > 라우팅 N (mobile) 1`] = `
-"import { enableProdMode } from "@angular/core";
+"import consola from "consola";
+import { enableProdMode, inject, provideAppInitializer } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideSdAngular } from "@simplysm/angular";
-import { AppPage } from "./AppPage";
+import { AppServiceProvider } from "@demo/client-common";
+import { AppRoot } from "./app.root";
 import "./styles.scss";
 
 if (typeof ngDevMode !== "undefined" && !ngDevMode) {
   enableProdMode();
+} else {
+  consola.log("dev mode");
 }
 
-bootstrapApplication(AppPage, {
+bootstrapApplication(AppRoot, {
   providers: [
     provideHttpClient(withFetch()),
     provideSdAngular({ clientName: "client-pda" }),
+
+    //-- app-service 연결
+    provideAppInitializer(async () => {
+      await inject(AppServiceProvider).connectAsync();
+    }),
   ],
 }).catch((err: unknown) => {
-  console.error(err);
+  consola.error(err);
 });
 "
 `;
 
 exports[`client/src/main.ts.hbs > 라우팅 Y (web) 1`] = `
-"import { enableProdMode } from "@angular/core";
+"import consola from "consola";
+import { enableProdMode, inject, provideAppInitializer } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 import { provideRouter, withHashLocation } from "@angular/router";
 import { provideSdAngular } from "@simplysm/angular";
-import { AppPage } from "./AppPage";
+import { AppServiceProvider } from "@demo/client-common";
+import { AppRoot } from "./app.root";
 import { routes } from "./routes";
 import "./styles.scss";
 
 if (typeof ngDevMode !== "undefined" && !ngDevMode) {
   enableProdMode();
+} else {
+  consola.log("dev mode");
 }
 
-bootstrapApplication(AppPage, {
+bootstrapApplication(AppRoot, {
   providers: [
     provideHttpClient(withFetch()),
     provideRouter(routes, withHashLocation()),
     provideSdAngular({ clientName: "client-admin" }),
+
+    //-- app-service 연결
+    provideAppInitializer(async () => {
+      await inject(AppServiceProvider).connectAsync();
+    }),
   ],
 }).catch((err: unknown) => {
-  console.error(err);
+  consola.error(err);
 });
 "
 `;
@@ -159,6 +177,10 @@ exports[`server/src/main.ts.hbs > DB=N — OrmService 없음 1`] = `
 import { env, num, parseBoolEnv } from "@simplysm/core-common";
 import { setupConsola } from "@simplysm/core-node";
 import { createServiceServer, getConfig } from "@simplysm/service-server";
+import {EventEmitter} from "node:events";
+
+Error.stackTraceLimit = Infinity;
+EventEmitter.defaultMaxListeners = 0;
 
 setupConsola();
 
@@ -188,6 +210,11 @@ exports[`server/src/main.ts.hbs > DB=Y — OrmService 포함 1`] = `
 import { env, num, parseBoolEnv } from "@simplysm/core-common";
 import { setupConsola } from "@simplysm/core-node";
 import { createServiceServer, getConfig, OrmService } from "@simplysm/service-server";
+import {EventEmitter} from "node:events";
+import { DevService } from "./services/dev.service";
+
+Error.stackTraceLimit = Infinity;
+EventEmitter.defaultMaxListeners = 0;
 
 setupConsola();
 
@@ -201,7 +228,7 @@ if (authConfig?.jwtSecret == null) {
 
 export const server = createServiceServer({
   rootPath: import.meta.dirname,
-  services: [OrmService],
+  services: [OrmService, ...(parseBoolEnv(env("DEV")) ? [DevService] : [])],
   port: num.parseInt(env("SERVER_PORT"))!,
   auth: { jwtSecret: authConfig.jwtSecret },
 });

@@ -1,0 +1,68 @@
+import { inject, Injectable } from "@angular/core";
+import { SdServiceClientFactoryProvider } from "@simplysm/angular";
+import { env, num, parseBoolEnv } from "@simplysm/core-common";
+{{#if hasDb}}
+import {
+  createOrmClientConnector,
+  type OrmClientConnector,
+  type ServiceProxy,
+{{#if hasAuth}}
+  type ClientEventProxy,
+{{/if}}
+} from "@simplysm/service-client";
+{{/if}}
+{{#if hasDb}}
+import type { DevServiceMethods } from "@{{workspaceName}}/server";
+{{/if}}
+{{#if hasAuth}}
+import type { AuthServiceMethods } from "@{{workspaceName}}/server";
+import { AuthInfoChangedEvent } from "@{{workspaceName}}/common";
+{{/if}}
+
+export const APP_MAIN_SERVICE_KEY = "MAIN";
+
+@Injectable({ providedIn: "root" })
+export class AppServiceProvider {
+  private readonly _sdServiceClientFactory = inject(SdServiceClientFactoryProvider);
+
+  get client() {
+    return this._sdServiceClientFactory.get(APP_MAIN_SERVICE_KEY);
+  }
+{{#if hasDb}}
+
+  private _orm?: OrmClientConnector;
+  get orm(): OrmClientConnector {
+    return (this._orm ??= createOrmClientConnector(this.client));
+  }
+
+  private _dev?: ServiceProxy<DevServiceMethods>;
+  get dev(): ServiceProxy<DevServiceMethods> {
+    return (this._dev ??= this.client.getService<DevServiceMethods>("DevService"));
+  }
+{{/if}}
+{{#if hasAuth}}
+
+  private _auth?: ServiceProxy<AuthServiceMethods>;
+  get auth(): ServiceProxy<AuthServiceMethods> {
+    return (this._auth ??= this.client.getService<AuthServiceMethods>("AuthService"));
+  }
+
+  private _authInfoChangedEvent?: ClientEventProxy<typeof AuthInfoChangedEvent>;
+  get authInfoChangedEvent(): ClientEventProxy<typeof AuthInfoChangedEvent> {
+    return (this._authInfoChangedEvent ??= this.client.getEvent(AuthInfoChangedEvent));
+  }
+{{/if}}
+
+  async connectAsync() {
+    await this._sdServiceClientFactory.connectAsync(
+      APP_MAIN_SERVICE_KEY,
+      Boolean(env("SERVER_HOST"))
+        ? {
+            host: env("SERVER_HOST"),
+            port: num.parseInt(env("SERVER_PORT")),
+            ssl: parseBoolEnv(env("SERVER_SSL")),
+          }
+        : {},
+    );
+  }
+}

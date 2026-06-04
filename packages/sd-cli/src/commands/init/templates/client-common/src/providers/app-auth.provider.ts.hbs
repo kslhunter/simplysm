@@ -1,0 +1,90 @@
+import { inject, Injectable, signal } from "@angular/core";
+import { SdAppStructureProvider, SdLocalStorageProvider } from "@simplysm/angular";
+import { createLogger } from "@simplysm/core-common";
+import type { IAuthData } from "@{{workspaceName}}/server";
+import { AppServiceProvider } from "./app-service.provider";
+import { AppSharedDataProvider } from "./app-shared-data.provider";
+
+const logger = createLogger("client-common:auth");
+
+interface IAppLocalStorageMap {
+  "auth-token": string;
+  "last-login-id": string;
+}
+
+@Injectable({ providedIn: "root" })
+export class AppAuthProvider {
+  private readonly _appService = inject(AppServiceProvider);
+  private readonly _sdLocalStorage = inject(
+    SdLocalStorageProvider,
+  ) as SdLocalStorageProvider<IAppLocalStorageMap>;
+  private readonly _sdAppStructure = inject(SdAppStructureProvider);
+  private readonly _appSharedData = inject(AppSharedDataProvider);
+
+  authInfo = signal<IAuthData | undefined>(undefined);
+
+  private _authEventKey?: string;
+
+  async login(loginId: string, password: string): Promise<void> {
+    const { token, ...authData } = await this._appService.auth.login(loginId, password);
+    this._sdLocalStorage.set("last-login-id", loginId);
+    await this._applyAuthAsync(token, authData);
+  }
+
+  async logout(): Promise<void> {
+    await this._clearAuthAsync();
+  }
+
+  async tryReloadAuth(): Promise<boolean> {
+    const currentToken = this._sdLocalStorage.get("auth-token");
+    if (currentToken == null || currentToken === "") return false;
+
+    try {
+      await this._appService.client.auth(currentToken);
+      const { token, ...authData } = await this._appService.auth.refresh();
+      await this._applyAuthAsync(token, authData);
+      return true;
+    } catch (err) {
+      logger.error("인증 재로드 실패", err);
+      await this._clearAuthAsync();
+      return false;
+    }
+  }
+
+  private async _applyAuthAsync(token: string, authData: IAuthData): Promise<void> {
+    this._sdLocalStorage.set("auth-token", token);
+    await this._appService.client.auth(token);
+    this.authInfo.set(authData);
+    this._sdAppStructure.permRecord.set(authData.permissions);
+    await this._registerAuthEvent(authData.{{userEntityCamel}}Id);
+    this._appSharedData.initialize();
+  }
+
+  private async _clearAuthAsync(): Promise<void> {
+    await this._unregisterAuthEvent();
+    this._sdLocalStorage.remove("auth-token");
+    this.authInfo.set(undefined);
+    this._sdAppStructure.permRecord.set(undefined);
+  }
+
+  private async _registerAuthEvent({{userEntityCamel}}Id: number): Promise<void> {
+    await this._unregisterAuthEvent();
+    this._authEventKey = await this._appService.authInfoChangedEvent.addListener(
+      { {{userEntityCamel}}Id },
+      async () => {
+        await this.tryReloadAuth();
+      },
+    );
+  }
+
+  private async _unregisterAuthEvent(): Promise<void> {
+    if (this._authEventKey != null) {
+      await this._appService.client.removeListener(this._authEventKey);
+      this._authEventKey = undefined;
+    }
+  }
+
+  getLastLoginId(): string | undefined {
+    return this._sdLocalStorage.get("last-login-id");
+  }
+}

@@ -1,62 +1,88 @@
-# @simplysm/service-server — transport-internals
+# @simplysm/service-server — 전송 계층 내부
 
-`ServiceServer.listen()` 이 내부적으로 등록하는 저수준 전송·프로토콜 핸들러와 서비스 실행기. 보통 직접 호출하지 않으며, 커스텀 서버를 손수 조립하거나 동작을 디버깅·확장할 때만 참조한다.
+`ServiceServer.listen()` 이 내부적으로 구성하는 저수준 전송·프로토콜·실행기. 일반 앱 작성에서는 `createServiceServer` 가 알아서 엮으므로 직접 쓸 일이 없고, 커스텀 전송을 손수 조립하거나 동작을 테스트·디버깅·확장할 때만 참조한다.
 
 ## executeServiceMethod
 
-`executeServiceMethod(server, def): Promise<unknown>` — 서비스 이름·메서드 이름·params 로 실제 메서드를 찾아 인증 검사 후 실행하는 핵심 디스패처. WebSocket/HTTP 핸들러가 공통으로 이걸 호출한다.
+```ts
+function executeServiceMethod(
+  server: ServiceServer,
+  def: {
+    serviceName: string;
+    methodName: string;
+    params: unknown[];
+    socket?: ServiceSocket;
+    http?: { clientName: string; authTokenPayload?: AuthTokenPayload };
+  },
+): Promise<unknown>
+```
 
-- `def.serviceName` / `def.methodName` — `services` 에서 매칭할 이름. 서비스 없으면 `"서비스 [..]를 찾을 수 없습니다."`, 메서드 없으면 `"메서드 [..]를 찾을 수 없습니다."` throw.
-- `def.params: unknown[]` — 메서드 인자.
-- `def.socket?` / `def.http?` — 요청 출처(둘 중 하나). clientName 에 `..`·`/`·`\` 포함 시 보안 throw.
+요청 1건을 실제 서비스 메서드로 라우팅·실행하는 핵심 게이트키퍼. WebSocket/HTTP 핸들러가 모두 이 함수로 수렴한다.
 
-인증 검사는 메서드/서비스 권한 + 서버 `auth` 설정 조합으로 수행(service-authoring.md 의 `auth` 항목 참조).
+- `serviceName`/`methodName` — `server.options.services` 에서 `names` 매칭으로 서비스를, 그 팩토리 산출 객체에서 메서드를 찾음. 없으면 throw.
+- `params: unknown[]` — 메서드 인자 배열. 스프레드되어 메서드에 전달.
+- `socket?` / `http?` — 둘 중 하나로 요청 출처 전달. `clientName` 에 `..`·슬래시가 있으면 보안 차단 throw.
+- 동작: 컨텍스트 생성 → 팩토리 호출 → 메서드 조회 → 인증/권한 검사(`auth` 래핑 권한 기준) → 실행 후 반환값 반환. `auth: false` 면 인증 스킵, `auth` 미설정인데 권한 요구 메서드면 설정 오류 throw.
 
-## createWebSocketHandler / WebSocketHandler
+## createServiceContext
 
-`createWebSocketHandler(runMethod, jwtSecret?): WebSocketHandler` — 여러 WebSocket 연결을 `clientId` 키로 관리하고 메시지를 라우팅·이벤트 브로드캐스트한다. `runMethod` 는 보통 `executeServiceMethod` 바인딩.
+```ts
+function createServiceContext<TAuthInfo>(
+  server, socket?, http?, legacy?,
+): ServiceContext<TAuthInfo>
+```
 
-`WebSocketHandler` 멤버:
+`ServiceContext`(인증·클라이언트·설정 접근자) 인스턴스를 만든다. 인자 `socket`/`http`/`legacy` 중 들어온 것으로 `authInfo`·`clientName` 출처가 결정된다. 컨텍스트 필드 의미는 [service-authoring.md](./service-authoring.md) 의 ServiceContext 절 참조. 테스트에서 컨텍스트를 직접 만들어 서비스 메서드를 단위 호출할 때 유용.
 
-- `addSocket(socket, clientId, clientName, connReq)` — 새 연결 등록. 같은 `clientId` 기존 연결은 닫고 교체. 연결 처리 중 에러 시 소켓 terminate.
-- `closeAll()` — 모든 연결 종료(서버 close 시).
-- `emit<TEventDef>(eventName, infoSelector, data): Promise<void>` — 등록 리스너 중 `infoSelector(info)` true 인 키에만 `evt:on` 전송.
+## ServiceSocket / createServiceSocket
 
-처리하는 클라이언트 메시지 `name`: `"<service>.<method>"`(RPC 실행), `evt:add`/`evt:remove`/`evt:gets`/`evt:emit`(이벤트 리스너 등록·해제·조회·발신), `auth`(토큰 검증 후 소켓에 페이로드 저장; jwtSecret 없으면 throw). 그 외엔 `BAD_MESSAGE`, 실행 중 예외는 `INTERNAL_ERROR` 코드로 에러 응답(`DEV` env 시 stack 포함).
+단일 WebSocket 연결을 감싸 프로토콜 인코딩·ping/pong 연결 유지·이벤트 리스너 추적을 담당하는 인터페이스. `createServiceSocket(socket, clientId, clientName, connReq)` 로 생성.
 
-## createServiceSocket / ServiceSocket
+- `connectedAtDateTime: DateTime` / `clientName: string` / `connReq: FastifyRequest` — 연결 시각·클라이언트 이름·원본 요청.
+- `authTokenPayload?: AuthTokenPayload` — 소켓 `auth` 메시지로 검증된 토큰. 이후 그 소켓 요청의 `ctx.authInfo` 출처.
+- `close()` — 소켓 즉시 종료(terminate).
+- `send(uuid, msg): Promise<number>` — 서버 메시지를 프로토콜로 인코딩해 전송, 보낸 바이트 수 반환.
+- `addListener(key, eventName, info)` / `removeListener(key)` — 이벤트 구독 등록·해제. `key` 는 구독 식별자, `info` 는 selector 매칭용 메타.
+- `getEventListeners(eventName)` — 해당 이벤트의 구독 `{ key, info }[]` 조회.
+- `filterEventTargetKeys(targetKeys)` — 주어진 키 중 이 소켓에 존재하는 것만 반환.
+- `on("error" | "close" | "message", handler)` — 소켓 이벤트 후킹. 5초 주기 ping, pong 미수신 시 자동 terminate.
 
-`createServiceSocket(socket: WebSocket, clientId, clientName, connReq): ServiceSocket` — 단일 WebSocket 연결을 감싸 프로토콜 인코딩/디코딩, 5초 주기 ping/pong keep-alive(무응답 시 terminate), 이벤트 리스너 추적을 담당.
+## WebSocketHandler / createWebSocketHandler
 
-`ServiceSocket` 멤버:
+```ts
+function createWebSocketHandler(
+  runMethod: (def) => Promise<unknown>,
+  jwtSecret: string | undefined,
+): WebSocketHandler
+```
 
-- `connectedAtDateTime: DateTime` / `clientName: string` / `connReq: FastifyRequest` — 연결 메타(읽기 전용).
-- `authTokenPayload?: AuthTokenPayload` — `auth` 메시지 검증 후 저장되는 인증 페이로드(get/set).
-- `close()` — 연결 terminate.
-- `send(uuid, msg): Promise<number>` — 메시지 인코딩 후 전송, 전송 바이트 수 반환(소켓 닫혀 있으면 0).
-- `addListener(key, eventName, info)` / `removeListener(key)` — 이벤트 리스너 등록·제거.
-- `getEventListeners(eventName): Array<{ key, info }>` — 해당 이벤트의 리스너 목록.
-- `filterEventTargetKeys(targetKeys): string[]` — 이 소켓에 실제 등록된 키만 필터.
-- `on(event, handler)` — `"error"`(Error) / `"close"`(code: number) / `"message"`({ uuid, msg }) 핸들러 등록.
+여러 `ServiceSocket` 을 `clientId` 로 관리하고, 클라이언트 메시지를 `runMethod`(보통 `executeServiceMethod` 바인딩)로 라우팅하며, 이벤트를 브로드캐스트한다.
 
-## handleHttpRequest
+- `addSocket(socket, clientId, clientName, connReq)` — 연결 등록. 같은 `clientId` 의 기존 연결은 닫고 교체.
+- `closeAll()` — 모든 연결 종료(서버 `close()` 시 호출).
+- `emit<TEventDef>(eventName, infoSelector, data): Promise<void>` — 전 소켓의 해당 이벤트 구독 중 `infoSelector(info)` 가 `true` 인 키에게만 `evt:on` 메시지 전송. `ServiceServer.emitEvent` 의 실제 구현.
+- 처리하는 클라이언트 메시지 종류: `"<service>.<method>"`(RPC 호출), `evt:add`/`evt:remove`/`evt:gets`/`evt:emit`(이벤트 구독·조회·발생), `auth`(소켓 토큰 검증). 그 외는 `BAD_MESSAGE` 에러 응답. `DEV` 환경에서만 에러 스택 포함.
 
-`handleHttpRequest<TAuthInfo>(req, reply, jwtSecret?, runMethod): Promise<void>` — `/api/:service/:method` 라우트 처리. `x-sd-client-name` 헤더 필수(없으면 throw), `Authorization: Bearer <token>` 있으면 검증(실패 시 401). GET 은 `?json=` 쿼리에서 params 파싱, POST 는 본문 배열(아니면 400), 그 외 메서드는 405. 결과를 그대로 응답.
+## HTTP / 정적 / 업로드 핸들러
 
-## handleUpload
+`fastify` 라우트에 직접 물리는 저수준 함수들. 커스텀 라우트를 짤 때만 직접 사용.
 
-`handleUpload(req, reply, rootPath, jwtSecret?): Promise<void>` — `/upload` multipart 업로드 처리. multipart 아니면 400, 인증 토큰 누락·검증 실패 시 401. 각 파일을 `<rootPath>/www/uploads/<uuid><ext>` 로 저장하고 `ServiceUploadResult[]`(`{ path, filename, size }`) 반환. 크기 제한 초과나 도중 에러 시 이미 저장된 파일을 모두 삭제(원자적 정리)하고 500.
+- `handleHttpRequest(req, reply, jwtSecret, runMethod)` — `/api/:service/:method` 처리. `x-sd-client-name` 헤더 필수, `Authorization: Bearer <token>` 검증(실패 시 401), GET 은 `?json=` 쿼리, POST 는 배열 본문에서 파라미터를 받아 `runMethod` 실행. 그 외 메서드는 405.
+- `handleUpload(req, reply, rootPath, jwtSecret)` — `/upload` multipart 처리. 인증 토큰 필수(없거나 무효면 401). 파일을 `rootPath/www/uploads/<uuid><ext>` 로 저장하고 `ServiceUploadResult[]`(`{ path, filename, size }`) 반환. 도중 실패 시 그 요청에서 저장한 파일을 모두 롤백 삭제 후 500.
+- `handleStaticFile(req, reply, rootPath, urlPath)` — `rootPath/www` 하위 정적 파일 전송. `www` 밖 경로는 차단(throw), 디렉터리면 슬래시 리다이렉트 후 `index.html`, `.` 으로 시작하는 숨김 파일은 403, 미존재는 404 HTML 응답.
 
-## handleStaticFile
+## ServerProtocolWrapper / createServerProtocolWrapper
 
-`handleStaticFile(req, reply, rootPath, urlPath): Promise<void>` — `<rootPath>/www/` 하위 정적 파일 제공. `www` 밖 경로 탐색 시도는 throw. 디렉토리는 끝에 `/` 붙여 리다이렉트 후 `index.html` 제공. `.` 으로 시작하는 숨김 파일은 403, 없는 파일은 404, 그 외 전송 에러는 500(각각 HTML 에러 페이지).
+메시지 인코딩/디코딩을 크기·내용에 따라 worker 스레드와 메인 스레드로 자동 분배하는 래퍼. `createServerProtocolWrapper()` 로 생성(worker 는 지연 싱글턴).
 
-## createServerProtocolWrapper / ServerProtocolWrapper
+- `encode(uuid, message): Promise<{ chunks: Bytes[]; totalSize: number }>` — `body` 에 `Uint8Array` 가 있으면 worker, 아니면 메인 스레드에서 인코딩.
+- `decode(bytes): Promise<ServiceMessageDecodeResult>` — 청크 재조립(stateful)은 항상 메인 스레드 단일 누적기에서, 재조립 완료 후 30KB 초과 JSON 파싱(stateless)만 worker 위임. 진행 중이면 `{ type: "progress" }`, 완료면 `{ type: "complete", uuid, message }`.
+- `dispose()` — 프로토콜 리소스 해제.
 
-`createServerProtocolWrapper(): ServerProtocolWrapper` — 메시지 인코딩/디코딩 래퍼. 무거운 작업(Uint8Array 본문, 30KB 초과 JSON 파싱)은 공유 worker 스레드에 위임하고 가벼운 작업은 메인에서 처리. 청크 재조립(stateful)은 항상 메인 단일 누적기에서 수행한다(분산 시 재조립 불가 회피, #35).
+## getConfig
 
-`ServerProtocolWrapper` 멤버:
+```ts
+function getConfig<TConfig>(filePath: string): Promise<TConfig | undefined>
+```
 
-- `encode(uuid, message): Promise<{ chunks: Bytes[]; totalSize: number }>` — 인코딩. 본문이 Uint8Array 거나 Uint8Array 요소를 포함한 배열이면 worker 사용.
-- `decode(bytes): Promise<ServiceMessageDecodeResult>` — 누적·디코딩. 진행 중이면 `{ type: "progress", ... }`, 완료 시 `{ type: "complete", uuid, message }`(30KB 초과 시 worker 파싱).
-- `dispose()` — 프로토콜 리소스 해제(소켓 종료 시).
+`filePath` JSON 설정을 읽어 캐시·파일워치한다. `ServiceContext.getConfig` 의 내부 구현. 캐시 히트 시 즉시 반환(접근 시 만료 시간 갱신), 파일 변경 시 자동 리로드, 1시간 무접근 시 캐시·워처 GC. 파일이 없으면 `undefined`.

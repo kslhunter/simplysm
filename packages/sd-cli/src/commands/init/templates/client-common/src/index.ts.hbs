@@ -1,8 +1,12 @@
 {{#if hasServer}}
-export { AppServiceProvider, APP_MAIN_SERVICE_KEY } from "./providers/AppServiceProvider";
+export * from "./providers/app-service.provider";
 {{/if}}
 {{#if hasDb}}
-export { AppOrmProvider } from "./providers/AppOrmProvider";
+export * from "./providers/app-orm.provider";
+export * from "./providers/app-shared-data.provider";
+{{/if}}
+{{#if hasAuth}}
+export * from "./providers/app-auth.provider";
 {{/if}}
 {{#unless hasServer}}
 {{#unless hasDb}}

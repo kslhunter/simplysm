@@ -1,5 +1,5 @@
 export type ClientType = "web" | "mobile";
-export type DbDialect = "mysql" | "postgres" | "mssql";
+export type DbDialect = "mysql" | "postgresql" | "mssql";
 
 export interface ClientInputSpec {
   name: string;
@@ -15,6 +15,9 @@ export interface InitInput {
   hasDb: boolean;
   dbDialect?: DbDialect;
   dbContextName?: string;
+  hasAuth?: boolean;
+  userEntityName?: string;
+  userEntityLabel?: string;
   mobileAppId?: string;
   serverPort?: number;
 }
@@ -24,6 +27,8 @@ export interface ClientSpec {
   type: ClientType;
   hasRouter: boolean;
   isMobile: boolean;
+  appStructureName: string;
+  needsNgIcons: boolean;
 }
 
 export interface NormalizedInput {
@@ -34,11 +39,21 @@ export interface NormalizedInput {
   hasDb: boolean;
   dbDialect?: DbDialect;
   dbPort: number;
+  dbUsername: string;
+  dbPassword: string;
   isMysql: boolean;
   isPostgres: boolean;
   isMssql: boolean;
   dbContextClassName: string;
   dbContextNameUpper: string;
+  dbContextFileName: string;
+  dbFolderName: string;
+  hasAuth: boolean;
+  userEntityPascal: string;
+  userEntityCamel: string;
+  userEntityKebab: string;
+  userEntityLabel: string;
+  appStructureNames: string[];
   serverPort: number;
   mobileAppId?: string;
   firstMobileClientName?: string;

@@ -51,4 +51,4 @@ export const AutoUpdateService = defineService(["AutoUpdate", "SdAutoUpdateServi
   },
 }));
 
-export type AutoUpdateServiceType = ServiceMethods<typeof AutoUpdateService>;
+export type AutoUpdateServiceMethods = ServiceMethods<typeof AutoUpdateService>;

@@ -34,7 +34,7 @@ export class AppSharedDataProvider extends SdSharedDataProvider<TAppSharedData> 
             isDisabled: item.isDisabled,
 
             __valueKey: item.id,
-            __searchText: expr.concat(item.code, "|_|", item.name),
+            __searchText: expr.concat(item.code, "|", item.name),
             __isHidden: item.isDisabled,
           }));
 
@@ -85,7 +85,7 @@ this.register("품목", {
         isDisabled: item.isDisabled,
 
         __valueKey: item.id,
-        __searchText: expr.concat(item.code, "|_|", item.name),
+        __searchText: expr.concat(item.code, "|", item.name),
         __isHidden: item.isDisabled,
       }));
 

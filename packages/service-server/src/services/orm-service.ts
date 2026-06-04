@@ -184,4 +184,4 @@ export const OrmService = defineService(
   }),
 );
 
-export type OrmServiceType = ServiceMethods<typeof OrmService>;
+export type OrmServiceMethods = ServiceMethods<typeof OrmService>;

@@ -19,7 +19,7 @@ export class AppOrmProvider {
       {
         DbClass: MainDbContext,
         connOpt: { configName: "MAIN" },
-        dbContextOpt: { database: "...", schema: "dbo" },
+        dbContextOpt: { database: "..." },
       },
       callback,
     );

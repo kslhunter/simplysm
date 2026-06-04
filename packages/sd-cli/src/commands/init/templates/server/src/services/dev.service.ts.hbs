@@ -1,0 +1,112 @@
+{{#if hasAuth}}
+import path from "node:path";
+{{/if}}
+import { defineService, type ServiceMethods } from "@simplysm/service-server";
+{{#if hasAuth}}
+import { getFlatPermissions } from "@simplysm/service-common";
+import { ExcelWorkbook } from "@simplysm/excel";
+import bcrypt from "bcrypt";
+import { fsx } from "@simplysm/core-node";
+{{/if}}
+import { getOrm } from "../utils/orm.utils";
+{{#if hasAuth}}
+import { {{#each appStructureNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}} } from "@{{workspaceName}}/common";
+{{/if}}
+
+export const DevService = defineService("DevService", (ctx) => {
+{{#if hasAuth}}
+  async function loadInitXlsx() {
+    const excelPath = path.resolve(ctx.server.options.rootPath, "초기화.xlsx");
+    if (!(await fsx.exists(excelPath))) {
+      throw new Error(`초기화 파일을 찾을 수 없습니다: ${excelPath}`);
+    }
+
+    const xlsxBytes = await fsx.readBytes(excelPath);
+    const wb = new ExcelWorkbook(xlsxBytes);
+    const excelData: Record<string, Record<string, any>[]> = {};
+    try {
+      for (const wsName of await wb.getWorksheetNames()) {
+        const ws = await wb.getWorksheet(wsName);
+        excelData[wsName] = await ws.getDataTable();
+      }
+    } finally {
+      await wb.close();
+    }
+
+    return excelData;
+  }
+{{/if}}
+
+  return {
+    initDb: async (): Promise<void> => {
+{{#if hasAuth}}
+      const excelData = await loadInitXlsx();
+
+{{/if}}
+      const orm = await getOrm(ctx);
+      await orm.connectWithoutTransaction(async (db) => {
+        await db.initialize({ force: true });
+
+{{#if hasAuth}}
+        await db.transaction(async () => {
+          if ("역할" in excelData) {
+            await db
+              .role()
+              .insert(
+                excelData["역할"]
+                  .filter((r) => r["ID"] != null)
+                  .map((r) => ({ id: r["ID"], name: r["명칭"], isDeleted: false })),
+              );
+            await db.role().insertDataLog({ action: "초기화" });
+          }
+
+          if ("직원" in excelData) {
+            await db.{{userEntityCamel}}().insert(
+              await excelData["직원"]
+                .filter((r) => r["ID"] != null)
+                .mapAsync(async (r) => ({
+                  id: r["ID"],
+                  name: r["이름"],
+                  loginId: r["로그인ID"],
+                  encryptedPassword: await bcrypt.hash(r["비밀번호"], 10),
+                  roleId: r["역할.ID"],
+                  isDeleted: false,
+                })),
+            );
+            await db.{{userEntityCamel}}().insertDataLog({ action: "초기화" });
+          }
+
+          if ("역할권한" in excelData) {
+            const allPermCodes = getFlatPermissions(
+              [{{#each appStructureNames}}...{{this}}{{#unless @last}}, {{/unless}}{{/each}}],
+              undefined,
+            )
+              .map((p) => p.codeChain.join("."))
+              .distinct();
+            await db.rolePermission().insert(
+              excelData["역할권한"]
+                .filter((r) => r["역할.ID"] != null)
+                .flatMap((r) =>
+                  r["코드"] === "ALL"
+                    ? allPermCodes.map((code) => ({
+                        roleId: r["역할.ID"],
+                        code,
+                        valueJson: r["값"],
+                      }))
+                    : [{ roleId: r["역할.ID"], code: r["코드"], valueJson: r["값"] }],
+                ),
+            );
+            await db.rolePermission().insertDataLog({ action: "초기화" });
+          }
+
+          // TODO: 업무 테이블 초기 데이터 시드 추가
+        });
+{{else}}
+        // TODO: 초기 데이터 시드 추가
+{{/if}}
+      });
+    },
+  };
+});
+
+export type DevServiceMethods = ServiceMethods<typeof DevService>;

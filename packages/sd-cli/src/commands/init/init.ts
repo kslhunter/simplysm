@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import path from "path";
 import { createLogger } from "@simplysm/core-common";
 import { generateClient } from "./generators/client";
 import { generateClientCommon } from "./generators/client-common";
@@ -9,6 +10,7 @@ import { normalize } from "./normalize";
 import { promptInit } from "./prompts";
 import type { RenderData } from "./types";
 import { validateBeforePrompt, validateInput } from "./validate";
+import { shellSpawn } from "../../utils/shell-spawn";
 
 const logger = createLogger("sd:cli:init");
 
@@ -19,7 +21,7 @@ export interface InitOptions {
 export async function runInit(opts: InitOptions): Promise<void> {
   await validateBeforePrompt(opts.cwd);
 
-  const input = await promptInit();
+  const input = await promptInit(path.basename(opts.cwd));
   validateInput(input);
 
   const normalized = normalize(input);
@@ -40,7 +42,15 @@ export async function runInit(opts: InitOptions): Promise<void> {
 
   logger.info("워크스페이스 부트스트랩 완료.");
 
-  const steps: string[] = ["pnpm install"];
+  logger.info("의존성 설치 및 도구 준비 중...");
+  await shellSpawn("mise", ["trust"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("mise", ["install"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("pnpm", ["install"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("pnpm", ["approve-builds", "--all"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("pnpm", ["up", "-r"], { cwd: opts.cwd, stdio: "inherit" });
+  logger.info("의존성 설치 및 도구 준비 완료.");
+
+  const steps: string[] = [];
   if (data.hasDb) {
     steps.push("sd.config.ts 의 configs.orm.MAIN 접속 정보 (host/port/user/password/database) 를 실제 값으로 수정");
   }

@@ -1,0 +1,144 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import { Router } from "@angular/router";
+import {
+  mark,
+  SdBusyContainer,
+  SdButton,
+  SdForm,
+  SdTextfield,
+  SdToastProvider,
+  setupBgTheme,
+} from "@simplysm/angular";
+import { NgIcon } from "@ng-icons/core";
+import { tablerLockOpen } from "@ng-icons/tabler-icons";
+import { env, parseBoolEnv } from "@simplysm/core-common";
+import { AppAuthProvider } from "@{{workspaceName}}/client-common";
+
+interface ILoginInput {
+  loginId?: string;
+  password?: string;
+}
+
+@Component({
+  selector: "app-login-view",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdBusyContainer, SdForm, SdTextfield, SdButton, NgIcon],
+  template: `
+    <sd-busy-container [busy]="initBusyCount() > 0">
+      @if (initBusyCount() === 0) {
+        <div style="width: 15em; margin: 0 auto; padding-top: 80px; padding-bottom: 30px;">
+          <img src="assets/logo.png" alt="{{workspaceName}}" style="width: 100%; height: auto;" />
+        </div>
+
+        <div class="card m-0-auto bd-radius-lg" style="width: 22em;">
+          <div class="flex-row cross-align-center p-lg-xl bdb bdb-color-light">
+            <h3 class="flex-fill">로그인</h3>
+            <div>v\{{ VER }}.\{{ DEV ? "d" : "p" }}</div>
+          </div>
+
+          <sd-busy-container [busy]="busyCount() > 0" class="p-xl" [type]="'bar'">
+            <sd-form (formSubmit)="onSubmit()">
+              <table class="form-table" style="width: 100%;">
+                <tr>
+                  <th>아이디</th>
+                  <td>
+                    <sd-textfield
+                      [type]="'text'"
+                      [autocomplete]="'username'"
+                      [placeholder]="'아이디를 입력하세요.'"
+                      [required]="true"
+                      [(value)]="data().loginId"
+                      (valueChange)="mark(data)"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th>비밀번호</th>
+                  <td>
+                    <sd-textfield
+                      [type]="'password'"
+                      [autocomplete]="'current-password'"
+                      [placeholder]="'비밀번호를 입력하세요.'"
+                      [required]="true"
+                      [(value)]="data().password"
+                      (valueChange)="mark(data)"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th></th>
+                  <td>
+                    <sd-button [type]="'submit'" [theme]="'primary'" [size]="'lg'">
+                      <ng-icon [svg]="tablerLockOpen" />
+                      로그인
+                    </sd-button>
+                  </td>
+                </tr>
+              </table>
+            </sd-form>
+          </sd-busy-container>
+        </div>
+      }
+    </sd-busy-container>
+  `,
+})
+export class LoginView {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _appAuth = inject(AppAuthProvider);
+  private readonly _router = inject(Router);
+
+  initBusyCount = signal(0);
+  busyCount = signal(0);
+
+  data = signal<ILoginInput>({});
+
+  constructor() {
+    setupBgTheme({ theme: "gray" });
+
+    effect(() => {
+      void untracked(async () => {
+        this.initBusyCount.update((v) => v + 1);
+        try {
+          const ok = await this._appAuth.tryReloadAuth();
+          if (ok) {
+            const firstRouterLink = this._appAuth.authInfo()?.configs["first-router-link"] ?? "/home/main";
+            await this._router.navigateByUrl(firstRouterLink, { replaceUrl: true });
+            return;
+          }
+          const lastLoginId = this._appAuth.getLastLoginId();
+          if (lastLoginId != null && lastLoginId !== "") {
+            this.data.update((d) => ({ ...d, loginId: lastLoginId }));
+          }
+        } finally {
+          this.initBusyCount.update((v) => v - 1);
+        }
+      });
+    });
+  }
+
+  async onSubmit() {
+    if (this.busyCount() > 0) return;
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      await this._appAuth.login(this.data().loginId!, this.data().password!);
+      const firstRouterLink = this._appAuth.authInfo()?.configs["first-router-link"] ?? "/home/main";
+      await this._router.navigateByUrl(firstRouterLink, { replaceUrl: true });
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  protected readonly VER = env("VER");
+  protected readonly DEV = parseBoolEnv(env("DEV"));
+  protected readonly mark = mark;
+  protected readonly tablerLockOpen = tablerLockOpen;
+}

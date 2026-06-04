@@ -1,31 +1,171 @@
-import consola from "consola";
+{{#if hasServer}}
+import { enableProdMode, inject, provideAppInitializer } from "@angular/core";
+{{else}}
 import { enableProdMode } from "@angular/core";
+{{/if}}
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 {{#if client.hasRouter}}
 import { provideRouter, withHashLocation } from "@angular/router";
 {{/if}}
-import { provideSdAngular } from "@simplysm/angular";
-import { AppPage } from "./AppPage";
+import {
+  provideSdAngular,
+{{#if hasDb}}
+  SdSharedDataProvider,
+  SdSystemLogProvider,
+{{/if}}
+{{#if hasAuth}}
+  SdSystemConfigProvider,
+{{#if client.hasRouter}}
+  SdAppStructureProvider,
+{{/if}}
+{{/if}}
+} from "@simplysm/angular";
+import { createLogger{{#if hasDb}}, DateTime, json{{/if}} } from "@simplysm/core-common";
+{{#if hasAuth}}
+import { expr } from "@simplysm/orm-common";
+{{/if}}
+{{#if hasServer}}
+import {
+  AppServiceProvider,
+{{#if hasDb}}
+  AppOrmProvider,
+  AppSharedDataProvider,
+{{/if}}
+{{#if hasAuth}}
+  AppAuthProvider,
+{{/if}}
+} from "@{{workspaceName}}/client-common";
+{{/if}}
+{{#if hasAuth}}
+{{#if client.hasRouter}}
+import { {{client.appStructureName}} } from "@{{workspaceName}}/common";
+{{/if}}
+{{/if}}
+import { AppRoot } from "./app.root";
 {{#if client.hasRouter}}
 import { routes } from "./routes";
 {{/if}}
 import "./styles.scss";
 
+const CLIENT_NAME = "{{client.name}}";
+const logger = createLogger(CLIENT_NAME);
+
 if (typeof ngDevMode !== "undefined" && !ngDevMode) {
   enableProdMode();
 } else {
-  consola.log("dev mode");
+  logger.info("dev mode");
 }
 
-bootstrapApplication(AppPage, {
+bootstrapApplication(AppRoot, {
   providers: [
     provideHttpClient(withFetch()),
 {{#if client.hasRouter}}
     provideRouter(routes, withHashLocation()),
 {{/if}}
-    provideSdAngular({ clientName: "{{client.name}}" }),
+    provideSdAngular({ clientName: CLIENT_NAME }),
+{{#if hasDb}}
+
+    { provide: SdSharedDataProvider, useExisting: AppSharedDataProvider },
+{{/if}}
+{{#if hasServer}}
+
+    //-- app-service 연결
+    provideAppInitializer(async () => {
+      await inject(AppServiceProvider).connectAsync();
+    }),
+{{/if}}
+{{#if hasAuth}}
+{{#if client.hasRouter}}
+
+    //-- app-structure 초기화
+    provideAppInitializer(() => {
+      inject(SdAppStructureProvider).initialize({{client.appStructureName}});
+    }),
+{{/if}}
+{{/if}}
+{{#if hasDb}}
+
+    //-- 로그 DB 연동
+    provideAppInitializer(() => {
+      const sdSystemLog = inject(SdSystemLogProvider);
+      const appOrm = inject(AppOrmProvider);
+{{#if hasAuth}}
+      const appAuth = inject(AppAuthProvider);
+{{/if}}
+
+      sdSystemLog.writeFn = async (severity: "error" | "warn" | "log", ...logs: any[]) => {
+        await appOrm.connectAsync(async (db) => {
+          await db.systemLog().insert([
+            {
+              dateTime: new DateTime(),
+              severity,
+              message: logs
+                .map((l) =>
+                  typeof l === "string"
+                    ? l
+                    : l instanceof Error
+                      ? (l.stack ?? l.message)
+                      : json.stringify(l, { space: 2 }),
+                )
+                .join(" "),
+              clientName: CLIENT_NAME,
+{{#if hasAuth}}
+              {{userEntityCamel}}Id: appAuth.authInfo()?.{{userEntityCamel}}Id,
+{{/if}}
+            },
+          ]);
+        });
+      };
+    }),
+{{/if}}
+{{#if hasAuth}}
+
+    //-- 시스템 설정 DB 연동
+    provideAppInitializer(() => {
+      const sdSystemConfig = inject(SdSystemConfigProvider);
+      const appAuth = inject(AppAuthProvider);
+      const appOrm = inject(AppOrmProvider);
+
+      sdSystemConfig.fn = {
+        set: async (key: string, val: any) => {
+          const {{userEntityCamel}}Id = appAuth.authInfo()?.{{userEntityCamel}}Id;
+          if ({{userEntityCamel}}Id == null) return;
+
+          await appOrm.connectAsync(async (db) => {
+            await db
+              .{{userEntityCamel}}Config()
+              .where((item) => [expr.eq(item.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.eq(item.code, key)])
+              .upsert(
+                () => ({
+                  valueJson: json.stringify(val),
+                }),
+                (updateRecord) => ({
+                  ...updateRecord,
+                  {{userEntityCamel}}Id,
+                  code: key,
+                }),
+              );
+          });
+        },
+        get: async (key: string) => {
+          const {{userEntityCamel}}Id = appAuth.authInfo()?.{{userEntityCamel}}Id;
+          if ({{userEntityCamel}}Id == null) return;
+
+          return appOrm.connectAsync(async (db) => {
+            const {{userEntityCamel}}Config = await db
+              .{{userEntityCamel}}Config()
+              .where((item) => [expr.eq(item.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.eq(item.code, key)])
+              .single();
+            return {{userEntityCamel}}Config?.valueJson != null
+              ? json.parse({{userEntityCamel}}Config.valueJson)
+              : undefined;
+          });
+        },
+      };
+    }),
+{{/if}}
   ],
 }).catch((err: unknown) => {
-  consola.error(err);
+  logger.error("부트스트랩 실패", err);
 });

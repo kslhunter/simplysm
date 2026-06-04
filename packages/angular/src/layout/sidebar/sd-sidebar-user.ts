@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, signal, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  signal,
+  ViewEncapsulation,
+} from "@angular/core";
 import { SdCollapseIcon } from "../../controls/collapse/sd-collapse-icon";
 import { SdCollapse } from "../../controls/collapse/sd-collapse";
 import { SdRipple } from "../../core/ripple/sd-ripple";
@@ -10,19 +16,19 @@ import { SdListItem } from "../../controls/list/sd-list-item";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdCollapseIcon,
-    SdCollapse,
-    SdRipple,
-    SdList,
-    SdListItem,
-  ],
+  imports: [SdCollapseIcon, SdCollapse, SdRipple, SdList, SdListItem],
   template: `
     <div class="p-lg">
       <ng-content />
     </div>
     @if (userMenu(); as _userMenu) {
-      <div class="_menu-button" tabindex="0" (click)="onMenuOpenButtonClick()" (keydown.enter)="onMenuOpenButtonClick()" [sdRipple]="true">
+      <div
+        class="_menu-button"
+        tabindex="0"
+        (click)="onMenuOpenButtonClick()"
+        (keydown.enter)="onMenuOpenButtonClick()"
+        [sdRipple]="true"
+      >
         {{ _userMenu.title }}
         <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
       </div>
@@ -77,6 +83,6 @@ export interface SdSidebarUserMenu {
   title: string;
   menus: {
     title: string;
-    onClick: () => void;
+    onClick: () => Promise<void> | void;
   }[];
 }

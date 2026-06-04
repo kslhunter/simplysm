@@ -137,7 +137,6 @@ Queryable.prototype.joinLastDataLog = function (this: Queryable<any, any>, opts)
 
 ```ts
 // main.db-context.ts
-import "./system-data-log.ext"; // side-effect: Queryable.prototype 확장 로드 보장
 // ...
 export class MainDbContext extends DbContext {
   role = this.queryable(Role);

@@ -1,0 +1,20 @@
+import { Table } from "@simplysm/orm-common";
+import { Role } from "../system/role";
+import { {{userEntityPascal}}Config } from "./{{userEntityKebab}}-config";
+
+export const {{userEntityPascal}} = Table("{{userEntityPascal}}")
+  .description("{{userEntityLabel}}")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    name: c.varchar(100),
+    loginId: c.varchar(50),
+    encryptedPassword: c.varchar(200).nullable(),
+    roleId: c.bigint().nullable(),
+    isDeleted: c.boolean(),
+  }))
+  .primaryKey("id")
+  .indexes((i) => [i.index("loginId").unique()])
+  .relations((r) => ({
+    role: r.foreignKey(["roleId"], () => Role),
+    configs: r.foreignKeyTarget(() => {{userEntityPascal}}Config, "{{userEntityCamel}}"),
+  }));

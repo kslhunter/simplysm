@@ -2,6 +2,16 @@ import path from "node:path";
 import { env, num, parseBoolEnv } from "@simplysm/core-common";
 import { setupConsola } from "@simplysm/core-node";
 import { createServiceServer, getConfig{{#if hasDb}}, OrmService{{/if}} } from "@simplysm/service-server";
+import { EventEmitter } from "node:events";
+{{#if hasAuth}}
+import { AuthService } from "./services/auth.service";
+{{/if}}
+{{#if hasDb}}
+import { DevService } from "./services/dev.service";
+{{/if}}
+
+Error.stackTraceLimit = Infinity;
+EventEmitter.defaultMaxListeners = 0;
 
 setupConsola();
 
@@ -15,7 +25,7 @@ if (authConfig?.jwtSecret == null) {
 
 export const server = createServiceServer({
   rootPath: import.meta.dirname,
-  services: [{{#if hasDb}}OrmService{{/if}}],
+  services: [{{#if hasDb}}OrmService{{#if hasAuth}}, AuthService{{/if}}, ...(parseBoolEnv(env("DEV")) ? [DevService] : []){{/if}}],
   port: num.parseInt(env("SERVER_PORT"))!,
   auth: { jwtSecret: authConfig.jwtSecret },
 });

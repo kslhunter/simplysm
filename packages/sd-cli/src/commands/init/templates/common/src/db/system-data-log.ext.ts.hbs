@@ -1,0 +1,138 @@
+import { DateTime } from "@simplysm/core-common";
+import { type DataRecord, expr, Queryable, queryable, type TableBuilder } from "@simplysm/orm-common";
+import { SystemDataLog } from "./tables/system/system-data-log";
+
+// ── Type Declarations ──
+
+export type IDataLogJoinOptions = {
+  includeActions?: string[];
+  excludeActions?: string[];
+};
+
+export type IDataLogJoinResult = {
+  action?: string;
+  dateTime?: DateTime;
+{{#if hasAuth}}
+  {{userEntityCamel}}Id?: number;
+  {{userEntityCamel}}Name?: string;
+{{/if}}
+};
+
+export type IInsertDataLogParam = {
+  action: string;
+  itemId?: number;
+  valueJson?: string;
+{{#if hasAuth}}
+  {{userEntityCamel}}Id?: number;
+{{/if}}
+};
+
+declare module "@simplysm/orm-common" {
+  interface Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any, any> | never> {
+    joinLastDataLog(
+      opts?: IDataLogJoinOptions,
+    ): Queryable<TData & { lastDataLog?: IDataLogJoinResult }, TFrom>;
+
+    joinFirstDataLog(
+      opts?: IDataLogJoinOptions,
+    ): Queryable<TData & { firstDataLog?: IDataLogJoinResult }, TFrom>;
+
+    insertDataLog(log: IInsertDataLogParam): Promise<void>;
+  }
+}
+
+// ── Runtime: insertDataLog ──
+
+Queryable.prototype.insertDataLog = async function (
+  this: Queryable<any, any>,
+  log: IInsertDataLogParam,
+): Promise<void> {
+  const fromTable = this.meta.from as TableBuilder<any, any, any>;
+  const qr = queryable(this.meta.db, SystemDataLog);
+
+  await qr().insert([
+    {
+      tableName: fromTable.meta.name,
+      tableDescription: fromTable.meta.description,
+      action: log.action,
+      itemId: log.itemId,
+      valueJson: log.valueJson,
+      dateTime: new DateTime(),
+{{#if hasAuth}}
+      {{userEntityCamel}}Id: log.{{userEntityCamel}}Id,
+{{/if}}
+    },
+  ]);
+};
+
+// ── Runtime: joinLastDataLog ──
+
+Queryable.prototype.joinLastDataLog = function (
+  this: Queryable<any, any>,
+  opts?: IDataLogJoinOptions,
+) {
+  const tableName = (this.meta.from as TableBuilder<any, any, any>).meta.name;
+
+  return this.joinSingle("lastDataLog", (qr, en) =>
+    qr
+      .from(SystemDataLog)
+      .where((dl) => [
+        expr.eq(dl.tableName, tableName),
+        expr.eq(dl.itemId, en["id"]),
+        ...(opts?.includeActions ? [expr.in(dl.action, opts.includeActions)] : []),
+        ...(opts?.excludeActions ? [expr.not(expr.in(dl.action, opts.excludeActions))] : []),
+      ])
+      .orderBy((dl) => dl.dateTime, "DESC")
+      .top(1)
+{{#if hasAuth}}
+      .include((dl) => dl.{{userEntityCamel}})
+      .select((dl) => ({
+        action: dl.action,
+        dateTime: dl.dateTime,
+        {{userEntityCamel}}Id: dl.{{userEntityCamel}}Id,
+        {{userEntityCamel}}Name: dl.{{userEntityCamel}}!.name,
+      })),
+{{else}}
+      .select((dl) => ({
+        action: dl.action,
+        dateTime: dl.dateTime,
+      })),
+{{/if}}
+  );
+};
+
+// ── Runtime: joinFirstDataLog ──
+
+Queryable.prototype.joinFirstDataLog = function (
+  this: Queryable<any, any>,
+  opts?: IDataLogJoinOptions,
+) {
+  const tableName = (this.meta.from as TableBuilder<any, any, any>).meta.name;
+
+  return this.joinSingle("firstDataLog", (qr, en) =>
+    qr
+      .from(SystemDataLog)
+      .where((dl) => [
+        expr.eq(dl.tableName, tableName),
+        expr.eq(dl.itemId, en["id"]),
+        ...(opts?.includeActions ? [expr.in(dl.action, opts.includeActions)] : []),
+        ...(opts?.excludeActions ? [expr.not(expr.in(dl.action, opts.excludeActions))] : []),
+      ])
+      .orderBy((dl) => dl.dateTime, "ASC")
+      .top(1)
+{{#if hasAuth}}
+      .include((dl) => dl.{{userEntityCamel}})
+      .select((dl) => ({
+        action: dl.action,
+        dateTime: dl.dateTime,
+        {{userEntityCamel}}Id: dl.{{userEntityCamel}}Id,
+        {{userEntityCamel}}Name: dl.{{userEntityCamel}}!.name,
+      })),
+{{else}}
+      .select((dl) => ({
+        action: dl.action,
+        dateTime: dl.dateTime,
+      })),
+{{/if}}
+  );
+};

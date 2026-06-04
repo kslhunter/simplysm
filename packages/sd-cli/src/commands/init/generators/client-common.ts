@@ -14,15 +14,28 @@ export async function generateClientCommon(cwd: string, data: RenderData): Promi
   await renderToFile(path.join(TPL, "src/index.ts.hbs"), path.join(out, "src/index.ts"), data);
 
   if (data.hasServer) {
-    await copyFixed(
-      path.join(TPL, "src/providers/AppServiceProvider.ts"),
-      path.join(out, "src/providers/AppServiceProvider.ts"),
+    await renderToFile(
+      path.join(TPL, "src/providers/app-service.provider.ts.hbs"),
+      path.join(out, "src/providers/app-service.provider.ts"),
+      data,
+    );
+  }
+  if (data.hasAuth) {
+    await renderToFile(
+      path.join(TPL, "src/providers/app-auth.provider.ts.hbs"),
+      path.join(out, "src/providers/app-auth.provider.ts"),
+      data,
     );
   }
   if (data.hasDb) {
     await renderToFile(
-      path.join(TPL, "src/providers/AppOrmProvider.ts.hbs"),
-      path.join(out, "src/providers/AppOrmProvider.ts"),
+      path.join(TPL, "src/providers/app-orm.provider.ts.hbs"),
+      path.join(out, "src/providers/app-orm.provider.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/providers/app-shared-data.provider.ts.hbs"),
+      path.join(out, "src/providers/app-shared-data.provider.ts"),
       data,
     );
   }

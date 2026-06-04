@@ -1,74 +1,91 @@
-# @simplysm/angular — 부트스트랩·설정·로깅·서비스 인프라
+# @simplysm/angular — 부트스트랩·전역 프로바이더
 
-앱 시작 시 1회 설정하는 부트스트랩 함수와 전역 프로바이더 묶음. 앱 부팅 코드(`appConfig`/`main.ts`)·전역 에러·서버 연결·시스템 설정 저장을 다룰 때 함께 읽힘.
+앱 시작 시 1회 배선하는 `provideSdAngular` 와, `providedIn: "root"` 로 어디서든 inject 하는 전역 프로바이더(테마·로컬스토리지·시스템설정·시스템로그·서비스클라이언트·설정값)를 모은 군. 화면이 아니라 부트스트랩(`provideAppInitializer`)·앱 셸 코드에서 같이 읽힌다.
 
 ## provideSdAngular
 
-`provideSdAngular(opt: { clientName: string }): EnvironmentProviders` — 앱 `providers` 에 1개 추가하면 다음을 일괄 설정. zoneless 변경감지 활성, 전역 에러 핸들러(`SdGlobalErrorHandlerPlugin`) 등록, 옵션 이벤트 플러그인(`SdOptionEventPlugin`) 등록, ng-icons 기본설정(strokeWidth 1.5, size 1.33em), `IMAGE_CONFIG` 경고 비활성, 테마 dark/fontSize 를 로컬스토리지(`sd-theme-dark`/`sd-theme-font-size`)에 자동 영속, service worker 업데이트 폴링(5분~최대1시간 지수 백오프, 갱신 감지 시 새로고침 확인), 라우터 네비게이션 동안 글로벌 busy 카운트 증감.
-
-- opt.clientName: string — 이 클라이언트 식별자. 로컬스토리지 키 prefix·service-client 연결 이름으로 사용. 앱마다 고유 문자열.
-
 ```ts
-bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes), provideSdAngular({ clientName: "my-app" })],
-});
+function provideSdAngular(opt: { clientName: string }): EnvironmentProviders
 ```
+
+`ApplicationConfig.providers` 에 1개 넣으면 simplysm 클라이언트 동작 전체가 배선됨. 내부 처리:
+
+- `clientName` — 이 클라이언트의 식별 이름. `SdAngularConfigProvider.clientName` 으로 보관되어 로컬스토리지 키 prefix, 서비스 클라이언트 이름, 시스템 로그 `clientName` 등에 사용. `provideSdAngular({ clientName: CLIENT_NAME })` 형태로 전달하며, 시스템 로그 배선 시 같은 값을 씀(`client-system-log.md`).
+- ng-icons 전역 설정(strokeWidth 1.5, size 1.33em), `IMAGE_CONFIG`(이미지 경고 비활성), `provideZonelessChangeDetection()`.
+- 테마(dark/fontSize) 를 `SdLocalStorageProvider` 와 양방향 동기화(저장값 복원 + 변경 시 저장).
+- `window` 의 `unhandledrejection`/`error` 를 `ErrorHandler` 로 위임 + `ErrorHandler` 를 `SdGlobalErrorHandlerPlugin` 으로 교체(미처리 에러를 전체화면 표시 + 시스템로그 적재).
+- `EVENT_MANAGER_PLUGINS` 에 `SdOptionEventPlugin`(capture/passive/once 이벤트 옵션 지원) 추가.
+- service-worker(`SwUpdate`) 가 있으면 5분 주기(실패 시 지수 백오프, 최대 1시간)로 업데이트 확인 후 사용자 confirm → reload.
+- 라우터가 있으면 네비게이션 시작/종료에 `SdBusyProvider.globalBusyCount` 를 ±1 → 전역 busy 표시.
+
+사용: `bootstrapApplication(AppRoot, { providers: [provideSdAngular({ clientName: CLIENT_NAME }), provideRouter(...), ...] })`.
 
 ## SdAngularConfigProvider
 
-`@Injectable({providedIn:"root"})`. `clientName: string` 필드 1개. `provideSdAngular` 가 채워줌. 다른 프로바이더가 clientName 을 참조할 때 inject.
-
-## SdSystemLogProvider
-
-전역 로그 기록 프로바이더. 콘솔 로그 + 선택적 서버 전송.
-
-- writeFn?: (severity, ...data) => Promise<void> | void — 외부(서버) 전송 훅. 지정하면 매 로그마다 호출. 서버 로그 적재가 필요하면 앱 초기화 때 할당.
-- writeAsync(severity: "error"|"warn"|"log", ...data): Promise<void> — 로그 기록. 콘솔에 먼저 출력 후 writeFn 호출. writeFn 이 throw 해도 로깅 자체는 실패하지 않음(내부 logger.error 로 기록).
-
-## SdLocalStorageProvider<T>
-
-`clientName.<key>` 형태로 localStorage 에 JSON 저장/조회. T 는 `{ key: 값타입 }` 맵.
-
-- set<K>(key, value) — JSON.stringify 후 저장.
-- get<K>(key): T[K] | undefined — 없거나 파싱 실패 시 undefined(결측 보존).
-- remove(key) — 삭제.
-
-## SdSystemConfigProvider<T>
-
-화면별 설정(시트 컬럼 상태, 모달 위치, 상태 프리셋 등) 영속 프로바이더. `fn` 미지정 시 로컬스토리지로 폴백.
-
-- fn?: { set(key, data): Promise|void; get(key): PromiseLike<unknown> } — 서버 영속 훅. 지정하면 서버에 저장/조회, 미지정이면 `SdLocalStorageProvider` 로 폴백. 서버 동기화가 필요하면 앱 초기화 때 할당.
-- setAsync<K>(key, data) — data 가 null 이면 제거(폴백 시), 아니면 저장.
-- getAsync(key) — 저장된 값 조회.
-
-## injectSdSystemConfigResource<T>
-
-`injectSdSystemConfigResource<T>({ key: Signal<string|undefined> })` — 컴포넌트 내에서 호출. 호스트 엘리먼트 태그명 + key 를 합친 키로 `SdSystemConfigProvider` 에 연동되는 resource 핸들 반환. key 가 undefined 면 로드/저장 안 함.
-
-- key: Signal<string|undefined> — 설정 키 signal. 빈 값이면 비활성.
-- 반환: `{ value, isLoading, status, hasValue(), reload(), set(v), update(fn) }`. set/update 는 즉시 로컬 반영 후 microtask 로 비동기 영속(실패 시 errorHandler 로 전달). 시트/상태프리셋이 내부적으로 사용.
-
-## SdServiceClientFactoryProvider
-
-`@simplysm/service-client` 연결을 key 단위로 관리하는 팩토리. 요청/응답 진행률을 토스트로 표시.
-
-- connectAsync(key: string, options?: Partial<ServiceConnectionOptions>): Promise<void> — 연결 생성. host/port/ssl 미지정 시 현재 location 기준 기본값. 같은 key 재연결·끊긴 key 재사용 시 throw.
-- closeAsync(key): Promise<void> — 연결 종료. 미연결 key 면 throw.
-- get(key): ServiceClient — 연결된 클라이언트 반환. 미연결/끊김이면 throw. 서비스 호출 시 이걸로 ServiceClient 획득.
-
-## SdGlobalErrorHandlerPlugin
-
-`ErrorHandler` 구현. `provideSdAngular` 가 등록하므로 직접 쓸 일은 드묾. 처리되지 않은 에러/Promise 거부를 시스템 로그에 기록하고 전체화면 오류 오버레이를 1회 표시 후 앱을 destroy(클릭 시 새로고침). 직접 inject 하지 말고 `throw` 로 위임.
+- `clientName: string` — `provideSdAngular` 가 주입하는 클라이언트 이름. 다른 provider 가 prefix/식별자로 참조. 보통 직접 set 하지 않음.
 
 ## SdThemeProvider
 
-`@Injectable({providedIn:"root"})`. 다크모드·폰트크기 전역 상태.
+다크모드·기본 글자크기 전역 상태. `provideSdAngular` 가 로컬스토리지 동기화를 자동 배선하므로 화면에서는 토글만 호출.
 
-- dark: WritableSignal<boolean> — 다크모드. true 면 body 에 `sd-theme-dark` 클래스 토글.
-- fontSize: WritableSignal<number> — 루트 폰트 크기(px). 변경 시 `documentElement.style.fontSize` 반영.
-- fontSizePresets: readonly number[] — `[12,14,16,20,24,28]`. 증감 단계.
-- increaseFontSize() / decreaseFontSize() — 프리셋 내 다음/이전 단계로 이동.
+- `dark: WritableSignal<boolean>` — 다크모드 on/off. true 면 `<body>` 에 `sd-theme-dark` 클래스 토글. 테마 전환 UI 에서 set.
+- `fontSize: WritableSignal<number>` — 루트 폰트 크기(px). 변경 시 `<html>` 의 `font-size` 적용(전체 rem 기준 스케일).
+- `fontSizePresets: readonly number[]` — `[12,14,16,20,24,28]`. 증감 단계 후보.
+- `increaseFontSize(): void` / `decreaseFontSize(): void` — presets 안에서 한 단계 위/아래로 이동. 경계면 무변경.
+- 사용: 테마 선택 UI 는 `sd-theme-selector`(features.md) 가 이 provider 를 래핑. 직접 다크 토글은 `inject(SdThemeProvider).dark.update(v => !v)`.
 
-## SdThemeSelector
+## SdLocalStorageProvider<T>
 
-`<sd-theme-selector />` — 폰트크기 증감·다크모드 스위치를 드롭다운으로 제공하는 컴포넌트. input 없음. `SdThemeProvider` 를 직접 조작. 탑바 등에 배치.
+`localStorage` 를 `<clientName>.<key>` 네임스페이스로 JSON 직렬화해 읽고 씀. 제네릭 `T` 로 키→값 타입 매핑.
+
+- `set<K extends keyof T & string>(key: K, value: T[K]): void` — `JSON.stringify` 후 저장.
+- `get<K extends keyof T & string>(key: K): T[K] | undefined` — 파싱해 반환. 미존재·파싱실패 시 `undefined`(결측 보존).
+- `remove(key: keyof T & string): void` — 삭제.
+- 사용: `inject<SdLocalStorageProvider<{ "last-tab": string }>>(SdLocalStorageProvider)`.
+
+## SdSystemConfigProvider<T>
+
+화면별 설정(시트 컬럼 구성, 모달 위치 등) 영속화. 외부 저장 함수(`fn`) 가 꽂혀 있으면 그쪽, 없으면 `SdLocalStorageProvider` 로 폴백.
+
+- `fn?: { set(key, data): Promise<void>|void; get(key): PromiseLike<unknown> }` — 서버 등 외부 저장소 연동 훅. 부트스트랩에서 할당하면 모든 설정이 외부로 영속. 미할당이면 로컬스토리지만 사용.
+- `setAsync<K>(key: K, data: T[K] | undefined): Promise<void>` — `fn` 있으면 위임, 없으면 로컬스토리지에 저장(데이터 `null` 이면 remove).
+- `getAsync(key): Promise<unknown>` — `fn` 있으면 위임, 없으면 로컬스토리지 get.
+- 직접 호출보다 `injectSdSystemConfigResource` (아래) 로 컴포넌트별 자동 키 분리·resource 화해 쓰는 게 표준.
+
+## injectSdSystemConfigResource<T>
+
+```ts
+function injectSdSystemConfigResource<T>(options: { key: Signal<string | undefined> }): {
+  value: Signal<T | undefined>;
+  isLoading: Signal<boolean>;
+  status: Signal<...>;
+  hasValue(): boolean;
+  reload(): void;
+  set(value: T | undefined): void;
+  update(fn: (prev: T | undefined) => T | undefined): void;
+}
+```
+
+`SdSystemConfigProvider` 위에 Angular `resource` 를 얹은 컴포넌트 스코프 헬퍼. 실제 저장 키는 `<호스트엘리먼트태그>.<key>` 로 자동 분리되어 같은 컴포넌트 종류끼리 설정을 공유.
+
+- `options.key: Signal<string | undefined>` — 설정 키 signal. `undefined` 면 로드/저장 스킵. 컴포넌트의 `key` 입력을 그대로 넘김.
+- `set` — 메모리 즉시 반영 후 microtask 로 `setAsync` 영속(실패 시 ErrorHandler 로 전파, silent skip 아님).
+- `sd-sheet` 가 컬럼 설정을 이걸로 보관(sheet.md 참조).
+
+## SdSystemLogProvider
+
+프레임워크가 잡은 에러/경고를 콘솔 + (배선 시) 외부 저장소로 적재. 자세한 배선·자동 적재 지점은 `client-system-log.md` 참조.
+
+- `writeFn?: (severity: "error"|"warn"|"log", ...data: any[]) => Promise<void>|void` — 외부 적재 함수. 부트스트랩에서 1회 할당(예: DB insert). 미할당 시 콘솔만.
+- `writeAsync(severity: "error"|"warn"|"log", ...data: any[]): Promise<void>` — 항상 콘솔(`createLogger("angular:system-log")`)로 먼저 찍고, `writeFn` 있으면 추가 적재. `writeFn` 호출은 try/catch 로 감싸 실패해도 throw 하지 않음(로그 싱크 실패가 본 동작을 막지 않게 한 의도된 설계).
+  - `severity` 값 차이: `"error"` = 문제 발생, `"warn"` = 인지 필요, `"log"` = 일반. `SdGlobalErrorHandlerPlugin`·`SdToastProvider.try/danger` 가 자동으로 `"error"` 적재.
+- 직접 적재: `await this._sdSystemLog.writeAsync("error", "결제 승인 실패", err.stack)`.
+
+## SdServiceClientFactoryProvider
+
+`@simplysm/service-client` 의 `ServiceClient` 를 key 별로 생성·보관·종료. 요청/응답 진행률을 자동으로 토스트 progress 로 표시.
+
+- `connectAsync(key: string, options?: Partial<ServiceConnectionOptions>): Promise<void>` — key 로 클라이언트 연결. host/port/ssl 미지정 시 현재 `location` 기준 기본값. 이미 연결됐거나 닫힌 key 면 throw. 연결 중 `request-progress`/`response-progress` 를 받아 `SdToastProvider.info(..., true)` progress 로 갱신.
+- `closeAsync(key: string): Promise<void>` — 연결 종료 + 해당 key 를 닫힘 처리(재연결 불가). 미연결 key 면 throw.
+- `get(key: string): ServiceClient` — 연결된 클라이언트 반환. 미연결/닫힘이면 throw(silent 반환 안 함).
+- 앱은 보통 `AppServiceProvider` 가 이걸 래핑(`client-service.md`). 화면에서 직접 inject 하기보다 앱 provider 경유.

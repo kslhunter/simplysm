@@ -1,0 +1,16 @@
+import { Table } from "@simplysm/orm-common";
+import { {{userEntityPascal}} } from "../master/{{userEntityKebab}}";
+import { RolePermission } from "./role-permission";
+
+export const Role = Table("Role")
+  .description("역할")
+  .columns((c) => ({
+    id: c.bigint().autoIncrement(),
+    name: c.varchar(100),
+    isDeleted: c.boolean(),
+  }))
+  .primaryKey("id")
+  .relations((r) => ({
+    {{userEntityCamel}}s: r.foreignKeyTarget(() => {{userEntityPascal}}, "role"),
+    permissions: r.foreignKeyTarget(() => RolePermission, "role"),
+  }));

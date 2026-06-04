@@ -1,5 +1,18 @@
 {{#if hasDb}}
-export * from "./{{dbContextClassName}}";
+export * from "./{{dbFolderName}}/{{dbContextFileName}}";
+{{#if hasAuth}}
+export * from "./{{dbFolderName}}/tables/master/{{userEntityKebab}}";
+export * from "./{{dbFolderName}}/tables/master/{{userEntityKebab}}-config";
+export * from "./{{dbFolderName}}/tables/system/role";
+export * from "./{{dbFolderName}}/tables/system/role-permission";
+{{/if}}
+export * from "./{{dbFolderName}}/tables/system/system-data-log";
+export * from "./{{dbFolderName}}/tables/system/system-log";
+export * from "./{{dbFolderName}}/system-data-log.ext";
+{{#if hasAuth}}
+export * from "./app-structure";
+export * from "./auth-info-changed.event";
+{{/if}}
 {{else}}
 export {};
 {{/if}}

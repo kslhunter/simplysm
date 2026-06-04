@@ -1,0 +1,8 @@
+import { createOrm, type DbConnConfig } from "@simplysm/orm-node";
+import { {{dbContextClassName}} } from "@{{workspaceName}}/common";
+import type { ServiceContext } from "@simplysm/service-server";
+
+export async function getOrm(ctx: ServiceContext) {
+  const ormConfig = await ctx.getConfig<{ {{dbContextNameUpper}}: DbConnConfig }>("orm");
+  return createOrm({{dbContextClassName}}, ormConfig.{{dbContextNameUpper}});
+}

@@ -1,0 +1,16 @@
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { injectViewTypeSignal, SdBaseContainer } from "@simplysm/angular";
+
+@Component({
+  selector: "app-main-view",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  template: `
+    <sd-base-container [initialized]="true" [viewType]="viewType()" />
+  `,
+  imports: [SdBaseContainer],
+})
+export class MainView {
+  viewType = injectViewTypeSignal();
+}

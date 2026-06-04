@@ -18,12 +18,8 @@ export const adminAppStructureItems: AppStructureItem[] = [
 
 ```ts
 // 앱 부트스트랩 (main.ts)
-provideAppInitializer(async () => {
-  const appService = inject(AppServiceProvider);
-  const sdAppStructure = inject(SdAppStructureProvider);
-
-  await appService.connectAsync();
-  sdAppStructure.initialize(adminAppStructureItems); // 동기 — await 불필요
+provideAppInitializer(() => {
+  inject(SdAppStructureProvider).initialize(adminAppStructureItems);
 });
 ```
 
@@ -69,7 +65,13 @@ export const adminAppStructureItems: AppStructureItem[] = [
   { title: "메인메뉴", code: "main", isNotMenu: true }, // 홈/메인 화면
   { title: "내 정보 수정", code: "my-info", isNotMenu: true }, // 사용자 본인 정보 화면
 
-  { title: "재고관리", code: "inventory", children: [ /* ... */ ] }, // 이하 실제 메뉴 그룹
+  {
+    title: "재고관리",
+    code: "inventory",
+    children: [
+      /* ... */
+    ],
+  }, // 이하 실제 메뉴 그룹
 ];
 ```
 

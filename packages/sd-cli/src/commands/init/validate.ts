@@ -26,6 +26,12 @@ export function validateInput(input: InitInput): void {
     );
   }
 
+  if (input.hasAuth && input.userEntityName != null && !KEBAB_CASE_RE.test(input.userEntityName)) {
+    throw new Error(
+      `사용자 엔티티 영문 식별자는 kebab-case 여야 합니다 (예: employee). 입력값: "${input.userEntityName}"`,
+    );
+  }
+
   const clientNames = new Set<string>();
   for (const c of input.clients) {
     if (!KEBAB_CASE_RE.test(c.name)) {

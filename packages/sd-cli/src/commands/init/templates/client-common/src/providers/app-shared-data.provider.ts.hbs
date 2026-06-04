@@ -1,0 +1,100 @@
+import { inject, Injectable } from "@angular/core";
+import {
+  SdSharedDataProvider,
+{{#if hasAuth}}
+  type SharedDataBase,
+{{/if}}
+  type SharedDataHandle,
+} from "@simplysm/angular";
+{{#if hasAuth}}
+import { expr } from "@simplysm/orm-common";
+import { AppOrmProvider } from "./app-orm.provider";
+{{/if}}
+
+export function useSharedSignal<K extends keyof TAppSharedData>(
+  name: K,
+): SharedDataHandle<TAppSharedData[K]> {
+  const appSharedData = inject(AppSharedDataProvider);
+  return appSharedData.getHandle(name);
+}
+
+@Injectable({ providedIn: "root" })
+export class AppSharedDataProvider extends SdSharedDataProvider<TAppSharedData> {
+{{#if hasAuth}}
+  private readonly _appOrm = inject(AppOrmProvider);
+
+{{/if}}
+  override initialize() {
+{{#if hasAuth}}
+    this.register("{{userEntityLabel}}", {
+      serviceKey: "{{dbContextNameUpper}}",
+      getter: async (changeKeys) => {
+        return this._appOrm.connectAsync(async (db) => {
+          let qr = db.{{userEntityCamel}}().select((item) => ({
+            id: item.id,
+            name: item.name,
+            isDeleted: item.isDeleted,
+
+            __valueKey: item.id,
+            __searchText: item.name,
+            __isHidden: item.isDeleted,
+          }));
+
+          if (changeKeys) {
+            qr = qr.where((item) => [expr.in(item.id, changeKeys as number[])]);
+          }
+          return qr.execute();
+        });
+      },
+      orderBy: (item) => item.name,
+    });
+
+    this.register("역할", {
+      serviceKey: "{{dbContextNameUpper}}",
+      getter: async (changeKeys) => {
+        return this._appOrm.connectAsync(async (db) => {
+          let qr = db.role().select((item) => ({
+            id: item.id,
+            name: item.name,
+            isDeleted: item.isDeleted,
+
+            __valueKey: item.id,
+            __searchText: item.name,
+            __isHidden: item.isDeleted,
+          }));
+
+          if (changeKeys) {
+            qr = qr.where((item) => [expr.in(item.id, changeKeys as number[])]);
+          }
+          return qr.execute();
+        });
+      },
+      orderBy: (item) => item.name,
+    });
+{{else}}
+    // TODO: 공유 데이터 등록
+    // this.register("키", { serviceKey: "{{dbContextNameUpper}}", getter: async () => [...], orderBy: (item) => item.name });
+{{/if}}
+  }
+}
+
+{{#if hasAuth}}
+export type TAppSharedData = {
+  {{userEntityLabel}}: IShared{{userEntityPascal}};
+  역할: ISharedRole;
+};
+
+export interface IShared{{userEntityPascal}} extends SharedDataBase<number> {
+  id: number;
+  name: string;
+  isDeleted: boolean;
+}
+
+export interface ISharedRole extends SharedDataBase<number> {
+  id: number;
+  name: string;
+  isDeleted: boolean;
+}
+{{else}}
+export type TAppSharedData = {};
+{{/if}}

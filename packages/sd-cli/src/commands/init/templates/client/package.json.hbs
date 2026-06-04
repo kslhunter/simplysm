@@ -6,7 +6,6 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "consola": "^3.4.2",
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
@@ -16,7 +15,9 @@
     "@{{workspaceName}}/client-common": "workspace:*"{{/if}}{{#if hasServer}},
     "@simplysm/service-client": "^14.0.0",
     "@simplysm/service-common": "^14.0.0"{{/if}}{{#if client.hasRouter}},
-    "@angular/router": "^21.2.0"{{/if}}{{#if hasDb}},
+    "@angular/router": "^21.2.0"{{/if}}{{#if client.needsNgIcons}},
+    "@ng-icons/core": "^33.2.3",
+    "@ng-icons/tabler-icons": "^33.2.3"{{/if}}{{#if hasDb}},
     "@{{workspaceName}}/common": "workspace:*",
     "@simplysm/orm-common": "^14.0.0"{{/if}}{{#if client.isMobile}},
     "@capacitor/core": "^7.0.0"{{/if}}

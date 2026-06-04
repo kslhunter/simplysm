@@ -61,6 +61,22 @@ WHERE 와 SELECT 양쪽에서 동일 도출 산식을 쓰겠다고 `buildDerived
 
 "Layer 1 = materialize, Layer 2 = derive" 같은 다층 wrap 구조도 군더더기. 단일 select 안에서 로컬 `const` 로 산식을 분리하면 동일한 SQL 이 생성됨.
 
+### 불필요한 `expr.val` 사용 금지
+
+`where` 비교·`update`/`upsert`/`insert` 값은 `ExprInput`(= `ExprUnit | T`) 자리라 리터럴을 그대로 넘김 — `expr.val` 로 감싸지 말 것.
+
+```ts
+// 나쁜 예 — 불필요한 래핑
+.update((u) => ({ name: expr.val("string", "새이름") }))
+.where((u) => [expr.eq(u.status, expr.val("string", "active"))])
+
+// 좋은 예 — 리터럴 직접 전달
+.update((u) => ({ name: "새이름" }))
+.where((u) => [expr.eq(u.status, "active")])
+```
+
+`expr.val` 은 `select` 콜백에서 리터럴 상수 컬럼을 만들 때처럼 `ExprUnit` 이 요구되는 자리에서만 사용.
+
 ## 스키마 정의
 
 컬럼은 `NOT NULL` 기본. `.nullable()` / `.default(...)` 는 도메인 근거가 있을 때만 사용.

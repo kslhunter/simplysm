@@ -36,7 +36,7 @@ export const SystemLog = Table("SystemLog")
 
 ## 부트스트랩에서 외부 적재를 배선하려면
 
-`provideAppInitializer` 안에서 `SdSystemLogProvider.writeFn` 에 적재 함수를 할당. 트랜잭션이 필요 없는 단순 insert 이므로 `connectWithoutTransAsync` 를 사용.
+`provideAppInitializer` 안에서 `SdSystemLogProvider.writeFn` 에 적재 함수를 할당.
 
 ```ts
 provideAppInitializer(() => {
@@ -45,12 +45,20 @@ provideAppInitializer(() => {
   const appAuth = inject(AppAuthProvider);
 
   inject(SdSystemLogProvider).writeFn = async (severity, ...data) => {
-    await appOrm.connectWithoutTransAsync(async (db) => {
+    await appOrm.connectAsync(async (db) => {
       await db.systemLog().insert([
         {
           dateTime: new DateTime(),
           severity,
-          message: JSON.stringify(data),
+          message: logs
+            .map((l) =>
+              typeof l === "string"
+                ? l
+                : l instanceof Error
+                  ? (l.stack ?? l.message)
+                  : json.stringify(l, { space: 2 }),
+            )
+            .join(" "),
           clientName: CLIENT_NAME,
           employeeId: appAuth.authInfo()?.employeeId,
         },

@@ -4,9 +4,10 @@ import type { ClientInputSpec, ClientType, DbDialect, InitInput } from "./types"
 const KEBAB_CASE_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 const APPID_RE = /^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$/;
 
-export async function promptInit(): Promise<InitInput> {
+export async function promptInit(workspaceNameDefault: string): Promise<InitInput> {
   const workspaceName = await input({
     message: "워크스페이스 이름 (영문 kebab-case, 예: my-project):",
+    default: KEBAB_CASE_RE.test(workspaceNameDefault) ? workspaceNameDefault : undefined,
     validate: (v) => KEBAB_CASE_RE.test(v) || "영문 kebab-case 만 허용됩니다.",
   });
 
@@ -22,6 +23,9 @@ export async function promptInit(): Promise<InitInput> {
   let hasDb = false;
   let dbDialect: DbDialect | undefined;
   let dbContextName: string | undefined;
+  let hasAuth = false;
+  let userEntityName: string | undefined;
+  let userEntityLabel: string | undefined;
   let serverPort: number | undefined;
   if (hasServer) {
     hasDb = await confirm({
@@ -33,7 +37,7 @@ export async function promptInit(): Promise<InitInput> {
         message: "DB dialect 를 선택하세요:",
         choices: [
           { name: "MySQL", value: "mysql" },
-          { name: "PostgreSQL", value: "postgres" },
+          { name: "PostgreSQL", value: "postgresql" },
           { name: "MSSQL", value: "mssql" },
         ],
       });
@@ -43,10 +47,34 @@ export async function promptInit(): Promise<InitInput> {
         validate: (v) =>
           /^[A-Za-z][A-Za-z0-9]*$/.test(v) || "영문 (대소문자) + 숫자만, 첫 글자는 영문",
       });
+
+      hasAuth = await confirm({
+        message: "사용자 인증을 사용할까요? (사용자/역할/권한/로그 테이블 부트스트랩)",
+        default: true,
+      });
+      if (hasAuth) {
+        const useDefaultEntity = await confirm({
+          message: "사용자 엔티티를 user / 사용자 로 만들까요?",
+          default: true,
+        });
+        if (useDefaultEntity) {
+          userEntityName = "user";
+          userEntityLabel = "사용자";
+        } else {
+          userEntityName = await input({
+            message: "사용자 엔티티 영문 식별자 (kebab-case, 예: employee):",
+            validate: (v) => KEBAB_CASE_RE.test(v) || "영문 kebab-case 만 허용됩니다.",
+          });
+          userEntityLabel = await input({
+            message: "사용자 엔티티 한글 라벨 (예: 직원):",
+            validate: (v) => v.trim().length > 0 || "라벨을 입력하세요.",
+          });
+        }
+      }
     }
 
     const portStr = await input({
-      message: "server port (dev/prod 동일):",
+      message: "server port:",
       default: "40080",
       validate: (v) => {
         const n = Number(v);
@@ -103,6 +131,9 @@ export async function promptInit(): Promise<InitInput> {
     hasDb,
     dbDialect,
     dbContextName,
+    hasAuth,
+    userEntityName,
+    userEntityLabel,
     mobileAppId,
     serverPort,
   };

@@ -1,91 +1,86 @@
 # @simplysm/core-common — 에러 클래스
 
-원인 체인(`cause`)을 가진 에러를 throw 하거나 타입별로 분기할 때 함께 읽히는 묶음. 모두 `SdError` 를 베이스로 하며 각 클래스는 `name` 을 자기 클래스명으로 설정해 `instanceof`·`name` 양쪽으로 식별 가능.
+`throw` 를 던지거나, 에러 원인을 체인으로 감싸거나, catch 에서 `instanceof` 로 분기할 때 함께 읽히는 묶음. 모두 `SdError` 를 상속하므로 `instanceof SdError` 로 한꺼번에 잡을 수 있음.
 
 ## SdError
 
-ES2024 `cause` 를 활용해 에러를 트리로 감싸는 베이스 클래스. 메시지는 **역순으로 결합**되어 상위(가장 바깥) 메시지가 앞에 온다.
-
-```typescript
+```ts
 class SdError extends Error {
   override cause?: Error;
-  constructor(cause: Error, ...messages: string[]); // 원인 에러 + 상위 메시지들
-  constructor(...messages: string[]);               // 메시지들만
+  constructor(cause: Error, ...messages: string[]); // 원인 에러를 감싸기
+  constructor(...messages: string[]);                // 메시지만으로 생성
 }
 ```
 
-- `cause: Error` — 첫 인자가 `Error` 면 원인으로 저장되고 그 stack 이 현재 stack 뒤에 `---- cause stack ----` 로 이어붙음. 첫 인자가 문자열/기타면 일반 메시지로 취급.
-- `...messages` — 추가 설명 메시지들. 결합 시 `messages` 가 먼저 reverse 되어 `상위 => 하위 => 원인` 순으로 `" => "` 결합. null/undefined 메시지는 제외.
+ES2024 `cause` 를 활용한 트리형 에러. 메시지는 **역순으로** `" => "` 로 결합됨(상위 메시지가 앞).
 
-```typescript
-throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
-// message: "사용자 로드 실패 => API 호출 실패 => 원본 에러 메시지"
+- cause: Error — 첫 인자가 Error 면 원인 에러로 보존(`this.cause`). 원인 에러의 stack 이 현재 stack 뒤에 `---- cause stack ----` 로 이어 붙음. 하위 호출에서 받은 에러를 상위 문맥으로 감쌀 때.
+- ...messages: string[] — 문맥 메시지들. `new SdError(err, "API 호출 실패", "사용자 로드 실패")` → `"사용자 로드 실패 => API 호출 실패 => 원본 메시지"`. null/undefined 메시지는 제외됨.
+- `name` 은 `"SdError"`. V8(Node·Chrome)에서 `captureStackTrace` 로 생성자 프레임 제거.
 
-throw new SdError("잘못된 상태", "처리 불가");
-// message: "처리 불가 => 잘못된 상태"
+```ts
+import { SdError } from "@simplysm/core-common";
+try {
+  await fetch(url);
+} catch (err) {
+  throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
+}
 ```
 
-주의: 하위 에러를 잡아 컨텍스트를 덧붙여 다시 throw 할 때 사용. 원본 에러를 삼키지 말고 첫 인자로 넘겨 체인을 보존.
+주의: 첫 인자가 Error 가 아니면(문자열·기타) cause 없이 메시지로만 취급됨. `new SdError("잘못된 상태", "처리 불가")` → `"처리 불가 => 잘못된 상태"`.
 
 ## ArgumentError
 
-유효하지 않은 인자를 받았을 때 throw. 인자 객체를 YAML 로 직렬화해 메시지에 포함(디버깅용). `SdError` 상속.
-
-```typescript
+```ts
 class ArgumentError extends SdError {
-  constructor(argObj: Record<string, unknown>);             // 기본 메시지 + 인자
-  constructor(message: string, argObj: Record<string, unknown>); // 커스텀 메시지 + 인자
+  constructor(argObj: Record<string, unknown>);
+  constructor(message: string, argObj: Record<string, unknown>);
 }
 ```
 
-- `argObj` — 문제가 된 인자들을 담은 객체. `YAML.stringify` 결과가 메시지 본문 뒤에 두 줄 띄고 붙음. 어떤 값이 잘못됐는지 그대로 노출하려는 의도.
-- `message` — 생략 시 `"잘못된 인자입니다."` 가 기본값.
+유효하지 않은 인자를 받았을 때 던지는 에러. 디버깅을 위해 인자 객체를 **YAML 형식**으로 메시지에 붙임. `name` 은 `"ArgumentError"`.
 
-```typescript
-throw new ArgumentError("잘못된 사용자", { userId: 123, name: null });
-// "잘못된 사용자\n\nuserId: 123\nname: null"
+- argObj: Record<string, unknown> — 메시지에 YAML 로 직렬화해 포함할 인자값들. 어떤 입력이 문제였는지 드러낼 때.
+- message: string — 커스텀 머리말. 생략 시 `"잘못된 인자입니다."` 사용.
+
+```ts
+import { ArgumentError } from "@simplysm/core-common";
+throw new ArgumentError("유효하지 않은 UUID 형식입니다.", { uuid });
+// 메시지: "유효하지 않은 UUID 형식입니다.\n\nuuid: ..."
 ```
 
-이 패키지 내부(`Uuid`, `bytes`, `num` 파싱, `obj` 체인 함수 등)에서 입력 검증 실패 시 광범위하게 사용된다.
+이 패키지 내부 검증(Uuid·bytes·obj 체인 등)에서 이미 광범위하게 throw 하므로, 유효성 위반은 직접 처리하지 말고 그대로 전파하는 편이 일관적.
 
 ## NotImplementedError
 
-아직 구현되지 않은 코드 경로가 호출됐을 때 throw. `SdError` 상속.
-
-```typescript
+```ts
 class NotImplementedError extends SdError {
-  constructor(message?: string); // "미구현" 또는 "미구현: <message>"
+  constructor(message?: string);
 }
 ```
 
-- `message` — 어떤 기능이 미구현인지 보조 설명. 생략 시 메시지는 `"미구현"`.
+아직 구현되지 않은 기능이 호출됐을 때. 메시지는 `"미구현"` 또는 `"미구현: <message>"`. `name` 은 `"NotImplementedError"`. 추상 메서드 스텁, 미구현 분기에 사용.
 
-```typescript
-switch (type) {
-  case "A": return handleA();
-  case "B": throw new NotImplementedError(`타입 ${type} 처리`); // "미구현: 타입 B 처리"
-}
-```
-
-추상 메서드 스텁이나 미완성 분기에 의도적 throw 로 두어 silent skip 을 막는 용도.
+- message?: string — 무엇이 미구현인지 추가 설명. 예: `throw new NotImplementedError(\`타입 ${type} 처리\`)`.
 
 ## TimeoutError
 
-대기 시간이 초과됐을 때 throw. `wait.until()` 이 `maxCount` 초과 시 자동으로 발생시킨다. `SdError` 상속.
-
-```typescript
+```ts
 class TimeoutError extends SdError {
-  constructor(count?: number, message?: string); // "대기 시간 초과(<count>회 시도): <message>"
+  constructor(count?: number, message?: string);
 }
 ```
 
-- `count` — 시도 횟수. 지정 시 `(N회 시도)` 가 메시지에 삽입됨.
-- `message` — 무엇을 대기하다 실패했는지 보조 설명.
+대기 시간 초과 에러. 메시지는 `"대기 시간 초과"` + (count 있으면 `(N회 시도)`) + (message 있으면 `: <message>`). `name` 은 `"TimeoutError"`.
 
-```typescript
+- count?: number — 시도 횟수. `wait.until(...)` 이 최대 시도 초과 시 자동으로 이 에러를 throw(시도 횟수를 넣어).
+- message?: string — 무엇을 기다리다 초과했는지 추가 설명.
+
+```ts
+import { TimeoutError, wait } from "@simplysm/core-common";
 try {
   await wait.until(() => isReady, 100, 50);
-} catch (e) {
-  if (e instanceof TimeoutError) { /* 타임아웃 분기 */ }
+} catch (err) {
+  if (err instanceof TimeoutError) { /* 타임아웃 처리 */ }
 }
 ```

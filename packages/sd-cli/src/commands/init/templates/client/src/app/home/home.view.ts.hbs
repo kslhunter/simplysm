@@ -1,0 +1,137 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import { Router, RouterOutlet } from "@angular/router";
+import {
+  SdAppStructureProvider,
+  SdBusyContainer,
+  SdRouterLink,
+  SdSidebar,
+  SdSidebarContainer,
+  SdSidebarMenu,
+  SdSidebarUser,
+  type SdSidebarUserMenu,
+  SdToastProvider,
+} from "@simplysm/angular";
+import { AppAuthProvider } from "@{{workspaceName}}/client-common";
+import { NgIcon } from "@ng-icons/core";
+import { tablerUserCircle } from "@ng-icons/tabler-icons";
+
+@Component({
+  selector: "app-home-view",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    RouterOutlet,
+    SdBusyContainer,
+    SdSidebarContainer,
+    SdSidebar,
+    SdSidebarMenu,
+    SdSidebarUser,
+    SdRouterLink,
+    NgIcon,
+  ],
+  template: `
+    <sd-busy-container [busy]="busyCount() > 0">
+      @if (initialized()) {
+        <sd-sidebar-container>
+          <sd-sidebar class="flex-column">
+            <div>
+              <div
+                class="p-default-xl sh-topbar"
+                style="cursor: pointer;"
+                [sdRouterLink]="{ link: '/home/main' }"
+              >
+                <img
+                  alt="로고"
+                  src="assets/logo-landscape.png"
+                  style="height: 100%; width: auto;"
+                />
+              </div>
+
+              <sd-sidebar-user [userMenu]="userMenu">
+                <div style="float: left;" class="pr-default">
+                  <ng-icon [svg]="tablerUserCircle" [size]="'3em'" />
+                </div>
+
+                <div>\{{ authInfo()?.name }}</div>
+                <small>\{{ authInfo()?.roleName }}</small>
+              </sd-sidebar-user>
+            </div>
+
+            <div class="flex-fill">
+              <sd-sidebar-menu [menus]="menus()" />
+            </div>
+          </sd-sidebar>
+
+          <div class="fill">
+            <router-outlet />
+          </div>
+        </sd-sidebar-container>
+      }
+    </sd-busy-container>
+  `,
+})
+export class HomeView {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _appAuth = inject(AppAuthProvider);
+  private readonly _sdAppStructure = inject(SdAppStructureProvider);
+  private readonly _router = inject(Router);
+
+  busyCount = signal(0);
+  initialized = signal(false);
+
+  authInfo = computed(() => this._appAuth.authInfo());
+  menus = computed(() => this._sdAppStructure.usableMenus());
+
+  userMenu: SdSidebarUserMenu = {
+    title: "내 계정 정보",
+    menus: [
+      {
+        title: "내 정보 수정",
+        onClick: async () => {
+          await this._router.navigate(["/home/my-info"]);
+        },
+      },
+      {
+        title: "로그아웃",
+        onClick: async () => {
+          await this._appAuth.logout();
+          await this._router.navigate(["/login"]);
+        },
+      },
+    ],
+  };
+
+  constructor() {
+    effect(() => {
+      void untracked(async () => {
+        if (this._appAuth.authInfo() != null) {
+          this.initialized.set(true);
+          return;
+        }
+
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          const ok = await this._appAuth.tryReloadAuth();
+          if (!ok) {
+            await this._router.navigateByUrl("/login", { replaceUrl: true });
+            return;
+          }
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+  }
+
+  protected readonly tablerUserCircle = tablerUserCircle;
+}
