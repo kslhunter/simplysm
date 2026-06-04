@@ -28,6 +28,7 @@ export function injectViewTypeSignal(): Signal<SdViewType> {
       ) {
         return "control";
       }
+      
       if (fullPageCode() === currPageCode?.()) {
         return "page";
       }

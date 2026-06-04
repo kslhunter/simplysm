@@ -20,6 +20,7 @@
 
 - 표준 시그널: `ready: model<boolean>`, `initialized: input<boolean>`, `busyCount: model<number>`, `restricted: input<boolean>`, `viewType: input.required<SdViewType>`.
 - `readonly: input<boolean>` — true 면 저장/등록/삭제 UI·편집 동작 제거(조회 전용).
+- `inlineEdit: input<boolean>`(기본 true) — 시트 인라인 편집 chrome(폼 래핑 + 저장 버튼/CTRL+S + per-row 삭제 컬럼) 노출 여부. false 면 시트를 조회·선택 전용으로 두고, 편집은 호스트가 selectedKeys 등으로 모달·상세를 열어 처리(등록·선택 삭제·복구·필터·페이징은 유지, submit 출력 미발화). `readonly` 와 직교.
 - `selectMode: "single"|"multi"` — 행 선택 모드. modal 모드 + 지정 시 하단에 선택 해제/확인 바. single 은 행 클릭 자동 선택, 미지정+편집 가능이면 multi 기본.
 - `key: input.required<string>` — 시트 설정 저장 키(`<key>-sheet` 로 시트에 전달).
 - `items: TItem[]` — 행 데이터. `selectedKeys: model<NonNullable<TKey>[]>` — 선택 키.

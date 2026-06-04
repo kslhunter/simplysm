@@ -1070,7 +1070,11 @@ def _convert_legacy(input_path: Path, target_path: Path) -> None:
     """
     target_ext = target_path.suffix
     with _common.com_lock(), _common.temp_workdir() as tmp:
-        tmp_target = tmp / (input_path.stem + target_ext)
+        # Excel SaveAs 등 Office COM 은 파일명에 `< > ? [ ] : | * "` 를 거부 (대괄호는
+        # 워크북 참조 구문으로 해석). 임시 변환 파일명에서만 치환 — 최종 결과는
+        # target_path 의 원본 이름으로 copy 되므로 출력명에는 영향 없음.
+        safe_stem = re.sub(r'[<>?\[\]:|*"]', "_", input_path.stem)
+        tmp_target = tmp / (safe_stem + target_ext)
         _run_worker(
             "convert_legacy", input_path.suffix.lower(), str(input_path), str(tmp_target),
             timeout=600,

@@ -11,6 +11,7 @@ import type { SortingDef } from "../../../src/core/selection/useSortingManager";
     [(busyCount)]="busyCount"
     [restricted]="restricted()"
     [readonly]="readonly()"
+    [inlineEdit]="inlineEdit()"
     [viewType]="viewType()"
     [selectMode]="selectMode()"
     [key]="'test-list'"
@@ -33,6 +34,7 @@ export class SdCrudListTestHost {
   busyCount = model(0);
   restricted = input(false);
   readonly = input(false);
+  inlineEdit = input(true);
   viewType = input<SdViewType>("page");
   selectMode = input<"single" | "multi">();
   items = input<{ id: number; name: string }[]>([]);

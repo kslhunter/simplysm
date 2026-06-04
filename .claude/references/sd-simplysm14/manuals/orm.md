@@ -77,7 +77,7 @@ WHERE 와 SELECT 양쪽에서 동일 도출 산식을 쓰겠다고 `buildDerived
 
 `expr.val` 은 `select` 콜백에서 리터럴 상수 컬럼을 만들 때처럼 `ExprUnit` 이 요구되는 자리에서만 사용.
 
-## 스키마 정의
+## 컬럼 정책 (nullable / default)
 
 컬럼은 `NOT NULL` 기본. `.nullable()` / `.default(...)` 는 도메인 근거가 있을 때만 사용.
 

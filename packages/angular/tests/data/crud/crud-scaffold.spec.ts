@@ -197,4 +197,39 @@ describe("SdCrudList 내부 동작", () => {
       expect(closeFn).not.toHaveBeenCalled();
     });
   });
+
+  describe("inlineEditEnabled", () => {
+    function setupList(readonly: boolean, inlineEdit: boolean) {
+      TestBed.configureTestingModule({
+        imports: [SdCrudListTestHost],
+        providers: [
+          { provide: SdSharedDataProvider, useValue: createMockSharedDataProvider() },
+          { provide: SdToastProvider, useValue: createMockToastProvider() },
+        ],
+      });
+      const fixture = TestBed.createComponent(SdCrudListTestHost);
+      fixture.componentRef.setInput("initialized", true);
+      fixture.componentRef.setInput("viewType", "page");
+      fixture.componentRef.setInput("readonly", readonly);
+      fixture.componentRef.setInput("inlineEdit", inlineEdit);
+      fixture.detectChanges();
+      return fixture.debugElement.children[0].componentInstance as SdCrudList<any, any>;
+    }
+
+    it("readonly=false, inlineEdit=true이면 true를 반환한다", () => {
+      expect(setupList(false, true).inlineEditEnabled()).toBe(true);
+    });
+
+    it("readonly=false, inlineEdit=false이면 false를 반환한다", () => {
+      expect(setupList(false, false).inlineEditEnabled()).toBe(false);
+    });
+
+    it("readonly=true, inlineEdit=true이면 false를 반환한다", () => {
+      expect(setupList(true, true).inlineEditEnabled()).toBe(false);
+    });
+
+    it("readonly=true, inlineEdit=false이면 false를 반환한다", () => {
+      expect(setupList(true, false).inlineEditEnabled()).toBe(false);
+    });
+  });
 });

@@ -645,7 +645,6 @@ await this._appOrm.connectAsync(async (db) => {
 });
 ```
 
-- 기본은 `connectAsync` (트랜잭션). `connectWithoutTransAsync` 는 트랜잭션 안에서 동작하지 않는 작업용 헬퍼.
 - 쿼리 작성법은 [orm.md](./orm.md), Provider 정의 컨벤션은 [client-orm.md](./client-orm.md) 참조.
 
 ## 공유 데이터 (`useSharedSignal`)

@@ -9,7 +9,7 @@ export function injectCurrentPageCodeSignal(): Signal<string> | undefined {
     const activatedUrlSegmentsSignals = activatedRoute.pathFromRoot
       .slice(2)
       .map((item) => toSignal(item.url, { initialValue: item.snapshot.url }));
-    return computed(() => activatedUrlSegmentsSignals.map((item) => item()).join("."));
+    return computed(() => activatedUrlSegmentsSignals.map((item) => item().join(".")).join("."));
   }
 
   return undefined;

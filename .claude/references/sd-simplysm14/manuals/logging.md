@@ -44,7 +44,7 @@ console.error("[X] 실패:", err);
 
 ## 환경별 셋업
 
-- **Node 진입점(서버·CLI)**: 진입점에서 `setupConsola()` 를 1회 호출. 상세는 [apis/core-node/consola.md](../apis/core-node/consola.md) 참조.
+- **Node 진입점(서버·CLI)**: 진입점에서 `setupConsola()` 를 1회 호출.
 - **Browser·Capacitor 진입점**: `setupConsola` 호출 금지 (Node 전용 API). consola 기본 reporter 가 브라우저 콘솔로 출력하며, tag·level·호출 방식의 일관성은 그대로 충족.
 
 ## 모듈-레벨 logger 주의

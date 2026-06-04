@@ -69,7 +69,7 @@ if (!result) return;
 // sd-demo: 미구현 — 동작 자리
 ```
 
-영역 한정 호출(`→ [화면.Y] 의 <영역> — 선택 전용` 등) 은 모달의 입력 시그널(`selectMode` 등) 로 전달.
+영역 한정 호출(`→ [화면.Y] 의 <영역> — 선택 전용` 등) 은 모달의 입력 시그널(`selectMode` 등) 로 전달. spec 마커 매핑: "선택 전용"·multiselect 는 `selectMode`(`single`/`multi`) 로, "편집 가능 여부" 는 `readonly` 로 따로 전달. "선택 전용" 은 선택 목적을 뜻할 뿐 편집을 막지 않으므로(readonly 아님), 편집까지 차단하려면 `readonly=true` 를 함께 줄 것.
 
 피호출 모달은 `<sd-crud-detail>` 을 루트로 사용 (`viewType='modal'` 자동 주입). 임의 `close` output 규약을 만들지 말 것 — `_sdModal.showAsync` 의 페이로드 반환 규약만 사용.
 

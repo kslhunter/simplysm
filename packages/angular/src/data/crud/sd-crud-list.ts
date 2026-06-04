@@ -62,9 +62,9 @@ import {
       [viewType]="viewType()"
     >
       <!-- TOP -->
-      @if (viewType() === "page" && (!readonly() || commandTplRef())) {
+      @if (viewType() === "page" && (inlineEditEnabled() || commandTplRef())) {
         <ng-template #topbarTpl>
-          @if (!readonly()) {
+          @if (inlineEditEnabled()) {
             <sd-button [theme]="'link-primary'" (click)="formCtrl()?.requestSubmit()">
               <ng-icon [svg]="tablerDeviceFloppy" />
               저장
@@ -74,9 +74,9 @@ import {
 
           <ng-template [ngTemplateOutlet]="commandTplRef()" />
         </ng-template>
-      } @else if (!readonly() || commandTplRef()) {
+      } @else if (inlineEditEnabled() || commandTplRef()) {
         <ng-template #commandTpl>
-          @if (!readonly()) {
+          @if (inlineEditEnabled()) {
             <sd-button [theme]="'primary'" (click)="onSaveButtonClick()">
               <ng-icon [svg]="tablerDeviceFloppy" />
               저장
@@ -167,14 +167,14 @@ import {
             </div>
           }
 
-          @if (readonly()) {
-            <div class="flex-fill p-default pt-0">
-              <ng-template [ngTemplateOutlet]="sheet" />
-            </div>
-          } @else {
+          @if (inlineEditEnabled()) {
             <sd-form #formCtrl (formSubmit)="submit.emit()" class="flex-fill p-default pt-0">
               <ng-template [ngTemplateOutlet]="sheet" />
             </sd-form>
+          } @else {
+            <div class="flex-fill p-default pt-0">
+              <ng-template [ngTemplateOutlet]="sheet" />
+            </div>
           }
         </div>
       </ng-template>
@@ -198,7 +198,7 @@ import {
         [columnControlsInput]="columnControls()"
         (selectedKeysChange)="onSelectedKeysChange()"
       >
-        @if (!readonly()) {
+        @if (inlineEditEnabled()) {
           <sd-sheet-column
             [fixed]="true"
             [key]="'deleteButton'"
@@ -234,6 +234,7 @@ export class SdCrudList<TItem, TKey> {
   busyCount = model(0);
   restricted = input(false);
   readonly = input(false);
+  inlineEdit = input(true);
   viewType = input.required<SdViewType>();
   selectMode = input<"single" | "multi">();
   key = input.required<string>();
@@ -273,6 +274,8 @@ export class SdCrudList<TItem, TKey> {
   bottomCommandTplRef = contentChild<TemplateRef<void>>("bottomCommandTpl");
 
   columnControls = contentChildren(SdSheetColumn);
+
+  inlineEditEnabled = computed(() => !this.readonly() && this.inlineEdit());
 
   hasSelectedDeleted = computed(() => this.currSelectedItems().some((it) => this.isDeleted(it)));
   hasSelectedNotDeleted = computed(() =>

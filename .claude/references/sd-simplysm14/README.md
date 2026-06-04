@@ -25,7 +25,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 
 | 트리거                                                  | 매뉴얼                                                 |
 | ------------------------------------------------------- | ------------------------------------------------------ |
-| 클라이언트 코드 (앱 패키지·`@simplysm/angular`) 를 작성·수정하는 모든 작업 | [client-rules.md](./manuals/client-rules.md)           |
+| 클라이언트 공통 lint/template 규칙 (예: `$any` 금지) | [client-rules.md](./manuals/client-rules.md)           |
 | 화면 컴포넌트(`<domain>.<역할>.ts`) 작성/수정           | [client-component.md](./manuals/client-component.md)   |
 | `sd-crud-list` / `sd-crud-detail` 채택한 목록·단건 화면 | [client-crud.md](./manuals/client-crud.md)             |
 | 클라이언트 데모 컴포넌트 작성                           | [client-demo.md](./manuals/client-demo.md)             |
@@ -35,7 +35,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 | 앱에서 공유 마스터 데이터 사용 (provider 정의·항목 추가) | [client-shared-data.md](./manuals/client-shared-data.md) |
 | 클라이언트·서버 간 실시간 이벤트 정의·발생·구독         | [event.md](./manuals/event.md)                         |
 | 앱 메뉴 구조·권한 정의 추가/수정                        | [client-app-structure.md](./manuals/client-app-structure.md) |
-| DB 스키마 정의 또는 ORM 쿼리 작성                       | [orm.md](./manuals/orm.md)                             |
+| ORM 쿼리 작성(조회 흐름·안티패턴), 컬럼 nullable/default 정책, 삭제 전략 | [orm.md](./manuals/orm.md)                             |
 | 이종 엔티티를 한 목록으로 합쳐 표시 (UNION)             | [orm-union.md](./manuals/orm-union.md)                 |
 | CRUD 처리에 데이터 변경 이력 적재·조회 (누가·언제·무엇을 변경) | [data-log.md](./manuals/data-log.md)                   |
 | 콘솔 로깅 코드 작성/수정 (모든 패키지)                  | [logging.md](./manuals/logging.md)                     |
