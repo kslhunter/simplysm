@@ -109,19 +109,7 @@ state = signal<"draft" | "confirmed">("draft");
 
 ## "선택하세요." 빈 화면
 
-list 와 detail 의 합성 view 에서 항목 미선택 빈 상태는 시연 시 눈에 띄도록 작성:
-
-```html
-<div
-  class="flex-fill tx-theme-gray-default p-xxl"
-  style="font-size: 48px; line-height: 1.5em"
->
-  <ng-icon [svg]="tablerArrowLeft" />
-  선택하세요.
-</div>
-```
-
-[client-component.md "list + detail 합성"](./client-component.md) 의 단순 `<div class="flex-fill p-default">선택하세요.</div>` 코드를 위 사례로 대체.
+list 와 detail 의 합성 view 에서 항목 미선택 빈 상태는 [client-component.md "list + detail 합성"](./client-component.md) 의 빈 상태 규약(`p-xxl` + `font-size: 48px` + `tablerArrowLeft` 아이콘) 을 그대로 따름.
 
 ## 라우팅·메뉴 따라가기
 

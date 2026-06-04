@@ -233,6 +233,50 @@ describe.each(dbCases)("$label DML", (dbCase) => {
         expect(inserted[1].id).toBeGreaterThan(inserted[0].id);
       });
     });
+
+    it("explicit AI id INSERT advances sequence for subsequent auto INSERT", async () => {
+      await resetTable();
+
+      await orm.connect(async (db) => {
+        // seed: AI 컬럼에 명시값 삽입
+        await db.employee().insert([{ id: 100, name: "Seed100", departmentId: 1 }]);
+
+        // 이후 id 없이 삽입 → 시퀀스가 명시값(100) 다음부터 발급되어 중복이 없어야 함
+        const [auto] = await db
+          .employee()
+          .insert([{ name: "AutoNext", departmentId: 1 }], ["id", "name"]);
+
+        expect(auto.id).toBeGreaterThan(100);
+        expect(auto.name).toBe("AutoNext");
+
+        const all = await db
+          .employee()
+          .orderBy((e) => e.id)
+          .execute();
+        expect(all).toHaveLength(2);
+        expect(all[0].id).toBe(100);
+        expect(all[1].id).toBeGreaterThan(100);
+      });
+    });
+
+    it("explicit AI id INSERT with output returns inserted row and advances sequence", async () => {
+      await resetTable();
+
+      await orm.connect(async (db) => {
+        // 명시값 삽입 + output(반환컬럼) 동시 사용: 삽입한 명시값 그대로 회수되어야 함
+        const [seeded] = await db
+          .employee()
+          .insert([{ id: 200, name: "Seed200", departmentId: 1 }], ["id", "name"]);
+        expect(seeded.id).toBe(200);
+        expect(seeded.name).toBe("Seed200");
+
+        // 이후 자동 삽입은 200 다음부터
+        const [auto] = await db
+          .employee()
+          .insert([{ name: "AfterSeed200", departmentId: 1 }], ["id", "name"]);
+        expect(auto.id).toBeGreaterThan(200);
+      });
+    });
   });
 
   //#endregion

@@ -74,7 +74,13 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
       <app-outbound-instruction-list #headerSheet selectMode="single" class="flex-min" />
 
       @let _selectedId = headerSheet.selectedKeys().first(); @if (_selectedId == null) {
-      <div class="flex-fill p-default">선택하세요.</div>
+      <div
+        class="flex-fill tx-theme-gray-default p-xxl"
+        style="font-size: 48px; line-height: 1.5em"
+      >
+        <ng-icon [svg]="tablerArrowLeft" />
+        선택하세요.
+      </div>
       } @else {
       <app-outbound-instruction-detail
         class="flex-fill"
@@ -92,6 +98,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 - view 는 list 컴포넌트를 템플릿 변수(`#headerSheet`) 로 잡아 `selectedKeys()` 를 읽고 `doRefresh()` 를 호출.
 - detail 의 단건 변경·삭제는 list 가 표시하는 동일 데이터에 반영해야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화.
 - view 는 `sd-base-container` 를 루트로 두고, 내부 콘텐츠는 `#contentTpl` 슬롯에 배치.
+- 미선택 빈 상태(`선택하세요.`) 코드는 위 예시 그대로 사용. `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
 
 ### list + list 합성 (마스터-라인)
 
@@ -105,7 +112,13 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
       @let _selectedId = headerSheet.selectedKeys().first();
       @if (_selectedId == null) {
-        <div class="flex-fill p-default">선택하세요.</div>
+        <div
+          class="flex-fill tx-theme-gray-default p-xxl"
+          style="font-size: 48px; line-height: 1.5em"
+        >
+          <ng-icon [svg]="tablerArrowLeft" />
+          선택하세요.
+        </div>
       } @else {
         <app-line-list
           class="flex-fill"

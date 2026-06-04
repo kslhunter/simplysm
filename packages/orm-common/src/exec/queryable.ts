@@ -1325,6 +1325,7 @@ export class Queryable<
       table: this.meta.db.getQueryDefObjectName(from),
       records,
       overrideIdentity: overrideIdentity || undefined,
+      aiColName: overrideIdentity ? outputDef.aiColName : undefined,
       output: outputColumns
         ? {
             columns: outputColumns,

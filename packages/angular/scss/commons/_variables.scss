@@ -107,11 +107,11 @@ $vars: (
     auto: "auto",
   ),
   border-color: (
-    lighter: var(--theme-gray-lightest),
-    light: var(--theme-gray-lighter),
-    default: var(--theme-gray-light),
-    dark: var(--theme-gray-default),
-    darker: var(--theme-gray-dark),
+    lighter: var(--theme-gray-lighter),
+    light: var(--theme-gray-light),
+    default: var(--theme-gray-default),
+    dark: var(--theme-gray-dark),
+    darker: var(--theme-gray-darker),
   ),
   border-radius: (
     xs: var(--gap-xxs),

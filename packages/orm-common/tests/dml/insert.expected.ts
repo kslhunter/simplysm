@@ -82,7 +82,39 @@ export const insertWithAi: ExpectedSql = {
   `,
   postgresql: pgsql`
     INSERT INTO "TestSchema"."Employee" ("id", "name", "managerId", "departmentId")
-    VALUES (100, 'Gildong Hong', NULL, 1)
+    VALUES (100, 'Gildong Hong', NULL, 1);
+    SELECT setval(pg_get_serial_sequence('"TestSchema"."Employee"', 'id'), (SELECT MAX("id") FROM "TestSchema"."Employee"))
+  `,
+};
+
+export const insertWithAiAndOutput: ExpectedSql = {
+  mysql: mysql`
+    INSERT INTO \`TestDb\`.\`Employee\` (\`id\`, \`name\`, \`managerId\`, \`departmentId\`)
+    VALUES (100, 'Gildong Hong', NULL, 1);
+    SELECT \`id\`, \`name\` FROM \`TestDb\`.\`Employee\` WHERE \`id\` = 100
+  `,
+  mssql: tsql`
+    SET IDENTITY_INSERT [TestDb].[TestSchema].[Employee] ON;
+    INSERT INTO [TestDb].[TestSchema].[Employee] ([id], [name], [managerId], [departmentId])
+    OUTPUT INSERTED.[id], INSERTED.[name]
+    VALUES (100, N'Gildong Hong', NULL, 1);
+    SET IDENTITY_INSERT [TestDb].[TestSchema].[Employee] OFF;
+  `,
+  postgresql: pgsql`
+    WITH "_ins" AS (
+      INSERT INTO "TestSchema"."Employee" ("id", "name", "managerId", "departmentId")
+      VALUES (100, 'Gildong Hong', NULL, 1)
+      RETURNING "id", "name"
+    ), "_seq" AS (
+      SELECT setval(
+        pg_get_serial_sequence('"TestSchema"."Employee"', 'id'),
+        GREATEST(
+          COALESCE((SELECT MAX("id") FROM "TestSchema"."Employee"), 0),
+          COALESCE((SELECT MAX("id") FROM "_ins"), 0)
+        )
+      ) AS "_v"
+    )
+    SELECT "id", "name" FROM "_ins", "_seq"
   `,
 };
 

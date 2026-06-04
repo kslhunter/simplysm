@@ -82,6 +82,7 @@ export interface SelectQueryDefJoin extends SelectQueryDef {
  *
  * @property records - 삽입할 레코드 배열
  * @property overrideIdentity - IDENTITY_INSERT 활성화 여부
+ * @property aiColName - AI(auto-increment) 컬럼명. PostgreSQL에서 명시값 삽입 후 시퀀스 보정에 사용
  * @property output - OUTPUT 절 정의
  */
 export interface InsertQueryDef {
@@ -89,6 +90,7 @@ export interface InsertQueryDef {
   table: QueryDefObjectName;
   records: Record<string, ColumnPrimitive>[];
   overrideIdentity?: boolean;
+  aiColName?: string;
   output?: CudOutputDef;
 }
 

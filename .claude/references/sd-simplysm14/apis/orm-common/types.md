@@ -27,7 +27,7 @@ executor·QueryBuilder 를 직접 구현하거나, `QueryDef`/`Expr` AST·column
 `executeDefs`/`build` 가 다루는 쿼리 정의 AST. `Queryable.getXQueryDef()`·`DbContext.getXQueryDef()` 가 생성.
 
 - `QueryDefObjectName` — `{ database?; schema?; name }`. DB 객체 네임스페이스(MySQL `database.name`, MSSQL `database.schema.name`, PostgreSQL `schema.name`).
-- DML: `SelectQueryDef`(from/as/select/distinct/top/lock/where/joins/orderBy/limit/groupBy/having/with), `SelectQueryDefJoin`(SelectQueryDef + `isSingle?`), `InsertQueryDef`(records/overrideIdentity?/output?), `InsertIfNotExistsQueryDef`, `InsertIntoQueryDef`, `UpdateQueryDef`, `DeleteQueryDef`, `UpsertQueryDef`.
+- DML: `SelectQueryDef`(from/as/select/distinct/top/lock/where/joins/orderBy/limit/groupBy/having/with), `SelectQueryDefJoin`(SelectQueryDef + `isSingle?`), `InsertQueryDef`(records/overrideIdentity?/aiColName?/output?), `InsertIfNotExistsQueryDef`, `InsertIntoQueryDef`, `UpdateQueryDef`, `DeleteQueryDef`, `UpsertQueryDef`.
 - `CudOutputDef` — CUD OUTPUT 절: `{ columns: string[]; pkColNames: string[]; aiColName? }`. 삽입/갱신/삭제 행 회수 정의.
 - DDL: `ClearSchemaQueryDef`, `CreateTableQueryDef`/`DropTableQueryDef`/`RenameTableQueryDef`/`TruncateQueryDef`, `AddColumnQueryDef`/`DropColumnQueryDef`/`ModifyColumnQueryDef`/`RenameColumnQueryDef`, `AddPrimaryKeyQueryDef`/`DropPrimaryKeyQueryDef`/`AddForeignKeyQueryDef`/`DropForeignKeyQueryDef`/`AddIndexQueryDef`/`DropIndexQueryDef`, `CreateViewQueryDef`/`DropViewQueryDef`/`CreateProcQueryDef`/`DropProcQueryDef`/`ExecProcQueryDef`.
 - Utils/Meta: `SwitchFkQueryDef`(`{ table; enabled }`, DDL 아님 — 트랜잭션 가능), `SchemaExistsQueryDef`.

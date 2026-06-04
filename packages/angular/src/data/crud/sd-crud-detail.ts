@@ -71,7 +71,7 @@ import { tablerDeviceFloppy } from "@ng-icons/tabler-icons";
       @if (viewType() === "modal" || bottomCommandTplRef()) {
         <ng-template #bottomCommandTpl>
           @if (bottomCommandTplRef()) {
-            <div class="flex-fill flex-row main-align-start gap-sm">
+            <div class="flex-fill">
               <ng-template [ngTemplateOutlet]="bottomCommandTplRef()" />
             </div>
           }

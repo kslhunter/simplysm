@@ -206,10 +206,12 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       const values = columns.map((c) => this.expr.escapeValue(record[c])).join(", ");
       statements.push(`INSERT INTO ${table} (${colList}) VALUES (${values})`);
 
-      // PK로 SELECT (aiColName에는 LAST_INSERT_ID() 사용)
+      // PK로 SELECT. AI 컬럼은 자동 생성값이므로 LAST_INSERT_ID()로 조회하되,
+      // 명시값이 주어진 경우(AI 컬럼에 직접 값 삽입)에는 그 값으로 조회한다.
+      // (명시값 삽입 시 MySQL은 LAST_INSERT_ID()를 갱신하지 않으므로 LAST_INSERT_ID()로는 조회 불가)
       const whereForSelect = output.pkColNames.map((pk) => {
         const wrappedPk = this.expr.wrap(pk);
-        if (pk === output.aiColName) {
+        if (pk === output.aiColName && record[pk] == null) {
           return `${wrappedPk} = LAST_INSERT_ID()`;
         }
         return `${wrappedPk} = ${this.expr.escapeValue(record[pk])}`;

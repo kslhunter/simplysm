@@ -53,18 +53,17 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
     class: "flex-column fill",
   },
   template: `
-    @if (header()) {
-      <div class="control-header p-default">
-        {{ header() }}
-      </div>
-    }
-
-    <div class="flex-column gap-sm p-default pt-0">
-      @if (headerTplRef() || modal()) {
+    <div class="flex-column gap-sm p-default">
+      @if (header() || headerTplRef() || modal()) {
         <div class="flex-row">
           <div class="flex-fill">
             @if (headerTplRef()) {
               <ng-template [ngTemplateOutlet]="headerTplRef()!"></ng-template>
+            }
+            @if (header()) {
+              <div class="control-header">
+                {{ header() }}
+              </div>
             }
           </div>
           @if (modal()) {

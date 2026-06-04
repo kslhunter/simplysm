@@ -113,12 +113,43 @@ describe("INSERT - 기본", () => {
         table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
         records: [{ id: 100, name: "Gildong Hong", managerId: undefined, departmentId: 1 }],
         overrideIdentity: true,
+        aiColName: "id",
       });
     });
 
     it.each(dialects)("[%s] Verify SQL", (dialect) => {
       const builder = createQueryBuilder(dialect);
       expect(builder.build(def)).toMatchSql(expected.insertWithAi[dialect]);
+    });
+  });
+
+  describe("AI 컬럼 명시적 지정 + output", () => {
+    const db = createTestDb();
+    const def = db
+      .employee()
+      .getInsertQueryDef(
+        [{ id: 100, name: "Gildong Hong", managerId: undefined, departmentId: 1 }],
+        ["id", "name"],
+      );
+
+    it("QueryDef 검증", () => {
+      expect(def).toEqual({
+        type: "insert",
+        table: { database: "TestDb", schema: "TestSchema", name: "Employee" },
+        records: [{ id: 100, name: "Gildong Hong", managerId: undefined, departmentId: 1 }],
+        overrideIdentity: true,
+        aiColName: "id",
+        output: {
+          columns: ["id", "name"],
+          pkColNames: ["id"],
+          aiColName: "id",
+        },
+      });
+    });
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.insertWithAiAndOutput[dialect]);
     });
   });
 
