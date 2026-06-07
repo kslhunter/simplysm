@@ -21,7 +21,7 @@
     "@simplysm/core-common": "workspace:*"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.6.5"
+    "@capacitor/core": "^7.6.6"
   },
   "peerDependencies": {
     "@capacitor/core": "^7"
