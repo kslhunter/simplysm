@@ -200,9 +200,41 @@ rows[0].firstDataLog?.action;      // "등록"
 .joinLastDataLog({ excludeActions: ["삭제"] })
 ```
 
+## 목록 시트에 수정일시·수정자 컬럼을 두려면
+
+`joinLastDataLog()` 로 부착한 `lastDataLog` 를 표시용 필드로 평탄화한 뒤 시트 컬럼으로 노출. 컬럼은 기본 숨김으로 두고 사용자가 컬럼 설정에서 켜 보게 함. 엑셀 다운로드에는 숨김과 무관하게 항상 포함.
+
+```ts
+.joinLastDataLog()
+.select((c) => ({
+  // ...표시 컬럼들...
+  lastModifiedAt: c.lastDataLog?.dateTime,
+  lastModifiedBy: c.lastDataLog?.employeeName,
+}))
+```
+
+```html
+<sd-sheet-column [key]="'lastModifiedAt'" [header]="'수정일시'" [hidden]="true">
+  <ng-template [cell]="items()" let-item="item">
+    <div class="p-xs-sm">{{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}</div>
+  </ng-template>
+</sd-sheet-column>
+
+<sd-sheet-column [key]="'lastModifiedBy'" [header]="'수정자'" [hidden]="true">
+  <ng-template [cell]="items()" let-item="item">
+    <div class="p-xs-sm">{{ item.lastModifiedBy ?? "&nbsp;" }}</div>
+  </ng-template>
+</sd-sheet-column>
+```
+
+- `[hidden]="true"` 로 기본 숨김 — 평소엔 안 보이고, 사용자가 시트 컬럼 설정에서 켜야 노출.
+- 엑셀 다운로드 양식에는 항상 포함([client-crud.md](./client-crud.md) 의 엑셀 다운로드).
+- 모델 단위 변경 로그(`itemId` 없음, 예: 초기화)는 개별 행에 조인되지 않아 그 행은 빈칸 — 정상.
+
 ## 지킬 것
 
 - 모델 변경을 적재할 땐 변경을 수행한 그 모델의 queryable 에서 `insertDataLog` 호출. `db.dataLog().insert(...)` 로 `tableName` 을 손으로 적지 않음(자동 도출이 깨짐).
 - "최종 수정자/일시"·"최초 등록자/일시" 는 대상 테이블에 별도 컬럼을 추가하지 말고 `joinLastDataLog`/`joinFirstDataLog` 조인으로 표시.
 - 적재와 본 데이터 변경은 같은 트랜잭션 안에서 수행 — 이력만 남고 데이터가 롤백되거나 그 반대가 되지 않게 함.
 - `action` 문자열은 프로젝트 단위로 고정된 집합을 쓰고, 조회 측 `includeActions`/`excludeActions` 와 철자를 일치시킴.
+- 목록 시트의 `수정일시`·`수정자` 컬럼은 `[hidden]="true"` 기본(사용자가 켜서 봄)이고, 엑셀 다운로드에는 항상 포함.

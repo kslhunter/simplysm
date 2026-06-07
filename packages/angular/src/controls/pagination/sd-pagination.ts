@@ -50,7 +50,7 @@ import {
       sd-pagination {
         > sd-anchor {
           display: inline-block;
-          padding: var(--gap-xs);
+          padding: var(--gap-xxs) var(--gap-xs);
         }
       }
     `,

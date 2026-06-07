@@ -80,7 +80,7 @@ import { SdEvents } from "../../core/events/sd-events";
     @if ((key() || effectivePageCount() > 1) && !hideConfigBar()) {
       <div class="_tool flex-row gap-sm p-xs">
         @if (key()) {
-          <sd-button [theme]="'link-primary'" [size]="'sm'" (click)="onConfigButtonClick()">
+          <sd-button [theme]="'link-blue-gray'" [size]="'xs'" (click)="onConfigButtonClick()">
             <ng-icon [svg]="icons.tablerSettings" />
           </sd-button>
         }

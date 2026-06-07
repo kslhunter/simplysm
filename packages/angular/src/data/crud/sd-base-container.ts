@@ -57,7 +57,7 @@ import { NgTemplateOutlet } from "@angular/common";
     <ng-template #content>
       <div class="flex-column fill">
         @if (commandTplRef()) {
-          <div class="p-default flex-row gap-default">
+          <div class="p-sm-default flex-row gap-default  bdb bdb-color-lighter bg-theme-gray-lightest">
             <ng-template [ngTemplateOutlet]="commandTplRef()" />
           </div>
         }
@@ -69,7 +69,9 @@ import { NgTemplateOutlet } from "@angular/common";
         </div>
 
         @if (bottomCommandTplRef()) {
-          <div class="p-sm-default flex-row main-align-end gap-sm bdt bdt-theme-gray-lighter bg-theme-gray-lightest">
+          <div
+            class="p-sm-default flex-row main-align-end gap-sm bdt bdt-theme-gray-lighter bg-theme-gray-lightest"
+          >
             <ng-template [ngTemplateOutlet]="bottomCommandTplRef()" />
           </div>
         }

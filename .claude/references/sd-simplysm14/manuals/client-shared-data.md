@@ -165,6 +165,52 @@ sharedProducts = useSharedSignal("품목");
   - 이 계약은 `sd-crud-list` 의 모달 선택 모드와 동일 ([client-crud.md](./client-crud.md) 참조). 즉 목록 화면 하나가 일반 페이지·선택 모달 양쪽으로 재사용됨.
 - 선택 컨트롤이 띄울 때는 항상 `selectMode: "single"` 로 주입되므로, 목록은 단건 선택 모드로 동작함.
 
+## 좌측 선택 목록 + 우측 상세(master-detail) 레이아웃을 구성하려면
+
+`sd-shared-data-select-list` 를 좌측에 두어 마스터를 고르고, 선택된 항목의 상세를 우측에 임베드하는 2-pane 화면. 선택을 바꾸거나 화면을 떠날 때 우측 상세의 미저장 변경을 보호하려면 자식 상세의 변경 가드를 부모가 위임 호출하도록 연결.
+
+```html
+<div class="flex-row fill">
+  <sd-shared-data-select-list
+    class="flex-min"
+    [items]="sharedRoles.items()"
+    [(selectedItem)]="selectedRole"
+    [canChangeFn]="checkCanLeave"
+    [header]="'역할'"
+    [modal]="{ type: RoleList, title: '역할', inputs: {} }"
+  >
+    <ng-template [itemOf]="sharedRoles.items()" let-item="item">{{ item.name }}</ng-template>
+  </sd-shared-data-select-list>
+
+  @let _selectedRole = selectedRole();
+  @if (_selectedRole == null) {
+    <div class="flex-fill p-xxl">역할을 선택하세요.</div>
+  } @else {
+    <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
+  }
+</div>
+```
+
+```ts
+detail = viewChild(RolePermissionDetail);
+
+// 자식 상세의 미저장 변경 가드를 부모가 위임 호출
+protected readonly checkCanLeave = (): boolean => {
+  const detail = this.detail();
+  return detail == null || detail.checkIgnoreChanges();
+};
+
+constructor() {
+  setupCanDeactivate(this.checkCanLeave); // 라우팅 이탈 보호
+}
+```
+
+- 자식 상세는 변경 가드를 `public` 메서드(`checkIgnoreChanges()`)로 노출해 부모가 호출. 이 화면에선 자식이 직접 `setupCanDeactivate` 를 두지 않고 부모가 가드를 소유.
+- 두 이탈 경로를 모두 막음:
+  - `[canChangeFn]="checkCanLeave"` — 좌측에서 **다른 항목으로 전환**하기 전 확인.
+  - `setupCanDeactivate(checkCanLeave)` — **페이지(라우팅) 이탈** 전 확인.
+- 선택 전(`selectedItem == null`)에는 안내 문구를 두고 상세를 띄우지 않음.
+
 ## 지킬 것
 
 - 항목 추가 시 세 곳(`register` · `TAppSharedData` · 인터페이스)을 모두 갱신. 하나라도 빠지면 타입 불일치 또는 미등록 데이터가 됨.

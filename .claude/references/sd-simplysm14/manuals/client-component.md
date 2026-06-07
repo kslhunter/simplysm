@@ -116,7 +116,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 - view 는 list 컴포넌트를 템플릿 변수(`#headerSheet`) 로 잡아 `selectedKeys()` 를 읽고 `doRefresh()` 를 호출.
 - detail 의 단건 변경·삭제는 list 가 표시하는 동일 데이터에 반영해야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화.
 - view 는 `sd-base-container` 를 루트로 두고, 내부 콘텐츠는 `#contentTpl` 슬롯에 배치.
-- 미선택 빈 상태(`선택하세요.`) 코드는 위 예시 그대로 사용. `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
+- 미선택 빈 상태는 위 예시의 구조(아이콘 + 안내 문구 `div`)를 그대로 사용하되, 안내 문구는 무엇을 선택하는지 드러내는 맥락 문구로 작성(예: `역할을 선택하세요.`). `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
 
 ### list + list 합성 (마스터-라인)
 

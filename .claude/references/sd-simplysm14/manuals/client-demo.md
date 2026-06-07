@@ -86,7 +86,7 @@ if (!result) return;
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelUploadClick()">
     <ng-icon [svg]="tablerFileExcel" /> 엑셀 업로드
   </sd-button>
-  <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="onExcelDownloadClick()">
+  <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelDownloadClick()">
     <ng-icon [svg]="tablerDownload" /> 엑셀 다운로드
   </sd-button>
 </ng-template>

@@ -154,6 +154,10 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           vertical-align: top;
         }
 
+        &[data-sd-size="xs"] > button {
+          padding: var(--gap-xxs) var(--gap-xs);
+        }
+        
         &[data-sd-size="sm"] > button {
           padding: var(--gap-xs) var(--gap-default);
         }
@@ -202,7 +206,7 @@ export class SdButton {
   >();
   inline = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
-  size = input<"sm" | "lg">();
+  size = input<"xs" | "sm" | "lg">();
   disabled = input(false, { transform: booleanAttribute });
   buttonStyle = input<string>();
   buttonClass = input<string>();
