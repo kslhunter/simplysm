@@ -27,6 +27,20 @@ WHERE 와 SELECT 양쪽에서 동일 도출 산식을 쓰겠다고 `buildDerived
 
 ## 안티패턴
 
+### execute 결과를 코드에서 후처리 금지
+
+가져올 데이터는 DB단에서 최소화함. 중복 제거·필터·정렬·집계·페이징은 ORM 절로 처리하고, `execute()` 로 받은 배열을 코드에서 가공하지 않음. 전건을 메모리로 끌어온 뒤 코드에서 거르면 네트워크·직렬화·메모리 비용이 행 수에 비례해 커짐.
+
+| 코드 후처리 (나쁜 예)                         | ORM 절 (좋은 예)                          |
+| --------------------------------------------- | ----------------------------------------- |
+| `(await q.execute())` 후 `.distinct()`        | `.distinct().execute()` (count 시 `.distinct().wrap().count()`) |
+| 받은 배열을 `.filter(...)`                    | `.where((r) => [...])`                     |
+| 받은 배열을 `.sort(...)`                      | `.orderBy((r) => ..., "ASC")`             |
+| 받은 배열을 `.slice(page*size, ...)`          | `.limit(page * size, size)`               |
+| 받은 배열로 `.reduce((sum, ...) => ...)`      | `.select((r) => ({ sum: expr.sum(...) }))` (집계는 `joinSingle` 부착) |
+
+이종 엔티티를 합쳐야 할 때도 코드 merge 대신 DB단 UNION — predicate pushdown 으로 각 소스에서 먼저 행을 줄임 ([orm-union.md](./orm-union.md)).
+
 ### SELECT 절 내부에 `expr.subquery` / `expr.exists` 사용 금지
 
 도메인 boolean(`isCompleted`, `hasAny` 등)이나 집계(`SUM`, `COUNT`, `MAX`)가 필요하면 `joinSingle` 안에서 `from + where + select(aggregate)` 로 묶어 outer 행에 컬럼으로 부착함. SELECT 컬럼에 subquery / exists 를 넣으면 outer 행마다 inner 쿼리가 N 회 실행됨.

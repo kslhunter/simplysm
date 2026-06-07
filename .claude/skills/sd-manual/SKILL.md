@@ -1,6 +1,7 @@
 ---
 name: sd-manual
 description: `.claude/references/sd-simplysm14/manuals/` 에 주제 단위 목적 기반 개발 매뉴얼(how-to)을 작성·갱신. Use when 라이브러리·프레임워크 사용법을 "~하려면 ~한다" 식 매뉴얼로 새로 쓰거나 코드 변경을 반영해 갱신할 때.
+disable-model-invocation: true
 ---
 
 # sd-manual

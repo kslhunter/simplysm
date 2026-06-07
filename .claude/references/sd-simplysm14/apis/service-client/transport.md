@@ -20,7 +20,7 @@ WebSocket 1개의 연결·하트비트·자동 재연결 담당.
 - connected: boolean (getter) — 소켓이 OPEN 상태인지.
 - connect(): Promise\<void\> — 접속 시작. 실패 시 throw, 성공 시 재연결 카운트 리셋하고 `state: "connected"` emit.
 - close(): Promise\<void\> — 수동 종료. 이후 자동 재연결 안 함. 소켓 CLOSED 까지 대기 후 `state: "closed"` emit.
-- send(data: Bytes): Promise\<void\> — 바이트 전송. 일정 시간 내 미연결이면 throw("서버에 연결되지 않았습니다...").
+- send(data: Bytes): Promise\<void\> — 바이트 전송. 일정 시간 내 미연결이면 throw("서버에 연결되지 않았습니다. 인터넷 연결을 확인해 주세요.").
 - on(type, listener) / off(type, listener) — 이벤트 구독/해제.
 
 `SocketProviderEvents`:

@@ -1,6 +1,6 @@
 # @simplysm/excel — ExcelWorkbook / ExcelWorksheet
 
-.xlsx 파일을 열거나 새로 만들고, 시트를 추가/조회하고, 시트 단위로 데이터 테이블·매트릭스·레코드 쓰기·행 복사/삽입·이미지·뷰를 다룬 뒤 바이트/Blob 로 내보내는 진입 흐름. 워크북은 내부적으로 ZIP 리소스를 잡으므로 사용 후 반드시 `close()` 해야 한다(미해제 시 리소스 누수).
+.xlsx 파일을 열거나 새로 만들고, 시트를 추가/조회하고, 시트 단위로 데이터 테이블·매트릭스·레코드 읽기·쓰기·행 복사/삽입·이미지·뷰를 다룬 뒤 바이트/Blob 로 내보내는 진입 흐름. 워크북은 내부적으로 ZIP 리소스를 잡으므로 사용 후 반드시 `close()` 해야 한다(미해제 시 리소스 누수).
 
 ## ExcelWorkbook
 
@@ -53,7 +53,7 @@ try {
 
 이름:
 
-- `getName(): Promise<string>` — 시트 이름 반환.
+- `getName(): Promise<string>` — 시트 이름 반환. ID 에 대응하는 이름이 없으면 throw.
 - `setName(newName: string): Promise<void>` — 시트 이름 변경.
 
 셀 접근:
@@ -72,7 +72,7 @@ try {
 - `getDataTable(opt?): Promise<Record<string, ExcelValueType>[]>` — 헤더 행을 키로 한 레코드 배열로 읽기.
   - `opt.headerRowIndex?: number` — 헤더로 쓸 행 인덱스. 미지정 시 range 시작 행. 상단에 제목 행이 있으면 실제 헤더 행 인덱스를 지정.
   - `opt.checkEndColIndex?: number` — 데이터 끝 판정 열. 그 열 셀이 비면 이후 행을 더 읽지 않고 종료. 빈 행으로 데이터가 끊기는 양식에서 사용.
-  - `opt.usableHeaderNameFn?: (headerName: string) => boolean` — 헤더 채택 필터. `true` 인 헤더만 키로 사용. 일부 열만 읽을 때. 채택된 헤더가 중복이면 throw.
+  - `opt.usableHeaderNameFn?: (headerName: string) => boolean` — 헤더 채택 필터. `true` 인 헤더만 키로 사용. 일부 열만 읽을 때. 채택된 헤더가 한 행 내 중복이면 throw.
 - `setDataMatrix(matrix: ExcelValueType[][]): Promise<void>` — 2차원 배열을 0,0 부터 행 우선으로 쓰기. 헤더 없이 좌표 그대로 채울 때. `undefined` 원소는 해당 셀 삭제.
 - `setRecords(records: Record<string, ExcelValueType>[]): Promise<void>` — 0행에 헤더(전 레코드 키 합집합, 빈 키 제외)를 자동 생성하고 1행부터 값 기록. 키 순서는 첫 등장 순. 표 형태 출력의 기본 수단.
 
@@ -90,17 +90,17 @@ try {
 
 - `copyCellStyle(srcAddr: ExcelAddressPoint, targetAddr: ExcelAddressPoint): Promise<void>` — 셀 스타일 ID 만 복사(값 제외). 원본에 스타일이 없으면 무변경.
 - `copyRowStyle(srcR: number, targetR: number): Promise<void>` — range 내 모든 열에 대해 행 스타일 복사.
-- `copyCell(srcAddr, targetAddr): Promise<void>` — 셀(값+스타일)을 대상에 복사.
+- `copyCell(srcAddr: ExcelAddressPoint, targetAddr: ExcelAddressPoint): Promise<void>` — 셀(값+스타일)을 대상에 복사.
 - `copyRow(srcR: number, targetR: number): Promise<void>` — 행 전체를 대상 행에 복사(대상 기존 내용 덮어쓰기).
 - `insertCopyRow(srcR: number, targetR: number): Promise<void>` — 원본 행을 대상 위치에 "삽입" 복사. 대상 이하 기존 행은 1칸 아래로 밀리고, 삽입 지점을 관통하는 다중행 병합은 1행 확장, 원본의 단일행 병합은 대상 행에 복제된다. 템플릿 행을 반복 펼칠 때 사용(덮어쓰기 방지).
 
 이미지:
 
-- `addImage(opts): Promise<void>` — 시트에 이미지 삽입.
+- `addImage(opts): Promise<void>` — 시트에 이미지 삽입. 같은 시트에 여러 번 호출하면 기존 drawing 파트에 이어 붙인다.
   - `opts.bytes: Bytes` — 이미지 바이너리.
   - `opts.ext: string` — 확장자(`"png"`, `"jpg"` 등). MIME 미해석 시 throw.
   - `opts.from: { r: number; c: number; rOff?: number | string; cOff?: number | string }` — 시작 위치(0 기반 행/열, `rOff`/`cOff` 는 셀 내부 EMU 오프셋).
-  - `opts.to?: { r; c; rOff?; cOff? }` — 끝 위치. 생략 시 `from` 의 한 칸 우하단(`from.r+1, from.c+1`)에 배치되어 약 1셀 크기로 들어간다. 명시하면 두 셀 앵커 사이로 늘려 배치.
+  - `opts.to?: { r: number; c: number; rOff?: number | string; cOff?: number | string }` — 끝 위치. 생략 시 `from` 의 한 칸 우하단(`from.r+1, from.c+1`)에 배치되어 약 1셀 크기로 들어간다. 명시하면 두 셀 앵커 사이로 늘려 배치.
 
 데이터 읽기 예:
 

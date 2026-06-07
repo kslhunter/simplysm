@@ -19,15 +19,17 @@ ws.addConditionalFormat(opts: { ref: string; rules: ExcelConditionalRule[] }): P
 
 값 비교(구간):
 
-- `{ type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style }` — 두 값 사이 구간 비교(양 끝 inclusive). `op` = 구간 안/밖. `value` = `[a, b]` 튜플.
+- `{ type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style }` — 두 값 사이 구간 비교(양 끝 inclusive). `op` = `"between"`(구간 안)/`"notBetween"`(구간 밖). `value` = `[a, b]` 튜플.
 
 텍스트 매칭:
 
-- `{ type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style }` — 문자열 매칭. `op` = 포함/미포함/시작/끝. 내부적으로 SEARCH 기반(대소문자 무시) formula 로 변환되며 비교 기준은 ref 좌상단 셀. 부분 문자열·접두/접미 강조에.
+- `{ type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style }` — 문자열 매칭. `op` = `"contains"`(포함)/`"notContains"`(미포함)/`"beginsWith"`(시작)/`"endsWith"`(끝). 내부적으로 SEARCH 기반(대소문자 무시) formula 로 변환되며 비교 기준은 ref 좌상단 셀. 부분 문자열·접두/접미 강조에.
 
 수식:
 
 - `{ type: "expression"; formula: string; style }` — 임의 엑셀 수식 기반. `formula` 가 TRUE 인 셀에 style 적용. `=` 없이 본문만(예 `"$B2>$C2"`). 다른 셀 참조·복합 조건 등 위 프리셋으로 안 되는 규칙에.
+
+각 규칙의 `style` 은 아래 `ExcelConditionalRuleStyle`.
 
 ## ExcelConditionalRuleStyle
 

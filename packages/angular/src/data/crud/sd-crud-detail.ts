@@ -40,7 +40,7 @@ import { tablerDeviceFloppy } from "@ng-icons/tabler-icons";
       @if (viewType() === "page" && (!readonly() || commandTplRef())) {
         <ng-template #topbarTpl>
           @if (!readonly()) {
-            <sd-button [theme]="'link-primary'" (click)="formCtrl()?.requestSubmit()">
+            <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="formCtrl()?.requestSubmit()">
               <ng-icon [svg]="tablerDeviceFloppy" />
               저장
               <small>(CTRL+S)</small>

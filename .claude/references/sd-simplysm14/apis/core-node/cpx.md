@@ -30,10 +30,10 @@ if (r.exitCode !== 0) { /* 직접 처리 */ }
 
 ## SpawnProcess
 
-`spawn` 반환 타입. Promise 처럼 쓰면서 프로세스 제어를 함께 제공.
+`spawn` 반환 타입. Promise 처럼 쓰면서 프로세스 제어를 함께 제공(`implements PromiseLike<SpawnResult>`).
 
 - `pid: number | undefined` — 자식 프로세스 PID(생성 전이면 undefined).
-- `then(...)` / `catch(...)` — `SpawnResult` 로 resolve 되는 thenable(그래서 `await` 가능).
+- `then(onfulfilled?, onrejected?)` / `catch(onrejected?)` — `SpawnResult` 로 resolve 되는 thenable(그래서 `await` 가능).
 - `kill(signal?: NodeJS.Signals | number): boolean` — 프로세스에 시그널 전송. 타임아웃·취소 시 사용.
 
 ```ts

@@ -22,13 +22,13 @@
   - `sourcePath: string` — 원본. **존재하지 않으면 아무 것도 안 하고 반환**(throw 안 함).
   - `targetPath: string` — 대상. 원본이 디렉토리면 대상 디렉토리를 만들고 하위를 재귀 복사(glob `*`, `dot: true` 로 숨김 포함), 파일이면 상위 디렉토리 생성 후 복사.
   - `filter?: (absolutePath: string) => boolean` — 복사 여부 결정. 각 하위 항목의 **절대 경로**가 전달되며 true=복사, false=제외. **최상위 sourcePath 자신은 필터 대상 아님**. 디렉토리에 false 면 그 디렉토리와 모든 내용을 건너뜀. 빌드 산출물 중 특정 파일만 복사할 때 사용.
-  - 파일 복사 실패 시 500ms 대기(sync 는 busy-wait, async 는 setTimeout)로 최대 7회 시도 후에도 실패하면 `SdError`.
+  - 파일 복사 실패 시 500ms 대기(sync 는 busy-wait, async 는 setTimeout)로 최대 7회(i=0..6) 시도 후에도 실패하면 `SdError`.
 
 ## 읽기
 
 - `readSync(targetPath: string): string` / `read(...): Promise<string>` — UTF-8 문자열로 읽음.
 - `readBytesSync(targetPath: string): Uint8Array` / `readBytes(...): Promise<Uint8Array>` — 바이너리(`Uint8Array`)로 읽음.
-- `readJsonSync<TData = unknown>(targetPath): TData` / `readJson<TData = unknown>(...): Promise<TData>` — 읽어 `json.parse`(`@simplysm/core-common`, Date 등 특수타입 복원)로 파싱. 파싱 실패 시 SdError 메시지에 내용 앞 500자 프리뷰를 첨부.
+- `readJsonSync<TData = unknown>(targetPath): TData` / `readJson<TData = unknown>(...): Promise<TData>` — 읽어 `json.parse`(`@simplysm/core-common`, Date 등 특수타입 복원)로 파싱. 파싱 실패 시 SdError 메시지에 내용 앞 500자 프리뷰(+`...(truncated)`)를 첨부.
   - 제네릭 `TData` — 파싱 결과 타입. 호출부에서 기대 타입을 지정해 반환 타입을 좁힘.
 
 ## 쓰기

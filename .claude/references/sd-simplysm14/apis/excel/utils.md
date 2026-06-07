@@ -26,7 +26,7 @@
 
 `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` 와 엑셀 formatCode/numFmtId 사이 변환.
 
-- `convertNumFmtCodeToName(numFmtCode: string): ExcelNumberFormat` — formatCode 문자열을 형식 이름으로. `"General"`→`"number"`, yy/dd/mm·h/ss 패턴 조합으로 `"DateOnly"`/`"DateTime"`/`"Time"` 판별(시간 문맥의 `mm` 은 분으로 제외), 숫자 패턴이면 `"number"`. 미해석 코드면 throw.
+- `convertNumFmtCodeToName(numFmtCode: string): ExcelNumberFormat` — formatCode 문자열을 형식 이름으로. `"General"`→`"number"`, yy/dd/mm·h/ss 패턴 조합으로 `"DateOnly"`/`"DateTime"`/`"Time"` 판별(시간 문맥의 `mm` 은 분으로 보아 날짜 판정에서 제외), 숫자 패턴이면 `"number"`. 미해석 코드면 throw.
 - `convertNumFmtIdToName(numFmtId: number): ExcelNumberFormat` — 엑셀 내장 형식 ID 를 이름으로. 0~13·37~40·48→`"number"`, 14~17·27~31·34~36·50~58→`"DateOnly"`, 22→`"DateTime"`, 18~21·32~33·45~47→`"Time"`, 49→`"string"`. 그 외 ID 면 throw.
 - `convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number` — 이름을 내장 형식 ID 로. `"number"`→0, `"DateOnly"`→14, `"DateTime"`→22, `"Time"`→18, `"string"`→49.
 

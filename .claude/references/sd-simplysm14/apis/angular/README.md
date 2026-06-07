@@ -1,57 +1,77 @@
 # @simplysm/angular
 
-Angular(zoneless) 기반 SI/업무 클라이언트용 UI 컴포넌트·디렉티브·프로바이더·signal 헬퍼 라이브러리. `import "@simplysm/core-browser"` 를 side-effect 로 로드하며, 모든 컴포넌트는 standalone + OnPush + `ViewEncapsulation.None`, selector 는 `sd-` prefix.
-
-> 사용 예 패턴 근거: `manuals/client-component.md`, `client-shared-data.md`, `client-system-log.md`, `client-demo.md`, `client-rules.md`. 화면 작성 시 provider 경유 호출·표준 시그널(ready/initialized/busyCount/viewType)·`mark` 사용·`$any` 금지 등은 매뉴얼을 따름.
+Angular(zoneless) 기반 SI/업무 클라이언트용 UI 컴포넌트·디렉티브·전역 프로바이더·signal 헬퍼 모음. `provideSdAngular` 부트스트랩 위에서 모달/토스트/busy/인쇄, 라우팅/메뉴/권한, 폼 입력 컨트롤, 시트(sd-sheet), 공유 마스터 데이터, CRUD 화면 골격, 사이드바/탑바 레이아웃, 칸반/권한표/에디터/시각화를 제공. `import "@simplysm/core-browser"` 를 side-effect 로 로드하며, 컴포넌트는 standalone + OnPush + `ViewEncapsulation.None`, selector 는 `sd-` prefix.
 
 ## 사용 트리거 인덱스
 
-- **앱 부트스트랩·전역 프로바이더** — `provideSdAngular`, 테마/로컬스토리지/시스템설정/시스템로그/서비스클라이언트 provider 를 배선할 때. 자세히: [infra.md](./infra.md)
-- **모달·토스트·busy·인쇄 (오버레이/전역 피드백)** — 화면에서 모달을 띄우거나, 토스트로 알림·진행률을 표시하거나, busy 인디케이터·인쇄/PDF 를 호출할 때. 자세히: [overlay.md](./overlay.md)
-- **라우팅·앱 구조(메뉴·권한)** — 라우터 링크, 현재 페이지 코드·뷰 타입·뷰 제목 signal, 메뉴·권한 트리(`injectPermsSignal`) 를 다룰 때. 자세히: [routing-appstructure.md](./routing-appstructure.md)
-- **디렉티브·signal setup 헬퍼** — 리사이즈/교차/캡처 이벤트, 커맨드 단축키, ripple, 노출 애니메이션, invalid 표시, 타입드 템플릿을 붙일 때. 자세히: [directives.md](./directives.md)
-- **폼·기본 입력 컨트롤** — 버튼/앵커, textfield/textarea/numpad/range/날짜범위, checkbox/switch/group, select/dropdown, form/collapse/tab/list/pagination 을 배치할 때. 자세히: [controls.md](./controls.md)
-- **레이아웃 셸 (사이드바·탑바)** — 앱 좌측 사이드바/상단바 + 메뉴/사용자 메뉴를 구성할 때. 자세히: [layout.md](./layout.md)
-- **시트(그리드)** — `sd-sheet` + 컬럼/셀 템플릿으로 다건 목록·편집 표를 그릴 때. 자세히: [sheet.md](./sheet.md)
-- **공유 마스터 데이터 + 선택 컨트롤** — `SdSharedDataProvider` 등록·조회, `sd-shared-data-select`(드롭다운/버튼/리스트) 로 마스터 데이터를 선택할 때. 자세히: [shared-data.md](./shared-data.md)
-- **selection/sorting/expanding 매니저** — 커스텀 목록 컴포넌트에서 선택·정렬·트리 펼침 상태 로직을 signal 로 합성할 때. 자세히: [selection-managers.md](./selection-managers.md)
-- **CRUD 화면 표준 골격** — `sd-base-container` / `sd-crud-list` / `sd-crud-detail` 로 목록/단건 화면을 만들 때. 자세히: [crud.md](./crud.md)
-- **기능 컴포넌트 (칸반·권한표·상태프리셋·테마선택·주소검색·에디터·시각화)** — 위 군에 안 드는 도메인성 컴포넌트를 쓸 때. 자세히: [features.md](./features.md)
+- **앱 부트스트랩·전역 설정** — `provideSdAngular` 로 zoneless 앱을 띄우고, 클라이언트명·테마·로컬스토리지·시스템설정·시스템로그·서비스클라이언트 프로바이더를 설정할 때. 자세히: [infra.md](./infra.md)
+- **오버레이(모달·토스트·busy·인쇄)** — 코드로 모달/토스트를 띄우거나, 화면 busy 표시·인쇄/PDF 출력을 할 때. 자세히: [overlay.md](./overlay.md)
+- **라우팅·메뉴·권한(app-structure)** — 페이지 코드·뷰 타입·제목 시그널, 라우터 링크/창 열기, 이탈 가드, 메뉴/권한 트리 계산을 할 때. 자세히: [routing-appstructure.md](./routing-appstructure.md)
+- **공유 마스터 데이터** — `SdSharedDataProvider` 로 고객사·품목 등 마스터를 한 번 등록해 화면에서 공유 시그널로 쓰고, 선택 컨트롤로 관리·선택 모달을 띄울 때. 자세히: [shared-data.md](./shared-data.md)
+- **시트(sd-sheet)** — 컬럼·셀 템플릿·정렬·페이징·선택·트리·요약 행을 가진 데이터 그리드를 그릴 때. 자세히: [sheet.md](./sheet.md)
+- **CRUD 화면 골격** — 목록(`sd-crud-list`)·단건(`sd-crud-detail`)·공통 컨테이너(`sd-base-container`) 표준 화면 골격을 채택할 때. 자세히: [crud.md](./crud.md)
+- **폼·입력 컨트롤** — 버튼·텍스트필드·체크박스·셀렉트·드롭다운·폼·페이지네이션 등 입력 컨트롤을 쓸 때. 자세히: [controls.md](./controls.md)
+- **레이아웃(사이드바·탑바)** — 앱 셸의 사이드바/탑바/메뉴/유저 메뉴를 배치할 때. 자세히: [layout.md](./layout.md)
+- **호스트 디렉티브·signal 헬퍼·선택 매니저** — 리사이즈/교차/리플/등장효과/유효성 디렉티브, 명령 단축키, 옵션 이벤트 플러그인, 템플릿 타입 가드, 선택/정렬/펼침 매니저를 쓸 때. 자세히: [directives.md](./directives.md)
+- **부가 기능(칸반·권한표·상태프리셋·테마·주소·에디터·시각화)** — 칸반 보드, 권한 트리 표, 상태 프리셋, 테마 토글, 주소 검색 모달, Tiptap 에디터, 라벨/노트/진행바/달력/바코드/ECharts 를 쓸 때. 자세히: [features.md](./features.md)
 
-아래는 군을 별도로 둘 만큼 크지 않은 유틸·타입·표시용 심볼의 인라인 섹션이다.
+## 공통 인라인 (소형 심볼)
 
-## signal·DOM 유틸
+### FormatPipe
 
-- `mark(sig: WritableSignal<any>): void` — WritableSignal 의 값을 in-place 변경한 뒤 변경 알림만 발행. 내부적으로 배열이면 `[...v]`, 객체면 `{...v}` 로 shallow copy 해 새 참조를 set. effect 강제 재발화나 객체/배열 필드 변경 알림에 사용. 매뉴얼 권장 패턴: `doRefresh(){ mark(this.lastFilter); }`, 양방향 바인딩 자식 변경 시 `(valueChange)="mark(filter)"`.
-- `setSafeStyle(renderer: Renderer2, el: HTMLElement, style: Partial<CSSStyleDeclaration>): void` — `style` 객체의 각 키를 `renderer.setStyle` 로 적용. Angular Renderer 경유로 DOM 스타일을 안전하게 일괄 세팅할 때(직접 `el.style` 대입을 피해야 하는 디렉티브/setup 내부).
+문자열·날짜를 표시 포맷으로 변환하는 standalone pipe. name `format`.
 
-## FormatPipe (`format` 파이프)
+- `transform(value: string | DateTime | DateOnly | undefined, format: string): string` — `value` 가 null 이면 `""`. `DateTime`/`DateOnly` 면 `value.toFormatString(format)`. 문자열이면 `format` 을 `|` 로 분리해 `X` 개수가 문자열 길이와 같은 패턴을 골라 `X` 자리에 글자를 끼워 넣음(전화번호·사업자번호 등 자릿수 마스킹). 매칭 패턴 없으면 원문 반환.
 
-- `transform(value: string | DateTime | DateOnly | undefined, format: string): string` — 값 표시 포매팅 파이프(`name: "format"`).
-  - `value` 가 `null`/`undefined` → `""` 반환(결측 보존).
-  - `DateTime`/`DateOnly` → `value.toFormatString(format)`.
-  - `string` → `format` 을 `|` 로 끊어 각 후보에서 `X` 개수가 문자열 길이와 같은 것을 찾아 `X` 자리에 한 글자씩 끼워 마스킹(예: 전화번호 `"XXX-XXXX-XXXX"`). 매칭 후보가 없으면 원문 그대로.
-  - 사용: `{{ phone | format: 'XXX-XXXX-XXXX' }}`, `{{ date | format: 'yyyy-MM-dd' }}`.
+```html
+{{ phone | format: "XXX-XXXX-XXXX|XX-XXXX-XXXX" }}
+{{ regDate | format: "yyyy-MM-dd" }}
+```
 
-## 디렉티브 입력 추론 타입
+### mark
 
-모달/토스트/인쇄 provider 의 `inputs` 타입 계산에 쓰이는 유틸 타입. 직접 쓸 일은 드물지만 시그니처 해석용으로 노출됨.
+시그널 값을 in-place 변경한 뒤 소비자에게 변경 알림만 발행.
 
-- `DirectiveInputSignals<T>` — 컴포넌트/디렉티브 클래스 `T` 의 `InputSignal` 프로퍼티만 골라 `{ 키: 값타입 }` 으로 추출. `InputSignal` 아닌 멤버는 제외, `undefined` 포함 필드는 optional 로 변환.
-- `UndefToOptional<T>` — `undefined` 를 포함하는 프로퍼티를 optional(`?`)로 바꾸는 매핑 타입. `DirectiveInputSignals` 내부에서 사용.
-- `WithOptional<T, K extends keyof T>` — 특정 키 `K` 만 optional 로 만든 타입(`Omit<T,K> & Partial<Pick<T,K>>`). provider 의 `inputs` 에서 "기본값 있는 입력은 생략 가능" 을 표현.
+- `mark(sig: WritableSignal<any>): void` — `sig` 가 배열이면 `[...v]`, 객체면 `{...v}` 로 shallow copy 해 set. 객체·배열 시그널 내부 필드만 바꾼 뒤(`data().name = ...; mark(data)`) 양방향 바인딩의 `(valueChange)` 에 묶어 호출하거나, 값이 같아도 effect 를 강제 재발화시킬 때 사용.
 
-## SelectModalOutputResult
+```html
+<sd-textfield [(value)]="data().name" (valueChange)="mark(data)" />
+```
 
-- `interface SelectModalOutputResult<TKey = any> { selectedKeys: TKey[] }` — 선택 전용 모달이 close 시 emit 하는 페이로드 규약. `SdSelectModal` / `SdModalSelectButton` / `sd-shared-data-select` 모달 연동의 반환 타입. 선택 모달 컴포넌트는 이 타입을 `close.emit` 으로 돌려줌.
+### setSafeStyle
 
-## SdGap (`sd-gap`)
+`Renderer2` 로 여러 스타일 속성을 한 번에 설정.
 
-여백 전용 빈 컴포넌트. flex 레이아웃 사이 간격을 토큰/픽셀로 삽입.
+- `setSafeStyle(renderer: Renderer2, el: HTMLElement, style: Partial<CSSStyleDeclaration>): void` — `style` 의 각 키를 `renderer.setStyle` 로 적용. 디렉티브·setup 헬퍼에서 호스트 엘리먼트에 스타일을 줄 때 사용.
 
-- `height: "xxs"|"xs"|"sm"|"default"|"lg"|"xl"|"xxl"` — 세로 간격 토큰(`--gap-*`). 세로 스택 사이 간격에 사용. 지정 시 display=block.
-- `heightPx: number` — 세로 간격 px. `0` 이면 display=none(간격 제거).
-- `width: "xxs"|...|"xxl"` — 가로 간격 토큰. 가로 나열 사이 간격에 사용. 지정 시 display=inline-block.
-- `widthPx: number` — 가로 간격 px. `0` 이면 display=none.
-- `widthEm: number` — 가로 간격 em. `0` 이면 display=none.
-- 사용: `<sd-gap [width]="'sm'" />`.
+### setupBgTheme
+
+현재 컴포넌트가 살아있는 동안 `document.body` 배경색 CSS 변수를 테마색으로 설정(파괴 시 해제). injection 컨텍스트(생성자)에서 호출.
+
+- `options.theme: "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"` — 배경 테마 계열. 미지정 시 배경색 변수를 빈 값으로 둠(기본 배경 유지).
+- `options.lightness: "lightest"|"lighter"` — 테마색 밝기. 미지정 시 `"lightest"`. 페이지 전체 배경을 옅게 깔 때 사용.
+
+```ts
+constructor() { setupBgTheme({ theme: "gray", lightness: "lightest" }); }
+```
+
+### setupModelHook
+
+`WritableSignal` 의 `set`/`update` 를 가로채 변경 허용 여부를 콜백으로 검사(비동기 허용). injection 컨텍스트에서 호출.
+
+- `model: WritableSignal<T>` — 가드를 걸 대상 모델 시그널.
+- `canFn: Signal<(item: T) => boolean | Promise<boolean>>` — 새 값을 받기 전 호출. `false` 면 반영 차단, `true` 면 즉시 반영, `Promise` 면 resolve 가 `false` 가 아닐 때만 반영(reject 는 `ErrorHandler` 로). 체크박스·스위치의 변경 확인 후에만 모델을 바꿔야 할 때.
+
+### SelectModalOutputResult
+
+선택 모달이 close 페이로드로 돌려주는 결과 타입.
+
+- `selectedKeys: TKey[]` — 모달에서 선택된 키 배열. 단건 선택도 배열로 반환(첫 키만 사용). `sd-modal-select-button`·`sd-shared-data-select` 가 이 페이로드로 선택을 갱신.
+
+### 타입 유틸 (directive-input-signals)
+
+컴포넌트 input 시그널에서 값 타입을 뽑는 매핑 타입. 모달/토스트/인쇄 `inputs` 의 정적 타입 검증에 쓰임.
+
+- `DirectiveInputSignals<T>` — `T` 의 `InputSignal` 프로퍼티만 골라 값 타입으로 변환한 객체 타입. `undefined` 포함 필드는 optional 로.
+- `UndefToOptional<T>` — `undefined` 를 포함하는 프로퍼티를 optional(`?`) 로 변환.
+- `WithOptional<T, K>` — `T` 에서 키 `K` 들만 optional 로 변환.

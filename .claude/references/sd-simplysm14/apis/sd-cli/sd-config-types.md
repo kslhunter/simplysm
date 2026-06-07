@@ -1,6 +1,6 @@
 # @simplysm/sd-cli — sd.config.ts 설정 타입
 
-프로젝트 루트 `sd.config.ts` 작성·수정 시 함께 읽히는 타입 묶음. `sd.config.ts` 는 `SdConfigFn` 을 default export 해야 한다. 권위 소스는 `packages/sd-cli/src/sd-config.types.ts`. 모든 타입은 `import type { ... } from "@simplysm/sd-cli"` 로 가져온다.
+프로젝트 루트 `sd.config.ts` 작성·수정 시 함께 읽히는 타입 묶음. `sd.config.ts` 는 `SdConfigFn` 형태의 함수를 default export 해야 하며, 그 반환값 `SdConfig` 의 `packages` 맵에 각 패키지를 타겟별 설정으로 채운다. 모든 타입은 `import type { ... } from "@simplysm/sd-cli"` 로 가져온다.
 
 ## SdConfigFn / SdConfigParams / SdConfig
 
@@ -22,15 +22,15 @@ interface SdConfig {
 
 `SdConfigParams` (sd-cli 가 설정 함수에 주입):
 
-- cwd: string — 현재 작업 디렉토리(워크스페이스 루트). 설정에서 경로를 절대화할 때 쓴다.
-- dev: boolean — 개발 모드 플래그. true 면 dev 실행(watch/dev). env·publish 를 모드별로 분기할 때 쓴다.
-- opt: string[] — CLI 의 `-o` 플래그로 넘어온 추가 옵션 배열. 임의 빌드 변형(예: 특정 환경 타겟)을 분기할 때 쓴다.
+- cwd: string — 현재 작업 디렉토리(워크스페이스 루트). 설정에서 경로를 절대화할 때 기준.
+- dev: boolean — 개발 모드 플래그. true 면 dev 실행(watch/dev) 중. env·빌드 타겟을 dev/prod 로 분기할 때.
+- opt: string[] — CLI 의 `-o` 플래그로 넘어온 추가 옵션 배열. 특정 옵션이 들어왔을 때만 패키지를 켜는 식의 임의 빌드 변형에.
 
 `SdConfig`:
 
-- packages: Record<string, SdPackageConfig | undefined> — 키는 `packages/` 하위 디렉토리명(예: `"core-common"`), 값은 해당 패키지 빌드 설정. `undefined` 면 그 패키지를 빌드 대상에서 제외. 워크스페이스의 어떤 패키지를 어떤 타겟으로 빌드할지 한 곳에 모은다.
-- replaceDeps?: Record<string, string> — 의존성 교체(심링크). 키는 node_modules 에서 찾을 패키지 glob(예: `"@simplysm/*"`), 값은 로컬 소스 디렉토리 경로로 키의 `*` 캡처가 값의 `*` 에 치환됨(예: `"../simplysm/packages/*"`). 배포된 패키지 대신 로컬 소스를 곧바로 쓰고 싶을 때.
-- postPublish?: SdPostPublishScriptConfig[] — 배포 완료 후 순차 실행할 스크립트 목록. 배포 후 알림·태깅 등 후처리에 쓴다.
+- packages: Record<string, SdPackageConfig | undefined> — 키는 `packages/` 하위 디렉토리명(예: `"core-common"`), 값은 빌드 설정. `undefined` 면 그 패키지를 빌드 대상에서 제외. 어떤 패키지를 어떤 타겟으로 빌드할지 한 곳에 모은다.
+- replaceDeps?: Record<string, string> — 의존성 교체(심링크). 키는 node_modules 에서 찾을 패키지 glob(예: `"@simplysm/*"`), 값은 로컬 소스 디렉토리 경로로 키의 `*` 캡처가 값의 `*` 에 치환됨(예: `"../simplysm/packages/*"`). 배포된 패키지 대신 로컬 소스를 곧바로 물려 디버깅할 때.
+- postPublish?: SdPostPublishScriptConfig[] — 배포 완료 후 순차 실행할 스크립트 목록. 배포 후 태깅·알림 등 후처리에.
 
 사용 예:
 
@@ -59,7 +59,7 @@ type SdPackageConfig =
 
 판별자는 `target`. enum literal 별 의미:
 
-- "node" / "browser" / "neutral" (→ `SdBuildPackageConfig`) — esbuild 라이브러리 패키지. "node" = Node.js 전용, "browser" = 브라우저 전용, "neutral" = 공용. npm 배포 라이브러리에 쓴다.
+- "node" / "browser" / "neutral" (→ `SdBuildPackageConfig`) — esbuild 라이브러리 패키지. "node" = Node.js 전용, "browser" = 브라우저 전용, "neutral" = 양쪽 공용. npm 배포 라이브러리에 쓴다.
 - "client" (→ `SdClientPackageConfig`) — Frontend 앱(Angular + Capacitor/Electron/PWA 옵션). esbuild + define 으로 env 주입.
 - "server" (→ `SdServerPackageConfig`) — Fastify 서버 앱. esbuild banner 로 env 주입, PM2 옵션.
 - "scripts" (→ `SdScriptsPackageConfig`) — 유틸 패키지. watch 훅이 없으면 watch/typecheck 대상에서 제외됨.
@@ -97,13 +97,13 @@ interface SdClientPackageConfig {
 }
 ```
 
-- server: string | number — 연결할 dev 서버. string = 서버 패키지명(예: `"demo-server"`), number = 포트 직접 지정(하위 호환). 보통 같은 워크스페이스의 서버 패키지명을 준다.
+- server: string | number — 연결할 서버. string = 서버 패키지명(예: `"demo-server"`), number = 포트 직접 지정(하위 호환). 보통 같은 워크스페이스의 서버 패키지명을 준다.
 - env?: Record<string, string> — 빌드 시 `process.env` 를 객체로 치환할 환경 변수. 프론트 코드에 빌드 타임 상수를 주입할 때.
-- publish?: SdPublishConfig — 산출물 배포 설정.
+- publish?: SdPublishConfig — 산출물 배포 설정. 미지정 시 배포 안 함.
 - capacitor?: SdCapacitorConfig — Capacitor 모바일 앱 패키징 설정. 지정 시 Android 등으로 패키징.
 - electron?: SdElectronConfig — Electron 데스크톱 앱 패키징 설정.
-- configs?: Record<string, unknown> — 런타임 설정. 빌드 시 `dist/.config.json` 으로 기록되어 앱이 런타임에 읽음. 배포 환경별 가변 값.
-- exclude?: string[] — Capacitor/Electron `package.json` 에 추가(번들 제외)할 패키지 목록.
+- configs?: Record<string, unknown> — 런타임 설정. 빌드 시 `dist/.config.json` 으로 기록되어 앱이 런타임에 읽음. 배포 환경별 가변 값에.
+- exclude?: string[] — Capacitor/Electron `package.json` 에 추가(번들에서 빼 외부 패키지로 둘)할 패키지 목록.
 - browserSupport?: SdBrowserSupportConfig — 브라우저 호환(browserslist/PostCSS/legacyModule) 설정.
 - pwa?: false | SdPwaConfig — PWA 설정. `false` 면 비활성화, 미지정 시 기본값으로 활성화, 객체면 manifest 커스텀. PWA 가 필요 없으면 `false`.
 
@@ -122,9 +122,10 @@ interface SdServerPackageConfig {
 ```
 
 - env?: Record<string, string> — 빌드 시 `process.env.KEY` 를 상수로 치환(esbuild banner). 서버 빌드 타임 상수 주입.
+- publish?: SdPublishConfig — 산출물 배포 설정.
 - configs?: Record<string, unknown> — 런타임 설정. `dist/.config.json` 으로 기록.
 - externals?: string[] — esbuild 번들에 포함하지 않을 외부 모듈. 자동 `binding.gyp` 감지 항목에 더해짐. 네이티브 모듈을 번들에서 뺄 때.
-- pm2?.name?: string — PM2 프로세스 이름. 미지정 시 `package.json` name 에서 생성. 지정 시 `dist/pm2.config.cjs` 생성.
+- pm2?.name?: string — PM2 프로세스 이름. 미지정 시 `package.json` name 에서 생성. `pm2` 지정 시 `dist/pm2.config.cjs` 생성.
 - pm2?.ignoreWatchPaths?: string[] — PM2 watch 에서 제외할 경로.
 - packageManager?: "volta" | "mise" — 산출물에 생성할 패키지 매니저 설정 종류. "volta" = volta 설정, "mise" = `mise.toml` 생성. 배포 서버의 매니저에 맞춘다.
 
@@ -138,6 +139,7 @@ interface SdScriptsPackageConfig {
 }
 ```
 
+- publish?: SdPublishConfig — 산출물 배포 설정.
 - watch?: SdWatchHookConfig — watch 훅. 지정해야만 이 패키지가 watch 모드에 포함됨(미지정 시 watch/typecheck 제외). 파일 변경 시 임의 명령 실행에 쓴다.
 
 ## SdWatchHookConfig
@@ -174,6 +176,7 @@ interface SdPostPublishScriptConfig {
 }
 ```
 
+- type: "script" — 후처리 스크립트임을 나타내는 판별자(고정).
 - cmd: string — 배포 후 실행할 명령어.
 - args: string[] — 인수. `%VER%`(버전), `%PROJECT%`(프로젝트명) 치환됨.
 
@@ -221,7 +224,7 @@ interface SdCapacitorPermission { name: string; maxSdkVersion?: number; ignore?:
 interface SdCapacitorIntentFilter { action?: string; category?: string; }
 ```
 
-- SdCapacitorSignConfig.keystore — keystore 파일 경로(패키지 기준 상대). storePassword/alias/password = 서명 자격. keystoreType?: string — keystore 타입(기본값 `"jks"`).
+- SdCapacitorSignConfig.keystore — keystore 파일 경로(패키지 기준 상대). storePassword/alias/password = 서명 자격증명. keystoreType?: string — keystore 타입(기본값 `"jks"`).
 - SdCapacitorPermission.name — 권한 이름(예: `"CAMERA"`). maxSdkVersion?: number — 권한 적용 최대 SDK. ignore?: string — `tools:ignore` 속성 값.
 - SdCapacitorIntentFilter.action — intent 액션(예: `"android.intent.action.VIEW"`). category — intent 카테고리(예: `"android.intent.category.DEFAULT"`).
 
@@ -263,8 +266,9 @@ interface SdPwaManifestConfig {
 
 - manifest?: SdPwaManifestConfig — PWA manifest 커스터마이징. 미지정 시 기본 manifest.
 - display?: "standalone"|"fullscreen"|"minimal-ui"|"browser" — 앱 표시 모드. "standalone" = 브라우저 UI 없는 앱 창, "fullscreen" = 전체 화면, "minimal-ui" = 최소 브라우저 UI, "browser" = 일반 탭. 네이티브 느낌이면 "standalone".
-- name/short_name/theme_color/background_color — manifest 표준 필드(앱 이름·축약명·테마색·배경색).
-- icons?: Array<{ src; sizes; type? }> — manifest 아이콘 목록(경로·크기·MIME).
+- name/short_name — manifest 앱 이름 / 짧은 이름.
+- theme_color/background_color — manifest 테마 색 / 배경 색.
+- icons?: Array<{ src; sizes; type? }> — manifest 아이콘 목록. src = 경로, sizes = 크기(예: `"512x512"`), type = MIME 타입.
 
 ## SdBrowserSupportConfig (client 의 browserSupport)
 
@@ -284,8 +288,8 @@ interface SdBrowserSupportConfig {
 
 ```typescript
 type BuildTarget = "node" | "browser" | "neutral";
-interface NpmConfig { name; version; description?; dependencies?; devDependencies?; peerDependencies?; volta?; }
+interface NpmConfig { name: string; version: string; description?: string; dependencies?: Record<string,string>; devDependencies?: Record<string,string>; peerDependencies?: Record<string,string>; volta?: unknown; }
 ```
 
-- BuildTarget — esbuild 라이브러리 빌드 런타임 타겟 enum(위 `SdPackageConfig` 풀이 참조).
-- NpmConfig — `package.json` 구조 타입. name/version 필수, 나머지 선택. package.json 을 타입 안전하게 다룰 때.
+- BuildTarget — esbuild 라이브러리 빌드 런타임 타겟 enum. "node" = Node 전용, "browser" = 브라우저 전용, "neutral" = 공용(위 `SdPackageConfig` 풀이와 동일).
+- NpmConfig — `package.json` 구조 타입. name/version 필수, description/dependencies/devDependencies/peerDependencies/volta 는 선택. package.json 을 타입 안전하게 다룰 때.

@@ -41,7 +41,7 @@ import { NgTemplateOutlet } from "@angular/common";
         } @else if (viewType() === "page") {
           <sd-topbar-container>
             <sd-topbar>
-              <h4>{{ viewTitle() }}</h4>
+              <h5 class="tx-trans-light">{{ viewTitle() }}</h5>
 
               <ng-template [ngTemplateOutlet]="topbarTplRef()" />
             </sd-topbar>
@@ -57,7 +57,7 @@ import { NgTemplateOutlet } from "@angular/common";
     <ng-template #content>
       <div class="flex-column fill">
         @if (commandTplRef()) {
-          <div class="p-default flex-row gap-default bdb bdb-theme-gray-lightest">
+          <div class="p-default flex-row gap-default">
             <ng-template [ngTemplateOutlet]="commandTplRef()" />
           </div>
         }
@@ -69,7 +69,7 @@ import { NgTemplateOutlet } from "@angular/common";
         </div>
 
         @if (bottomCommandTplRef()) {
-          <div class="p-sm-default flex-row main-align-end gap-sm bdt bdt-theme-gray-lightest">
+          <div class="p-sm-default flex-row main-align-end gap-sm bdt bdt-theme-gray-lighter bg-theme-gray-lightest">
             <ng-template [ngTemplateOutlet]="bottomCommandTplRef()" />
           </div>
         }

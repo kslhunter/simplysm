@@ -10,15 +10,19 @@ import { SdCollapse } from "../../controls/collapse/sd-collapse";
 import { SdRipple } from "../../core/ripple/sd-ripple";
 import { SdList } from "../../controls/list/sd-list";
 import { SdListItem } from "../../controls/list/sd-list-item";
+import { NgIcon } from "@ng-icons/core";
 
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdCollapseIcon, SdCollapse, SdRipple, SdList, SdListItem],
+  imports: [SdCollapseIcon, SdCollapse, SdRipple, SdList, SdListItem, NgIcon],
+  host:{
+    "[class]": "'pv-lg'"
+  },
   template: `
-    <div class="p-lg">
+    <div class="p-xs-default">
       <ng-content />
     </div>
     @if (userMenu(); as _userMenu) {
@@ -29,6 +33,9 @@ import { SdListItem } from "../../controls/list/sd-list-item";
         (keydown.enter)="onMenuOpenButtonClick()"
         [sdRipple]="true"
       >
+        @if (_userMenu.icon) {
+          <ng-icon [svg]="_userMenu.icon" />
+        }
         {{ _userMenu.title }}
         <sd-collapse-icon [open]="menuOpen()" style="float: right;" [openRotate]="180" />
       </div>
@@ -53,8 +60,11 @@ import { SdListItem } from "../../controls/list/sd-list-item";
           display: block;
           cursor: pointer;
           user-select: none;
+          color: var(--text-trans-light);
 
-          padding: var(--gap-default);
+          padding: var(--gap-sm) var(--gap-default);
+          border-radius: var(--border-radius-default);
+          margin: 0 var(--gap-sm);
 
           &:hover {
             background: var(--trans-lighter);
@@ -64,6 +74,7 @@ import { SdListItem } from "../../controls/list/sd-list-item";
         > sd-collapse > ._content > sd-list {
           background: var(--trans-lightest);
           padding: var(--gap-xs) 0;
+          margin: 0 var(--gap-sm);
         }
       }
     `,
@@ -80,6 +91,7 @@ export class SdSidebarUser {
 }
 
 export interface SdSidebarUserMenu {
+  icon?: string;
   title: string;
   menus: {
     title: string;

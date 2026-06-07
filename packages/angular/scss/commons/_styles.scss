@@ -47,19 +47,21 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: var(--theme-gray-light);
+    background-color: var(--trans-lighter);
     border-radius: 0.6667rem;
     background-clip: padding-box;
     border: 2px solid transparent;
   }
 
-  *::-webkit-scrollbar-track {
-    &:hover {
-      background-color: var(--theme-gray-lightest);
-      border-radius: 0.6667rem;
-      background-clip: padding-box;
-      border: 2px solid transparent;
-    }
+  *:hover::-webkit-scrollbar-thumb {
+    background-color: var(--trans-light);
+  }
+
+  *::-webkit-scrollbar-track:hover {
+    background-color: var(--trans-lightest);
+    border-radius: 0.6667rem;
+    background-clip: padding-box;
+    border: 2px solid transparent;
   }
 
   *::-webkit-scrollbar-corner {

@@ -17,5 +17,6 @@ tests/*/dist
 ~*.*
 
 packages/sd-claude/claude
+packages/angular/styles.css
 signCert.der
 signPri.key

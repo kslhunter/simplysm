@@ -349,6 +349,15 @@ export function transformWorkerPatterns(
         text: `new ${match.workerType}(new URL("${workerCodePath}", import.meta.url), ${optsStr})`,
       });
     } else {
+      // node 워커(import.meta.resolve)는 node 런타임 전용이다. browser 빌드에서는 번들하지
+      // 않고 import.meta.resolve(...) 호출을 그대로 둔다. 이 호출은 호출부에서
+      // isNodeWorkerSupported() 등 node 가드 하에서만 실행되므로 browser 런타임에는 도달하지
+      // 않으며, node 워커를 browser 플랫폼으로 buildSync 하면 worker_threads/fs 등 node
+      // 빌트인 resolve 가 실패하므로 이를 원천 차단한다.
+      if (build.initialOptions.platform === "browser") {
+        continue;
+      }
+
       const fullWorkerPath = path.resolve(containingDir, match.urlPath);
       const workerCodePath = processWorkerBundle(
         fullWorkerPath,

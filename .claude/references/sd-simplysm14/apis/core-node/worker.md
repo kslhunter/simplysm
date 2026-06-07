@@ -5,7 +5,7 @@
 ## createWorker (워커 스레드 측)
 
 - `createWorker<TMethods, TEvents>(methods): { send; __methods; __events }` — 워커 스레드 진입 파일에서 호출하고 그 반환을 `export default`. `parentPort` 가 없으면(워커 컨텍스트 아님) `SdError` throw. 메서드 호출 메시지를 수신해 실행 후 결과/에러를 응답하고, 워커의 `process.stdout.write` 를 가로채 메인으로 로그를 전달한다.
-  - `methods: TMethods` (`Record<string, (...args: any[]) => unknown>`) — 워커가 제공할 메서드 맵. 동기/비동기 모두 가능(내부에서 await). 알 수 없는 메서드 호출 시 `SdError("알 수 없는 메서드: ...")` 로 응답.
+  - `methods: TMethods` (`Record<string, (...args: any[]) => unknown>`) — 워커가 제공할 메서드 맵. 동기/비동기 모두 가능(내부에서 await). 알 수 없는 메서드 호출 시 `SdError("알 수 없는 메서드: ...")` 로 응답, 잘못된 요청 형식이면 `SdError("잘못된 워커 요청 형식: ...")` 응답.
   - 제네릭 `TEvents extends Record<string, unknown>`(기본 `Record<string, never>`) — 워커가 보낼 이벤트명→데이터 타입 맵(메인의 `on` 타입 추론에 사용).
   - 반환 `send<K extends keyof TEvents & string>(event, data?): void` — 워커→메인 이벤트 전송. 진행률 등 메서드 반환과 별개의 통지에 사용.
   - 반환 `__methods` / `__events` — 타입 추론용 마커. 런타임 값이 아니라 `Worker.create<typeof import(...)>` 의 타입에서만 참조됨.
@@ -49,6 +49,9 @@ await worker.terminate();
 
 - `interface WorkerModule { default: { __methods: Record<string, (...args: any[]) => unknown>; __events: Record<string, unknown> } }` — `Worker.create` 의 제네릭 제약. `typeof import("./worker")` 가 이 구조를 만족(=`createWorker` 반환을 default export).
 - `type PromisifyMethods<TMethods>` — 각 메서드 반환을 `Promise<Awaited<R>>` 로 바꾸는 매핑 타입. 함수가 아닌 멤버는 `never`.
-- `type WorkerProxy<TModule>` — 위 프록시 타입.
+- `type WorkerProxy<TModule>` — 위 프록시 타입(Promise화 메서드 + on/off/terminate).
 - `interface WorkerRequest { id: string; method: string; params: unknown[] }` — 내부 요청 메시지.
-- `type WorkerResponse` — 내부 응답 메시지 union: `return`(결과) / `error`(Error) / `event`(워커 send) / `log`(stdout 전달). 직접 다룰 일은 거의 없음.
+  - `id: string` — 요청 식별자(Uuid). 응답을 대기 중 호출과 매칭하는 키.
+  - `method: string` — 호출할 워커 메서드명.
+  - `params: unknown[]` — 메서드 인자 배열.
+- `type WorkerResponse` — 내부 응답 메시지 union: `return`(결과 body) / `error`(Error body) / `event`(워커 send: event+body) / `log`(stdout 전달 body). 직접 다룰 일은 거의 없음.

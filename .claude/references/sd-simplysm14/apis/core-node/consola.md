@@ -45,4 +45,7 @@ consola.options.reporters = [createFileReporter({ maxSize: 5 * 1024 * 1024, maxD
 ## FileReporterOptions / SetupConsolaOptions
 
 - `interface FileReporterOptions { maxSize?: number; maxDays?: number }` — 위 createFileReporter 옵션 타입.
+  - `maxSize?: number` — 로그 파일 1개의 최대 바이트(기본 20MB). 초과 시 seq 파일로 분할.
+  - `maxDays?: number` — 로그 보관 일수(기본 14). 초과 날짜 파일 삭제.
 - `interface SetupConsolaOptions { cli?: boolean }` — 위 setupConsola 옵션 타입.
+  - `cli?: boolean` — CLI 모드 여부. true 면 prod 라도 콘솔 출력 경로 사용.

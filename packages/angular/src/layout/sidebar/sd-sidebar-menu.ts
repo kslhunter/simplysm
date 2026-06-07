@@ -30,7 +30,7 @@ import { NgIcon } from "@ng-icons/core";
     "[attr.data-sd-root-layout]": "rootLayout()",
   },
   template: `
-    <div class="control-header p-default">MENU</div>
+    <div class="control-header p-default"><b>MENU</b></div>
 
     <sd-list class="flex-fill" [inset]="true">
       <ng-template
@@ -42,8 +42,6 @@ import { NgIcon } from "@ng-icons/core";
     <ng-template #itemTpl [typed]="itemTemplateType" let-currMenus="menus" let-depth="depth">
       @for (menu of currMenus; track menu.codeChain.join(".")) {
         <sd-list-item
-          [contentClass]="depth === 0 ? 'pv-default' : ''"
-          [style.text-indent.em]="depth > 0 ? (depth + 1) * 0.5 : undefined"
           [sdRouterLink]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu)"
           [selected]="getIsMenuSelected(menu)"
@@ -76,11 +74,10 @@ import { NgIcon } from "@ng-icons/core";
           sd-list {
             background: var(--trans-lightest);
           }
-
         }
 
         &:not([data-sd-root-layout="accordion"]) {
-          > sd-list[data-sd-inset="true"] > sd-list-item > sd-collapse > ._content > sd-list {
+          > sd-list[data-sd-inset="true"] > sd-list-item > sd-collapse > ._content > ._children > sd-list {
             background: transparent;
           }
         }

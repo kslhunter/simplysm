@@ -10,10 +10,12 @@
 | 단건 입력 폼                                             | `<domain>.detail.ts`                                                                            |
 | 좌 목록 + 우 단건                                        | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
 | 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 마스터-라인     | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
-| 모달 (동작 섹션에 `→ [화면.X] 을 모달로 띄움` 표기)      | `<domain>.modal.ts`                                                                             |
+| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)               | `<domain>.modal.ts`                                                                             |
 | 프린트 양식                                              | `<domain>.print-template.ts`                                                                    |
 
 `<domain>` 은 화면명을 dash-case 영문으로 음역한 슬러그. 같은 도메인 폴더에 같은 역할의 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식 사용.
+
+동작 섹션의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님. 화면.X 가 단건 편집이면 `.detail.ts` 를 `showAsync` 로 띄우고(= 위 "단건 입력 폼" 행), 모달 전용 비-CRUD UI 일 때만 `.modal.ts`. 판별 기준은 [client-component.md "detail 과 modal 구분"](./client-component.md) 참조.
 
 ## 와이어프레임 기준
 
@@ -71,7 +73,7 @@ if (!result) return;
 
 영역 한정 호출(`→ [화면.Y] 의 <영역> — 선택 전용` 등) 은 모달의 입력 시그널(`selectMode` 등) 로 전달. spec 마커 매핑: "선택 전용"·multiselect 는 `selectMode`(`single`/`multi`) 로, "편집 가능 여부" 는 `readonly` 로 따로 전달. "선택 전용" 은 선택 목적을 뜻할 뿐 편집을 막지 않으므로(readonly 아님), 편집까지 차단하려면 `readonly=true` 를 함께 줄 것.
 
-피호출 모달은 `<sd-crud-detail>` 을 루트로 사용 (`viewType='modal'` 자동 주입). 임의 `close` output 규약을 만들지 말 것 — `_sdModal.showAsync` 의 페이로드 반환 규약만 사용.
+단건 편집을 모달로 띄우는 경우 피호출 화면은 `.detail.ts`(`<sd-crud-detail>` 루트, `viewType='modal'` 자동 주입)이며 모달 표시용 별도 `.modal.ts` 를 만들지 않음. 모달 전용 비-CRUD 화면(`.modal.ts`)은 `sd-crud-detail` 대신 `sd-busy-container` 등으로 자체 구성. 어느 경우든 임의 `close` output 규약을 만들지 말 것 — `_sdModal.showAsync` 의 페이로드 반환 규약만 사용.
 
 **동반 모달**: 동작 섹션에 `→ [화면.Y] 을 모달로 띄움` 으로 등장하는 모든 모달은 같은 호출에서 함께 생성. 이미 존재하면 재사용.
 

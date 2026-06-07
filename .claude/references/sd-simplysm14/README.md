@@ -32,7 +32,7 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 | `<sd-tab>` 사용                                         | [client-tab.md](./manuals/client-tab.md)               |
 | 앱에서 서버 서비스·이벤트 호출 (provider 정의·항목 추가) | [client-service.md](./manuals/client-service.md)       |
 | 앱에서 ORM(DB) 사용 (AppOrmProvider 정의)               | [client-orm.md](./manuals/client-orm.md)               |
-| 앱에서 공유 마스터 데이터 사용 (provider 정의·항목 추가) | [client-shared-data.md](./manuals/client-shared-data.md) |
+| 앱에서 공유 마스터 데이터 사용 (provider 정의·항목 추가, 선택 컨트롤의 관리·선택 모달) | [client-shared-data.md](./manuals/client-shared-data.md) |
 | 클라이언트·서버 간 실시간 이벤트 정의·발생·구독         | [event.md](./manuals/event.md)                         |
 | 앱 메뉴 구조·권한 정의 추가/수정                        | [client-app-structure.md](./manuals/client-app-structure.md) |
 | ORM 쿼리 작성(조회 흐름·안티패턴), 컬럼 nullable/default 정책, 삭제 전략 | [orm.md](./manuals/orm.md)                             |
@@ -45,15 +45,16 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 ## 패키지 인덱스
 
 - **angular** — Angular(zoneless) 기반 SI/업무 클라이언트용 UI 컴포넌트·디렉티브·전역 프로바이더·signal 헬퍼 — 부트스트랩(provideSdAngular)·모달/토스트/busy/인쇄·라우팅/메뉴/권한·폼 입력 컨트롤·시트(sd-sheet)·공유 마스터 데이터·CRUD 화면 골격·사이드바/탑바 레이아웃·칸반/권한표/에디터/시각화를 쓸 때. 자세히: [apis/angular/README.md](./apis/angular/README.md)
-- **capacitor-plugin-auto-update** — Android APK 자동 업데이트 Capacitor 플러그인 — 부팅 시 서버/외부저장소의 최신 APK 를 받아 설치하는 오케스트레이터(AutoUpdate)와 저수준 설치·권한·버전 조회 정적 클래스(ApkInstaller). 자세히: [apis/capacitor-plugin-auto-update/README.md](./apis/capacitor-plugin-auto-update/README.md)
+- **capacitor-plugin-auto-update** — Android APK 자동 업데이트 Capacitor 플러그인 — 부팅 시 서버/외부저장소의 최신 APK 를 받아 설치하는 오케스트레이터(AutoUpdate.run/runByExternalStorage)와 저수준 설치·권한·버전 조회 정적 클래스(ApkInstaller) 및 브리지 타입(ApkInstallerPlugin/VersionInfo)을 쓸 때. 자세히: [apis/capacitor-plugin-auto-update/README.md](./apis/capacitor-plugin-auto-update/README.md)
 - **capacitor-plugin-file-system** — Capacitor 네이티브 파일 시스템 접근(Android OS 파일 시스템 / 웹 IndexedDB 에뮬레이션). FileSystem 정적 메서드로 권한 확인·요청, 디렉토리 읽기/생성, 파일 읽기/쓰기/삭제, 저장소 경로·파일 URI 조회 시. 자세히: [apis/capacitor-plugin-file-system/README.md](./apis/capacitor-plugin-file-system/README.md)
 - **capacitor-plugin-intent** — Android 인텐트 송수신 Capacitor 플러그인(Intent 정적 클래스) — 브로드캐스트 구독/전송, 실행 인텐트 조회, newIntent 리스닝, startActivityForResult 외부 Activity 실행·결과 수신. 바코드 스캐너·PDA 등 산업용 디바이스 연동 시 사용. 자세히: [apis/capacitor-plugin-intent/README.md](./apis/capacitor-plugin-intent/README.md)
 - **capacitor-plugin-usb-storage** — 연결된 USB Mass Storage 장치를 열거·권한확인 후 디렉토리/파일을 읽는 Capacitor 플러그인. 정적 클래스 UsbStorage 와 입출력 타입(UsbDeviceInfo/UsbDeviceFilter/UsbFileInfo/UsbStoragePlugin) 제공. 자세히: [apis/capacitor-plugin-usb-storage/README.md](./apis/capacitor-plugin-usb-storage/README.md)
 - **core-browser** — 브라우저 전용 유틸리티 — DOM 요소 탐색·위치 계산·가시성 확장, IndexedDB 영속화 및 가상 파일시스템, Blob 다운로드·URL 바이너리 수신·파일 선택 대화상자가 필요할 때. 자세히: [apis/core-browser/README.md](./apis/core-browser/README.md)
-- **core-common** — 브라우저·Node 공용 기반 유틸 — 날짜/시간 값 타입(DateTime/DateOnly/Time), 에러 클래스(SdError 등), 배열/객체 조작, 직렬화(json/xml/bytes/transfer), 비동기 큐·이벤트·대기, 로거·환경변수가 필요할 때. 자세히: [apis/core-common/README.md](./apis/core-common/README.md)
+- **core-common** — 브라우저·Node 공용 기반 유틸 — 날짜/시간 값 타입(DateTime/DateOnly/Time/Uuid), 에러 클래스(SdError 등), 배열/Set/Map 프로토타입 확장, 객체 깊은 복사·비교·병합(obj), 직렬화(json/xml/bytes/transfer), 비동기 큐·이벤트·대기·자동만료 Map, 문자열/숫자/경로/날짜포맷 유틸, 로거·환경변수·원시타입 매핑이 필요할 때. 자세히: [apis/core-common/README.md](./apis/core-common/README.md)
 - **core-node** — Node 전용 유틸: 파일시스템 IO(fsx)·경로 가공(pathx)·자식 프로세스 실행(cpx)·glob 감시(FsWatcher)·consola 로깅 셋업(setupConsola)·worker_threads 타입 안전 래퍼(Worker/createWorker)가 필요할 때. 자세히: [apis/core-node/README.md](./apis/core-node/README.md)
 - **excel** — OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리. ExcelWorkbook/ExcelWorksheet 로 시트·셀 값/수식·스타일·조건부 서식·이미지·행 복사·뷰를, ExcelWrapper 로 Zod 스키마 기반 레코드 ↔ 엑셀 변환을, ExcelUtils 로 주소·날짜 시리얼·숫자형식 변환을 다룰 때. 자세히: [apis/excel/README.md](./apis/excel/README.md)
-- **orm-common** — Dialect 독립 ORM 코어 — DbContext 상속·연결/트랜잭션/DDL/마이그레이션, Table/View/Procedure 스키마 빌더, Queryable 체이닝·CRUD·검색·UNION, expr 표현식 빌더, QueryDef/Expr AST·QueryBuilder·결과 파싱을 다룰 때 참조. 자세히: [apis/orm-common/README.md](./apis/orm-common/README.md)
+- **lint** — 심플리즘 ESLint 자산. 커스텀 규칙 9종 플러그인(`@simplysm/lint/eslint-plugin`)과 그 규칙 + typescript-eslint/angular-eslint/import/unused-imports 를 묶은 flat config 프리셋(`@simplysm/lint/eslint-recommended`)을 프로젝트 eslint.config 에 적용하거나 개별 규칙의 검사 대상·메시지·autofix·옵션을 파악할 때. 자세히: [apis/lint/README.md](./apis/lint/README.md)
+- **orm-common** — Dialect(MySQL/MSSQL/PostgreSQL) 독립 ORM 코어 — Table/View/Procedure 스키마 빌더, DbContext 상속(연결·트랜잭션·DDL·마이그레이션), Queryable 체이닝(SELECT/CUD·join/include/union/recursive·검색), expr 표현식 빌더(비교·집계·조건·윈도우·서브쿼리), QueryDef/Expr AST·dialect QueryBuilder·결과 파싱을 다룰 때. 자세히: [apis/orm-common/README.md](./apis/orm-common/README.md)
 - **orm-node** — Node.js 환경에서 DbContext 를 MySQL/MSSQL/PostgreSQL 에 연결·실행하는 ORM 런타임 — 고수준 createOrm(트랜잭션 경계) 과 저수준 createDbConn/DbConn(raw SQL·파라미터 쿼리·bulk insert·수동 트랜잭션) 제공. 자세히: [apis/orm-node/README.md](./apis/orm-node/README.md)
 - **sd-cli** — sd.config.ts 설정 타입(SdConfigFn·타겟별 패키지 설정·배포/Capacitor/Electron/PWA), 패키지 단위 TS/Angular AOT 증분 컴파일러 SdTsCompiler, Vitest용 Angular Vite 플러그인 sdAngularPlugin 을 다룰 때. 자세히: [apis/sd-cli/README.md](./apis/sd-cli/README.md)
 - **service-client** — WebSocket 으로 서비스 서버에 접속해 서비스 RPC 호출·서버 푸시 이벤트 구독/발행·파일 업다운로드·서버측 ORM 원격 실행을 수행하는 클라이언트(브라우저/Node 양용)가 필요할 때. 자세히: [apis/service-client/README.md](./apis/service-client/README.md)

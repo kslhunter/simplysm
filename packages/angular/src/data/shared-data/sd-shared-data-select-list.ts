@@ -53,7 +53,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
     class: "flex-column fill",
   },
   template: `
-    <div class="flex-column gap-sm p-default">
+    <div class="flex-column gap-sm pt-default ph-sm">
       @if (header() || headerTplRef() || modal()) {
         <div class="flex-row">
           <div class="flex-fill">

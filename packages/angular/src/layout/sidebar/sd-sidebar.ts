@@ -32,8 +32,9 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
         left: 0;
         width: var(--sidebar-width);
         height: 100%;
-        background: var(--control-color);
-        border-right: 1px solid var(--border-color-lighter);
+        //background: var(--control-color);
+        background: var(--theme-gray-lightest);
+        //border-right: 1px solid var(--border-color-lighter);
 
         @media not all and (max-width: variables.$breakpoint-mobile) {
           transition: transform 0.1s ease-out;

@@ -1,6 +1,6 @@
 # @simplysm/service-client
 
-WebSocket 으로 서비스 서버(`@simplysm/service-server`)에 접속해 서비스 메서드 RPC 호출·서버 푸시 이벤트 구독/발행·파일 업/다운로드·서버측 ORM 원격 실행을 수행하는 클라이언트. 브라우저(DOM Worker)와 Node.js(글로벌 `WebSocket` 없으면 `ws` 로 polyfill, `worker_threads`) 양쪽에서 동작.
+WebSocket 으로 서비스 서버에 접속해 서비스 RPC 호출·서버 푸시 이벤트 구독/발행·파일 업/다운로드·서버측 ORM 원격 실행을 수행하는 클라이언트. 브라우저와 Node.js 양쪽에서 동작(Node 에서 글로벌 `WebSocket` 이 없으면 모듈 로드 시 `ws` 로 polyfill).
 
 ## 사용 트리거 인덱스
 
@@ -32,7 +32,7 @@ WebSocket 으로 서비스 서버(`@simplysm/service-server`)에 접속해 서�
 - connect(): Promise\<void\> — 서버에 WebSocket 연결. 초기 연결 실패 시 throw. 통신(서비스 호출·이벤트 등록) 전에 반드시 1회 호출.
 - close(): Promise\<void\> — 연결 수동 종료(이후 자동 재연결 안 함) 및 프로토콜 워커 자원 해제. 종료한 인스턴스는 재사용하지 말 것.
 - send(serviceName, methodName, params, progress?): Promise\<unknown\> — 저수준 서비스 호출. `serviceName.methodName` 메시지를 보내고 응답 반환. 보통 `getService` 프록시로 간접 호출. progress 인자를 주지 않아도 client 의 `request/response/server-progress` 이벤트는 항상 발생.
-- auth(token): Promise\<void\> — 인증 토큰 전송 후 내부 보관. 보관 토큰은 재연결 시 자동 재인증·파일 업로드 Bearer 인증에 재사용.
+- auth(token): Promise\<void\> — 인증 토큰 전송 후 내부 보관. 보관 토큰은 재연결 시 자동 재인증·파일 업로드 Bearer 인증에 재사용. 파일 업로드 전에는 반드시 선행.
 - getService / getEvent / addListener / removeListener / emitEvent / uploadFile / downloadFileBuffer — 아래 각 섹션 참조.
 
 ```ts
@@ -69,7 +69,7 @@ client.on("state", (s) => { if (s === "reconnecting") showOfflineBanner(); });
 
 - TService — 서버 서비스 메서드 인터페이스 타입. 컴파일 타임 시그니처 검증용(런타임 검증 아님). 앱에선 server 패키지가 export 한 `ServiceMethods<typeof XxxService>` 사용.
 - serviceName: string — 서버의 `defineService("XxxName", ...)` 이름과 일치해야 함.
-- ServiceProxy\<TService\> — TService 의 각 함수 멤버를 `(...args) => Promise<Awaited<R>>` 로 매핑. 함수 아닌 속성은 `never` 로 제외.
+- ServiceProxy\<TService\> — TService 의 각 함수 멤버를 `(...args) => Promise<Awaited<R>>` 로 매핑하는 타입 변환기. 원본이 동기 반환이어도 Promise 로 래핑됨. 함수 아닌 속성은 `never` 로 제외.
 
 ```ts
 const svc = client.getService<TestServiceMethods>("TestService");
@@ -80,22 +80,26 @@ const result = await svc.echo("hi"); // 서버 TestService.echo("hi") 호출, Pr
 
 서버 푸시 이벤트는 `@simplysm/service-common` 의 `defineEvent` 산출물(`ServiceEventDef`. `$info` = 구독 필터 정보 타입, `$data` = 페이로드 타입) 단위로 다룬다. 등록한 리스너는 재연결 시 자동 복구됨.
 
-`addListener<TEventDef>(eventDef, info, cb): Promise<string>` — 리스너 등록. 미연결(`connected === false`)이면 throw. 반환 key 로 나중에 제거.
+`addListener<TEventDef>(eventDef, info, cb): Promise<string>` — 리스너 등록. 미연결(`connected === false`)이면 throw("서버에 연결되지 않았습니다."). 반환 key 로 나중에 제거.
 
 - eventDef: TEventDef — 이벤트 정의(`defineEvent` 결과). `$info`/`$data` 타입의 출처.
-- info: TEventDef["$info"] — 이 구독을 식별·필터링할 정보. 서버가 emit 대상 선별에 사용.
+- info: TEventDef["$info"] — 이 구독을 식별·필터링할 정보. 발행측 selector 가 이 값을 보고 전달 여부 결정.
 - cb: (data: $data) => PromiseLike\<void\> — 이벤트 수신 콜백. 콜백 내 예외는 로깅만 되고 호출부로 전파되지 않음.
 
 `removeListener(key): Promise<void>` — 등록 key 로 리스너 제거. 서버 전송 실패(연결 끊김 등)는 무시(서버가 끊김 시 리스너를 자동 정리하므로 안전).
 
-`emitEvent<TEventDef>(eventDef, infoSelector, data): Promise<void>` — 이벤트 발행. 서버에서 동일 이벤트 구독자 목록을 조회한 뒤 `infoSelector(info)` 가 true 인 대상에게만 data 전송.
+`emitEvent<TEventDef>(eventDef, infoSelector, data): Promise<void>` — 이벤트 발행. 서버에서 동일 이벤트 구독자 목록을 조회한 뒤 `infoSelector(info)` 가 true 인 대상에게만 data 전송. 매칭 대상이 0개면 전송 자체를 생략.
 
-- infoSelector: (item: $info) => boolean — 발행 대상 구독자를 info 기준으로 필터. true 반환 구독자에게만 전달.
+- infoSelector: (item: $info) => boolean — 발행 대상 구독자를 info 기준으로 필터. true 반환 구독자에게만 전달. 전체 전송이면 `() => true`.
 - data: TEventDef["$data"] — 전송 페이로드.
 
 `getEvent<TEventDef>(eventDef): ClientEventProxy<TEventDef>` — 특정 eventDef 에 바인딩된 프록시 반환. eventDef 를 매번 넘기지 않고 짧게 쓰려 할 때(앱의 `AppServiceProvider.xxxEvent` getter 패턴).
 
-`ClientEventProxy<TEventDef>` 멤버: `addListener(info, cb)`, `removeListener(key)`, `emit(infoSelector, data)` — 위 client 메서드의 eventDef 고정판.
+`ClientEventProxy<TEventDef>` 멤버(위 client 메서드의 eventDef 고정판):
+
+- addListener(info, cb): Promise\<string\> — 리스너 등록.
+- removeListener(key): Promise\<void\> — 리스너 제거.
+- emit(infoSelector, data): Promise\<void\> — 이벤트 발행.
 
 ```ts
 const chatEvent = defineEvent<{ channel: string }, string>("Chat");
@@ -104,7 +108,7 @@ await client.emitEvent(chatEvent, (info) => info.channel === "room1", "hello");
 await client.removeListener(key);
 ```
 
-`EventClient` / `createEventClient(transport)` 는 `ServiceClient` 가 내부 조립에 쓰는 저수준 구현. 위 메서드에 더해 `resubscribeAll(): Promise<void>`(보관된 모든 리스너를 서버에 재등록, 재연결 복구용)를 가짐. 일반 사용에선 직접 만들지 않음.
+`EventClient` / `createEventClient(transport)` 는 `ServiceClient` 가 내부 조립에 쓰는 저수준 구현. 위 메서드(getEvent/addListener/removeListener/emit)에 더해 `resubscribeAll(): Promise<void>`(보관된 모든 리스너를 서버에 재등록, 재연결 복구용)를 가짐. 일반 사용에선 직접 만들지 않음.
 
 ## 파일 업/다운로드 (uploadFile / downloadFileBuffer)
 
@@ -142,6 +146,10 @@ const bytes = await client.downloadFileBuffer("/files/a.txt");
 
 전역 추적이면 콜백 대신 ServiceClient 의 `request/response/server-progress` 이벤트(`client.on("response-progress", ...)`)를 써도 됨 — `send` 는 progress 인자 유무와 무관하게 이 이벤트들을 항상 발생시킴.
 
+```ts
+client.on("response-progress", (s) => updateBar(s.completedSize / s.totalSize));
+```
+
 ## 환경 호환 타입·헬퍼 (browser-compat)
 
 Node/browser 공용 코드에서 DOM 전용 타입을 피하고 Worker 지원 여부를 분기하기 위한 타입·함수. 프로토콜 인코딩/파싱 Worker 오프로딩 판단 시 내부에서 사용.
@@ -149,6 +157,6 @@ Node/browser 공용 코드에서 DOM 전용 타입을 피하고 Worker 지원 �
 - BlobInput = `Blob | Uint8Array<ArrayBuffer> | ArrayBuffer | string` — `Blob` 생성자가 받는 데이터 타입(DOM `BlobPart` 대체). `uploadFile` 의 커스텀 객체 data 타입.
 - FileCollection (interface) — DOM `FileList` 대체. `length`, `item(index): File | null`, 인덱스 접근, `[Symbol.iterator]` 보유. 브라우저 `FileList` 와 구조적 호환.
 - BrowserWorker (interface) — DOM `Worker` 최소 인터페이스(`onmessage`/`onerror` 핸들러, `postMessage(message, transfer?)`, `terminate()`). DOM lib 없이 타입체크 통과용.
-- isBrowserWorkerSupported(): boolean — `globalThis` 에 `Worker` 존재 여부. 브라우저 DOM Worker 가용 판단.
-- isNodeWorkerSupported(): boolean — `process.versions.node` 존재 여부. Node `worker_threads` 가용 판단.
-- isWorkerSupported(): boolean — 위 둘 중 하나라도 true. 프로토콜 인코딩/파싱 오프로딩 가능 여부 판단(미지원 시 메인 스레드 폴백).
+- isBrowserWorkerSupported(): boolean — `globalThis` 에 `Worker` 존재 여부 반환. 브라우저 DOM Worker 가용 판단.
+- isNodeWorkerSupported(): boolean — `process.versions.node` 존재 여부 반환. Node `worker_threads` 가용 판단.
+- isWorkerSupported(): boolean — 위 둘 중 하나라도 true 면 true. 프로토콜 인코딩/파싱 오프로딩 가능 여부 판단(미지원 시 메인 스레드 폴백).

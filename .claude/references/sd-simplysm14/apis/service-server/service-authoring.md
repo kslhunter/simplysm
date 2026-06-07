@@ -51,11 +51,11 @@ export const AdminService = defineService("Admin", auth((ctx) => ({
 
 - `server: ServiceServer<TAuthInfo>` — 서버 인스턴스. `ctx.server.emitEvent(...)` 로 이벤트 발생, `ctx.server.signAuthToken(...)` 로 토큰 발급.
 - `socket?: ServiceSocket` — WebSocket 요청일 때만 존재하는 소켓. HTTP 요청이면 `undefined`(소켓 필요한 기능은 존재 검사 필수).
-- `http?: { clientName: string; authTokenPayload? }` — HTTP 요청일 때만 존재.
-- `legacy?: { clientName? }` — V1 레거시 연결 컨텍스트(자동업데이트 전용).
-- `get authInfo: TAuthInfo | undefined` — 검증된 토큰의 `data` 페이로드. 비로그인 요청이면 `undefined`(결측을 그대로 노출하므로 받는 쪽도 옵셔널로 다룰 것).
-- `get clientName: string | undefined` — 요청 클라이언트 이름(소켓→HTTP→레거시 순 우선). 빈 문자열·`..`·슬래시(`/`,`\`) 포함 등 경로 탈출 위험 값이면 throw.
-- `get clientPath: string | undefined` — `rootPath/www/<clientName>` 절대경로. clientName 없으면 `undefined`.
+- `http?: { clientName: string; authTokenPayload?: AuthTokenPayload<TAuthInfo> }` — HTTP 요청일 때만 존재.
+- `legacy?: { clientName?: string }` — V1 레거시 연결 컨텍스트(자동업데이트 전용).
+- `get authInfo(): TAuthInfo | undefined` — 검증된 토큰의 `data` 페이로드(소켓→HTTP 순). 비로그인 요청이면 `undefined`(결측을 그대로 노출하므로 받는 쪽도 옵셔널로 다룰 것).
+- `get clientName(): string | undefined` — 요청 클라이언트 이름(소켓→HTTP→레거시 순 우선). 빈 문자열·`..`·슬래시(`/`,`\`) 포함 등 경로 탈출 위험 값이면 throw.
+- `get clientPath(): string | undefined` — `rootPath/www/<clientName>` 절대경로. clientName 없으면 `undefined`.
 - `getConfig<T>(section: string): Promise<T>` — `rootPath/.config.json` 루트 설정에 클라이언트별 `www/<clientName>/.config.json` 을 머지한 뒤 `section` 키 값을 반환. 섹션이 없으면 throw. 설정 파일은 변경 시 자동 리로드(파일 워처 + 캐시).
 
 ```ts
@@ -67,7 +67,7 @@ export const ReportService = defineService("Report", auth((ctx) => ({
 
 ## ServiceDefinition / ServiceMethods / getServiceAuthPermissions
 
-- `ServiceDefinition<TMethods>` — `defineService` 반환 타입. `{ name: string; names: string[]; factory: (ctx) => TMethods; authPermissions?: string[] }`. `names` 는 별칭 전체, `authPermissions` 는 서비스 수준 `auth` 권한(없으면 `undefined`).
+- `ServiceDefinition<TMethods>` — `defineService` 반환 타입. `{ name: string; names: string[]; factory: (ctx) => TMethods; authPermissions?: string[] }`. `name` 은 대표 이름, `names` 는 별칭 전체, `authPermissions` 는 서비스 수준 `auth` 권한(없으면 `undefined`).
 - `type ServiceMethods<TDefinition>` — `ServiceDefinition<M>` 에서 메서드 시그니처 `M` 만 추출하는 타입 유틸. 클라이언트와 서비스 타입을 공유하려고 common 패키지에 `export type XxxServiceMethods = ServiceMethods<typeof XxxService>` 로 재노출하고, 클라이언트는 `client.getService<XxxServiceMethods>("Xxx")` 로 사용.
 - `getServiceAuthPermissions(fn: Function): string[] | undefined` — `auth(...)` 로 래핑된 함수에서 권한 배열을 읽음. 래핑 안 됐으면 `undefined`. 내부 실행기·커스텀 전송에서만 필요(일반 작성에서는 불필요).
 

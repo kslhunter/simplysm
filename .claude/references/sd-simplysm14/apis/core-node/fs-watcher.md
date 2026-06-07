@@ -5,7 +5,7 @@ chokidar 기반 파일 감시 래퍼 (`packages/core-node/src/features/fs-watche
 ## FsWatcher.watch (정적 진입점)
 
 - `static watch(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher>` — 감시 시작. ready 될 때까지 대기 후 인스턴스 반환. ready 전 에러 시 watcher 를 close 하고 throw.
-  - `paths: string[]` — 감시할 경로/glob 패턴 배열. 내부적으로 각 패턴의 glob 메타문자 이전 base 디렉토리를 추출해 chokidar 에 등록하고, 콜백 단계에서 원본 패턴으로 minimatch 재필터(패턴 자체 + `패턴/**` 양쪽 매칭).
+  - `paths: string[]` — 감시할 경로/glob 패턴 배열. 내부적으로 각 패턴의 glob 메타문자 이전 base 디렉토리를 추출해 chokidar 에 등록하고, 콜백 단계에서 원본 패턴으로 minimatch 재필터(패턴 자체 + `패턴/**` 양쪽을 `dot: true` 로 매칭).
   - `options?: ChokidarOptions` — chokidar 옵션. `persistent` 기본 true. `ignoreInitial` 은 chokidar 에는 내부적으로 항상 true 로 강제(초기 스캔 이벤트 무시).
   - `options.ignoreInitial: false` 지정 시 → `onChange` 의 첫 콜백이 **빈 배열 `[]`** 로 1회 호출됨(실제 초기 파일 목록은 담기지 않음 — 이벤트 병합과의 충돌 방지). "초기 1회 전체 빌드 후 변경 감시" 패턴 트리거용.
 

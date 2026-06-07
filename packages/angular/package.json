@@ -12,16 +12,17 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "style": "./dist/styles.css",
+  "style": "./styles.css",
   "files": [
     "dist",
+    "styles.css",
     "src",
     "scss"
   ],
   "sideEffects": [
     "./src/index.ts",
     "./dist/index.js",
-    "./dist/**/*.css"
+    "./styles.css"
   ],
   "dependencies": {
     "@angular/animations": "^21.2.15",

@@ -432,15 +432,15 @@ describe("SdTsCompiler — Acceptance", () => {
   // ── Rule: globalScss 옵션이 글로벌 SCSS 컴파일을 제어한다 ──
 
   describe("글로벌 SCSS 컴파일", () => {
-    const DIST_STYLES = path.join(ANGULAR_FIXTURE, "dist", "styles.css");
+    const STYLES_CSS = path.join(ANGULAR_FIXTURE, "styles.css");
 
     afterEach(() => {
-      if (fs.existsSync(DIST_STYLES)) {
-        fs.unlinkSync(DIST_STYLES);
+      if (fs.existsSync(STYLES_CSS)) {
+        fs.unlinkSync(STYLES_CSS);
       }
     });
 
-    it("globalScss=true이고 styles.scss 존재 시 dist/styles.css가 생성된다", async () => {
+    it("globalScss=true이고 styles.scss 존재 시 styles.css가 생성된다", async () => {
       const compiler = new SdTsCompiler({
         pkgDir: ANGULAR_FIXTURE,
         cwd: CWD,
@@ -450,8 +450,8 @@ describe("SdTsCompiler — Acceptance", () => {
 
       const result = await compiler.compileAsync();
 
-      expect(fs.existsSync(DIST_STYLES)).toBe(true);
-      const css = fs.readFileSync(DIST_STYLES, "utf-8");
+      expect(fs.existsSync(STYLES_CSS)).toBe(true);
+      const css = fs.readFileSync(STYLES_CSS, "utf-8");
       expect(css).toContain("color:");
       expect(result.scssErrors).toEqual([]);
     });
@@ -478,7 +478,7 @@ describe("SdTsCompiler — Acceptance", () => {
 
       await compiler.compileAsync();
 
-      expect(fs.existsSync(DIST_STYLES)).toBe(false);
+      expect(fs.existsSync(STYLES_CSS)).toBe(false);
     });
   });
 

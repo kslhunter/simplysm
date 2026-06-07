@@ -41,6 +41,6 @@ export interface ISdTsCompilerOptions {
   // === SCSS/lint 통합 (Feature 1.3) ===
   /** lint 실행 여부. true이면 compileAsync 결과에 lint 결과 포함 */
   lint?: boolean;
-  /** 글로벌 SCSS 컴파일 여부. true이면 scss/styles.scss → dist/styles.css 생성 */
+  /** 글로벌 SCSS 컴파일 여부. true이면 scss/styles.scss → styles.css(패키지 루트) 생성 */
   globalScss?: boolean;
 }

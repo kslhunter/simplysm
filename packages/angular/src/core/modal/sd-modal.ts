@@ -159,7 +159,8 @@ import "@simplysm/core-browser";
             display: flex;
             align-items: center;
             user-select: none;
-            border-bottom: 1px solid var(--theme-gray-lightest);
+            border-bottom: 1px solid var(--theme-gray-lighter);
+            background: var(--theme-gray-lightest);
 
             > ._title {
               flex: 1;

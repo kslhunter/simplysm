@@ -1,33 +1,34 @@
 # @simplysm/core-common — 에러 클래스
 
-`throw` 를 던지거나, 에러 원인을 체인으로 감싸거나, catch 에서 `instanceof` 로 분기할 때 함께 읽히는 묶음. 모두 `SdError` 를 상속하므로 `instanceof SdError` 로 한꺼번에 잡을 수 있음.
+원인(cause) 체인을 메시지에 누적하는 `SdError` 와 그 파생 에러들, 그리고 catch 블록에서 메시지를 안전하게 뽑는 `err.message`. 예외를 throw 하거나 잡아 사용자 메시지를 만들 때 함께 참조.
 
 ## SdError
 
 ```ts
 class SdError extends Error {
   override cause?: Error;
-  constructor(cause: Error, ...messages: string[]); // 원인 에러를 감싸기
-  constructor(...messages: string[]);                // 메시지만으로 생성
+  constructor(cause: Error, ...messages: string[]);
+  constructor(...messages: string[]);
 }
 ```
 
-ES2024 `cause` 를 활용한 트리형 에러. 메시지는 **역순으로** `" => "` 로 결합됨(상위 메시지가 앞).
+ES `cause` 를 활용해 트리 형태로 에러를 감싸는 기반 클래스.
 
-- cause: Error — 첫 인자가 Error 면 원인 에러로 보존(`this.cause`). 원인 에러의 stack 이 현재 stack 뒤에 `---- cause stack ----` 로 이어 붙음. 하위 호출에서 받은 에러를 상위 문맥으로 감쌀 때.
-- ...messages: string[] — 문맥 메시지들. `new SdError(err, "API 호출 실패", "사용자 로드 실패")` → `"사용자 로드 실패 => API 호출 실패 => 원본 메시지"`. null/undefined 메시지는 제외됨.
-- `name` 은 `"SdError"`. V8(Node·Chrome)에서 `captureStackTrace` 로 생성자 프레임 제거.
+- 첫 인자가 `Error` 면 그것을 `cause` 로 보존하고, `cause.stack` 을 자기 stack 뒤에 `---- cause stack ----` 로 이어 붙임.
+- 메시지들은 **역순으로 `" => "` 결합** — 상위(가장 마지막 인자)부터 하위·원인 순으로 읽힘. null 메시지는 제외.
+- V8(Node/Chrome)에서는 `Error.captureStackTrace` 로 생성자 프레임을 stack 에서 제거.
+- `name` 은 `"SdError"`.
 
 ```ts
-import { SdError } from "@simplysm/core-common";
 try {
   await fetch(url);
 } catch (err) {
-  throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
+  throw new SdError(err as Error, "API 호출 실패", "사용자 로드 실패");
+  // message: "사용자 로드 실패 => API 호출 실패 => <원본 메시지>"
 }
 ```
 
-주의: 첫 인자가 Error 가 아니면(문자열·기타) cause 없이 메시지로만 취급됨. `new SdError("잘못된 상태", "처리 불가")` → `"처리 불가 => 잘못된 상태"`.
+주의: 첫 인자가 `Error` 가 아니면 메시지로 취급되므로, 원인 보존이 목적이면 `Error` 인스턴스를 첫 인자로 넘길 것.
 
 ## ArgumentError
 
@@ -38,18 +39,16 @@ class ArgumentError extends SdError {
 }
 ```
 
-유효하지 않은 인자를 받았을 때 던지는 에러. 디버깅을 위해 인자 객체를 **YAML 형식**으로 메시지에 붙임. `name` 은 `"ArgumentError"`.
+유효하지 않은 인자에 대한 에러. 디버깅을 위해 인자 객체를 **YAML 로 직렬화해 메시지에 첨부**.
 
-- argObj: Record<string, unknown> — 메시지에 YAML 로 직렬화해 포함할 인자값들. 어떤 입력이 문제였는지 드러낼 때.
-- message: string — 커스텀 머리말. 생략 시 `"잘못된 인자입니다."` 사용.
+- 첫 인자가 객체면 기본 메시지 `"잘못된 인자입니다."` + YAML.
+- 첫 인자가 문자열이면 커스텀 메시지 + 둘째 인자 객체의 YAML.
+- `name` 은 `"ArgumentError"`. 패키지 내부 검증 실패(잘못된 UUID, hex 홀수 길이, 중복 key, 빈 chain 등)에서 광범위하게 throw 됨.
 
 ```ts
-import { ArgumentError } from "@simplysm/core-common";
-throw new ArgumentError("유효하지 않은 UUID 형식입니다.", { uuid });
-// 메시지: "유효하지 않은 UUID 형식입니다.\n\nuuid: ..."
+throw new ArgumentError("잘못된 사용자", { userId: 123 });
+// message: "잘못된 사용자\n\nuserId: 123\n"
 ```
-
-이 패키지 내부 검증(Uuid·bytes·obj 체인 등)에서 이미 광범위하게 throw 하므로, 유효성 위반은 직접 처리하지 말고 그대로 전파하는 편이 일관적.
 
 ## NotImplementedError
 
@@ -59,9 +58,7 @@ class NotImplementedError extends SdError {
 }
 ```
 
-아직 구현되지 않은 기능이 호출됐을 때. 메시지는 `"미구현"` 또는 `"미구현: <message>"`. `name` 은 `"NotImplementedError"`. 추상 메서드 스텁, 미구현 분기에 사용.
-
-- message?: string — 무엇이 미구현인지 추가 설명. 예: `throw new NotImplementedError(\`타입 ${type} 처리\`)`.
+미구현 분기·추상 메서드 스텁에서 throw. 메시지는 `"미구현"` 뒤에 `message` 가 있으면 `": " + message` 를 덧붙임. `name` 은 `"NotImplementedError"`.
 
 ## TimeoutError
 
@@ -71,16 +68,17 @@ class TimeoutError extends SdError {
 }
 ```
 
-대기 시간 초과 에러. 메시지는 `"대기 시간 초과"` + (count 있으면 `(N회 시도)`) + (message 있으면 `: <message>`). `name` 은 `"TimeoutError"`.
+대기 시간 초과 에러. 메시지는 `"대기 시간 초과"` + `count` 있으면 `"(N회 시도)"` + `message` 있으면 `": " + message`. `name` 은 `"TimeoutError"`. `wait.until` 이 최대 시도 횟수 초과 시 자동으로 던지며, `err instanceof TimeoutError` 로 분기 가능.
 
-- count?: number — 시도 횟수. `wait.until(...)` 이 최대 시도 초과 시 자동으로 이 에러를 throw(시도 횟수를 넣어).
-- message?: string — 무엇을 기다리다 초과했는지 추가 설명.
+## err.message
+
+`import { err } from "@simplysm/core-common"` 네임스페이스.
+
+- `message(err: unknown): string` — `unknown` 에러에서 메시지 추출. `Error` 면 `.message`, 아니면 `String(err)`. catch 블록에서 타입 좁히기 없이 메시지를 얻을 때.
 
 ```ts
-import { TimeoutError, wait } from "@simplysm/core-common";
-try {
-  await wait.until(() => isReady, 100, 50);
-} catch (err) {
-  if (err instanceof TimeoutError) { /* 타임아웃 처리 */ }
+import { err } from "@simplysm/core-common";
+try { /* ... */ } catch (e) {
+  toast.danger(err.message(e));
 }
 ```

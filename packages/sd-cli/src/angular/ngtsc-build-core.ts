@@ -171,9 +171,7 @@ export function compileGlobalScss(
   const errors: string[] = [];
   try {
     const result = compileScssFile(stylesPath, loadPaths);
-    const distDir = path.join(pkgDir, "dist");
-    fs.mkdirSync(distDir, { recursive: true });
-    fs.writeFileSync(path.join(distDir, "styles.css"), result.css, "utf-8");
+    fs.writeFileSync(path.join(pkgDir, "styles.css"), result.css, "utf-8");
   } catch (err) {
     errors.push(`Global SCSS error: ${errNs.message(err)}`);
   }

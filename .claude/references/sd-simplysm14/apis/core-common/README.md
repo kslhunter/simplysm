@@ -1,130 +1,137 @@
 # @simplysm/core-common
 
-브라우저·Node 공용 유틸리티 패키지. 날짜/시간 값 타입, 에러 클래스, 배열/객체 조작, 직렬화, 비동기 큐, 로거, 환경변수 접근을 제공. 워크스페이스 거의 모든 패키지의 기반.
-
-> 부수효과 주의: 이 패키지를 import 하면 `Array.prototype`·`Set.prototype`·`Map.prototype` 에 확장 메서드가 설치됨(전역 prototype 변경). 확장 메서드는 `array.toMap(...)` 처럼 메서드로 직접 호출.
+브라우저·Node 공용 기반 유틸. 날짜/시간 값 타입, 에러 클래스, 배열/Set/Map 확장, 객체 조작, 직렬화(json/xml/bytes/transfer), 비동기 큐·이벤트·대기, 로거·환경변수·원시타입 매핑을 제공.
 
 ## 사용 트리거 인덱스
 
-- **에러 클래스** — `throw` 할 때, 에러 원인 체인을 만들 때, catch 에서 분기할 때. SdError/ArgumentError/NotImplementedError/TimeoutError. 자세히: [errors.md](./errors.md)
-- **날짜/시간 값 타입** — 날짜·시간을 불변 값으로 다루거나 파싱·포맷·산술할 때. DateTime/DateOnly/Time + `dt` 포맷 네임스페이스. 자세히: [datetime.md](./datetime.md)
-- **배열 확장 메서드** — 배열을 그룹화·정렬·중복제거·Map변환·트리화·diff/merge 할 때. `Array.prototype` 확장. 자세히: [array-ext.md](./array-ext.md)
-- **객체 유틸 (`obj` 네임스페이스)** — 깊은 복사/비교/병합, 체인 경로 접근, key 변환을 할 때. 자세히: [obj.md](./obj.md)
-- **직렬화/Worker 전송** — 커스텀 타입(DateTime·Uuid·Map·Set·Error 등) 포함 데이터를 JSON·XML·바이트·Worker 메시지로 주고받을 때. `json`/`xml`/`bytes`/`transfer` 네임스페이스. 자세히: [serialization.md](./serialization.md)
-- **비동기 큐·이벤트·대기** — 디바운스/직렬 실행, 타입 안전 이벤트, 조건 대기, 자동 만료 Map 이 필요할 때. DebounceQueue/SerialQueue/EventEmitter/wait/LazyGcMap. 자세히: [async-runtime.md](./async-runtime.md)
-- **로거** — 모듈 어디서든 로그를 찍을 때 (아래 인라인).
-- **환경변수** — 환경변수를 읽고/쓰고/boolean 파싱할 때 (아래 인라인).
-- **문자열/숫자/경로 유틸** — 한국어 조사, 케이스 변환, 숫자 파싱·포맷, POSIX 경로 조작 (아래 인라인).
-- **UUID·ZIP·템플릿 태그·Set/Map 확장·공용 타입** — 그 외 단발성 유틸 (아래 인라인).
+- **에러 클래스** — 원인 체인을 묶은 에러를 throw 하거나 catch 에서 메시지를 추출할 때. 자세히: [errors.md](./errors.md)
+- **날짜/시간 값 타입 (DateTime·DateOnly·Time·Uuid)** — 불변 날짜/시간/식별자 값을 만들고 파싱·산술·포맷할 때. 자세히: [value-types.md](./value-types.md)
+- **배열/Set/Map 확장** — `arr.single/groupBy/toMap/distinct/orderBy/diffs/toTree` 등 프로토타입 확장 메서드와 `Set.adds/toggle`, `Map.getOrCreate/update` 를 쓸 때. 자세히: [collection-ext.md](./collection-ext.md)
+- **객체 조작 (obj 네임스페이스)** — `obj.clone/equal/merge/merge3/pick/omit/getChainValue/keys/entries` 등 깊은 복사·비교·병합·체인 접근이 필요할 때. 자세히: [obj.md](./obj.md)
+- **직렬화 (json·xml·bytes·transfer)** — 커스텀 타입(DateTime/Uuid/Map/Error 등) 포함 객체를 JSON/XML 문자열, hex/base64, Worker 전송 형태로 변환할 때. 자세히: [serialization.md](./serialization.md)
+- **비동기 런타임 (큐·이벤트·대기·LazyGcMap)** — `DebounceQueue`/`SerialQueue` 로 호출 흐름을 제어하거나, `EventEmitter` 로 타입 안전 이벤트를 다루거나, `wait.until/time`, 자동 만료 Map 이 필요할 때. 자세히: [async-runtime.md](./async-runtime.md)
+- **str (문자열 유틸)** — 한국어 조사 선택, 전각→반각, 케이스 변환, 빈문자열 판별, 삽입. (아래 인라인)
+- **num (숫자 유틸)** — 비숫자 제거 후 정수/실수 파싱, 0/null 판별, 천단위 포맷. (아래 인라인)
+- **path (POSIX 경로 유틸)** — 브라우저용 join/basename/extname. (아래 인라인)
+- **dt (날짜 포맷 헬퍼)** — `DateTime`/`DateOnly`/`Time` 의 `toFormatString` 이 내부적으로 쓰는 C# 스타일 포맷 문자열 변환. (아래 인라인)
+- **primitive (원시타입 추론)** — 런타임 값에서 `PrimitiveTypeStr` 추론. (아래 인라인)
+- **template-strings (코드 하이라이팅 태그)** — `js/ts/html/tsql/mysql/pgsql` 템플릿 태그로 들여쓰기 정규화. (아래 인라인)
+- **ZipArchive** — ZIP 바이트를 읽고 파일 단위로 추출·추가·재압축할 때. (아래 인라인)
+- **env / createLogger** — 환경변수 읽기·쓰기, 모듈 레벨 안전 lazy 로거 생성. (아래 인라인)
+- **공용 타입 (common.types)** — `PrimitiveType`/`PrimitiveTypeStr`/`PrimitiveTypeMap`/`Bytes`/`DeepPartial`/`Type`. (아래 인라인)
 
-## 로거
+## str (문자열 유틸)
 
-`createLogger(tag)` — consola 기반 lazy logger 인스턴스 생성. 모듈 레벨에서 호출해도 안전(첫 메서드 접근 시점까지 `consola.withTag` 생성을 지연하므로 이후 `setupConsola()` 의 level/reporters 변경이 반영됨).
+`import { str } from "@simplysm/core-common"` 네임스페이스.
 
-- tag: string — 로그 prefix 로 표시되는 태그. 형식은 `<도메인>:<역할>` 또는 단일 토큰 권장. 메시지 본문에 `[패키지명]` 수동 prefix 를 넣지 말 것 — 그 역할은 tag 가 담당.
-
-```ts
-import { createLogger } from "@simplysm/core-common";
-const logger = createLogger("capacitor:auto-update");
-logger.info("최신 버전 확인 중");
-logger.error("checkPermissions 실패", err);
-```
-
-`console.*` 직접 호출·`consola.withTag()` 직접 호출 금지 — 항상 `createLogger` 사용.
-
-## 환경변수
-
-- `env(key)`: → `string | undefined` — 환경변수 읽기. `process.env[key]` 우선, 없으면 `import.meta.env[key]` fallback. Node·브라우저(Vite) 양쪽에서 동작.
-- `env(key, value)`: → `void` — `process.env[key]` 에 값 쓰기 (Node 환경에서만 적용, 브라우저에선 무동작).
-- `parseBoolEnv(value)`: → `boolean` — 환경변수 문자열을 boolean 으로 해석. `"true"|"1"|"yes"|"on"` (대소문자 무시) 이면 true, 그 외(빈 값·undefined 포함) false. 플래그성 env 판정에 사용.
-
-```ts
-import { env, parseBoolEnv } from "@simplysm/core-common";
-if (parseBoolEnv(env("DEV"))) { /* 개발 모드 분기 */ }
-```
-
-## 문자열 유틸 (`str` 네임스페이스)
-
-- `str.getKoreanSuffix(text, type)`: → string — 받침 유무로 한국어 조사 선택. type: `"을"`(을/를)·`"은"`(은/는)·`"이"`(이/가)·`"와"`(과/와)·`"랑"`(이랑/랑)·`"로"`(으로/로, 받침 ㄹ 은 "로")·`"라"`(이라/라). 빈 문자열·한글 아님이면 받침 없음 조사 반환. 동적 메시지 조립에 사용.
-- `str.replaceFullWidth(s)`: → string — 전각 영문/숫자/공백/괄호를 반각으로 변환. OCR·외부 입력 정규화에 사용.
-- `str.toPascalCase(s)` / `toCamelCase(s)` / `toKebabCase(s)` / `toSnakeCase(s)`: → string — 케이스 변환. `-`·`_`·`.` 구분자와 대문자 경계를 인식. 코드 생성·식별자 정규화에 사용.
-- `str.isNullOrEmpty(s)`: → `s is "" | undefined` — null/undefined/빈 문자열 판정(타입 가드). false 분기에서 non-empty string 으로 좁혀짐.
-- `str.insert(s, index, insertString)`: → string — index 위치에 문자열 삽입한 새 문자열.
+- `getKoreanSuffix(text: string, type: "을"|"은"|"이"|"와"|"랑"|"로"|"라"): string` — 마지막 글자 받침 유무로 한국어 조사를 선택. type 은 조사 쌍 식별자: `"을"`=을/를, `"은"`=은/는, `"이"`=이/가, `"와"`=과/와, `"랑"`=이랑/랑, `"로"`=으로/로(받침이 ㄹ이면 "로"), `"라"`=이라/라. 한글이 아니거나 빈 문자열이면 받침 없는 형태 반환. 동적 메시지 조립 시 사용.
+- `replaceFullWidth(str: string): string` — 전각 영문·숫자·공백·괄호를 반각으로 치환. 외부 입력(엑셀·스캐너) 정규화 시.
+- `toPascalCase(str: string): string` — `-`/`_`/`.` 구분자 뒤 글자와 첫 글자를 대문자화. 식별자 변환 시.
+- `toCamelCase(str: string): string` — 구분자 뒤 글자는 대문자화하되 첫 글자는 소문자화.
+- `toKebabCase(str: string): string` — 대문자 앞에 `-` 삽입 후 소문자화. 연속 대문자도 글자별 분리(`XMLParser`→`x-m-l-parser`), 기존 `-`/`_` 구분자는 유지.
+- `toSnakeCase(str: string): string` — `toKebabCase` 와 동일 규칙이되 구분자가 `_`.
+- `isNullOrEmpty(str: string | undefined): str is "" | undefined` — null/undefined/빈문자열이면 true 인 타입 가드. else 분기에서 비어있지 않은 string 으로 좁혀짐.
+- `insert(str: string, index: number, insertString: string): string` — index 위치에 문자열 삽입한 새 문자열.
 
 ```ts
 import { str } from "@simplysm/core-common";
-`${name}${str.getKoreanSuffix(name, "을")} 저장했습니다`;
+const label = "사과" + str.getKoreanSuffix("사과", "을") + " 담았습니다."; // "사과를 담았습니다."
 ```
 
-## 숫자 유틸 (`num` 네임스페이스)
+## num (숫자 유틸)
 
-- `num.parseInt(text)`: → `number | undefined` — 비숫자 문자 제거 후 정수 파싱. 소수점은 버림(`"12.34"`→12). 선행 `-` 만 음수 부호로 유지, 중간 `-` 제거(`"010-1234"`→101234). 파싱 불가면 undefined.
-- `num.parseFloat(text)`: → `number | undefined` — 위와 동일 규칙으로 실수 파싱.
-- `num.parseRoundedInt(text)`: → `number | undefined` — float 파싱 후 반올림한 정수. 소수 입력을 반올림 정수로 받을 때.
-- `num.isNullOrEmpty(val)`: → `val is 0 | undefined` — null/undefined/0 판정(타입 가드). false 분기에서 0 아닌 숫자로 좁혀짐.
-- `num.format(val, digit?)`: → string(또는 입력이 undefined 면 undefined) — 천 단위 구분자 포함 포맷. `digit.max`=최대 소수 자릿수, `digit.min`=최소 소수 자릿수(부족분 0 채움). `format(1234.567, { max: 2 })`→`"1,234.57"`.
+`import { num } from "@simplysm/core-common"` 네임스페이스. 파싱 계열은 비숫자 문자(0-9·`-`·`.` 외)를 먼저 제거하므로 `"010-1234"` 같은 입력도 받음(선행 `-`만 부호로 유지).
 
-## 경로 유틸 (`path` 네임스페이스)
+- `parseInt(text: unknown): number | undefined` — 정수 파싱. number 면 `Math.trunc`, 소수 문자열이면 정수부만, 파싱 불가면 undefined.
+- `parseFloat(text: unknown): number | undefined` — 실수 파싱. number 는 그대로, 파싱 불가면 undefined.
+- `parseRoundedInt(text: unknown): number | undefined` — `parseFloat` 후 `Math.round`. 반올림 정수가 필요할 때.
+- `isNullOrEmpty(val: number | undefined): val is 0 | undefined` — null/undefined/0 이면 true 인 타입 가드. else 분기에서 0 아닌 number 로 좁혀짐.
+- `format(val, digit?: { max?: number; min?: number }): string | undefined` — 천단위 구분자 포맷. `max`=최대 소수 자릿수, `min`=최소 소수 자릿수(부족분 0 채움). val 이 undefined 면 undefined 반환.
 
-POSIX 스타일(슬래시 `/`)만 지원. 브라우저·Capacitor 환경용. Windows 백슬래시 경로 미지원.
+```ts
+import { num } from "@simplysm/core-common";
+num.format(1234.567, { max: 2 }); // "1,234.57"
+num.parseInt("010-1234-5678");    // 1012345678
+```
 
-- `path.join(...segments)`: → string — 세그먼트를 `/` 로 결합. 중간 중복 슬래시·빈 세그먼트 정리.
-- `path.basename(filePath, ext?)`: → string — 파일명 추출. ext 가 주어지고 끝나면 그 확장자 제거.
-- `path.extname(filePath)`: → string — 확장자 추출(`.` 포함). 숨김 파일(`.gitignore`)은 빈 문자열(Node 와 동일).
+## path (POSIX 경로 유틸)
 
-## UUID (`Uuid` 클래스)
+`import { path } from "@simplysm/core-common"` 네임스페이스. POSIX 슬래시 경로만 지원(Windows 백슬래시 미지원). 브라우저·Capacitor 환경용 Node `path` 대체.
 
-- `Uuid.generate()`: → Uuid — `crypto.getRandomValues` 기반 암호학적 안전 UUID v4 생성.
-- `new Uuid(uuidStr)` — 문자열로 생성. 형식 불일치면 ArgumentError throw.
-- `Uuid.fromBytes(bytes)`: → Uuid — 16바이트 Uint8Array 로 생성. 길이≠16 이면 ArgumentError.
-- 인스턴스: `toString()` → 문자열, `toBytes()` → 16바이트 Uint8Array.
+- `join(...segments: string[]): string` — 슬래시로 결합하며 중간 세그먼트의 앞뒤 슬래시·빈 세그먼트 제거.
+- `basename(filePath: string, ext?: string): string` — 마지막 세그먼트 추출. `ext` 가 끝과 일치하면 제거.
+- `extname(filePath: string): string` — 마지막 `.` 이후 확장자(`.` 포함). 숨김파일(`.gitignore`)은 빈 문자열.
 
-## ZIP (`ZipArchive` 클래스)
+## dt (날짜 포맷 헬퍼)
 
-ZIP 읽기/쓰기/압축/해제. 동일 파일 중복 해제 방지용 내부 캐시 사용. 사용 후 `close()` 필수.
+`import { dt } from "@simplysm/core-common"` 네임스페이스. 보통 `DateTime`/`DateOnly`/`Time` 의 `toFormatString` 을 통해 간접 사용.
 
-- `new ZipArchive(data?)` — data(`Blob | Uint8Array`) 주면 읽기용, 생략하면 새 아카이브.
-- `extractAll(progressCallback?)`: → `Promise<Map<string, Bytes | undefined>>` — 모든 파일 추출. 콜백은 `{ fileName, totalSize, extractedSize }` 진행률 수신.
-- `get(fileName)`: → `Promise<Bytes | undefined>` — 단일 파일 추출(없으면 undefined).
-- `exists(fileName)`: → `Promise<boolean>` — 파일 존재 여부.
-- `write(fileName, bytes)`: → void — 파일을 캐시에 등록(아직 압축 전).
-- `compress()`: → `Promise<Bytes>` — 캐시된 전체 파일을 ZIP 바이트로 압축. 내부적으로 `extractAll()` 호출(대용량 시 메모리 주의).
-- `close()`: → `Promise<void>` — 리더 닫고 캐시 비움.
+- `format(formatString: string, args: { year?, month?, day?, hour?, minute?, second?, millisecond?, timezoneOffsetMinutes? }): string` — C# 스타일 포맷 토큰 치환. 토큰: `yyyy/yy`(연), `MM/M`(월), `ddd`(요일 한글)/`dd/d`(일), `tt`(AM/PM), `hh/h`(12시간)/`HH/H`(24시간), `mm/m`(분), `ss/s`(초), `fff/ff/f`(밀리초), `zzz/zz/z`(타임존 오프셋). 전달되지 않은 구성요소의 토큰은 치환되지 않음.
+- `normalizeMonth(year, month, day): { year; month; day }` — 1-12 범위 밖 월을 연도로 이월하고, 대상 월 일수를 넘는 일은 말일로 보정.
+- `convert12To24(rawHour: number, isPM: boolean): number` — 12시간제(1-12)+오전/오후를 24시간제(0-23)로 변환.
 
-## 템플릿 태그 (코드 하이라이팅용)
+## primitive (원시타입 추론)
 
-`js` / `ts` / `html` / `tsql` / `mysql` / `pgsql` — 모두 동일 동작: 템플릿 리터럴을 문자열로 결합하고 공통 들여쓰기를 제거(앞뒤 빈 줄 제거). IDE 하이라이팅·가독성 목적이며 SQL 이스케이프 등 기능 차이는 없음.
+`import { primitive } from "@simplysm/core-common"` 네임스페이스.
+
+- `typeStr(value): PrimitiveTypeStr` — 런타임 값에서 `"string"|"number"|"boolean"|"DateTime"|"DateOnly"|"Time"|"Uuid"|"Bytes"` 중 해당 문자열 반환. 지원하지 않는 타입이면 `ArgumentError` throw. ORM/직렬화에서 값 타입을 문자열 키로 다룰 때.
+
+## template-strings (코드 하이라이팅 태그)
+
+`import { js, ts, html, tsql, mysql, pgsql } from "@simplysm/core-common"`. 모두 동일 동작 — 보간값을 문자열로 합친 뒤 공통 최소 들여쓰기를 제거하고 앞뒤 빈 줄을 잘라냄. 함수별 차이는 IDE 하이라이팅 언어 힌트뿐(js/ts/html/T-SQL/MySQL/PostgreSQL). 런타임 검증·이스케이프는 하지 않음.
 
 ```ts
 import { ts } from "@simplysm/core-common";
 const code = ts`
-  interface User { name: string; }
-`; // 들여쓰기 정규화된 문자열
+  interface User {
+    name: string;
+  }
+`; // 앞 공통 들여쓰기 제거된 문자열
 ```
 
-## Set 확장 메서드 (`Set.prototype`)
+## ZipArchive
 
-- `set.adds(...values)`: → this — 여러 값을 한 번에 add. 체이닝 가능.
-- `set.toggle(value, addOrDel?)`: → this — 값 토글. `addOrDel` 생략 시 있으면 제거/없으면 추가, `"add"`=강제 추가, `"del"`=강제 제거. 조건부 추가/제거를 한 줄로.
+`import { ZipArchive } from "@simplysm/core-common"`. `@zip.js/zip.js` 래퍼. 읽기/쓰기를 한 인스턴스로 다루며 추출 결과를 내부 캐시에 보관. 사용 후 `close()` 필수.
 
-## Map 확장 메서드 (`Map.prototype`)
+- `new ZipArchive(data?: Blob | Bytes)` — `data` 생략 시 새 빈 아카이브, 주면 읽기용 리더 구성(`Uint8Array`→`Uint8ArrayReader`, `Blob`→`BlobReader`).
+- `extractAll(progressCallback?: (p: ZipArchiveProgress) => void): Promise<Map<string, Bytes | undefined>>` — 전체 파일 추출. 콜백 인자 `ZipArchiveProgress` 필드: `fileName`=현재 파일명, `totalSize`=전체 비압축 크기, `extractedSize`=누적 추출 크기.
+- `get(fileName: string): Promise<Bytes | undefined>` — 단일 파일 추출(없으면 undefined). 캐시 우선.
+- `exists(fileName: string): Promise<boolean>` — 파일 존재 여부.
+- `write(fileName: string, bytes: Bytes): void` — 캐시에 파일 등록(아직 압축 안 함).
+- `compress(): Promise<Bytes>` — 캐시(및 원본 추출분)를 ZIP 바이트로 압축. 내부적으로 `extractAll()` 호출하므로 전체가 메모리에 로드됨.
+- `close(): Promise<void>` — 리더 닫고 캐시 비움.
 
-- `map.getOrCreate(key, newValue)` / `getOrCreate(key, newValueFn)`: → V — key 없으면 값(또는 팩토리 호출 결과) 설정 후 반환, 있으면 기존 값. 주의: V 가 함수 타입이면 두 번째 인자 함수가 팩토리로 인식되어 호출됨 — 함수를 값으로 저장하려면 `() => myFn` 으로 감쌀 것.
-- `map.update(key, updateFn)`: → void — `updateFn(현재값 | undefined)` 결과로 값 설정. key 가 없어도 호출됨. 카운터 증가·배열 누적에 사용. 예: `m.update(k, v => (v ?? 0) + 1)`.
+```ts
+const zip = new ZipArchive(zipBytes);
+try {
+  const content = await zip.get("file.txt");
+} finally {
+  await zip.close();
+}
+```
 
-## 공용 타입 (`common.types`)
+## env / createLogger
 
-- `Bytes` = `Uint8Array` — 바이너리 데이터 별칭. Buffer 대신 사용.
-- `PrimitiveTypeMap` — 원시 타입 문자열 → 실제 타입 매핑(`string`/`number`/`boolean`/`DateTime`/`DateOnly`/`Time`/`Uuid`/`Bytes`). orm-common 과 공유.
-- `PrimitiveTypeStr` = `keyof PrimitiveTypeMap` — 원시 타입 문자열 key union.
-- `PrimitiveType` — 모든 원시 타입 값의 union(+ undefined).
-- `DeepPartial<T>` — 모든 속성을 재귀적으로 optional 화. 원시/날짜 타입은 그대로 두고 object/array 만 재귀.
-- `Type<TInstance>` — 클래스 생성자 타입(`new (...args) => TInstance`). DI·팩토리·instanceof 체크에 사용.
+`import { env, parseBoolEnv, createLogger } from "@simplysm/core-common"`.
 
-## 원시 타입 추론 (`primitive` 네임스페이스)
+- `env(key: string): string | undefined` — 환경변수 읽기. `process.env` 우선, 없으면 `import.meta.env` fallback(Node 에선 보통 undefined).
+- `env(key: string, value: string): void` — `process.env[key]` 에 쓰기(process 없는 런타임이면 무시).
+- `parseBoolEnv(value: unknown): boolean` — `"true"/"1"/"yes"/"on"`(대소문자 무시)이면 true, 그 외 false. 환경변수 boolean 해석 시.
+- `createLogger(tag: string): ConsolaInstance` — consola 태그 로거를 첫 메서드 접근 시점까지 지연 생성하는 Proxy. 모듈 레벨에서 선언해도 이후 `setupConsola` 의 level/reporters 변경이 반영됨. 모듈 최상단에 로거를 두고 싶을 때 `consola.withTag()` 직접 호출 대신 사용.
 
-- `primitive.typeStr(value)`: → PrimitiveTypeStr — 런타임 값에서 원시 타입 문자열 추론(`"hello"`→`"string"`, `new DateTime()`→`"DateTime"`, `Uint8Array`→`"Bytes"`). 지원 안 되는 타입이면 ArgumentError. ORM 컬럼 타입 판정 등에 사용.
+```ts
+import { createLogger, env, parseBoolEnv } from "@simplysm/core-common";
+const logger = createLogger("MyModule");
+if (parseBoolEnv(env("DEV"))) logger.debug("dev mode");
+```
 
-## 에러 메시지 추출 (`err` 네임스페이스)
+## 공용 타입 (common.types)
 
-- `err.message(e)`: → string — `unknown` 에러에서 메시지 추출. Error 면 `.message`, 아니면 `String(e)`. catch 블록의 `unknown` 을 안전하게 문자열화할 때.
+`import type { ... } from "@simplysm/core-common"`. orm-common 등과 공유되는 원시타입 매핑·유틸 타입.
+
+- `Bytes = Uint8Array` — 바이너리 값 타입(Node `Buffer` 대신 사용).
+- `PrimitiveTypeMap` — 원시타입 문자열 key → 실제 타입 매핑(`string/number/boolean/DateTime/DateOnly/Time/Uuid/Bytes`).
+- `PrimitiveTypeStr = keyof PrimitiveTypeMap` — 위 매핑의 key 유니온.
+- `PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined` — 모든 원시 값 유니온(undefined 포함).
+- `DeepPartial<TObject>` — 원시타입은 그대로 두고 객체/배열만 재귀적으로 optional 화. 부분 패치 입력 타입에.
+- `Type<TInstance>` — `new (...args) => TInstance` 생성자 타입. 팩토리·DI·`instanceof` 분기에서 클래스를 값으로 받을 때.

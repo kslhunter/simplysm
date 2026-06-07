@@ -238,6 +238,52 @@ describe("esbuild Worker Bundle Plugin — Acceptance", () => {
     );
     expect(workerOutput).toBeDefined();
   });
+
+  it("browser 빌드에서 import.meta.resolve(node worker)는 번들하지 않고 호출을 그대로 둔다", async () => {
+    const result = await buildWithPlugin(
+      'const p = import.meta.resolve("./node-worker.js");',
+    );
+
+    expect(result.errors).toHaveLength(0);
+
+    const mainOutput = result.outputFiles!.find((f) => path.basename(f.path).startsWith("entry"));
+    const content = mainOutput!.text;
+
+    // node 워커는 browser 빌드에서 번들되지 않고 import.meta.resolve가 그대로 남는다
+    expect(content).toContain("import.meta.resolve");
+
+    // worker 번들 산출물이 없어야 한다
+    const workerOutput = result.outputFiles!.find((f) =>
+      /worker-[a-z0-9]+\.js$/i.test(path.basename(f.path)),
+    );
+    expect(workerOutput).toBeUndefined();
+  });
+
+  it("browser 빌드에서 브라우저 워커는 번들하고 node 워커는 그대로 둔다 (공존)", async () => {
+    const result = await buildWithPlugin(
+      [
+        'const w = new Worker(new URL("./worker.js", import.meta.url));',
+        'const p = import.meta.resolve("./node-worker.js");',
+      ].join("\n"),
+    );
+
+    expect(result.errors).toHaveLength(0);
+
+    const mainOutput = result.outputFiles!.find((f) => path.basename(f.path).startsWith("entry"));
+    const content = mainOutput!.text;
+
+    // 브라우저 워커는 번들·치환됨
+    expect(content).not.toContain('"./worker.js"');
+    expect(content).toMatch(/worker-[A-Z0-9]+\.js/i);
+    // node 워커는 그대로 남음 (browser 빌드에서 스킵)
+    expect(content).toContain("import.meta.resolve");
+
+    // 브라우저 워커 번들 1개만 존재 (node 워커는 번들 안 됨)
+    const workerOutputs = result.outputFiles!.filter((f) =>
+      /worker-[a-z0-9]+\.js$/i.test(path.basename(f.path)),
+    );
+    expect(workerOutputs).toHaveLength(1);
+  });
 });
 
 describe("esbuild Worker Bundle Plugin — Node.js import.meta.resolve Acceptance", () => {

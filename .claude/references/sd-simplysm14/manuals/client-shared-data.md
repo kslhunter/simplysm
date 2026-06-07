@@ -139,6 +139,32 @@ sharedProducts = useSharedSignal("품목");
 
 - `register` 에 쓴 이름 문자열을 그대로 넘기면 `TAppSharedData` 에서 타입이 추론됨.
 
+## 선택 컨트롤에서 관리·선택 모달 띄우기
+
+공유데이터 선택 컨트롤(`sd-shared-data-select` · `sd-shared-data-select-list`)은 그 자리에서 해당 마스터를 관리·선택하는 모달을 여는 입력을 가짐. 마스터 목록 화면(`sd-crud-list` 기반)을 모달로 재사용해, 선택 컨트롤 옆에서 등록·수정·선택을 끝낼 수 있음.
+
+| 입력         | 컨트롤              | 동작                                                                                               |
+| ------------ | ------------------- | -------------------------------------------------------------------------------------------------- |
+| `[modal]`    | select · select-list | 선택형 모달. 모달에 `selectMode: "single"` 과 현재 선택 키가 주입되어 열리고, 닫힘 결과의 첫 키로 선택을 갱신. |
+| `[editModal]` | select              | 관리 전용 모달(선택을 바꾸지 않음). 닫혀도 현재 선택은 그대로 유지.                                |
+
+```html
+<sd-shared-data-select-list
+  [items]="sharedRoles.items()"
+  [(selectedItem)]="selectedRole"
+  [modal]="{ type: RoleList, title: '역할', inputs: {} }"
+>
+  <ng-template [itemOf]="sharedRoles.items()" let-item="item">{{ item.name }}</ng-template>
+</sd-shared-data-select-list>
+```
+
+- `[modal]` 값은 `{ type, title, inputs }` (모달 호출과 동일 형태, [client-component.md](./client-component.md) 의 '모달 호출' 참조).
+- `[modal]` 로 띄울 목록 컴포넌트는 **선택 모달 계약**을 구현해야 함:
+  - `selectMode` input + `selectedKeys` model 보유.
+  - `SdModalContentDef<SelectModalOutputResult<TKey> | undefined>` 구현 (close 페이로드로 `{ selectedKeys }` 전달).
+  - 이 계약은 `sd-crud-list` 의 모달 선택 모드와 동일 ([client-crud.md](./client-crud.md) 참조). 즉 목록 화면 하나가 일반 페이지·선택 모달 양쪽으로 재사용됨.
+- 선택 컨트롤이 띄울 때는 항상 `selectMode: "single"` 로 주입되므로, 목록은 단건 선택 모드로 동작함.
+
 ## 지킬 것
 
 - 항목 추가 시 세 곳(`register` · `TAppSharedData` · 인터페이스)을 모두 갱신. 하나라도 빠지면 타입 불일치 또는 미등록 데이터가 됨.

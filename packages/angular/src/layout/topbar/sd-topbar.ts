@@ -18,13 +18,14 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
   standalone: true,
   imports: [SdButton, NgIcon],
   host: {
-    "class": "flex-row gap-default cross-align-center main-align-start"
+    "class": "flex-row gap-sm cross-align-center main-align-start"
   },
   template: `
     @if (hasSidebar()) {
       <sd-button
-        [theme]="'link-primary'"
-        [buttonClass]="'p-sm-default'"
+        [size]="'sm'"
+        [theme]="'link-gray'"
+        [buttonClass]="'p-xs-sm'"
         (click)="onToggleButtonClick()"
       >
         <ng-icon [svg]="tablerMenu2" />
@@ -41,10 +42,11 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
         overflow-y: hidden;
         user-select: none;
 
-        background: var(--control-color);
+        //background: var(--control-color);
+        background: var(--theme-gray-lightest);
         color: var(--text-trans-default);
         border-bottom: 1px solid var(--border-color-lighter);
-        padding-left: var(--gap-sm);
+        padding-left: var(--gap-xs);
 
         @each $h in (h1, h2, h3, h4, h5, h6) {
           > #{$h} {

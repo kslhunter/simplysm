@@ -1,21 +1,26 @@
 # @simplysm/capacitor-plugin-usb-storage
 
-Capacitor 플러그인. 연결된 USB Mass Storage 장치를 열거하고 권한을 얻은 뒤 디렉토리/파일을 읽는다. Android 는 libaums 네이티브 구현, 브라우저는 IndexedDB 기반 가상 USB 저장소로 에뮬레이션된다. entry 가 노출하는 심볼은 정적 클래스 `UsbStorage` 와 입출력 타입 4종.
+연결된 USB Mass Storage 장치를 열거하고, 장치별 접근 권한을 확인·요청한 뒤 디렉토리·파일을 읽는 Capacitor 플러그인. Android 는 libaums 라이브러리로 USB Mass Storage 에 접근하고, 웹은 IndexedDB 기반 가상 USB 저장소(`capacitor_usb_virtual_storage` DB)로 동일 API 를 에뮬레이션한다. 모든 호출은 `vendorId`/`productId` 조합(`UsbDeviceFilter`)으로 대상 장치를 지정하며, `UsbStorage` 정적 메서드가 진입점이다.
 
 ## 사용 트리거 인덱스
 
-- **UsbStorage** — USB 저장 장치 접근의 진입점. "장치 목록 조회 → 권한 확인/요청 → readdir/readFile" 흐름을 정적 메서드로 호출할 때.
-- **UsbDeviceInfo / UsbDeviceFilter / UsbFileInfo / UsbStoragePlugin** — 위 메서드의 입출력 타입. 장치 식별(vendorId/productId), 반환 항목(`name`/`isDirectory`) 형태를 다룰 때 참조.
+- **UsbStorage** — 앱에서 USB 저장 장치를 다룰 때의 진입점. 장치 목록 조회·권한 확인/요청·디렉토리 나열·파일 읽기 전반. 모든 메서드가 `static async` 이며 인스턴스화 불필요(abstract class).
+- **UsbDeviceFilter** — `requestPermissions`/`checkPermissions`/`readdir`/`readFile` 의 대상 장치 지정 인자. `getDevices` 로 얻은 장치 중 하나를 vendorId/productId 로 가리킬 때.
+- **UsbDeviceInfo** — `getDevices` 결과 항목 타입. 연결된 장치를 표시·선택하거나 거기서 filter 를 만들 때.
+- **UsbFileInfo** — `readdir` 결과 항목 타입. 디렉토리 나열 결과를 순회·필터할 때.
+- **UsbStoragePlugin** — 저수준 Capacitor 플러그인 인터페이스(옵션 객체 기반 원형). 보통 직접 쓰지 않고 `UsbStorage` 래퍼를 쓰며, 커스텀 네이티브/web 구현이나 옵션·반환 타입 참조가 필요할 때만 사용.
 
 ## UsbStorage
 
-`abstract class` 이며 모든 멤버가 `static` — 인스턴스화하지 않고 `UsbStorage.메서드()` 로 호출한다. 내부적으로 `registerPlugin<UsbStoragePlugin>("UsbStorage")` 로 얻은 네이티브(Android)/웹 구현에 위임하고, 래퍼 객체(`{ devices }`·`{ granted }`·`{ files }`·`{ data }`)에서 값을 꺼내 평탄화해 반환한다. 대상 장치는 항상 `UsbDeviceFilter`(= `{ vendorId, productId }`) 로 지정하며 readdir/readFile 도 매 호출마다 filter 를 받는다(상태 없음).
+모든 USB 저장 작업의 진입점. 추상 클래스의 정적 메서드 모음이라 `new` 없이 `UsbStorage.메서드()` 로 호출한다. 내부적으로 `registerPlugin<UsbStoragePlugin>("UsbStorage")` 로 얻은 네이티브 구현(웹은 `UsbStorageWeb`)에 위임하고, 플러그인의 `{ ... }` 래퍼 결과를 평탄화해 반환한다. 대상 장치는 항상 `UsbDeviceFilter`(`{ vendorId, productId }`) 로 지정하며 readdir/readFile 도 매 호출마다 filter 를 받는다(상태 없음).
 
-- `static getDevices(): Promise<UsbDeviceInfo[]>` — 현재 연결된 USB 장치 목록 조회. 권한과 무관하게 열거되며, 반환 항목의 `vendorId`/`productId` 를 추려 이후 호출의 filter 로 사용. 흐름의 첫 단계.
-- `static requestPermissions(filter: UsbDeviceFilter): Promise<boolean>` — 지정 장치 접근 권한을 사용자에게 요청(다이얼로그). 반환 true=승인, false=거부(이때 읽기 중단). 권한이 없을 때 읽기 직전 호출. 브라우저 웹 구현은 항상 true 를 반환.
-- `static checkPermissions(filter: UsbDeviceFilter): Promise<boolean>` — 다이얼로그 없이 현재 권한 보유 여부만 확인. true=이미 보유(requestPermissions 생략 가능), false=미보유(요청 필요). 권한이 이미 있을 때 요청을 건너뛰려는 분기 기준. 브라우저 웹 구현은 항상 true 를 반환.
-- `static readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]>` — 지정 장치의 `dirPath`(읽을 디렉토리 경로, 루트는 `"/"`) 바로 아래 항목 목록 조회. 각 항목은 `name`+`isDirectory` 로 파일/폴더 구분. 트리를 순회하려면 `isDirectory === true` 인 항목을 다시 readdir. 웹 구현은 장치가 없거나 대상이 디렉토리가 아니면 빈 배열.
-- `static readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined>` — 지정 장치의 `filePath`(읽을 파일 경로) 내용을 `Bytes`(`@simplysm/core-common`) 로 읽음. 파일이 없거나 네이티브가 데이터 없음(`null`)을 주면 `undefined` 반환 — "빈 파일" 과 "없음" 을 구분하려면 이 `undefined` 를 그대로 검사(`""`·기본값 치환 금지). 내부에서 base64 응답을 `bytes.fromBase64` 로 복원.
+- `static getDevices(): Promise<UsbDeviceInfo[]>` — 현재 연결된 USB 장치 목록 조회. 빈 배열이면 연결된 장치 없음. 권한과 무관하게 열거되며, 반환 항목의 `vendorId`/`productId` 를 추려 이후 호출의 filter 로 사용. 목록 UI 를 채우거나 흐름의 첫 단계에서 호출. 플러그인의 `{ devices }` 를 배열로 풀어 반환.
+- `static checkPermissions(filter: UsbDeviceFilter): Promise<boolean>` — 다이얼로그 없이 지정 장치 접근 권한 보유 여부만 확인. true = 이미 보유(requestPermissions 생략 가능), false = 미보유(요청 필요). 웹은 항상 true. `readdir`/`readFile` 전 게이트로 호출. 플러그인의 `{ granted }` 를 boolean 으로 풀어 반환.
+- `static requestPermissions(filter: UsbDeviceFilter): Promise<boolean>` — 지정 장치 접근 권한을 사용자에게 요청(다이얼로그). true = 승인, false = 거부(이때 읽기 중단). 웹은 항상 true. `checkPermissions` 가 false 일 때 호출. 플러그인의 `{ granted }` 를 boolean 으로 풀어 반환.
+- `static readdir(filter: UsbDeviceFilter, dirPath: string): Promise<UsbFileInfo[]>` — 지정 장치의 디렉토리 항목 나열. `filter` = 대상 장치, `dirPath` = 나열할 디렉토리 경로(루트는 `"/"`). 각 항목은 `UsbFileInfo`(이름·디렉토리 여부)로, 트리를 순회하려면 `isDirectory === true` 인 항목을 다시 readdir. 폴더 내용을 훑을 때. 플러그인의 `{ files }` 를 배열로 풀어 반환.
+- `static readFile(filter: UsbDeviceFilter, filePath: string): Promise<Bytes | undefined>` — 지정 장치의 파일 읽기. `filter` = 대상 장치, `filePath` = 읽을 파일 경로. 플러그인이 base64 문자열로 준 데이터를 `bytes.fromBase64` 로 `Bytes`(Uint8Array 계열)로 디코드해 반환. 파일이 없거나 데이터가 `null` 이면 `undefined`(결측 그대로 전파 — `""`·기본값 치환 금지). 읽은 바이너리를 가공·저장할 때.
+
+반환 `Bytes` 는 `@simplysm/core-common` 의 바이트 배열 타입. 플러그인 레벨에서는 base64 문자열로 주고받고, `UsbStorage.readFile` 가 base64 ↔ `Bytes` 변환을 담당한다.
 
 사용 예:
 
@@ -32,31 +37,66 @@ if (!(await UsbStorage.checkPermissions(filter))) {
 
 for (const entry of await UsbStorage.readdir(filter, "/")) {
   if (entry.isDirectory) continue; // 폴더면 하위 readdir 로 순회
-  const data = await UsbStorage.readFile(filter, `/${entry.name}`);
+  const data = await UsbStorage.readFile(filter, `/${entry.name}`); // Bytes | undefined
   if (data === undefined) continue; // 파일 없음/데이터 없음
   // data: Bytes 사용
 }
 ```
 
-## 입출력 타입
+## UsbDeviceFilter
 
-`UsbStoragePlugin` 은 Capacitor 가 `registerPlugin<UsbStoragePlugin>("UsbStorage")` 로 등록하는 네이티브 측 계약이며, 위 `UsbStorage` 정적 메서드가 이를 1:1 로 감싸 쓰기 쉬운 형태(배열·boolean·Bytes)로 변환한다. 보통 직접 호출하지 않고 타입 참조용으로만 본다.
+권한 메서드와 `readdir`/`readFile` 가 대상 장치를 가리키는 데 쓰는 식별 인자. 보통 `getDevices` 결과 항목의 `vendorId`/`productId` 를 그대로 옮겨 만든다.
 
-- `UsbDeviceInfo` — `getDevices()` 가 돌려주는 장치 정보 1건.
-  - `deviceName: string` — OS 가 부여한 장치 시스템 이름. 화면 표시·로그용.
-  - `manufacturerName: string` — 제조사 이름. 사용자에게 장치를 식별시키거나 동일 제품명을 구분할 때.
-  - `productName: string` — 제품 이름. 사용자에게 어떤 장치인지 보여줄 때.
-  - `vendorId: number` — USB 벤더 ID. 이후 filter 의 `vendorId` 로 그대로 사용.
-  - `productId: number` — USB 제품 ID. `vendorId` 와 조합해 장치를 유일하게 지정, 이후 filter 의 `productId` 로 그대로 사용.
-- `UsbDeviceFilter` — 접근 대상 장치를 지정하는 키. 권한·읽기 메서드 모두 이 형태를 받음. 보통 `UsbDeviceInfo` 에서 두 ID 만 추려 만듦.
-  - `vendorId: number` — 대상 장치 벤더 ID. `UsbDeviceInfo.vendorId` 를 그대로 넘김.
-  - `productId: number` — 대상 장치 제품 ID. `UsbDeviceInfo.productId` 를 그대로 넘김.
-- `UsbFileInfo` — `readdir()` 가 돌려주는 디렉토리 항목 1건.
-  - `name: string` — 파일/폴더 이름(경로가 아닌 단일 세그먼트). readFile/하위 readdir 경로를 만들 때 부모 경로에 이어붙임.
-  - `isDirectory: boolean` — 디렉토리 여부. true 면 폴더(다시 readdir 대상), false 면 파일(readFile 대상). 트리 순회·파일 필터링의 분기 기준.
-- `UsbStoragePlugin` — Capacitor `registerPlugin` 대상 인터페이스. `UsbStorage` 가 평탄화하기 전의 원형 시그니처로, 메서드는 옵션 객체 입력 / 래퍼 객체 출력을 가짐.
-  - `getDevices(): Promise<{ devices: UsbDeviceInfo[] }>` — 장치 목록을 `devices` 키로 반환.
-  - `requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>` — 권한 요청 결과를 `granted` 로 반환.
-  - `checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>` — 권한 보유 여부를 `granted` 로 반환.
-  - `readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>` — filter 에 `path`(대상 디렉토리 경로)를 합친 입력으로 항목을 `files` 로 반환.
-  - `readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>` — filter 에 `path`(대상 파일 경로)를 합친 입력으로 파일을 base64 문자열 `data` 로 반환. 데이터 없으면 `null`(상위 `UsbStorage.readFile` 가 `undefined` 로 변환).
+```ts
+interface UsbDeviceFilter {
+  vendorId: number;
+  productId: number;
+}
+```
+
+- `vendorId: number` — 대상 USB 장치 벤더 ID(제조사 식별 코드). `UsbDeviceInfo.vendorId` 를 그대로 넘김. 같은 제조사여도 모델 구분은 `productId` 로.
+- `productId: number` — 대상 USB 장치 제품 ID(모델 식별 코드). `UsbDeviceInfo.productId` 를 그대로 넘김. `vendorId` 와 조합해 하나의 장치를 특정(웹 구현은 `${vendorId}:${productId}` 를 장치 키로 사용).
+
+## UsbDeviceInfo
+
+`getDevices` 가 반환하는 연결 장치 1건. 표시·선택용 메타데이터에 더해 `UsbDeviceFilter` 를 만들 두 ID 를 포함한다.
+
+```ts
+interface UsbDeviceInfo {
+  deviceName: string;
+  manufacturerName: string;
+  productName: string;
+  vendorId: number;
+  productId: number;
+}
+```
+
+- `deviceName: string` — OS 가 부여한 장치 시스템 이름(식별 문자열). 디버깅·로그·표시용.
+- `manufacturerName: string` — 제조사 표시명. 사람이 읽는 장치 라벨을 만들거나 동일 제품명을 구분할 때.
+- `productName: string` — 제품 표시명. 목록 UI 의 장치 항목 라벨에 사용.
+- `vendorId: number` — 벤더 ID. 이 값을 `UsbDeviceFilter.vendorId` 로 옮겨 권한·읽기 호출에 사용.
+- `productId: number` — 제품 ID. 이 값을 `UsbDeviceFilter.productId` 로 옮겨 권한·읽기 호출에 사용.
+
+## UsbFileInfo
+
+`readdir` 가 반환하는 디렉토리 항목 1건.
+
+```ts
+interface UsbFileInfo {
+  name: string;
+  isDirectory: boolean;
+}
+```
+
+- `name: string` — 항목 이름(경로가 아닌 단일 세그먼트의 파일/디렉토리명). readFile·하위 readdir 경로를 만들 때 부모 경로에 이어붙임.
+- `isDirectory: boolean` — 디렉토리 여부. true = 하위 디렉토리(다시 readdir 대상), false = 파일(readFile 대상). 트리 순회·파일 필터링의 분기 기준.
+
+## UsbStoragePlugin
+
+저수준 Capacitor 플러그인 인터페이스. `UsbStorage` 정적 메서드가 내부에서 위임하는 원형으로, 메서드가 옵션 객체(`UsbDeviceFilter`, 또는 거기에 `path` 를 더한 형태)를 받고 결과도 래핑 객체(`{ devices }`·`{ granted }`·`{ files }`·`{ data }`)로 반환한다. 보통 직접 호출하지 않으며, 커스텀 web 구현(`UsbStoragePlugin` 구현)을 작성하거나 옵션/반환 타입을 참조해야 할 때만 사용한다.
+
+- `getDevices(): Promise<{ devices: UsbDeviceInfo[] }>` — 연결 장치 목록을 `devices` 로 반환.
+- `requestPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>` — `options` 장치의 권한 요청 결과를 `granted` 로 반환(true=승인).
+- `checkPermissions(options: UsbDeviceFilter): Promise<{ granted: boolean }>` — `options` 장치의 권한 보유 여부를 `granted` 로 반환(true=보유).
+- `readdir(options: UsbDeviceFilter & { path: string }): Promise<{ files: UsbFileInfo[] }>` — filter 에 `path`(나열할 디렉토리 경로)를 합친 입력으로 항목 목록을 `files` 로 반환.
+- `readFile(options: UsbDeviceFilter & { path: string }): Promise<{ data: string | null }>` — filter 에 `path`(읽을 파일 경로)를 합친 입력으로 파일을 base64 문자열 `data` 로 반환. 파일이 없거나 데이터 없음이면 `data` 가 `null`(래퍼 `UsbStorage.readFile` 이 이를 `undefined` 로 변환).

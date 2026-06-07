@@ -192,6 +192,7 @@ import {
         [useAutoSort]="totalPageCount() === 0"
         [selectMode]="selectMode() ?? (readonly() ? undefined : 'multi')"
         [(selectedKeys)]="selectedKeys"
+        [getItemSelectableFn]="getItemSelectableFn()"
         [trackByFn]="trackByFn()"
         [getItemCellStyleFn]="getItemCellStyleFn"
         [autoSelect]="selectMode() === 'single' ? 'click' : undefined"
@@ -267,6 +268,7 @@ export class SdCrudList<TItem, TKey> {
   sorts = model<SortingDef[]>([]);
 
   trackByFn = input.required<(item: TItem) => TKey>();
+  getItemSelectableFn = input<(item: TItem) => boolean | string>();
 
   commandTplRef = contentChild<TemplateRef<void>>("commandTpl");
   filterTplRef = contentChild<TemplateRef<void>>("filterTpl");

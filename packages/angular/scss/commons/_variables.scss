@@ -52,7 +52,7 @@ $breakpoint-sm: 1280px;
 
 $vars: (
   theme: (
-    "gray": color-map(map.get($colors, gray), -5%),
+    "gray": color-map(map.get($colors, gray)),
     blue-gray: color-map(map.get($colors, slate)),
     primary: color-map(map.get($colors, blue)),
     secondary: color-map(map.get($colors, blue)),
@@ -106,13 +106,7 @@ $vars: (
     0: 0,
     auto: "auto",
   ),
-  border-color: (
-    lighter: var(--theme-gray-lighter),
-    light: var(--theme-gray-light),
-    default: var(--theme-gray-default),
-    dark: var(--theme-gray-dark),
-    darker: var(--theme-gray-darker),
-  ),
+  border-color: color-map(map.get($colors, gray), 5%),
   border-radius: (
     xs: var(--gap-xxs),
     sm: var(--gap-xs),
@@ -139,10 +133,10 @@ $vars: (
   animation-duration: 0.2s,
   elevation-size: 0.0833rem,
   sidebar: (
-    width: 15rem,
+    width: 14rem,
   ),
   topbar: (
-    height: 3rem,
+    height: 2.5rem,
   ),
   sheet: (
     pv: var(--gap-xs),
