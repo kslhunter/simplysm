@@ -367,7 +367,7 @@ doRefresh(): void {
 **2. 객체·배열 시그널 내부 변경 알림** — 시그널이 들고 있는 객체의 _필드만_ 변경된 경우 시그널 자체는 변경 알림을 보내지 않음. 양방향 바인딩 자식의 변경 이벤트에 묶어 호출.
 
 ```ts
-filter = signal<IFilter>({ name: "", state: "" });
+filter = signal<IFilter>({ ... });
 ```
 
 ```html

@@ -320,6 +320,12 @@ export class ExcelWorksheet {
     wsXml.freezeAt(point);
   }
 
+  /** 헤더 자동 필터(드롭다운) 설정. 범위는 헤더행~데이터 끝 전체를 덮도록 지정 */
+  async setAutoFilter(range: ExcelAddressRangePoint): Promise<void> {
+    const wsXml = await this._getWsData();
+    wsXml.setAutoFilter(range);
+  }
+
   //#endregion
 
   //#region Conditional Format Methods

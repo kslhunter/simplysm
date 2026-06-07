@@ -161,6 +161,12 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
       await ws.setZoom(85);
       await ws.freezeAt({ r: 0 });
 
+      // 헤더 자동 필터 (표 전체 범위: 헤더행 + 데이터행)
+      await ws.setAutoFilter({
+        s: { r: 0, c: 0 },
+        e: { r: records.length, c: keys.length - 1 },
+      });
+
       return wb;
     } catch (e) {
       await wb.close();

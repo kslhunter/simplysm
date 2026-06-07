@@ -34,7 +34,7 @@ OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리
 - `ExcelXmlContentTypeData` — `[Content_Types].xml` 의 `Types`(Default 확장자 매핑·Override 파트 등록) 구조.
 - `ExcelXmlRelationshipData` / `ExcelRelationshipData` — `*.rels` 의 `Relationships` 컨테이너 및 개별 `Relationship`(Id/Target/Type) 구조.
 - `ExcelXmlWorkbookData` — `xl/workbook.xml` 의 `workbook`(bookViews/sheets 등) 구조.
-- `ExcelXmlWorksheetData` — `xl/worksheets/sheetN.xml` 의 `worksheet`(sheetPr 탭색/dimension/sheetViews 뷰·틀고정/cols 열너비/sheetData 행·셀/mergeCells/conditionalFormatting/drawing) 구조.
+- `ExcelXmlWorksheetData` — `xl/worksheets/sheetN.xml` 의 `worksheet`(sheetPr 탭색/dimension/sheetViews 뷰·틀고정/cols 열너비/sheetData 행·셀/autoFilter 헤더 필터/mergeCells/conditionalFormatting/drawing) 구조.
 - `ExcelXmlConditionalFormattingData` / `ExcelXmlCfRuleData` — `<conditionalFormatting sqref="...">` 블록과 `<cfRule>`(type/operator/priority/dxfId/text/formula) 구조. `ExcelXmlCfRuleData["$"]["type"|"operator"]` 인덱스 타입은 규칙 spec 빌드 시 내부에서 참조된다.
 - `ExcelRowData` / `ExcelCellData` — `<row r="..">` 과 `<c r=".." s="스타일ID" t="타입">`(v=값, f=수식, is=인라인 문자열) 구조.
 - `ExcelXmlDrawingData` — `xl/drawings/drawingN.xml` 의 `wsDr`(twoCellAnchor from/to 앵커, pic/blipFill/spPr 이미지 노드) 구조.

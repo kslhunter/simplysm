@@ -81,6 +81,7 @@ try {
 - `setTabColor(color: string): Promise<void>` — 시트 탭 색(ARGB 8자리, 예 `"00FF0000"`). 시트 구분 강조용.
 - `setZoom(percent: number): Promise<void>` — 확대/축소 비율(퍼센트). 워크북 뷰를 함께 초기화한다.
 - `freezeAt(point: { r?: number; c?: number }): Promise<void>` — 틀 고정. `r` = 위쪽 고정할 행 분할 지점, `c` = 왼쪽 고정할 열 분할 지점(0 기반). 헤더 한 줄 고정이면 `{ r: 0 }`(0행까지 위가 고정되고 1행부터 스크롤).
+- `setAutoFilter(range: ExcelAddressRangePoint): Promise<void>` — 헤더 자동 필터(드롭다운) 설정. `range`(`{s,e}`, 0 기반, 양끝 inclusive) = 필터를 거는 범위로 보통 헤더행~데이터 끝 전체를 덮는다. `getRange()` 반환값을 그대로 넘겨 표 전체에 적용할 수 있다. 같은 시트에 다시 호출하면 직전 범위를 덮어쓴다(시트당 1개).
 
 조건부 서식:
 

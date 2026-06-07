@@ -129,6 +129,11 @@ export interface ExcelXmlWorksheetData {
         row?: ExcelRowData[];
       },
     ];
+    autoFilter?: [
+      {
+        $: { ref: string };
+      },
+    ];
     mergeCells?: [
       {
         $: { count: string };

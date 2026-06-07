@@ -412,6 +412,12 @@ export class ExcelXmlWorksheet implements ExcelXml {
     ];
   }
 
+  setAutoFilter(range: ExcelAddressRangePoint): void {
+    this.data.worksheet.autoFilter = [
+      { $: { ref: ExcelUtils.stringifyRangeAddr(range) } },
+    ];
+  }
+
   copyRow(sourceR: number, targetR: number, options?: { skipMerge?: boolean }): void {
     // 원본 행 데이터 복제
     const sourceRowInfo = this._dataMap.get(sourceR);
@@ -489,9 +495,10 @@ export class ExcelXmlWorksheet implements ExcelXml {
       if (key === "conditionalFormatting") continue;
       if (key === "sheetPr") continue;
       if (key === "dimension") continue;
+      if (key === "autoFilter") continue;
 
       if (key === "sheetData") {
-        // OOXML CT_Worksheet 자식 순서: sheetPr → dimension → sheetViews → sheetFormatPr → cols → sheetData → mergeCells → conditionalFormatting
+        // OOXML CT_Worksheet 자식 순서: sheetPr → dimension → sheetViews → sheetFormatPr → cols → sheetData → autoFilter → mergeCells → conditionalFormatting
         if (this.data.worksheet.sheetPr != null) {
           result.sheetPr = this.data.worksheet.sheetPr;
         }
@@ -507,6 +514,9 @@ export class ExcelXmlWorksheet implements ExcelXml {
         }
         result.sheetData = this.data.worksheet.sheetData;
 
+        if (this.data.worksheet.autoFilter != null) {
+          result.autoFilter = this.data.worksheet.autoFilter;
+        }
         if (this.data.worksheet.mergeCells != null) {
           result.mergeCells = this.data.worksheet.mergeCells;
         }
