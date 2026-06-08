@@ -45,11 +45,11 @@ import { NgIcon } from "@ng-icons/core";
           [sdRouterLink]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu)"
           [selected]="getIsMenuSelected(menu)"
-          [layout]="depth === 0 ? rootLayout() : 'accordion'"
+          [layout]="depth === 0 && rootLayout() === 'flat' ? 'flat' : 'accordion'"
+          [open]="expandInitially() && menu.children != null"
         >
           @if (menu.icon) {
             <ng-icon [svg]="menu.icon" />
-            &nbsp;
           }
           {{ menu.title }}
           @if (menu.children) {
@@ -70,13 +70,13 @@ import { NgIcon } from "@ng-icons/core";
   styles: [
     /* language=SCSS */ `
       sd-sidebar-menu {
-        > sd-list[data-sd-inset="true"] {
+        /*> sd-list[data-sd-inset="true"] {
           sd-list {
             background: var(--trans-lightest);
           }
-        }
+        }*/
 
-        &:not([data-sd-root-layout="accordion"]) {
+        &[data-sd-root-layout="flat"] {
           > sd-list[data-sd-inset="true"] > sd-list-item > sd-collapse > ._content > ._children > sd-list {
             background: transparent;
           }
@@ -87,12 +87,15 @@ import { NgIcon } from "@ng-icons/core";
 })
 export class SdSidebarMenu {
   menus = input<SdMenu[]>([]);
-  layout = input<"accordion" | "flat">();
+  layout = input<"accordion" | "accordion-expanded" | "flat">();
   getMenuIsSelectedFn = input<(menu: SdMenu) => boolean>();
 
   fullPageCode = injectFullPageCodeSignal();
 
   rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+
+  // accordion-expanded: 모든 깊이 항목을 펼친 채로 시작(이후 클릭 토글). 그 외는 접힘 시작.
+  expandInitially = computed(() => this.rootLayout() === "accordion-expanded");
 
   getMenuRouterLinkOption(
     menu: SdMenu,

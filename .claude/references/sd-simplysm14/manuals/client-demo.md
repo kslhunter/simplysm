@@ -4,24 +4,11 @@
 
 ## 화면 정의 섹션(4번 섹션) 의 화면 유형별 파일 역할
 
-| 화면 유형 패턴                                           | 파일 역할                                                                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 마스터(체크박스·`[E N]`·5버튼바) / 시트 단일             | `<domain>.list.ts`                                                                              |
-| 단건 입력 폼                                             | `<domain>.detail.ts`                                                                            |
-| 좌 목록 + 우 단건                                        | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
-| 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 마스터-라인     | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
-| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)               | `<domain>.modal.ts`                                                                             |
-| 프린트 양식                                              | `<domain>.print-template.ts`                                                                    |
-
-`<domain>` 은 화면명을 dash-case 영문으로 음역한 슬러그. 같은 도메인 폴더에 같은 역할의 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식 사용.
-
-동작 섹션의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님. 화면.X 가 단건 편집이면 `.detail.ts` 를 `showAsync` 로 띄우고(= 위 "단건 입력 폼" 행), 모달 전용 비-CRUD UI 일 때만 `.modal.ts`. 판별 기준은 [client-component.md "detail 과 modal 구분"](./client-component.md) 참조.
+화면 유형 → 파일 구성 매핑(`<domain>` 슬러그·모달 표기 해석 포함) 은 [client-component.md "파일명·역할·위치"](./client-component.md) 의 "화면 정의 → 파일 구성" 을 따름. 데모도 같은 매핑으로 파일을 구성.
 
 ## 와이어프레임 기준
 
-화면 정의 섹션(4번 섹션) 의 와이어프레임이 모든 시각 요소(버튼·필터·시트·탭·검색) 의 **존재·영역·순서** 결정의 1순위. 표준 슬롯이나 기본 UI(사용자 인터페이스) 와 충돌하면 와이어프레임에 맞춰 슬롯을 비우거나 컴포넌트를 교체. 줄 수·픽셀 좌표는 기준이 아님 (폼 inline 자동 wrap 등의 표현 한계 때문).
-
-`sd-crud-list` 의 표준 출력(`(create)/(delete)/(restore)`) 이 와이어프레임에 명시된 버튼 위치를 가린다면 표준 출력 사용을 포기하고 슬롯 안에 `sd-button` 으로 직접 배치.
+시각 요소(버튼·필터·시트·탭·검색) 의 존재·영역·순서는 와이어프레임이 1순위 ([client-component.md "시각 요소 배치 기준"](./client-component.md)). `sd-crud-list` 표준 출력과 충돌할 때의 처리는 [client-crud.md "와이어프레임이 표준 버튼 위치와 충돌하면"](./client-crud.md). 데모도 와이어프레임을 따라 구성.
 
 ## 항목표의 `종류` 컬럼을 입력 컨트롤로 매핑
 
@@ -73,7 +60,7 @@ if (!result) return;
 
 영역 한정 호출(`→ [화면.Y] 의 <영역> — 선택 전용` 등) 은 모달의 입력 시그널(`selectMode` 등) 로 전달. spec 마커 매핑: "선택 전용"·multiselect 는 `selectMode`(`single`/`multi`) 로, "편집 가능 여부" 는 `readonly` 로 따로 전달. "선택 전용" 은 선택 목적을 뜻할 뿐 편집을 막지 않으므로(readonly 아님), 편집까지 차단하려면 `readonly=true` 를 함께 줄 것.
 
-단건 편집을 모달로 띄우는 경우 피호출 화면은 `.detail.ts`(`<sd-crud-detail>` 루트, `viewType='modal'` 자동 주입)이며 모달 표시용 별도 `.modal.ts` 를 만들지 않음. 모달 전용 비-CRUD 화면(`.modal.ts`)은 `sd-crud-detail` 대신 `sd-busy-container` 등으로 자체 구성. 어느 경우든 임의 `close` output 규약을 만들지 말 것 — `_sdModal.showAsync` 의 페이로드 반환 규약만 사용.
+단건 편집을 모달로 띄우는 경우 피호출 화면은 `.detail.ts`(`<sd-crud-detail>` 루트, `viewType='modal'` 자동 주입)이며 모달 표시용 별도 `.modal.ts` 를 만들지 않음. 모달 전용 비-CRUD 화면(`.modal.ts`)은 `sd-crud-detail` 대신 `sd-busy-container` 등으로 자체 구성.
 
 **동반 모달**: 동작 섹션에 `→ [화면.Y] 을 모달로 띄움` 으로 등장하는 모든 모달은 같은 호출에서 함께 생성. 이미 존재하면 재사용.
 
@@ -84,7 +71,7 @@ if (!result) return;
 ```html
 <ng-template #toolTpl>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelUploadClick()">
-    <ng-icon [svg]="tablerFileExcel" /> 엑셀 업로드
+    <ng-icon [svg]="tablerUpload" /> 엑셀 업로드
   </sd-button>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelDownloadClick()">
     <ng-icon [svg]="tablerDownload" /> 엑셀 다운로드
@@ -115,4 +102,4 @@ list 와 detail 의 합성 view 에서 항목 미선택 빈 상태는 [client-co
 
 ## 라우팅·메뉴 따라가기
 
-기존 화면 1개의 라우팅·메뉴 등록 위치·방식을 그대로 따름. 라우트 경로는 화면명을 dash-case 영문으로 음역한 슬러그 사용 (프로젝트의 기존 슬러그 규칙이 일관되어 있다면 그 규칙을 따름). 메뉴 라벨은 spec 의 화면명을 그대로 사용.
+라우팅·메뉴 등록 관례(기존 화면 본뜨기·`title`=화면명·`code`=음역 슬러그) 는 [client-app-structure.md "2. 메뉴 추가"](./client-app-structure.md) 를 따름. 데모도 같은 방식으로 등록.

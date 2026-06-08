@@ -1,10 +1,10 @@
 # @simplysm/excel
 
-OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리. 접근한 셀에 필요한 XML 파트(SharedStrings/Styles 등)만 그때그때 로드하므로 모든 셀/시트 I/O 메서드가 `async` 다. `ExcelWorkbook` 진입점에서 시트 추가·셀 값/수식·스타일·조건부 서식·이미지·행 복사·뷰를, `ExcelWrapper` 로 Zod 스키마 기반 레코드 배열 ↔ 엑셀 변환을, `ExcelUtils` 로 주소·날짜 시리얼·숫자형식 변환을 다룬다. 외부 의존은 `@simplysm/core-common`(DateOnly/DateTime/Time/Bytes), `zod`, `mime`.
+OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리. 접근한 셀에 필요한 XML 파트(SharedStrings/Styles 등)만 그때그때 로드하므로 거의 모든 셀/시트 I/O 메서드가 `async` 다. `ExcelWorkbook` 진입점에서 시트 추가·셀 값/수식·스타일·조건부 서식·이미지·행 복사·뷰를, `ExcelWrapper` 로 Zod 스키마 기반 레코드 배열 ↔ 엑셀 변환을, `ExcelUtils` 로 주소·날짜 시리얼·숫자형식 변환을 다룬다. 외부 의존은 `@simplysm/core-common`(DateOnly/DateTime/Time/Bytes), `zod`, `mime`.
 
 ## 사용 트리거 인덱스
 
-- **ExcelWorkbook / ExcelWorksheet** — .xlsx 를 열거나 새로 만들고, 시트 추가/조회/이름, 데이터 테이블·매트릭스·레코드 읽기·쓰기, 행 복사/삽입, 뷰(zoom/freeze/탭색), 이미지 삽입, 바이트/Blob 내보내기를 할 때. 자세히: [workbook-worksheet.md](./workbook-worksheet.md)
+- **ExcelWorkbook / ExcelWorksheet** — .xlsx 를 열거나 새로 만들고, 시트 추가/조회/이름, 데이터 테이블·매트릭스·레코드 읽기·쓰기, 행 복사/삽입, 뷰(zoom/freeze/autoFilter/탭색), 이미지 삽입, 바이트/Blob 내보내기를 할 때. 자세히: [workbook-worksheet.md](./workbook-worksheet.md)
 - **ExcelCell / ExcelRow / ExcelCol** — 개별 셀의 값·수식·병합·스타일을 읽고 쓰거나, 행/열 단위로 셀을 순회하고 열 너비를 줄 때. 자세히: [cell.md](./cell.md)
 - **셀 스타일 (ExcelStyleOptions / ExcelFont)** — 셀(`cell.setStyle`)이나 워크북 default(`wb.setDefaultStyle`)의 배경·테두리·정렬·숫자형식·폰트를 지정할 때. 자세히: [style.md](./style.md)
 - **조건부 서식 (ExcelConditionalRule / ExcelConditionalRuleStyle)** — 셀/범위에 값 비교·텍스트 매칭·수식 기반 native CF 규칙을 추가할 때. 자세히: [conditional-format.md](./conditional-format.md)
@@ -18,7 +18,7 @@ OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리
 `./types` 가 노출하는 사용자 대면 값/형식 타입. 셀 값을 다루거나 메서드 시그니처를 해석할 때 참조.
 
 - `ExcelValueType` = `number | string | DateOnly | DateTime | Time | boolean | undefined` — 셀이 가질 수 있는 값 유니온. `getValue()` 반환·`setValue()` 인자 타입. `undefined` = "값 없음"(읽기 시 빈 셀, 쓰기 시 셀 삭제)이므로 결측을 끝까지 보존한다. `DateOnly`/`DateTime`/`Time` 은 `@simplysm/core-common` 타입이며 셀에 시리얼 숫자 + 날짜 numFmt 로 저장된다.
-- `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋 이름. `"number"` = 일반 수치, `"string"` = 텍스트 형식(numFmtId 49), `"DateOnly"`/`"DateTime"`/`"Time"` = 날짜/시간 시리얼 해석·표시. `ExcelStyleOptions.numberFormat` 와 `ExcelUtils` 변환의 공용 단위. 날짜 셀은 값으로 직접 `DateOnly`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 따로 지정할 필요가 적다.
+- `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋 이름. `"number"` = 일반 수치(numFmtId 0), `"string"` = 텍스트 형식(numFmtId 49), `"DateOnly"`(14)/`"DateTime"`(22)/`"Time"`(18) = 날짜/시간 시리얼 해석·표시. `ExcelStyleOptions.numberFormat` 와 `ExcelUtils` 변환의 공용 단위. 날짜 셀은 값으로 직접 `DateOnly`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 따로 지정할 필요가 적다.
 - `ExcelCellType` = `"s" | "b" | "str" | "n" | "inlineStr" | "e"` — OOXML 셀 `t` 속성. `"s"` = SharedString 인덱스 참조, `"b"` = boolean(`"1"`/`"0"`), `"str"` = 수식 결과 문자열, `"n"` = 숫자, `"inlineStr"` = 인라인 서식 텍스트, `"e"` = 에러(읽기 시 throw). 보통 `getValue`/`setValue` 가 자동 매핑하므로, 외부 생성 파일의 셀 타입을 직접 분기 검사할 때만 참조. 숫자/날짜 셀은 타입 코드가 `null` 이고 스타일 numFmt 로 구분된다.
 - `ExcelAddressPoint` = `{ r: number; c: number }` — 0 기반 행(`r`)·열(`c`) 좌표. 셀 단일 위치 단위. `cell(r, c)` 인덱스와 동일 0 기반.
 - `ExcelAddressRangePoint` = `{ s: ExcelAddressPoint; e: ExcelAddressPoint }` — 범위 좌표. `s` = 시작(좌상단), `e` = 끝(우하단, inclusive). `getRange()` 반환 타입이며 시트 순회 루프 경계로 쓴다.
@@ -29,7 +29,7 @@ OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리
 
 ## OOXML XML-shape 타입
 
-`./types` 가 함께 export 하는 다음 인터페이스·타입은 라이브러리 내부 XML 파서/직렬화기가 OOXML 파트의 파싱 결과(`xml2js` 스타일의 `$`=속성, 자식은 단일 원소 배열로 래핑)를 표현하는 데이터 모델이다. 일반 사용 흐름(값/스타일/시트 API)에서는 직접 다루지 않으며, OOXML 노드를 직접 조작·검증할 때만 참조한다. 풀이는 각 타입이 표현하는 파트 1줄로 한정.
+`./types` 가 함께 export 하는 다음 인터페이스·타입은 라이브러리 내부 XML 파서/직렬화기가 OOXML 파트의 파싱 결과(`$`=속성, 자식은 단일 원소 배열로 래핑되는 xml2js 스타일)를 표현하는 데이터 모델이다. 일반 사용 흐름(값/스타일/시트 API)에서는 직접 다루지 않으며, OOXML 노드를 직접 조작·검증할 때만 참조한다. 풀이는 각 타입이 표현하는 파트 1줄로 한정.
 
 - `ExcelXmlContentTypeData` — `[Content_Types].xml` 의 `Types`(Default 확장자 매핑·Override 파트 등록) 구조.
 - `ExcelXmlRelationshipData` / `ExcelRelationshipData` — `*.rels` 의 `Relationships` 컨테이너 및 개별 `Relationship`(Id/Target/Type) 구조.

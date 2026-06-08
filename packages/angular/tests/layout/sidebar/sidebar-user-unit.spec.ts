@@ -42,7 +42,7 @@ describe("SdSidebarUser unit", () => {
     expect(ctrl.menuOpen()).toBe(false);
   });
 
-  it("ng-content가 p-lg div 안에 투영된다", async () => {
+  it("ng-content가 p-xs-default div 안에 투영된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [UserUnitTest],
     }).createComponent(UserUnitTest);
@@ -54,10 +54,10 @@ describe("SdSidebarUser unit", () => {
     ) as HTMLElement;
     expect(profileContent).toBeTruthy();
 
-    // Profile should be inside the p-lg container
-    const pLg = fixture.nativeElement.querySelector(".p-lg") as HTMLElement;
-    expect(pLg).toBeTruthy();
-    expect(pLg.contains(profileContent)).toBe(true);
+    // Profile should be inside the p-xs-default container
+    const container = fixture.nativeElement.querySelector(".p-xs-default") as HTMLElement;
+    expect(container).toBeTruthy();
+    expect(container.contains(profileContent)).toBe(true);
   });
 
   it("userMenu가 undefined이면 host의 display가 block이고 메뉴 버튼이 없다", async () => {

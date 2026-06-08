@@ -1,6 +1,7 @@
 ---
 name: sd-spec
 description: SI/업무시스템 요구사항을 분석해 spec.md 로 구조화. 배치 작성(분석/설계 워크플로) + 부분 수정 인라인 처리. Use when "요구사항 분석", "SI 분석", "업무시스템 spec 작성" 을 요청할 때.
+model: xhigh
 ---
 
 # sd-spec

@@ -7,6 +7,7 @@ import {
   SidebarMenuAccordionTest,
   SidebarMenuForceLayoutTest,
   SidebarMenuChildrenTest,
+  SidebarMenuExpandedTest,
   SidebarMenuIconTest,
   SidebarMenuUrlTest,
   SidebarMenuQueryStringTest,
@@ -84,6 +85,89 @@ describe("Feature 4.3 Slice 2: SdSidebarMenu 계층 메뉴", () => {
 
     const childItems = nestedList.querySelectorAll("sd-list-item");
     expect(childItems.length).toBe(2);
+  });
+
+  it("layout='accordion-expanded'이면 host data-sd-root-layout이 accordion-expanded이다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const host = fixture.nativeElement.querySelector("sd-sidebar-menu") as HTMLElement;
+    expect(host.getAttribute("data-sd-root-layout")).toBe("accordion-expanded");
+  });
+
+  it("layout='accordion-expanded'이면 모든 깊이의 하위 보유 항목이 펼친 채(open=true) 시작한다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const parentItems = fixture.nativeElement.querySelectorAll(
+      'sd-list-item[data-sd-has-children="true"]',
+    ) as NodeListOf<HTMLElement>;
+    // Parent 1, Child 2(중첩), Parent 2 → 하위 보유 항목 3개
+    expect(parentItems.length).toBe(3);
+    for (const item of parentItems) {
+      expect(item.getAttribute("data-sd-open")).toBe("true");
+    }
+  });
+
+  it("layout='accordion-expanded'에서 하위 없는 말단 항목은 펼침 시작 대상이 아니다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const leafItems = fixture.nativeElement.querySelectorAll(
+      'sd-list-item[data-sd-has-children="false"]',
+    ) as NodeListOf<HTMLElement>;
+    // Child 1, Grandchild, Child 3 → 말단 항목 3개
+    expect(leafItems.length).toBe(3);
+    for (const item of leafItems) {
+      expect(item.getAttribute("data-sd-open")).toBe("false");
+    }
+  });
+
+  it("layout='accordion-expanded'에서도 하위 보유 항목은 accordion 구조(토글 가능)다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const parentItem = fixture.nativeElement.querySelector(
+      'sd-list-item[data-sd-has-children="true"]',
+    ) as HTMLElement;
+    expect(parentItem.getAttribute("data-sd-layout")).toBe("accordion");
+  });
+
+  it("layout='accordion-expanded'에서 펼친 항목을 클릭하면 접힌다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const parentItem = fixture.nativeElement.querySelector(
+      'sd-list-item[data-sd-has-children="true"]',
+    ) as HTMLElement;
+    expect(parentItem.getAttribute("data-sd-open")).toBe("true");
+
+    const content = parentItem.querySelector("._content") as HTMLElement;
+    content.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(parentItem.getAttribute("data-sd-open")).toBe("false");
   });
 
   it("메뉴에 아이콘이 있으면 제목 앞에 표시된다", async () => {

@@ -67,6 +67,34 @@ export class SidebarMenuChildrenTest {
 }
 
 @Component({
+  selector: "sd-sidebar-menu-expanded-test",
+  template: `<sd-sidebar-menu [menus]="menus()" [layout]="'accordion-expanded'" />`,
+  standalone: true,
+  imports: [SdSidebarMenu],
+})
+export class SidebarMenuExpandedTest {
+  menus = signal<SdMenu[]>([
+    {
+      title: "Parent 1",
+      codeChain: ["p1"],
+      children: [
+        { title: "Child 1", codeChain: ["p1", "c1"] },
+        {
+          title: "Child 2",
+          codeChain: ["p1", "c2"],
+          children: [{ title: "Grandchild", codeChain: ["p1", "c2", "g1"] }],
+        },
+      ],
+    },
+    {
+      title: "Parent 2",
+      codeChain: ["p2"],
+      children: [{ title: "Child 3", codeChain: ["p2", "c3"] }],
+    },
+  ]);
+}
+
+@Component({
   selector: "sd-sidebar-menu-icon-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,
   standalone: true,

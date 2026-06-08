@@ -17,6 +17,20 @@
 - 모든 파일명은 dash-case.
 - 라이브러리(`@simplysm/angular`) 의 파일은 `sd-` prefix 적용 (`sd-button.ts`, `sd-crud-list.ts`).
 
+**화면 정의 → 파일 구성**: 화면 정의(와이어프레임·동작) 의 화면 유형을 다음 역할 파일로 매핑.
+
+| 화면 유형 패턴                                           | 파일 역할                                                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 마스터(체크박스·`[E N]`·5버튼바) / 시트 단일             | `<domain>.list.ts`                                                                              |
+| 단건 입력 폼                                             | `<domain>.detail.ts`                                                                            |
+| 좌 목록 + 우 단건                                        | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
+| 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 마스터-라인     | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
+| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)               | `<domain>.modal.ts`                                                                              |
+| 프린트 양식                                              | `<domain>.print-template.ts`                                                                    |
+
+- `<domain>` 은 화면명을 dash-case 영문으로 음역한 슬러그. 같은 역할 파일이 2개 이상이면 아래 "변형 파일" 규칙 적용.
+- 동작 정의의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님. 화면.X 가 단건 편집이면 `.detail.ts` 를 모달로 띄우고(= "단건 입력 폼" 행), 모달 전용 비-CRUD UI 일 때만 `.modal.ts`. 판별 기준은 아래 "detail 과 modal 구분" 참조.
+
 **위치**: 도메인이 있는 파일은 도메인 폴더 안에 둠. 도메인이 없는(범용) 파일은 `src/<역할>s/` 하위에 둠. 예: `src/controls/`, `src/modals/`.
 
 **변형 파일**: 한 도메인 폴더 안에 같은 역할 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식으로 갈래를 표시. 예 (`outbound-instruction/` 폴더):
@@ -70,6 +84,10 @@ Angular 기본과 다른 부분만 명시:
 
 - 첫 줄에 `/* language=SCSS */` 주석 배치 (IDE 가 SCSS 로 인식하게 함).
 - 내부 전용 클래스명은 `_` prefix (예: `._content`, `._button`).
+
+## 시각 요소 배치 기준
+
+화면 정의의 와이어프레임이 모든 시각 요소(버튼·필터·시트·탭·검색) 의 **존재·영역·순서** 결정의 1순위. 표준 슬롯이나 기본 UI 와 충돌하면 와이어프레임에 맞춰 슬롯을 비우거나 컴포넌트를 교체. 줄 수·픽셀 좌표는 기준이 아님 (폼 inline 자동 wrap 등의 표현 한계 때문).
 
 ## 화면 합성 패턴
 
@@ -196,27 +214,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
 #### 편집형 detail 임베드 시 — 미저장 변경 가드
 
-임베드한 detail 이 편집 가능(미저장 변경 상태를 가짐)하면, 페이지 이탈뿐 아니라 **마스터 전환**도 막아야 함. 마스터 전환은 라우터가 아니라 `sd-shared-data-select-list` 를 통해 일어나므로, 두 가드를 모두 배선할 수 있는 **view 로 가드를 끌어올림**.
-
-```ts
-detail = viewChild(RolePermissionDetail);
-
-// 미저장 변경 보호: 페이지 이탈·마스터 전환 전에 자식 detail 의 변경 가드 확인
-protected readonly checkCanLeave = (): boolean => {
-  const detail = this.detail();
-  return detail == null || detail.checkIgnoreChanges();
-};
-
-constructor() {
-  setupCanDeactivate(this.checkCanLeave); // 페이지 이탈 가드
-}
-```
-
-```html
-<sd-shared-data-select-list ... [canChangeFn]="checkCanLeave">
-  ...
-</sd-shared-data-select-list>
-```
+임베드한 detail 이 편집 가능(미저장 변경 상태를 가짐)하면, 페이지 이탈뿐 아니라 **마스터 전환**도 막아야 함. 마스터 전환은 라우터가 아니라 `sd-shared-data-select-list` 를 통해 일어나므로, 두 가드를 모두 배선할 수 있는 **view 로 가드를 끌어올림**. 가드 배선 코드(`viewChild`·`checkCanLeave`·`setupCanDeactivate`·`[canChangeFn]`)는 [client-shared-data.md](./client-shared-data.md) 의 '좌측 선택 목록 + 우측 상세(master-detail) 레이아웃' 섹션 참조.
 
 배선 약속:
 
@@ -260,7 +258,7 @@ perms = injectPermsSignal(
 );
 ```
 
-- 첫 인자: **권한 path 목록** (도메인 트리 좌표).
+- 첫 인자: **권한 path 목록** — app-structure 의 화면 `fullCode`(들) (점으로 결합된 도메인 트리 좌표).
 - 둘째 인자: **확인할 action 목록**. `perms()` 의 반환값은 사용자가 보유한 action 의 string 배열.
 
 **사용 약속**:
@@ -351,6 +349,7 @@ if (!result) return;
 - **`title`** — 모달 헤더 제목.
 - **`inputs`** — 모달 컴포넌트가 받을 input 시그널 값. 없으면 `{}`.
 - **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 닫기(X)·취소로 닫으면 `undefined`.
+- **close 규약** — 모달 컴포넌트는 `SdModalContentDef` 의 `close` output 만 사용. 임의 close output 규약을 따로 만들지 말 것 — 호출 측은 위 반환값(페이로드) 으로만 결과를 받음.
 
 ## `mark` 헬퍼
 
@@ -622,6 +621,7 @@ async onSubmit(): Promise<void> {
 
 - `[width]` 는 **미명시가 기본** (자동). px 지정은 사용자가 명시 지시한 경우에만 적용.
 - 영역 폭(`flex-min` 의 `style="width: ..."` 등) 도 동일.
+- 명시 지시로 px 폭을 지정할 땐 그 의도·근거를 바로 위 코드 주석으로 남김 — 주석 없는 px 폭은 리뷰에서 비-합의 지정으로 간주됨.
 
 **셀 본문 약속**:
 

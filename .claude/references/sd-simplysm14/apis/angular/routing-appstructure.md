@@ -2,89 +2,135 @@
 
 라우터 링크·현재 페이지 식별·뷰 컨텍스트(page/control/modal)·이탈 가드, 그리고 앱 구조 트리에서 메뉴·권한을 파생하는 군. 화면 컴포넌트의 표준 시그널 `viewType`, 권한 가드 `injectPermsSignal`, 사이드바/탑바 메뉴가 이 군에 의존.
 
-## 페이지 코드·뷰 타입·제목 시그널
+## 라우팅 디렉티브·프로바이더
 
-injection 컨텍스트에서 호출하는 헬퍼들. 현재 라우트 상태를 시그널로 노출.
-
-- `injectFullPageCodeSignal(): Signal<string>` — 전체 URL 경로를 점(`.`) 연결 코드로 반환(`/home/a/b` → `"a.b"`). 라우팅 변경 시 갱신.
-- `injectCurrentPageCodeSignal(): Signal<string> | undefined` — 현재 컴포넌트 기준 상대 페이지 코드. `ActivatedRoute` 없으면 `undefined`.
-- `injectViewTitleSignal(): Signal<string>` — 현재 화면 제목. 모달이면 모달 제목, 아니면 앱 구조에서 코드로 찾은 제목.
-- `injectViewTypeSignal(): Signal<SdViewType>` — 화면이 동작 중인 컨텍스트. `SdViewType = "page"|"modal"|"control"`. 라우팅 진입(셀렉터=현재 코드)이면 `"page"`, 모달이면 `"modal"`, view 의 자식 등이면 `"control"`. `sd-base-container`/`sd-crud-*` 의 `[viewType]` 입력에 그대로 전달.
+### SdRouterLink — `[sdRouterLink]`
 
 ```ts
-viewType = injectViewTypeSignal();
-viewTitle = injectViewTitleSignal();
+option = input<{ link: string; params?: Record<string,string>;
+  window?: { width?: number; height?: number };
+  outletName?: string; queryParams?: Record<string,string> } | undefined>(undefined, { alias: "sdRouterLink" });
 ```
 
-## setupCanDeactivate
-
-라우터/모달 이탈 시점에 호출되는 가드를 등록. injection 컨텍스트에서 호출.
-
-- `setupCanDeactivate(fn: () => boolean): void` — `fn()` 이 `false` 면 이탈 차단. 모달이면 `SdActivatedModalProvider.canDeactivateFn` 설정, 페이지면 route 의 `canDeactivate` 에 push(파괴 시 자동 제거). detail 화면의 변경사항 가드에 사용.
-
-```ts
-setupCanDeactivate(() => this._orgData == null || obj.equal(this.data(), this._orgData) || confirm("변경사항이 있습니다. 진행할까요?"));
-```
-
-## SdNavigateWindowProvider
-
-새 창/탭으로 라우트를 여는 프로바이더. 현재 컨텍스트가 창 모드인지 판별.
-
-- `isWindow: boolean` — 현재가 `window=true` 쿼리로 열린 창인지.
-- `open(navigate: string, params?: Record<string,string>, features?: string): void` — 창 모드이거나 `features` 가 있으면 `window.open` 으로 새 창(beforeunload 시 자식 창 정리), 아니면 `_blank` 새 탭으로 라우트 열기.
-
-## SdRouterLink
-
-`[sdRouterLink]` 디렉티브. 클릭 시 옵션에 따라 라우팅/새 창/아웃렛 이동.
-
-- `sdRouterLink` (option) — `{ link, params?, window?: { width?, height? }, outletName?, queryParams? }`. `link` 가 이동 경로, `params` 가 matrix 파라미터, `window` 가 창 크기, `outletName` 이 named outlet, `queryParams` 가 쿼리. Ctrl/Shift+클릭이면 새 창, 창 모드면 팝업 창, 아니면 `Router.navigate`. Alt+클릭은 무시.
+- 클릭 시 라우터 내비게이트. `option.link`=경로, `params`=matrix 파라미터, `queryParams`=쿼리, `outletName`=명명 outlet. Ctrl/Shift 클릭 또는 윈도우 모드면 새 창으로(`window.width/height`). Alt 클릭은 무시.
 
 ```html
-<a [sdRouterLink]="{ link: '/home/goods/detail', params: { id: '5' } }">상세</a>
+<sd-list-item [sdRouterLink]="{ link: '/home/order/list' }">주문</sd-list-item>
 ```
 
-## 메뉴 유틸 (menu-utils)
-
-`SdMenu` 로부터 라우터 링크 옵션·선택 여부를 계산. 사이드바/탑바 메뉴가 사용.
-
-- `getMenuRouterLinkOption(menu: SdMenu): { link, queryParams } | undefined` — leaf 메뉴면 `"/home/"+코드체인` 링크와 쿼리파라미터 반환, 그룹/외부 url 메뉴면 `undefined`.
-- `getIsMenuSelected(menu, fullPageCode?, customFn?): boolean` — `customFn` 있으면 그것으로, 없으면 현재 fullPageCode 와 메뉴 코드체인 일치 여부.
-
-## SdAppStructureProvider<TModule>
-
-앱 메뉴·권한 트리(`AppStructureItem[]`)에서 사용 가능 메뉴·권한을 파생하는 전역 프로바이더. `providedIn: "root"`.
-
-- `usableModules: WritableSignal<TModule[] | undefined>` — 사용자가 보유한 모듈. 메뉴/권한 필터에 사용.
-- `permRecord: WritableSignal<Record<string, boolean> | undefined>` — `"코드.액션"→보유여부` 권한 맵.
-- `items: WritableSignal<AppStructureItem<TModule>[]>` — 앱 구조 원본.
-- `initialize(items)` — 구조 트리 주입.
-- `usableMenus`/`usableFlatMenus` — 모듈·권한으로 필터된 메뉴 트리/평면 메뉴(computed).
-- `getPermsByFullCode(fullCodes, permKeys): K[]` — 해당 코드들에서 보유한 권한 키 배열. 권한 정의 자체가 없는 항목은 모든 키 통과.
-- `getTitleByFullCode`/`findTitleByFullCode` — 코드로 제목 조회(전자는 미발견 시 throw, 후자는 `undefined`).
-- `getItemChainByFullCode`/`getPermissionsByStructure` — 코드 체인·권한 트리 조회.
-
-## injectPermsSignal
-
-화면 컴포넌트가 권한을 시그널로 받는 헬퍼. injection 컨텍스트에서 호출.
-
-- `injectPermsSignal<K>(viewCodes: string[], keys: K[]): Signal<K[]>` — `viewCodes` 권한 path 들에서 사용자가 보유한 `keys` 만 담은 배열을 반환. 템플릿/코드에서 `perms().includes("edit")` 식으로 인라인 가드.
+### SdNavigateWindowProvider
 
 ```ts
-perms = injectPermsSignal(["inventory.outbound"], ["use", "edit"]);
-// this.perms().includes("use")
+@Injectable({ providedIn: "root" }) class SdNavigateWindowProvider {
+  get isWindow: boolean;
+  open(navigate: string, params?: Record<string,string>, features?: string): void;
+}
 ```
 
-## SdAppStructureUtils
+- `isWindow` — 현재가 팝업 창 모드인지(hash 의 `window=true`). `open(navigate, params, features)` — 새 창/탭으로 화면을 염(features 있으면 팝업, 없으면 새 탭). 부모 종료 시 자식 창 일괄 닫힘.
 
-`AppStructureItem[]` 에서 메뉴/권한/제목을 계산하는 정적 메서드 모음(추상 클래스). 대개 `SdAppStructureProvider` 가 내부에서 호출하지만 직접 쓸 수도 있음.
+## 페이지 식별·뷰 컨텍스트 시그널
 
-- `getMenus(items, codeChain, usableModules, permRecord): SdMenu[]` — 모듈·`use` 권한으로 필터된 메뉴 트리.
-- `getFlatMenus(...)`: `SdFlatMenu[]` — 평면 메뉴(BFS, titleChain/codeChain/modulesChain 보유).
-- `getPermissions(items, codeChain, usableModules): SdPermission[]` — 권한 트리(subPerms 를 children 으로).
-- `getTitleByFullCode`/`findTitleByFullCode`/`getItemChainByFullCode`/`getPermsByFullCode`/`getFlatPermissions` — provider 와 동일 동작의 정적 버전.
+주입 컨텍스트(컴포넌트 생성자)에서 호출하는 헬퍼.
 
-## 타입 (sd-app-structure.types)
+### injectFullPageCodeSignal / injectCurrentPageCodeSignal
 
-- `SdMenu` — `{ title; codeChain: string[]; url?; icon?; children? }`. 사이드바/탑바 메뉴 렌더 단위.
-- `SdFlatMenu<TModule>` — `{ titleChain: string[]; codeChain: string[]; modulesChain: TModule[][] }`. 검색용 평면 메뉴.
-- `SdPermission<TModule>` — `{ title; codeChain; modules; perms: ("use"|"edit")[] | undefined; children }`. 권한표(`sd-permission-table`) 입력 단위.
+```ts
+injectFullPageCodeSignal(): Signal<string>;
+injectCurrentPageCodeSignal(): Signal<string> | undefined;
+```
+
+- `injectFullPageCodeSignal` — 현재 URL 의 전체 페이지 코드(`a.b.c`, `/home/` 이후 세그먼트를 `.` 결합). 메뉴 선택 판정에 사용.
+- `injectCurrentPageCodeSignal` — 현재 라우트 컴포넌트 기준 페이지 코드(중첩 라우트의 자기 위치). `ActivatedRoute` 없으면 undefined.
+
+### injectViewTitleSignal / injectViewTypeSignal
+
+```ts
+injectViewTitleSignal(): Signal<string>;
+injectViewTypeSignal(): Signal<SdViewType>; // "page" | "modal" | "control"
+```
+
+- `injectViewTitleSignal` — 현재 뷰 제목. 모달이면 모달 title, 페이지면 app-structure 에서 코드로 제목 조회. `sd-base-container` 가 사용.
+- `injectViewTypeSignal` — 현재 뷰 컨텍스트. `"modal"`=모달 안, `"page"`=라우팅 진입 단위(컴포넌트 selector 가 라우트 컴포넌트와 일치+풀코드 매칭), 그 외 `"control"`(임베드). crud 골격의 `viewType` 입력에 그대로 전달.
+
+### setupCanDeactivate
+
+```ts
+setupCanDeactivate(fn: () => boolean): void;
+```
+
+- 화면 이탈 가드 등록. 모달 안이면 `SdActivatedModalProvider.canDeactivateFn` 에, 페이지면 라우트 `canDeactivate` 에 연결(파괴 시 해제). `fn` 이 false 면 이탈 차단(미저장 변경 보호).
+
+### 메뉴 유틸
+
+```ts
+getMenuRouterLinkOption(menu: SdMenu): { link: string; queryParams: Record<string,string>|undefined } | undefined;
+getIsMenuSelected(menu: SdMenu, fullPageCode: string|undefined, customFn?: (menu: SdMenu)=>boolean): boolean;
+```
+
+- `getMenuRouterLinkOption` — 리프 메뉴(자식·url 없음)면 `/home/<codeChain>` 링크 옵션 반환, 그룹/외부url 이면 undefined(클릭 비내비게이트). `sdRouterLink` 에 전달.
+- `getIsMenuSelected` — 메뉴가 현재 페이지인지. `customFn` 있으면 그 결과, 없으면 코드 일치. 메뉴 컴포넌트가 선택 강조에 사용.
+
+## 앱 구조(메뉴·권한)
+
+### SdAppStructureProvider
+
+```ts
+@Injectable({ providedIn: "root" }) class SdAppStructureProvider<TModule = unknown> {
+  usableModules: WritableSignal<TModule[] | undefined>;
+  permRecord: WritableSignal<Record<string, boolean> | undefined>;
+  items: WritableSignal<AppStructureItem<TModule>[]>;
+  initialize(items): void;
+  usableMenus = computed<SdMenu[]>(...);
+  usableFlatMenus = computed<SdFlatMenu<TModule>[]>(...);
+  getPermissionsByStructure(items, codeChain?): SdPermission<TModule>[];
+  getTitleByFullCode(fullCode): string;     // 못 찾으면 throw
+  findTitleByFullCode(fullCode): string | undefined; // 결측 보존
+  getItemChainByFullCode(fullCode): AppStructureItem<TModule>[];
+  getPermsByFullCode<K>(fullCodes: string[], permKeys: K[]): K[];
+}
+```
+
+- `initialize(items)` — 앱 구조 트리 주입. `usableModules`/`permRecord` 를 인증 후 채우면 메뉴/권한이 그에 맞게 필터됨.
+- `usableMenus` — 모듈·권한으로 필터된 메뉴 트리(사이드바/탑바용). `usableFlatMenus` — 평탄화된 메뉴(검색 등).
+- `getTitleByFullCode` 는 못 찾으면 throw, `findTitleByFullCode` 는 undefined(결측 보존) — 상황에 맞게 선택. `getPermsByFullCode` 는 주어진 코드들에 대해 보유한 권한 키만 반환.
+
+### injectPermsSignal
+
+```ts
+injectPermsSignal<K extends string>(viewCodes: string[], keys: K[]): Signal<K[]>;
+```
+
+- 화면 권한 가드. `viewCodes`(보통 현재 화면 코드)에 대해 `keys`(`["use","edit"]` 등) 중 보유한 것만 반환하는 시그널. `perms().includes("use")` 로 분기.
+
+```ts
+perms = injectPermsSignal(["base.role"], ["use", "edit"]);
+```
+
+### SdAppStructureUtils
+
+```ts
+abstract class SdAppStructureUtils {
+  static getTitleByFullCode(items, fullCode): string;
+  static findTitleByFullCode(items, fullCode): string | undefined;
+  static getPermsByFullCode(items, fullCodes, permKeys, permRecord): K[];
+  static getItemChainByFullCode(items, fullCode): AppStructureItem[];
+  static getMenus(items, codeChain, usableModules, permRecord): SdMenu[];
+  static getFlatMenus(items, usableModules, permRecord): SdFlatMenu[];
+  static getPermissions(items, codeChain, usableModules): SdPermission[];
+  static getFlatPermissions(items, usableModules);
+}
+```
+
+- 트리에서 메뉴/권한/제목/체인을 계산하는 순수 정적 유틸(`SdAppStructureProvider` 가 위임). provider 없이 트리만으로 파생할 때 직접 호출.
+
+### 타입
+
+```ts
+SdMenu { title: string; codeChain: string[]; url?: string; icon?: string; children?: SdMenu[] }
+SdFlatMenu<TModule> { titleChain: string[]; codeChain: string[]; modulesChain: TModule[][] }
+SdPermission<TModule> { title; codeChain; modules?; perms?: ("use"|"edit")[]; children? }
+SdViewType = "page" | "modal" | "control"
+```
+
+- `SdMenu` — 메뉴 트리 노드(레이아웃 메뉴 컴포넌트 입력). `SdFlatMenu` — 평탄화 메뉴. `SdPermission` — 권한 트리 노드(`SdPermissionTable` 입력, features.md). `SdViewType` — crud/뷰 컨텍스트.

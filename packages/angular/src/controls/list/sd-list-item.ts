@@ -5,8 +5,6 @@ import {
   computed,
   contentChild,
   contentChildren,
-  forwardRef,
-  inject,
   input,
   model,
   TemplateRef,
@@ -29,7 +27,6 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
     <div
       class="_content"
       [style]="contentStyle()"
-      [style.padding-left]="indentPadding()"
       [class]="contentClass()"
       tabindex="0"
       (click)="onContentClick()"
@@ -59,7 +56,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
       <sd-collapse [open]="childrenOpen()">
         <div class="_children">
           @if (layout() === "accordion") {
-            <div class="_indent-guide" [style.left]="guideLeft()"></div>
+            <div class="_indent-guide"></div>
           }
           <ng-content select="sd-list" />
         </div>
@@ -110,7 +107,9 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           }
         }
 
-        // 중첩 자식 영역: 세로 가이드선을 그리기 위한 기준 컨테이너
+        // 중첩 자식 영역: 세로 가이드선을 그리기 위한 기준 컨테이너.
+        // 깊이별 들여쓰기는 중첩 sd-list 의 padding 으로 누적되므로, 이 컨테이너
+        // 좌측은 항상 현재 항목 기준이라 가이드선 위치는 고정값이면 충분함.
         > sd-collapse > ._content > ._children {
           position: relative;
 
@@ -118,8 +117,9 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
             position: absolute;
             top: 0;
             bottom: 0;
+            left: 1em;
             width: 0;
-            border-left: 1px solid var(--border-color-default);
+            border-left: 1px solid var(--trans-light);
             pointer-events: none;
           }
         }
@@ -132,9 +132,11 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
             }
           }
 
-          //> sd-collapse > ._content > ._children > sd-list {
-          //  padding: var(--gap-xs) 0;
-          //}
+          // 깊이별 들여쓰기: accordion 항목의 자식 리스트를 한 칸씩 누적 들여씀.
+          // (flat 항목의 자식 리스트는 들여쓰지 않음)
+          > sd-collapse > ._content > ._children > sd-list {
+            padding-left: 1.5em;
+          }
         }
 
         &[data-sd-layout="flat"][data-sd-has-children="true"] {
@@ -177,31 +179,6 @@ export class SdListItem {
   toolTpl = contentChild<TemplateRef<void>>("toolTpl");
 
   private readonly _childLists = contentChildren(SdList);
-
-  // 상위 아이템을 주입해 중첩 깊이(레벨)를 추적
-  private readonly _parentItem = inject<SdListItem>(
-    forwardRef(() => SdListItem),
-    {
-      optional: true,
-      skipSelf: true,
-    },
-  );
-
-  // accordion(트리) 깊이만 셈. flat(섹션 그룹)은 들여쓰기 대상이 아니므로 0,
-  // flat 하위의 accordion 트리는 자체 루트(1)부터 새로 깊이를 셈.
-  level = computed((): number => {
-    if (this.layout() !== "accordion") return 0;
-    return (this._parentItem?.level() ?? 0) + 1;
-  });
-
-  // accordion 트리 깊이별 좌측 들여쓰기 (트리 루트·flat은 기본 패딩 유지)
-  indentPadding = computed(() => {
-    if (this.level() <= 1) return undefined;
-    return `calc(var(--gap-default) + ${(this.level() - 1) * 1.5}em)`;
-  });
-
-  // 자식 영역에 그릴 세로 가이드선의 좌측 위치 (현재 레벨 기준 + 반 칸)
-  guideLeft = computed(() => `calc(var(--gap-default) + ${(this.level() - 1) * 1.5}em + 0.75em)`);
 
   hasChildren = computed(() => this._childLists().length > 0);
 

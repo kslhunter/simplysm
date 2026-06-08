@@ -2,110 +2,162 @@
 
 화면에서 프로그래밍 방식으로 모달을 띄우거나, 토스트로 알림·진행률을 표시하거나, busy 인디케이터·인쇄/PDF 출력을 호출할 때 함께 읽히는 군. provider 는 모두 `providedIn: "root"`, 동적으로 body 에 attach 하므로 컴포넌트를 템플릿에 직접 둘 일은 거의 없음.
 
-## SdModalProvider
+## 모달
 
-`showAsync` 로 컴포넌트를 모달로 띄움. 컨텐츠 컴포넌트는 `SdModalContentDef<O>` 를 구현해야 함.
+### SdModalProvider
 
-- `modalCount: WritableSignal<number>` — 현재 열린 모달 수.
-- `showAsync<T>(modal: SdModalInfo<T>, options?: SdModalOptions): Promise<O | undefined>` — 모달을 띄우고 close 페이로드를 반환. 사용자가 X/취소로 닫으면 `undefined`.
+```ts
+@Injectable({ providedIn: "root" }) class SdModalProvider {
+  modalCount: WritableSignal<number>;
+  showAsync<T extends SdModalContentDef<any>>(modal: SdModalInfo<T>, options?: SdModalOptions):
+    Promise<Parameters<T["close"]["emit"]>[0] | undefined>;
+}
+```
 
-`SdModalInfo<T>`:
-- `title: string` — 모달 헤더 제목.
-- `type: Type<T>` — `SdModalContentDef` 구현 컴포넌트 클래스.
-- `inputs` — 컴포넌트 input 값들. `initialized`/`close`/`actionTplRef` 제외, optional 입력은 생략 가능.
-
-`SdModalContentDef<O>` (컨텐츠 컴포넌트가 구현):
-- `initialized: Signal<boolean>` — 로드 완료 시그널.
-- `close: OutputEmitterRef<O | undefined>` — 닫기 + 페이로드 emit. emit 값이 `showAsync` 반환값.
-- `actionTplRef?: TemplateRef` — 헤더 우측에 끼울 액션 영역 템플릿(선택).
-
-`SdModalOptions` (선택):
-- `key?: string` — 모달 식별 키.
-- `hideHeader: boolean` — 헤더 숨김. true 면 제목/닫기 영역 없음.
-- `hideCloseButton: boolean` — 닫기 버튼만 숨김.
-- `headerStyle?: string` — 헤더 인라인 스타일.
-- `useCloseByBackdrop: boolean` — 배경 클릭으로 닫기 허용(기본 true).
-- `useCloseByEscapeKey: boolean` — ESC 로 닫기 허용(기본 true).
-- `float: boolean` — 화면에 띄우는 플로팅 모드.
-- `fill: boolean` — 화면 가득 채움.
-- `resizable: boolean` — 가장자리 드래그 리사이즈 허용.
-- `movable: boolean` — 헤더 드래그 이동 허용.
-- `position: "bottom-right"|"top-right"` — 고정 위치.
-- `minHeightPx`/`minWidthPx`/`heightPx`/`widthPx: number` — 크기(px).
-- `noFirstControlFocusing: boolean` — true 면 첫 입력에 자동 포커스하지 않고 dialog 에 포커스.
+- `showAsync(modal, options)` — 모달 컴포넌트를 동적 생성·표시하고, 컨텐츠가 `close.emit(value)` 한 값(또는 배경/ESC/닫기 시 undefined)으로 resolve. 첫 탭 가능 요소에 자동 포커스, 닫힘 후 이전 포커스 복귀.
+- `modal.title` — 헤더 제목. `modal.type` — `SdModalContentDef` 구현 컴포넌트. `modal.inputs` — 컴포넌트 input 바인딩(`close`/`initialized`/`actionTplRef` 제외, optional 마킹된 키는 생략 가능).
 
 ```ts
 const result = await inject(SdModalProvider).showAsync(
-  { type: GoodsDetailModal, title: "품목 등록", inputs: { goodsId: 12 } },
-  { resizable: true, widthPx: 720 },
-);
-if (result == null) return;
-```
-
-## SdActivatedModalProvider<T>
-
-모달 컨텐츠 컴포넌트 안에서 inject 해 자기 모달 셸을 제어. `SdModalProvider` 가 컨텐츠 인젝터에 주입.
-
-- `modalComponent: WritableSignal<SdModal | undefined>` — 모달 셸 컴포넌트 참조(제목 등 조회).
-- `contentComponent: WritableSignal<T | undefined>` — 컨텐츠 컴포넌트 참조.
-- `canDeactivateFn: () => boolean` — 닫기 시도 시 가드. `setupCanDeactivate` 가 이 값을 설정.
-
-## SdPromptModal / SdConfirmModal
-
-바로 쓰는 범용 모달 컨텐츠 컴포넌트.
-
-- `SdPromptModal` — `SdModalContentDef<string>`. `message: input.required<string>` 를 표시하고 텍스트 입력(필수) 후 확인 시 입력값, 취소 시 `undefined` emit.
-- `SdConfirmModal` — `SdModalContentDef<boolean>`. `message: input.required<string>` 표시 후 확인 시 `true`, 취소 시 `undefined` emit.
-
-```ts
-const ok = await sdModal.showAsync({ type: SdConfirmModal, title: "삭제", inputs: { message: "삭제할까요?" } });
-```
-
-## SdToastProvider
-
-토스트 알림·진행률·커스텀 토스트를 띄우고, 비동기 try 래퍼를 제공.
-
-- `info`/`success`/`warning`/`danger(message, useProgress?)` — 해당 severity 토스트. `useProgress: true` 면 진행률 토스트로 `WritableSignal<number>`(0~100) 반환(100 도달 1초 후 자동 닫힘), `false`/생략이면 일정 시간 후 자동 닫힘.
-- `try<R>(fn, messageFn?): Promise<R | undefined>` — `fn` 실행 중 `Error` throw 시 `danger` 토스트로 표시하고 시스템 로그에 기록한 뒤 `undefined` 반환(에러 외 throw 는 재전파). 화면 비동기 작업 표준 래퍼.
-- `notify<T>(input: SdToastInput<T>): Promise<O | undefined>` — 커스텀 컴포넌트(`SdToastContentDef<O>`)를 토스트로 띄움. close emit 값 또는 5초 후 `undefined` 반환.
-- `alertThemes: WritableSignal<SdToastSeverity[]>` — 여기에 든 severity 는 토스트 대신 `window.alert` 로 표시.
-- `overlap: WritableSignal<boolean>` — true 면 새 토스트가 기존 토스트를 모두 치움.
-- `beforeShowFn?: (theme) => void` — 토스트 표시 직전 콜백.
-
-타입:
-- `SdToastSeverity = "info"|"success"|"warning"|"danger"`.
-- `SdToastTheme = "primary"|"secondary"|SdToastSeverity|"gray"|"blue-gray"`.
-- `SdToastContentDef<O>` — `close: OutputEmitterRef<O | undefined>` 보유.
-- `SdToastInput<T>` — `{ type: Type<T>; inputs }`(`close` 제외).
-
-```ts
-this.busyCount.update((v) => v + 1);
-await this._sdToast.try(async () => { await this._refresh(); });
-this.busyCount.update((v) => v - 1);
-this._sdToast.success("저장되었습니다.");
-```
-
-## SdBusyProvider
-
-전역 busy 인디케이터 상태. `provideSdAngular` 가 라우팅 동안 증감, 인쇄 provider 도 사용.
-
-- `type: WritableSignal<SdBusyType>` — 인디케이터 모양(`"spinner"|"bar"|"cube"`, 기본 `"bar"`).
-- `globalBusyCount: WritableSignal<number>` — 0 보다 크면 화면 전체 busy 오버레이 표시. 비동기 작업 시작 `+1`, 종료 `-1`.
-
-`SdBusyContainer` 컴포넌트(영역 단위 busy): `busy: boolean`, `message?: string`, `type?: SdBusyType`, `progressPercent?: number`(진행 바). 화면 영역을 감싸 그 영역만 busy 표시.
-
-## SdPrintProvider
-
-화면 컴포넌트(`SdPrint` 구현)를 인쇄하거나 PDF 버퍼로 변환. 처리 동안 `globalBusyCount` 증감.
-
-- `printAsync<T>(template: SdPrintInput<T>, options?: { size?: string; margin?: string }): Promise<void>` — 컴포넌트를 렌더해 `@page` 스타일을 걸고 `window.print` 호출. `initialized()` 와 이미지 로드를 대기.
-- `getPdfBufferAsync<T>(template, options?: { orientation?: "portrait"|"landscape"; pageSize?: string }): Promise<Uint8Array>` — `.page` 요소(없으면 전체)를 캔버스로 떠 jsPDF 로 PDF 바이트 생성.
-
-`SdPrint` (템플릿 컴포넌트가 구현): `initialized: Signal<boolean>`(렌더 완료 시그널). `SdPrintInput<T>` — `{ type: Type<T>; inputs }`.
-
-```ts
-await inject(SdPrintProvider).printAsync(
-  { type: InvoicePrintTemplate, inputs: { invoiceId: 5 } },
-  { size: "A4", margin: "10mm" },
+  { title: "역할 선택", type: RoleListModal, inputs: { selectMode: "single" } },
+  { useCloseByBackdrop: false },
 );
 ```
+
+### SdModal — `<sd-modal>`
+
+```ts
+open = model(false); key = input<string>(); title = input("");
+hideHeader; hideCloseButton; headerStyle = input<string>();
+useCloseByBackdrop = input(true); useCloseByEscapeKey = input(true);
+float; fill; resizable; movable;
+position = input<"bottom-right" | "top-right" | undefined>();
+minHeightPx; minWidthPx; heightPx; widthPx = input<number>();
+actionTplRef = input<TemplateRef<any>>(); closeRequest = output<void>();
+```
+
+- 모달 셸 컴포넌트(보통 `SdModalProvider` 가 생성, 직접 템플릿 사용은 드묾). `key` 지정 시 크기·위치를 `SdSystemConfigProvider` 에 저장/복원.
+- `useCloseByBackdrop`/`useCloseByEscapeKey` — 배경 클릭/ESC 닫기 허용(기본 true). `float`=배경 없는 부유창, `fill`=전체 채움, `resizable`/`movable`=리사이즈/드래그(헤더), `position`=고정 위치.
+
+### 관련 타입·내장 모달
+
+```ts
+SdModalContentDef<O> { initialized: Signal<boolean>; close: OutputEmitterRef<O | undefined>; actionTplRef?; _optionalModalInputs? }
+SdModalInfo<T, X> { title: string; type: Type<T>; inputs: ... }
+SdModalOptions { key?; hideHeader?; hideCloseButton?; headerStyle?; useCloseByBackdrop?; useCloseByEscapeKey?; float?; fill?; resizable?; movable?; position?; minHeightPx?; minWidthPx?; heightPx?; widthPx?; noFirstControlFocusing? }
+```
+
+- `SdModalContentDef<O>` — 모달 컨텐츠 컴포넌트 계약(`initialized` 시그널 + `close` 출력). `O` 가 close 페이로드 타입. `_optionalModalInputs` 에 optional input 키를 문자열 리터럴로 선언하면 `showAsync` 호출 시 해당 input 생략 허용.
+- `SdModalOptions.noFirstControlFocusing` — true 면 첫 컨트롤 자동 포커스 안 함(다이얼로그만 포커스).
+
+### SdActivatedModalProvider
+
+```ts
+@Injectable() class SdActivatedModalProvider<T> {
+  modalComponent: WritableSignal<SdModal | undefined>;
+  contentComponent: WritableSignal<T | undefined>;
+  canDeactivateFn: () => boolean; // 기본 () => true
+}
+```
+
+- 모달 컨텐츠 내부에서 `inject` 해 사용. `canDeactivateFn` 을 세팅하면 닫기 전 가드(미저장 변경 보호). `contentComponent` 로 자기 컴포넌트 참조(crud-list 가 close 호출에 사용).
+
+### SdPromptModal / SdConfirmModal
+
+```ts
+// SdPromptModal: SdModalContentDef<string>  — message 입력 + 텍스트 입력 후 확인/취소
+message = input.required<string>();
+// SdConfirmModal: SdModalContentDef<boolean> — message 표시 후 확인(true)/취소(undefined)
+message = input.required<string>();
+```
+
+- 범용 입력/확인 모달. `showAsync({ type: SdPromptModal, inputs: { message } })` 로 호출. prompt 는 확인 시 입력 문자열, confirm 은 확인 시 `true`, 취소는 둘 다 undefined.
+
+## 토스트
+
+### SdToastProvider
+
+```ts
+@Injectable({ providedIn: "root" }) class SdToastProvider {
+  alertThemes: WritableSignal<SdToastSeverity[]>; overlap: WritableSignal<boolean>;
+  beforeShowFn?: (theme: SdToastSeverity) => void;
+  info(msg, useProgress?): WritableSignal<number> | void;   // success/warning/danger 동일 시그니처
+  notify<T>(input: SdToastInput<T>): Promise<...>;
+  try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined>;
+}
+// SdToastSeverity = "info" | "success" | "warning" | "danger"
+```
+
+- `info`/`success`/`warning`/`danger(msg, useProgress?)` — 토스트 표시. `useProgress=true` 면 진행률 토스트의 `WritableSignal<number>`(0~100) 반환(100 도달 후 자동 해제), 아니면 3초 후(호버 시 지연) 자동 해제.
+- `try(fn, messageFn?)` — fn 실행 중 Error 발생 시 `danger` 토스트 + 시스템로그 적재 후 undefined 반환(Error 외 예외는 rethrow). 화면 핸들러를 감싸 에러를 사용자에게 알림.
+- `alertThemes` — 해당 severity 는 토스트 대신 `window.alert` 사용. `overlap`=새 토스트가 기존을 대체. `notify` 는 커스텀 컴포넌트 토스트.
+
+```ts
+await inject(SdToastProvider).try(async () => { await save(); this._sdToast.success("저장됨"); });
+```
+
+### SdToast / SdToastContainer — `<sd-toast>` / `<sd-toast-container>`
+
+```ts
+// toast
+open = model(false); useProgress = input(false); theme = input<SdToastTheme>("info");
+progress = model(0); message = model<string | undefined>();
+// container
+overlap = input(false);
+// SdToastTheme = "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"
+```
+
+- 토스트 표시 단위/컨테이너(provider 가 동적 생성, 직접 사용은 드묾). `theme` info/success 는 aria status·polite, warning/danger 는 alert·assertive 로 접근성 자동 설정.
+
+### 관련 타입
+
+```ts
+SdToastContentDef<O> { close: OutputEmitterRef<O | undefined> }
+SdToastInput<T> { type: Type<T>; inputs: Omit<DirectiveInputSignals<T>, "close"> }
+```
+
+- 커스텀 컴포넌트 토스트(`notify`)의 계약·입력 타입.
+
+## busy
+
+### SdBusyProvider
+
+```ts
+@Injectable({ providedIn: "root" }) class SdBusyProvider {
+  type: WritableSignal<SdBusyType>;       // 기본 "bar"
+  globalBusyCount: WritableSignal<number>;
+}
+// SdBusyType = "spinner" | "bar" | "cube"
+```
+
+- `globalBusyCount` — 0 초과면 전역 busy 오버레이 표시(라우팅 네비게이션·인쇄가 자동 +1/-1). 화면에서 비동기 작업 동안 직접 증감 가능. `type` 은 전역 인디케이터 모양.
+
+### SdBusyContainer — `<sd-busy-container>`
+
+```ts
+busy = input(false); message = input<string>(); type = input<SdBusyType>();
+progressPercent = input<number>();
+```
+
+- 특정 영역에 busy 오버레이를 씌우는 컨테이너. `busy` true 동안 콘텐츠 위에 인디케이터 + 키보드 차단. `type` 미지정 시 `SdBusyProvider.type`, `progressPercent`=상단 진행바.
+
+```html
+<sd-busy-container [busy]="loading()"> <ng-content /> </sd-busy-container>
+```
+
+## 인쇄·PDF
+
+### SdPrintProvider
+
+```ts
+@Injectable({ providedIn: "root" }) class SdPrintProvider {
+  printAsync<T extends SdPrint>(template: SdPrintInput<T>, options?: { size?: string; margin?: string }): Promise<void>;
+  getPdfBufferAsync<T extends SdPrint>(template: SdPrintInput<T>, options?: { orientation?: "portrait"|"landscape"; pageSize?: string }): Promise<Uint8Array>;
+}
+// SdPrint { initialized: Signal<boolean>; _optionalPrintInputs? }
+// SdPrintInput<T, X> { type: Type<T>; inputs: ... }
+```
+
+- `printAsync(template, options)` — 인쇄용 컴포넌트를 임시 렌더(`initialized` 대기 + 이미지 로드 대기) 후 `window.print()`. `options.size`(예: `"A4 auto"`)/`margin` 은 `@page` 규칙. 동안 globalBusy.
+- `getPdfBufferAsync(template, options)` — 같은 방식으로 렌더 후 `.page` 요소(없으면 전체)를 페이지별 이미지로 PDF 생성, `Uint8Array` 반환. `orientation`/`pageSize`(예: `"a4"`) 지정.
+- `template.type` 는 `SdPrint` 구현 컴포넌트(`initialized` 시그널 필수). `inputs` 로 데이터 주입.

@@ -45,7 +45,7 @@ export const adminAppStructureItems: AppStructureItem[] = [
 ```
 
 - `code` 는 부모부터 dot 으로 이어져 화면을 식별함 (위 예: `inventory.goods-inventory`). 라우팅 경로·권한 키가 모두 이 코드 기준.
-- 그룹은 `children` 만 두고 `perms`·`url` 을 두지 않음. 표시 가능한 자식이 하나도 없으면 그룹도 메뉴에서 자동으로 빠짐.
+- 그룹은 `children` 을 가지며, 화면 전용 필드(`perms`·`url`·`subPerms`·`isNotMenu`)는 두지 않음. 표시 가능한 자식이 하나도 없으면 그룹도 메뉴에서 자동으로 빠짐.
 - 외부 링크 화면은 `url` 지정.
 
 | 필드       | 위치      | 용도                                       |
@@ -55,6 +55,8 @@ export const adminAppStructureItems: AppStructureItem[] = [
 | `icon`     | 그룹·화면 | 메뉴 아이콘                                |
 | `children` | 그룹      | 하위 항목 배열                             |
 | `url`      | 화면      | 외부 링크 등 이동 경로                     |
+
+**새 화면 등록 관례**: 기존 화면 1개의 등록 위치·방식을 그대로 본떠 추가. `title` 은 화면명을 그대로, `code` 는 화면명을 dash-case 영문으로 음역한 슬러그(프로젝트의 기존 슬러그 규칙이 일관되면 그 규칙 우선).
 
 ## 3. 메뉴에 안 띄우고 화면만 두기
 
@@ -113,7 +115,7 @@ this._sdAppStructure.permRecord.set(this.authInfo()!.user.permissionRecord);
 
 **화면 안에서 권한 체크** — 화면 컴포넌트에서 `injectPermsSignal(<path>, <actions>)` 로 정의된 권한을 읽어 체크함. 첫 인자(권한 path)는 이 구조의 화면 fullCode(들). 체크 작성 관례(단순 체크는 인라인, `computed` 사용 기준)는 [client-component.md](./client-component.md) 의 '권한' 참조.
 
-- `perms` 를 정의하지 않은 화면은 제약이 없으므로 항상 모든 권한이 활성으로 나옴.
+- `perms` 를 정의하지 않은 화면은 제약이 없으므로, `permRecord` 가 연결된 뒤에는 모든 권한이 활성으로 나옴(`permRecord` 미설정 상태인 로그인 전에는 빈 권한).
 
 ## 5. 기능 모듈로 메뉴 on/off
 

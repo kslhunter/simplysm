@@ -50,6 +50,10 @@
 
 `<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
+### 와이어프레임이 표준 버튼 위치와 충돌하면
+
+`(create)/(delete)/(restore)` 표준 출력이 와이어프레임에 명시된 버튼 위치를 가린다면, 표준 출력 사용을 포기하고 `#toolTpl` 등 슬롯 안에 `sd-button` 으로 직접 배치. 시각 요소 배치는 와이어프레임이 1순위 ([client-component.md "시각 요소 배치 기준"](./client-component.md)).
+
 ### viewType 별 동작
 
 - **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
@@ -110,7 +114,7 @@ async onEdit(item: IItem, event: Event): Promise<void> {
 ```html
 <ng-template #toolTpl>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
-    <ng-icon [svg]="tablerFileExcel" />
+    <ng-icon [svg]="tablerUpload" />
     엑셀 다운로드
   </sd-button>
 </ng-template>
@@ -149,8 +153,105 @@ async onDownloadExcelButtonClick(): Promise<void> {
 - 조회는 목록과 같은 `_search` 를 페이징 인자만 꺼서 재사용 — 보이는 페이지가 아니라 결과 전체를 받음.
 - 파일명은 `<화면제목>_<yyMMdd>.xlsx`. 화면 제목은 `injectViewTitleSignal()`.
 - 양식 컬럼 = 화면 표시 컬럼 + `삭제`(참/거짓) + `수정일시`·`수정자`([data-log.md](./data-log.md) 의 표시 규약). 참조 마스터는 명칭으로 출력.
-- 비밀번호 등 평문으로 못 꺼내는 값은 양식에서 제외.
+- 같은 `_excelWrapper`(zod 스키마) 를 아래 업로드 레시피와 **공유**함 — `write` 가 다운로드, `read` 가 업로드.
 - `ExcelWrapper`/`downloadBlob` 자체 사용법은 [apis/excel/README.md](../apis/excel/README.md) · [apis/core-browser/README.md](../apis/core-browser/README.md).
+
+### 엑셀 업로드로 일괄 등록·수정하려면
+
+다운로드와 **같은 `_excelWrapper`(zod 스키마) 를 공유**해 역방향으로 읽음. `#toolTpl` 의 다운로드 버튼 옆에 업로드 버튼을 `edit` 권한으로 게이팅해 두고, `openFileDialog` → `_excelWrapper.read` → 정합성 검증 → `save` 일괄 저장. 아래 예시는 참조 마스터(예: 역할) 컬럼을 포함한 목록 기준.
+
+```html
+<ng-template #toolTpl>
+  @if (perms().includes("edit")) {
+    <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
+      <ng-icon [svg]="tablerUpload" />
+      엑셀 업로드
+    </sd-button>
+  }
+  <!-- 위 '엑셀 다운로드' 버튼과 같은 #toolTpl 안에 둠 -->
+</ng-template>
+```
+
+```ts
+async onUploadExcelButtonClick(): Promise<void> {
+  if (this.busyCount() > 0) return;
+  if (!this.perms().includes("edit")) return;
+
+  const files = await openFileDialog({ accept: ".xlsx" });
+  if (files == null) return; // 취소
+
+  this.busyCount.update((v) => v + 1);
+  await this._sdToast.try(async () => {
+    // 파생 컬럼(수정일시·수정자)은 업로드에서 제외하고 파싱.
+    const records = await this._excelWrapper.read(files[0], 0, {
+      excludes: ["lastModifiedAt", "lastModifiedBy"],
+    });
+    if (records.length === 0) throw new Error("업로드할 데이터가 없습니다.");
+
+    // 다건일 때만 에러 메시지에 항목명을 붙임(단건이면 평문).
+    const label = (itemName: string): string =>
+      records.length > 1 ? `직원 '${itemName}': ` : "";
+
+    // 참조 마스터: 명칭 → ID 역변환(활성 기준). 매칭 안 되는 명칭은 throw.
+    const roleIdByName = new Map(this.sharedRoles.items().map((r) => [r.name, r.id] as const));
+    const inputs = records.map((rec) => {
+      let roleId: number | undefined;
+      const roleName = rec.roleName?.trim();
+      if (roleName != null && roleName !== "") {
+        roleId = roleIdByName.get(roleName);
+        if (roleId == null) throw new Error(`${label(rec.name)}존재하지 않는 역할입니다. (${roleName})`);
+      }
+      return { id: rec.id, name: rec.name, roleId, isDeleted: rec.isDeleted };
+    });
+
+    // ID↔이름 정합성 — id 있는 행은 DB의 (id, name) 과 대조. id 없으면 신규.
+    const ids = inputs.flatMap((x) => (x.id != null ? [x.id] : []));
+    const dbRows =
+      ids.length === 0
+        ? []
+        : await this._appOrm.connectWithoutTransAsync((db) =>
+            db
+              .employee()
+              .where((c) => [expr.in(c.id, ids)])
+              .select((c) => ({ id: c.id, name: c.name }))
+              .execute(),
+          );
+    const dbNameById = new Map(dbRows.map((r) => [r.id, r.name] as const));
+
+    // 기존 이름(비즈니스키)이 바뀌면 엑셀 행 어긋남(정렬 사고) 의심 → 변경 건수를 입력받아 확인.
+    let nameChangedCount = 0;
+    for (const x of inputs) {
+      if (x.id == null) continue;
+      const dbName = dbNameById.get(x.id);
+      if (dbName == null) throw new Error(`${label(x.name)}ID ${x.id} 에 해당하는 직원이 없습니다.`);
+      if (dbName !== x.name.trim()) nameChangedCount++;
+    }
+    if (nameChangedCount >= 1) {
+      const answer = prompt(
+        `기존 항목 ${nameChangedCount}건의 이름이 변경됩니다.\n계속하려면 ${nameChangedCount} 을(를) 입력하세요.`,
+      );
+      if (answer == null || answer.trim() !== String(nameChangedCount)) return;
+    }
+
+    const results = await this._appService.employee.save(inputs); // 일괄 저장(트랜잭션)
+    await this._appSharedData.emitAsync(
+      "직원",
+      results.map((r) => r.id),
+    );
+    this._sdToast.success(`${results.length}건이 반영되었습니다.`);
+    await this._refresh();
+  });
+  this.busyCount.update((v) => v - 1);
+}
+```
+
+- 다운로드와 같은 `_excelWrapper` 를 그대로 재사용 — `read(file, sheetIndex, { excludes })` 가 역방향. `excludes` 로 파생 컬럼(수정일시·수정자)을 파싱에서 뺌.
+- 빈 파일(0건)은 throw — 정상 처리하지 않음.
+- 참조 마스터(역할 등)는 **명칭 → ID 역변환**. 매칭 안 되는 명칭은 throw — 일부만 건너뛰지 않음(다중 작업 원자성).
+- `id` 유무로 신규/수정 분기. `id` 있는 행은 DB의 `(id, name)` 과 대조해 존재·정합성 확인(없으면 throw).
+- 기존 이름(비즈니스키) 변경은 엑셀 행이 밀린 사고일 수 있어, 변경 건수를 직접 입력받아 확인 후 진행.
+- 저장은 `save(inputs)` 한 번으로 일괄 — 한 건이라도 실패하면 전체 롤백(트랜잭션 원자성).
+- 업로드 버튼은 `edit` 권한일 때만 노출. import 추가: `openFileDialog`(`@simplysm/core-browser`) · `tablerUpload`(`@ng-icons/tabler-icons`).
 
 ### 특정 행의 선택·삭제를 막으려면
 
@@ -166,6 +267,26 @@ getItemSelectableFn = (item: IItem): boolean | string =>
 
 - `true` = 선택 가능, `string` = 선택 불가 + 사유. 선택 자체가 막히므로 핸들러에 같은 가드를 또 두지 않아도 됨.
 - 단건 상세에는 선택 개념이 없으므로, 같은 제약을 삭제 버튼을 조건부로 숨겨 적용(`@if (!isSelf() && perms().includes("edit")) { ...삭제 버튼... }`).
+
+### 시트 정렬을 서버 정렬로 반영하려면
+
+`[(sorts)]="sortingDefs"` 로 받은 정렬 조건을 `_search` 쿼리에 반영. 시트 컬럼 `key` 가 select 별칭과 일치하므로, 컬럼별 분기 없이 `obj.getChainValue` 로 `key` 를 컬럼으로 풀어 `orderBy` 에 전달.
+
+```ts
+// 화면 사용자가 지정한 정렬을 우선순위대로 적용
+for (const sort of this.sortingDefs()) {
+  qr2 = qr2.orderBy((c) => obj.getChainValue(c, sort.key) as any, sort.desc ? "DESC" : "ASC");
+}
+// 이 화면의 기본 정렬 — 여기를 고쳐 화면별 기본값을 바꿈
+if (!this.sortingDefs().some((s) => s.key === "id")) {
+  qr2 = qr2.orderBy((c) => c.id, "DESC");
+}
+```
+
+- 아래 `if` 블록이 그 화면의 기본 정렬을 정하는 자리. 예시는 `id DESC` — 다른 기본 정렬이 필요하면 `orderBy` 의 컬럼·방향과 `s.key` 를 같은 키로 함께 바꿈.
+- 화면 사용자가 시트 헤더로 정렬하면 그 정렬이 1순위로 적용되고, 기본 정렬은 맨 뒤에 깔림.
+- 컬럼마다 `if (sort.key === "X") orderBy((c) => c.X, ...)` 식 분기 금지 — `sort.key` 가 select 별칭과 일치하므로 한 줄로 처리.
+- `obj` 는 `@simplysm/core-common`, `SortingDef` 는 `@simplysm/angular`.
 
 ## `sd-crud-detail`
 
@@ -209,7 +330,9 @@ getItemSelectableFn = (item: IItem): boolean | string =>
 
 ### 삭제 (onDelete)
 
-`confirm` → soft delete(`isDeleted=true`) → 이력 적재 → 공유 데이터 통지 → 목록은 refresh / 단건은 close.
+`confirm` → soft delete(`isDeleted=true`) → 이력 적재 → 공유 데이터 통지 → 목록(list)은 `_refresh()` / 단건(detail)은 `submitted.emit(true)`.
+
+**벌크 삭제 (list)**:
 
 ```ts
 async onDelete(targets: IItem[]): Promise<void> {
@@ -231,6 +354,30 @@ async onDelete(targets: IItem[]): Promise<void> {
     await this._appSharedData.emitAsync("역할", ids);
     this._sdToast.success("삭제되었습니다.");
     await this._refresh();
+  });
+  this.busyCount.update((v) => v - 1);
+}
+```
+
+**단건 삭제 (detail)**: `sd-crud-detail` 표준 호출에는 `(delete)` output 이 없으므로, 삭제 버튼을 `#commandTpl` 슬롯에 두고 `(click)="onDelete()"` 로 배선. 목록의 `_refresh()` 대신 `submitted.emit(true)` 로 부모(list) 에 통지.
+
+```ts
+async onDelete(): Promise<void> {
+  if (this.busyCount() > 0) return;
+  if (!this.canEdit()) return;
+  if (!confirm("삭제하시겠습니까?")) return;
+
+  const id = this.dataId();
+  const employeeId = this._appAuth.authInfo()?.employeeId;
+  this.busyCount.update((v) => v + 1);
+  await this._sdToast.try(async () => {
+    await this._appOrm.connectAsync(async (db) => {
+      await db.role().where((c) => [expr.eq(c.id, id)]).update(() => ({ isDeleted: true }));
+      await db.role().insertDataLog({ action: "삭제", itemId: id, employeeId });
+    });
+    await this._appSharedData.emitAsync("역할", [id]);
+    this._sdToast.success("삭제되었습니다.");
+    this.submitted.emit(true);
   });
   this.busyCount.update((v) => v - 1);
 }
@@ -288,4 +435,4 @@ for (const id of ids) {
 - 삭제·복구·이력 적재는 한 `connectAsync` 트랜잭션 안에서 수행 — 데이터만 바뀌고 이력이 빠지거나 그 반대가 되지 않게 함.
 - 벌크 복구는 하나라도 충돌하면 전체 롤백(원자성). 충돌분만 빼고 나머지를 복구하지 않음.
 - 활성 유니크 검증은 복구 경로에서 빠뜨리지 않음 — 단건은 선검증, 벌크는 후검증. 활성 유니크가 없는 모델이면 생략 가능.
-- 단건은 삭제 후 닫고(close), 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.
+- 단건(detail)은 삭제 후 [client-component.md "detail 데이터 흐름"](./client-component.md) 의 계약대로 `submitted.emit(true)` 로 부모에 통지(modal 컨텍스트에선 모달 호스트가 그 위에 `close` 로 닫음 — `emit` 의 대체 아님). 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.

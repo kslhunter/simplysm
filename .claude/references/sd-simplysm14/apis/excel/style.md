@@ -22,7 +22,7 @@ interface ExcelStyleOptions {
 - `verticalAlign?: "center" | "top" | "bottom"` — 세로 정렬. `"center"` = 가운데, `"top"`/`"bottom"` = 위/아래. 행 높이가 큰 셀에서 의미.
 - `numberFormat?: "number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋. `"number"` = 일반 수치(numFmtId 0), `"string"` = 텍스트(49), `"DateOnly"`(14)/`"DateTime"`(22)/`"Time"`(18) = 날짜/시간 표시. 표준 형식이면 이걸로 충분.
 - `numberFormatCode?: string` — 커스텀 엑셀 formatCode(예 `"0.000000"`, `"#,##0.00"`, `"0.00%"`). `numberFormat` 과 동시 지정 시 이 필드가 우선. 천단위·소수 자릿수·퍼센트 등 세밀한 표시가 필요할 때.
-- `font?: ExcelFont` — 폰트 묶음(아래). 일부 속성만 줘도 되며, 미지정 속성은 워크북 default 폰트로 표시.
+- `font?: ExcelFont` — 폰트 묶음(아래). 일부 속성만 줘도 되며, 미지정 속성은 엑셀 기본/워크북 default 폰트로 표시.
 
 ## ExcelFont
 
@@ -67,7 +67,7 @@ await wb.setDefaultStyle({ font: { family: "맑은 고딕", size: 10 } });
 
 ## 주의사항
 
-- `setDefaultStyle` 은 styles.xml 의 0번 자원 슬롯(font/fill/border)을 덮어쓴다 — fontId/fillId/borderId 를 명시하지 않은 모든 셀이 영향을 받는다. 옵션에 없는 자원은 0번 슬롯이 빈 슬롯으로 reset 되므로, default 로 줄 항목은 한 번에 모아 호출.
+- `setDefaultStyle` 은 styles.xml 의 0번 자원 슬롯(font/fill/border)을 덮어쓴다 — fontId/fillId/borderId 를 명시하지 않은 모든 셀이 영향을 받는다. 옵션에 없는 자원은 0번 슬롯이 빈 슬롯으로 reset 되므로, default 로 줄 항목은 한 번에 모아 호출. horizontalAlign/verticalAlign/numberFormat/numberFormatCode 는 `cellXfs[0].xf[0]` 에 직접 박힌다.
 - `numberFormat` 과 `numberFormatCode` 동시 지정 시 `numberFormatCode` 우선.
 - 색상은 모두 ARGB 8자리(알파 포함). RGB 6자리만 주면 의도와 다르게 해석될 수 있다.
 - 날짜/시간 셀은 값으로 `DateOnly`/`DateTime`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 보통 `numberFormat` 을 따로 줄 필요가 없다.

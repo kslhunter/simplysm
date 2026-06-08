@@ -184,7 +184,10 @@ sharedProducts = useSharedSignal("품목");
 
   @let _selectedRole = selectedRole();
   @if (_selectedRole == null) {
-    <div class="flex-fill p-xxl">역할을 선택하세요.</div>
+    <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px; line-height: 1.5em">
+      <ng-icon [svg]="tablerArrowLeft" />
+      역할을 선택하세요.
+    </div>
   } @else {
     <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
   }
@@ -209,7 +212,7 @@ constructor() {
 - 두 이탈 경로를 모두 막음:
   - `[canChangeFn]="checkCanLeave"` — 좌측에서 **다른 항목으로 전환**하기 전 확인.
   - `setupCanDeactivate(checkCanLeave)` — **페이지(라우팅) 이탈** 전 확인.
-- 선택 전(`selectedItem == null`)에는 안내 문구를 두고 상세를 띄우지 않음.
+- 선택 전(`selectedItem == null`)에는 미선택 빈 상태를 둠 — 아이콘 + 안내 문구 구조와 `NgIcon` 등록은 [client-component.md](./client-component.md) 의 'list + detail 합성' 빈 상태 규약을 따름.
 
 ## 지킬 것
 

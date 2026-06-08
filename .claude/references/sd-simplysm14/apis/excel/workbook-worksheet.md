@@ -80,8 +80,8 @@ try {
 
 - `setTabColor(color: string): Promise<void>` — 시트 탭 색(ARGB 8자리, 예 `"00FF0000"`). 시트 구분 강조용.
 - `setZoom(percent: number): Promise<void>` — 확대/축소 비율(퍼센트). 워크북 뷰를 함께 초기화한다.
-- `freezeAt(point: { r?: number; c?: number }): Promise<void>` — 틀 고정. `r` = 위쪽 고정할 행 분할 지점, `c` = 왼쪽 고정할 열 분할 지점(0 기반). 헤더 한 줄 고정이면 `{ r: 0 }`(0행까지 위가 고정되고 1행부터 스크롤).
-- `setAutoFilter(range: ExcelAddressRangePoint): Promise<void>` — 헤더 자동 필터(드롭다운) 설정. `range`(`{s,e}`, 0 기반, 양끝 inclusive) = 필터를 거는 범위로 보통 헤더행~데이터 끝 전체를 덮는다. `getRange()` 반환값을 그대로 넘겨 표 전체에 적용할 수 있다. 같은 시트에 다시 호출하면 직전 범위를 덮어쓴다(시트당 1개).
+- `freezeAt(point: { r?: number; c?: number }): Promise<void>` — 틀 고정. `r` = 위쪽 고정할 행 분할 지점, `c` = 왼쪽 고정할 열 분할 지점(0 기반). 헤더 한 줄 고정이면 `{ r: 0 }`(0행까지 위가 고정되고 1행부터 스크롤). 워크북 뷰를 함께 초기화한다.
+- `setAutoFilter(range: ExcelAddressRangePoint): Promise<void>` — 헤더 자동 필터(드롭다운) 설정. `range`(`{s,e}`, 0 기반, 양끝 inclusive) = 필터를 거는 범위로 보통 헤더행~데이터 끝 전체를 덮는다. `getRange()` 반환값을 그대로 넘겨 표 전체에 적용할 수 있다.
 
 조건부 서식:
 
@@ -99,7 +99,7 @@ try {
 
 - `addImage(opts): Promise<void>` — 시트에 이미지 삽입. 같은 시트에 여러 번 호출하면 기존 drawing 파트에 이어 붙인다.
   - `opts.bytes: Bytes` — 이미지 바이너리.
-  - `opts.ext: string` — 확장자(`"png"`, `"jpg"` 등). MIME 미해석 시 throw.
+  - `opts.ext: string` — 확장자(`"png"`, `"jpg"` 등). MIME 미해석 시 throw. media 파일명/타입 결정에 사용.
   - `opts.from: { r: number; c: number; rOff?: number | string; cOff?: number | string }` — 시작 위치(0 기반 행/열, `rOff`/`cOff` 는 셀 내부 EMU 오프셋).
   - `opts.to?: { r: number; c: number; rOff?: number | string; cOff?: number | string }` — 끝 위치. 생략 시 `from` 의 한 칸 우하단(`from.r+1, from.c+1`)에 배치되어 약 1셀 크기로 들어간다. 명시하면 두 셀 앵커 사이로 늘려 배치.
 
@@ -116,6 +116,6 @@ const rows = await ws.getDataTable({
 
 ## 주의사항
 
-- 모든 셀/시트 I/O 메서드는 `async` — lazy XML 로드 때문. 반복 쓰기는 await 누적이 필요하다.
-- `ExcelWorkbook` 은 반드시 `close()` 해야 한다. 닫힌 워크북의 모든 메서드는 throw.
+- 거의 모든 셀/시트 I/O 메서드는 `async` — lazy XML 로드 때문. 반복 쓰기는 await 누적이 필요하다(`cell`/`row`/`col` 객체 획득만 동기).
+- `ExcelWorkbook` 은 반드시 `close()` 해야 한다. 닫힌 워크북의 시트 조회·내보내기 메서드는 throw.
 - `setRecords` 헤더는 레코드 키에서 자동 생성되므로 열 순서를 고정하려면 모든 레코드의 키 등장 순을 일정하게 유지하거나 `setDataMatrix` 를 사용.

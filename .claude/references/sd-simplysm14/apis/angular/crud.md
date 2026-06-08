@@ -1,80 +1,75 @@
 # @simplysm/angular — CRUD 화면 골격
 
-목록/단건 화면의 표준 컨테이너 골격. `sd-base-container`(공통 셸) 위에 `sd-crud-list`(목록), `sd-crud-detail`(단건)이 얹힘. 표준 시그널(ready/initialized/busyCount/viewType)·page/modal/control 컨텍스트별 탑바·하단바 자동 구성·CTRL+S 저장을 내장. 화면 데이터 흐름·시그널 전파 규약은 client-component.md / client-crud.md 를 따름.
+목록/단건 화면의 표준 컨테이너 골격. `sd-base-container`(공통 셸) 위에 `sd-crud-list`(목록), `sd-crud-detail`(단건)이 얹힘. 표준 시그널(ready/initialized/busyCount/viewType)·page/modal/control 컨텍스트별 탑바·하단바 자동 구성·CTRL+S 저장을 내장. 사용 절차는 [client-crud.md](../manuals/client-crud.md) 참조.
 
-## 표준 시그널 (3 컴포넌트 공통)
+## SdBaseContainer — `<sd-base-container>`
 
-세 컴포넌트 모두 화면 표준 시그널을 입력/모델로 받음:
-- `ready: model<boolean>` — 자식이 데이터 로드를 시작해도 되는 시점. 컨테이너가 공유데이터 로드 완료 후 true 로 set.
-- `initialized: input<boolean>` — 첫 데이터 로드 완료 여부(자식이 set 한 값을 받음). true 가 되어야 본문 렌더.
-- `busyCount: model<number>` — 진행 중 비동기 작업 수. 0 보다 크면 busy 표시.
-- `restricted: input<boolean>` — 권한 없음. true 면 "사용권한이 없습니다" 안내만 표시.
-- `viewType: input.required<SdViewType>` — page/modal/control 컨텍스트(`injectViewTypeSignal()` 전달). page 면 탑바를, modal 이면 하단 확인/취소를 구성.
-
-## SdBaseContainer
-
-selector `sd-base-container`. 모든 화면의 공통 셸(busy·권한 안내·page 탑바·콘텐츠/명령 슬롯).
-
-- 위 표준 시그널 + 슬롯: `#topbarTpl`(page 탑바 추가 영역), `#commandTpl`(상단 명령 줄), `#contentTpl`(본문), `#bottomCommandTpl`(하단 명령 줄).
-- 생성자에서 `SdSharedDataProvider` 가 있으면 그 로드 완료(`wait()`)를 기다린 뒤 `ready` 를 true 로 set.
-
-```html
-<sd-base-container [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount"
-  [restricted]="!perms().includes('use')" [viewType]="viewType()">
-  <ng-template #contentTpl>...</ng-template>
-</sd-base-container>
+```ts
+ready = model(false); initialized = input(false); busyCount = model(0);
+restricted = input(false); viewType = input.required<SdViewType>(); // "page"|"modal"|"control"
+viewTitle = injectViewTitleSignal(); // 자동
+// 슬롯: #topbarTpl #commandTpl #contentTpl #bottomCommandTpl
 ```
 
-## SdCrudList<TItem, TKey>
+- `initialized` — false 동안 busy 표시. `busyCount`>0 이면 busy(model 양방향, 화면이 +1/-1 누적). `restricted`=권한 없음 안내 화면 표시(콘텐츠 미렌더).
+- `viewType` — `"page"`=탑바(제목+#topbarTpl) 포함, `"modal"`/`"control"`=콘텐츠만. `ready` 는 공유데이터 로드 완료 후 true(model, 화면이 이를 보고 초기화 진행).
+- 직접 쓰기보다 `sd-crud-list`/`sd-crud-detail` 또는 커스텀 화면 셸로 사용. 슬롯은 `#topbarTpl`(탑바 추가), `#commandTpl`(명령영역), `#contentTpl`(본문), `#bottomCommandTpl`(하단).
 
-selector `sd-crud-list`. 검색폼·등록/삭제/복원 버튼·시트·페이지네이션을 갖춘 목록 골격. 직속 자식 `<sd-sheet-column>` 들을 내부 시트로 투영. `Ctrl+S` 로 저장 명령.
+## SdCrudList — `<sd-crud-list>`
 
-추가 입력:
-- `readonly: input<boolean>` — 읽기 전용. true 면 등록/삭제/저장 버튼 숨김.
-- `inlineEdit: input<boolean>` — 시트 셀 인라인 편집 + 저장 버튼 노출(기본 true). `readonly` 면 무시.
-- `selectMode: "single"|"multi"` — 선택 모드. 모달 선택 시 하단 확인/해제 버튼 구성.
-- `key: input.required<string>` — 시트 컬럼 구성 영속화 키.
-- `items: input<TItem[]>` — 행 데이터.
-- `selectedKeys: model<NonNullable<TKey>[]>` — 선택 키.
-- `currDeletedItems: input<TItem[]>` — 삭제 표시 행(복원 대상 판정).
-- `currentPage: model<number>`, `totalPageCount`/`itemsPerPage`/`visiblePageCount: input<number>` — 페이징(서버 페이징은 `totalPageCount`, 클라 페이징은 `itemsPerPage`).
-- `sorts: model<SortingDef[]>` — 정렬 상태.
-- `trackByFn: input.required<(item) => TKey>` — 행 키 함수.
-- `getItemSelectableFn: input<(item) => boolean | string>` — 행 선택 가능 여부(문자열 반환 시 불가 사유). 내부 시트로 전달.
+```ts
+ready = model(false); initialized = input(false); busyCount = model(0);
+restricted = input(false); readonly = input(false); inlineEdit = input(true);
+viewType = input.required<SdViewType>(); selectMode = input<"single" | "multi">();
+key = input.required<string>();
+items = input<TItem[]>([]); selectedKeys = model<NonNullable<TKey>[]>([]);
+currDeletedItems = input<TItem[]>([]);
+currentPage = model(0); totalPageCount = input(0); itemsPerPage = input(0); visiblePageCount = input(10);
+sorts = model<SortingDef[]>([]);
+trackByFn = input.required<(item: TItem) => TKey>();
+getItemSelectableFn = input<(item: TItem) => boolean | string>();
 
-출력:
-- `filterSubmit: output` — 검색폼 제출(조회).
-- `submit: output` — 인라인 편집 저장(Ctrl+S/저장 버튼).
-- `create: output` — 등록 버튼.
-- `delete: output<TItem[]>` — 선택 행 삭제(선택 항목 전달).
-- `restore: output<TItem[]>` — 선택된 삭제 행 복원.
+filterSubmit = output(); submit = output(); create = output();
+delete = output<TItem[]>(); restore = output<TItem[]>();
+// 슬롯: #filterTpl #toolTpl #commandTpl #bottomCommandTpl, 직속 <sd-sheet-column>
+```
 
-슬롯: `#filterTpl`(검색 폼 항목), `#commandTpl`/`#bottomCommandTpl`(명령 줄), `#toolTpl`(도구 줄).
+- 목록 표준 골격(시트 + 검색폼 + 등록/삭제/복구 버튼 + CTRL+S 저장 + 모달 선택모드).
+- `readonly` — 편집 전체 불가(시트 선택만). `inlineEdit`(기본 true) — true 면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + per-row 삭제컬럼, false 면 조회·선택 전용(편집은 외부 상세/모달). 둘은 직교.
+- `selectMode` — `"single"`=행 클릭 즉시(modal 이면 close), `"multi"`=하단 확인 버튼. modal+selectMode 면 close 시 `{ selectedKeys }` 자동 전달.
+- `currDeletedItems` — 현재 삭제(soft delete)된 항목들. 해당 행은 취소선 + 복구 버튼으로 표시. `key` 는 시트 설정 저장 키(`<key>-sheet`).
+- 출력: `filterSubmit`(검색), `submit`(인라인 편집 저장, inlineEdit=true 일 때만), `create`(등록), `delete`/`restore`(선택 항목 배열). `<sd-sheet-column>` 을 직속에 두면 내부 시트로 투영.
 
 ```html
-<sd-crud-list [viewType]="viewType()" [key]="'goods-list'" [(selectedKeys)]="selectedKeys"
-  [items]="items()" [trackByFn]="trackByFn" [totalPageCount]="pageLength()" [(currentPage)]="page"
-  (filterSubmit)="onFilterSubmit()" (create)="onCreate()" (delete)="onDelete($event)">
+<sd-crud-list [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount"
+  [restricted]="!perms().includes('use')" [readonly]="!canEdit()" [viewType]="viewType()"
+  [key]="'role'" [items]="items()" [trackByFn]="trackByFn" [(selectedKeys)]="selectedKeys"
+  (create)="onCreate()" (delete)="onDelete($event)" (restore)="onRestore($event)">
   <ng-template #filterTpl>...</ng-template>
   <sd-sheet-column [key]="'name'" [header]="'이름'">
-    <ng-template [cell]="items()" let-item="item"><div class="p-xs-sm">{{ item.name }}</div></ng-template>
+    <ng-template [cell]="items()" let-item="item">{{ item.name }}</ng-template>
   </sd-sheet-column>
 </sd-crud-list>
 ```
 
-## SdCrudDetail
+## SdCrudDetail — `<sd-crud-detail>`
 
-selector `sd-crud-detail`. 단건 편집 골격(폼 + 저장 명령).
+```ts
+ready = model(false); initialized = input(false); busyCount = model(0);
+restricted = input(false); readonly = input(false);
+viewType = input.required<SdViewType>();
+submit = output();
+// 슬롯: #contentTpl(필수) #commandTpl #bottomCommandTpl
+```
 
-추가 입력/출력:
-- `readonly: input<boolean>` — 읽기 전용(저장 버튼 숨김).
-- `submit: output` — 저장(폼 제출/저장 버튼).
-- 슬롯: `#commandTpl`(상단 명령), `#contentTpl`(폼 본문), `#bottomCommandTpl`(하단 명령).
-- `onSaveButtonClick()` — 내부 폼의 `requestSubmit()` 호출(저장 트리거).
+- 단건 편집 표준 골격(폼 래핑 + CTRL+S 저장 + 저장 버튼 + modal "확인" 자동).
+- `readonly` — true 면 `#contentTpl` 을 `<sd-form>` 없이 그대로(읽기), false 면 폼으로 감싸 `submit` 출력. `viewType` `"page"`=상단 저장버튼, `"control"`=명령영역 저장버튼, `"modal"`=하단 우측 "확인" 자동.
+- `#contentTpl`(필수) 폼 본문, `#commandTpl`/`#bottomCommandTpl` 추가 액션.
 
 ```html
-<sd-crud-detail [viewType]="viewType()" [(ready)]="ready" [initialized]="initialized()"
-  [(busyCount)]="busyCount" (submit)="onSubmit()">
-  <ng-template #contentTpl><div class="form-table">...</div></ng-template>
+<sd-crud-detail [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount"
+  [restricted]="!perms().includes('use')" [readonly]="!canEdit()" [viewType]="viewType()"
+  (submit)="onSubmit()">
+  <ng-template #contentTpl><!-- 폼 본문 --></ng-template>
 </sd-crud-detail>
 ```

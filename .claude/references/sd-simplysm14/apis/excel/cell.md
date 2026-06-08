@@ -10,8 +10,8 @@
 
 값/수식:
 
-- `getValue(): Promise<ExcelValueType>` — 셀 값을 타입 추론해 반환. SharedString→string, `b`→boolean, 숫자형 numFmt→number, 날짜/시간 numFmt→`DateOnly`/`DateTime`/`Time`, 빈 셀→`undefined`. 셀 타입이 `e`(에러)이거나 시리얼 파싱 실패면 throw. 날짜 판별은 셀 스타일의 numFmtCode/numFmtId 를 본다.
-- `setValue(val: ExcelValueType): Promise<void>` — 값 쓰기. `string`→SharedString 등록 후 `s` 타입, `boolean`→`b` 타입(`"1"`/`"0"`), `number`→숫자, `DateOnly`/`DateTime`/`Time`→시리얼 숫자 + 해당 날짜 numFmt 자동 부여, `undefined`/`null`→셀 삭제. 그 외 타입은 throw. 날짜형 화면이면 문자열 변환 없이 날짜 객체를 그대로 넘겨 자동 서식을 받는 게 단순.
+- `getValue(): Promise<ExcelValueType>` — 셀 값을 타입 추론해 반환. SharedString(`s`)→string, `str`/`inlineStr`→string, `b`→boolean, 빈 셀→`undefined`. 타입 코드가 없는 셀은 스타일 numFmt 로 분기: 숫자형→number, 텍스트형(`string`)→string, 날짜/시간형→`DateOnly`/`DateTime`/`Time`. 셀 타입이 `e`(에러)이거나 시리얼/ID 파싱 실패면 throw.
+- `setValue(val: ExcelValueType): Promise<void>` — 값 쓰기. `string`→SharedString 등록 후 `s` 타입, `boolean`→`b` 타입(`"1"`/`"0"`), `number`→숫자(타입 코드 없음), `DateOnly`/`DateTime`/`Time`→시리얼 숫자 + 해당 날짜 numFmt 자동 부여, `undefined`/`null`→셀 삭제. 그 외 타입은 throw. 날짜형이면 문자열 변환 없이 날짜 객체를 그대로 넘겨 자동 서식을 받는 게 단순.
 - `getFormula(): Promise<string | undefined>` — 셀 수식 문자열 반환(없으면 `undefined`).
 - `setFormula(val: string | undefined): Promise<void>` — 수식 설정. 셀 타입을 `str` 로 두고 캐시 값(v)은 비운다. `undefined` 면 셀 삭제. 수식 문자열은 `=` 없이 본문만(예: `"SUM(A1:A3)"`).
 
@@ -39,7 +39,7 @@ const v = await ws.cell(1, 0).getValue(); // DateOnly 로 복원
 `ws.row(r)` 로 얻는다.
 
 - `cell(c: number): ExcelCell` — 이 행의 0 기반 열 `c` 셀 반환.
-- `getCells(): Promise<ExcelCell[]>` — 이 행에서 시트 range 의 열 범위에 해당하는 셀들을 배열로 반환(인덱스 = 열 번호, 앞쪽 빈 열은 비어 있음).
+- `getCells(): Promise<ExcelCell[]>` — 이 행에서 시트 range 의 열 범위에 해당하는 셀들을 배열로 반환(인덱스 = 열 번호, range 시작 전 앞쪽 인덱스는 비어 있음).
 
 ## ExcelCol
 

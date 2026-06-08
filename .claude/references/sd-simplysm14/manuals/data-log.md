@@ -133,7 +133,7 @@ Queryable.prototype.joinLastDataLog = function (this: Queryable<any, any>, opts)
 
 ### 3. db-context 등록
 
-확장 메서드는 `*.ext.ts` 가 한 번이라도 로드돼야 prototype 에 붙음. db-context 에서 side-effect import 로 로드를 보장하고, 이력 직접 조회용 queryable 도 등록.
+확장 메서드는 `*.ext.ts` 가 한 번이라도 로드돼야 prototype 에 붙음. `*.ext.ts` 가 진입점 import 그래프에 포함되면 로드 보장됨 — 표준 구조에선 `index.ts` 의 배럴 재export(`export * from "./db-main/system-data-log.ext"`)가 이를 충족. 배럴을 거치지 않고 db-context 를 직접 import 하는 경로가 따로 있으면 그 db-context 에 side-effect import 추가. 이력 직접 조회용 queryable 도 db-context 에 등록.
 
 ```ts
 // main.db-context.ts
