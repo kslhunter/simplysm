@@ -7,7 +7,7 @@
 common 패키지에 클라이언트별 `AppStructureItem[]` 상수를 두고, 앱 부트스트랩에서 `SdAppStructureProvider.initialize(items)` 로 연결함.
 
 ```ts
-// common/src/app-structure-items.ts
+// common/src/app-structure.ts
 import type { AppStructureItem } from "@simplysm/service-common";
 import { tablerBox } from "@ng-icons/tabler-icons"; // 아이콘은 @ng-icons 의 SVG 문자열 상수
 

@@ -60,6 +60,51 @@ export async function generateClient(
       path.join(out, "src/app/home/my-info/my-info.detail.ts"),
       data,
     );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/user.list.ts.hbs"),
+      path.join(out, `src/app/home/master/${data.userEntityKebab}/${data.userEntityKebab}.list.ts`),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/user.detail.ts.hbs"),
+      path.join(out, `src/app/home/master/${data.userEntityKebab}/${data.userEntityKebab}.detail.ts`),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/role-permission/role.list.ts.hbs"),
+      path.join(out, "src/app/home/master/role-permission/role.list.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/role-permission/role.detail.ts.hbs"),
+      path.join(out, "src/app/home/master/role-permission/role.detail.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/role-permission/role-permission.view.ts.hbs"),
+      path.join(out, "src/app/home/master/role-permission/role-permission.view.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/master/role-permission/role-permission.detail.ts.hbs"),
+      path.join(out, "src/app/home/master/role-permission/role-permission.detail.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/system/data-log/data-log.list.ts.hbs"),
+      path.join(out, "src/app/home/system/data-log/data-log.list.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/app/home/system/system-log/system-log.list.ts.hbs"),
+      path.join(out, "src/app/home/system/system-log/system-log.list.ts"),
+      data,
+    );
+    await renderToFile(
+      path.join(TPL, "src/modals/text-view.modal.ts.hbs"),
+      path.join(out, "src/modals/text-view.modal.ts"),
+      data,
+    );
     await copyFixed(
       path.join(TPL, "login-public/assets/logo.png"),
       path.join(out, "public/assets/logo.png"),

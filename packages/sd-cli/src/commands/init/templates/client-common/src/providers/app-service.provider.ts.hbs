@@ -2,20 +2,25 @@ import { inject, Injectable } from "@angular/core";
 import { SdServiceClientFactoryProvider } from "@simplysm/angular";
 import { env, num, parseBoolEnv } from "@simplysm/core-common";
 {{#if hasDb}}
+import type {
+{{#if hasAuth}}
+  AuthServiceMethods,
+{{/if}}
+  DevServiceMethods,
+{{#if hasAuth}}
+  {{userEntityPascal}}ServiceMethods,
+{{/if}}
+} from "@{{workspaceName}}/server";
 import {
-  createOrmClientConnector,
-  type OrmClientConnector,
-  type ServiceProxy,
 {{#if hasAuth}}
   type ClientEventProxy,
 {{/if}}
+  createOrmClientConnector,
+  type OrmClientConnector,
+  type ServiceProxy,
 } from "@simplysm/service-client";
 {{/if}}
-{{#if hasDb}}
-import type { DevServiceMethods } from "@{{workspaceName}}/server";
-{{/if}}
 {{#if hasAuth}}
-import type { AuthServiceMethods } from "@{{workspaceName}}/server";
 import { AuthInfoChangedEvent } from "@{{workspaceName}}/common";
 {{/if}}
 
@@ -34,6 +39,15 @@ export class AppServiceProvider {
   get orm(): OrmClientConnector {
     return (this._orm ??= createOrmClientConnector(this.client));
   }
+{{/if}}
+{{#if hasAuth}}
+
+  private _auth?: ServiceProxy<AuthServiceMethods>;
+  get auth(): ServiceProxy<AuthServiceMethods> {
+    return (this._auth ??= this.client.getService<AuthServiceMethods>("AuthService"));
+  }
+{{/if}}
+{{#if hasDb}}
 
   private _dev?: ServiceProxy<DevServiceMethods>;
   get dev(): ServiceProxy<DevServiceMethods> {
@@ -42,9 +56,9 @@ export class AppServiceProvider {
 {{/if}}
 {{#if hasAuth}}
 
-  private _auth?: ServiceProxy<AuthServiceMethods>;
-  get auth(): ServiceProxy<AuthServiceMethods> {
-    return (this._auth ??= this.client.getService<AuthServiceMethods>("AuthService"));
+  private _{{userEntityCamel}}?: ServiceProxy<{{userEntityPascal}}ServiceMethods>;
+  get {{userEntityCamel}}(): ServiceProxy<{{userEntityPascal}}ServiceMethods> {
+    return (this._{{userEntityCamel}} ??= this.client.getService<{{userEntityPascal}}ServiceMethods>("{{userEntityPascal}}Service"));
   }
 
   private _authInfoChangedEvent?: ClientEventProxy<typeof AuthInfoChangedEvent>;

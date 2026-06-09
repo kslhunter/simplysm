@@ -37,6 +37,11 @@ export async function generateServer(cwd: string, data: RenderData): Promise<voi
       path.join(out, "src/services/auth.service.ts"),
       data,
     );
+    await renderToFile(
+      path.join(TPL, "src/services/user.service.ts.hbs"),
+      path.join(out, `src/services/${data.userEntityKebab}.service.ts`),
+      data,
+    );
     await copyFixed(
       path.join(TPL, "public-dev/초기화.xlsx"),
       path.join(out, "public-dev/초기화.xlsx"),

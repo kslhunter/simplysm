@@ -1,12 +1,14 @@
+{{#if hasAuth}}
+export * from "./providers/app-auth.provider";
+{{/if}}
+{{#if hasDb}}
+export * from "./providers/app-orm.provider";
+{{/if}}
 {{#if hasServer}}
 export * from "./providers/app-service.provider";
 {{/if}}
 {{#if hasDb}}
-export * from "./providers/app-orm.provider";
 export * from "./providers/app-shared-data.provider";
-{{/if}}
-{{#if hasAuth}}
-export * from "./providers/app-auth.provider";
 {{/if}}
 {{#unless hasServer}}
 {{#unless hasDb}}

@@ -504,7 +504,11 @@ constructor() {
 
 ## detail 데이터 흐름
 
-detail 컴포넌트는 식별자를 받아 자체 로드·저장을 수행하고, 변경·삭제 후 `submitted` 로 부모에게 알림.
+detail 컴포넌트는 식별자를 받아 자체 로드·저장을 수행하고, 저장·삭제 결과를 부모에게 알림. 알림 output 은 사용 맥락에 따라 두 종류이며 **서로 독립**(배타 아님):
+
+- **`submitted`** (`output<boolean>`) — 트리거: detail 을 컨트롤로 임베드한 부모가 저장을 감지해 refresh 해야 할 때. 부모가 `(submitted)="doRefresh()"` 로 받음.
+- **`close`** (`SdModalContentDef` 의 output) — 트리거: detail 을 모달로 띄울 때. 저장·삭제 후 `close.emit(payload)` 로 결과를 반환하고, 호출 측은 `showAsync` 반환값으로 받아 refresh ([모달 호출](#모달-호출) 참조).
+- 한 detail 이 모달·임베드 양쪽으로 쓰이면 둘 다 둠. 모달 전용이면 `close` 만, 임베드 전용이면 `submitted` 만, page 전용·공유데이터 뷰면 둘 다 없이 self-refresh·`emitAsync` 로 처리. 아래 시그널·예시는 `submitted`(임베드) 기준.
 
 ### 시그널 구성
 
@@ -601,11 +605,12 @@ async onSubmit(): Promise<void> {
 
 **핵심 약속**:
 
-- 식별자는 `input.required<>` 로 받음.
+- 식별자 input 은 조회·수정 전용이면 `input.required<number>()`, 신규 등록까지 한 detail 로 처리하면 `input<number>()`(undefined = 신규).
 - 로드 후 `_orgData = obj.clone(loaded)` 로 원본 보관.
 - 페이지 이탈 가드는 `setupCanDeactivate` + `obj.equal` 비교로 처리.
 - 저장 완료 후 `_refresh()` 로 다시 로드 → `submitted.emit(true)`.
 - 삭제·취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list) 가 새로고침할 수 있게 함.
+- 위 `submitted` 는 임베드(컨트롤) 사용 시의 통지. 모달로 띄우는 detail 은 대신 `close.emit(payload)` 로 결과를 반환(호출 측이 `showAsync` 반환으로 refresh). 둘은 독립이라 양쪽으로 쓰이면 함께 둠.
 
 ## 시트 컬럼·셀 표준
 
@@ -734,7 +739,7 @@ private readonly _appService = inject(AppServiceProvider);
 
 await this._appService.user.someMethod(...);
 
-const listenerKey = await this._appService.authInfoEvent.addListener(info, async (data) => { ... });
+const listenerKey = await this._appService.authInfoChangedEvent.addListener(info, async () => { ... });
 ```
 
 Provider 정의·서비스·이벤트 호출 추가 컨벤션은 [client-service.md](./client-service.md) 참조.

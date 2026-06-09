@@ -10,45 +10,52 @@ import { provideRouter, withHashLocation } from "@angular/router";
 {{/if}}
 import {
   provideSdAngular,
-{{#if hasDb}}
-  SdSharedDataProvider,
-  SdSystemLogProvider,
-{{/if}}
 {{#if hasAuth}}
-  SdSystemConfigProvider,
 {{#if client.hasRouter}}
   SdAppStructureProvider,
 {{/if}}
 {{/if}}
+{{#if hasDb}}
+  SdSharedDataProvider,
+{{/if}}
+{{#if hasAuth}}
+  SdSystemConfigProvider,
+{{/if}}
+{{#if hasDb}}
+  SdSystemLogProvider,
+{{/if}}
 } from "@simplysm/angular";
 import { createLogger{{#if hasDb}}, DateTime, json{{/if}} } from "@simplysm/core-common";
-{{#if hasAuth}}
-import { expr } from "@simplysm/orm-common";
-{{/if}}
-{{#if hasServer}}
-import {
-  AppServiceProvider,
-{{#if hasDb}}
-  AppOrmProvider,
-  AppSharedDataProvider,
-{{/if}}
-{{#if hasAuth}}
-  AppAuthProvider,
-{{/if}}
-} from "@{{workspaceName}}/client-common";
-{{/if}}
-{{#if hasAuth}}
-{{#if client.hasRouter}}
-import { {{client.appStructureName}} } from "@{{workspaceName}}/common";
-{{/if}}
-{{/if}}
 import { AppRoot } from "./app.root";
 {{#if client.hasRouter}}
 import { routes } from "./routes";
 {{/if}}
 import "./styles.scss";
+{{#if hasAuth}}
+{{#if client.hasRouter}}
+import { {{client.appStructureName}} } from "@{{workspaceName}}/common";
+{{/if}}
+{{/if}}
+{{#if hasServer}}
+import {
+{{#if hasAuth}}
+  AppAuthProvider,
+{{/if}}
+{{#if hasDb}}
+  AppOrmProvider,
+{{/if}}
+  AppServiceProvider,
+{{#if hasDb}}
+  AppSharedDataProvider,
+{{/if}}
+} from "@{{workspaceName}}/client-common";
+{{/if}}
+{{#if hasAuth}}
+import { expr } from "@simplysm/orm-common";
+{{/if}}
 
 const CLIENT_NAME = "{{client.name}}";
+
 const logger = createLogger(CLIENT_NAME);
 
 if (typeof ngDevMode !== "undefined" && !ngDevMode) {
@@ -70,7 +77,6 @@ bootstrapApplication(AppRoot, {
 {{/if}}
 {{#if hasServer}}
 
-    //-- app-service 연결
     provideAppInitializer(async () => {
       await inject(AppServiceProvider).connectAsync();
     }),
@@ -78,7 +84,6 @@ bootstrapApplication(AppRoot, {
 {{#if hasAuth}}
 {{#if client.hasRouter}}
 
-    //-- app-structure 초기화
     provideAppInitializer(() => {
       inject(SdAppStructureProvider).initialize({{client.appStructureName}});
     }),

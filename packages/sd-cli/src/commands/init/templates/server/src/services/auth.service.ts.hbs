@@ -10,6 +10,7 @@ export interface I{{userEntityPascal}}ConfigMap {
 
 export interface IAuthData {
   {{userEntityCamel}}Id: number;
+  roleId: number;
   name: string;
   roleName: string;
   loginId: string;
@@ -25,26 +26,33 @@ export const AuthService = defineService("AuthService", (ctx) => {
   async function buildAuthResult({{userEntityCamel}}: {
     id: number;
     name: string;
-    loginId: string;
+    loginId?: string;
     role?: { id: number; name: string };
     permissions?: { code: string; valueJson: string }[];
     configs?: { code: string; valueJson: string }[];
   }): Promise<IAuthResult> {
+    // 인증된 사용자는 loginId 가 반드시 존재(로그인으로 식별됨). 없으면 인증 불가 상태이므로 throw.
+    if ({{userEntityCamel}}.loginId == null) {
+      throw new Error("로그인 ID가 없는 계정입니다.");
+    }
+    const loginId = {{userEntityCamel}}.loginId;
+
     const permissions: Record<string, boolean> = {};
     for (const rp of {{userEntityCamel}}.permissions ?? []) {
       permissions[rp.code] = JSON.parse(rp.valueJson) as boolean;
     }
 
     const configs: I{{userEntityPascal}}ConfigMap = {};
-    for (const cfg of {{userEntityCamel}}.configs ?? []) {
-      (configs as Record<string, unknown>)[cfg.code] = JSON.parse(cfg.valueJson);
+    for (const c of {{userEntityCamel}}.configs ?? []) {
+      (configs as Record<string, unknown>)[c.code] = JSON.parse(c.valueJson);
     }
 
     const authData: IAuthData = {
       {{userEntityCamel}}Id: {{userEntityCamel}}.id,
+      roleId: {{userEntityCamel}}.role!.id,
       name: {{userEntityCamel}}.name,
       roleName: {{userEntityCamel}}.role!.name,
-      loginId: {{userEntityCamel}}.loginId,
+      loginId,
       permissions,
       configs,
     };
@@ -72,6 +80,7 @@ export const AuthService = defineService("AuthService", (ctx) => {
         const {{userEntityCamel}} = await db
           .{{userEntityCamel}}()
           .where((c) => [expr.eq(c.loginId, loginId)])
+          .include((item) => item.role)
           .join("permissions", (qr, e) =>
             qr
               .from(RolePermission)
@@ -81,10 +90,9 @@ export const AuthService = defineService("AuthService", (ctx) => {
           .join("configs", (qr, e) =>
             qr
               .from({{userEntityPascal}}Config)
-              .where((cfg) => [expr.eq(cfg.{{userEntityCamel}}Id, e.id)])
-              .select((cfg) => ({ code: cfg.code, valueJson: cfg.valueJson })),
+              .where((ec) => [expr.eq(ec.{{userEntityCamel}}Id, e.id)])
+              .select((ec) => ({ code: ec.code, valueJson: ec.valueJson })),
           )
-          .include((item) => item.role)
           .select((item) => ({
             id: item.id,
             name: item.name,
@@ -133,6 +141,7 @@ export const AuthService = defineService("AuthService", (ctx) => {
       return orm.connect(async (db) => {
         const {{userEntityCamel}} = await db
           .{{userEntityCamel}}()
+          .include((item) => item.role)
           .where((c) => [expr.eq(c.id, currentAuth.{{userEntityCamel}}Id)])
           .join("permissions", (qr, e) =>
             qr
@@ -143,10 +152,9 @@ export const AuthService = defineService("AuthService", (ctx) => {
           .join("configs", (qr, e) =>
             qr
               .from({{userEntityPascal}}Config)
-              .where((cfg) => [expr.eq(cfg.{{userEntityCamel}}Id, e.id)])
-              .select((cfg) => ({ code: cfg.code, valueJson: cfg.valueJson })),
+              .where((ec) => [expr.eq(ec.{{userEntityCamel}}Id, e.id)])
+              .select((ec) => ({ code: ec.code, valueJson: ec.valueJson })),
           )
-          .include((item) => item.role)
           .select((item) => ({
             id: item.id,
             name: item.name,
@@ -234,18 +242,16 @@ export const AuthService = defineService("AuthService", (ctx) => {
           const codes = Object.keys(input.configs).filter(
             (code) => (input.configs as Record<string, unknown>)[code] != null,
           );
-          const existingConfigs = await db
-            .{{userEntityCamel}}Config()
-            .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id)])
-            .select((c) => ({ code: c.code }))
-            .execute();
-          for (const existing of existingConfigs) {
-            if (!codes.includes(existing.code)) {
-              await db
-                .{{userEntityCamel}}Config()
-                .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.eq(c.code, existing.code)])
-                .delete();
-            }
+          if (codes.length === 0) {
+            await db
+              .{{userEntityCamel}}Config()
+              .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id)])
+              .delete();
+          } else {
+            await db
+              .{{userEntityCamel}}Config()
+              .where((c) => [expr.eq(c.{{userEntityCamel}}Id, {{userEntityCamel}}Id), expr.not(expr.in(c.code, codes))])
+              .delete();
           }
           for (const code of codes) {
             const valueJson = JSON.stringify((input.configs as Record<string, unknown>)[code]);

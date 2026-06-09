@@ -108,7 +108,7 @@ export class LoginView {
     effect(() => {
       void untracked(async () => {
         this.initBusyCount.update((v) => v + 1);
-        try {
+        await this._sdToast.try(async () => {
           const ok = await this._appAuth.tryReloadAuth();
           if (ok) {
             const firstRouterLink = this._appAuth.authInfo()?.configs["first-router-link"] ?? "/home/main";
@@ -119,9 +119,8 @@ export class LoginView {
           if (lastLoginId != null && lastLoginId !== "") {
             this.data.update((d) => ({ ...d, loginId: lastLoginId }));
           }
-        } finally {
-          this.initBusyCount.update((v) => v - 1);
-        }
+        });
+        this.initBusyCount.update((v) => v - 1);
       });
     });
   }

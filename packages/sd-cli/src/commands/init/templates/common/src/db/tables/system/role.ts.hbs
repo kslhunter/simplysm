@@ -10,6 +10,7 @@ export const Role = Table("Role")
     isDeleted: c.boolean(),
   }))
   .primaryKey("id")
+  .indexes((i) => [i.index("name", "isDeleted")])
   .relations((r) => ({
     {{userEntityCamel}}s: r.foreignKeyTarget(() => {{userEntityPascal}}, "role"),
     permissions: r.foreignKeyTarget(() => RolePermission, "role"),

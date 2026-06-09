@@ -1,0 +1,30 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+  signal,
+  ViewEncapsulation,
+} from "@angular/core";
+import { type SdModalContentDef } from "@simplysm/angular";
+
+@Component({
+  selector: "app-text-view-modal",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [],
+  template: `
+    <div class="p-default">
+      <div class="p-default bg-theme-gray-lightest bd-radius-default bd bd-theme-gray-lighter">
+        <pre>\{{ text() }}</pre>
+      </div>
+    </div>
+  `,
+})
+export class TextViewModal implements SdModalContentDef<void> {
+  text = input.required<string>();
+  close = output<void>();
+
+  initialized = signal(true);
+}

@@ -7,13 +7,13 @@ export const {{userEntityPascal}} = Table("{{userEntityPascal}}")
   .columns((c) => ({
     id: c.bigint().autoIncrement(),
     name: c.varchar(100),
-    loginId: c.varchar(50),
+    loginId: c.varchar(50).nullable(),
     encryptedPassword: c.varchar(200).nullable(),
     roleId: c.bigint().nullable(),
     isDeleted: c.boolean(),
   }))
   .primaryKey("id")
-  .indexes((i) => [i.index("loginId").unique()])
+  .indexes((i) => [i.index("loginId").unique(), i.index("name", "isDeleted")])
   .relations((r) => ({
     role: r.foreignKey(["roleId"], () => Role),
     configs: r.foreignKeyTarget(() => {{userEntityPascal}}Config, "{{userEntityCamel}}"),

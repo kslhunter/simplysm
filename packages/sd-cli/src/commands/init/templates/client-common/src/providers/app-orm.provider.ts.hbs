@@ -16,15 +16,4 @@ export class AppOrmProvider {
       callback,
     );
   }
-
-  connectWithoutTransAsync<R>(callback: (db: {{dbContextClassName}}) => Promise<R>): Promise<R> {
-    return this._appService.orm.connectWithoutTransaction(
-      {
-        DbClass: {{dbContextClassName}},
-        connOpt: { configName: "{{dbContextNameUpper}}" },
-        dbContextOpt: { database: "{{workspaceNameUpper}}" },
-      },
-      callback,
-    );
-  }
 }

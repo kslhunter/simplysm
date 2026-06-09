@@ -12,10 +12,10 @@ import { AppOrmProvider } from "./app-orm.provider";
 {{/if}}
 
 export function useSharedSignal<K extends keyof TAppSharedData>(
-  name: K,
+  dataKey: K,
 ): SharedDataHandle<TAppSharedData[K]> {
   const appSharedData = inject(AppSharedDataProvider);
-  return appSharedData.getHandle(name);
+  return appSharedData.getHandle(dataKey);
 }
 
 @Injectable({ providedIn: "root" })

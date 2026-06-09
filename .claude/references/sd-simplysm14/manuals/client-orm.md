@@ -7,7 +7,7 @@
 
 ## AppOrmProvider 를 정의하려면 (새 앱 1회성)
 
-앱의 DbContext·DB명·스키마를 한 곳에 고정하고, 트랜잭션 유무별 진입 메서드를 제공.
+앱의 DbContext·DB명·스키마를 한 곳에 고정하고, `connectAsync` 한 메서드로 쿼리를 실행.
 
 ```ts
 @Injectable({ providedIn: "root" })
@@ -24,13 +24,6 @@ export class AppOrmProvider {
       callback,
     );
   }
-
-  connectWithoutTransAsync<R>(callback: (db: MainDbContext) => Promise<R>): Promise<R> {
-    return this._appService.orm.connectWithoutTransaction(
-      { /* 같은 옵션 */ },
-      callback,
-    );
-  }
 }
 ```
 
@@ -38,7 +31,7 @@ export class AppOrmProvider {
 
 - `@Injectable({ providedIn: "root" })`.
 - DbContext 는 앱별로 정의 (예: `@adtek/db-main` 의 `MainDbContext`). 스키마 정의는 [orm.md](./orm.md).
-- 기본 메서드는 `connectAsync` (트랜잭션 포함). `connectWithoutTransAsync` 는 initialize 등 트랜잭션 안에서 동작하지 않는 작업 전용 헬퍼.
+- 진입 메서드는 `connectAsync` (트랜잭션 포함).
 - 콜백의 반환값이 그대로 메서드의 반환값이 됨.
 
 ## 화면·프로바이더에서 쿼리를 실행하려면
@@ -54,9 +47,7 @@ const rows = await this._appOrm.connectAsync(async (db) => {
 ```
 
 - 콜백 인자 `db` 는 `MainDbContext`. 테이블·뷰 빌더와 쿼리 작성은 [orm.md](./orm.md).
-- 트랜잭션이 곤란한 작업(initialize 등)만 `connectWithoutTransAsync` 사용.
 
 ## 지킬 것
 
-- DB 옵션(`DbClass`·`connOpt`·`dbContextOpt`)은 `AppOrmProvider` 한 곳에만 두고, 화면·프로바이더는 `connectAsync`/`connectWithoutTransAsync` 만 호출. 옵션을 호출부에 흩뿌리지 않음.
-- 기본은 `connectAsync`. 트랜잭션 없이 돌려야 하는 명확한 이유가 있을 때만 `connectWithoutTransAsync`.
+- DB 옵션(`DbClass`·`connOpt`·`dbContextOpt`)은 `AppOrmProvider` 한 곳에만 두고, 화면·프로바이더는 `connectAsync` 만 호출. 옵션을 호출부에 흩뿌리지 않음.

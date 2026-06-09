@@ -21,6 +21,28 @@ export const routes: Routes = [
         loadComponent: () =>
           import("./app/home/my-info/my-info.detail").then((m) => m.MyInfoDetail),
       },
+      {
+        path: "master/role-permission",
+        loadComponent: () =>
+          import("./app/home/master/role-permission/role-permission.view").then(
+            (m) => m.RolePermissionView,
+          ),
+      },
+      {
+        path: "master/{{userEntityKebab}}",
+        loadComponent: () =>
+          import("./app/home/master/{{userEntityKebab}}/{{userEntityKebab}}.list").then((m) => m.{{userEntityPascal}}List),
+      },
+      {
+        path: "system/data-log",
+        loadComponent: () =>
+          import("./app/home/system/data-log/data-log.list").then((m) => m.DataLogList),
+      },
+      {
+        path: "system/system-log",
+        loadComponent: () =>
+          import("./app/home/system/system-log/system-log.list").then((m) => m.SystemLogList),
+      },
     ],
   },
 ];

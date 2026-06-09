@@ -1,0 +1,106 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  signal,
+  untracked,
+  viewChild,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  injectViewTypeSignal,
+  SdBaseContainer,
+  SdItemOfTemplate,
+  SdSharedDataSelectList,
+  setupCanDeactivate,
+} from "@simplysm/angular";
+import { NgIcon } from "@ng-icons/core";
+import { tablerArrowLeft } from "@ng-icons/tabler-icons";
+import { type ISharedRole, useSharedSignal } from "@{{workspaceName}}/client-common";
+import { RolePermissionDetail } from "./role-permission.detail";
+import { RoleList } from "./role.list";
+
+@Component({
+  selector: "app-role-permission-view",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    SdBaseContainer,
+    SdSharedDataSelectList,
+    SdItemOfTemplate,
+    RolePermissionDetail,
+    NgIcon,
+  ],
+  template: `
+    <sd-base-container
+      [(ready)]="ready"
+      [initialized]="initialized()"
+      [(busyCount)]="busyCount"
+      [viewType]="viewType()"
+    >
+      <ng-template #contentTpl>
+        <div class="flex-row fill">
+          <!-- min-width: 좌측 역할 목록이 너무 좁아져 가독성이 떨어지는 것을 막는 의도적 고정 폭 (사용자 지시) -->
+          <sd-shared-data-select-list
+            class="flex-min bdr bdr-color-lighter"
+            style="min-width: 12rem;"
+            [items]="sharedRoles.items()"
+            [(selectedItem)]="selectedRole"
+            [canChangeFn]="checkCanLeave"
+            [header]="'역할'"
+            [modal]="{ type: RoleList, title: '역할', inputs: {} }"
+          >
+            <ng-template [itemOf]="sharedRoles.items()" let-item="item">
+              \{{ item.name }}
+            </ng-template>
+          </sd-shared-data-select-list>
+
+          @let _selectedRole = selectedRole();
+          @if (_selectedRole == null) {
+            <div
+              class="flex-fill tx-theme-gray-default p-xxl"
+              style="font-size: 48px; line-height: 1.5em"
+            >
+              <ng-icon [svg]="tablerArrowLeft" />
+              역할을 선택하세요.
+            </div>
+          } @else {
+            <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
+          }
+        </div>
+      </ng-template>
+    </sd-base-container>
+  `,
+})
+export class RolePermissionView {
+  viewType = injectViewTypeSignal();
+
+  ready = signal(false);
+  initialized = signal(false);
+  busyCount = signal(0);
+
+  sharedRoles = useSharedSignal("역할");
+  selectedRole = signal<ISharedRole | undefined>(undefined);
+
+  detail = viewChild(RolePermissionDetail);
+
+  // 미저장 권한 변경 보호: 페이지 이탈·역할 전환 전에 자식 detail 의 변경 가드 확인
+  protected readonly checkCanLeave = (): boolean => {
+    const detail = this.detail();
+    return detail == null || detail.checkIgnoreChanges();
+  };
+
+  constructor() {
+    effect(() => {
+      if (this.ready()) {
+        untracked(() => this.initialized.set(true));
+      }
+    });
+
+    setupCanDeactivate(this.checkCanLeave);
+  }
+
+  protected readonly RoleList = RoleList;
+  protected readonly tablerArrowLeft = tablerArrowLeft;
+}

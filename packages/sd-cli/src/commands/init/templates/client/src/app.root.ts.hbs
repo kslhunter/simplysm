@@ -17,12 +17,18 @@ import { DevModal } from "./modals/dev.modal";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-{{#if hasDb}}
-  host: { "(document:keydown)": "onKeydown($event)" },
-{{/if}}
 {{#if client.hasRouter}}
   imports: [RouterOutlet],
-  template: `<router-outlet />`,
+{{/if}}
+{{#if hasDb}}
+  host: {
+    "(document:keydown)": "onKeydown($event)",
+  },
+{{/if}}
+{{#if client.hasRouter}}
+  template: `
+    <router-outlet />
+  `,
 {{else}}
   template: `<div></div>`,
 {{/if}}

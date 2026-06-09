@@ -40,7 +40,7 @@ import {
         sd-list-item sd-list {
           border-color: transparent;
           border-radius: 0;
-          padding: var(--gap-xs);
+          padding: 0;
           background: transparent;
         }
       }

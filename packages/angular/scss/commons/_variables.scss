@@ -108,12 +108,12 @@ $vars: (
   ),
   border-color: color-map(map.get($colors, gray), 5%),
   border-radius: (
-    xs: var(--gap-xxs),
-    sm: var(--gap-xs),
-    default: var(--gap-sm),
-    lg: var(--gap-default),
-    xl: var(--gap-lg),
-    xxl: var(--gap-xl),
+    xs: var(--gap-xs),
+    sm: var(--gap-sm),
+    default: var(--gap-default),
+    lg: var(--gap-lg),
+    xl: var(--gap-xl),
+    xxl: var(--gap-xxl),
   ),
   z-index: (
     toast: 9999,

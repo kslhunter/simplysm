@@ -9,6 +9,9 @@ import { AuthService } from "./services/auth.service";
 {{#if hasDb}}
 import { DevService } from "./services/dev.service";
 {{/if}}
+{{#if hasAuth}}
+import { {{userEntityPascal}}Service } from "./services/{{userEntityKebab}}.service";
+{{/if}}
 
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 0;
@@ -25,7 +28,18 @@ if (authConfig?.jwtSecret == null) {
 
 export const server = createServiceServer({
   rootPath: import.meta.dirname,
-  services: [{{#if hasDb}}OrmService{{#if hasAuth}}, AuthService{{/if}}, ...(parseBoolEnv(env("DEV")) ? [DevService] : []){{/if}}],
+  services: [
+{{#if hasDb}}
+    OrmService,
+{{/if}}
+{{#if hasAuth}}
+    AuthService,
+    {{userEntityPascal}}Service,
+{{/if}}
+{{#if hasDb}}
+    ...(parseBoolEnv(env("DEV")) ? [DevService] : []),
+{{/if}}
+  ],
   port: num.parseInt(env("SERVER_PORT"))!,
   auth: { jwtSecret: authConfig.jwtSecret },
 });

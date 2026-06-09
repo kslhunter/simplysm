@@ -56,7 +56,7 @@ export class AppAuthProvider {
     await this._appService.client.auth(token);
     this.authInfo.set(authData);
     this._sdAppStructure.permRecord.set(authData.permissions);
-    await this._registerAuthEvent(authData.{{userEntityCamel}}Id);
+    await this._registerAuthEvent(authData.{{userEntityCamel}}Id, authData.roleId);
     this._appSharedData.initialize();
   }
 
@@ -67,10 +67,10 @@ export class AppAuthProvider {
     this._sdAppStructure.permRecord.set(undefined);
   }
 
-  private async _registerAuthEvent({{userEntityCamel}}Id: number): Promise<void> {
+  private async _registerAuthEvent({{userEntityCamel}}Id: number, roleId: number): Promise<void> {
     await this._unregisterAuthEvent();
     this._authEventKey = await this._appService.authInfoChangedEvent.addListener(
-      { {{userEntityCamel}}Id },
+      { {{userEntityCamel}}Id, roleId },
       async () => {
         await this.tryReloadAuth();
       },

@@ -12,10 +12,10 @@
 
 ```ts
 export function useSharedSignal<K extends keyof TAppSharedData>(
-  name: K,
+  dataKey: K,
 ): SharedDataHandle<TAppSharedData[K]> {
   const appSharedData = inject(AppSharedDataProvider);
-  return appSharedData.getHandle(name);
+  return appSharedData.getHandle(dataKey);
 }
 
 @Injectable({ providedIn: "root" })
@@ -65,7 +65,23 @@ export interface ISharedCustomer extends SharedDataBase<number> {
 
 - `@Injectable({ providedIn: "root" })` 사용, `SdSharedDataProvider<TAppSharedData>` 를 상속.
 - 등록은 `override initialize()` 안에서 `this.register(name, opts)` 호출로 수행.
-- `useSharedSignal<K>(name)` 헬퍼를 함께 export — 컴포넌트는 inject 없이 이름만으로 접근.
+- `useSharedSignal<K>(dataKey)` 헬퍼를 함께 export — 컴포넌트는 inject 없이 이름만으로 접근.
+
+## 부트스트랩에 연결하려면 (새 앱 1회성)
+
+라이브러리 공유데이터 컨트롤(`sd-shared-data-select` · `sd-shared-data-select-list`)은 base 토큰 `SdSharedDataProvider` 를 inject 하므로, 부트스트랩 providers 에 앱 provider 를 그 토큰의 별칭으로 등록.
+
+```ts
+// 앱 부트스트랩 (main.ts)
+bootstrapApplication(AppRoot, {
+  providers: [
+    // ...
+    { provide: SdSharedDataProvider, useExisting: AppSharedDataProvider },
+  ],
+});
+```
+
+- 이 별칭이 없으면 컨트롤이 데이터가 등록된 `AppSharedDataProvider` 가 아니라 빈 base 인스턴스를 잡아, 공유데이터 select 컨트롤에 항목이 표시되지 않음.
 
 ## 마스터 데이터 항목을 추가하려면
 

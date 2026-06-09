@@ -19,6 +19,7 @@
   [selectMode]="selectMode() ?? 'multi'"
   [key]="'<도메인-키>'"
   [items]="items()"
+  [currDeletedItems]="deletedItems()"
   [trackByFn]="trackByFn"
   [(selectedKeys)]="selectedKeys"
   [(currentPage)]="page"
@@ -38,6 +39,8 @@
   </sd-sheet-column>
 </sd-crud-list>
 ```
+
+- **`[currDeletedItems]`** — 삭제(soft delete)된 행을 시트에서 취소선으로 구분하고 "선택 복구" 버튼을 띄우는 입력. `deletedItems = computed(() => this.items().filter((i) => i.isDeleted))` 를 넘김. 삭제항목 포함 검색을 지원하는 목록에는 필수 — 빠뜨리면 삭제 행이 일반 행과 구분되지 않고 복구 버튼이 나오지 않음.
 
 ### 슬롯 규약
 
@@ -114,7 +117,7 @@ async onEdit(item: IItem, event: Event): Promise<void> {
 ```html
 <ng-template #toolTpl>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
-    <ng-icon [svg]="tablerUpload" />
+    <ng-icon [svg]="tablerDownload" />
     엑셀 다운로드
   </sd-button>
 </ng-template>
@@ -209,7 +212,7 @@ async onUploadExcelButtonClick(): Promise<void> {
     const dbRows =
       ids.length === 0
         ? []
-        : await this._appOrm.connectWithoutTransAsync((db) =>
+        : await this._appOrm.connectAsync((db) =>
             db
               .employee()
               .where((c) => [expr.in(c.id, ids)])
@@ -359,7 +362,7 @@ async onDelete(targets: IItem[]): Promise<void> {
 }
 ```
 
-**단건 삭제 (detail)**: `sd-crud-detail` 표준 호출에는 `(delete)` output 이 없으므로, 삭제 버튼을 `#commandTpl` 슬롯에 두고 `(click)="onDelete()"` 로 배선. 목록의 `_refresh()` 대신 `submitted.emit(true)` 로 부모(list) 에 통지.
+**단건 삭제 (detail)**: `sd-crud-detail` 표준 호출에는 `(delete)` output 이 없으므로, 삭제 버튼을 슬롯에 직접 둠 — 모달로 띄우는 detail 은 `#bottomCommandTpl`(모달 "확인" 버튼과 같은 하단 줄)에 두고 `(click)="onDelete()"` 로 배선. 목록의 `_refresh()` 대신 detail 통지 output(임베드면 `submitted.emit(true)`, 모달이면 `close.emit(payload)`)으로 부모(list) 에 통지.
 
 ```ts
 async onDelete(): Promise<void> {
@@ -435,4 +438,4 @@ for (const id of ids) {
 - 삭제·복구·이력 적재는 한 `connectAsync` 트랜잭션 안에서 수행 — 데이터만 바뀌고 이력이 빠지거나 그 반대가 되지 않게 함.
 - 벌크 복구는 하나라도 충돌하면 전체 롤백(원자성). 충돌분만 빼고 나머지를 복구하지 않음.
 - 활성 유니크 검증은 복구 경로에서 빠뜨리지 않음 — 단건은 선검증, 벌크는 후검증. 활성 유니크가 없는 모델이면 생략 가능.
-- 단건(detail)은 삭제 후 [client-component.md "detail 데이터 흐름"](./client-component.md) 의 계약대로 `submitted.emit(true)` 로 부모에 통지(modal 컨텍스트에선 모달 호스트가 그 위에 `close` 로 닫음 — `emit` 의 대체 아님). 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.
+- 단건(detail)은 삭제 후 부모에 통지 — 임베드(컨트롤)면 `submitted.emit(true)`, 모달이면 `close.emit(payload)` 로 결과 반환(호출 측이 `showAsync` 반환으로 refresh). 두 output 은 독립이며 사용 맥락에 따라 한쪽 또는 양쪽 ([client-component.md "detail 데이터 흐름"](./client-component.md) 참조). 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.

@@ -12,12 +12,14 @@ ORM 사용은 [client-orm.md](./client-orm.md), 이벤트 정의·발생 메커�
 서버 연결·서비스·이벤트·ORM 진입점을 한 root provider 에 모음. 서비스·이벤트는 `private _xxx?` 캐시 필드 + getter 로 lazy 노출(`??=`).
 
 ```ts
+export const APP_MAIN_SERVICE_KEY = "MAIN";
+
 @Injectable({ providedIn: "root" })
 export class AppServiceProvider {
   private readonly _sdServiceClientFactory = inject(SdServiceClientFactoryProvider);
 
   get client() {
-    return this._sdServiceClientFactory.get("MAIN");
+    return this._sdServiceClientFactory.get(APP_MAIN_SERVICE_KEY);
   }
 
   private _orm?: OrmClientConnector;
@@ -30,13 +32,22 @@ export class AppServiceProvider {
     return (this._user ??= this.client.getService<UserServiceMethods>("User"));
   }
 
-  private _authInfoEvent?: ClientEventProxy<typeof AuthInfoEvent>;
-  get authInfoEvent(): ClientEventProxy<typeof AuthInfoEvent> {
-    return (this._authInfoEvent ??= this.client.getEvent(AuthInfoEvent));
+  private _authInfoChangedEvent?: ClientEventProxy<typeof AuthInfoChangedEvent>;
+  get authInfoChangedEvent(): ClientEventProxy<typeof AuthInfoChangedEvent> {
+    return (this._authInfoChangedEvent ??= this.client.getEvent(AuthInfoChangedEvent));
   }
 
   async connectAsync() {
-    await this._sdServiceClientFactory.connectAsync("MAIN");
+    await this._sdServiceClientFactory.connectAsync(
+      APP_MAIN_SERVICE_KEY,
+      Boolean(env("SERVER_HOST"))
+        ? {
+            host: env("SERVER_HOST"),
+            port: num.parseInt(env("SERVER_PORT")),
+            ssl: parseBoolEnv(env("SERVER_SSL")),
+          }
+        : {},
+    );
   }
 }
 ```
@@ -44,9 +55,9 @@ export class AppServiceProvider {
 **약속**:
 
 - `@Injectable({ providedIn: "root" })`.
-- `client` getter — `SdServiceClientFactoryProvider.get("MAIN")` 결과. 서비스·이벤트·ORM 의 공통 진입점.
+- `client` getter — `SdServiceClientFactoryProvider.get(APP_MAIN_SERVICE_KEY)` 결과. 서비스·이벤트·ORM 의 공통 진입점. 서비스 키(`"MAIN"`)는 `client.get`·`connectAsync` 등 여러 곳에서 참조하므로 상수로 추출.
 - `orm` getter — `createOrmClientConnector(this.client)` 결과. DB 설정을 얹는 `AppOrmProvider` 가 이 위에 올라감 ([client-orm.md](./client-orm.md)).
-- `connectAsync()` — 앱 부트스트랩 시점에 서버 연결 수행. `addListener` 등 통신은 이 호출 이후에만 가능.
+- `connectAsync()` — 앱 부트스트랩 시점에 서버 연결 수행. 클라이언트·서버를 다른 호스트로 배포할 때를 위해 env(`SERVER_HOST`·`SERVER_PORT`·`SERVER_SSL`)로 연결 옵션을 주입(미설정이면 same-origin). `env`·`num`·`parseBoolEnv` 는 `@simplysm/core-common`. `addListener` 등 통신은 이 호출 이후에만 가능.
 
 ## 부트스트랩에서 서버에 연결하려면
 

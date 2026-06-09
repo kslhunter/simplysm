@@ -78,11 +78,13 @@ export const DevService = defineService("DevService", (ctx) => {
 
           if ("역할권한" in excelData) {
             const allPermCodes = getFlatPermissions(
+{{#if appStructureNames.[1]}}
               [{{#each appStructureNames}}...{{this}}{{#unless @last}}, {{/unless}}{{/each}}],
+{{else}}
+              {{appStructureNames.[0]}},
+{{/if}}
               undefined,
-            )
-              .map((p) => p.codeChain.join("."))
-              .distinct();
+            ).map((p) => p.codeChain.join("."));
             await db.rolePermission().insert(
               excelData["역할권한"]
                 .filter((r) => r["역할.ID"] != null)
@@ -98,8 +100,6 @@ export const DevService = defineService("DevService", (ctx) => {
             );
             await db.rolePermission().insertDataLog({ action: "초기화" });
           }
-
-          // TODO: 업무 테이블 초기 데이터 시드 추가
         });
 {{else}}
         // TODO: 초기 데이터 시드 추가

@@ -150,7 +150,7 @@ export class MyInfoDetail {
 
   flatMenus = computed(() => this._sdAppStructure.usableFlatMenus());
 
-  data = signal<IData>({ name: "", loginId: "", configRecord: {} });
+  data = signal<IData>({ configRecord: {} });
   private _orgData?: IData;
 
   constructor() {
@@ -223,9 +223,7 @@ export class MyInfoDetail {
         .single();
     });
 
-    if (loaded == null) {
-      throw new Error("{{userEntityLabel}} 정보를 찾을 수 없습니다.");
-    }
+    if (loaded == null) throw new Error("{{userEntityLabel}} 정보를 찾을 수 없습니다.");
 
     const configRecord = (loaded.configs ?? []).toObject(
       (c) => c.code,
@@ -254,8 +252,8 @@ export class MyInfoDetail {
 }
 
 interface IData {
-  name: string;
-  loginId: string;
+  name?: string;
+  loginId?: string;
   configRecord: I{{userEntityPascal}}ConfigMap;
   currentPassword?: string;
   newPassword?: string;

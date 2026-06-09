@@ -1,0 +1,191 @@
+import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
+import { expr } from "@simplysm/orm-common";
+import bcrypt from "bcrypt";
+import { getOrm } from "../utils/orm.utils";
+import type { IAuthData } from "./auth.service";
+
+export interface I{{userEntityPascal}}SaveInput {
+  id?: number;
+  name: string;
+  loginId?: string;
+  roleId?: number;
+  password?: string;
+  isDeleted?: boolean;
+}
+
+export const {{userEntityPascal}}Service = defineService("{{userEntityPascal}}Service", (ctx) => {
+  return {
+    // {{userEntityLabel}} 등록/수정 일괄 처리. 비밀번호는 bcrypt 해시(브라우저 실행 불가 + 보안)라 서버에서 처리.
+    // 전체를 한 트랜잭션으로 처리 — 한 건이라도 실패하면 전부 롤백(원자성).
+    save: auth(async (inputs: I{{userEntityPascal}}SaveInput[]): Promise<{ id: number }[]> => {
+      const currentAuth = ctx.authInfo as IAuthData | undefined;
+      if (!currentAuth) {
+        throw new Error("인증 정보가 없습니다.");
+      }
+      const performerId = currentAuth.{{userEntityCamel}}Id;
+
+      // 에러 식별 접두사 — 단건(상세 화면)이면 생략, 다건(엑셀 업로드)이면 이름으로 표기.
+      const label = ({{userEntityCamel}}Name: string): string =>
+        inputs.length > 1 ? `{{userEntityLabel}} '${ {{~userEntityCamel}}Name}': ` : "";
+
+      // 행별 형식 검증 + 정규화 (DB 접근 전).
+      const rows = inputs.map((input) => {
+        const {{userEntityCamel}}Name = input.name.trim();
+        if ({{userEntityCamel}}Name === "" || {{userEntityCamel}}Name.length > 100) {
+          throw new Error(`${label({{userEntityCamel}}Name)}이름은 1~100자의 문자열이어야 합니다.`);
+        }
+
+        // 로그인ID 는 선택값(로그인 안 하는 {{userEntityLabel}}). 빈 문자열은 NULL 로 정규화.
+        const trimmedLoginId = input.loginId?.trim();
+        const loginId =
+          trimmedLoginId != null && trimmedLoginId !== "" ? trimmedLoginId : undefined;
+        if (loginId != null && loginId.length > 50) {
+          throw new Error(`${label({{userEntityCamel}}Name)}로그인ID는 50자 이하의 문자열이어야 합니다.`);
+        }
+
+        const password =
+          input.password != null && input.password !== "" ? input.password : undefined;
+        if (password != null && password.length > 500) {
+          throw new Error(`${label({{userEntityCamel}}Name)}비밀번호는 1~500자의 문자열이어야 합니다.`);
+        }
+
+        return {
+          id: input.id,
+          name: {{userEntityCamel}}Name,
+          loginId,
+          roleId: input.roleId,
+          password,
+          isDeleted: input.isDeleted,
+        };
+      });
+
+      // 배치 내 로그인ID 중복 검증 — 같은 업로드 안의 충돌은 DB 검사로 못 잡으므로 여기서 차단.
+      // (이름 활성유니크는 행 반영 후 한 번에 후검증 — 아래 참조.)
+      const findDuplicate = (values: (string | undefined)[]): string | undefined => {
+        const seen = new Set<string>();
+        for (const value of values) {
+          if (value == null) continue;
+          if (seen.has(value)) return value;
+          seen.add(value);
+        }
+        return undefined;
+      };
+      const dupLoginId = findDuplicate(rows.map((r) => r.loginId));
+      if (dupLoginId != null) {
+        throw new Error(`업로드 내 로그인ID가 중복됩니다: '${dupLoginId}'`);
+      }
+
+      const orm = await getOrm(ctx);
+      return orm.connect(async (db) => {
+        const results: { id: number }[] = [];
+        const activeNames: string[] = [];
+
+        for (const { id, name, loginId, roleId, password, isDeleted } of rows) {
+          // 수정 대상이면 기존 레코드 확인 — id 존재 강제 + 불변식·이력전이 판정에 기존 상태 필요.
+          let existingEncryptedPassword: string | undefined;
+          let existingIsDeleted: boolean | undefined;
+          if (id != null) {
+            const existing = await db
+              .{{userEntityCamel}}()
+              .where((c) => [expr.eq(c.id, id)])
+              .select((c) => ({
+                encryptedPassword: c.encryptedPassword,
+                isDeleted: c.isDeleted,
+              }))
+              .single();
+            if (existing == null) {
+              throw new Error(`${label(name)}존재하지 않는 {{userEntityLabel}}입니다. (ID: ${id})`);
+            }
+            existingEncryptedPassword = existing.encryptedPassword ?? undefined;
+            existingIsDeleted = existing.isDeleted;
+          }
+
+          // 저장 후 삭제상태 — 입력값 우선, 없으면(상세 화면) 기존 유지, 신규는 활성(false).
+          const resultIsDeleted = isDeleted ?? existingIsDeleted ?? false;
+          // 활성으로 귀결되는 이름은 후검증(활성유니크) 대상으로 수집.
+          if (!resultIsDeleted) {
+            activeNames.push(name);
+          }
+
+          // 불변식: 로그인ID 가 있으면 역할·비밀번호 필수 (비번은 이번 입력 또는 수정 시 기존 해시로 충족).
+          if (loginId != null) {
+            if (roleId == null) {
+              throw new Error(`${label(name)}로그인ID가 있으면 역할이 필수입니다.`);
+            }
+            if (password == null && existingEncryptedPassword == null) {
+              throw new Error(`${label(name)}로그인ID가 있으면 비밀번호가 필수입니다.`);
+            }
+          }
+
+          // 로그인ID 중복검증 (자기 자신 제외). loginId 는 DB 유니크 인덱스라 삭제 건도 포함해 검사.
+          if (loginId != null) {
+            const isDuplicated = await db
+              .{{userEntityCamel}}()
+              .where((c) => [
+                expr.eq(c.loginId, loginId),
+                ...(id == null ? [] : [expr.not(expr.eq(c.id, id))]),
+              ])
+              .exists();
+            if (isDuplicated) {
+              throw new Error(`${label(name)}이미 사용 중인 로그인ID입니다.`);
+            }
+          }
+
+          const encryptedPassword =
+            password != null ? await bcrypt.hash(password, 10) : undefined;
+
+          if (id == null) {
+            const [inserted] = await db
+              .{{userEntityCamel}}()
+              .insert([{ name, loginId, encryptedPassword, roleId, isDeleted: resultIsDeleted }], [
+                "id",
+              ]);
+            await db.{{userEntityCamel}}().insertDataLog({
+              action: "등록",
+              itemId: inserted.id,
+              {{userEntityCamel}}Id: performerId,
+            });
+            results.push({ id: inserted.id });
+          } else {
+            // 비밀번호 미입력 시 기존 해시 유지 — encryptedPassword 키를 set 에서 제외.
+            await db
+              .{{userEntityCamel}}()
+              .where((c) => [expr.eq(c.id, id)])
+              .update(() => ({
+                name,
+                loginId,
+                roleId,
+                isDeleted: resultIsDeleted,
+                ...(encryptedPassword == null ? {} : { encryptedPassword }),
+              }));
+            // 삭제상태 전이에 따른 이력 action.
+            const action =
+              existingIsDeleted === resultIsDeleted ? "수정" : resultIsDeleted ? "삭제" : "복구";
+            await db.{{userEntityCamel}}().insertDataLog({ action, itemId: id, {{userEntityCamel}}Id: performerId });
+            results.push({ id });
+          }
+        }
+
+        // 이름 활성유니크 후검증 — 모든 행 반영 후, 활성으로 귀결된 이름 중 활성 중복이 있으면 throw(전체 롤백).
+        // 벌크는 처리 전 상태로는 대상끼리 충돌을 못 보므로 후검증. 삭제 행은 제외돼 동명이 허용된다.
+        if (activeNames.length > 0) {
+          const conflicts = await db
+            .{{userEntityCamel}}()
+            .where((c) => [expr.in(c.name, activeNames), expr.eq(c.isDeleted, false)])
+            .groupBy((c) => [c.name])
+            .having(() => [expr.gt(expr.count(), 1)])
+            .select((c) => ({ name: c.name }))
+            .execute();
+          if (conflicts.length > 0) {
+            const conflictNames = conflicts.map((x) => `'${x.name}'`).join(", ");
+            throw new Error(`이미 존재하는 {{userEntityLabel}} 이름: ${conflictNames}`);
+          }
+        }
+
+        return results;
+      });
+    }),
+  };
+});
+
+export type {{userEntityPascal}}ServiceMethods = ServiceMethods<typeof {{userEntityPascal}}Service>;

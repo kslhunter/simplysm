@@ -1,0 +1,337 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  injectPermsSignal,
+  injectViewTypeSignal,
+  mark,
+  SdButton,
+  SdCrudDetail,
+  SdItemOfTemplate,
+  type SdModalContentDef,
+  SdSharedDataSelect,
+  SdTextfield,
+  SdToastProvider,
+  setupCanDeactivate,
+} from "@simplysm/angular";
+import { obj } from "@simplysm/core-common";
+import { expr } from "@simplysm/orm-common";
+import {
+  AppAuthProvider,
+  AppOrmProvider,
+  AppServiceProvider,
+  AppSharedDataProvider,
+  useSharedSignal,
+} from "@{{workspaceName}}/client-common";
+
+@Component({
+  selector: "app-{{userEntityKebab}}-detail",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [SdCrudDetail, SdTextfield, SdSharedDataSelect, SdItemOfTemplate, SdButton],
+  template: `
+    <sd-crud-detail
+      [(ready)]="ready"
+      [initialized]="initialized()"
+      [(busyCount)]="busyCount"
+      [viewType]="viewType()"
+      [restricted]="!perms().includes('use')"
+      [readonly]="!perms().includes('edit')"
+      (submit)="onSubmit()"
+    >
+      @if ({{userEntityCamel}}Id() != null && !isSelf() && perms().includes("edit")) {
+        <ng-template #bottomCommandTpl>
+          <div class="flex-row gap-sm">
+            @if (data().isDeleted) {
+              <sd-button [size]="'sm'" [theme]="'warning'" (click)="onRestore()">
+                복구
+              </sd-button>
+            } @else {
+              <sd-button [size]="'sm'" [theme]="'danger'" (click)="onDelete()">
+                삭제
+              </sd-button>
+            }
+          </div>
+        </ng-template>
+      }
+
+      <ng-template #contentTpl>
+        <div class="p-default">
+          <table class="form-table">
+            <tbody>
+              <tr><th colspan="2" class="form-table-header">기본정보</th></tr>
+              <tr>
+                <th>이름</th>
+                <td>
+                  <sd-textfield
+                    [type]="'text'"
+                    [(value)]="data().name"
+                    (valueChange)="mark(data)"
+                    [required]="true"
+                    [disabled]="!perms().includes('edit')"
+                  />
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody>
+              <tr><th colspan="2" class="form-table-header">인증/권한</th></tr>
+              <tr>
+                <th>로그인ID</th>
+                <td>
+                  <sd-textfield
+                    [type]="'text'"
+                    [(value)]="data().loginId"
+                    (valueChange)="mark(data)"
+                    [disabled]="!perms().includes('edit')"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>역할</th>
+                <td>
+                  <sd-shared-data-select
+                    [items]="sharedRoles.items()"
+                    [(value)]="data().roleId"
+                    (valueChange)="mark(data)"
+                    [required]="!!data().loginId?.trim()"
+                    [disabled]="!perms().includes('edit')"
+                  >
+                    <ng-template [itemOf]="sharedRoles.items()" let-item="item">
+                      \{{ item.name }}
+                    </ng-template>
+                  </sd-shared-data-select>
+                </td>
+              </tr>
+              <tr>
+                <th>비밀번호</th>
+                <td>
+                  <sd-textfield
+                    [type]="'password'"
+                    [placeholder]="passwordPlaceholder()"
+                    [(value)]="data().password"
+                    (valueChange)="mark(data)"
+                    [required]="!!data().loginId?.trim() && {{userEntityCamel}}Id() == null"
+                    [disabled]="!perms().includes('edit')"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </sd-crud-detail>
+  `,
+})
+export class {{userEntityPascal}}Detail implements SdModalContentDef<{ id: number } | undefined> {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _appOrm = inject(AppOrmProvider);
+  private readonly _appService = inject(AppServiceProvider);
+  private readonly _appSharedData = inject(AppSharedDataProvider);
+  private readonly _appAuth = inject(AppAuthProvider);
+
+  {{userEntityCamel}}Id = input<number>();
+  close = output<{ id: number } | undefined>();
+
+  perms = injectPermsSignal(["master.{{userEntityKebab}}"], ["use", "edit"]);
+  viewType = injectViewTypeSignal();
+
+  // 로그인한 본인 계정은 삭제 불가 — 삭제 버튼 숨김(아래 isSelf). 핸들러 가드는 두지 않음(목록 선택 차단 + 이 버튼 숨김이 모든 삭제 경로를 차단).
+  isSelf = computed(
+    () => this.{{userEntityCamel}}Id() != null && this.{{userEntityCamel}}Id() === this._appAuth.authInfo()?.{{userEntityCamel}}Id,
+  );
+
+  ready = signal(false);
+  initialized = signal(false);
+  busyCount = signal(0);
+
+  sharedRoles = useSharedSignal("역할");
+
+  passwordPlaceholder = (): string =>
+    this.{{userEntityCamel}}Id() == null ? "비밀번호를 입력하세요." : "변경하려면 입력하세요.";
+
+  data = signal<IData>({});
+  private _orgData?: IData;
+
+  constructor() {
+    effect(() => {
+      this.{{userEntityCamel}}Id();
+
+      if (!this.perms().includes("use") || !this.ready()) {
+        this.initialized.set(true);
+        return;
+      }
+
+      void untracked(async () => {
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+
+    setupCanDeactivate(() => this._checkIgnoreChanges());
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    const data = this.data();
+    if (this._orgData != null && obj.equal(data, this._orgData)) {
+      this._sdToast.info("변경사항이 없습니다.");
+      return;
+    }
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const [{ id }] = await this._appService.{{userEntityCamel}}.save([
+        {
+          id: this.{{userEntityCamel}}Id(),
+          name: data.name!.trim(),
+          loginId: data.loginId?.trim(),
+          roleId: data.roleId,
+          password: data.password,
+        },
+      ]);
+
+      await this._appSharedData.emitAsync("{{userEntityLabel}}", [id]);
+      this._sdToast.success("저장되었습니다.");
+      this.close.emit({ id });
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onDelete(): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    const {{userEntityCamel}}Id = this.{{userEntityCamel}}Id();
+    if ({{userEntityCamel}}Id == null) return;
+
+    if (!confirm("삭제하시겠습니까?")) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const performerId = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
+      await this._appOrm.connectAsync(async (db) => {
+        await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+          .update(() => ({ isDeleted: true }));
+        await db
+          .{{userEntityCamel}}()
+          .insertDataLog({ action: "삭제", itemId: {{userEntityCamel}}Id, {{userEntityCamel}}Id: performerId });
+      });
+
+      await this._appSharedData.emitAsync("{{userEntityLabel}}", [{{userEntityCamel}}Id]);
+      this._sdToast.success("삭제되었습니다.");
+      this.close.emit({ id: {{userEntityCamel}}Id });
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onRestore(): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    const {{userEntityCamel}}Id = this.{{userEntityCamel}}Id();
+    if ({{userEntityCamel}}Id == null) return;
+
+    const {{userEntityCamel}}Name = this.data().name;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const performerId = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
+      await this._appOrm.connectAsync(async (db) => {
+        // 복구 전 이름 비삭제 유니크 재검증 (삭제된 동안 같은 이름의 활성 {{userEntityLabel}}이 생겼을 수 있음).
+        const isNameDuplicated = await db
+          .{{userEntityCamel}}()
+          .where((c) => [
+            expr.eq(c.name, {{userEntityCamel}}Name),
+            expr.eq(c.isDeleted, false),
+            expr.not(expr.eq(c.id, {{userEntityCamel}}Id)),
+          ])
+          .exists();
+        if (isNameDuplicated) {
+          throw new Error("같은 이름의 활성 {{userEntityLabel}}이 있어 복구할 수 없습니다.");
+        }
+
+        await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+          .update(() => ({ isDeleted: false }));
+        await db
+          .{{userEntityCamel}}()
+          .insertDataLog({ action: "복구", itemId: {{userEntityCamel}}Id, {{userEntityCamel}}Id: performerId });
+      });
+
+      await this._appSharedData.emitAsync("{{userEntityLabel}}", [{{userEntityCamel}}Id]);
+      this._sdToast.success("복구되었습니다.");
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  private async _refresh(): Promise<void> {
+    const {{userEntityCamel}}Id = this.{{userEntityCamel}}Id();
+    if ({{userEntityCamel}}Id == null) {
+      this.data.set({});
+      this._orgData = obj.clone(this.data());
+      return;
+    }
+
+    const loaded = await this._appOrm.connectAsync(async (db) => {
+      return db
+        .{{userEntityCamel}}()
+        .where((c) => [expr.eq(c.id, {{userEntityCamel}}Id)])
+        .select((c) => ({
+          name: c.name,
+          loginId: c.loginId,
+          roleId: c.roleId,
+          isDeleted: c.isDeleted,
+        }))
+        .single();
+    });
+
+    if (loaded == null) throw new Error("{{userEntityLabel}}을 찾을 수 없습니다.");
+
+    this.data.set({
+      name: loaded.name,
+      loginId: loaded.loginId,
+      roleId: loaded.roleId ?? undefined,
+      isDeleted: loaded.isDeleted,
+    });
+    this._orgData = obj.clone(this.data());
+  }
+
+  private _checkIgnoreChanges(): boolean {
+    return (
+      this._orgData == null ||
+      obj.equal(this.data(), this._orgData) ||
+      confirm("변경사항이 있습니다. 무시하고 진행하시겠습니까?")
+    );
+  }
+
+  protected readonly mark = mark;
+}
+
+interface IData {
+  name?: string;
+  loginId?: string;
+  roleId?: number;
+  password?: string;
+  isDeleted?: boolean;
+}

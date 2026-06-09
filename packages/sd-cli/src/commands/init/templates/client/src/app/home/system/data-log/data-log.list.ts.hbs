@@ -1,0 +1,355 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  FormatPipe,
+  injectPermsSignal,
+  injectViewTitleSignal,
+  injectViewTypeSignal,
+  mark,
+  SdAnchor,
+  SdButton,
+  SdCrudList,
+  SdDateRangePicker,
+  SdItemOfTemplate,
+  SdModalProvider,
+  SdSharedDataSelect,
+  SdSheetColumn,
+  SdSheetColumnCellTemplate,
+  SdTextfield,
+  SdToastProvider,
+  type SortingDef,
+} from "@simplysm/angular";
+import { expr } from "@simplysm/orm-common";
+import { DateOnly, DateTime, obj } from "@simplysm/core-common";
+import { downloadBlob } from "@simplysm/core-browser";
+import { ExcelWrapper } from "@simplysm/excel";
+import { z } from "zod";
+import { AppOrmProvider, useSharedSignal } from "@{{workspaceName}}/client-common";
+import { NgIcon } from "@ng-icons/core";
+import { tablerDownload } from "@ng-icons/tabler-icons";
+import { TextViewModal } from "../../../../modals/text-view.modal";
+
+const ITEMS_PER_PAGE = 50;
+
+@Component({
+  selector: "app-data-log-list",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    SdCrudList,
+    SdSheetColumn,
+    SdSheetColumnCellTemplate,
+    SdTextfield,
+    SdDateRangePicker,
+    SdSharedDataSelect,
+    SdItemOfTemplate,
+    SdAnchor,
+    SdButton,
+    NgIcon,
+    FormatPipe,
+  ],
+  template: `
+    <sd-crud-list
+      [key]="'data-log-list'"
+      [(ready)]="ready"
+      [initialized]="initialized()"
+      [(busyCount)]="busyCount"
+      [viewType]="viewType()"
+      [restricted]="!perms().includes('use')"
+      [readonly]="true"
+      [inlineEdit]="false"
+      [items]="items()"
+      [trackByFn]="trackByFn"
+      [(currentPage)]="page"
+      [totalPageCount]="pageLength()"
+      [(sorts)]="sortingDefs"
+      (filterSubmit)="onFilterSubmit()"
+    >
+      <ng-template #filterTpl>
+        <div class="form-box-inline">
+          <div>
+            <label>기간</label>
+            <sd-date-range-picker
+              [(from)]="filter().fromDate"
+              (fromChange)="mark(filter)"
+              [(to)]="filter().toDate"
+              (toChange)="mark(filter)"
+            />
+          </div>
+          <div>
+            <label>검색어</label>
+            <sd-textfield
+              [type]="'text'"
+              [(value)]="filter().searchText"
+              (valueChange)="mark(filter)"
+            />
+          </div>
+          <div>
+            <label>수행자</label>
+            <sd-shared-data-select
+              [selectMode]="'multi'"
+              [items]="shared{{userEntityPascal}}s.items()"
+              [(value)]="filter().{{userEntityCamel}}Ids"
+              (valueChange)="mark(filter)"
+            >
+              <ng-template [itemOf]="shared{{userEntityPascal}}s.items()" let-item="item">
+                \{{ item.name }}
+              </ng-template>
+            </sd-shared-data-select>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #toolTpl>
+        <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
+          <ng-icon [svg]="tablerDownload" />
+          엑셀 다운로드
+        </sd-button>
+      </ng-template>
+
+      <sd-sheet-column [key]="'id'" [header]="'#'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm tx-right">\{{ item.id }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'dateTime'" [header]="'변경시각'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.dateTime | format: "yyyy-MM-dd HH:mm:ss" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'tableName'" [header]="'테이블'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.tableDescription ?? item.tableName }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'action'" [header]="'변경유형'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.action }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'itemId'" [header]="'대상'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm tx-right">\{{ item.itemId ?? "&nbsp;" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'{{userEntityCamel}}Name'" [header]="'수행자'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.{{userEntityCamel}}Name ?? "시스템" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'value'" [header]="'변경값'">
+        <ng-template [cell]="items()" let-item="item">
+          @if (item.valueJson) {
+            <sd-anchor (click)="onOpenValue(item)">
+              <div
+                class="p-xs-sm"
+                style="max-width: 40em; overflow: clip; white-space: nowrap; text-overflow: ellipsis;"
+              >
+                \{{ item.valueJson }}
+              </div>
+            </sd-anchor>
+          } @else {
+            <div class="p-xs-sm">&nbsp;</div>
+          }
+        </ng-template>
+      </sd-sheet-column>
+    </sd-crud-list>
+  `,
+})
+export class DataLogList {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _sdModal = inject(SdModalProvider);
+  private readonly _appOrm = inject(AppOrmProvider);
+
+  perms = injectPermsSignal(["system.data-log"], ["use"]);
+  viewType = injectViewTypeSignal();
+  viewTitle = injectViewTitleSignal();
+
+  ready = signal(false);
+  initialized = signal(false);
+  busyCount = signal(0);
+
+  shared{{userEntityPascal}}s = useSharedSignal("{{userEntityLabel}}");
+
+  items = signal<IItem[]>([]);
+  page = signal(0);
+  pageLength = signal(0);
+  sortingDefs = signal<SortingDef[]>([]);
+
+  filter = signal<IFilter>({ {{userEntityCamel}}Ids: [] });
+  lastFilter = signal<IFilter>({ {{userEntityCamel}}Ids: [] });
+
+  trackByFn = (item: IItem): number => item.id;
+
+  private readonly _excelWrapper = new ExcelWrapper(
+    z.object({
+      dateTime: z.custom<DateTime>().optional().describe("변경시각"),
+      table: z.string().optional().describe("테이블"),
+      action: z.string().optional().describe("변경유형"),
+      itemId: z.number().optional().describe("대상"),
+      {{userEntityCamel}}Name: z.string().optional().describe("수행자"),
+      valueJson: z.string().optional().describe("변경값"),
+    }),
+  );
+
+  constructor() {
+    effect(() => {
+      if (!this.perms().includes("use") || !this.ready()) {
+        this.initialized.set(true);
+        return;
+      }
+
+      this.lastFilter();
+      this.page();
+      this.sortingDefs();
+
+      void untracked(async () => {
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+  }
+
+  onFilterSubmit(): void {
+    this.page.set(0);
+    this.lastFilter.set({ ...this.filter() });
+  }
+
+  async onOpenValue(item: IItem): Promise<void> {
+    if (item.valueJson == null || item.valueJson === "") return;
+    await this._sdModal.showAsync({
+      type: TextViewModal,
+      title: "변경값",
+      inputs: { text: item.valueJson },
+    });
+  }
+
+  async onDownloadExcelButtonClick(): Promise<void> {
+    if (this.busyCount() > 0) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const r = await this._search(false);
+      const records = r.items.map((item) => ({
+        dateTime: item.dateTime,
+        table: item.tableDescription ?? item.tableName,
+        action: item.action,
+        itemId: item.itemId,
+        {{userEntityCamel}}Name: item.{{userEntityCamel}}Name,
+        valueJson: item.valueJson,
+      }));
+      const wb = await this._excelWrapper.write(this.viewTitle(), records);
+      try {
+        downloadBlob(
+          await wb.toBlob(),
+          `${this.viewTitle()}_${new DateTime().toFormatString("yyMMdd")}.xlsx`,
+        );
+      } finally {
+        await wb.close();
+      }
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  private async _refresh(): Promise<void> {
+    const r = await this._search(true);
+    this.items.set(r.items);
+    this.pageLength.set(r.pageLength);
+  }
+
+  private async _search(usePagination: boolean): Promise<{ items: IItem[]; pageLength: number }> {
+    return this._appOrm.connectAsync(async (db) => {
+      let qr = db.dataLog();
+
+      const fromDate = this.lastFilter().fromDate;
+      if (fromDate != null) {
+        const fromBoundary = new DateTime(fromDate.year, fromDate.month, fromDate.day);
+        qr = qr.where((c) => [expr.gte(c.dateTime, fromBoundary)]);
+      }
+
+      const toDate = this.lastFilter().toDate;
+      if (toDate != null) {
+        const toBoundary = new DateTime(toDate.year, toDate.month, toDate.day).addDays(1);
+        qr = qr.where((c) => [expr.lt(c.dateTime, toBoundary)]);
+      }
+
+      const searchText = this.lastFilter().searchText?.trim();
+      if (searchText != null && searchText.length > 0) {
+        qr = qr.search((c) => [c.tableName, c.tableDescription, c.action], searchText);
+      }
+
+      const {{userEntityCamel}}Ids = this.lastFilter().{{userEntityCamel}}Ids;
+      if ({{userEntityCamel}}Ids.length > 0) {
+        qr = qr.where((c) => [expr.in(c.{{userEntityCamel}}Id, {{userEntityCamel}}Ids)]);
+      }
+
+      const pageLength = usePagination ? Math.ceil((await qr.count()) / ITEMS_PER_PAGE) : 0;
+
+      let qr2 = qr
+        .include((c) => c.{{userEntityCamel}})
+        .select((c) => ({
+          id: c.id,
+          dateTime: c.dateTime,
+          tableName: c.tableName,
+          tableDescription: c.tableDescription,
+          action: c.action,
+          itemId: c.itemId,
+          valueJson: c.valueJson,
+          {{userEntityCamel}}Name: c.{{userEntityCamel}}?.name,
+        }));
+
+      for (const sort of this.sortingDefs()) {
+        qr2 = qr2.orderBy((c) => obj.getChainValue(c, sort.key) as any, sort.desc ? "DESC" : "ASC");
+      }
+      if (!this.sortingDefs().some((s) => s.key === "id")) {
+        qr2 = qr2.orderBy((c) => c.id, "DESC");
+      }
+
+      if (usePagination) {
+        qr2 = qr2.limit(this.page() * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+      }
+
+      const items = (await qr2.execute()) as IItem[];
+      return { items, pageLength };
+    });
+  }
+
+  protected readonly mark = mark;
+  protected readonly tablerDownload = tablerDownload;
+}
+
+interface IItem {
+  id: number;
+  dateTime: DateTime;
+  tableName: string;
+  tableDescription?: string;
+  action: string;
+  itemId?: number;
+  valueJson?: string;
+  {{userEntityCamel}}Name?: string;
+}
+
+interface IFilter {
+  fromDate?: DateOnly;
+  toDate?: DateOnly;
+  searchText?: string;
+  {{userEntityCamel}}Ids: number[];
+}

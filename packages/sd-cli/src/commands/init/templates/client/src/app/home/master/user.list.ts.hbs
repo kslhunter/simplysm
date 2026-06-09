@@ -1,0 +1,540 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from "@angular/core";
+import {
+  FormatPipe,
+  injectPermsSignal,
+  injectViewTitleSignal,
+  injectViewTypeSignal,
+  mark,
+  SdAnchor,
+  SdButton,
+  SdCheckbox,
+  SdCrudList,
+  SdItemOfTemplate,
+  SdModalProvider,
+  SdSharedDataSelect,
+  SdSheetColumn,
+  SdSheetColumnCellTemplate,
+  SdTextfield,
+  SdToastProvider,
+  type SortingDef,
+} from "@simplysm/angular";
+import { expr } from "@simplysm/orm-common";
+import { DateTime, obj } from "@simplysm/core-common";
+import { downloadBlob, openFileDialog } from "@simplysm/core-browser";
+import { ExcelWrapper } from "@simplysm/excel";
+import { z } from "zod";
+import {
+  AppAuthProvider,
+  AppOrmProvider,
+  AppServiceProvider,
+  AppSharedDataProvider,
+  useSharedSignal,
+} from "@{{workspaceName}}/client-common";
+import { tablerDownload, tablerEdit, tablerUpload } from "@ng-icons/tabler-icons";
+import { NgIcon } from "@ng-icons/core";
+import { {{userEntityPascal}}Detail } from "./{{userEntityKebab}}.detail";
+
+const ITEMS_PER_PAGE = 50;
+
+@Component({
+  selector: "app-{{userEntityKebab}}-list",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    SdCrudList,
+    SdSheetColumn,
+    SdSheetColumnCellTemplate,
+    SdTextfield,
+    SdCheckbox,
+    SdAnchor,
+    SdButton,
+    SdSharedDataSelect,
+    SdItemOfTemplate,
+    NgIcon,
+    FormatPipe,
+  ],
+  template: `
+    <sd-crud-list
+      [key]="'{{userEntityKebab}}-list'"
+      [(ready)]="ready"
+      [initialized]="initialized()"
+      [(busyCount)]="busyCount"
+      [viewType]="viewType()"
+      [restricted]="!perms().includes('use')"
+      [readonly]="!perms().includes('edit')"
+      [inlineEdit]="false"
+      [items]="items()"
+      [currDeletedItems]="deletedItems()"
+      [trackByFn]="trackByFn"
+      [getItemSelectableFn]="getItemSelectableFn"
+      [(selectedKeys)]="selectedKeys"
+      [(currentPage)]="page"
+      [totalPageCount]="pageLength()"
+      [(sorts)]="sortingDefs"
+      (filterSubmit)="onFilterSubmit()"
+      (create)="onCreate()"
+      (delete)="onDelete($event)"
+      (restore)="onRestore($event)"
+    >
+      <ng-template #filterTpl>
+        <div class="form-box-inline">
+          <div>
+            <label>검색어</label>
+            <sd-textfield
+              [type]="'text'"
+              [(value)]="filter().searchText"
+              (valueChange)="mark(filter)"
+            />
+          </div>
+          <div>
+            <label>역할</label>
+            <sd-shared-data-select
+              [selectMode]="'multi'"
+              [items]="sharedRoles.items()"
+              [(value)]="filter().roleIds"
+              (valueChange)="mark(filter)"
+            >
+              <ng-template [itemOf]="sharedRoles.items()" let-item="item">
+                \{{ item.name }}
+              </ng-template>
+            </sd-shared-data-select>
+          </div>
+          <div class="form-box-item">
+            <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
+              삭제항목 포함
+            </sd-checkbox>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #toolTpl>
+        @if (perms().includes("edit")) {
+          <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
+            <ng-icon [svg]="tablerUpload" />
+            엑셀 업로드
+          </sd-button>
+        }
+        <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onDownloadExcelButtonClick()">
+          <ng-icon [svg]="tablerDownload" />
+          엑셀 다운로드
+        </sd-button>
+      </ng-template>
+
+      <sd-sheet-column [key]="'id'" [header]="'#'">
+        <ng-template [cell]="items()" let-item="item">
+          @if (perms().includes("edit")) {
+            <sd-anchor class="flex-row gap-sm p-xs-sm" (click)="onEdit(item, $event)">
+              <div><ng-icon [svg]="tablerEdit" /></div>
+              <div class="flex-fill tx-right">\{{ item.id }}</div>
+            </sd-anchor>
+          } @else {
+            <div class="p-xs-sm tx-right">\{{ item.id }}</div>
+          }
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'name'" [header]="'이름'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.name }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'loginId'" [header]="'로그인ID'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.loginId }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'roleName'" [header]="'역할'">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.roleName ?? "&nbsp;" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'lastModifiedAt'" [header]="'수정일시'" [hidden]="true">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+
+      <sd-sheet-column [key]="'lastModifiedBy'" [header]="'수정자'" [hidden]="true">
+        <ng-template [cell]="items()" let-item="item">
+          <div class="p-xs-sm">\{{ item.lastModifiedBy ?? "&nbsp;" }}</div>
+        </ng-template>
+      </sd-sheet-column>
+    </sd-crud-list>
+  `,
+})
+export class {{userEntityPascal}}List {
+  private readonly _sdToast = inject(SdToastProvider);
+  private readonly _sdModal = inject(SdModalProvider);
+  private readonly _appOrm = inject(AppOrmProvider);
+  private readonly _appService = inject(AppServiceProvider);
+  private readonly _appSharedData = inject(AppSharedDataProvider);
+  private readonly _appAuth = inject(AppAuthProvider);
+
+  perms = injectPermsSignal(["master.{{userEntityKebab}}"], ["use", "edit"]);
+  viewType = injectViewTypeSignal();
+  viewTitle = injectViewTitleSignal();
+
+  ready = signal(false);
+  initialized = signal(false);
+  busyCount = signal(0);
+
+  selectedKeys = signal<number[]>([]);
+
+  sharedRoles = useSharedSignal("역할");
+
+  items = signal<IItem[]>([]);
+  deletedItems = computed(() => this.items().filter((i) => i.isDeleted));
+  page = signal(0);
+  pageLength = signal(0);
+  sortingDefs = signal<SortingDef[]>([]);
+
+  filter = signal<IFilter>({ isIncludeDeleted: false, roleIds: [] });
+  lastFilter = signal<IFilter>({ isIncludeDeleted: false, roleIds: [] });
+
+  trackByFn = (item: IItem): number => item.id;
+
+  // 로그인한 본인 계정은 선택(→삭제) 불가 — 해당 행 체크박스 비활성화.
+  getItemSelectableFn = (item: IItem): boolean | string =>
+    item.id === this._appAuth.authInfo()?.{{userEntityCamel}}Id ? "본인 계정은 삭제할 수 없습니다." : true;
+
+  private readonly _excelWrapper = new ExcelWrapper(
+    z.object({
+      id: z.number().optional().describe("ID"),
+      name: z.string().describe("이름"),
+      loginId: z.string().optional().describe("로그인ID"),
+      roleName: z.string().optional().describe("역할"),
+      password: z.string().optional().describe("비밀번호"),
+      isDeleted: z.boolean().describe("삭제"),
+      lastModifiedAt: z.custom<DateTime>().optional().describe("수정일시"),
+      lastModifiedBy: z.string().optional().describe("수정자"),
+    }),
+  );
+
+  constructor() {
+    effect(() => {
+      if (!this.perms().includes("use") || !this.ready()) {
+        this.initialized.set(true);
+        return;
+      }
+
+      this.lastFilter();
+      this.page();
+      this.sortingDefs();
+
+      void untracked(async () => {
+        this.busyCount.update((v) => v + 1);
+        await this._sdToast.try(async () => {
+          await this._refresh();
+        });
+        this.busyCount.update((v) => v - 1);
+        this.initialized.set(true);
+      });
+    });
+  }
+
+  onFilterSubmit(): void {
+    this.page.set(0);
+    this.lastFilter.set({ ...this.filter() });
+  }
+
+  async onDownloadExcelButtonClick(): Promise<void> {
+    if (this.busyCount() > 0) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const r = await this._search(false);
+      const wb = await this._excelWrapper.write(this.viewTitle(), r.items);
+      try {
+        downloadBlob(
+          await wb.toBlob(),
+          `${this.viewTitle()}_${new DateTime().toFormatString("yyMMdd")}.xlsx`,
+        );
+      } finally {
+        await wb.close();
+      }
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onUploadExcelButtonClick(): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+
+    const files = await openFileDialog({ accept: ".xlsx" });
+    if (files == null) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      // 파생 컬럼(수정일시·수정자)은 업로드에서 제외하고 파싱. 삭제 여부는 읽어서 반영.
+      const records = await this._excelWrapper.read(files[0], 0, {
+        excludes: ["lastModifiedAt", "lastModifiedBy"],
+      });
+      if (records.length === 0) {
+        throw new Error("업로드할 데이터가 없습니다.");
+      }
+
+      // 다건일 때만 에러에 이름을 표기(단건이면 평문).
+      const label = ({{userEntityCamel}}Name: string): string =>
+        records.length > 1 ? `{{userEntityLabel}} '${ {{~userEntityCamel}}Name}': ` : "";
+
+      // 역할명 → 역할ID (활성 역할 기준). 없는 역할명은 오류.
+      const roleIdByName = new Map(this.sharedRoles.items().map((r) => [r.name, r.id] as const));
+      const inputs = records.map((rec) => {
+        const roleName = rec.roleName?.trim();
+        let roleId: number | undefined;
+        if (roleName != null && roleName !== "") {
+          roleId = roleIdByName.get(roleName);
+          if (roleId == null) {
+            throw new Error(`${label(rec.name)}존재하지 않는 역할입니다. (${roleName})`);
+          }
+        }
+        return {
+          id: rec.id,
+          name: rec.name,
+          loginId: rec.loginId,
+          roleId,
+          password: rec.password,
+          isDeleted: rec.isDeleted,
+        };
+      });
+
+      // ID↔이름 정합성 — 전체(삭제 포함) {{userEntityLabel}}의 (id, name) 와 대조. ID 없으면 신규.
+      const ids = inputs.flatMap((x) => (x.id != null ? [x.id] : []));
+      const dbRows =
+        ids.length === 0
+          ? []
+          : await this._appOrm.connectAsync(async (db) =>
+              db
+                .{{userEntityCamel}}()
+                .where((c) => [expr.in(c.id, ids)])
+                .select((c) => ({ id: c.id, name: c.name }))
+                .execute(),
+            );
+      const dbNameById = new Map(dbRows.map((r) => [r.id, r.name] as const));
+
+      let nameChangedCount = 0;
+      const changedSamples: string[] = [];
+      for (const x of inputs) {
+        if (x.id == null) continue;
+        const dbName = dbNameById.get(x.id);
+        if (dbName == null) {
+          throw new Error(`${label(x.name)}ID ${x.id} 에 해당하는 {{userEntityLabel}}이 없습니다.`);
+        }
+        if (dbName !== x.name.trim()) {
+          nameChangedCount++;
+          if (changedSamples.length < 2) {
+            changedSamples.push(`${dbName} → ${x.name.trim()}`);
+          }
+        }
+      }
+
+      // 기존 이름(비즈니스키)이 바뀌는 건이 있으면 행 어긋남(정렬 사고)일 수 있어, 건수 입력으로 확인.
+      if (nameChangedCount >= 1) {
+        const sample =
+          changedSamples.join(", ") + (nameChangedCount > changedSamples.length ? " 등" : "");
+        let confirmed = false;
+        while (!confirmed) {
+          const answer = prompt(
+            `기존 항목 ${nameChangedCount}건의 이름이 변경됩니다. (예: ${sample})\n` +
+              `계속하려면 ${nameChangedCount} 을(를) 입력하세요.`,
+          );
+          if (answer == null) return;
+          confirmed = answer.trim() === String(nameChangedCount);
+        }
+      }
+
+      const results = await this._appService.{{userEntityCamel}}.save(inputs);
+      await this._appSharedData.emitAsync(
+        "{{userEntityLabel}}",
+        results.map((r) => r.id),
+      );
+      this._sdToast.success(`${results.length}건이 반영되었습니다.`);
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onCreate(): Promise<void> {
+    await this._openDetail(undefined);
+  }
+
+  async onEdit(item: IItem, event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await this._openDetail(item.id);
+  }
+
+  private async _openDetail({{userEntityCamel}}Id: number | undefined): Promise<void> {
+    if (this.busyCount() > 0) return;
+
+    const result = await this._sdModal.showAsync({
+      type: {{userEntityPascal}}Detail,
+      title: {{userEntityCamel}}Id == null ? "{{userEntityLabel}} 등록" : "{{userEntityLabel}} 수정",
+      inputs: { {{userEntityCamel}}Id },
+    });
+    if (result == null) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onDelete(targets: IItem[]): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+    if (targets.length === 0) return;
+    if (!confirm("삭제하시겠습니까?")) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const ids = targets.map((t) => t.id);
+      const {{userEntityCamel}}Id = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
+      await this._appOrm.connectAsync(async (db) => {
+        await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.in(c.id, ids)])
+          .update(() => ({ isDeleted: true }));
+        for (const id of ids) {
+          await db.{{userEntityCamel}}().insertDataLog({ action: "삭제", itemId: id, {{userEntityCamel}}Id });
+        }
+      });
+      await this._appSharedData.emitAsync("{{userEntityLabel}}", ids);
+      this._sdToast.success("삭제되었습니다.");
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  async onRestore(targets: IItem[]): Promise<void> {
+    if (this.busyCount() > 0) return;
+    if (!this.perms().includes("edit")) return;
+    if (targets.length === 0) return;
+
+    this.busyCount.update((v) => v + 1);
+    await this._sdToast.try(async () => {
+      const ids = targets.map((t) => t.id);
+      const names = targets.map((t) => t.name);
+      const {{userEntityCamel}}Id = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
+      await this._appOrm.connectAsync(async (db) => {
+        await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.in(c.id, ids)])
+          .update(() => ({ isDeleted: false }));
+
+        // 복구 후 이름 비삭제 유니크 재검증 — 복구로 활성 중복이 생겼으면 throw(트랜잭션 롤백).
+        // 대상끼리 충돌·기존 활성과의 충돌을 복구한 이름으로 한정해 한 번에 검사.
+        const conflicts = await db
+          .{{userEntityCamel}}()
+          .where((c) => [expr.in(c.name, names), expr.eq(c.isDeleted, false)])
+          .groupBy((c) => [c.name])
+          .having(() => [expr.gt(expr.count(), 1)])
+          .select((c) => ({ name: c.name }))
+          .execute();
+        if (conflicts.length > 0) {
+          const conflictNames = conflicts.map((x) => `'${x.name}'`).join(", ");
+          throw new Error(`같은 이름(${conflictNames})의 활성 {{userEntityLabel}}이 있어 복구할 수 없습니다.`);
+        }
+
+        for (const id of ids) {
+          await db.{{userEntityCamel}}().insertDataLog({ action: "복구", itemId: id, {{userEntityCamel}}Id });
+        }
+      });
+      await this._appSharedData.emitAsync("{{userEntityLabel}}", ids);
+      this._sdToast.success("복구되었습니다.");
+      await this._refresh();
+    });
+    this.busyCount.update((v) => v - 1);
+  }
+
+  private async _refresh(): Promise<void> {
+    const r = await this._search(true);
+    this.items.set(r.items);
+    this.pageLength.set(r.pageLength);
+  }
+
+  private async _search(usePagination: boolean): Promise<{ items: IItem[]; pageLength: number }> {
+    return this._appOrm.connectAsync(async (db) => {
+      let qr = db.{{userEntityCamel}}();
+
+      const searchText = this.lastFilter().searchText?.trim();
+      if (searchText != null && searchText.length > 0) {
+        qr = qr.search((c) => [c.name, c.loginId], searchText);
+      }
+
+      const roleIds = this.lastFilter().roleIds;
+      if (roleIds != null && roleIds.length > 0) {
+        qr = qr.where((c) => [expr.in(c.roleId, roleIds)]);
+      }
+
+      if (!this.lastFilter().isIncludeDeleted) {
+        qr = qr.where((c) => [expr.eq(c.isDeleted, false)]);
+      }
+
+      const pageLength = usePagination ? Math.ceil((await qr.count()) / ITEMS_PER_PAGE) : 0;
+
+      let qr2 = qr
+        .joinLastDataLog()
+        .include((c) => c.role)
+        .select((c) => ({
+          id: c.id,
+          name: c.name,
+          loginId: c.loginId,
+          roleName: c.role?.name,
+          isDeleted: c.isDeleted,
+          lastModifiedAt: c.lastDataLog?.dateTime,
+          lastModifiedBy: c.lastDataLog?.{{userEntityCamel}}Name,
+        }));
+
+      for (const sort of this.sortingDefs()) {
+        qr2 = qr2.orderBy((c) => obj.getChainValue(c, sort.key) as any, sort.desc ? "DESC" : "ASC");
+      }
+      if (!this.sortingDefs().some((s) => s.key === "id")) {
+        qr2 = qr2.orderBy((c) => c.id, "DESC");
+      }
+
+      if (usePagination) {
+        qr2 = qr2.limit(this.page() * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+      }
+
+      const items = (await qr2.execute()) as IItem[];
+      return { items, pageLength };
+    });
+  }
+
+  protected readonly mark = mark;
+  protected readonly tablerEdit = tablerEdit;
+  protected readonly tablerDownload = tablerDownload;
+  protected readonly tablerUpload = tablerUpload;
+}
+
+interface IItem {
+  id: number;
+  name: string;
+  loginId?: string;
+  roleName?: string;
+  isDeleted: boolean;
+  lastModifiedAt?: DateTime;
+  lastModifiedBy?: string;
+}
+
+interface IFilter {
+  searchText?: string;
+  roleIds?: number[];
+  isIncludeDeleted: boolean;
+}

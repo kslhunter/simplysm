@@ -2,8 +2,8 @@
 export * from "./{{dbFolderName}}/{{dbContextFileName}}";
 {{#if hasAuth}}
 export * from "./{{dbFolderName}}/tables/master/{{userEntityKebab}}";
-export * from "./{{dbFolderName}}/tables/master/{{userEntityKebab}}-config";
 export * from "./{{dbFolderName}}/tables/system/role";
+export * from "./{{dbFolderName}}/tables/master/{{userEntityKebab}}-config";
 export * from "./{{dbFolderName}}/tables/system/role-permission";
 {{/if}}
 export * from "./{{dbFolderName}}/tables/system/system-data-log";

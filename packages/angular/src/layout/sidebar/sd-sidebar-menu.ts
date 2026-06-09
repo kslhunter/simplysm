@@ -92,7 +92,7 @@ export class SdSidebarMenu {
 
   fullPageCode = injectFullPageCodeSignal();
 
-  rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "flat" : "accordion"));
+  rootLayout = computed(() => this.layout() ?? (this.menus().length <= 3 ? "accordion-expanded" : "accordion"));
 
   // accordion-expanded: 모든 깊이 항목을 펼친 채로 시작(이후 클릭 토글). 그 외는 접힘 시작.
   expandInitially = computed(() => this.rootLayout() === "accordion-expanded");
