@@ -12,7 +12,6 @@ const FIXED: (string | [string, string])[] = [
   ".editorconfig",
   ["gitignore", ".gitignore"],
   ["npmrc", ".npmrc"],
-  ".prettierignore",
   ".prettierrc.yaml",
   "eslint.config.ts",
   "pnpm-workspace.yaml",
