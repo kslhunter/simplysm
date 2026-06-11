@@ -92,6 +92,16 @@ export default defineConfig({
           include: ["tests/sd-cli-client/**/*.spec.ts"],
         },
       },
+      // Integration tests - SSG (빌드 타임 프리렌더)
+      {
+        extends: true,
+        test: {
+          name: "ssg",
+          environment: "node",
+          include: ["tests/ssg/**/*.spec.ts"],
+          testTimeout: 120000,
+        },
+      },
       // Integration tests - ORM (requires Docker DB)
       {
         extends: true,

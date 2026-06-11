@@ -57,6 +57,7 @@ export function normalize(input: InitInput): NormalizedInput {
       isMobile,
       appStructureName: `${str.toCamelCase(baseName)}AppStructureItems`,
       needsNgIcons: (hasRouter && hasAuth) || hasDb,
+      useSsg: hasRouter && !isMobile && (c.useSsg ?? false),
     };
   });
 

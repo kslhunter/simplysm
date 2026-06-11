@@ -5,9 +5,11 @@ import {
   EnvironmentInjector,
   inject,
   Injectable,
+  PLATFORM_ID,
   signal,
   type ComponentRef,
 } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { SdBusyContainer } from "./sd-busy-container";
 
 export type SdBusyType = "spinner" | "bar" | "cube";
@@ -42,6 +44,9 @@ export class SdBusyProvider {
   }
 
   constructor() {
+    // SSR(프리렌더) 가드: busy 오버레이는 document 직접 조작 — 브라우저 전용
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
     effect(() => {
       const busy = this.globalBusyCount() > 0;
 

@@ -5,6 +5,8 @@ export interface ClientInputSpec {
   name: string;
   type: ClientType;
   hasRouter: boolean;
+  /** SSG(빌드 타임 프리렌더) 사용 여부 (web + 라우팅 클라이언트만) */
+  useSsg?: boolean;
 }
 
 export interface InitInput {
@@ -29,6 +31,7 @@ export interface ClientSpec {
   isMobile: boolean;
   appStructureName: string;
   needsNgIcons: boolean;
+  useSsg: boolean;
 }
 
 export interface NormalizedInput {

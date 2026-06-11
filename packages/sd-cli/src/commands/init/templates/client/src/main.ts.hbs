@@ -3,10 +3,18 @@ import { enableProdMode, inject, provideAppInitializer } from "@angular/core";
 {{else}}
 import { enableProdMode } from "@angular/core";
 {{/if}}
+{{#if client.useSsg}}
+import { bootstrapApplication, provideClientHydration } from "@angular/platform-browser";
+{{else}}
 import { bootstrapApplication } from "@angular/platform-browser";
+{{/if}}
 import { provideHttpClient, withFetch } from "@angular/common/http";
 {{#if client.hasRouter}}
+{{#if client.useSsg}}
+import { provideRouter } from "@angular/router";
+{{else}}
 import { provideRouter, withHashLocation } from "@angular/router";
+{{/if}}
 {{/if}}
 import {
   provideSdAngular,
@@ -68,7 +76,12 @@ bootstrapApplication(AppRoot, {
   providers: [
     provideHttpClient(withFetch()),
 {{#if client.hasRouter}}
+{{#if client.useSsg}}
+    provideRouter(routes),
+    provideClientHydration(),
+{{else}}
     provideRouter(routes, withHashLocation()),
+{{/if}}
 {{/if}}
     provideSdAngular({ clientName: CLIENT_NAME }),
 {{#if hasDb}}

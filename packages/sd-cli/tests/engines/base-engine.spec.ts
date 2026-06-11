@@ -14,8 +14,7 @@ vi.spyOn(Worker, "create").mockReturnValue(mockWorker as any);
 import { TscEngine } from "../../src/engines/TscEngine";
 import { BaseEngine } from "../../src/engines/BaseEngine";
 
-import type { BuildPackageInfo, BuildOutput } from "../../src/engines/types";
-import type { BuildResult } from "../../src/runtime/ResultCollector";
+import type { BuildPackageInfo } from "../../src/engines/types";
 
 // --- Helpers ---
 
@@ -373,18 +372,6 @@ describe("BaseEngine", () => {
   });
 
   describe("lint 통합", () => {
-    describe("BuildOutput.lint flag controls lint execution", () => {
-      it("BuildOutput이 lint 불리언 플래그를 수용", () => {
-        const output: BuildOutput = { js: true, dts: true, lint: true };
-        expect(output.lint).toBe(true);
-      });
-
-      it("BuildOutput.lint는 미설정 시 undefined가 기본값", () => {
-        const output: BuildOutput = { js: true, dts: true };
-        expect(output.lint).toBeUndefined();
-      });
-    });
-
     describe("EngineResult includes lint field", () => {
       it("run() returns EngineResult with lint field when worker provides it", async () => {
         mockWorker.build.mockResolvedValue({
@@ -494,18 +481,6 @@ describe("BaseEngine", () => {
         expect(lintResult).toBeUndefined();
 
         await engine.stop();
-      });
-    });
-
-    describe("ResultCollector supports lint type", () => {
-      it("BuildResult 타입에 lint 포함", () => {
-        const lintResult: BuildResult = {
-          name: "test-pkg",
-          target: "node",
-          type: "lint",
-          status: "success",
-        };
-        expect(lintResult.type).toBe("lint");
       });
     });
   });

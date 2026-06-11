@@ -33,6 +33,8 @@ provideSdAngular(opt: { clientName: string }): EnvironmentProviders
 
 `makeEnvironmentProviders` 로 다음을 한 번에 등록: `IMAGE_CONFIG`(이미지 경고 비활성), ng-icons 기본 설정(strokeWidth 1.5, size 1.33em), 테마 dark/fontSize 의 localStorage 복원·저장 effect, 전역 `unhandledrejection`/`error` 리스너→`ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(이벤트 수식어 지원), `ErrorHandler=SdGlobalErrorHandlerPlugin`, `provideZonelessChangeDetection()`, `SwUpdate` 주기 점검(5분 시작 → 실패 시 지수 백오프 최대 60분, 업데이트 발견 시 confirm 후 reload), 라우팅 네비게이션을 `SdBusyProvider.globalBusyCount` 와 연동. 앱 `ApplicationConfig.providers` 에 1회 추가.
 
+SSR(프리렌더) 안전: 부트스트랩 경로의 브라우저 의존 동작(테마 localStorage 복원, window 에러 리스너, SW 업데이트 점검, busy 오버레이, 에러 오버레이, `setupBgTheme`/`setupRipple`, core-browser prototype 확장)은 서버 플랫폼에서 무동작 — `prerender`(SSG) 클라이언트에서 그대로 사용 가능. 그 외 컴포넌트의 SSR-safe 여부는 개별 확인 필요.
+
 ```ts
 export const appConfig: ApplicationConfig = {
   providers: [provideRouter(routes), provideSdAngular({ clientName: "my-app" })],

@@ -14,6 +14,8 @@ import { createDevHttpServer, type DevHttpServer } from "../dev-server/dev-http-
 import { createHmrService, type HmrService } from "../dev-server/hmr-service";
 import { createHmrPostTransform } from "../dev-server/hmr-client-script";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
+import { buildSsrBundle } from "../esbuild/esbuild-ssr-config";
+import { prerenderRoutes } from "../ssg/prerender";
 import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types";
 import type esbuild from "esbuild";
 import type { PartialMessage } from "esbuild";
@@ -40,6 +42,8 @@ export interface ClientBuildInfo {
   base?: string;
   /** 브라우저 지원 설정 (메인 프로세스에서 전달, Worker 내 sd.config.ts 재로드 방지) */
   browserSupport?: SdBrowserSupportConfig;
+  /** SSG(빌드 타임 프리렌더) 라우트 목록. 지정 시 프로덕션 빌드에서만 적용 */
+  prerender?: string[];
 }
 
 /** Client 빌드 결과 */
@@ -149,6 +153,28 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     });
 
     fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+
+    // 5.5. SSG 프리렌더 (opt-in — prerender 설정이 있을 때만)
+    if (info.prerender != null && info.prerender.length > 0 && indexResult.errors.length === 0) {
+      // SPA 셸 별도 보존 (비프리렌더 라우트 딥링크 폴백용 — 서버 정적 핸들러가 사용)
+      fs.writeFileSync(path.join(outdir, "index.csr.html"), indexResult.content);
+
+      const { bundlePath } = await buildSsrBundle({
+        pkgDir: info.pkgDir,
+        cwd: info.cwd,
+        env: info.env,
+        postcssPlugins: info.browserSupport?.postCss?.plugins,
+      });
+
+      // 라우트별 HTML 생성 ("/"는 index.html을 프리렌더 결과로 대체)
+      await prerenderRoutes({
+        bundlePath,
+        routes: info.prerender,
+        documentHtml: indexResult.content,
+        basePath,
+        outdir,
+      });
+    }
 
     // 6. PWA 적용
     await applyPwa({

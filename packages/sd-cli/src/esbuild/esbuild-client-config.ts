@@ -1,9 +1,7 @@
 import path from "path";
 import fs from "fs";
-import { createRequire } from "module";
 import esbuild from "esbuild";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import type { AcceptedPlugin } from "postcss";
 import { AngularSourceFileCache } from "../angular/angular-compiler.js";
 import { createClientTransformStylesheet } from "../angular/client-transform-stylesheet.js";
 import {
@@ -12,7 +10,7 @@ import {
 } from "./esbuild-angular-compiler-plugin.js";
 import { MemoryLoadResultCache } from "./load-result-cache.js";
 import { createScssPlugin } from "./esbuild-scss-plugin";
-import { createPostcssPlugin } from "./esbuild-postcss-plugin";
+import { createPostcssPlugin, loadPostcssPlugins } from "./esbuild-postcss-plugin";
 
 export interface CreateClientEsbuildOptions {
   /** 패키지 디렉토리 경로 */
@@ -82,15 +80,7 @@ export async function createClientEsbuildContext(
   const stylesheetErrors: string[] = [];
 
   // PostCSS 플러그인 로딩 (튜플 → 인스턴스) — transformStylesheet와 createPostcssPlugin 양쪽에 사용
-  let loadedPostcssPlugins: AcceptedPlugin[] | undefined;
-  if (options.postcssPlugins != null && options.postcssPlugins.length > 0) {
-    const req = createRequire(path.join(options.pkgDir, "package.json"));
-    loadedPostcssPlugins = options.postcssPlugins.map(([name, pluginOpts]) => {
-      const pluginFn = req(name);
-      const fn = pluginFn.default ?? pluginFn;
-      return pluginOpts != null ? fn(pluginOpts) : fn;
-    });
-  }
+  const loadedPostcssPlugins = loadPostcssPlugins(options.pkgDir, options.postcssPlugins);
 
   // transformStylesheet 콜백 생성
   const cachePath = path.join(options.pkgDir, ".angular", "cache");

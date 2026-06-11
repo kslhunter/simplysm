@@ -27,7 +27,7 @@
     "./dist/index.js"
   ],
   "devDependencies": {
-    "@types/node": "^20.19.42"
+    "@types/node": "^20.19.43"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.8.26",

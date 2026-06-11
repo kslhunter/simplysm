@@ -47,72 +47,75 @@ declare global {
   }
 }
 
-HTMLElement.prototype.repaint = function (): void {
-  // offsetHeight에 접근하면 브라우저에서 강제 동기 레이아웃이 트리거되어,
-  // 현재 레이아웃의 스타일 변경이 즉시 적용되고 리페인트가 발생합니다.
-  void this.offsetHeight;
-};
-
-HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): {
-  top: number;
-  left: number;
-} {
-  const parentEl = typeof parent === "string" ? this.closest(parent) : parent;
-
-  if (!(parentEl instanceof HTMLElement)) {
-    throw new ArgumentError({ parent });
-  }
-
-  const elementRect = this.getBoundingClientRect();
-  const parentRect = parentEl.getBoundingClientRect();
-
-  const relativeOffset = {
-    top: elementRect.top - parentRect.top + (parentEl.scrollTop || 0),
-    left: elementRect.left - parentRect.left + (parentEl.scrollLeft || 0),
+// SSR(프리렌더) 가드: 서버(node)에는 HTMLElement 전역이 없음 — 브라우저에서만 prototype 확장
+if (typeof HTMLElement !== "undefined") {
+  HTMLElement.prototype.repaint = function (): void {
+    // offsetHeight에 접근하면 브라우저에서 강제 동기 레이아웃이 트리거되어,
+    // 현재 레이아웃의 스타일 변경이 즉시 적용되고 리페인트가 발생합니다.
+    void this.offsetHeight;
   };
 
-  let currentEl = this.parentElement;
-  while (currentEl != null && currentEl !== parentEl) {
-    const style = getComputedStyle(currentEl);
-    relativeOffset.top += parseFloat(style.borderTopWidth) || 0;
-    relativeOffset.left += parseFloat(style.borderLeftWidth) || 0;
-    currentEl = currentEl.parentElement;
-  }
+  HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): {
+    top: number;
+    left: number;
+  } {
+    const parentEl = typeof parent === "string" ? this.closest(parent) : parent;
 
-  const elTransform = getComputedStyle(this).transform;
-  const parentTransform = getComputedStyle(parentEl).transform;
-
-  if (elTransform !== "none" || parentTransform !== "none") {
-    const elementMatrix = new DOMMatrix(elTransform);
-    const parentMatrix = new DOMMatrix(parentTransform);
-
-    if (!elementMatrix.isIdentity || !parentMatrix.isIdentity) {
-      const transformedPoint = parentMatrix
-        .inverse()
-        .multiply(elementMatrix)
-        .transformPoint(new DOMPoint(relativeOffset.left, relativeOffset.top));
-
-      relativeOffset.left = transformedPoint.x;
-      relativeOffset.top = transformedPoint.y;
+    if (!(parentEl instanceof HTMLElement)) {
+      throw new ArgumentError({ parent });
     }
-  }
 
-  return relativeOffset;
-};
+    const elementRect = this.getBoundingClientRect();
+    const parentRect = parentEl.getBoundingClientRect();
 
-HTMLElement.prototype.scrollIntoViewIfNeeded = function (
-  target: { top: number; left: number },
-  offset: { top: number; left: number } = { top: 0, left: 0 },
-): void {
-  const scroll = {
-    top: this.scrollTop,
-    left: this.scrollLeft,
+    const relativeOffset = {
+      top: elementRect.top - parentRect.top + (parentEl.scrollTop || 0),
+      left: elementRect.left - parentRect.left + (parentEl.scrollLeft || 0),
+    };
+
+    let currentEl = this.parentElement;
+    while (currentEl != null && currentEl !== parentEl) {
+      const style = getComputedStyle(currentEl);
+      relativeOffset.top += parseFloat(style.borderTopWidth) || 0;
+      relativeOffset.left += parseFloat(style.borderLeftWidth) || 0;
+      currentEl = currentEl.parentElement;
+    }
+
+    const elTransform = getComputedStyle(this).transform;
+    const parentTransform = getComputedStyle(parentEl).transform;
+
+    if (elTransform !== "none" || parentTransform !== "none") {
+      const elementMatrix = new DOMMatrix(elTransform);
+      const parentMatrix = new DOMMatrix(parentTransform);
+
+      if (!elementMatrix.isIdentity || !parentMatrix.isIdentity) {
+        const transformedPoint = parentMatrix
+          .inverse()
+          .multiply(elementMatrix)
+          .transformPoint(new DOMPoint(relativeOffset.left, relativeOffset.top));
+
+        relativeOffset.left = transformedPoint.x;
+        relativeOffset.top = transformedPoint.y;
+      }
+    }
+
+    return relativeOffset;
   };
 
-  if (target.top - scroll.top < offset.top) {
-    this.scrollTop = target.top - offset.top;
-  }
-  if (target.left - scroll.left < offset.left) {
-    this.scrollLeft = target.left - offset.left;
-  }
-};
+  HTMLElement.prototype.scrollIntoViewIfNeeded = function (
+    target: { top: number; left: number },
+    offset: { top: number; left: number } = { top: 0, left: 0 },
+  ): void {
+    const scroll = {
+      top: this.scrollTop,
+      left: this.scrollLeft,
+    };
+
+    if (target.top - scroll.top < offset.top) {
+      this.scrollTop = target.top - offset.top;
+    }
+    if (target.left - scroll.left < offset.left) {
+      this.scrollLeft = target.left - offset.left;
+    }
+  };
+}

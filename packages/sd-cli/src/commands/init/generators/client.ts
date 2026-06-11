@@ -39,6 +39,14 @@ export async function generateClient(
     await renderToFile(path.join(TPL, "src/routes.ts.hbs"), path.join(out, "src/routes.ts"), data);
   }
 
+  if (client.useSsg) {
+    await renderToFile(
+      path.join(TPL, "src/main.server.ts.hbs"),
+      path.join(out, "src/main.server.ts"),
+      data,
+    );
+  }
+
   if (data.hasAuth && client.hasRouter) {
     await renderToFile(
       path.join(TPL, "src/app/login/login.view.ts.hbs"),

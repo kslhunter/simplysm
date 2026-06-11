@@ -240,6 +240,13 @@ export interface SdClientPackageConfig {
   browserSupport?: SdBrowserSupportConfig;
   /** PWA 설정. false이면 비활성화. 미지정 시 기본값으로 활성화 */
   pwa?: false | SdPwaConfig;
+  /**
+   * SSG(빌드 타임 프리렌더) 라우트 목록 (예: ["/", "/about"])
+   * - 지정 시 프로덕션 빌드에서 src/main.server.ts 진입점으로 라우트별 HTML을 생성
+   * - SPA 셸은 index.csr.html로 별도 출력 (비프리렌더 라우트 딥링크 폴백용)
+   * - dev/watch 모드에는 적용되지 않음 (기존 SPA dev 서버 그대로)
+   */
+  prerender?: string[];
 }
 
 /**

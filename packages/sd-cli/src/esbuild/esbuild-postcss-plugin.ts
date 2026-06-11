@@ -2,12 +2,30 @@ import type esbuild from "esbuild";
 import type { AcceptedPlugin } from "postcss";
 import postcss from "postcss";
 import fs from "fs";
+import path from "path";
+import { createRequire } from "module";
 import * as acorn from "acorn";
 import * as walk from "acorn-walk";
 
 export interface CreatePostcssPluginOptions {
   /** 이미 로딩된 PostCSS 플러그인 인스턴스 배열 */
   plugins: AcceptedPlugin[];
+}
+
+/**
+ * PostCSS 플러그인 설정 튜플([name, options])을 패키지 기준으로 로딩해 인스턴스 배열로 변환한다.
+ */
+export function loadPostcssPlugins(
+  pkgDir: string,
+  postcssPlugins: [string, (object | string)?][] | undefined,
+): AcceptedPlugin[] | undefined {
+  if (postcssPlugins == null || postcssPlugins.length === 0) return undefined;
+  const req = createRequire(path.join(pkgDir, "package.json"));
+  return postcssPlugins.map(([pluginName, pluginOpts]) => {
+    const pluginFn = req(pluginName);
+    const fn = pluginFn.default ?? pluginFn;
+    return pluginOpts != null ? fn(pluginOpts) : fn;
+  });
 }
 
 export function createPostcssPlugin(options: CreatePostcssPluginOptions): esbuild.Plugin {

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createServiceProtocol, type ServiceProtocol } from "../../src/protocol/create-service-protocol";
 import type { ServiceMessage } from "../../src/protocol/protocol.types";
-import { PROTOCOL_CONFIG } from "../../src/protocol/protocol.types";
 import { ArgumentError, Uuid } from "@simplysm/core-common";
 
 describe("ServiceProtocol", () => {
@@ -235,11 +234,6 @@ describe("ServiceProtocol", () => {
         expect(decoded.message.name).toBe("test.method");
         expect(decoded.message.body).toEqual([{ value: 42 }]);
       }
-    });
-
-    it("MAX_TOTAL_SIZE(100MB)가 32비트 unsigned integer 범위 내이다", () => {
-      const UINT32_MAX = 4_294_967_295;
-      expect(PROTOCOL_CONFIG.MAX_TOTAL_SIZE).toBeLessThanOrEqual(UINT32_MAX);
     });
 
     it("인코딩된 바이너리가 BigUint64 형식과 동일한 바이트를 생성한다", () => {

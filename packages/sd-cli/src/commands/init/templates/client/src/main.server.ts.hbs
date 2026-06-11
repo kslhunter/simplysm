@@ -1,0 +1,24 @@
+import { bootstrapApplication, type BootstrapContext } from "@angular/platform-browser";
+import { provideServerRendering } from "@angular/platform-server";
+import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideRouter } from "@angular/router";
+import { provideSdAngular } from "@simplysm/angular";
+import { AppRoot } from "./app.root";
+import { routes } from "./routes";
+
+// 프리렌더(빌드 시점) 전용 부트스트랩 — 서버 연결·로그 배선 등 브라우저 전용 초기화는 제외
+const bootstrap = (context: BootstrapContext) =>
+  bootstrapApplication(
+    AppRoot,
+    {
+      providers: [
+        provideHttpClient(withFetch()),
+        provideRouter(routes),
+        provideSdAngular({ clientName: "{{client.name}}" }),
+        provideServerRendering(),
+      ],
+    },
+    context,
+  );
+
+export default bootstrap;

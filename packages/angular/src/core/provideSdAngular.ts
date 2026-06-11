@@ -6,11 +6,12 @@ import {
   ErrorHandler,
   inject,
   makeEnvironmentProviders,
+  PLATFORM_ID,
   provideAppInitializer,
   provideEnvironmentInitializer,
   provideZonelessChangeDetection,
 } from "@angular/core";
-import { IMAGE_CONFIG } from "@angular/common";
+import { IMAGE_CONFIG, isPlatformBrowser } from "@angular/common";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
 import { toSignal } from "@angular/core/rxjs-interop";
 import {
@@ -46,6 +47,9 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       size: "1.33em",
     }),
     provideEnvironmentInitializer(() => {
+      // SSR(프리렌더) 가드: 테마 저장·복원은 브라우저 전용
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
       const sdTheme = inject(SdThemeProvider);
       const sdLocalStorage = inject(SdLocalStorageProvider);
 
@@ -78,6 +82,9 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       });
     }),
     provideEnvironmentInitializer(() => {
+      // SSR(프리렌더) 가드: window 전역 에러 리스너는 브라우저 전용
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
       const envInjector = inject(EnvironmentInjector);
 
       const rejectionListener = (event: PromiseRejectionEvent) => {
@@ -111,6 +118,9 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
     { provide: ErrorHandler, useClass: SdGlobalErrorHandlerPlugin },
     provideZonelessChangeDetection(),
     provideAppInitializer(() => {
+      // SSR(프리렌더) 가드: 서비스워커 업데이트 확인은 브라우저 전용
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
       const swUpdate = inject(SwUpdate, { optional: true });
       const destroyRef = inject(DestroyRef);
       let timerId: ReturnType<typeof setTimeout> | undefined;

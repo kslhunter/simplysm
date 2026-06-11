@@ -1,6 +1,10 @@
-import { effect, ElementRef, inject } from "@angular/core";
+import { effect, ElementRef, inject, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 
 export function setupRipple(enableFn?: () => boolean): void {
+  // SSR(프리렌더) 가드: 포인터 인터랙션은 브라우저 전용
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
   const elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   effect((onCleanup) => {

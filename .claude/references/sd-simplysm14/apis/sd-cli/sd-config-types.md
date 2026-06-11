@@ -94,6 +94,7 @@ interface SdClientPackageConfig {
   exclude?: string[];
   browserSupport?: SdBrowserSupportConfig;
   pwa?: false | SdPwaConfig;
+  prerender?: string[];
 }
 ```
 
@@ -106,6 +107,10 @@ interface SdClientPackageConfig {
 - exclude?: string[] — Capacitor/Electron `package.json` 에 추가(번들에서 빼 외부 패키지로 둘)할 패키지 목록.
 - browserSupport?: SdBrowserSupportConfig — 브라우저 호환(browserslist/PostCSS/legacyModule) 설정.
 - pwa?: false | SdPwaConfig — PWA 설정. `false` 면 비활성화, 미지정 시 기본값으로 활성화, 객체면 manifest 커스텀. PWA 가 필요 없으면 `false`.
+- prerender?: string[] — SSG(빌드 타임 프리렌더) 라우트 목록(예: `["/", "/about"]`). SEO 가 필요한 공개 페이지에 지정. 프로덕션 빌드에서만 동작하며 dev/watch 모드는 기존 SPA 그대로. 동작:
+  - `src/main.server.ts` 가 서버 부트스트랩(`(context: BootstrapContext) => bootstrapApplication(App, config, context)`)을 default export 해야 하며, 앱 설정에 `provideClientHydration()`, 서버 설정에 `provideServerRendering()` 포함. `@angular/platform-server` 의존성 필요 (Angular 표준 SSR 셋업과 동일).
+  - 라우트별 `<경로>/index.html` 을 서버 렌더 결과로 생성 (`"/"` 는 `index.html` 대체). SPA 셸은 `index.csr.html` 로 별도 보존되어 비프리렌더 라우트 딥링크 폴백에 사용 (service-server 정적 핸들러가 처리).
+  - 라우트 1건이라도 렌더 실패 시 빌드 전체 실패.
 
 ### SdServerPackageConfig (server)
 

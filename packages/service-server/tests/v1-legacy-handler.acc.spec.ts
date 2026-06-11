@@ -3,7 +3,6 @@ import { WebSocket as WsClient, type RawData, type WebSocket } from "ws";
 import {
   createServiceServer,
   handleV1Connection,
-  type ServiceServerOptions,
   type V1RequestHandler,
   type V1Response,
 } from "@simplysm/service-server";
@@ -112,22 +111,6 @@ function createServiceContext(clientNameGetter?: () => string | undefined): Serv
 }
 
 describe("V1 레거시 사용자 핸들러", () => {
-  it("서버 옵션으로 V1 사용자 핸들러를 등록할 수 있다", () => {
-    const options = {
-      rootPath: ".",
-      port: 0,
-      services: [],
-      legacyV1Handlers: [
-        ({ request }) =>
-          request.command === "LegacyBootstrap.getConfig"
-            ? { handled: true, body: "ok" }
-            : { handled: false },
-      ],
-    } satisfies ServiceServerOptions;
-
-    expect(options.legacyV1Handlers).toHaveLength(1);
-  });
-
   it("등록된 사용자 핸들러가 V1 요청을 처리한다", async () => {
     const socket = new FakeWebSocket();
     const handler: V1RequestHandler = ({ request }) => {

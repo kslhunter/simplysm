@@ -1,4 +1,5 @@
-import { effect, Injectable, signal } from "@angular/core";
+import { effect, inject, Injectable, PLATFORM_ID, signal } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {
@@ -9,6 +10,9 @@ export class SdThemeProvider {
   fontSize = signal<number>(12);
 
   constructor() {
+    // SSR(프리렌더) 가드: document 반영은 브라우저 전용
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+
     effect(() => {
       document.body.classList.toggle("sd-theme-dark", this.dark());
     });

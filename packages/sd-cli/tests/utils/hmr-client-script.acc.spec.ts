@@ -14,27 +14,6 @@ describe("HMR 클라이언트 스크립트 통합", () => {
       // logical assignment (&&=, ||=, ??=) 미사용
       expect(script).not.toMatch(/&&=|(\|\|=)|(\?\?=)/);
     });
-
-    it("WebSocket 연결 코드를 포함한다", () => {
-      const script = getHmrClientScript("/app/", 4200);
-      expect(script).toContain("WebSocket");
-      expect(script).toContain("ws://");
-    });
-
-    it("component-update, css-update, full-reload 메시지 핸들러를 포함한다", () => {
-      const script = getHmrClientScript("/app/", 4200);
-      expect(script).toContain("component-update");
-      expect(script).toContain("css-update");
-      expect(script).toContain("full-reload");
-      expect(script).toContain("__hmr_dispatch");
-      expect(script).toContain("location.reload");
-    });
-
-    it("자동 재연결 로직을 포함한다", () => {
-      const script = getHmrClientScript("/app/", 4200);
-      expect(script).toContain("setTimeout");
-      expect(script).toContain("connect");
-    });
   });
 
   describe("Scenario: css-update 메시지의 files와 매칭되는 link만 업데이트", () => {

@@ -72,6 +72,7 @@ export class EsbuildClientEngine implements BuildEngine {
       outDir: this._outDir,
       base: this._base,
       browserSupport: this._pkg.config.browserSupport,
+      prerender: this._pkg.config.prerender,
     });
 
     logger.debug(`[${this._pkg.name}] EsbuildClientEngine.run 완료 (success: ${result.success})`);

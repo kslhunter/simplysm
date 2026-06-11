@@ -112,7 +112,15 @@ export async function promptInit(workspaceNameDefault: string): Promise<InitInpu
       });
     }
 
-    clients.push({ name: clientName, type: clientType, hasRouter });
+    let useSsg = false;
+    if (clientType === "web" && hasRouter) {
+      useSsg = await confirm({
+        message: `${clientName}: SSG (SEO 용 빌드 타임 프리렌더) 를 쓸까요?`,
+        default: false,
+      });
+    }
+
+    clients.push({ name: clientName, type: clientType, hasRouter, useSsg });
   }
 
   let mobileAppId: string | undefined;

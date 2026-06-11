@@ -83,65 +83,70 @@ declare global {
   }
 }
 
-Element.prototype.findAll = function <TEl extends Element = Element>(selector: string): TEl[] {
-  const trimmed = selector.trim();
-  if (trimmed === "") return [];
-  return Array.from(this.querySelectorAll<TEl>(trimmed));
-};
+// SSR(프리렌더) 가드: 서버(node)에는 Element 전역이 없음 — 브라우저에서만 prototype 확장
+if (typeof Element !== "undefined") {
+  Element.prototype.findAll = function <TEl extends Element = Element>(selector: string): TEl[] {
+    const trimmed = selector.trim();
+    if (trimmed === "") return [];
+    return Array.from(this.querySelectorAll<TEl>(trimmed));
+  };
 
-Element.prototype.findFirst = function <TEl extends Element = Element>(
-  selector: string,
-): TEl | undefined {
-  const trimmed = selector.trim();
-  if (trimmed === "") return undefined;
-  return this.querySelector<TEl>(trimmed) ?? undefined;
-};
+  Element.prototype.findFirst = function <TEl extends Element = Element>(
+    selector: string,
+  ): TEl | undefined {
+    const trimmed = selector.trim();
+    if (trimmed === "") return undefined;
+    return this.querySelector<TEl>(trimmed) ?? undefined;
+  };
 
-Element.prototype.prependChild = function <TEl extends Element>(child: TEl): TEl {
-  return this.insertBefore(child, this.firstElementChild);
-};
+  Element.prototype.prependChild = function <TEl extends Element>(child: TEl): TEl {
+    return this.insertBefore(child, this.firstElementChild);
+  };
 
-Element.prototype.getParents = function (): Element[] {
-  const result: Element[] = [];
-  let cursor = this.parentNode;
-  while (cursor != null && cursor instanceof Element) {
-    result.push(cursor);
-    cursor = cursor.parentNode;
-  }
-  return result;
-};
-
-Element.prototype.findTabbableParent = function (): HTMLElement | undefined {
-  let parentEl = this.parentElement;
-  while (parentEl != null) {
-    if (isTabbable(parentEl)) {
-      return parentEl;
+  Element.prototype.getParents = function (): Element[] {
+    const result: Element[] = [];
+    let cursor = this.parentNode;
+    while (cursor != null && cursor instanceof Element) {
+      result.push(cursor);
+      cursor = cursor.parentNode;
     }
-    parentEl = parentEl.parentElement;
-  }
-  return undefined;
-};
+    return result;
+  };
 
-Element.prototype.findFirstTabbableChild = function (): HTMLElement | undefined {
-  const walker = document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT);
-  let node = walker.nextNode();
-  while (node != null) {
-    if (node instanceof HTMLElement && isTabbable(node)) {
-      return node;
+  Element.prototype.findTabbableParent = function (): HTMLElement | undefined {
+    let parentEl = this.parentElement;
+    while (parentEl != null) {
+      if (isTabbable(parentEl)) {
+        return parentEl;
+      }
+      parentEl = parentEl.parentElement;
     }
-    node = walker.nextNode();
-  }
-  return undefined;
-};
+    return undefined;
+  };
 
-Element.prototype.isOffsetElement = function (): boolean {
-  return ["relative", "absolute", "fixed", "sticky"].includes(getComputedStyle(this).position);
-};
+  Element.prototype.findFirstTabbableChild = function (): HTMLElement | undefined {
+    const walker = document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT);
+    let node = walker.nextNode();
+    while (node != null) {
+      if (node instanceof HTMLElement && isTabbable(node)) {
+        return node;
+      }
+      node = walker.nextNode();
+    }
+    return undefined;
+  };
 
-Element.prototype.isVisible = function (): boolean {
-  const style = getComputedStyle(this);
-  return this.getClientRects().length > 0 && style.visibility !== "hidden" && style.opacity !== "0";
-};
+  Element.prototype.isOffsetElement = function (): boolean {
+    return ["relative", "absolute", "fixed", "sticky"].includes(getComputedStyle(this).position);
+  };
+
+  Element.prototype.isVisible = function (): boolean {
+    const style = getComputedStyle(this);
+    return (
+      this.getClientRects().length > 0 && style.visibility !== "hidden" && style.opacity !== "0"
+    );
+  };
+}
 
 // ============================================================================
 // 정적 함수 (이벤트 핸들러 또는 다중 요소용)

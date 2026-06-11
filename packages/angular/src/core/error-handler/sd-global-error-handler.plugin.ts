@@ -5,7 +5,9 @@ import {
   inject,
   Injectable,
   isDevMode,
+  PLATFORM_ID,
 } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
 import { createLogger } from "@simplysm/core-common";
 import { SdSystemLogProvider } from "../config/sd-system-log.provider";
 
@@ -15,9 +17,16 @@ const logger = createLogger("angular:error-handler");
 export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   private readonly _envInjector = inject(EnvironmentInjector);
   private readonly _sdSystemLog = inject(SdSystemLogProvider);
+  private readonly _isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private _hasDisplayedError = false;
 
   handleError(event: unknown) {
+    // SSR(프리렌더) 가드: 서버에는 화면 오버레이·브라우저 전역 이벤트 타입이 없음 — 로그만 남김
+    if (!this._isBrowser) {
+      logger.error(event);
+      return false;
+    }
+
     try {
       if (event instanceof PromiseRejectionEvent) {
         const reason = event.reason;

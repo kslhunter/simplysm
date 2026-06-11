@@ -79,7 +79,7 @@ function createWebSocketHandler(
 
 - `handleHttpRequest(req, reply, jwtSecret, runMethod)` — `/api/:service/:method` 처리. `x-sd-client-name` 헤더 필수, `Authorization: Bearer <token>` 검증(실패 시 401). GET 은 `?json=` 쿼리, POST 는 배열 본문에서 파라미터를 받아 `runMethod` 실행. 본문이 배열이 아니면 400, 그 외 HTTP 메서드는 405.
 - `handleUpload(req, reply, rootPath, jwtSecret)` — `/upload` multipart 처리. multipart 아니면 400, 인증 토큰 필수(없거나 무효면 401). 파일을 `rootPath/www/uploads/<uuid><ext>` 로 저장하고 `ServiceUploadResult[]`(`{ path, filename, size }`) 반환. 도중 실패 시 그 요청에서 저장한 파일을 모두 롤백 삭제 후 500.
-- `handleStaticFile(req, reply, rootPath, urlPath)` — `rootPath/www` 하위 정적 파일 전송. `www` 밖 경로는 차단(throw), 디렉터리면 슬래시 리다이렉트 후 `index.html`, `.` 으로 시작하는 숨김 파일은 403, 미존재는 404, 그 외 전송 실패는 500 HTML 응답.
+- `handleStaticFile(req, reply, rootPath, urlPath)` — `rootPath/www` 하위 정적 파일 전송. `www` 밖 경로는 차단(throw), 디렉터리면 슬래시 리다이렉트 후 `index.html`, `.` 으로 시작하는 숨김 파일은 403, 미존재는 404, 그 외 전송 실패는 500 HTML 응답. SPA 폴백: 미존재 + 확장자 없는 페이지 요청이면 `www` 루트 방향으로 가장 가까운 `index.csr.html`(SSG 클라이언트의 SPA 셸)을 찾아 반환 — 셸 파일이 없는 기존 클라이언트는 그대로 404.
 
 ## ServerProtocolWrapper / createServerProtocolWrapper
 

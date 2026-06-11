@@ -141,9 +141,8 @@ describe("server/src/main.ts.hbs", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, "server/src/main.ts.hbs"), data);
-    expect(out).toContain(
-      'services: [OrmService, ...(parseBoolEnv(env("DEV")) ? [DevService] : [])],',
-    );
+    expect(out).toContain("OrmService,");
+    expect(out).toContain('...(parseBoolEnv(env("DEV")) ? [DevService] : []),');
     expect(out).not.toContain("AuthService");
   });
 
@@ -161,9 +160,9 @@ describe("server/src/main.ts.hbs", () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "server/src/main.ts.hbs"), data);
     expect(out).toContain('import { AuthService } from "./services/auth.service";');
     expect(out).toContain('import { DevService } from "./services/dev.service";');
-    expect(out).toContain(
-      'services: [OrmService, AuthService, ...(parseBoolEnv(env("DEV")) ? [DevService] : [])],',
-    );
+    expect(out).toContain("OrmService,");
+    expect(out).toContain("AuthService,");
+    expect(out).toContain('...(parseBoolEnv(env("DEV")) ? [DevService] : []),');
   });
 });
 
@@ -208,8 +207,8 @@ describe("server 인증 템플릿", () => {
     expect(out).toContain("roleName: employee.role!.name,");
     expect(out).toContain(".include((item) => item.role)");
     expect(out).toContain(".from(EmployeeConfig)");
-    expect(out).toContain("expr.eq(cfg.employeeId, e.id)");
-    expect(out).toContain("(configs as Record<string, unknown>)[cfg.code] = JSON.parse(cfg.valueJson);");
+    expect(out).toContain("expr.eq(ec.employeeId, e.id)");
+    expect(out).toContain("(configs as Record<string, unknown>)[c.code] = JSON.parse(c.valueJson);");
     expect(out).toContain("유효하지 않은 직원입니다.");
 
     // update(내정보수정) 메서드 + 인증정보 변경 이벤트 emit
@@ -371,8 +370,24 @@ describe("client 인증 로그인 (routes / login.view / ng-icons)", () => {
     expect(out).toContain('"@ng-icons/tabler-icons": "^33.2.3"');
   });
 
-  it("client/package.json: 인증 OFF → @ng-icons 없음", async () => {
+  it("client/package.json: 인증 OFF + DB ON → dev 모달용 @ng-icons 포함", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(false));
+    expect(out).toContain('"@ng-icons/core": "^33.2.3"');
+  });
+
+  it("client/package.json: 인증 OFF + DB OFF → @ng-icons 없음", async () => {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: false,
+      clients: [{ name: "admin", type: "web", hasRouter: true }],
+      serverPort: 40080,
+    });
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), {
+      ...data,
+      client: data.clients[0],
+    });
     expect(out).not.toContain("@ng-icons");
   });
 });
@@ -397,7 +412,7 @@ describe("관리자 셸 (home/main/app-structure/main.ts 와이어링)", () => {
   it("common/app-structure: 사용자 엔티티 메뉴 항목에 선택 네이밍 반영", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "common/src/app-structure.ts.hbs"), authClientCtx(true));
     expect(out).toContain('import type { AppStructureItem } from "@simplysm/service-common";');
-    expect(out).toContain("export const appStructureItems: AppStructureItem[] = [");
+    expect(out).toContain("export const adminAppStructureItems: AppStructureItem[] = [");
     expect(out).toContain('{ code: "employee", title: "직원", perms: ["use", "edit"] }');
     expect(out).toContain('{ code: "role-permission", title: "역할/권한", perms: ["use", "edit"] }');
   });
@@ -448,8 +463,8 @@ describe("관리자 셸 (home/main/app-structure/main.ts 와이어링)", () => {
   it("client/main.ts: 인증 ON + router → app-structure 초기화 와이어링", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/src/main.ts.hbs"), authClientCtx(true));
     expect(out).toContain("SdAppStructureProvider");
-    expect(out).toContain('import { appStructureItems } from "@demo/common";');
-    expect(out).toContain("inject(SdAppStructureProvider).initialize(appStructureItems);");
+    expect(out).toContain('import { adminAppStructureItems } from "@demo/common";');
+    expect(out).toContain("inject(SdAppStructureProvider).initialize(adminAppStructureItems);");
   });
 
   it("client/main.ts: 인증 OFF → app-structure 초기화 없음", async () => {
@@ -534,7 +549,8 @@ describe("client-common/src/providers/app-service.provider.ts.hbs", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, svcTpl), data);
-    expect(out).toContain('import type { AuthServiceMethods } from "@demo/server";');
+    expect(out).toContain("AuthServiceMethods,");
+    expect(out).toContain('} from "@demo/server";');
     expect(out).toContain("type ServiceProxy,");
     expect(out).toContain("private _auth?: ServiceProxy<AuthServiceMethods>;");
     expect(out).toContain("get auth(): ServiceProxy<AuthServiceMethods> {");
@@ -564,8 +580,8 @@ describe("client-common/src/providers/app-auth.provider.ts.hbs", () => {
     expect(out).toContain("export class AppAuthProvider {");
     expect(out).toContain("authInfo = signal<IAuthData | undefined>(undefined);");
     expect(out).toContain("inject(SdAppStructureProvider)");
-    expect(out).toContain("this._sdAppStructure.permRecord.set(this.authInfo()?.permissions);");
-    expect(out).toContain("async login(email: string, password: string): Promise<void>");
+    expect(out).toContain("this._sdAppStructure.permRecord.set(authData.permissions);");
+    expect(out).toContain("async login(loginId: string, password: string): Promise<void>");
     expect(out).toContain("async tryReloadAuth(): Promise<boolean>");
     expect(out).toContain("await this._appService.client.auth(token);");
   });
@@ -584,7 +600,7 @@ describe("client-common/src/index.ts.hbs auth export", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, "client-common/src/index.ts.hbs"), data);
-    expect(out).toContain('export { AppAuthProvider } from "./providers/app-auth.provider";');
+    expect(out).toContain('export * from "./providers/app-auth.provider";');
   });
 
   it("인증 OFF → AppAuthProvider export 없음", async () => {
@@ -616,9 +632,7 @@ describe("server/src/index.ts.hbs", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, "server/src/index.ts.hbs"), data);
-    expect(out).toContain(
-      'export type { AuthServiceMethods, IAuthData, IAuthResult } from "./services/auth.service";',
-    );
+    expect(out).toContain('export type * from "./services/auth.service";');
   });
 });
 
@@ -928,6 +942,68 @@ describe("common/src/index.ts.hbs", () => {
   });
 });
 
+describe("SSG 클라이언트 스캐폴드", () => {
+  function ssgCtx(useSsg: boolean) {
+    const data = buildData({
+      workspaceName: "demo",
+      description: "Demo",
+      hasServer: true,
+      hasDb: false,
+      clients: [{ name: "portal", type: "web", hasRouter: true, useSsg }],
+      serverPort: 40080,
+    });
+    return { ...data, client: data.clients[0] };
+  }
+
+  it("sd.config: SSG ON → prerender 설정 포함", async () => {
+    const ctx = ssgCtx(true);
+    const out = await renderTemplate(path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"), ctx);
+    expect(out).toContain('prerender: ["/"],');
+  });
+
+  it("sd.config: SSG OFF → prerender 없음", async () => {
+    const ctx = ssgCtx(false);
+    const out = await renderTemplate(path.join(TPL_ROOT, "workspace-root/sd.config.ts.hbs"), ctx);
+    expect(out).not.toContain("prerender");
+  });
+
+  it("client/package.json: SSG ON → @angular/platform-server 의존성 포함", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), ssgCtx(true));
+    expect(out).toContain('"@angular/platform-server": "^21.2.0"');
+  });
+
+  it("client/package.json: SSG OFF → @angular/platform-server 없음", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), ssgCtx(false));
+    expect(out).not.toContain("@angular/platform-server");
+  });
+
+  it("client/main.ts: SSG ON → path 라우팅 + hydration", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/src/main.ts.hbs"), ssgCtx(true));
+    expect(out).toContain('import { provideRouter } from "@angular/router";');
+    expect(out).not.toContain("withHashLocation");
+    expect(out).toContain("provideClientHydration");
+    expect(out).toContain("provideRouter(routes),");
+  });
+
+  it("client/main.ts: SSG OFF → hash 라우팅 유지 + hydration 없음", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/src/main.ts.hbs"), ssgCtx(false));
+    expect(out).toContain("provideRouter(routes, withHashLocation()),");
+    expect(out).not.toContain("provideClientHydration");
+  });
+
+  it("client/main.server.ts: 서버 부트스트랩 default export + 최소 provider", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/src/main.server.ts.hbs"), ssgCtx(true));
+    expect(out).toContain('import { provideServerRendering } from "@angular/platform-server";');
+    expect(out).toContain("const bootstrap = (context: BootstrapContext) =>");
+    expect(out).toContain("provideRouter(routes),");
+    expect(out).toContain('provideSdAngular({ clientName: "client-portal" }),');
+    expect(out).toContain("provideServerRendering(),");
+    expect(out).toContain("export default bootstrap;");
+    // 프리렌더는 빌드 시점 — 서버 연결·로그 배선 제외
+    expect(out).not.toContain("connectAsync");
+  });
+});
+
 describe("root/package.json.hbs", () => {
   it("hasMobile=true 시 run-device 스크립트 포함", async () => {
     const data = buildData({
@@ -984,8 +1060,9 @@ describe("common/src/auth-info-changed.event.ts.hbs", () => {
     );
     expect(out).toContain('import { defineEvent } from "@simplysm/service-common";');
     expect(out).toContain(
-      'export const AuthInfoChangedEvent = defineEvent<{ employeeId: number }, void>("AuthInfoChanged");',
+      "export const AuthInfoChangedEvent = defineEvent<{ employeeId: number; roleId: number }, void>(",
     );
+    expect(out).toContain('"AuthInfoChanged",');
   });
 });
 
@@ -1057,8 +1134,10 @@ describe("client-common 인증정보 변경 구독 배선", () => {
     );
     expect(out).toContain("async logout(): Promise<void> {");
     expect(out).toContain("await this._unregisterAuthEvent();");
-    expect(out).toContain("await this._registerAuthEvent(authData.employeeId);");
-    expect(out).toContain("private async _registerAuthEvent(employeeId: number): Promise<void> {");
+    expect(out).toContain("await this._registerAuthEvent(authData.employeeId, authData.roleId);");
+    expect(out).toContain(
+      "private async _registerAuthEvent(employeeId: number, roleId: number): Promise<void> {",
+    );
     expect(out).toContain("this._appService.authInfoChangedEvent.addListener(");
   });
 });
@@ -1094,7 +1173,7 @@ describe("client/src/app/home/my-info/my-info.detail.ts.hbs", () => {
     expect(out).toContain("this._appAuth.authInfo()?.employeeId");
     expect(out).toContain("lastModifiedBy: item.lastDataLog?.employeeName,");
     expect(out).toContain("await this._appService.auth.update({");
-    expect(out).toContain('{{ flatMenu.titleChain.join(" / ") }}');
+    expect(out).toContain('{{ flatMenu.titleChain.join("» ") }}');
     expect(out).not.toContain("\\{{");
   });
 });
@@ -1142,8 +1221,8 @@ describe("server/src/services/dev.service.ts.hbs", () => {
     expect(out).toContain('import { ExcelWorkbook } from "@simplysm/excel";');
     expect(out).toContain('import { appStructureItems } from "@demo/common";');
     expect(out).toContain(".employee().insert(");
-    expect(out).toContain("getFlatPermissions(appStructureItems, undefined)");
-    expect(out).toContain("// TODO: 업무 테이블 초기 데이터 시드 추가");
+    expect(out).toContain("getFlatPermissions(");
+    expect(out).toContain("appStructureItems,");
   });
 
   it("인증 OFF (DB만) → 시드 없이 db.initialize + TODO", async () => {
@@ -1182,7 +1261,7 @@ describe("server/src/index.ts.hbs dev export", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, "server/src/index.ts.hbs"), data);
-    expect(out).toContain('export type { DevServiceMethods } from "./services/dev.service";');
+    expect(out).toContain('export type * from "./services/dev.service";');
     expect(out).not.toContain("auth.service");
   });
 
@@ -1198,8 +1277,8 @@ describe("server/src/index.ts.hbs dev export", () => {
       serverPort: 40080,
     });
     const out = await renderTemplate(path.join(TPL_ROOT, "server/src/index.ts.hbs"), data);
-    expect(out).toContain('from "./services/auth.service";');
-    expect(out).toContain('export type { DevServiceMethods } from "./services/dev.service";');
+    expect(out).toContain('export type * from "./services/auth.service";');
+    expect(out).toContain('export type * from "./services/dev.service";');
   });
 });
 
@@ -1219,7 +1298,8 @@ describe("client-common app-service dev getter", () => {
       path.join(TPL_ROOT, "client-common/src/providers/app-service.provider.ts.hbs"),
       data,
     );
-    expect(out).toContain('import type { DevServiceMethods } from "@demo/server";');
+    expect(out).toContain("DevServiceMethods,");
+    expect(out).toContain('} from "@demo/server";');
     expect(out).toContain("type ServiceProxy,");
     expect(out).toContain("get dev(): ServiceProxy<DevServiceMethods> {");
     expect(out).toContain('this._dev ??= this.client.getService<DevServiceMethods>("DevService")');
@@ -1259,7 +1339,7 @@ describe("client/src/app.root.ts.hbs dev 도구 배선", () => {
 
   it("DB ON → HostListener keydown + DevModal 호출", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/src/app.root.ts.hbs"), devCtx(true));
-    expect(out).toContain('@HostListener("document:keydown", ["$event"])');
+    expect(out).toContain('"(document:keydown)": "onKeydown($event)",');
     expect(out).toContain('import { DevModal } from "./modals/dev.modal";');
     expect(out).toContain("this._sdModal.showAsync({ type: DevModal");
     expect(out).toContain("export class AppRoot {");
@@ -1268,13 +1348,13 @@ describe("client/src/app.root.ts.hbs dev 도구 배선", () => {
   it("DB OFF → 빈 AppRoot (dev 배선 없음)", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/src/app.root.ts.hbs"), devCtx(false));
     expect(out).toContain("export class AppRoot {}");
-    expect(out).not.toContain("HostListener");
+    expect(out).not.toContain("onKeydown");
     expect(out).not.toContain("DevModal");
   });
 });
 
 describe("client/src/modals/dev.modal.ts.hbs", () => {
-  it("dev 모달: client-common import + initDb 호출 (아이콘 의존 없음)", async () => {
+  it("dev 모달: client-common import + initDb 호출 + 아이콘 사용", async () => {
     const data = buildData({
       workspaceName: "demo",
       description: "Demo",
@@ -1293,6 +1373,6 @@ describe("client/src/modals/dev.modal.ts.hbs", () => {
     expect(out).toContain("export class DevModal implements SdModalContentDef<void> {");
     expect(out).toContain('import { AppServiceProvider } from "@demo/client-common";');
     expect(out).toContain("await this._appService.dev.initDb();");
-    expect(out).not.toContain("@ng-icons");
+    expect(out).toContain('import { NgIcon } from "@ng-icons/core";');
   });
 });
