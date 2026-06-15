@@ -40,6 +40,7 @@ import { SdGap } from "../gap/sd-gap";
         display: block;
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
+        font-family: var(--font-family-field);
         transition: background var(--animation-duration) ease-in;
         background: var(--control-color);
 

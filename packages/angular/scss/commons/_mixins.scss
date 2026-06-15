@@ -33,10 +33,7 @@
         calc(#{$value} * var(--elevation-size))
         calc(#{$value} * 4 * var(--elevation-size))
         var(--trans-lighter),
-      0
-        var(--elevation-size)
-        var(--elevation-size)
-        var(--trans-lighter);
+      0 var(--elevation-size) var(--elevation-size) var(--trans-lighter);
   }
 }
 

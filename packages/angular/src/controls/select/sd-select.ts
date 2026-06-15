@@ -129,6 +129,7 @@ export type SelectModeValue<T> = {
             flex-grow: 1;
             padding: var(--gap-sm) var(--gap-default);
             cursor: pointer;
+            font-family: var(--font-family-field);
 
             > ._sd-select-control-content {
               flex: 1;

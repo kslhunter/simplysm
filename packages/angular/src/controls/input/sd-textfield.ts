@@ -1,10 +1,16 @@
+import { isPlatformBrowser } from "@angular/common";
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  ElementRef,
+  inject,
   input,
   model,
+  PLATFORM_ID,
+  viewChild,
   ViewEncapsulation,
 } from "@angular/core";
 import { setupInvalid } from "../../core/validation/setupInvalid";
@@ -40,6 +46,7 @@ import {
     </div>
     @if (!readonly() && !disabled()) {
       <input
+        #inputEl
         [style]="inputStyle()"
         [class]="inputClass()"
         [attr.title]="title() ?? placeholder()"
@@ -48,11 +55,11 @@ import {
         [attr.max]="max()"
         [type]="controlType()"
         [attr.inputmode]="type() === 'number' ? 'numeric' : undefined"
-        [value]="controlValue()"
         [attr.autocomplete]="autocomplete()"
         [attr.step]="controlStep()"
         (input)="onInput($event)"
         (paste)="onInputPaste($event)"
+        (blur)="onBlur($event)"
       />
     }
   `,
@@ -70,6 +77,7 @@ import {
         > input,
         > ._contents {
           @include mixins.form-control-base();
+          font-family: var(--font-family-field);
 
           overflow: auto;
           width: 100%;
@@ -112,6 +120,10 @@ import {
 
         > ._contents {
           display: none;
+        }
+
+        > ._contents > pre {
+          font-family: inherit;
         }
 
         &[data-sd-type="number"] {
@@ -316,6 +328,8 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
+  private readonly _inputElRef = viewChild<ElementRef<HTMLInputElement>>("inputEl");
+
   private readonly _handler = computed(() => textfieldTypeHandlers[this.type()]);
 
   controlType = computed(() => this._handler().controlType);
@@ -340,6 +354,21 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   });
 
   constructor() {
+    if (isPlatformBrowser(inject(PLATFORM_ID))) {
+      effect(() => {
+        const controlValue = this.controlValue();
+        const inputEl = this._inputElRef()?.nativeElement;
+        if (inputEl == null) return;
+
+        // 편집(포커스) 중에는 DOM 을 되쓰면 사용자 입력(세그먼트·캐럿·IME 조합)이 깨지므로 생략
+        if (document.activeElement === inputEl) return;
+
+        if (inputEl.value !== controlValue) {
+          inputEl.value = controlValue;
+        }
+      });
+    }
+
     setupInvalid(() => {
       const value = this.value();
       const handlerErrors = this._handler().validate(value, {
@@ -377,6 +406,13 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
       return;
     }
     this.value.set(parsed as SdTextfieldTypes[K]);
+  }
+
+  onBlur(event: FocusEvent): void {
+    // 편집 종료 시 모델 기준값으로 동기화 (number 콤마 포맷 반영, date 미완성 입력 정리)
+    // date 미완성 입력은 input.value 가 "" 라 비교 없이 무조건 되써야 남은 세그먼트가 정리됨
+    const inputEl = event.target as HTMLInputElement;
+    inputEl.value = this.controlValue();
   }
 
   onInputPaste(event: ClipboardEvent): void {

@@ -56,6 +56,7 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
         > textarea,
         > ._contents {
           @include mixins.form-control-base();
+          font-family: var(--font-family-field);
           resize: none;
 
           overflow: auto;
@@ -77,6 +78,10 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
           &::-webkit-input-placeholder {
             color: var(--text-trans-lighter);
           }
+        }
+
+        > ._contents > pre {
+          font-family: inherit;
         }
 
         &:not([data-sd-inset="true"]):not([data-sd-disabled="true"]) > ._contents {

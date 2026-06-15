@@ -84,12 +84,12 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           &:focus-visible {
             outline: none;
             transition: background var(--animation-duration) ease-out;
-            background: var(--trans-lighter);
+            background: var(--trans-light);
           }
         }
 
         &[data-sd-selected="true"] > ._content {
-          background: var(--trans-lighter);
+          background: var(--trans-light);
           font-weight: bold;
         }
 
@@ -97,7 +97,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           color: var(--text-trans-default);
 
           &:hover {
-            background: var(--trans-lighter);
+            background: var(--trans-light);
           }
         }
 
@@ -128,13 +128,13 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           &:not([data-sd-readonly="true"]) {
             > ._content:hover {
               transition: background var(--animation-duration) ease-out;
-              background: var(--trans-lighter);
+              background: var(--trans-light);
             }
           }
 
           // 깊이별 들여쓰기: accordion 항목의 자식 리스트를 한 칸씩 누적 들여씀.
           // (flat 항목의 자식 리스트는 들여쓰지 않음)
-          > sd-collapse > ._content > ._children > sd-list {
+          > sd-collapse > ._content > ._children > sd-list > sd-list-item > ._content {
             padding-left: 1.5em;
           }
         }

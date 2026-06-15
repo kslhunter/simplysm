@@ -500,6 +500,7 @@ import { SdEvents } from "../../core/events/sd-events";
             }
 
             > tbody > tr > td {
+              font-family: var(--font-family-field);
               background: var(--control-color);
               vertical-align: top;
 

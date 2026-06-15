@@ -189,6 +189,7 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
         > ._editor-container {
           padding: var(--gap-sm);
           min-height: 6.25rem;
+          font-family: var(--font-family-field);
 
           > .tiptap {
             outline: none;

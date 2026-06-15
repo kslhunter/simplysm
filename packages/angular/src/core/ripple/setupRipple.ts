@@ -42,7 +42,7 @@ export function setupRipple(enableFn?: () => boolean): void {
         top: y - size + "px",
         left: x - size + "px",
 
-        transition: "var(--animation-duration) linear",
+        transition: "calc(2 * var(--animation-duration)) linear",
         transitionProperty: "transform, opacity",
         transform: "scale(0.1)",
       });
