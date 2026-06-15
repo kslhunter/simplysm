@@ -1,167 +1,107 @@
-# @simplysm/angular — 호스트 디렉티브·signal 헬퍼
+# @simplysm/angular — 디렉티브·signal 헬퍼
 
-DOM 관찰(리사이즈/교차)·캡처 이벤트·커맨드 단축키·ripple·노출 애니메이션·invalid 표시·타입드 템플릿을 호스트 엘리먼트에 붙이는 디렉티브와, signal/model 을 다루는 작은 헬퍼 군. `setup*` 헬퍼는 컴포넌트 `constructor`(주입 컨텍스트)에서 호출(`inject(ElementRef)` 의존), `Sd*` 디렉티브는 그 헬퍼를 attribute 로 래핑.
+DOM 관찰(리사이즈/교차)·캡처 이벤트·커맨드 단축키·ripple·노출 애니메이션·invalid 표시·타입드 템플릿을 호스트 엘리먼트에 붙이는 디렉티브와, 그 디렉티브가 래핑하는 `setup*` 헬퍼 군. `setup*`/`inject*` 헬퍼는 컴포넌트 `constructor`(주입 컨텍스트)에서 호출(`inject(ElementRef)` 등 의존). 모든 디렉티브는 standalone, attribute selector.
 
 ## DOM 관찰 디렉티브
 
-### SdResizeDirective — `[sdResize]`
+### `SdResizeDirective` — `[sdResize]`
 
-```ts
-sdResize = output<SdResizeEvent>();
-// SdResizeEvent { heightChanged: boolean; widthChanged: boolean; target: HTMLElement; contentRect: DOMRectReadOnly }
-```
-
-- `ResizeObserver` 로 크기 변화를 rAF 디바운스해 방출. `heightChanged`/`widthChanged` 로 변경 축을 구분(불필요한 재계산 회피). 시트·collapse·echarts 가 사용.
+- `sdResize: output<SdResizeEvent>` — `ResizeObserver` 기반, `requestAnimationFrame` 디바운스. `SdResizeEvent` = `{ heightChanged: boolean; widthChanged: boolean; target: HTMLElement; contentRect: DOMRectReadOnly }`.
 
 ```html
 <div (sdResize)="onResize($event)">...</div>
 ```
 
-### SdIntersectionDirective — `[sdIntersection]`
+### `SdIntersectionDirective` — `[sdIntersection]`
 
-```ts
-sdIntersection = output<SdIntersectionEvent>();
-// SdIntersectionEvent { entry: IntersectionObserverEntry }
-```
+- `sdIntersection: output<SdIntersectionEvent>` — `IntersectionObserver` 기반, 콜백 배치의 마지막 엔트리 emit. `SdIntersectionEvent` = `{ entry: IntersectionObserverEntry }`.
 
-- `IntersectionObserver` 로 뷰포트 진입/이탈을 방출. 지연 로드·노출 트리거에 사용. `entry.isIntersecting` 으로 판정.
+## 캡처/옵션 이벤트
 
-## 이벤트·커맨드 디렉티브
+### `SdEvents` (디렉티브)
 
-### SdEvents — 이벤트 수식어 출력
-
-```ts
-// selector 의 각 어트리뷰트가 output. 예:
-"click.capture", "click.once", "scroll.passive", "wheel.passive",
-"touchstart.passive", "keydown.capture", "focus.capture", "blur.capture",
-"invalid.capture", "transitionend.once", "animationend.once" ...
-```
-
-- capture/passive/once 수식어가 붙은 DOM 이벤트를 Angular 출력으로 노출(`SdOptionEventPlugin` 과 함께 동작). 성능·캡처가 필요한 이벤트 바인딩에 사용. 호스트 디렉티브로도 쓰임(시트가 `keydown.capture` 등 사용).
+native DOM 리스너 옵션(`capture`/`passive`/`once`)을 이벤트명 접미사로 노출하는 디렉티브. `SdOptionEventPlugin` 과 함께 동작. 출력은 접미사 그대로의 이름: `click.capture`/`click.once`/`click.capture.once`, `mousedown.capture`/`mouseup.capture`/`mouseover.capture`/`mouseout.capture`, `keydown.capture`/`keyup.capture`, `focus.capture`/`blur.capture`, `invalid.capture`, `scroll.capture`/`scroll.passive`/`scroll.capture.passive`, `wheel.passive`/`wheel.capture.passive`, `touchstart.passive`/`touchmove.passive`/`touchend.passive`(및 `.capture.passive` 변형), `dragover.capture`/`dragenter.capture`/`dragleave.capture`/`drop.capture`, `transitionend.once`, `animationend.once`. 각 출력의 페이로드 타입은 해당 native 이벤트(`MouseEvent`/`KeyboardEvent`/`FocusEvent`/`DragEvent`/`WheelEvent`/`TouchEvent`/`TransitionEvent`/`AnimationEvent`/`Event`).
 
 ```html
-<div (scroll.passive)="onScroll()" (keydown.capture)="onKeydown($event)">...</div>
+<div (keydown.capture)="onKeydownCapture($event)" (scroll.passive)="onScroll($event)">...</div>
 ```
 
-### SdOptionEventPlugin
+### `SdOptionEventPlugin`
+
+`EventManagerPlugin` 확장(`provideSdAngular` 가 `EVENT_MANAGER_PLUGINS` multi 로 등록). 이벤트명 접미사 `.capture`/`.passive`/`.once` 를 native 리스너 옵션으로 변환. 위 `SdEvents` 출력이 이 플러그인 위에서 동작.
+
+## 커맨드 단축키
+
+### `SdCommandDirective` — `[sdRefreshCommand],[sdSaveCommand],[sdInsertCommand]`
+
+전역 키 조합을 받아 출력으로 발화하는 디렉티브. 호스트가 최상위 열린 모달 안이거나 모달이 없을 때만 처리.
+
+- `sdRefreshCommand: output<KeyboardEvent>` — `Ctrl+Alt+L`.
+- `sdSaveCommand: output<KeyboardEvent>` — `Ctrl+S`(Alt 없이). `sd-crud-list`/`sd-crud-detail` 이 hostDirective 로 사용해 저장에 배선.
+- `sdInsertCommand: output<KeyboardEvent>` — `Ctrl+Insert`.
+
+## ripple
+
+### `setupRipple`
 
 ```ts
-class SdOptionEventPlugin extends EventManagerPlugin
+function setupRipple(enableFn?: () => boolean): void
 ```
 
-- `.capture`/`.passive`/`.once` 수식어 이벤트를 처리하는 Angular `EVENT_MANAGER_PLUGINS`. `provideSdAngular` 가 등록(직접 사용 안 함). `SdEvents` 디렉티브의 기반.
+- 주입 컨텍스트에서 호출. 호스트를 `position:relative; overflow:hidden` 으로 만들고 `pointerdown` 시 확장 원형 ripple 생성. `enableFn` 이 false 반환 시 스킵. SSR no-op.
 
-### SdCommandDirective — `[sdRefreshCommand]` / `[sdSaveCommand]` / `[sdInsertCommand]`
+### `SdRipple` — `[sdRipple]`
+
+- `enabled: input.required({ alias: "sdRipple", transform: booleanAttribute })` — 속성값을 boolean 으로. `setupRipple(() => enabled())` 배선.
+
+## 노출 애니메이션
+
+### `setupRevealOnShow`
 
 ```ts
-sdRefreshCommand = output<KeyboardEvent>(); // Ctrl+Alt+L
-sdSaveCommand = output<KeyboardEvent>();    // Ctrl+S
-sdInsertCommand = output<KeyboardEvent>();  // Insert
+function setupRevealOnShow(optFn?: () => { type?: "l2r" | "t2b"; enabled?: boolean }): void
 ```
 
-- 전역 키보드 단축키를 출력으로. 최상위 열린 모달 안에서만 동작(다른 화면 간섭 방지). crud 골격이 `sdSaveCommand` 로 CTRL+S 저장 연결.
+- 초기 숨김(opacity 0 + 이동) 후 `IntersectionObserver` 로 화면 진입 시 슬라이드-인. `type` = `"l2r"`(좌→우) / `"t2b"`(위→아래, 기본). `enabled` 기본 true(false 면 즉시 표시).
 
-### SdGlobalErrorHandlerPlugin
+### `SdShowEffect` — `[sdShowEffect]`
+
+- `enabled: input.required({ alias: "sdShowEffect", transform: booleanAttribute })`.
+- `sdShowEffectType: input<"l2r" | "t2b">("t2b")` — 노출 방향.
+
+## invalid 표시
+
+### `setupInvalid`
 
 ```ts
-class SdGlobalErrorHandlerPlugin implements ErrorHandler
+function setupInvalid(getInvalidMessage: () => string): void
 ```
 
-- 전역 에러 핸들러. 처리되지 않은 에러/Promise 거부를 시스템 로그 적재 + 전체화면 에러 오버레이로 표시(앱 destroy 후 클릭 시 reload). `provideSdAngular` 가 `ErrorHandler` 로 등록(직접 사용 안 함).
+- 호스트에 danger 인디케이터 점 + 숨김 input(native validity 운반)을 주입. `getInvalidMessage()` 가 빈 문자열이 아니면 invalid(점 표시·`setCustomValidity`). `sd-form` 의 `checkValidity()` 에 연동. 모든 검증 컨트롤(`sd-textfield` 등)의 내부 기반.
 
-## 시각 효과·검증 디렉티브
+### `SdInvalid` — `[sdInvalid]`
 
-### setupRipple / SdRipple — `[sdRipple]`
+- `invalidMessage: input.required<string>({ alias: "sdInvalid" })` — 비어있지 않으면 호스트를 invalid 표시.
 
-```ts
-setupRipple(enableFn?: () => boolean): void;
-// SdRipple: enabled = input.required({ alias: "sdRipple", transform: booleanAttribute });
-```
+## 타입드 템플릿
 
-- 클릭 시 파동(ripple) 효과. `setupRipple` 은 constructor 에서, `[sdRipple]="true"` 디렉티브는 템플릿에서. `enableFn`/`enabled` 가 false 면 효과 비활성(disabled 컨트롤). 버튼·체크박스·리스트가 사용.
+### `SdTypedTemplate<T>` — `ng-template[typed]`
 
-### setupRevealOnShow / SdShowEffect — `[sdShowEffect]`
+- `typed: input.required<T>()` — 템플릿 컨텍스트 타입을 정하는 값. 정적 `ngTemplateContextGuard` 로 컨텍스트를 `T` 로 좁힘.
 
-```ts
-setupRevealOnShow(optFn?: () => { type?: "l2r" | "t2b"; enabled?: boolean }): void;
-// SdShowEffect: enabled = input.required({ alias: "sdShowEffect" }); sdShowEffectType = input<"l2r"|"t2b">("t2b");
-```
+### `SdItemOfTemplate<TItem>` — `ng-template[itemOf]`
 
-- 뷰포트 진입 시 페이드+슬라이드 노출 애니메이션. `type` `"t2b"`=위→아래(기본), `"l2r"`=좌→우. `enabled`=false 면 애니메이션 없이 즉시 표시.
-
-### setupInvalid / SdInvalid — `[sdInvalid]`
-
-```ts
-setupInvalid(getInvalidMessage: () => string): void;
-// SdInvalid: invalidMessage = input.required<string>({ alias: "sdInvalid" });
-```
-
-- 호스트에 숨김 input 을 붙여 native form 검증에 참여. `getInvalidMessage()`/`invalidMessage` 가 빈 문자열이 아니면 invalid(좌상단 빨간 인디케이터 + form 제출 차단). 폼 입력 컨트롤이 내부 사용.
-
-## 타입드 템플릿 디렉티브
-
-### SdTypedTemplate — `ng-template[typed]`
-
-```ts
-typed = input.required<T>();
-```
-
-- `ng-template` 컨텍스트 타입을 명시(`ngTemplateContextGuard`). 재귀 메뉴/트리 템플릿에서 `let-x` 의 타입 안전성 확보. `[typed]` 에 타입 토큰을 넘김.
-
-### SdItemOfTemplate — `ng-template[itemOf]`
-
-```ts
-itemOf = input.required<TItem[]>();
-// SdItemOfTemplateContext<TItem> { $implicit; item; index; depth }
-```
-
-- 반복 항목 템플릿 마커. `[itemOf]="items()"` 로 항목 타입을 추론해 `let-item`/`let-index`/`let-depth` 제공. select·shared-data·calendar 등의 항목 슬롯에 사용.
-
-## signal·model 헬퍼
-
-### setupModelHook
-
-```ts
-setupModelHook<T>(model: WritableSignal<T>, canFn: Signal<(item: T) => boolean | Promise<boolean>>): void;
-```
-
-- model 의 `set`/`update` 를 가로채 `canFn` 이 허용할 때만 적용. false 면 변경 거부, Promise 면 비동기 확인 후 적용(에러는 `ErrorHandler`). 체크박스·스위치·select-list 의 `canChangeFn` 이 사용.
-
-### mark
-
-```ts
-mark(sig: WritableSignal<any>): void;
-```
-
-- in-place mutation 한 signal 값에 shallow copy(배열/객체)로 새 참조를 만들어 변경 통지. 시트 셀에서 객체 필드를 직접 수정한 뒤 호출(`(valueChange)="mark(items)"`).
-
-### setSafeStyle
-
-```ts
-setSafeStyle(renderer: Renderer2, el: HTMLElement, style: Partial<CSSStyleDeclaration>): void;
-```
-
-- `Renderer2.setStyle` 로 여러 스타일을 한 번에 적용하는 헬퍼(키별 순회). `style` 객체의 각 CSS 속성을 엘리먼트에 설정. 디렉티브/composable 에서 DOM 스타일을 안전하게 줄 때 사용(`setupInvalid` 등이 내부 사용).
-
-### FormatPipe — `| format`
-
-```ts
-@Pipe({ name: "format" }) transform(value: string | DateTime | DateOnly | undefined, format: string): string;
-```
-
-- 값 포맷. `DateTime`/`DateOnly` 는 `toFormatString(format)`, 문자열은 `X` 마스크(`|` 로 길이 분기). null 이면 빈 문자열(결측 보존). calendar 등이 사용.
+- `itemOf: input.required<TItem[]>()` — 항목 배열; 원소 타입으로 per-item 컨텍스트를 정함. 공유데이터 select·calendar 등 항목 렌더 템플릿에 사용.
+- `SdItemOfTemplateContext<TItem>` = `{ $implicit: TItem; item: TItem; index: number; depth: number }`. 템플릿에서 `let-item="item"` 등으로 받음.
 
 ```html
-{{ date | format: "yyyy-MM-dd" }}
+<sd-shared-data-select [items]="sharedCustomers.items()" ...>
+  <ng-template [itemOf]="sharedCustomers.items()" let-item="item">{{ item.name }}</ng-template>
+</sd-shared-data-select>
 ```
 
-### 타입 유틸
+## 전역 에러 핸들러
 
-```ts
-DirectiveInputSignals<T> // 컴포넌트의 InputSignal 프로퍼티 → 값 타입 매핑(undefined 포함 필드는 optional)
-UndefToOptional<T>       // undefined 포함 프로퍼티를 optional 로 변환
-WithOptional<T, K>       // 특정 키 K 를 optional 로
-SelectModalOutputResult<TKey> { selectedKeys: TKey[] } // 선택 모달 close 페이로드
-```
+### `SdGlobalErrorHandlerPlugin`
 
-- `DirectiveInputSignals<T>` — 모달/토스트/인쇄의 `inputs` 타입 계산에 쓰이는 유틸(컴포넌트 input signal 을 일반 값 객체로 매핑). `SelectModalOutputResult` — 선택형 모달이 close 로 돌려주는 표준 페이로드.
+Angular `ErrorHandler` 구현(`provideSdAngular` 가 `ErrorHandler` 로 등록). `handleError(event)` — 브라우저에서 에러를 분류해 1회 전체화면 오버레이 표시 + `SdSystemLogProvider` 적재 + 앱 파괴(클릭 시 새로고침). SSR 에선 로깅만. 직접 호출할 일은 없고 등록만.

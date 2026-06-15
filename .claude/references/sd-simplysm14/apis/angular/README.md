@@ -1,216 +1,144 @@
 # @simplysm/angular
 
-Angular 21 zoneless 프론트엔드 UI 라이브러리. 부트스트랩 프로바이더, signal 기반 standalone 컴포넌트/디렉티브, 모달·토스트·busy 등 오버레이, 시트·CRUD 골격, 공유데이터·레이아웃·시각화 컴포넌트를 제공. `import "@simplysm/core-browser"` 를 side-effect 로 로드하며, 컴포넌트는 standalone + OnPush + `ViewEncapsulation.None`, selector 는 `sd-` prefix. 앱 화면을 작성·수정할 때 거의 항상 이 패키지를 import.
+Angular 기반 클라이언트 앱 프레임워크 — 부트스트랩 프로바이더, UI 컨트롤·레이아웃, CRUD·시트·공유데이터·칸반·시각화 컴포넌트, 모달·토스트·busy 오버레이, 라우팅·권한·설정 인프라를 제공. `import "@simplysm/core-browser"` 를 side-effect 로 로드하며, 모든 컴포넌트는 `standalone: true` + `OnPush` + `ViewEncapsulation.None`, selector 는 `sd-` prefix.
 
 ## 사용 트리거 인덱스
 
-- **provideSdAngular / SdAngularConfigProvider** — 앱 부트스트랩 시 1회 등록(테마·에러핸들러·zoneless·SW 업데이트·라우팅 busy 연동). 아래 "부트스트랩" 인라인 섹션.
-- **SdThemeProvider / setupBgTheme** — 다크모드·폰트크기 전역 테마 제어, 배경 테마 지정. 아래 "테마·배경" 인라인 섹션. 셀렉터 UI 는 `자세히: [features.md](./features.md)`.
-- **SdSystemLogProvider / SdLocalStorageProvider / SdSystemConfigProvider / injectSdSystemConfigResource** — 시스템 로그 적재 훅, 클라이언트별 localStorage, key 기반 영속 설정(시트/프리셋/모달 위치 저장). 아래 "설정·로그·인프라" 인라인 섹션.
-- **SdServiceClientFactoryProvider / SdFileDialogProvider** — 서버 서비스 클라이언트 연결, 파일 선택 대화상자. 아래 "설정·로그·인프라" 인라인 섹션.
-- **모달·토스트·busy·인쇄(Provider + 컴포넌트 + Def 타입)** — 프로그래밍 방식 오버레이를 띄울 때. `자세히: [overlay.md](./overlay.md)`.
-- **버튼·폼 입력·선택·체크박스·드롭다운·탭·리스트·페이징·gap 컨트롤** — 화면 폼/조작 UI 작성. `자세히: [controls.md](./controls.md)`.
-- **SdSheet 및 시트 컬럼/설정** — 데이터 그리드(정렬·페이징·트리·고정·선택·인라인편집·설정저장). `자세히: [sheet.md](./sheet.md)`.
-- **SdBaseContainer / SdCrudList / SdCrudDetail** — 목록·단건 화면 표준 골격. `자세히: [crud.md](./crud.md)`.
-- **SdSharedDataProvider / sd-shared-data-select\*** — 공유 마스터 데이터 정의·선택 컨트롤. `자세히: [shared-data.md](./shared-data.md)`.
-- **sidebar·topbar 레이아웃 + 메뉴/사용자** — 앱 셸 레이아웃. `자세히: [layout.md](./layout.md)`.
-- **라우팅 헬퍼 + SdAppStructureProvider/Utils** — 페이지 코드/제목/뷰타입/권한 시그널, 메뉴·권한 트리 구성. `자세히: [routing-appstructure.md](./routing-appstructure.md)`.
-- **core 디렉티브·signal 헬퍼** — resize/intersection/ripple/show-effect/invalid/명령단축키/template/모델훅 등. `자세히: [directives.md](./directives.md)`.
-- **useSelectionManager / useSortingManager / useExpandingManager** — 시트류 컴포넌트의 선택·정렬·확장 로직 합성 헬퍼(컴포넌트 작성용). 아래 "선택·정렬·확장 매니저" 인라인 섹션.
-- **SdPermissionTable / SdStatePreset** — 권한 트리 편집표, 화면 상태 프리셋 저장 컨트롤. `자세히: [features.md](./features.md)`.
-- **테마 셀렉터·주소검색·tiptap 에디터·label·note·progress·calendar·barcode·echarts** — 부가 기능 컴포넌트. `자세히: [features.md](./features.md)`.
-- **kanban 보드** — 드래그 가능 칸반. `자세히: [kanban.md](./kanban.md)`.
+- **provideSdAngular** — 앱 부트스트랩 시 1회. 테마 영속화·전역 에러 핸들러·zoneless·SW 업데이트 폴링·라우팅 busy 추적을 일괄 설정. (이 README 의 `앱 부트스트랩` 참조)
+- **UI 컨트롤** (`sd-button`·`sd-textfield`·`sd-select`·`sd-checkbox`·`sd-tab`·`sd-list`·`sd-form`·`sd-dropdown` 등) — 폼·입력·버튼·선택 화면을 구성할 때. 자세히: [controls.md](./controls.md)
+- **시트** (`sd-sheet`·`sd-sheet-column`·시트 설정 모달·시트 타입) — 다건 목록·편집 그리드. 자세히: [sheet.md](./sheet.md)
+- **CRUD 골격** (`sd-crud-list`·`sd-crud-detail`·`sd-base-container`·`SdStatePreset`·`SdPermissionTable`) — 목록·단건 편집 화면 표준 셸, 상태 프리셋, 권한 테이블. 자세히: [crud.md](./crud.md)
+- **오버레이** (`SdModalProvider`·`SdToastProvider`·`SdBusyProvider`·`SdPrintProvider`·`SdFileDialogProvider`·`SdModal`·`SdPromptModal`·`SdConfirmModal`) — 모달 띄우기·토스트·busy·프린트·파일 다이얼로그. 자세히: [overlay.md](./overlay.md)
+- **공유 마스터 데이터** (`SdSharedDataProvider`·`sd-shared-data-select*`·`use*Manager`·`matchesSearchText`) — 마스터 데이터 공유·선택 컨트롤·선택/정렬/펼침 매니저. 자세히: [shared-data.md](./shared-data.md)
+- **라우팅·앱구조·권한** (`SdRouterLink`·`injectViewTypeSignal`·`injectPermsSignal`·`SdAppStructureProvider`·`injectViewTitleSignal`·`setupCanDeactivate`·`getMenuRouterLinkOption`) — 메뉴·권한·라우팅 좌표·이탈 가드. 자세히: [routing-appstructure.md](./routing-appstructure.md)
+- **디렉티브·이펙트** (`SdEvents`·`SdCommandDirective`·`SdResizeDirective`·`SdIntersectionDirective`·`SdRipple`·`SdShowEffect`·`SdInvalid`·`SdTypedTemplate`·`SdItemOfTemplate`) — DOM 이벤트 옵션·단축키·리사이즈·리플·검증·타입 템플릿. 자세히: [directives.md](./directives.md)
+- **레이아웃** (`sd-sidebar*`·`sd-topbar*`) — 사이드바·탑바 셸. 자세히: [layout.md](./layout.md)
+- **칸반** (`sd-kanban-board`·`sd-kanban-lane`·`sd-kanban`) — 드래그앤드롭 칸반 보드. 자세히: [kanban.md](./kanban.md)
+- **features** (`SdThemeProvider`·`SdThemeSelector`·`SdTiptapEditor`·`SdAddressSearchModal`·`sd-label`·`sd-note`·`sd-progress`·`sd-calendar`·`sd-barcode`·`sd-echarts`) — 테마·에디터·주소검색·시각요소. 자세히: [features.md](./features.md)
+- **설정·로그·서비스 인프라** (`SdLocalStorageProvider`·`SdSystemConfigProvider`·`SdSystemLogProvider`·`SdServiceClientFactoryProvider`·`injectSdSystemConfigResource`·`SdAngularConfigProvider`) — 이 README 의 `설정·로그·서비스 인프라` 인라인 섹션.
+- **코어 유틸** (`mark`·`FormatPipe`·`setSafeStyle`·`setupBgTheme`·`setupModelHook`·타입 헬퍼) — 이 README 의 `코어 유틸` 인라인 섹션.
 
-## 부트스트랩
+## 앱 부트스트랩
 
-### provideSdAngular
+### `provideSdAngular`
 
 ```ts
-provideSdAngular(opt: { clientName: string }): EnvironmentProviders
+function provideSdAngular(opt: { clientName: string }): EnvironmentProviders
 ```
 
-- `opt.clientName` — 클라이언트 식별자. `SdAngularConfigProvider.clientName` 으로 보관되며 localStorage 키 접두사·서비스 클라이언트 이름으로 쓰임. 앱마다 고유 문자열.
-
-`makeEnvironmentProviders` 로 다음을 한 번에 등록: `IMAGE_CONFIG`(이미지 경고 비활성), ng-icons 기본 설정(strokeWidth 1.5, size 1.33em), 테마 dark/fontSize 의 localStorage 복원·저장 effect, 전역 `unhandledrejection`/`error` 리스너→`ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(이벤트 수식어 지원), `ErrorHandler=SdGlobalErrorHandlerPlugin`, `provideZonelessChangeDetection()`, `SwUpdate` 주기 점검(5분 시작 → 실패 시 지수 백오프 최대 60분, 업데이트 발견 시 confirm 후 reload), 라우팅 네비게이션을 `SdBusyProvider.globalBusyCount` 와 연동. 앱 `ApplicationConfig.providers` 에 1회 추가.
-
-SSR(프리렌더) 안전: 부트스트랩 경로의 브라우저 의존 동작(테마 localStorage 복원, window 에러 리스너, SW 업데이트 점검, busy 오버레이, 에러 오버레이, `setupBgTheme`/`setupRipple`, core-browser prototype 확장)은 서버 플랫폼에서 무동작 — `prerender`(SSG) 클라이언트에서 그대로 사용 가능. 그 외 컴포넌트의 SSR-safe 여부는 개별 확인 필요.
+- 부트스트랩 `providers` 에 1회 추가. `opt.clientName` — `SdAngularConfigProvider.clientName` 으로 설정되며 `SdLocalStorageProvider` 가 키 네임스페이스(`${clientName}.${key}`)로 사용.
+- 설정하는 것: 테마 dark/fontSize 의 `SdLocalStorageProvider` 영속화(브라우저 전용), 전역 `window` error/unhandledrejection → `ErrorHandler` 라우팅, `SdAngularConfigProvider`, `SdOptionEventPlugin`(`EVENT_MANAGER_PLUGINS` multi), `SdGlobalErrorHandlerPlugin`(`ErrorHandler`), `provideZonelessChangeDetection()`, 서비스워커 업데이트 폴러(지수 백오프 5분→60분, 갱신 시 새로고침 확인), 라우팅 navigation busy 추적(`SdBusyProvider.globalBusyCount`).
 
 ```ts
-export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes), provideSdAngular({ clientName: "my-app" })],
-};
+bootstrapApplication(AppRoot, {
+  providers: [provideSdAngular({ clientName: "admin" }), /* ... */],
+});
 ```
 
-### SdAngularConfigProvider
+## 코어 유틸
+
+### `mark`
 
 ```ts
-@Injectable({ providedIn: "root" }) class SdAngularConfigProvider { clientName: string }
+function mark(sig: WritableSignal<any>): void
 ```
 
-- `clientName` — `provideSdAngular` 가 채우는 클라이언트 이름. 직접 set 하지 말고 `provideSdAngular` 로 주입. localStorage/서비스 클라이언트가 참조.
-
-## 테마·배경
-
-### SdThemeProvider
+- 시그널 값을 얕은 복사(배열이면 `[...v]`, 객체면 `{ ...v }`)로 교체해 **새 참조**로 만들어 변경 알림만 발행. 값 자체는 동일. effect 강제 재발화·객체 시그널 내부 필드 변경 통지에 사용.
 
 ```ts
-@Injectable({ providedIn: "root" }) class SdThemeProvider {
-  dark: WritableSignal<boolean>;
-  fontSizePresets: readonly number[]; // [12,14,16,20,24,28]
-  fontSize: WritableSignal<number>;   // 기본 12
-  increaseFontSize(): void;
-  decreaseFontSize(): void;
-}
+<sd-textfield [(value)]="filter().name" (valueChange)="mark(filter)" />
+doRefresh(): void { mark(this.lastFilter); }
 ```
 
-- `dark` — true 면 `<body>` 에 `sd-theme-dark` 클래스 토글. `provideSdAngular` 가 localStorage 와 동기화.
-- `fontSize` — html 루트 `font-size(px)` 에 반영(rem 스케일 전체 변동). presets 안에서만 단계 이동 권장.
-- `increaseFontSize`/`decreaseFontSize` — presets 기준 다음/이전 단계로 이동. 경계면 무동작.
+### `FormatPipe`
+
+standalone pipe, `name: "format"`. `transform(value: string | DateTime | DateOnly | undefined, format: string): string`.
+
+- `value == null` → `""`.
+- `DateTime`/`DateOnly` → `value.toFormatString(format)`.
+- `string` → `format` 을 `|` 로 분리한 마스크 중 `X` 개수가 `value.length` 와 같은 첫 마스크 사용. `X` 는 좌→우로 값 문자로 치환, 비-`X` 문자는 리터럴 삽입. 일치 마스크 없으면 원본 반환. (예: `"XXX-XXXX"` 가 7자 문자열을 포맷)
+
+### `setSafeStyle`
 
 ```ts
-inject(SdThemeProvider).dark.set(true);
+function setSafeStyle(renderer: Renderer2, el: HTMLElement, style: Partial<CSSStyleDeclaration>): void
 ```
 
-### setupBgTheme
+- `style` 의 각 키를 `renderer.setStyle` 로 적용. 동적 스타일을 Renderer2 경유로 적용할 때.
+
+### `setupBgTheme`
 
 ```ts
-setupBgTheme(options?: {
-  theme?: "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray";
-  lightness?: "lightest" | "lighter";
+function setupBgTheme(options?: {
+  theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray";
+  lightness?: "lightest" | "lighter";  // 기본 "lightest"
 }): void
 ```
 
-- `theme` — 본문 배경에 적용할 테마색. 미지정 시 `--background-color` 해제(기본 배경). 화면 톤을 구분할 때 지정.
-- `lightness` — 배경 명도. `"lightest"`(기본) 가 더 옅음, `"lighter"` 가 약간 진함.
+- 주입 컨텍스트에서 호출. `effect` 안에서 body `--background-color` 를 `var(--theme-{theme}-{lightness})` 로 설정, 정리 시 복원. SSR no-op. 화면별 배경 테마 색 지정에.
 
-컴포넌트 생성자(주입 컨텍스트)에서 호출. effect 로 `document.body` 의 `--background-color` 를 설정/cleanup.
-
-## 설정·로그·인프라
-
-### SdSystemLogProvider
+### `setupModelHook`
 
 ```ts
-@Injectable({ providedIn: "root" }) class SdSystemLogProvider {
-  writeFn?: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void;
-  writeAsync(severity: "error" | "warn" | "log", ...data: any[]): Promise<void>;
+function setupModelHook<T, S extends WritableSignal<T>>(
+  model: S, canFn: Signal<(item: T) => boolean | Promise<boolean>>,
+): void
+```
+
+- model 시그널의 `set`/`update` 를 래핑해 쓰기 전에 `canFn()(value)` 가드 통과를 강제. `false` 면 쓰기 스킵, `true` 면 진행, Promise 면 resolve 값이 명시적 `false` 일 때만 차단. reject 는 `ErrorHandler` 로 라우팅. 주입 컨텍스트 필요. `SdCheckbox`/`SdSwitch`/`SdSharedDataSelectList` 의 `canChangeFn` 내부 기반.
+
+### 타입 헬퍼 (`directive-input-signals.ts`)
+
+- `DirectiveInputSignals<T>` — 컴포넌트/디렉티브 `T` 의 모든 `InputSignal<V>` 프로퍼티를 `{ prop: V }` 평면 객체로 추출(비-input 프로퍼티 제거), `undefined` 포함 필드는 optional 화. 모달/프린트 `inputs` 타입의 기반.
+- `UndefToOptional<T>` — 값 타입에 `undefined` 가 포함된 프로퍼티를 optional(`?`)로 바꾸고 값에서 `undefined` 제거.
+- `WithOptional<T, K extends keyof T>` = `Omit<T, K> & Partial<Pick<T, K>>` — 키 `K` 들을 optional 로.
+- `SelectModalOutputResult<TKey = any>` — `{ selectedKeys: TKey[] }`. 선택 모달의 close 페이로드 표준 형태.
+
+## 설정·로그·서비스 인프라
+
+### `SdAngularConfigProvider`
+
+`@Injectable({ providedIn: "root" })`. 필드 `clientName: string` — `provideSdAngular` 가 주입한 클라이언트 이름.
+
+### `SdLocalStorageProvider<T>`
+
+`@Injectable({ providedIn: "root" })`. 키는 `${clientName}.${key}` 로 네임스페이스. SSR 가드(`set`/`remove` no-op, `get` → `undefined`).
+
+- `set<K extends keyof T & string>(key: K, value: T[K]): void` — JSON 직렬화 저장.
+- `get<K extends keyof T & string>(key: K): T[K] | undefined` — JSON 파싱; 없거나 파싱 실패 시 `undefined`.
+- `remove(key: keyof T & string): void`.
+
+### `SdSystemConfigProvider<T>`
+
+`@Injectable({ providedIn: "root" })`. 원격 `fn` 미지정 시 `SdLocalStorageProvider` 위임.
+
+- `fn?: { set(key, data): Promise<void>|void; get(key): PromiseLike<unknown> }` — 원격 저장소 연동 함수. 설정 시 로컬 대신 사용.
+- `setAsync<K extends keyof T & string>(key: K, data: T[K] | undefined): Promise<void>` — `fn.set` 있으면 사용; 없으면 `data == null` 이면 로컬 remove, 아니면 저장.
+- `getAsync(key: keyof T & string): Promise<...>` — `fn.get` 있으면 사용; 없으면 로컬 read.
+
+### `injectSdSystemConfigResource<T>`
+
+```ts
+function injectSdSystemConfigResource<T>(options: { key: Signal<string | undefined> }): {
+  value: Signal<T | undefined>; isLoading: Signal<boolean>; status: Signal<ResourceStatus>;
+  hasValue: () => boolean; reload: () => boolean;
+  set: (value: T | undefined) => void; update: (fn: (prev: T | undefined) => T | undefined) => void;
 }
 ```
 
-- `writeFn` — 외부 적재 훅. 지정하면 `writeAsync` 가 콘솔 로깅 후 이 함수도 호출(예: 서버 DB 적재). 미지정 시 콘솔만.
-- `writeAsync(severity, ...data)` — 콘솔(`logger[severity]`) 출력 후 `writeFn` 호출. `writeFn` 이 throw 해도 로깅으로 흡수. 전역 에러 핸들러가 내부적으로 사용.
+- 주입 컨텍스트에서 호출. 호스트 엘리먼트 태그 + `key()` 를 합친 키(`${elTag}.${key}`)로 `SdSystemConfigProvider.getAsync` 를 로드하는 `resource` 반환. `set` 은 값을 동기 갱신 후 microtask 로 `setAsync` 영속화(키 `undefined` 면 스킵). 시트가 사용자별 컬럼 설정을 저장하는 데 사용.
 
-### SdLocalStorageProvider
+### `SdSystemLogProvider`
 
-```ts
-@Injectable({ providedIn: "root" }) class SdLocalStorageProvider<T> {
-  set<K extends keyof T & string>(key: K, value: T[K]): void;
-  get<K extends keyof T & string>(key: K): T[K] | undefined;
-  remove(key: keyof T & string): void;
-}
-```
+`@Injectable({ providedIn: "root" })`.
 
-- 키는 `<clientName>.<key>` 로 prefix 되어 JSON 직렬화 저장. `get` 은 파싱 실패 시 undefined(결측 보존).
-- 제네릭 `T` 로 키별 값 타입을 지정해 타입 안전하게 사용.
+- `writeFn?: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void` — 외부 싱크(DB 등). 설정 시 `writeAsync` 가 추가로 호출. (클라이언트 시스템 로그 적재 컨벤션은 client-system-log.md)
+- `writeAsync(severity: "error" | "warn" | "log", ...data: any[]): Promise<void>` — 내부 로거에 기록 후, `writeFn` 있으면 await(에러는 삼키고 로깅). `SdToastProvider.try` / `SdGlobalErrorHandlerPlugin` 가 에러를 여기에 적재.
 
-### SdSystemConfigProvider
+### `SdServiceClientFactoryProvider`
 
-```ts
-@Injectable({ providedIn: "root" }) class SdSystemConfigProvider<T> {
-  fn?: { set(key, data): Promise<void> | void; get(key): PromiseLike<unknown> };
-  setAsync<K extends keyof T & string>(key: K, data: T[K] | undefined): Promise<void>;
-  getAsync(key: keyof T & string): Promise<unknown>;
-}
-```
+`@Injectable({ providedIn: "root" })`. 키 기반 `ServiceClient` 풀 관리. (Provider 정의·서비스 호출 컨벤션은 client-service.md)
 
-- `fn` — 외부(서버) 저장 백엔드. 지정하면 set/get 을 서버로 위임, 미지정 시 `SdLocalStorageProvider` 사용. set 데이터가 null 이면 localStorage 경로에서 remove.
-- 시트/상태프리셋/모달 위치 등 영속 UI 설정 저장의 백엔드. 보통 `injectSdSystemConfigResource` 를 통해 사용.
-
-### injectSdSystemConfigResource
-
-```ts
-injectSdSystemConfigResource<T>(options: { key: Signal<string | undefined> }): {
-  value: Signal<T | undefined>; isLoading: Signal<boolean>; status; hasValue(): boolean;
-  reload(): void; set(value: T | undefined): void; update(fn: (prev: T | undefined) => T | undefined): void;
-}
-```
-
-- `options.key` — 설정 키 시그널. key 가 null 이면 로드/저장 안 함. 저장 키는 `<호스트엘리먼트태그>.<key>` 로 구성(컴포넌트 종류별 분리).
-- `value`/`isLoading`/`status` — Angular `resource` 위임. `set`/`update` 는 즉시 value 갱신 후 microtask 로 `SdSystemConfigProvider.setAsync` 영속화(에러는 `ErrorHandler`).
-- 주입 컨텍스트에서 호출(`ElementRef`/`SdSystemConfigProvider`/`ErrorHandler` inject). 시트·상태프리셋이 내부 사용.
-
-### SdServiceClientFactoryProvider
-
-```ts
-@Injectable({ providedIn: "root" }) class SdServiceClientFactoryProvider {
-  connectAsync(key: string, options?: Partial<ServiceConnectionOptions>): Promise<void>;
-  closeAsync(key: string): Promise<void>;
-  get(key: string): ServiceClient;
-}
-```
-
-- `connectAsync(key, options)` — `key` 별 `ServiceClient` 생성·연결. options 미지정 시 현재 location(host/port/ssl)으로 접속. 이미 연결·이미 종료된 key 면 throw. 요청/응답 진행률을 progress 토스트로 표시.
-- `closeAsync(key)` — 연결 종료 후 해당 key 를 종료 상태로 표시(이후 재연결 불가). 미연결 key 면 throw.
-- `get(key)` — 연결된 클라이언트 반환. 미연결·종료 key 면 throw(silent 반환 안 함). 앱 서비스/이벤트 호출의 기반(공유데이터·서버 함수 provider 가 내부 사용).
-
-### SdFileDialogProvider
-
-```ts
-@Injectable({ providedIn: "root" }) class SdFileDialogProvider {
-  showAsync(multiple?: false, accept?: string): Promise<File | undefined>;
-  showAsync(multiple: true, accept?: string): Promise<File[] | undefined>;
-}
-```
-
-- `multiple` — true 면 다중 선택(`File[]`), 미지정/false 면 단건(`File`). 타입이 오버로드로 분기.
-- `accept` — 파일 형식 필터(예: `".xlsx"`, `"image/*"`). 취소·미선택 시 undefined.
-
-```ts
-const file = await inject(SdFileDialogProvider).showAsync(false, ".xlsx");
-```
-
-## 선택·정렬·확장 매니저
-
-컴포넌트 작성 시 시트류 동작을 합성하는 헬퍼. 주입 컨텍스트가 아닌 일반 함수로, signal 바인딩을 받아 파생 시그널·조작 함수를 반환. `SdSheet` 내부도 이를 사용.
-
-### useSelectionManager
-
-```ts
-useSelectionManager<TItem, TKey>(options: {
-  displayItems: Signal<TItem[]>; selectedKeys: WritableSignal<TKey[]>;
-  selectMode: Signal<"single" | "multi" | undefined>;
-  getItemSelectableFn: Signal<((item: TItem) => boolean | string) | undefined>;
-  trackByFn: Signal<(item: TItem, index: number) => TKey>;
-}): { hasSelectable; isAllSelected; getSelectable(item); getCanChangeFn(item); select(item); deselect(item); toggle(item); toggleAll(); isSelected(item); }
-```
-
-- `selectMode` — `"single"`=단일(선택 시 기존 교체), `"multi"`=다중, undefined=선택 비활성.
-- `getItemSelectableFn` — 행별 선택 가능 여부. `true`=가능, `false`/undefined=불가, `string`=불가+사유(툴팁). `getSelectable` 이 이를 그대로 반환.
-- 키 비교는 참조 동일 또는 `obj.equal` 로 깊은 비교. `toggleAll` 은 선택 가능 항목 기준 전체 토글.
-
-### useSortingManager
-
-```ts
-useSortingManager(options: { sorts: WritableSignal<SortingDef[]> }): {
-  defMap: Signal<Map<string, { indexText?: string; desc: boolean }>>;
-  toggle(key: string, multiple: boolean): void;
-  sort<T>(items: T[]): T[];
-}
-// SortingDef = { key: string; desc: boolean }
-```
-
-- `toggle(key, multiple)` — 클릭 정렬 토글. `multiple`=true 면 다중 정렬 누적(asc→desc→제거 순환), false 면 단일 정렬로 교체. 헤더 클릭의 shift 여부를 넘김.
-- `defMap` — 정렬 중인 컬럼의 방향·표시순번(`indexText`, 2개 이상일 때만). `sort` 는 null-우선 정렬로 클라이언트 정렬 수행.
-
-### useExpandingManager
-
-```ts
-useExpandingManager<T>(binding: {
-  items: Signal<T[]>; expandedItems: WritableSignal<T[]>;
-  getChildrenFn: Signal<((item: T, index: number) => T[] | undefined) | undefined>;
-  sort: (items: T[]) => T[];
-}): { displayItems; hasExpandable; isAllExpanded; toggle(item); toggleAll(); isVisible(item); def(item); }
-// ExpandItemDef<T> = { item: T; parentDef: ExpandItemDef<T> | undefined; hasChildren: boolean; depth: number }
-```
-
-- `getChildrenFn` — 자식 배열 반환 함수(트리). undefined 면 평면.
-- `displayItems` — 펼침 상태를 반영해 평탄화된 표시 목록(접힌 노드 하위 제외 여부는 `isVisible` 로 판단). `def(item)` 은 항목의 depth/부모/자식유무 메타 반환(없으면 throw).
+- `connectAsync(key: string, options?: Partial<ServiceConnectionOptions>): Promise<void>` — `location` 기반 기본 옵션(host/port/ssl)에 `options` 머지해 클라이언트 생성·연결, `key` 로 저장. 이미 닫혔거나 연결된 키면 throw. request/response-progress 이벤트를 progress 토스트로 자동 배선.
+- `closeAsync(key: string): Promise<void>` — 닫고 맵에서 제거, 키를 닫힘으로 표시. 연결 안 된 키면 throw.
+- `get(key: string): ServiceClient` — 연결된 클라이언트 반환. 닫힌 키/미연결 키면 throw.

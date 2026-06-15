@@ -49,7 +49,7 @@ export async function promptInit(workspaceNameDefault: string): Promise<InitInpu
       });
 
       hasAuth = await confirm({
-        message: "사용자 인증을 사용할까요? (사용자/역할/권한/로그 테이블 부트스트랩)",
+        message: "사용자 인증을 사용할까요? (사용자/역할/권한)",
         default: true,
       });
       if (hasAuth) {
@@ -92,43 +92,12 @@ export async function promptInit(workspaceNameDefault: string): Promise<InitInpu
         : await confirm({ message: "다른 client 를 더 추가할까요?", default: false });
     if (!shouldAdd) break;
 
-    const clientName = await input({
-      message: "client 이름 (예: admin → 자동으로 client-admin):",
-      validate: (v) => KEBAB_CASE_RE.test(v) || "영문 kebab-case 만 허용됩니다.",
-    });
-    const clientType = await select<ClientType>({
-      message: "client 타입:",
-      choices: [
-        { name: "일반 웹", value: "web" },
-        { name: "모바일 (capacitor)", value: "mobile" },
-      ],
-    });
-
-    let hasRouter = false;
-    if (clientType !== "mobile") {
-      hasRouter = await confirm({
-        message: `${clientName}: 라우팅 (@angular/router) 을 쓸까요?`,
-        default: true,
-      });
-    }
-
-    let useSsg = false;
-    if (clientType === "web" && hasRouter) {
-      useSsg = await confirm({
-        message: `${clientName}: SSG (SEO 용 빌드 타임 프리렌더) 를 쓸까요?`,
-        default: false,
-      });
-    }
-
-    clients.push({ name: clientName, type: clientType, hasRouter, useSsg });
+    clients.push(await promptClientSpec());
   }
 
   let mobileAppId: string | undefined;
   if (clients.some((c) => c.type === "mobile")) {
-    mobileAppId = await input({
-      message: "capacitor appId (reverse-DNS, 예: kr.co.example.app):",
-      validate: (v) => APPID_RE.test(v) || "reverse-DNS 형식이어야 합니다.",
-    });
+    mobileAppId = await promptMobileAppId();
   }
 
   return {
@@ -145,4 +114,57 @@ export async function promptInit(workspaceNameDefault: string): Promise<InitInpu
     mobileAppId,
     serverPort,
   };
+}
+
+/** init client — 신규 클라이언트 질문 (워크스페이스에 capacitor appId 가 없고 mobile 이면 appId 질문 포함) */
+export async function promptInitClient(
+  hasExistingMobileAppId: boolean,
+): Promise<{ client: ClientInputSpec; mobileAppId?: string }> {
+  const client = await promptClientSpec();
+
+  let mobileAppId: string | undefined;
+  if (client.type === "mobile" && !hasExistingMobileAppId) {
+    mobileAppId = await promptMobileAppId();
+  }
+
+  return { client, mobileAppId };
+}
+
+async function promptClientSpec(): Promise<ClientInputSpec> {
+  const clientName = await input({
+    message: "client 이름 (예: admin → 자동으로 client-admin):",
+    validate: (v) => KEBAB_CASE_RE.test(v) || "영문 kebab-case 만 허용됩니다.",
+  });
+  const clientType = await select<ClientType>({
+    message: "client 타입:",
+    choices: [
+      { name: "일반 웹", value: "web" },
+      { name: "모바일 (capacitor)", value: "mobile" },
+    ],
+  });
+
+  let hasRouter = false;
+  if (clientType !== "mobile") {
+    hasRouter = await confirm({
+      message: `${clientName}: 라우팅 (@angular/router) 을 쓸까요?`,
+      default: true,
+    });
+  }
+
+  let useSsg = false;
+  if (clientType === "web" && hasRouter) {
+    useSsg = await confirm({
+      message: `${clientName}: SSG (SEO 용 빌드 타임 프리렌더) 를 쓸까요?`,
+      default: false,
+    });
+  }
+
+  return { name: clientName, type: clientType, hasRouter, useSsg };
+}
+
+async function promptMobileAppId(): Promise<string> {
+  return input({
+    message: "capacitor appId (reverse-DNS, 예: kr.co.example.app):",
+    validate: (v) => APPID_RE.test(v) || "reverse-DNS 형식이어야 합니다.",
+  });
 }

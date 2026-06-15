@@ -1,4 +1,12 @@
-.claude
+.claude/sd-*
+.claude/references/sd-*
+.claude/rules/sd-*
+.claude/scripts/sd_*
+.claude/skills/sd-*
+.claude/skills/playwright-cli
+.claude/skills/angular-developer
+.claude/settings.json
+.claude/simplysm.json
 
 .playwright-cli
 __pycache__

@@ -1,0 +1,27 @@
+# Let's Encrypt(ACME) 통합 테스트용 컨테이너
+# - pebble: 테스트용 ACME 서버 (실제 LE 대신 사용, 레이트리밋 없음)
+# - challtestsrv: mock DNS. 검증 도메인을 테스트 서버(호스트)로 해석시킴
+#
+# 사용법:
+#   시작: docker compose -f docker-compose.test.yml up -d
+#   종료: docker compose -f docker-compose.test.yml down
+#
+# pebble 기본 config(test/config/pebble-config.json)의 tlsPort=5001 로 TLS-ALPN-01 을 검증한다.
+# challtestsrv 가 도메인을 호스트 게이트웨이 IP 로 응답하면, pebble 이 호스트의 테스트 서버(5001)로 접속한다.
+
+services:
+  challtestsrv:
+    image: ghcr.io/letsencrypt/pebble-challtestsrv:latest
+    ports:
+      - "8055:8055" # 관리 REST API (set-default-ipv4 등)
+
+  pebble:
+    image: ghcr.io/letsencrypt/pebble:latest
+    depends_on:
+      - challtestsrv
+    command: -config test/config/pebble-config.json -dnsserver challtestsrv:8053
+    environment:
+      PEBBLE_VA_NOSLEEP: "1" # 검증 전 랜덤 sleep 제거 (테스트 가속)
+    ports:
+      - "14000:14000" # ACME 디렉토리 API
+      - "15000:15000" # 관리 API

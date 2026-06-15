@@ -113,6 +113,18 @@ export default defineConfig({
           fileParallelism: false,
         },
       },
+      // Integration tests - service-server Let's Encrypt (requires Docker: pebble + challtestsrv)
+      {
+        extends: true,
+        test: {
+          name: "service-server-acme",
+          environment: "node",
+          include: ["tests/service-server-acme/**/*.spec.ts"],
+          globalSetup: "./tests/service-server-acme/vitest.setup.ts",
+          fileParallelism: false,
+          testTimeout: 120000,
+        },
+      },
       // Integration tests - Service (requires server + browser tests)
       {
         extends: true,

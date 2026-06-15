@@ -329,7 +329,7 @@ describe("Expr - 날짜/시간 함수", () => {
     });
   });
 
-  describe("isoYearMonth - ISO year-month (YYYY-MM)", () => {
+  describe("isoYearMonth - ISO year-month (YYYYMM)", () => {
     const db = createTestDb();
     const def = db
       .user()

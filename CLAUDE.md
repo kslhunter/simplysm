@@ -74,7 +74,7 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## Vitest 프로젝트 구조
 
-`vitest.config.ts` 는 7 개 project 로 분리됨:
+`vitest.config.ts` 는 9 개 project 로 분리됨:
 
 | project         | 환경                         | 대상                                                          |
 | --------------- | ---------------------------- | ------------------------------------------------------------- |
@@ -83,8 +83,10 @@ docker compose -f tests/orm/docker-compose.test.yml down
 | `angular`       | chromium + `sdAngularPlugin` | `packages/angular/tests` (TestBed)                            |
 | `sd-cli-server` | node                         | `tests/sd-cli-server` (esbuild banner 주입 검증)              |
 | `sd-cli-client` | node                         | `tests/sd-cli-client` (esbuild define 주입 검증)              |
+| `ssg`           | node                         | `tests/ssg` — 빌드 타임 프리렌더(SSG)                         |
 | `orm`           | node + globalSetup           | `tests/orm` — Docker DB 필요, `fileParallelism: false`        |
 | `service`       | chromium + globalSetup       | `tests/service` — server+browser 통합                         |
+| `service-server-acme` | node + globalSetup     | `tests/service-server-acme` — Let's Encrypt(pebble) 통합, Docker 필요 |
 
 ## 개발 시 주의사항
 

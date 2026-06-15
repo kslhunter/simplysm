@@ -1,6 +1,6 @@
 # @simplysm/core-node — worker
 
-`worker_threads` 를 타입 안전하게 쓰기 위한 래퍼 (`packages/core-node/src/worker/*`). 워커 파일에서 `createWorker(methods)` 로 메서드 묶음을 만들어 `export default` 하고, 메인에서 `Worker.create<typeof import("./worker")>(path)` 로 프록시를 만들어 `await worker.method(...)` 처럼 호출. 메시지 직렬화는 `@simplysm/core-common` 의 `transfer`(Date 등 특수타입·transferList 지원)를 사용한다. 개발(`.ts`)·프로덕션(`.js`) 양쪽을 자동 분기한다.
+`worker_threads` 를 타입 안전하게 쓰기 위한 래퍼 (`packages/core-node/src/worker/*`). 워커 파일에서 `createWorker(methods)` 로 메서드 묶음을 만들어 `export default` 하고, 메인에서 `Worker.create<typeof import("./worker")>(path)` 로 프록시를 만들어 `await worker.method(...)` 처럼 호출한다. 메시지 직렬화는 `@simplysm/core-common` 의 `transfer`(Date 등 특수타입·transferList 지원)를 사용. 개발(`.ts`)·프로덕션(`.js`) 양쪽을 자동 분기한다.
 
 ## createWorker (워커 스레드 측)
 
@@ -25,7 +25,7 @@ export default sender;
 
 - `Worker.create<TModule extends WorkerModule>(filePath, opt?): WorkerProxy<TModule>` — 워커 스레드를 띄우고 메서드 프록시를 반환. 메서드 호출은 메시지로 전달되어 결과가 Promise 로 resolve/reject 된다. 워커 stdout/stderr 는 메인 프로세스로 파이프되며, 워커 비정상 종료(exit code≠0)·error 시 대기 중인 모든 호출이 reject 된다. 로거 태그 `sd-worker`.
   - `filePath: string` — 워커 파일 경로. `file://` URL 또는 절대 경로. 확장자가 `.ts` 면 dev 모드로 `lib/worker-dev-proxy.js`(tsx 로 TS 동적 로드)를 통해 실행, `.js` 면 직접 실행.
-  - `opt?: Omit<WorkerRawOptions, "stdout" | "stderr">` — worker_threads 옵션(stdout/stderr 는 내부 고정이라 제외). `env` 는 `process.env` 와 병합 전달, `argv` 는 dev 모드에서 워커 경로 뒤에 이어 붙음.
+  - `opt?: Omit<WorkerRawOptions, "stdout" | "stderr">` — worker_threads 옵션(stdout/stderr 는 내부 고정이라 제외). `env` 는 `process.env` 와 병합되어 전달, `argv` 는 dev 모드에서 워커 경로 뒤에 이어 붙는다.
 
 ```ts
 // main.ts (메인 측)
@@ -47,7 +47,7 @@ await worker.terminate();
 
 ## 타입
 
-- `interface WorkerModule { default: { __methods: Record<string, (...args: any[]) => unknown>; __events: Record<string, unknown> } }` — `Worker.create` 의 제네릭 제약. `typeof import("./worker")` 가 이 구조를 만족(=`createWorker` 반환을 default export).
+- `interface WorkerModule { default: { __methods: Record<string, (...args: any[]) => unknown>; __events: Record<string, unknown> } }` — `Worker.create` 의 제네릭 제약. `typeof import("./worker")` 가 이 구조를 만족(=`createWorker` 반환을 default export)해야 한다.
 - `type PromisifyMethods<TMethods>` — 각 메서드 반환을 `Promise<Awaited<R>>` 로 바꾸는 매핑 타입. 함수가 아닌 멤버는 `never`.
 - `type WorkerProxy<TModule>` — 위 프록시 타입(Promise화 메서드 + on/off/terminate).
 - `interface WorkerRequest { id: string; method: string; params: unknown[] }` — 내부 요청 메시지.

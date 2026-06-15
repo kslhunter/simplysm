@@ -86,20 +86,18 @@ const ITEMS_PER_PAGE = 50;
       (restore)="onRestore($event)"
     >
       <ng-template #filterTpl>
-        <div class="form-box-inline">
-          <div>
-            <label>검색어</label>
-            <sd-textfield
-              [type]="'text'"
-              [(value)]="filter().searchText"
-              (valueChange)="mark(filter)"
-            />
-          </div>
-          <div class="form-box-item">
-            <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
-              삭제항목 포함
-            </sd-checkbox>
-          </div>
+        <div>
+          <label>검색어</label>
+          <sd-textfield
+            [type]="'text'"
+            [(value)]="filter().searchText"
+            (valueChange)="mark(filter)"
+          />
+        </div>
+        <div>
+          <sd-checkbox [(value)]="filter().isIncludeDeleted" (valueChange)="mark(filter)">
+            삭제항목 포함
+          </sd-checkbox>
         </div>
       </ng-template>
 

@@ -1,6 +1,6 @@
 # @simplysm/orm-node — 저수준 DB 연결
 
-`createOrm` 추상화를 거치지 않고 raw SQL·파라미터 쿼리·bulk insert·수동 트랜잭션을 직접 다루거나, dialect별 접속 설정 타입을 작성하거나, `DbContext` 의 executor 를 손수 조립할 때 함께 읽히는 묶음. 연결 인스턴스 생성·연결 인터페이스·접속 설정·executor·dialect 헬퍼·상수로 구성.
+`createOrm` 추상화를 거치지 않고 raw SQL·파라미터 쿼리·bulk insert·수동 트랜잭션을 직접 다루거나, dialect별 접속 설정 타입을 작성하거나, `DbContext` executor 를 손수 조립할 때 함께 읽히는 묶음. 연결 인스턴스 생성·연결 인터페이스·접속 설정·executor·dialect 헬퍼·상수로 구성.
 
 ## createDbConn
 
@@ -8,7 +8,7 @@
 function createDbConn(config: DbConnConfig): Promise<DbConn>
 ```
 
-`config.dialect` 에 맞는 드라이버를 **지연 import** 해 연결 인스턴스를 만든다(mysql → `mysql2/promise`, postgresql → `pg` + `pg-copy-streams`, mssql/mssql-azure → `tedious`). 한 번 로드한 드라이버는 모듈 캐시에 보관해 재사용. 반환 객체는 아직 **미연결** 상태이므로 `connect()` 를 별도 호출해야 함.
+`config.dialect` 에 맞는 드라이버를 **지연 import** 해 연결 인스턴스를 생성(mysql → `mysql2/promise`, postgresql → `pg` + `pg-copy-streams`, mssql/mssql-azure → `tedious`). 한 번 로드한 드라이버는 모듈 캐시에 보관해 재사용. 반환 객체는 아직 **미연결** 상태이므로 `connect()` 를 별도로 호출해야 함.
 
 ```typescript
 const conn = await createDbConn({ dialect: "postgresql", host: "localhost", username: "u", password: "p", database: "db" });
@@ -23,7 +23,7 @@ await conn.connect();
 - isConnected: boolean — 현재 연결 여부. `connect` 성공 시 `true`, `close`/드라이버 `end` 이벤트 시 `false`. 재연결 판단·정리 분기에 사용.
 - isInTransaction: boolean — 트랜잭션 진행 여부. `beginTransaction` 후 `true`, 커밋·롤백 후 `false`. 중첩 방지·상태 확인에 사용.
 - connect(): Promise\<void\> — 연결 수립. 이미 연결돼 있으면 `DB_CONN_ERRORS.ALREADY_CONNECTED` throw.
-- close(): Promise\<void\> — 연결 종료. 미연결 상태면 아무 동작 없이 반환(throw 안 함). 재호출 안전.
+- close(): Promise\<void\> — 연결 종료. 미연결 상태면 아무 동작 없이 반환(throw 안 함) — 재호출 안전.
 - beginTransaction(isolationLevel?: IsolationLevel): Promise\<void\> — 트랜잭션 시작. `isolationLevel` 미지정 시 `config.defaultIsolationLevel`, 그것도 없으면 `READ_UNCOMMITTED` 로 시작. 테스트로 확인된 값: `"READ_UNCOMMITTED" | "READ_COMMITTED" | "REPEATABLE_READ" | "SERIALIZABLE"`. 더티 리드 차단이 필요하면 `READ_COMMITTED` 이상.
 - commitTransaction(): Promise\<void\> — 진행 중 트랜잭션 커밋, `isInTransaction` 을 `false` 로.
 - rollbackTransaction(): Promise\<void\> — 진행 중 트랜잭션 롤백, `isInTransaction` 을 `false` 로.

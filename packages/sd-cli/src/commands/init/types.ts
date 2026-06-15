@@ -32,6 +32,8 @@ export interface ClientSpec {
   appStructureName: string;
   needsNgIcons: boolean;
   useSsg: boolean;
+  /** robots.txt 지시문 — SSG(SEO) 클라이언트는 전체 허용, 그 외는 전체 차단 */
+  robotsDirective: string;
 }
 
 export interface NormalizedInput {

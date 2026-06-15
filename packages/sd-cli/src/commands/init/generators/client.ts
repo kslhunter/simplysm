@@ -14,7 +14,12 @@ export async function generateClient(
   const data = { ...base, client };
 
   await copyFixed(path.join(TPL, "tsconfig.json"), path.join(out, "tsconfig.json"));
-  await copyFixed(path.join(TPL, "public"), path.join(out, "public"));
+  await copyFixed(path.join(TPL, "public/favicon.ico"), path.join(out, "public/favicon.ico"));
+  await renderToFile(
+    path.join(TPL, "public/robots.txt.hbs"),
+    path.join(out, "public/robots.txt"),
+    data,
+  );
   await copyFixed(path.join(TPL, "src/polyfills.ts"), path.join(out, "src/polyfills.ts"));
   await copyFixed(path.join(TPL, "src/styles.scss"), path.join(out, "src/styles.scss"));
 

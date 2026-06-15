@@ -37,7 +37,7 @@ interface ServiceProtocol {
 ```
 
 - `encode(uuid, message)` — 메시지를 와이어 바이트로 인코딩. 3MB 초과 시 자동으로 여러 청크로 분할. 반환 `chunks` 는 전송할 패킷 배열, `totalSize` 는 본문 총 바이트. 같은 메시지의 모든 청크는 동일 `uuid` 를 공유. `MAX_TOTAL_SIZE` 초과 시 throw.
-- `accumulate(bytes)` — 수신 청크 패킷을 누적(stateful). 같은 uuid 의 청크를 한 누적기에 모음. 미완성이면 `progress`, 전부 도착하면 재조립된 raw 바이트를 담은 `complete` 반환. JSON 파싱은 안 함. 헤더(28바이트) 미만이거나 크기 위반 시 throw. 중복 패킷은 무시(인덱스 기준 1회만 반영).
+- `accumulate(bytes)` — 수신 청크 패킷을 누적(stateful). 같은 uuid 의 청크를 한 누적기에 모음. 미완성이면 `progress`, 전부 도착하면 재조립된 raw 바이트를 담은 `complete` 반환. JSON 파싱은 안 함. 헤더(28바이트) 미만이거나 크기 위반 시 throw. 중복 패킷은 인덱스 기준 1회만 반영(중복은 무시). 누적분이 `totalSize` 를 초과하면 무결성 위반으로 throw.
 - `parseMessage(resultBytes)` — 재조립된 raw 바이트를 `ServiceMessage` 로 파싱(stateless). 누적기 상태에 의존하지 않아 worker 등 다른 컨텍스트에 위임 가능. 파싱 실패 시 throw.
 - `decode(bytes)` — `accumulate` 후 완료 시 `parseMessage` 까지 수행하는 통합 경로. 단일 컨텍스트에서 한 번에 디코딩할 때.
 - `dispose()` — 내부 청크 누적기의 GC 타이머 해제·메모리 반환. 인스턴스를 더 안 쓸 때 반드시 호출.

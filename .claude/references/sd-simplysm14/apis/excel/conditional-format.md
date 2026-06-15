@@ -8,28 +8,27 @@
 ws.addConditionalFormat(opts: { ref: string; rules: ExcelConditionalRule[] }): Promise<void>
 ```
 
-- `opts.ref: string` — 적용 대상. 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) 엑셀 주소. text 류 규칙의 비교 기준 셀은 ref 의 좌상단 셀.
-- `opts.rules: ExcelConditionalRule[]` — 적용 규칙 배열. 배열 순서가 priority(앞이 우선)이며, 같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적되고 priority 는 시트 전역 카운터로 이어붙는다. 빈 배열이면 no-op.
+- `ref` — 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) 엑셀 주소. text/expression 규칙의 수식은 범위 좌상단(`ref` 의 `:` 앞 토큰)을 기준 셀로 삼는다.
+- `rules` — 적용할 규칙 배열. 배열 순서가 priority(앞이 우선)이며, 같은 시트에 여러 번 호출하면 priority 가 시트 전역 카운터로 이어붙는다(1,2,3,…). 빈 배열이면 no-op.
+
+같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적되고, 동일 `style` 의 규칙은 dxf 가 dedupe 되어 1개로 등록된다.
 
 ## ExcelConditionalRule
 
-값 비교(단일):
+네 가지 변형의 유니온.
 
-- `{ type: "cellIs"; op: "<" | ">" | "<=" | ">=" | "=" | "<>"; value: number | string; style }` — 셀 값과 `value` 의 단일 비교. `op` = 비교 연산자(`"<>"` = 같지 않음). `value: number` 는 raw formula(`4999`), `value: string` 은 따옴표 리터럴(`"OK"`)로 emit. 수치 임계·특정 텍스트 일치 강조에.
+```typescript
+type ExcelConditionalRule =
+  | { type: "cellIs"; op: "<" | ">" | "<=" | ">=" | "=" | "<>"; value: number | string; style: ExcelConditionalRuleStyle }
+  | { type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style: ExcelConditionalRuleStyle }
+  | { type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style: ExcelConditionalRuleStyle }
+  | { type: "expression"; formula: string; style: ExcelConditionalRuleStyle };
+```
 
-값 비교(구간):
-
-- `{ type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style }` — 두 값 사이 구간 비교(양 끝 inclusive). `op` = `"between"`(구간 안)/`"notBetween"`(구간 밖). `value` = `[a, b]` 튜플.
-
-텍스트 매칭:
-
-- `{ type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style }` — 문자열 매칭. `op` = `"contains"`(포함)/`"notContains"`(미포함)/`"beginsWith"`(시작)/`"endsWith"`(끝). 내부적으로 SEARCH 기반(대소문자 무시) formula 로 변환되며 비교 기준은 ref 좌상단 셀. 부분 문자열·접두/접미 강조에.
-
-수식:
-
-- `{ type: "expression"; formula: string; style }` — 임의 엑셀 수식 기반. `formula` 가 TRUE 인 셀에 style 적용. `=` 없이 본문만(예 `"$B2>$C2"`). 다른 셀 참조·복합 조건 등 위 프리셋으로 안 되는 규칙에.
-
-각 규칙의 `style` 은 아래 `ExcelConditionalRuleStyle`.
+- `type: "cellIs"` 단일 비교 — `op` 가 `<`/`>`/`<=`/`>=`/`=`/`<>`. `value` 는 `number`(raw formula `<formula>4999</formula>`) 또는 `string`(따옴표 리터럴 `<formula>"OK"</formula>`). OOXML operator(`lessThan`/`greaterThan`/`lessThanOrEqual`/`greaterThanOrEqual`/`equal`/`notEqual`)로 매핑.
+- `type: "cellIs"` 구간 — `op` 가 `between`/`notBetween`. `value` 는 `[a, b]` 튜플(양 끝 inclusive), number 튜플은 `["1000","2000"]`, string 튜플은 `['"A"','"M"']` 두 formula 로 emit.
+- `type: "text"` 텍스트 매칭 — `op` 가 `contains`/`notContains`/`beginsWith`/`endsWith`. `value` 는 string. `contains` 는 `NOT(ISERROR(SEARCH(...)))`, `notContains` 는 `ISERROR(SEARCH(...))`, `beginsWith` 는 `LEFT(...)=v`, `endsWith` 는 `RIGHT(...)=v` 수식으로 emit(SEARCH 기반, 대소문자 무시 고정). 따옴표는 OOXML escape 규칙대로 두 배(`a"b` → `a""b`).
+- `type: "expression"` — 임의 수식. `formula` 문자열을 raw 그대로 1개 formula 로 emit(operator 미부여). `AND($F2<>"",$F2-TODAY()<=7)` 같은 복합 조건에 사용.
 
 ## ExcelConditionalRuleStyle
 
@@ -41,11 +40,11 @@ interface ExcelConditionalRuleStyle {
 }
 ```
 
-- `background?: string` — 강조 배경색(ARGB 8자리, 예 `"00FFFF00"`). 미지정 시 base 셀 배경 유지.
-- `fontColor?: string` — 강조 글자색(ARGB 8자리). 미지정 시 base 글자색 유지.
-- `fontWeight?: "bold" | "normal"` — 글자 굵기. `"bold"` = 굵게, `"normal"` = base 가 bold 라도 강제 보통. 미지정 시 base 유지.
+- `background` — 강조 배경색(ARGB 8자리, 예 `"00FFFF00"`).
+- `fontColor` — 강조 글자색(ARGB 8자리).
+- `fontWeight` — `"bold"` = 굵게, `"normal"` = base 가 bold 라도 강제 normal.
 
-지정한 필드만 OOXML dxf 로 emit 되어 native CF 오버레이로 합성된다(미지정 필드는 base 그대로).
+미지정 필드는 base 셀 스타일을 그대로 두고, 지정 필드만 OOXML dxf 로 emit 되어 native CF 오버레이로 합성된다.
 
 ## 사용 예
 
@@ -62,6 +61,6 @@ await ws.addConditionalFormat({
 
 ## 주의사항
 
-- `rules` 배열 순서 = priority(앞이 우선). 겹치는 조건은 앞 규칙이 이긴다.
-- 여러 번 호출하면 블록이 누적되고 priority 카운터가 시트 전역으로 이어진다 — 한 범위의 규칙은 한 번의 호출에 모아 넣는 편이 우선순위 예측에 유리.
-- `value: string` 과 `expression.formula` 의 따옴표/이스케이프는 라이브러리가 처리하므로 원문 그대로 전달.
+- 규칙 배열 순서 = priority. 앞 규칙이 먼저 평가된다.
+- `value` 의 number/string 구분이 formula emit 방식을 바꾼다 — 비교 대상이 텍스트면 반드시 `string` 으로 줄 것.
+- toBytes → 재오픈 roundtrip 에서 type/operator/text/formula/dxf 가 보존된다.

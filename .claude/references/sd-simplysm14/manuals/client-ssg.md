@@ -79,6 +79,7 @@ if (isPlatformBrowser(inject(PLATFORM_ID))) {
 ```
 
 - 또는 `afterNextRender(() => { ... })` — 브라우저에서만 실행됨.
+- **프리렌더 시점에는 서버 연결이 없음** — 프리렌더 화면의 초기화 경로에서 서비스 RPC·ORM(`connectAsync`)·공유데이터 호출 금지. 데이터가 필요하면 브라우저 시점(hydration 후)으로 미루거나, 그 화면을 비프리렌더 라우트로 둠. `main.server.ts` 에 `connectAsync()` 부트스트랩 배선을 복사하지 않는 것도 같은 이유.
 - `@simplysm/angular` 부트스트랩 경로(provideSdAngular·테마·busy 등)는 이미 가드되어 그대로 사용 가능. 그 외 컴포넌트는 프리렌더 화면에 쓸 때 개별 확인 — 빌드가 깨지면 그 컴포넌트의 초기화 경로를 가드.
 
 ## 지킬 것

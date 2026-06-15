@@ -71,6 +71,7 @@ provideAppInitializer(async () => {
 ```
 
 - `connectAsync()` 의 Promise 를 **반환**해야 Angular 가 연결 완료까지 부트스트랩을 대기. 반환을 빠뜨리면 연결 전에 화면이 떠 통신 호출이 실패함.
+- 프리렌더(SSG) 클라이언트면 이 배선은 `main.ts` 에만 둠 — 제약은 [client-ssg.md](./client-ssg.md) 참조.
 
 ## 새 서비스 호출을 추가하려면
 

@@ -991,6 +991,25 @@ describe("SSG 클라이언트 스캐폴드", () => {
     expect(out).not.toContain("provideClientHydration");
   });
 
+  it("client/public/robots.txt: SSG ON → 전체 허용", async () => {
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "client/public/robots.txt.hbs"),
+      ssgCtx(true),
+    );
+    expect(out).toContain("User-agent: *");
+    expect(out).toContain("Allow: /");
+    expect(out).not.toContain("Disallow: /");
+  });
+
+  it("client/public/robots.txt: SSG OFF → 전체 차단", async () => {
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "client/public/robots.txt.hbs"),
+      ssgCtx(false),
+    );
+    expect(out).toContain("User-agent: *");
+    expect(out).toContain("Disallow: /");
+  });
+
   it("client/main.server.ts: 서버 부트스트랩 default export + 최소 provider", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/src/main.server.ts.hbs"), ssgCtx(true));
     expect(out).toContain('import { provideServerRendering } from "@angular/platform-server";');

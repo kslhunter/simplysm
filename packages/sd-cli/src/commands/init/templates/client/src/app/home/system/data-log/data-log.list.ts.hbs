@@ -74,37 +74,35 @@ const ITEMS_PER_PAGE = 50;
       (filterSubmit)="onFilterSubmit()"
     >
       <ng-template #filterTpl>
-        <div class="form-box-inline">
-          <div>
-            <label>기간</label>
-            <sd-date-range-picker
-              [(from)]="filter().fromDate"
-              (fromChange)="mark(filter)"
-              [(to)]="filter().toDate"
-              (toChange)="mark(filter)"
-            />
-          </div>
-          <div>
-            <label>검색어</label>
-            <sd-textfield
-              [type]="'text'"
-              [(value)]="filter().searchText"
-              (valueChange)="mark(filter)"
-            />
-          </div>
-          <div>
-            <label>수행자</label>
-            <sd-shared-data-select
-              [selectMode]="'multi'"
-              [items]="shared{{userEntityPascal}}s.items()"
-              [(value)]="filter().{{userEntityCamel}}Ids"
-              (valueChange)="mark(filter)"
-            >
-              <ng-template [itemOf]="shared{{userEntityPascal}}s.items()" let-item="item">
-                \{{ item.name }}
-              </ng-template>
-            </sd-shared-data-select>
-          </div>
+        <div>
+          <label>기간</label>
+          <sd-date-range-picker
+            [(from)]="filter().fromDate"
+            (fromChange)="mark(filter)"
+            [(to)]="filter().toDate"
+            (toChange)="mark(filter)"
+          />
+        </div>
+        <div>
+          <label>검색어</label>
+          <sd-textfield
+            [type]="'text'"
+            [(value)]="filter().searchText"
+            (valueChange)="mark(filter)"
+          />
+        </div>
+        <div>
+          <label>수행자</label>
+          <sd-shared-data-select
+            [selectMode]="'multi'"
+            [items]="shared{{userEntityPascal}}s.items()"
+            [(value)]="filter().{{userEntityCamel}}Ids"
+            (valueChange)="mark(filter)"
+          >
+            <ng-template [itemOf]="shared{{userEntityPascal}}s.items()" let-item="item">
+              \{{ item.name }}
+            </ng-template>
+          </sd-shared-data-select>
         </div>
       </ng-template>
 

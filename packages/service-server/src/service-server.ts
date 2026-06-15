@@ -12,6 +12,9 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import path from "path";
 import { Buffer } from "node:buffer";
+import type { TLSSocket } from "node:tls";
+import type * as https from "node:https";
+import { AcmeManager } from "./ssl/acme-manager";
 import { handleUpload } from "./transport/http/upload-handler";
 import { createWebSocketHandler } from "./transport/socket/websocket-handler";
 import type { WebSocket } from "ws";
@@ -40,6 +43,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   private readonly _wsHandler: ReturnType<typeof createWebSocketHandler>;
   private readonly _jwtSecret: string | undefined;
   private _shutdownRegistered = false;
+  private readonly _acmeManager: AcmeManager | undefined;
 
   readonly fastify: FastifyInstance;
 
@@ -49,11 +53,48 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     this._jwtSecret =
       options.auth != null && options.auth !== false ? options.auth.jwtSecret : undefined;
 
-    // SSL 설정 (동기)
+    // SSL 설정
     // 참고: Fastify HTTPS는 Buffer 타입이 필요함 (Uint8Array를 직접 사용할 수 없음)
-    const httpsConf = options.ssl
-      ? { pfx: Buffer.from(options.ssl.pfxBytes), passphrase: options.ssl.passphrase }
-      : null;
+    let httpsConf: https.ServerOptions | null = null;
+    if (options.ssl != null) {
+      if ("letsencrypt" in options.ssl) {
+        const acmeManager = new AcmeManager({
+          rootPath: options.rootPath,
+          domains: options.ssl.letsencrypt.domains,
+          email: options.ssl.letsencrypt.email,
+          staging: options.ssl.letsencrypt.staging,
+        });
+        this._acmeManager = acmeManager;
+
+        // 인증서 없이 ALPNCallback 만으로 HTTPS 서버 생성.
+        // 발급 전엔 acme-tls/1 챌린지에만 응답하고, 실인증서는 listen() 에서 setSecureContext 로 주입한다.
+        httpsConf = {
+          ALPNCallback: function (this: TLSSocket, { protocols }): string | undefined {
+            if (protocols.includes("acme-tls/1")) {
+              const ctx = acmeManager.getChallengeContext();
+              if (ctx != null) {
+                this.setKeyCert(ctx);
+                return "acme-tls/1";
+              }
+              return undefined;
+            }
+            return protocols.includes("http/1.1") ? "http/1.1" : undefined;
+          },
+        };
+      } else if ("pfxBytes" in options.ssl) {
+        httpsConf = {
+          pfx: Buffer.from(options.ssl.pfxBytes),
+          ...(options.ssl.passphrase != null ? { passphrase: options.ssl.passphrase } : {}),
+        };
+      } else {
+        httpsConf = {
+          key: Buffer.from(options.ssl.pemKeyBytes),
+          cert: Buffer.from(options.ssl.certBytes),
+          ...(options.ssl.caBytes != null ? { ca: Buffer.from(options.ssl.caBytes) } : {}),
+          ...(options.ssl.passphrase != null ? { passphrase: options.ssl.passphrase } : {}),
+        };
+      }
+    }
 
     this.fastify = fastify({ https: httpsConf });
 
@@ -65,6 +106,11 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
 
   async listen(): Promise<void> {
     logger.info(`서버 시작 중... ${env("VER") ?? ""}`);
+
+    // letsencrypt 는 핸드셰이크 중 인증서를 주입하는 TLSSocket.setKeyCert 가 필요 (Node 20.18.0+/22.9.0+)
+    if (this._acmeManager != null) {
+      assertAcmeNodeSupport();
+    }
 
     // auth 설정 검증: auth 미설정(undefined)인데 auth 요구 서비스가 있으면 에러
     if (this.options.auth == null) {
@@ -208,6 +254,17 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     // 리슨
     await this.fastify.listen({ port: this.options.port, host: "0.0.0.0" });
 
+    // Let's Encrypt: 리슨(443 바인딩) 후 인증서를 확보해 적용 (하이브리드 기동)
+    if (this._acmeManager != null) {
+      const server = this.fastify.server as unknown as https.Server;
+      const material = await this._acmeManager.ensureCertificate();
+      server.setSecureContext({ key: material.key, cert: material.cert });
+      this._acmeManager.onRenew((m) => {
+        server.setSecureContext({ key: m.key, cert: m.cert });
+        logger.info("갱신된 인증서가 적용되었습니다.");
+      });
+    }
+
     // 정상 종료 핸들러 등록
     this._registerGracefulShutdown();
 
@@ -217,6 +274,7 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   }
 
   async close(): Promise<void> {
+    this._acmeManager?.stop();
     this._wsHandler.closeAll();
     await this.fastify.close();
 
@@ -296,4 +354,19 @@ function createV1AutoUpdateMethods(
   return {
     getLastVersion: (platform) => getLastVersion(platform),
   };
+}
+
+/**
+ * Let's Encrypt(TLS-ALPN-01) 는 핸드셰이크 중 인증서를 주입하는 `TLSSocket.setKeyCert` 를 쓴다.
+ * 이 API 는 Node 20.18.0+ / 22.9.0+ 에서만 제공되므로 미만 버전이면 throw.
+ */
+function assertAcmeNodeSupport(): void {
+  const [major = 0, minor = 0] = process.versions.node.split(".").map((v) => Number(v));
+  const supported =
+    (major === 20 && minor >= 18) || (major === 22 && minor >= 9) || major >= 23;
+  if (!supported) {
+    throw new Error(
+      `Let's Encrypt(letsencrypt) SSL 은 Node 20.18.0+ 또는 22.9.0+ 가 필요합니다. 현재 버전: ${process.versions.node}`,
+    );
+  }
 }

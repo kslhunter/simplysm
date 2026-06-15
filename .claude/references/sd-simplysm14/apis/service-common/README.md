@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-서버·클라이언트가 공유하는 서비스 통신 계약. 이벤트 정의(`defineEvent`), 내장 RPC 서비스 인터페이스 시그니처, 앱 메뉴·권한·모듈 구조(`AppStructure`), WebSocket 바이너리 프로토콜·메시지 타입을 한곳에 둔다. 발생측·구독측 또는 서버·클라이언트가 같은 정의 객체·타입을 import 해 쓰는 게 핵심.
+서버·클라이언트가 공유하는 서비스 통신 계약. 실시간 이벤트 정의(`defineEvent`), 내장 RPC 서비스 인터페이스 시그니처, 앱 메뉴·권한·모듈 구조(`AppStructure`), WebSocket 바이너리 프로토콜·메시지 타입을 한곳에 둔다. 발생측·구독측 또는 서버·클라이언트가 같은 정의 객체·타입을 import 해 쓰는 게 핵심.
 
 ## 사용 트리거 인덱스
 
@@ -21,9 +21,9 @@
 function defineEvent<TInfo = unknown, TData = unknown>(eventName: string): ServiceEventDef<TInfo, TData>
 ```
 
-- `TInfo` (제네릭) — 구독자가 "무엇을 구독하는지" 식별하는 메타데이터 타입. 발생측 selector 가 이 값을 보고 전달 대상을 골라냄. 미지정 시 `unknown`. 예: `{ warehouseId: number }`.
-- `TData` (제네릭) — 이벤트가 실어 나르는 페이로드 타입. 구독 콜백이 받는 인자 타입. 미지정 시 `unknown`. 예: `{ orderId: number; status: string }`.
-- `eventName` (인자) — 라우팅 키 문자열. 같은 이름이면 같은 이벤트로 취급되므로 앱 내에서 고유해야 함.
+- `TInfo` (제네릭) — 구독자가 "무엇을 구독하는지" 식별하는 메타데이터 타입. 발생측 selector 가 이 값을 보고 전달 대상을 골라냄. 미지정 시 `unknown`.
+- `TData` (제네릭) — 이벤트가 실어 나르는 페이로드 타입. 구독 콜백이 받는 인자 타입. 미지정 시 `unknown`.
+- `eventName` (인자) — 라우팅 키 문자열. `ServiceEventDef.eventName` 에 그대로 들어가며 런타임에 실제로 쓰이는 유일한 값. 같은 이름이면 같은 이벤트로 취급되므로 앱 내에서 고유해야 함.
 - 반환된 `ServiceEventDef` 를 그대로 발생·구독 API 의 첫 인자로 넘기면 이름·타입이 추론됨.
 
 ```ts
@@ -49,8 +49,8 @@ interface ServiceEventDef<TInfo = unknown, TData = unknown> {
 ```
 
 - `eventName: string` — 라우팅 키. `defineEvent` 인자가 그대로 들어가며 런타임에 실제로 쓰이는 유일한 값.
-- `$info: TInfo` (readonly) — `TInfo` 타입 추출 전용 phantom 마커. 런타임 값은 `undefined`(사용되지 않음). 발생·구독 API 가 이 마커로 `TInfo` 를 끌어다 씀.
-- `$data: TData` (readonly) — `TData` 타입 추출 전용 phantom 마커. 런타임 값은 `undefined`(사용되지 않음). 직접 읽지 말 것.
+- `$info: TInfo` (readonly) — `TInfo` 타입 추출 전용 마커. 런타임 값은 `undefined`(사용되지 않음). 발생·구독 API 가 이 마커로 `TInfo` 를 끌어다 씀. 직접 읽지 말 것.
+- `$data: TData` (readonly) — `TData` 타입 추출 전용 마커. 런타임 값은 `undefined`(사용되지 않음). 직접 읽지 말 것.
 
 ## 내장 RPC 서비스 시그니처 (OrmService / AutoUpdateService)
 
@@ -82,7 +82,7 @@ interface OrmService {
 - `rollbackTransaction(connId)` — 트랜잭션 취소.
 - `executeParametrized(connId, query, params?)` — 파라미터 바인딩 raw SQL 직접 실행. `params` 는 플레이스홀더에 순서대로 바인딩(없으면 바인딩 없는 쿼리). 결과는 결과셋별 행 배열(`unknown[][]`).
 - `executeDefs(connId, defs, options?)` — ORM 코어가 만든 `QueryDef` 배열을 일괄 실행. `options[i]` 는 `defs[i]` 결과셋의 컬럼 파싱 메타(`ResultMeta`)로, 메타 불필요한 def 자리는 `undefined`.
-- `bulkInsert(connId, tableName, columnDefs, records)` — 다건 레코드 대량 삽입. `columnDefs` 는 컬럼명→`ColumnMeta`(타입·인코딩) 매핑, `records` 는 삽입할 행 배열.
+- `bulkInsert(connId, tableName, columnDefs, records)` — 다건 레코드 대량 삽입. `columnDefs` 는 컬럼명→`ColumnMeta` 매핑, `records` 는 삽입할 행 배열.
 
 `Dialect`/`IsolationLevel`/`QueryDef`/`ColumnMeta`/`ResultMeta` 는 `@simplysm/orm-common` 타입.
 
@@ -92,7 +92,7 @@ interface OrmService {
 type DbConnOptions = { configName?: string; config?: Record<string, unknown> }
 ```
 
-- `configName?: string` — 서버에 등록된 DB 연결 설정의 이름. 이 이름으로 서버가 접속 정보를 찾음. (`getInfo`/`connect` 는 `configName` 을 필수로 교차해 받음.)
+- `configName?: string` — 서버에 등록된 DB 연결 설정의 이름. 이 이름으로 서버가 접속 정보를 찾음. `getInfo`/`connect` 는 이 필드를 필수로 교차해(`& { configName: string }`) 받음.
 - `config?: Record<string, unknown>` — 등록 설정 대신 직접 넘기는 즉석 접속 설정 객체. `configName` 으로 가리킬 수 없을 때 사용.
 
 ### AutoUpdateService

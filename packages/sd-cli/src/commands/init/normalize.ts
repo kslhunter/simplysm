@@ -50,6 +50,7 @@ export function normalize(input: InitInput): NormalizedInput {
     const isMobile = c.type === "mobile";
     const hasRouter = isMobile ? false : c.hasRouter;
     const baseName = name.startsWith("client-") ? name.slice("client-".length) : name;
+    const useSsg = hasRouter && !isMobile && (c.useSsg ?? false);
     return {
       name,
       type: c.type,
@@ -57,7 +58,8 @@ export function normalize(input: InitInput): NormalizedInput {
       isMobile,
       appStructureName: `${str.toCamelCase(baseName)}AppStructureItems`,
       needsNgIcons: (hasRouter && hasAuth) || hasDb,
-      useSsg: hasRouter && !isMobile && (c.useSsg ?? false),
+      useSsg,
+      robotsDirective: useSsg ? "Allow: /" : "Disallow: /",
     };
   });
 

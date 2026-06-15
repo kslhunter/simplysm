@@ -8,7 +8,7 @@ OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리
 - **ExcelCell / ExcelRow / ExcelCol** — 개별 셀의 값·수식·병합·스타일을 읽고 쓰거나, 행/열 단위로 셀을 순회하고 열 너비를 줄 때. 자세히: [cell.md](./cell.md)
 - **셀 스타일 (ExcelStyleOptions / ExcelFont)** — 셀(`cell.setStyle`)이나 워크북 default(`wb.setDefaultStyle`)의 배경·테두리·정렬·숫자형식·폰트를 지정할 때. 자세히: [style.md](./style.md)
 - **조건부 서식 (ExcelConditionalRule / ExcelConditionalRuleStyle)** — 셀/범위에 값 비교·텍스트 매칭·수식 기반 native CF 규칙을 추가할 때. 자세히: [conditional-format.md](./conditional-format.md)
-- **ExcelWrapper** — Zod 스키마로 헤더 매핑·타입 변환·유효성 검사를 자동화해 레코드 배열 ↔ 엑셀을 변환할 때. 자세히: [wrapper.md](./wrapper.md)
+- **ExcelWrapper** — Zod 스키마로 헤더 매핑·타입 변환·유효성 검사를 자동화해 레코드 배열 ↔ 엑셀을 변환할 때(엑셀 다운로드/업로드). 자세히: [wrapper.md](./wrapper.md)
 - **ExcelUtils** — 셀 주소(A1 ↔ 좌표) 변환, 엑셀 날짜 시리얼 ↔ 타임스탬프 변환, 숫자형식 코드/ID/이름 상호 변환이 필요할 때. 자세히: [utils.md](./utils.md)
 - **값/주소/형식 타입** — 셀 값 유니온·숫자형식 프리셋·셀 타입·주소 좌표·정렬/테두리/밑줄 enum 을 시그니처에서 참조할 때. 아래 인라인 섹션.
 - **OOXML XML-shape 타입** — `ExcelXml*` / `Excel*Data` 류 내부 직렬화 타입. 아래 인라인 섹션.
@@ -18,8 +18,8 @@ OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리
 `./types` 가 노출하는 사용자 대면 값/형식 타입. 셀 값을 다루거나 메서드 시그니처를 해석할 때 참조.
 
 - `ExcelValueType` = `number | string | DateOnly | DateTime | Time | boolean | undefined` — 셀이 가질 수 있는 값 유니온. `getValue()` 반환·`setValue()` 인자 타입. `undefined` = "값 없음"(읽기 시 빈 셀, 쓰기 시 셀 삭제)이므로 결측을 끝까지 보존한다. `DateOnly`/`DateTime`/`Time` 은 `@simplysm/core-common` 타입이며 셀에 시리얼 숫자 + 날짜 numFmt 로 저장된다.
-- `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋 이름. `"number"` = 일반 수치(numFmtId 0), `"string"` = 텍스트 형식(numFmtId 49), `"DateOnly"`(14)/`"DateTime"`(22)/`"Time"`(18) = 날짜/시간 시리얼 해석·표시. `ExcelStyleOptions.numberFormat` 와 `ExcelUtils` 변환의 공용 단위. 날짜 셀은 값으로 직접 `DateOnly`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 따로 지정할 필요가 적다.
-- `ExcelCellType` = `"s" | "b" | "str" | "n" | "inlineStr" | "e"` — OOXML 셀 `t` 속성. `"s"` = SharedString 인덱스 참조, `"b"` = boolean(`"1"`/`"0"`), `"str"` = 수식 결과 문자열, `"n"` = 숫자, `"inlineStr"` = 인라인 서식 텍스트, `"e"` = 에러(읽기 시 throw). 보통 `getValue`/`setValue` 가 자동 매핑하므로, 외부 생성 파일의 셀 타입을 직접 분기 검사할 때만 참조. 숫자/날짜 셀은 타입 코드가 `null` 이고 스타일 numFmt 로 구분된다.
+- `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋 이름. `"number"` = 일반 수치(numFmtId 0), `"string"` = 텍스트 형식(numFmtId 49), `"DateOnly"`(14)/`"DateTime"`(22)/`"Time"`(18) = 날짜/시간 시리얼 해석·표시. `ExcelStyleOptions.numberFormat` 와 `ExcelUtils` 변환의 공용 단위. 날짜 셀은 값으로 직접 `DateOnly`/`DateTime`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 따로 지정할 필요가 적다.
+- `ExcelCellType` = `"s" | "b" | "str" | "n" | "inlineStr" | "e"` — OOXML 셀 `t` 속성. `"s"` = SharedString 인덱스 참조, `"b"` = boolean(`"1"`/`"0"`), `"str"` = 수식 결과 문자열, `"n"` = 숫자, `"inlineStr"` = 인라인 서식 텍스트, `"e"` = 에러(읽기 시 throw). 보통 `getValue`/`setValue` 가 자동 매핑하므로 외부 생성 파일의 셀 타입을 직접 분기할 때만 참조. 숫자/날짜 셀은 타입 코드가 `null` 이고 스타일 numFmt 로 구분된다.
 - `ExcelAddressPoint` = `{ r: number; c: number }` — 0 기반 행(`r`)·열(`c`) 좌표. 셀 단일 위치 단위. `cell(r, c)` 인덱스와 동일 0 기반.
 - `ExcelAddressRangePoint` = `{ s: ExcelAddressPoint; e: ExcelAddressPoint }` — 범위 좌표. `s` = 시작(좌상단), `e` = 끝(우하단, inclusive). `getRange()` 반환 타입이며 시트 순회 루프 경계로 쓴다.
 - `ExcelBorderPosition` = `"left" | "right" | "top" | "bottom"` — 테두리 적용 변. `ExcelStyleOptions.border` 배열 원소. 4변 전부면 4개를 배열에 모두 넣음.

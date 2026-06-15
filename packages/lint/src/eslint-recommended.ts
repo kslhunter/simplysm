@@ -66,19 +66,19 @@ const noDirectEnvAccessRules: FlatConfig.Rules = {
     },
     {
       selector: 'BinaryExpression[operator="==="][right.type="Identifier"][right.name="undefined"]',
-      message: "`== null`를 사용하지 마세요. `== null`을 사용하세요.",
+      message: "`=== undefined`를 사용하지 마세요. `== null`을 사용하세요.",
     },
     {
       selector: 'BinaryExpression[operator="==="][left.type="Identifier"][left.name="undefined"]',
-      message: "`== null`를 사용하지 마세요. `== null`을 사용하세요.",
+      message: "`=== undefined`를 사용하지 마세요. `== null`을 사용하세요.",
     },
     {
       selector: 'BinaryExpression[operator="!=="][right.type="Identifier"][right.name="undefined"]',
-      message: "`!= null`를 사용하지 마세요. `!= null`을 사용하세요.",
+      message: "`!== undefined`를 사용하지 마세요. `!= null`을 사용하세요.",
     },
     {
       selector: 'BinaryExpression[operator="!=="][left.type="Identifier"][left.name="undefined"]',
-      message: "`!= null`를 사용하지 마세요. `!= null`을 사용하세요.",
+      message: "`!== undefined`를 사용하지 마세요. `!= null`을 사용하세요.",
     },
   ],
 };

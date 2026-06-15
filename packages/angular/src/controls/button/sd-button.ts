@@ -68,7 +68,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           color: var(--theme-primary-default);
 
           &:hover {
-            color: var(--theme-primary-darker);
+            color: var(--theme-primary-dark);
           }
 
           &:disabled {
@@ -106,7 +106,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           color: var(--theme-primary-default);
 
           &:hover {
-            color: var(--theme-primary-darker);
+            color: var(--theme-primary-dark);
           }
 
           &:disabled {
@@ -123,7 +123,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
 
             &:hover {
               background: var(--trans-lighter);
-              color: var(--theme-#{$key}-darker);
+              color: var(--theme-#{$key}-dark);
             }
 
             &:disabled {

@@ -1,5 +1,7 @@
 # 클라이언트 화면 작성 매뉴얼
 
+프리렌더(SSG) 대상 화면을 작성할 때는 [client-ssg.md](./client-ssg.md) 의 SSR-safe·서버 연결 제약을 함께 적용.
+
 ## 파일명·역할·위치
 
 화면 파일명은 `<domain>.<역할>.ts` 형식. 역할 접미사로 책임을 표시.
@@ -643,7 +645,13 @@ async onSubmit(): Promise<void> {
 
 ```html
 <sd-crud-list ...>
-  <ng-template #filterTpl>...</ng-template>
+  <ng-template #filterTpl>
+    <!-- sd-crud-list 가 이미 form-box-inline 으로 감싸므로 여기서 다시 묶지 않음 -->
+    <div>
+      <label>검색어</label>
+      <sd-textfield [type]="'text'" [(value)]="filter().searchText" (valueChange)="mark(filter)" />
+    </div>
+  </ng-template>
 
   <sd-sheet-column [key]="..." [header]="...">
     <ng-template [cell]="items()" let-item="item">...</ng-template>

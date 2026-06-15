@@ -1,147 +1,99 @@
-# @simplysm/orm-common — 스키마 정의 (Table / View / Procedure / column / index / relation)
+# @simplysm/orm-common — schema
 
-DB 객체(Table/View/Procedure)와 그 구성요소(column/index/관계)를 fluent 빌더로 선언하는 묶음. 모든 빌더는 immutable — 각 메서드가 새 인스턴스를 반환한다. 정의한 빌더는 `DbContext` 안에서 `this.queryable()`/`this.executable()` 로 등록해 사용한다. column 은 기본 `NOT NULL` 이며 `.nullable()`/`.default(...)` 는 도메인 근거가 있을 때만 붙인다(orm.md 정책).
+테이블·뷰·프로시저 스키마를 fluent 빌더로 정의하는 군. `Table()`/`View()`/`Procedure()` 팩토리가 빌더를 만들고, 각 빌더의 메서드는 새 인스턴스를 반환하는 불변 체이닝이다. 정의 결과는 `DbContext` 의 `queryable()`/`executable()` 에 등록해 쓰며, `$inferSelect`/`$inferInsert` 등의 phantom 필드로 컬럼·관계 타입이 추론된다. 컬럼/관계/인덱스는 각 빌더의 콜백 안에서 팩토리(`c`/`r`/`i`)로 만든다.
 
-## Table / TableBuilder
+## TableBuilder / Table
 
 ```typescript
 function Table<TName extends string>(name: TName): TableBuilder<TName, {}, {}>;
+class TableBuilder<TName, TColumns, TRelations> {
+  readonly meta: { name; description?; database?; schema?; columns?; primaryKey?; relations?; indexes? };
+  readonly $inferSelect;   // InferColumns & InferDeepRelations (전체 — 관계 포함)
+  readonly $inferColumns;  // 컬럼만
+  readonly $inferInsert;   // INSERT 입력 (autoIncrement 제외, nullable/default 는 optional)
+  readonly $inferUpdate;   // UPDATE 입력 (모든 컬럼 optional)
+  description(desc: string): TableBuilder;
+  database(db: string): TableBuilder;
+  schema(schema: string): TableBuilder;
+  columns(fn: (c) => TNewColumnDefs): TableBuilder;
+  primaryKey(...columns: (keyof TColumns)[]): TableBuilder;
+  indexes(fn: (i) => IndexBuilder[]): TableBuilder;
+  relations(fn: (r) => TRelations): TableBuilder;
+}
 ```
 
-`Table(name)` 으로 시작해 fluent 체이닝으로 정의한다. 각 메서드는 새 `TableBuilder` 를 반환.
-
-- `database(db)` — 데이터베이스 이름 설정. dialect 네임스페이스 산출에 사용.
-- `schema(schema)` — 스키마 이름 설정(MSSQL: dbo, PostgreSQL: public). MySQL 은 무시.
-- `description(desc)` — 테이블 코멘트(DDL COMMENT). 문서화 목적.
-- `columns((c) => ({...}))` — column 정의. `c` 는 column 팩토리(아래). 반환 객체의 키가 컬럼명.
-- `primaryKey(...columns)` — PK 컬럼 지정(가변 인자). 둘 이상이면 복합 PK.
-- `indexes((i) => [...])` — 인덱스 정의. `i` 는 index 팩토리.
-- `relations((r) => ({...}))` — 관계(FK/역참조/논리관계) 정의. `r` 은 relation 팩토리.
-
-타입 추론 필드(런타임 값 아님): `$inferSelect`(컬럼+관계), `$inferColumns`(컬럼만), `$inferInsert`(autoIncrement/nullable/default 는 optional), `$inferUpdate`(전부 optional). `Queryable` 의 결과/입력 타입이 여기서 파생된다.
+- `Table(name)` — 테이블 빌더 시작점. `name` 은 실제 DB 테이블명이자 `$inferSelect` 의 phantom 타입 이름.
+- `description(desc)` — 테이블 설명. DDL Comment 로 사용됨.
+- `database(db)` — 테이블이 속한 데이터베이스명. 미지정 시 `DbContext` 의 database 옵션을 따름.
+- `schema(schema)` — 스키마명. MSSQL(`dbo`)/PostgreSQL(`public`) 에서만 의미 있고 MySQL 은 무시.
+- `columns(fn)` — `createColumnFactory()` 가 주입된 `c` 로 컬럼 레코드를 반환. 호출 시 `TColumns` 가 새 정의로 교체됨.
+- `primaryKey(...columns)` — PK 컬럼명을 가변 인자로. 2개 이상 넘기면 복합 PK. 인자는 `columns()` 의 키로 타입 체크됨.
+- `indexes(fn)` — `createIndexFactory()` 의 `i` 로 인덱스 배열을 반환.
+- `relations(fn)` — `createRelationFactory()` 의 `r` 로 관계 레코드 반환. Table 은 `foreignKey`/`foreignKeyTarget`/`relationKey`/`relationKeyTarget` 모두 사용 가능.
+- `meta` — 빌더가 누적한 정의 객체. DDL 생성·`queryable()` 이 읽음.
 
 ```typescript
 const User = Table("User")
   .database("mydb")
   .columns((c) => ({
-    id: c.int().autoIncrement(),
+    id: c.bigint().autoIncrement(),
     name: c.varchar(100),
     email: c.varchar(200).nullable(),
-    isActive: c.boolean().default(true),
-    companyId: c.int().nullable(),
+    status: c.varchar(20).default("active"),
   }))
   .primaryKey("id")
   .indexes((i) => [i.index("email").unique()])
-  .relations((r) => ({
-    company: r.foreignKey(["companyId"], () => Company),
-    posts: r.foreignKeyTarget(() => Post, "user"),
-  }));
+  .relations((r) => ({ posts: r.foreignKeyTarget(() => Post, "author") }));
 ```
 
-## column 팩토리 / ColumnBuilder
-
-`columns((c) => ...)` 의 `c` 가 노출하는 타입 생성 메서드. 각자 `ColumnBuilder` 를 반환하고, 그 위에 수식 메서드를 체이닝한다.
-
-타입 메서드:
-
-- `int()` — INT(4바이트 정수). 일반 정수 PK/카운트.
-- `bigint()` — BIGINT(8바이트 정수). 큰 범위 ID.
-- `float()` — 단정밀도 부동소수점. 정밀도 덜 중요한 실수.
-- `double()` — 배정밀도 부동소수점. 일반 실수 연산.
-- `decimal(precision, scale?)` — 고정 소수점. `precision`=전체 자릿수, `scale`=소수 자릿수(선택). 금액처럼 반올림 오차가 곤란한 값.
-- `varchar(length)` — 가변 길이 문자열. `length`=최대 길이.
-- `char(length)` — 고정 길이 문자열. 코드값처럼 길이가 일정한 값.
-- `text()` — 대용량 텍스트(본문 등).
-- `binary()` — 바이너리(MySQL LONGBLOB / MSSQL VARBINARY(MAX) / PostgreSQL BYTEA). 값 타입은 `Bytes`.
-- `boolean()` — 불리언(MySQL TINYINT(1) / MSSQL BIT / PostgreSQL BOOLEAN).
-- `datetime()` — 날짜+시간. 값 타입 `DateTime`.
-- `date()` — 날짜만. 값 타입 `DateOnly`.
-- `time()` — 시간만. 값 타입 `Time`.
-- `uuid()` — UUID(MySQL BINARY(16) / MSSQL UNIQUEIDENTIFIER / PostgreSQL UUID). 값 타입 `Uuid`.
-
-수식 메서드(`ColumnBuilder`):
-
-- `autoIncrement()` — 자동 증가. INSERT 타입에서 optional 처리. 보통 정수 PK 에만.
-- `nullable()` — NULL 허용. 값 타입에 `undefined` 추가, INSERT 타입에서 optional. 도메인상 값이 없을 수 있을 때만.
-- `default(value)` — INSERT 시 미지정이면 사용할 기본값. INSERT 타입에서 optional. 사용자가 명시적으로 지시한 경우에만.
-- `description(desc)` — 컬럼 코멘트(DDL COMMENT).
-
-## index 팩토리 / IndexBuilder
-
-`indexes((i) => [...])` 의 `i.index(...columns)` 로 시작. immutable 체이닝.
-
-- `index(...columns)` — 인덱스 대상 컬럼(가변 인자, 복합 인덱스 가능). `IndexBuilder` 반환.
-- `name(name)` — 인덱스 이름 지정. 미지정 시 자동 명명.
-- `unique()` — 유니크 인덱스로 설정. 중복 방지 제약이 필요할 때.
-- `orderBy(...orderBy)` — 컬럼별 정렬 방향(`"ASC" | "DESC"`). 인자 수가 컬럼 수와 일치해야 함. 범위/정렬 조회 최적화용.
-- `description(desc)` — 인덱스 코멘트.
+## ViewBuilder / View
 
 ```typescript
-.indexes((i) => [
-  i.index("email").unique(),
-  i.index("status", "createdAt").orderBy("ASC", "DESC"),
-])
+function View(name: string): ViewBuilder;
+class ViewBuilder<TDbContext, TData, TRelations> {
+  readonly meta: { name; description?; database?; schema?; viewFn?; relations? };
+  readonly $inferSelect; // TData
+  description(desc: string): ViewBuilder;
+  database(db: string): ViewBuilder;
+  schema(schema: string): ViewBuilder;
+  query(viewFn: (db: TDb) => Queryable<TViewData, any>): ViewBuilder;
+  relations(fn: (r) => TRelations): ViewBuilder;
+}
 ```
 
-## relation 팩토리 / 관계 빌더
-
-`relations((r) => ({...}))` 의 `r` 가 노출하는 관계 정의 메서드. Table 은 FK 계열 + RelationKey 계열 모두, View 는 RelationKey 계열만 사용 가능. 관계는 `include()`(queryable.md)로 자동 조인되며, 정의만 한다고 DB 쿼리가 나가지는 않는다. `description`/`single` 등 옵션은 메서드 체이닝이 아니라 마지막 `opts` 인자로 전달한다(순환 참조로 인한 TS7022 회피 목적).
-
-- `foreignKey(columns, targetFn, opts?)` — N:1 FK. DB 에 실제 FK 제약 생성. `columns`=현재 테이블의 FK 컬럼 배열, `targetFn`=대상 테이블 지연 팩토리(`() => User`). `opts.description` 선택.
-- `foreignKeyTarget(targetTableFn, relationName, opts?)` — 1:N 역참조. DB 객체는 안 만들고 `include` 시 배열로 로드. `relationName`=대상 테이블에 정의된 FK 관계 이름. `opts.single: true` 면 단일 객체(1:1)로 로드, `opts.description` 선택.
-- `relationKey(columns, targetFn, opts?)` — N:1 논리 관계. `foreignKey` 와 동일하나 DB FK 제약을 생성하지 않음. View 에서도 사용 가능. 물리 FK 를 걸 수 없는 관계(뷰↔테이블 등)에 사용.
-- `relationKeyTarget(targetTableFn, relationName, opts?)` — 1:N 논리 역참조. `foreignKeyTarget` 의 FK 미생성 버전. `opts.single`/`opts.description` 동일.
-
-opts 공통 필드:
-
-- `description`: string — 관계 코멘트.
-- `single`: true — (target 계열만) 역참조를 배열이 아닌 단일 객체로 로드. 1:1 관계일 때.
-
-```typescript
-const Post = Table("Post")
-  .columns((c) => ({ id: c.int().autoIncrement(), userId: c.int(), title: c.varchar(300) }))
-  .primaryKey("id")
-  .relations((r) => ({
-    user: r.foreignKey(["userId"], () => User, { description: "작성자" }),
-  }));
-```
-
-빌더 클래스: `ForeignKeyBuilder`, `ForeignKeyTargetBuilder`, `RelationKeyBuilder`, `RelationKeyTargetBuilder` 가 export 되며, `meta` 프로퍼티로 정의 내용을 노출한다(DDL 자동화·검증용). 보통 직접 `new` 하지 않고 위 팩토리로 생성한다.
-
-## View / ViewBuilder
-
-```typescript
-function View(name: string): ViewBuilder<...>;
-```
-
-쿼리 결과를 가상 테이블로 정의한다. `query` 콜백 안에서 `DbContext` 를 받아 `Queryable` 을 반환하면 그것이 뷰 본문이 된다.
-
-- `database(db)` / `schema(schema)` / `description(desc)` — Table 과 동일.
-- `query((db) => db.x().select(...))` — 뷰 본문 SELECT 정의. `db` 는 `DbContext`, 반환은 `Queryable`. select 결과 컬럼이 뷰 컬럼이 됨.
-- `relations((r) => ({...}))` — 논리 관계(RelationKey 계열)만 정의 가능.
+- `View(name)` — 뷰 빌더 시작점.
+- `description`/`database`/`schema` — Table 과 동일 의미.
+- `query(viewFn)` — 뷰의 데이터 소스인 SELECT Queryable 을 `db` 를 받아 반환. `viewFn` 이 `TData`(뷰 행 타입)를 결정.
+- `relations(fn)` — 뷰의 관계 정의. 뷰는 `relationKey`/`relationKeyTarget` 만 사용 가능(DB FK 미생성). 반환 타입에 관계가 합쳐져 `$inferSelect` 에 반영됨.
 
 ```typescript
 const ActiveUsers = View("ActiveUsers")
   .database("mydb")
-  .query((db: AppDb) =>
-    db.user().where((u) => [expr.eq(u.isActive, true)]).select((u) => ({ id: u.id, name: u.name })),
+  .query((db: MyDb) =>
+    db.user().where((u) => [expr.eq(u.status, "active")]).select((u) => ({ id: u.id, name: u.name })),
   );
 ```
 
-## Procedure / ProcedureBuilder
+## ProcedureBuilder / Procedure
 
 ```typescript
 function Procedure(name: string): ProcedureBuilder<never, never>;
+class ProcedureBuilder<TParams, TReturns> {
+  readonly meta: { name; description?; database?; schema?; params?; returns?; query? };
+  readonly $params; readonly $returns;
+  description(desc: string): ProcedureBuilder;
+  database(db: string): ProcedureBuilder;
+  schema(schema: string): ProcedureBuilder;
+  params(fn: (c) => TParams): ProcedureBuilder;
+  returns(fn: (c) => TReturns): ProcedureBuilder;
+  body(sql: string): ProcedureBuilder;
+}
 ```
 
-저장 프로시저를 정의한다. `executable()` 로 등록 후 `Executable.execute(params)`(queryable.md)로 호출.
-
-- `database(db)` / `schema(schema)` / `description(desc)` — 동일.
-- `params((c) => ({...}))` — 입력 파라미터 정의. `c` 는 column 팩토리. 키가 파라미터명.
-- `returns((c) => ({...}))` — 반환 결과 컬럼 정의.
-- `body(sql)` — 프로시저 본문 SQL. dialect 별 파라미터 구문 차이 주의(MySQL/PostgreSQL: `userId`, MSSQL: `@userId`).
-
-타입 추론 필드: `$params`, `$returns`(`Executable` 의 입력/출력 타입 파생).
+- `Procedure(name)` — 저장 프로시저 빌더 시작점. `executable()` 에 등록.
+- `params(fn)` — 입력 파라미터를 컬럼 팩토리로 정의. `Executable.execute()` 의 인자 타입이 됨.
+- `returns(fn)` — 반환 결과셋 컬럼을 정의. 결과 행 타입이 됨.
+- `body(sql)` — 프로시저 본문 SQL. DBMS 별 파라미터 구문 차이 주의(MySQL: `userId`, MSSQL: `@userId`, PostgreSQL: `RETURN QUERY` 필요).
 
 ```typescript
 const GetUserById = Procedure("GetUserById")
@@ -151,17 +103,122 @@ const GetUserById = Procedure("GetUserById")
   .body("SELECT id, name FROM User WHERE id = userId");
 ```
 
-## 타입 추론 유틸 / 기타 export
+## createColumnFactory (컬럼 팩토리 `c`)
 
-column-builder 가 함께 export 하는 타입(주로 빌더 내부·executor·고급 타입 작업용):
+`columns()`/`params()`/`returns()` 콜백에 주입되는 `c`. 각 메서드가 `ColumnBuilder` 를 반환하며 SQL 타입과 TS 원시 타입을 함께 고정한다.
 
-- `ColumnBuilderRecord` — `Record<string, ColumnBuilder<...>>`. `columns()` 반환 타입.
-- `InferColumns<T>` — column 빌더 레코드에서 실제 값 타입 추론.
-- `InferColumnExprs<T>` — 각 컬럼을 `ExprInput<V>` 로 추론(프로시저 파라미터 타입 등).
-- `InferInsertColumns<T>` / `InferUpdateColumns<T>` — INSERT(필수/optional 분리)·UPDATE(전부 optional) 타입.
-- `RequiredInsertKeys<T>` / `OptionalInsertKeys<T>` — INSERT 필수/optional 키 집합.
-- `DataToColumnBuilderRecord<TData>` — 데이터 레코드를 column 빌더 레코드로 역변환(`insertInto` 대상 테이블 제약에 사용).
-- `RelationBuilderRecord` — 관계 빌더 레코드 타입.
-- `InferDeepRelations<TRelations>` / `ExtractRelationTarget<T>` / `ExtractRelationTargetResult<T>` — 관계를 통한 심층 타입 추론(관계는 `include` 전이라 모두 optional 로 추론).
+| 메서드 | TS 타입 | SQL 매핑 |
+| ------ | ------- | -------- |
+| `c.int()` | number | INT (4바이트) |
+| `c.bigint()` | number | BIGINT (8바이트) |
+| `c.float()` | number | FLOAT/REAL (4바이트) |
+| `c.double()` | number | DOUBLE (8바이트) |
+| `c.decimal(precision, scale?)` | number | DECIMAL(precision, scale) — 고정 소수점 |
+| `c.varchar(length)` | string | VARCHAR(length) — 가변 길이 |
+| `c.char(length)` | string | CHAR(length) — 고정 길이 |
+| `c.text()` | string | TEXT/LONGTEXT — 대용량 |
+| `c.binary()` | Bytes | LONGBLOB / VARBINARY(MAX) / BYTEA |
+| `c.boolean()` | boolean | TINYINT(1) / BIT / BOOLEAN |
+| `c.datetime()` | DateTime | DATETIME |
+| `c.date()` | DateOnly | DATE |
+| `c.time()` | Time | TIME |
+| `c.uuid()` | Uuid | BINARY(16) / UNIQUEIDENTIFIER / UUID |
 
-`Table`/`View`/`Procedure` 빌더와 `_Migration`(시스템 마이그레이션 테이블 정의)도 함께 노출된다.
+### ColumnBuilder 수식 메서드
+
+- `.autoIncrement()` — INSERT 시 자동 증가. `$inferInsert` 에서 해당 컬럼이 optional 이 됨.
+- `.nullable()` — NULL 허용. 값 타입에 `undefined` 가 추가되고 `$inferInsert` 에서 optional.
+- `.default(value)` — INSERT 시 미지정이면 사용할 기본값. `$inferInsert` 에서 optional. (정책: 사용자가 명시 지시한 경우에만 사용.)
+- `.description(desc)` — 컬럼 설명. DDL Comment.
+
+```typescript
+.columns((c) => ({
+  id: c.bigint().autoIncrement(),
+  email: c.varchar(200).nullable(),
+  status: c.varchar(20).default("active"),
+}))
+```
+
+## createIndexFactory (인덱스 팩토리 `i`)
+
+`indexes()` 콜백에 주입되는 `i`. `i.index(...columns)` 가 `IndexBuilder` 를 반환.
+
+```typescript
+class IndexBuilder<TKeys> {
+  readonly meta: { columns; name?; unique?; orderBy?; description? };
+  name(name: string): IndexBuilder;
+  unique(): IndexBuilder;
+  orderBy(...orderBy: ("ASC" | "DESC")[]): IndexBuilder;
+  description(description: string): IndexBuilder;
+}
+```
+
+- `i.index(...columns)` — 인덱스 컬럼을 가변 인자로(복합 인덱스). 컬럼명은 테이블 컬럼 키로 타입 체크.
+- `.name(name)` — 인덱스 이름 직접 지정.
+- `.unique()` — 유니크 인덱스로 표시.
+- `.orderBy(...dirs)` — 컬럼별 정렬 방향. 인자 개수가 컬럼 개수와 일치해야 함.
+- `.description(desc)` — 인덱스 설명.
+
+```typescript
+.indexes((i) => [
+  i.index("email").unique(),
+  i.index("status", "createdAt").orderBy("ASC", "DESC"),
+])
+```
+
+## createRelationFactory (관계 팩토리 `r`)
+
+`relations()` 콜백에 주입되는 `r`. Table 은 4종 모두, View 는 `relationKey`/`relationKeyTarget` 만 노출. description·single 옵션은 메서드 체이닝이 아니라 `opts` 인자로 전달한다(순환 참조 시 TS7022 회피).
+
+- `r.foreignKey(columns, targetFn, opts?)` — N:1 FK 관계(DB FK 제약 **생성**). `columns` 는 FK 컬럼 배열, `targetFn` 은 대상 테이블 지연 반환(`() => User`). `opts.description?`. → `include()` 시 단일 객체로 로드.
+- `r.foreignKeyTarget(targetTableFn, relationName, opts?)` — 1:N FK 역참조. `relationName` 은 대상 테이블에서 이쪽을 가리키는 FK 관계 이름. `opts.single: true` 면 1:1(단일 객체), 미지정/`false` 면 배열. `opts.description?`.
+- `r.relationKey(columns, targetFn, opts?)` — `foreignKey` 와 동일하나 DB FK 제약 **미생성**(논리적 관계). View 에서도 사용 가능.
+- `r.relationKeyTarget(targetTableFn, relationName, opts?)` — `foreignKeyTarget` 의 DB FK 미생성 버전. `opts.single`/`description` 동일.
+
+대상은 항상 지연 함수(`() => Table`)로 넘긴다 — 순환 참조(A↔B) 방지.
+
+```typescript
+const Post = Table("Post")
+  .columns((c) => ({ id: c.bigint().autoIncrement(), authorId: c.bigint() }))
+  .primaryKey("id")
+  .relations((r) => ({
+    author: r.foreignKey(["authorId"], () => User, { description: "작성자" }),
+  }));
+
+const User = Table("User")
+  .columns((c) => ({ id: c.bigint().autoIncrement(), name: c.varchar(100) }))
+  .primaryKey("id")
+  .relations((r) => ({
+    posts: r.foreignKeyTarget(() => Post, "author"),
+    profile: r.foreignKeyTarget(() => Profile, "user", { single: true }),
+  }));
+```
+
+## 빌더 클래스 (관계)
+
+`createRelationFactory` 가 반환하는 인스턴스의 클래스도 export 된다. `meta` 만 보유하는 데이터 홀더이며 메서드 체이닝은 없다(옵션은 팩토리 `opts`).
+
+- `ForeignKeyBuilder` — N:1 FK(`meta: { ownerFn, columns, targetFn, description? }`).
+- `ForeignKeyTargetBuilder` — 1:N FK 역참조(`meta: { targetTableFn, relationName, description?, isSingle? }`).
+- `RelationKeyBuilder` / `RelationKeyTargetBuilder` — 위 둘의 DB FK 미생성 버전.
+
+## 타입 추론 유틸리티
+
+빌더의 phantom 필드 뒤에 있는 추론 타입. 직접 import 해 쓸 일은 드물지만 export 됨.
+
+- `InferColumns<TBuilders>` — 컬럼 빌더 레코드 → 실제 값 타입 레코드.
+- `InferColumnExprs<TBuilders>` — 컬럼 빌더 레코드 → `ExprInput<V>` 레코드(프로시저 파라미터 입력 타입).
+- `InferInsertColumns<TBuilders>` — INSERT 타입(필수/optional 분리).
+- `InferUpdateColumns<TBuilders>` — UPDATE 타입(전부 optional).
+- `RequiredInsertKeys`/`OptionalInsertKeys` — INSERT 필수/optional 키 추출.
+- `DataToColumnBuilderRecord<TData>` — 데이터 레코드 → 컬럼 빌더 레코드(`insertInto` 대상 타입 제약용).
+- `InferDeepRelations<TRelations>` — 관계 정의 → 심층(중첩) 관계 타입. 모든 관계는 optional(include 전 undefined). 같은 테이블 재방문 시 순환을 끊음.
+- `ExtractRelationTarget` / `ExtractRelationTargetResult` — 단일/배열 관계 대상 타입 추출(내부용).
+- `ColumnBuilderRecord` / `RelationBuilderRecord` — 컬럼/관계 빌더 레코드 타입.
+
+## 주의사항
+
+- 모든 빌더 메서드는 새 인스턴스를 반환하는 불변 체이닝 — 중간 결과를 변수에 담아 분기 재사용 가능.
+- 관계 `target`/`owner` 는 반드시 지연 함수로 — 즉시 참조하면 모듈 로드 순서·순환 참조로 깨짐.
+- View 의 관계는 `relationKey*` 만(DB FK 없음). Table 만 `foreignKey*` 로 실제 FK 제약 생성.
+- 컬럼은 기본 `NOT NULL`. `.nullable()`/`.default()` 는 도메인 근거가 있을 때만(orm.md 정책).

@@ -1,107 +1,115 @@
-# @simplysm/angular — 공유 마스터 데이터
+# @simplysm/angular — 공유 마스터 데이터·선택 매니저
 
-고객사·품목 등 자주 참조하는 마스터 데이터를 한 번 등록해 어느 화면에서든 공유 시그널로 쓰고, 그 데이터를 선택하는 드롭다운/버튼/리스트 컨트롤을 제공하는 군. 등록·항목 추가 절차는 [client-shared-data.md](../manuals/client-shared-data.md) 참조.
+고객사·품목 등 자주 참조하는 마스터 데이터를 한 번 등록해 어느 화면에서든 공유 시그널로 쓰고, 그 데이터를 선택하는 드롭다운/버튼/리스트 컨트롤과, 시트·리스트의 선택/정렬/펼침 상태를 관리하는 composable 매니저를 제공하는 군. 등록·항목 추가·선택 모달·좌측목록+우측상세 절차는 [client-shared-data.md](../manuals/client-shared-data.md) 참조.
 
-## SdSharedDataProvider
+## `SdSharedDataProvider<T>`
 
-```ts
-@Injectable() abstract class SdSharedDataProvider<T extends Record<string, SharedDataBase<string|number>>> {
-  loadingCount: WritableSignal<number>;
-  abstract initialize(): void;
-  register<K>(name: K, info: SharedDataInfo<T[K]>): void;
-  getHandle<K>(name: K): SharedDataHandle<T[K]>;
-  emitAsync<K>(name: K, changeKeys?: (string|number)[]): Promise<void>;
-  wait(): Promise<void>;
-}
-```
+`@Injectable()` **abstract**. 앱이 상속해 `initialize()` 에서 데이터를 `register` (root 별칭 등록 필요). `T extends Record<string, SharedDataBase<string|number>>`.
 
-- 추상 클래스 — 앱에서 상속(`AppSharedDataProvider`)해 `initialize()` 안에서 `register`. `T` 는 이름→항목타입 매핑.
-- `register(name, info)` — 마스터 데이터 등록. 재등록 시 이전 리스너 정리 + generation 증가로 이전 이벤트 무시 후 재로드.
-- `getHandle(name)` — 핸들 반환(첫 접근 시 lazy 로드 + 변경 이벤트 리스너 등록). 미등록이면 throw.
-- `emitAsync(name, changeKeys?)` — 변경 통지 이벤트 발생. `changeKeys` 지정 시 해당 키만 부분 갱신, 미지정 시 전체 리로드. CRUD 저장/삭제 후 호출해 다른 화면을 동기화.
-- `wait()` — 진행 중인 로드(`loadingCount`)가 끝날 때까지 대기. `sd-base-container` 의 ready 게이트가 사용.
+- `loadingCount: WritableSignal<number>` (초기 0) — 로드 중 카운트.
+- `abstract initialize(): void` — 하위에서 `register` 호출.
+- `register<K>(name: K, info: SharedDataInfo<T[K]>): void` — 데이터 항목 등록(lazy; 즉시 로드 안 함). 재등록 시 기존 리스너 제거·generation 증가로 stale 이벤트 무시.
+- `getHandle<K>(name: K): SharedDataHandle<T[K]>` — 핸들 반환(첫 접근 시 lazy 로드·리스너 등록). 미등록 시 throw.
+- `emitAsync<K>(name: K, changeKeys?: (string|number)[]): Promise<void>` — 변경 통지. `changeKeys` 생략 = 전체 재로드, 지정 = 그 키들만 부분 갱신. 저장·삭제 후 호출해 공유데이터를 최신화.
+- `wait(): Promise<void>` — `loadingCount <= 0` 까지 대기.
 
-### 관련 타입
+타입:
+- `SharedDataBase<TKey extends string|number>` — 항목 매직 필드: `__valueKey: TKey`(키) / `__searchText: string`(검색용) / `__isHidden: boolean`(숨김) / `__parentKey?: TKey`(트리 부모). getter select 결과에 포함 필수.
+- `SharedDataInfo<T>` — `{ serviceKey: string; getter: (changeKeys?) => Promise<T[]>; filter?: unknown; orderBy?: (item) => string|number|DateOnly|DateTime|Time|undefined }`. `getter(changeKeys)` 는 changeKeys 주어지면 그 키만 재조회(incremental).
+- `SharedDataHandle<T>` — `{ items: Signal<T[]>; get(key): T | undefined }`. 화면이 `useSharedSignal(name)` 으로 받아 `items()`·`get(id)` 사용.
+- `SdSharedDataChangeEvent` — `defineEvent<{ name; filter }, (string|number)[] | undefined>("SdSharedDataChange")`. provider 내부 통지 이벤트.
 
-```ts
-SharedDataBase<TKey> { __valueKey: TKey; __searchText: string; __isHidden: boolean; __parentKey?: TKey }
-SharedDataInfo<T> { serviceKey: string; getter: (changeKeys?) => Promise<T[]>; filter?; orderBy?: (item) => ...|undefined }
-SharedDataHandle<T> { items: Signal<T[]>; get(key): T | undefined }
-SdSharedDataChangeEvent // defineEvent — 변경 통지 이벤트 정의
-```
+## `SdSharedDataSelect<TItem, TMode, TModal>` — `<sd-shared-data-select>`
 
-- `SharedDataBase` — 모든 공유 항목이 가져야 할 매직 필드: `__valueKey`(키), `__searchText`(검색 텍스트), `__isHidden`(숨김 여부), `__parentKey`(트리 부모, 선택).
-- `SharedDataInfo.getter(changeKeys)` — DB 조회 함수. changeKeys 주어지면 그 키만 재조회(incremental refresh). `orderBy` 는 정렬 키 반환. `SharedDataHandle.get(key)` 로 단건 O(1) 조회.
+검색·트리(`__parentKey`) 가능한 공유데이터 드롭다운(`sd-select` 래핑). 폼 입력의 공유 데이터 선택지에 사용.
 
-```ts
-sharedProducts = useSharedSignal("품목"); // 앱 헬퍼
-// sharedProducts.items() / sharedProducts.get(id)
-```
-
-## 선택 컨트롤
-
-### SdSharedDataSelect — `<sd-shared-data-select>`
-
-```ts
-value = model<SelectModeValue<TItem["__valueKey"] | undefined>[TMode]>();
-items = input.required<TItem[]>();
-disabled; required; useUndefined; inset; inline;
-size = input<"sm"|"lg">(); selectMode = input<TMode>("single"); // "single" | "multi"
-filterFn = input<(item, index, ...params) => boolean>(); filterFnParams = input<any[]>();
-modal = input<SdSelectModalInfo<TModal>>(); editModal = input<SdModalInfo<SdModalContentDef<boolean>>>();
-selectClass; multiSelectionDisplayDirection = input<"vertical">();
-getIsHiddenFn = input(item => item.__isHidden); getSearchTextFn = input(item => item.__searchText);
-displayOrderByFn = input<(item) => ...|undefined>();
-// 콘텐츠: [itemOf] 템플릿(항목 렌더), #undefinedTpl(미지정 표시)
-```
-
-- 공유데이터 드롭다운 선택. `value` 는 선택된 `__valueKey`(single) 또는 키 배열(multi). `items` 에 `sharedX.items()` 전달.
-- `selectMode` — `"single"`/`"multi"`. `useUndefined`=multi 에서 "미지정" 항목 노출, `required=false`+single 이면 미지정 선택 가능. 내부 검색바로 `__searchText` 필터(부모키 트리면 자식 매칭 포함).
-- `modal` — 관리·선택 모달(`selectMode:"single"`+현재 키 주입, 결과로 선택 갱신). `editModal` — 관리 전용(선택 변경 없음). 둘 다 `<sd-select-button>` 아이콘으로 노출.
-- `filterFn`/`displayOrderByFn` — 표시 필터/정렬. `getIsHiddenFn`/`getSearchTextFn` — 숨김·검색텍스트 추출 커스텀(기본 매직필드). `__parentKey` 있으면 트리(`getChildrenFn` 자동).
+- `items: input.required<TItem[]>` — 소스 목록(`sharedX.items()`).
+- `value: model<...>` — single 이면 `키|undefined`, multi 면 `키[]`.
+- `selectMode: TMode` (기본 `"single"`) — `"single"`/`"multi"`.
+- `required: boolean` — true(single)면 "미지정" 옵션 숨김.
+- `useUndefined: boolean` — multi 에서 "미지정" 항목 표시.
+- `disabled`/`inset`/`inline`/`size: "sm"|"lg"`/`selectClass`/`multiSelectionDisplayDirection: "vertical"`.
+- `filterFn: (item, index, ...params) => boolean` + `filterFnParams: any[]` — 표시 전 필터.
+- `getIsHiddenFn` (기본 `(item) => item.__isHidden`) / `getSearchTextFn` (기본 `(item) => item.__searchText`) / `displayOrderByFn` — 숨김/검색텍스트/정렬 커스터마이즈.
+- `modal: SdSelectModalInfo<TModal>` — 설정 시 검색 모달 버튼(선택 갱신). `editModal: SdModalInfo<SdModalContentDef<boolean>>` — 관리 전용 모달 버튼(선택 안 바꿈). (선택/관리 모달 규약은 [client-shared-data.md](../manuals/client-shared-data.md))
+- 콘텐츠: `[itemOf]` 항목 템플릿, `#undefinedTpl`("미지정" 라벨).
 
 ```html
-<sd-shared-data-select [items]="sharedProducts.items()" [(value)]="productId" [required]="true">
-  <ng-template [itemOf]="sharedProducts.items()" let-item="item">{{ item.name }}</ng-template>
+<sd-shared-data-select [items]="sharedCustomers.items()" [(value)]="data().customerId" (valueChange)="mark(data)">
+  <ng-template [itemOf]="sharedCustomers.items()" let-item="item">{{ item.name }}</ng-template>
 </sd-shared-data-select>
 ```
 
-### SdSharedDataSelectButton — `<sd-shared-data-select-button>`
+## `SdSharedDataSelectButton<TItem, TMode, TModal>` — `<sd-shared-data-select-button>`
 
-```ts
-value = model<SelectModeValue<string|number>[TMode]>();
-items = input<TItem[]>([]); modal = input.required<SdSelectModalInfo<TModal>>();
-selectMode = input<TMode>("single"); disabled; required; inset; size = input<"sm"|"lg">();
-itemTplRef = contentChild.required(SdItemOfTemplate); // [itemOf] 템플릿(필수)
-```
+모달로 선택하는 버튼(`sd-modal-select-button` 래핑).
 
-- 모달로만 선택하는 버튼형(`SdModalSelectButton` 래핑). 선택된 항목을 `[itemOf]` 템플릿으로 표시(multi 면 콤마 구분). 항목이 많아 드롭다운보다 모달 검색이 나을 때.
+- `items: TItem[]` (기본 `[]`) — 선택 항목 표시 해석용.
+- `modal: input.required<SdSelectModalInfo<TModal>>` — 선택 모달(필수).
+- `value: model<SelectModeValue<string|number>[TMode]>` / `selectMode: TMode`(기본 `"single"`).
+- `disabled`/`required`/`inset`/`size: "sm"|"lg"`.
+- 콘텐츠: `[itemOf]` 항목 템플릿(필수).
 
-### SdSharedDataSelectList — `<sd-shared-data-select-list>`
+## `SdSharedDataSelectList<TItem, TModal>` — `<sd-shared-data-select-list>`
 
-```ts
-selectedItem = model<TItem>();
-canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
-items = input.required<TItem[]>(); selectedIcon = input<string>(); useUndefined;
-filterFn = input<(item, index) => boolean>(); modal = input<SdSelectModalInfo<TModal>>();
-header = input<string>(); pageItemCount = input<number>();
-// 콘텐츠: [itemOf](항목) #headerTpl #filterTpl #undefinedTpl
-```
+검색·페이지 가능한 단일 선택 리스트. 좌측목록+우측상세 레이아웃의 마스터로 사용.
 
-- 좌측 선택 목록형(master-detail 의 좌측 패널). `selectedItem` 은 항목 객체(키 아님). `canChangeFn` 으로 선택 전환 가드(미저장 변경 보호), Promise 가능.
-- `pageItemCount` 지정 시 페이징. `header`/`#headerTpl`=상단 제목, `#filterTpl`=검색 대체, `modal`=목록 관리 모달. 검색은 `__searchText` 매칭, `__isHidden` 항목 제외.
+- `selectedItem: model<TItem>` — 현재 선택(항목 객체). `canChangeFn` 가드(`setupModelHook`). `items` 변경 시 `__valueKey` 로 재해석 자동 동기.
+- `items: input.required<TItem[]>`.
+- `canChangeFn: (item: TItem | undefined) => boolean | Promise<boolean>` (기본 `() => true`) — 선택 변경 가드(다른 마스터로 전환 전 미저장 변경 확인 등).
+- `selectedIcon: string` — 선택 항목 아이콘. `useUndefined: boolean` — "미지정" 항목. `header: string` — 헤더 텍스트. `pageItemCount: number` — `>0` 이면 그 크기로 페이지네이션.
+- `filterFn: (item, index) => boolean`.
+- `modal: SdSelectModalInfo<TModal>` — 설정 시 외부 링크 모달 버튼(목록 관리·선택).
+- 콘텐츠: `#headerTpl` / `#filterTpl`(기본 검색 필드 대체) / `[itemOf]` / `#undefinedTpl`.
+- 메서드: `select(item)` / `toggle(item)` / `onModalButtonClick()`.
 
 ```html
-<sd-shared-data-select-list [items]="sharedRoles.items()" [(selectedItem)]="selectedRole"
-  [canChangeFn]="checkCanLeave" [header]="'역할'">
+<sd-shared-data-select-list class="flex-min" [items]="sharedRoles.items()" [(selectedItem)]="selectedRole" [header]="'역할'" [modal]="{ type: RoleList, title: '역할', inputs: {} }">
   <ng-template [itemOf]="sharedRoles.items()" let-item="item">{{ item.name }}</ng-template>
 </sd-shared-data-select-list>
 ```
 
-### matchesSearchText
+## `matchesSearchText`
 
 ```ts
-matchesSearchText(itemText: string, searchQuery: string | undefined): boolean;
+function matchesSearchText(itemText: string, searchQuery: string | undefined): boolean
 ```
 
-- 공백 분리 AND 부분일치(대소문자 무시). 빈 쿼리면 true. 선택 컨트롤이 내부 검색에 사용하며, 커스텀 필터에서 재사용 가능.
+- `searchQuery` 를 공백으로 분리한 모든 단어가 `itemText` 에 (대소문자 무시) 부분 포함되면 `true`(AND 매칭). 단어 없으면 `true`. 공유데이터 select 의 검색 매칭에 사용.
+
+## 선택/정렬/펼침 매니저 (composable)
+
+시트·리스트가 내부적으로 쓰는 상태 매니저. 직접 사용은 커스텀 그리드를 만들 때.
+
+### `useSelectionManager<TItem, TKey>`
+
+```ts
+useSelectionManager(options: {
+  displayItems: Signal<TItem[]>; selectedKeys: WritableSignal<TKey[]>;
+  selectMode: Signal<"single"|"multi"|undefined>;
+  getItemSelectableFn: Signal<((item) => boolean|string) | undefined>;
+  trackByFn: Signal<(item, index) => TKey>;
+})
+```
+
+반환: `hasSelectable`/`isAllSelected: Signal<boolean>`, `getSelectable(item): true | string | undefined`(불가=undefined, 가능=true, 사유=string), `getCanChangeFn(item)`, `select`/`deselect`/`toggle`/`toggleAll`/`isSelected`. single 은 교체, multi 는 추가(`obj.equal` 중복 제거).
+
+### `useSortingManager`
+
+```ts
+useSortingManager(options: { sorts: WritableSignal<SortingDef[]> })
+```
+
+반환: `defMap: Signal<Map<string, { indexText?: string; desc: boolean }>>`(다중 정렬 시 `indexText` "1"…"n"), `toggle(key, multiple)`(none→asc→desc→제거; `multiple=false` 면 전체 교체), `sort<T>(items): T[]`(안정 다중 키 정렬; null < non-null). `SortingDef` = `{ key: string; desc: boolean }`.
+
+### `useExpandingManager<T>`
+
+```ts
+useExpandingManager(binding: {
+  items: Signal<T[]>; expandedItems: WritableSignal<T[]>;
+  getChildrenFn: Signal<((item, index) => T[] | undefined) | undefined>;
+  sort: (items: T[]) => T[];
+})
+```
+
+반환: `displayItems: Signal<T[]>`(평탄화·부모→자식 순), `hasExpandable`/`isAllExpanded: Signal<boolean>`, `toggle(item)`/`toggleAll()`/`isVisible(item)`(모든 조상 펼침 시 true)/`def(item): ExpandItemDef<T>`. `ExpandItemDef<T>` = `{ item: T; parentDef: ExpandItemDef<T> | undefined; hasChildren: boolean; depth: number }`.

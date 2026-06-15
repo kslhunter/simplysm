@@ -82,54 +82,52 @@ type TSeverity = "error" | "warn" | "log";
       (filterSubmit)="onFilterSubmit()"
     >
       <ng-template #filterTpl>
-        <div class="form-box-inline">
-          <div>
-            <label>기간</label>
-            <sd-date-range-picker
-              [(from)]="filter().fromDate"
-              (fromChange)="mark(filter)"
-              [(to)]="filter().toDate"
-              (toChange)="mark(filter)"
-            />
-          </div>
-          <div>
-            <label>심각도</label>
-            <sd-select [(value)]="filter().severity" (valueChange)="mark(filter)">
-              <sd-select-item [value]="undefined">
-                <span class="tx-theme-gray-default">전체</span>
-              </sd-select-item>
-              <sd-select-item [value]="'error'">
-                <sd-label [theme]="'danger'">error</sd-label>
-              </sd-select-item>
-              <sd-select-item [value]="'warn'">
-                <sd-label [theme]="'warning'">warn</sd-label>
-              </sd-select-item>
-              <sd-select-item [value]="'log'">
-                <sd-label [theme]="'gray'">log</sd-label>
-              </sd-select-item>
-            </sd-select>
-          </div>
-          <div>
-            <label>검색어</label>
-            <sd-textfield
-              [type]="'text'"
-              [(value)]="filter().searchText"
-              (valueChange)="mark(filter)"
-            />
-          </div>
-          <div>
-            <label>사용자</label>
-            <sd-shared-data-select
-              [selectMode]="'multi'"
-              [items]="shared{{userEntityPascal}}s.items()"
-              [(value)]="filter().{{userEntityCamel}}Ids"
-              (valueChange)="mark(filter)"
-            >
-              <ng-template [itemOf]="shared{{userEntityPascal}}s.items()" let-item="item">
-                \{{ item.name }}
-              </ng-template>
-            </sd-shared-data-select>
-          </div>
+        <div>
+          <label>기간</label>
+          <sd-date-range-picker
+            [(from)]="filter().fromDate"
+            (fromChange)="mark(filter)"
+            [(to)]="filter().toDate"
+            (toChange)="mark(filter)"
+          />
+        </div>
+        <div>
+          <label>심각도</label>
+          <sd-select [(value)]="filter().severity" (valueChange)="mark(filter)">
+            <sd-select-item [value]="undefined">
+              <span class="tx-theme-gray-default">전체</span>
+            </sd-select-item>
+            <sd-select-item [value]="'error'">
+              <sd-label [theme]="'danger'">error</sd-label>
+            </sd-select-item>
+            <sd-select-item [value]="'warn'">
+              <sd-label [theme]="'warning'">warn</sd-label>
+            </sd-select-item>
+            <sd-select-item [value]="'log'">
+              <sd-label [theme]="'gray'">log</sd-label>
+            </sd-select-item>
+          </sd-select>
+        </div>
+        <div>
+          <label>검색어</label>
+          <sd-textfield
+            [type]="'text'"
+            [(value)]="filter().searchText"
+            (valueChange)="mark(filter)"
+          />
+        </div>
+        <div>
+          <label>사용자</label>
+          <sd-shared-data-select
+            [selectMode]="'multi'"
+            [items]="shared{{userEntityPascal}}s.items()"
+            [(value)]="filter().{{userEntityCamel}}Ids"
+            (valueChange)="mark(filter)"
+          >
+            <ng-template [itemOf]="shared{{userEntityPascal}}s.items()" let-item="item">
+              \{{ item.name }}
+            </ng-template>
+          </sd-shared-data-select>
         </div>
       </ng-template>
 

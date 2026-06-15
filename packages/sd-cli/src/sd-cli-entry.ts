@@ -10,6 +10,7 @@ import { runWatch } from "./commands/watch";
 import { runDev } from "./commands/dev";
 import { runBuild } from "./commands/build";
 import { runInit } from "./commands/init/init";
+import { runInitClient } from "./commands/init/init-client";
 import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
 import path from "path";
@@ -333,11 +334,23 @@ export function createCliParser(argv: string[]): Argv {
       },
     )
     .command(
-      "init",
-      "Bootstrap a new SI workspace via interactive prompts",
-      (cmd) => cmd.version(false).hide("help"),
-      async () => {
-        await runInit({ cwd: process.cwd() });
+      "init [kind]",
+      "Bootstrap a new SI workspace via interactive prompts (kind=client: add a client package to an existing workspace)",
+      (cmd) =>
+        cmd
+          .version(false)
+          .hide("help")
+          .positional("kind", {
+            describe: "init 대상 (생략: 새 워크스페이스 부트스트랩)",
+            type: "string",
+            choices: ["client"] as const,
+          }),
+      async (args) => {
+        if (args.kind === "client") {
+          await runInitClient({ cwd: process.cwd() });
+        } else {
+          await runInit({ cwd: process.cwd() });
+        }
       },
     )
     .demandCommand(1, "Please specify a command.")

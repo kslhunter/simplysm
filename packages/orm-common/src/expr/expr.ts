@@ -1138,23 +1138,25 @@ export const expr = {
   },
 
   /**
-   * ISO year-month (first day of the month)
+   * ISO year-month (YYYYMM)
    *
-   * 주어진 날짜의 해당 월 첫째 날 반환
+   * 주어진 날짜의 연월을 "YYYYMM" 문자열로 반환
    *
    * @param source - DateOnly expression
-   * @returns First day of the month
+   * @returns Year-month string (YYYYMM)
    *
    * @example
    * ```typescript
    * db.order().select((o) => ({
    *   yearMonth: expr.isoYearMonth(o.orderDate),
    * }))
-   * // 2024-01-15 → 2024-01-01
+   * // 2024-01-15 → "202401"
    * ```
    */
-  isoYearMonth<T extends DateOnly | undefined>(source: ExprUnit<T>): ExprUnit<T> {
-    return new ExprUnit("DateOnly", {
+  isoYearMonth<T extends DateOnly | undefined>(
+    source: ExprUnit<T>,
+  ): ExprUnit<T extends undefined ? undefined : string> {
+    return new ExprUnit("string", {
       type: "isoYearMonth",
       arg: toExpr(source),
     });

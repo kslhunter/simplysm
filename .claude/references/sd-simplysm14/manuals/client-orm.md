@@ -51,3 +51,4 @@ const rows = await this._appOrm.connectAsync(async (db) => {
 ## 지킬 것
 
 - DB 옵션(`DbClass`·`connOpt`·`dbContextOpt`)은 `AppOrmProvider` 한 곳에만 두고, 화면·프로바이더는 `connectAsync` 만 호출. 옵션을 호출부에 흩뿌리지 않음.
+- 프리렌더(SSG) 대상 화면의 초기화 경로에서는 `connectAsync` 호출 금지 — 제약은 [client-ssg.md](./client-ssg.md) 참조.

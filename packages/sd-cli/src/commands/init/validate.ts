@@ -1,5 +1,6 @@
+import path from "path";
 import { fsx } from "@simplysm/core-node";
-import type { InitInput } from "./types";
+import type { ClientInputSpec, InitInput } from "./types";
 
 const KEBAB_CASE_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -44,5 +45,27 @@ export function validateInput(input: InitInput): void {
       throw new Error(`client 이름이 중복됩니다: "${normalized}"`);
     }
     clientNames.add(normalized);
+  }
+}
+
+/** init client — 신규 클라이언트가 기존 워크스페이스와 충돌하지 않는지 검증 */
+export async function validateInitClientInput(
+  cwd: string,
+  newClient: ClientInputSpec,
+  existingClients: ClientInputSpec[],
+): Promise<void> {
+  if (!KEBAB_CASE_RE.test(newClient.name)) {
+    throw new Error(`client 이름은 영문 kebab-case 여야 합니다. 입력값: "${newClient.name}"`);
+  }
+
+  const toNormalized = (clientName: string): string =>
+    clientName.startsWith("client-") ? clientName : `client-${clientName}`;
+  const normalized = toNormalized(newClient.name);
+  if (existingClients.some((c) => toNormalized(c.name) === normalized)) {
+    throw new Error(`이미 존재하는 client 입니다: "${normalized}"`);
+  }
+
+  if (await fsx.exists(path.resolve(cwd, "packages", normalized))) {
+    throw new Error(`이미 존재하는 패키지 디렉토리입니다: packages/${normalized}`);
   }
 }

@@ -1,122 +1,94 @@
-# @simplysm/angular — 부가 기능(권한표·상태프리셋·테마·주소·에디터·시각화)
+# @simplysm/angular — features(테마·주소·에디터·시각화)
 
-위 군에 들지 않는 도메인성/표시용 컴포넌트 모음. 특정 화면 기능을 붙일 때 개별로 읽힘. 모두 standalone `sd-*` 컴포넌트.
+테마 토글·폰트 크기, 주소 검색 모달, 리치텍스트 에디터, 라벨·노트·진행률·캘린더·바코드·차트 등 표시용 컴포넌트 모음. 특정 화면 기능을 붙일 때 개별로 읽힘.
 
-## SdPermissionTable — `<sd-permission-table>`
+## 테마
 
-```ts
-value = model<Record<string, boolean>>({}); // "<코드>.use"/"<코드>.edit" → boolean
-items = input<SdPermission<TModule>[]>([]);
-disabled = input(false);
-```
+### `SdThemeProvider`
 
-- 권한 트리 편집표. `items`(`SdPermission` 트리, routing-appstructure.md)를 사용/편집 체크박스 표로 렌더. `value` 는 `<코드>.use`/`<코드>.edit` 키의 boolean 맵(양방향).
-- use 미체크면 edit 불가, use 해제 시 edit 자동 해제, 부모 토글 시 하위 일괄 변경. `disabled`=전체 읽기전용. 권한 관리 화면에 사용.
+`@Injectable({ providedIn: "root" })`. (`provideSdAngular` 가 dark/fontSize 를 `SdLocalStorageProvider` 에 영속화)
 
-## SdStatePreset — `<sd-state-preset>`
+- `dark: WritableSignal<boolean>` (초기 false) — `effect` 로 body `sd-theme-dark` 클래스 토글(브라우저 전용).
+- `fontSize: WritableSignal<number>` (초기 12) — `effect` 로 `documentElement.style.fontSize` 설정.
+- `fontSizePresets: readonly number[]` = `[12, 14, 16, 20, 24, 28]`.
+- `increaseFontSize()` / `decreaseFontSize()` — 다음/이전 프리셋으로(경계에서 no-op).
 
-```ts
-key = input.required<string>(); state = model.required<TState>(); size = input<"sm"|"lg">();
-// SdStatePresetDef<TState> { name: string; state: TState }
-```
+### `SdThemeSelector` — `<sd-theme-selector>`
 
-- 현재 화면 상태(`state`)를 이름붙여 저장·복원하는 프리셋 바(검색 조건 즐겨찾기 등). 별 버튼=현재 상태 저장(이름 prompt), 프리셋 클릭=상태 적용, 저장/삭제 버튼 제공.
-- `key` 로 `injectSdSystemConfigResource` 에 영속. `state` 는 화면이 들고 있는 상태 시그널(양방향).
+팔레트 아이콘 드롭다운(폰트 +/- · 다크모드 스위치). input 없음. `isMinFontSize`/`isMaxFontSize: computed` 로 +/- 버튼 비활성.
 
-## SdThemeProvider 셀렉터
+## 주소
 
-### SdThemeSelector — `<sd-theme-selector>`
+### `SdAddressSearchModal` — `<sd-address-search-modal>`
 
-```ts
-// 입력 없음. SdThemeProvider 를 inject.
-```
+Daum 우편번호 위젯 모달. `SdModalContentDef<Address>` 구현 — `_sdModal.showAsync({ type: SdAddressSearchModal, ... })` 로 띄움.
 
-- 다크모드 토글 + 글자크기 증감 UI 드롭다운. `SdThemeProvider` 를 직접 조작(`fontSize`/`dark`). 탑바 등에 배치. provider 본체는 [README.md](./README.md) "테마·배경".
+- input 없음. `close: output<Address>` — 선택 완료 시 주소 emit.
+- `Address` = `{ postNumber: string | undefined; address: string | undefined; buildingName: string | undefined }`.
 
-## SdAddressSearchModal — `<sd-address-search-modal>`
+## 에디터
 
-```ts
-close = output<Address>(); // SdModalContentDef<Address>
-// Address { postNumber: string | undefined; address: string | undefined; buildingName: string | undefined }
-```
+### `SdTiptapEditor` — `<sd-tiptap-editor>`
 
-- 다음(Daum) 우편번호 검색 모달. `SdModalProvider.showAsync({ type: SdAddressSearchModal, inputs: {} })` 로 띄움. 스크립트를 동적 로드하며 실패 시 에러 메시지 표시. 선택 시 `{ postNumber, address, buildingName }` 으로 close.
+툴바 내장 리치텍스트(TipTap) 에디터.
 
-```ts
-const addr = await this._sdModal.showAsync({ title: "주소 검색", type: SdAddressSearchModal, inputs: {} });
-```
-
-## SdTiptapEditor — `<sd-tiptap-editor>`
-
-```ts
-value = model<string>(); // HTML
-disabled; readonly; required; placeholder = input<string>();
-validatorFn = input<(value: string | undefined) => string | undefined>();
-extensions = input<AnyExtension[]>();
-editor: WritableSignal<Editor | undefined>; // @internal — TipTap 인스턴스
-```
-
-- 리치 텍스트(WYSIWYG) 에디터. `value` 는 HTML 문자열(빈 내용이면 undefined, 결측 보존). 내장 툴바(제목·굵게·색·정렬·목록·인용·코드블록 등) 제공.
-- `extensions` 지정 시 기본 확장 대체, 미지정 시 StarterKit + 색/하이라이트/정렬/이미지/밑줄(+placeholder). `disabled`/`readonly`=편집 불가, `required`/`validatorFn`=form 검증(`setupInvalid`).
+- `value: model<string>` — HTML 콘텐츠(비면 `undefined`).
+- `disabled: boolean` — true 면 툴바 숨김 + 비편집.
+- `readonly: boolean` — 비편집(기본 커서 유지). 편집 가능 = `!disabled && !readonly`.
+- `required: boolean` — 빈 값일 때 "값을 입력하세요.".
+- `placeholder: string` — Placeholder 확장 추가(`extensions` 미지정 시).
+- `validatorFn: (value) => string | undefined` — 커스텀 검증.
+- `extensions: AnyExtension[]` — 기본 확장 셋 전체 override.
+- 기본 확장: StarterKit·TextStyle·Color·Highlight·TextAlign·Image(base64)·Underline(+placeholder 시 Placeholder). 툴바: h1/h2·bold/italic/underline/strike·텍스트/배경색·리스트·들여쓰기·인용·코드블록·정렬·clean.
 
 ## 시각화
 
-### SdLabel — `<sd-label>`
+### `SdLabel` — `<sd-label>`
 
-```ts
-theme = input<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray">();
-color = input<string>(); clickable = input(false);
-```
+- `theme: "primary"|...|"blue-gray"|undefined` — 배경(`--theme-{key}-default`; 미지정 시 gray-darker).
+- `color: string` — 명시 배경색(theme 보다 우선).
+- `clickable: boolean` — true 면 포인터 커서 + hover 진해짐.
 
-- 짧은 배지/태그. `theme` 또는 임의 `color`(배경) 지정. `clickable`=호버 강조 + 커서 포인터. 상태 표시에 사용.
+### `SdNote` — `<sd-note>`
 
-### SdNote — `<sd-note>`
+- `theme: "primary"|...|"blue-gray"|undefined` — `--theme-{key}-lightest` 배경+테두리(미지정 시 gray-lightest, 테두리 없음).
+- `size: "sm"|"lg"` — `"sm"` 작은 폰트/패딩, `"lg"` 큰 패딩.
+- `inset: boolean` — true 면 라운드 제거(flush).
 
-```ts
-theme = input<...8색>(); size = input<"sm"|"lg">(); inset = input(false);
-```
+### `SdProgress` — `<sd-progress>`
 
-- 안내 박스(callout). `theme` 의 옅은 배경. `inset`=라운드 제거(영역 내장). 주의/도움말 문구에 사용.
+- `theme: input.required<"primary"|...|"blue-gray">` — 진행 바 색(`--theme-{key}-default`).
+- `value: input.required<number>` — 0~1 비율(퍼센트 표시).
+- `inset: boolean` — true 면 라운드/테두리 제거. `size: "sm"|"lg"` — 패딩.
 
-### SdProgress — `<sd-progress>`
+### `SdCalendar<T>` — `<sd-calendar>`
 
-```ts
-theme = input.required<...8색>(); value = input.required<number>(); // 0~1
-inset; size = input<"sm"|"lg">();
-```
+6×7 월 그리드에 일자별 항목 투영.
 
-- 진행률 막대. `value`(0~1)를 퍼센트 텍스트 + 채움 막대로 표시(0~100% clamp). `theme` 필수.
-
-### SdCalendar — `<sd-calendar>`
-
-```ts
-items = input.required<T[]>(); getItemDateFn = input.required<(item: T, index: number) => DateOnly>();
-yearMonth = input(new DateOnly().setDay(1));
-weekStartDay = input(0); minDaysInFirstWeek = input(1);
-itemTplRef = contentChild.required(SdItemOfTemplate); // [itemOf] 셀 항목 템플릿(필수)
-```
-
-- 월간 캘린더. `getItemDateFn` 으로 각 항목의 날짜를 산출해 해당 칸에 `[itemOf]` 템플릿으로 렌더. `yearMonth`=표시 월, `weekStartDay`=주 시작 요일(0=일), `minDaysInFirstWeek`=첫 주 판정.
+- `items: input.required<T[]>` — 데이터.
+- `getItemDateFn: input.required<(item, index) => DateOnly>` — 항목→일자 매핑.
+- `yearMonth: DateOnly` (기본 이번달 1일) — 표시 월(밖 일자는 `not-current` 클래스).
+- `weekStartDay: number` (기본 0=일요일) — 첫 열 요일.
+- `minDaysInFirstWeek: number` (기본 1) — 첫 주 시작 계산.
+- 콘텐츠: `[itemOf]` 항목 템플릿(필수).
 
 ```html
-<sd-calendar [items]="schedules()" [getItemDateFn]="getDate" [yearMonth]="month()">
-  <ng-template [itemOf]="schedules()" let-item="item">{{ item.title }}</ng-template>
+<sd-calendar [items]="events()" [getItemDateFn]="getDate" [(yearMonth)]="month">
+  <ng-template [itemOf]="events()" let-item="item">{{ item.title }}</ng-template>
 </sd-calendar>
 ```
 
-### SdBarcode — `<sd-barcode>`
+### `SdBarcode` — `<sd-barcode>`
 
-```ts
-type = input.required<BarcodeType>(); value = input<string>();
-// BarcodeType: "qrcode"|"code128"|"ean13"|"datamatrix"|... (bwip-js 전체 심볼 유니온)
-```
+bwip-js 로 바코드/QR 을 인라인 SVG 렌더.
 
-- 바코드/QR 렌더(bwip-js SVG). `type`=심볼 종류, `value`=인코딩 문자열(빈 값이면 미표시). `BarcodeType` 는 bwip-js 가 지원하는 전체 바코드 유형 리터럴 유니온.
+- `type: input.required<BarcodeType>` — bwip-js `bcid`(심볼로지). `BarcodeType` 은 bwip-js 전 심볼로지 문자열 union(예 `"qrcode"`·`"code128"`·`"code39"`·`"ean13"`·`"datamatrix"`·`"pdf417"`·`"upca"` 등 ~150종).
+- `value: string` — 바코드 텍스트(비면 미렌더).
 
-### SdEcharts — `<sd-echarts>`
+### `SdEcharts` — `<sd-echarts>`
 
-```ts
-option = input.required<echarts.EChartsOption>(); notMerge = input(false); loading = input(false);
-```
+Apache ECharts(SVG) 래퍼. `SdResizeDirective` hostDirective 로 자동 리사이즈.
 
-- ECharts 차트. `option` 변경 시 `setOption` 적용(`notMerge`=true 면 기존 옵션 병합 안 함). `loading`=로딩 인디케이터. 호스트 리사이즈 시 자동 `resize`(svg 렌더).
+- `option: input.required<echarts.EChartsOption>` — 차트 옵션(반응형 `setOption`).
+- `notMerge: boolean` (기본 false) — true 면 이전 옵션과 병합 없이 교체.
+- `loading: boolean` (기본 false) — true 면 `showLoading()`, false 면 `hideLoading()`.

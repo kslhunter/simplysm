@@ -28,6 +28,7 @@
     "@simplysm/orm-common": "workspace:*",
     "@simplysm/orm-node": "workspace:*",
     "@simplysm/service-common": "workspace:*",
+    "acme-client": "^5.4.0",
     "bufferutil": "^4.1.0",
     "fastify": "^5.8.5",
     "jose": "^6.2.3",

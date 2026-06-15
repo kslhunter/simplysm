@@ -235,3 +235,4 @@ constructor() {
 - 항목 추가 시 세 곳(`register` · `TAppSharedData` · 인터페이스)을 모두 갱신. 하나라도 빠지면 타입 불일치 또는 미등록 데이터가 됨.
 - select 결과에 매직 필드(`__valueKey` · `__searchText` · `__isHidden`)를 빠짐없이 포함.
 - `changeKeys` 분기를 생략하지 않음 — incremental refresh 가 동작하지 않으면 변경 시 전체 재조회가 됨.
+- 공유데이터는 서버 연결을 전제하므로 프리렌더(SSG) 대상 화면의 초기화 경로에서 사용 금지 — 제약은 [client-ssg.md](./client-ssg.md) 참조.
