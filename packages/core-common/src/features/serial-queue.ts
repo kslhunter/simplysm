@@ -4,16 +4,6 @@
  * 큐에 추가된 함수들은 순차적으로 실행됨.
  * 하나의 작업이 완료된 후에야 다음 작업이 시작됨.
  * 에러가 발생해도 후속 작업은 계속 실행됨.
- *
- * @example
- * const queue = new SerialQueue();
- * queue.run(async () => { await fetch("/api/1"); });
- * queue.run(async () => { await fetch("/api/2"); }); // 1 완료 후 실행
- * queue.run(async () => { await fetch("/api/3"); }); // 2 완료 후 실행
- *
- * @example
- * // 에러 처리
- * queue.on("error", (err) => console.error(err));
  */
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";

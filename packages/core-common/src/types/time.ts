@@ -6,11 +6,6 @@ import { convert12To24, format } from "../utils/date-format";
  *
  * 날짜 정보 없이 시간만 저장하는 불변 클래스.
  * 24시간을 초과하거나 음수인 값은 자동으로 정규화됨.
- *
- * @example
- * const now = new Time();
- * const specific = new Time(10, 30, 0);
- * const parsed = Time.parse("10:30:00");
  */
 export class Time {
   private static readonly _MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -60,12 +55,6 @@ export class Time {
    * @param str 시간 문자열
    * @returns 파싱된 Time 인스턴스
    * @throws ArgumentError 지원하지 않는 형식인 경우
-   *
-   * @example
-   * Time.parse("10:30:00")           // HH:mm:ss
-   * Time.parse("10:30:00.123")       // HH:mm:ss.fff
-   * Time.parse("AM 10:30:00")        // AM/PM HH:mm:ss
-   * Time.parse("2025-01-15T10:30:00") // ISO 8601 (extract time part only)
    */
   static parse(str: string): Time {
     const match1 = /(AM|PM) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/i.exec(str);

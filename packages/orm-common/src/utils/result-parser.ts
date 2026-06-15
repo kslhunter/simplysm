@@ -82,9 +82,6 @@ function buildColumnInfos(columns: Record<string, ColumnPrimitiveStr>): ColumnIn
 
 /**
  * 플랫 레코드를 중첩 객체로 변환
- *
- * @example
- * { "posts.id": 1, "posts.title": "Hi" } → { posts: { id: 1, title: "Hi" } }
  */
 function flatToNested(
   record: Record<string, unknown>,
@@ -186,27 +183,6 @@ const yieldToEventLoop: () => Promise<void> =
  * - async 전용: 대규모 처리 시 외부 인터럽트 허용을 위해 동기 버전 미제공
  * - 브라우저/Node 호환: setTimeout(resolve, 0)으로 양보
  * - 빈 결과 처리: 입력 배열이 비어있거나 파싱 후 모든 레코드가 빈 객체이면 undefined 반환
- *
- * @example
- * ```typescript
- * // 1. 단순 타입 파싱
- * const raw = [{ id: "1", createdAt: "2026-01-07T10:00:00.000Z" }];
- * const meta = { columns: { id: "number", createdAt: "DateTime" }, joins: {} };
- * const result = await parseQueryResult(raw, meta);
- * // [{ id: 1, createdAt: DateTime(...) }]
- *
- * // 2. JOIN 결과 중첩
- * const raw = [
- *   { id: 1, name: "User1", "posts.id": 10, "posts.title": "Post1" },
- *   { id: 1, name: "User1", "posts.id": 11, "posts.title": "Post2" },
- * ];
- * const meta = {
- *   columns: { id: "number", name: "string", "posts.id": "number", "posts.title": "string" },
- *   joins: { posts: { isSingle: false } }
- * };
- * const result = await parseQueryResult(raw, meta);
- * // [{ id: 1, name: "User1", posts: [{ id: 10, title: "Post1" }, { id: 11, title: "Post2" }] }]
- * ```
  */
 export async function parseQueryResult<TRecord>(
   rawResults: Record<string, unknown>[],

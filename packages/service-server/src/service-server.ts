@@ -58,29 +58,37 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     let httpsConf: https.ServerOptions | null = null;
     if (options.ssl != null) {
       if ("letsencrypt" in options.ssl) {
+        const letsencrypt = options.ssl.letsencrypt;
         const acmeManager = new AcmeManager({
           rootPath: options.rootPath,
-          domains: options.ssl.letsencrypt.domains,
-          email: options.ssl.letsencrypt.email,
-          staging: options.ssl.letsencrypt.staging,
+          domains: letsencrypt.domains,
+          email: letsencrypt.email,
+          staging: letsencrypt.staging,
+          cloudflareApiToken: letsencrypt.cloudflareApiToken,
         });
         this._acmeManager = acmeManager;
 
-        // 인증서 없이 ALPNCallback 만으로 HTTPS 서버 생성.
-        // 발급 전엔 acme-tls/1 챌린지에만 응답하고, 실인증서는 listen() 에서 setSecureContext 로 주입한다.
-        httpsConf = {
-          ALPNCallback: function (this: TLSSocket, { protocols }): string | undefined {
-            if (protocols.includes("acme-tls/1")) {
-              const ctx = acmeManager.getChallengeContext();
-              if (ctx != null) {
-                this.setKeyCert(ctx);
-                return "acme-tls/1";
+        if (letsencrypt.cloudflareApiToken != null) {
+          // DNS-01: ALPN 챌린지가 없으므로 인증서 없이 HTTPS 서버를 생성하고,
+          // 실인증서는 listen() 에서 setSecureContext 로 주입한다.
+          httpsConf = {};
+        } else {
+          // TLS-ALPN-01: 인증서 없이 ALPNCallback 만으로 HTTPS 서버 생성.
+          // 발급 전엔 acme-tls/1 챌린지에만 응답하고, 실인증서는 listen() 에서 setSecureContext 로 주입한다.
+          httpsConf = {
+            ALPNCallback: function (this: TLSSocket, { protocols }): string | undefined {
+              if (protocols.includes("acme-tls/1")) {
+                const ctx = acmeManager.getChallengeContext();
+                if (ctx != null) {
+                  this.setKeyCert(ctx);
+                  return "acme-tls/1";
+                }
+                return undefined;
               }
-              return undefined;
-            }
-            return protocols.includes("http/1.1") ? "http/1.1" : undefined;
-          },
-        };
+              return protocols.includes("http/1.1") ? "http/1.1" : undefined;
+            },
+          };
+        }
       } else if ("pfxBytes" in options.ssl) {
         httpsConf = {
           pfx: Buffer.from(options.ssl.pfxBytes),
@@ -107,8 +115,12 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
   async listen(): Promise<void> {
     logger.info(`서버 시작 중... ${env("VER") ?? ""}`);
 
-    // letsencrypt 는 핸드셰이크 중 인증서를 주입하는 TLSSocket.setKeyCert 가 필요 (Node 20.18.0+/22.9.0+)
-    if (this._acmeManager != null) {
+    // TLS-ALPN-01 은 핸드셰이크 중 인증서를 주입하는 TLSSocket.setKeyCert 가 필요 (Node 20.18.0+/22.9.0+).
+    // DNS-01(cloudflareApiToken 지정) 은 ALPNCallback 을 쓰지 않으므로 이 요구가 없다.
+    const ssl = this.options.ssl;
+    const usesTlsAlpnChallenge =
+      ssl != null && "letsencrypt" in ssl && ssl.letsencrypt.cloudflareApiToken == null;
+    if (this._acmeManager != null && usesTlsAlpnChallenge) {
       assertAcmeNodeSupport();
     }
 
@@ -366,7 +378,7 @@ function assertAcmeNodeSupport(): void {
     (major === 20 && minor >= 18) || (major === 22 && minor >= 9) || major >= 23;
   if (!supported) {
     throw new Error(
-      `Let's Encrypt(letsencrypt) SSL 은 Node 20.18.0+ 또는 22.9.0+ 가 필요합니다. 현재 버전: ${process.versions.node}`,
+      `Let's Encrypt TLS-ALPN-01 SSL 은 Node 20.18.0+ 또는 22.9.0+ 가 필요합니다. 현재 버전: ${process.versions.node} (DNS-01 은 cloudflareApiToken 지정 시 사용 가능)`,
     );
   }
 }

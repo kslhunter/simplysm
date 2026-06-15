@@ -131,30 +131,6 @@ export interface ReadonlyArrayExt<TItem> {
    * - parentKey 값이 null/undefined인 항목이 루트가 됨
    * - 내부적으로 toArrayMap을 사용하여 O(n) 복잡도
    * - 원본 항목은 복사되고 children 속성이 추가됨
-   *
-   * @example
-   * ```typescript
-   * interface Item {
-   *   id: number;
-   *   parentId?: number;
-   *   name: string;
-   * }
-   *
-   * const items: Item[] = [
-   *   { id: 1, name: "root" },
-   *   { id: 2, parentId: 1, name: "child1" },
-   *   { id: 3, parentId: 1, name: "child2" },
-   *   { id: 4, parentId: 2, name: "grandchild" },
-   * ];
-   *
-   * const tree = items.toTree("id", "parentId");
-   * // [{ id: 1, name: "root", children: [
-   * //   { id: 2, name: "child1", children: [
-   * //     { id: 4, name: "grandchild", children: [] }
-   * //   ]},
-   * //   { id: 3, name: "child2", children: [] }
-   * // ]}]
-   * ```
    */
   toTree<K extends keyof TItem, P extends keyof TItem>(
     keyProp: K,

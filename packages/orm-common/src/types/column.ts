@@ -22,13 +22,6 @@ import { DateOnly, DateTime, Time, Uuid, type Bytes } from "@simplysm/core-commo
  * - `date`: DATE
  * - `time`: TIME
  * - `uuid`: BINARY(16)/UNIQUEIDENTIFIER/UUID
- *
- * @example
- * ```typescript
- * const intType: DataType = { type: "int" };
- * const decimalType: DataType = { type: "decimal", precision: 10, scale: 2 };
- * const varcharType: DataType = { type: "varchar", length: 100 };
- * ```
  */
 export type DataType =
   | { type: "int" }
@@ -54,12 +47,6 @@ export type DataType =
  * Column 원시 타입 매핑
  *
  * TypeScript 타입 이름 (문자열) → 실제 TypeScript 타입 매핑
- *
- * @example
- * ```typescript
- * type StringType = ColumnPrimitiveMap["string"];  // string
- * type DateTimeType = ColumnPrimitiveMap["DateTime"];  // DateTime
- * ```
  */
 export type ColumnPrimitiveMap = {
   string: string;
@@ -74,12 +61,6 @@ export type ColumnPrimitiveMap = {
 
 /**
  * Column 원시 타입 이름 (문자열)
- *
- * @example
- * ```typescript
- * const typeStr: ColumnPrimitiveStr = "string";  // OK
- * const typeStr2: ColumnPrimitiveStr = "invalid";  // Error
- * ```
  */
 export type ColumnPrimitiveStr = keyof ColumnPrimitiveMap;
 
@@ -96,12 +77,6 @@ export type ColumnPrimitive = ColumnPrimitiveMap[ColumnPrimitiveStr] | undefined
 
 /**
  * SQL DataType → TypeScript 타입 이름 매핑
- *
- * @example
- * ```typescript
- * const tsType = dataTypeStrToColumnPrimitiveStr["int"];  // "number"
- * const tsType2 = dataTypeStrToColumnPrimitiveStr["datetime"];  // "DateTime"
- * ```
  */
 export const dataTypeStrToColumnPrimitiveStr = {
   int: "number" as const,
@@ -124,12 +99,6 @@ export const dataTypeStrToColumnPrimitiveStr = {
  * DataType으로부터 TypeScript 타입 추론
  *
  * @template T - DataType
- *
- * @example
- * ```typescript
- * type IntType = InferColumnPrimitiveFromDataType<{ type: "int" }>;  // number
- * type VarcharType = InferColumnPrimitiveFromDataType<{ type: "varchar"; length: 100 }>;  // string
- * ```
  */
 export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
   ColumnPrimitiveMap[(typeof dataTypeStrToColumnPrimitiveStr)[TDataType["type"]]];
@@ -140,13 +109,6 @@ export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
  * @param value - Column 값
  * @returns ColumnPrimitiveStr 타입 이름
  * @throws 값 타입이 알 수 없을 때 Error
- *
- * @example
- * ```typescript
- * inferColumnPrimitiveStr("hello");  // "string"
- * inferColumnPrimitiveStr(123);  // "number"
- * inferColumnPrimitiveStr(new DateTime());  // "DateTime"
- * ```
  */
 export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr {
   if (typeof value === "string") return "string";

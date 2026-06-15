@@ -13,30 +13,6 @@ import { type ColumnBuilderRecord, createColumnFactory } from "./factory/column-
  * @template TParams - 파라미터 Column 정의 타입
  * @template TReturns - 반환 Column 정의 타입
  *
- * @example
- * ```typescript
- * // Procedure definition
- * const GetUserById = Procedure("GetUserById")
- *   .database("mydb")
- *   .params((c) => ({
- *     userId: c.bigint(),
- *   }))
- *   .returns((c) => ({
- *     id: c.bigint(),
- *     name: c.varchar(100),
- *     email: c.varchar(200),
- *   }))
- *   .body("SELECT id, name, email FROM User WHERE id = userId");
- *
- * // Used in DbContext
- * class MyDb extends DbContext {
- *   readonly getUserById = executable(this, GetUserById);
- * }
- *
- * // Invocation
- * const users = await db.getUserById({ userId: 1n }).execute();
- * ```
- *
  * @see {@link Procedure} factory 함수
  * @see {@link executable} Executable 생성
  */
@@ -86,11 +62,6 @@ export class ProcedureBuilder<
    *
    * @param db - Database 이름
    * @returns 새 ProcedureBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const GetUser = Procedure("GetUser").database("mydb");
-   * ```
    */
   database(db: string): ProcedureBuilder<TParams, TReturns> {
     return new ProcedureBuilder({ ...this.meta, database: db });
@@ -117,15 +88,6 @@ export class ProcedureBuilder<
    * @template T - 새 파라미터 정의 타입
    * @param fn - Column factory를 받아 파라미터 정의를 반환하는 함수
    * @returns 새 ProcedureBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const GetUserById = Procedure("GetUserById")
-   *   .params((c) => ({
-   *     userId: c.bigint(),
-   *     includeDeleted: c.boolean().default(false),
-   *   }));
-   * ```
    */
   params<T extends ColumnBuilderRecord>(
     fn: (c: ReturnType<typeof createColumnFactory>) => T,
@@ -141,17 +103,6 @@ export class ProcedureBuilder<
    * @template T - 새 반환 타입 정의
    * @param fn - Column factory를 받아 column 정의를 반환하는 함수
    * @returns 새 ProcedureBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const GetUserById = Procedure("GetUserById")
-   *   .params((c) => ({ userId: c.bigint() }))
-   *   .returns((c) => ({
-   *     id: c.bigint(),
-   *     name: c.varchar(100),
-   *     email: c.varchar(200).nullable(),
-   *   }));
-   * ```
    */
   returns<T extends ColumnBuilderRecord>(
     fn: (c: ReturnType<typeof createColumnFactory>) => T,
@@ -169,19 +120,6 @@ export class ProcedureBuilder<
    *
    * @param sql - Procedure 본문 SQL
    * @returns 새 ProcedureBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * // MySQL/PostgreSQL
-   * const GetUser = Procedure("GetUser")
-   *   .params((c) => ({ userId: c.bigint() }))
-   *   .body("SELECT * FROM User WHERE id = userId");
-   *
-   * // MSSQL
-   * const GetUser = Procedure("GetUser")
-   *   .params((c) => ({ userId: c.bigint() }))
-   *   .body("SELECT * FROM [User] WHERE id = @userId");
-   * ```
    */
   body(sql: string): ProcedureBuilder<TParams, TReturns> {
     return new ProcedureBuilder({ ...this.meta, query: sql });
@@ -199,31 +137,6 @@ export class ProcedureBuilder<
  *
  * @param name - Procedure 이름
  * @returns ProcedureBuilder 인스턴스
- *
- * @example
- * ```typescript
- * // Basic usage
- * const GetUserById = Procedure("GetUserById")
- *   .database("mydb")
- *   .params((c) => ({
- *     userId: c.bigint(),
- *   }))
- *   .returns((c) => ({
- *     id: c.bigint(),
- *     name: c.varchar(100),
- *     email: c.varchar(200),
- *   }))
- *   .body("SELECT id, name, email FROM User WHERE id = userId");
- *
- * // 파라미터 없는 Procedure
- * const GetAllActiveUsers = Procedure("GetAllActiveUsers")
- *   .database("mydb")
- *   .returns((c) => ({
- *     id: c.bigint(),
- *     name: c.varchar(100),
- *   }))
- *   .body("SELECT id, name FROM User WHERE status = 'active'");
- * ```
  *
  * @see {@link ProcedureBuilder} builder 클래스
  */

@@ -1,5 +1,6 @@
 import * as acme from "acme-client";
 import tls from "node:tls";
+import { Resolver, resolveNs, resolve4 } from "node:dns/promises";
 import { chmod } from "node:fs/promises";
 import path from "node:path";
 import { fsx } from "@simplysm/core-node";
@@ -13,12 +14,26 @@ const RENEW_BEFORE_MS = 30 * 24 * 60 * 60 * 1000;
 const RETRY_DELAY_MS = 60 * 60 * 1000;
 /** setTimeout 최대 지연 (약 24.8일). 초과 시 분할하여 재무장 */
 const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
+/** DNS-01 전파 확인 최대 시도 횟수 */
+const DNS_PROPAGATION_MAX_TRIES = 30;
+/** DNS-01 전파 확인 간격 (2초). 최대 약 60초 대기 */
+const DNS_PROPAGATION_INTERVAL_MS = 2000;
+/** Cloudflare API 기본 base URL */
+const CLOUDFLARE_API_BASE_URL = "https://api.cloudflare.com/client/v4";
+
+/** auto() 의 챌린지 방식별 옵션 (TLS-ALPN-01 / DNS-01 공통 부분 제외) */
+type AcmeAutoChallengeOptions = Pick<
+  acme.ClientAutoOptions,
+  "challengePriority" | "challengeCreateFn" | "challengeRemoveFn"
+>;
 
 export interface AcmeManagerOptions {
   rootPath: string;
   domains: string[];
   email: string;
   staging?: boolean;
+  /** 지정 시 DNS-01(Cloudflare) 로 발급. 미지정 시 TLS-ALPN-01 로 발급 */
+  cloudflareApiToken?: string;
 }
 
 export interface AcmeCertMaterial {
@@ -31,14 +46,17 @@ export interface AcmeCertMaterial {
 /**
  * Let's Encrypt(ACME) 인증서 자동 발급·갱신 매니저.
  *
- * TLS-ALPN-01 챌린지로 발급한다. 챌린지 응답 인증서는 {@link getChallengeContext} 로 노출하여
- * 서버의 ALPNCallback 이 `acme-tls/1` 핸드셰이크에 주입한다.
+ * `cloudflareApiToken` 이 있으면 DNS-01 챌린지(Cloudflare TXT 자동 등록)로 발급하고,
+ * 없으면 TLS-ALPN-01 챌린지로 발급한다. TLS-ALPN-01 의 챌린지 응답 인증서는
+ * {@link getChallengeContext} 로 노출하여 서버의 ALPNCallback 이 `acme-tls/1` 핸드셰이크에 주입한다.
  */
 export class AcmeManager {
   private readonly _dir: string;
   private _challengeContext: tls.SecureContext | undefined;
   private _renewTimer: NodeJS.Timeout | undefined;
   private _onRenew: ((material: AcmeCertMaterial) => void) | undefined;
+  /** DNS-01: 도메인별로 생성한 Cloudflare TXT 레코드 (challengeRemoveFn 에서 삭제용) */
+  private readonly _dnsRecords = new Map<string, { zoneId: string; recordId: string }>();
 
   constructor(private readonly _options: AcmeManagerOptions) {
     this._dir = path.resolve(_options.rootPath, ".acme");
@@ -52,6 +70,9 @@ export class AcmeManager {
   }
   private get _certKeyPath(): string {
     return path.resolve(this._dir, "cert.key");
+  }
+  private get _metaPath(): string {
+    return path.resolve(this._dir, "issued-meta.json");
   }
 
   /** ALPNCallback 에서 사용할 현재 챌린지 컨텍스트 (챌린지 진행 중에만 존재) */
@@ -96,6 +117,14 @@ export class AcmeManager {
       return undefined;
     }
 
+    // 발급에 사용한 CA(directoryUrl)가 현재 설정과 다르거나 메타가 없으면 캐시 무효화 (재발급).
+    // staging↔production↔사설 CA 전환 시 캐시된 이전 CA 인증서를 그대로 쓰는 것을 막는다.
+    const issuedDirectoryUrl = await this._readIssuedDirectoryUrl();
+    if (issuedDirectoryUrl !== this._directoryUrl()) {
+      logger.info("발급 CA(directoryUrl)가 현재 설정과 다름. 재발급을 진행합니다.");
+      return undefined;
+    }
+
     const cert = await fsx.read(this._certPath);
     const key = await fsx.read(this._certKeyPath);
 
@@ -132,6 +161,17 @@ export class AcmeManager {
       : acme.directory.letsencrypt.production;
   }
 
+  /** 캐시된 인증서의 발급 CA(directoryUrl). 메타 부재·파싱 실패 시 undefined */
+  private async _readIssuedDirectoryUrl(): Promise<string | undefined> {
+    if (!(await fsx.exists(this._metaPath))) return undefined;
+    try {
+      const meta = JSON.parse(await fsx.read(this._metaPath)) as { directoryUrl?: string };
+      return meta.directoryUrl;
+    } catch {
+      return undefined;
+    }
+  }
+
   private async _getAccountKey(): Promise<string> {
     if (await fsx.exists(this._accountKeyPath)) {
       return fsx.read(this._accountKeyPath);
@@ -155,25 +195,21 @@ export class AcmeManager {
       csr,
       email: this._options.email,
       termsOfServiceAgreed: true,
-      challengePriority: ["tls-alpn-01"],
-      // 로컬 사전검증(발급 호스트가 자기 공개 도메인:443 으로 hairpin 접속) 생략.
-      // 망 구성에 따라 hairpin 이 막힐 수 있고, 실검증은 CA(LE) 가 직접 수행한다.
+      // 로컬 사전검증 생략. 실검증은 CA(LE) 가 직접 수행한다.
+      // - TLS-ALPN-01: 발급 호스트의 hairpin(자기 공개 도메인:443) 접속이 막힐 수 있어 생략.
+      // - DNS-01: self-verify 는 호스트 resolver 를 쓰므로, 전파 확인은 challengeCreateFn 에서 직접 수행.
       skipChallengeVerification: true,
-      // challengePriority 를 tls-alpn-01 로 고정했으므로 이 콜백은 항상 tls-alpn-01 챌린지로 호출된다.
-      challengeCreateFn: async (authz, _challenge, keyAuthorization) => {
-        const [alpnKey, alpnCert] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization);
-        this._challengeContext = tls.createSecureContext({ key: alpnKey, cert: alpnCert });
-      },
-      challengeRemoveFn: () => {
-        this._challengeContext = undefined;
-        return Promise.resolve();
-      },
+      ...(this._options.cloudflareApiToken != null
+        ? this._dns01AutoOptions(this._options.cloudflareApiToken)
+        : this._tlsAlpn01AutoOptions()),
     });
 
     const keyPem = certKey.toString();
     await fsx.write(this._certPath, cert);
     await fsx.write(this._certKeyPath, keyPem);
     await chmod(this._certKeyPath, 0o600).catch(() => {});
+    // 발급에 사용한 CA(directoryUrl)를 기록 — 다음 기동 시 CA 전환 감지에 사용
+    await fsx.write(this._metaPath, JSON.stringify({ directoryUrl: this._directoryUrl() }));
 
     const info = acme.crypto.readCertificateInfo(cert);
     logger.info(
@@ -182,6 +218,150 @@ export class AcmeManager {
     this._scheduleRenewal(info.notAfter);
 
     return { key: keyPem, cert };
+  }
+
+  /** TLS-ALPN-01: 챌린지 응답 인증서를 ALPNCallback 용 컨텍스트로 노출 */
+  private _tlsAlpn01AutoOptions(): AcmeAutoChallengeOptions {
+    return {
+      challengePriority: ["tls-alpn-01"],
+      challengeCreateFn: async (authz, _challenge, keyAuthorization) => {
+        const [alpnKey, alpnCert] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization);
+        this._challengeContext = tls.createSecureContext({ key: alpnKey, cert: alpnCert });
+      },
+      challengeRemoveFn: () => {
+        this._challengeContext = undefined;
+        return Promise.resolve();
+      },
+    };
+  }
+
+  /** DNS-01: Cloudflare 에 `_acme-challenge` TXT 를 등록·삭제하고 전파를 확인 */
+  private _dns01AutoOptions(token: string): AcmeAutoChallengeOptions {
+    return {
+      challengePriority: ["dns-01"],
+      challengeCreateFn: async (authz, _challenge, keyAuthorization) => {
+        const domain = authz.identifier.value;
+        const zone = await this._cfFindZone(token, domain);
+        const recordName = `_acme-challenge.${domain}`;
+        const recordId = await this._cfCreateTxtRecord(token, zone.id, recordName, keyAuthorization);
+        this._dnsRecords.set(domain, { zoneId: zone.id, recordId });
+        await this._waitForDnsPropagation(zone.name, recordName, keyAuthorization);
+      },
+      challengeRemoveFn: async (authz) => {
+        const domain = authz.identifier.value;
+        const record = this._dnsRecords.get(domain);
+        if (record == null) return;
+        await this._cfDeleteTxtRecord(token, record.zoneId, record.recordId);
+        this._dnsRecords.delete(domain);
+      },
+    };
+  }
+
+  private _cloudflareBaseUrl(): string {
+    // 운영 환경 변수로 Cloudflare API base URL 재정의 가능 (테스트 mock 등)
+    const override = env("SD_CLOUDFLARE_API_BASE_URL");
+    if (override != null && override !== "") return override;
+    return CLOUDFLARE_API_BASE_URL;
+  }
+
+  private async _cloudflareRequest(
+    token: string,
+    apiPath: string,
+    init?: { method: string; body?: string },
+  ): Promise<unknown> {
+    const res = await fetch(`${this._cloudflareBaseUrl()}${apiPath}`, {
+      method: init?.method ?? "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      ...(init?.body != null ? { body: init.body } : {}),
+    });
+    const body = (await res.json()) as { success: boolean; errors?: unknown[]; result?: unknown };
+    if (!res.ok || !body.success) {
+      throw new Error(
+        `Cloudflare API 요청 실패 (${apiPath}): HTTP ${res.status} ${JSON.stringify(body.errors ?? [])}`,
+      );
+    }
+    return body.result;
+  }
+
+  /** 도메인을 점 단위로 축소한 후보 중 등록된 가장 구체적인 zone 선택 */
+  private async _cfFindZone(token: string, domain: string): Promise<{ id: string; name: string }> {
+    const labels = domain.split(".");
+    for (let i = 0; i < labels.length - 1; i++) {
+      const candidate = labels.slice(i).join(".");
+      const result = (await this._cloudflareRequest(
+        token,
+        `/zones?name=${encodeURIComponent(candidate)}`,
+      )) as Array<{ id: string; name: string }>;
+      const zone = result.at(0);
+      if (zone != null) return { id: zone.id, name: zone.name };
+    }
+    throw new Error(`Cloudflare 계정에서 도메인의 zone 을 찾지 못했습니다: ${domain}`);
+  }
+
+  private async _cfCreateTxtRecord(
+    token: string,
+    zoneId: string,
+    recordName: string,
+    content: string,
+  ): Promise<string> {
+    const result = (await this._cloudflareRequest(token, `/zones/${zoneId}/dns_records`, {
+      method: "POST",
+      body: JSON.stringify({ type: "TXT", name: recordName, content, ttl: 60 }),
+    })) as { id: string };
+    return result.id;
+  }
+
+  private async _cfDeleteTxtRecord(
+    token: string,
+    zoneId: string,
+    recordId: string,
+  ): Promise<void> {
+    await this._cloudflareRequest(token, `/zones/${zoneId}/dns_records/${recordId}`, {
+      method: "DELETE",
+    });
+  }
+
+  /**
+   * DNS-01: TXT 가 도메인 권위 NS 에 전파됐는지 best-effort 로 확인.
+   * 권위 NS 조회 실패·전파 타임아웃 시 경고 후 진행 (CA 가 최종 검증).
+   */
+  private async _waitForDnsPropagation(
+    zoneName: string,
+    recordName: string,
+    expected: string,
+  ): Promise<void> {
+    let resolver: Resolver;
+    try {
+      const nsHosts = await resolveNs(zoneName);
+      const nsIps: string[] = [];
+      for (const nsHost of nsHosts) {
+        const ips = await resolve4(nsHost).catch(() => [] as string[]);
+        nsIps.push(...ips);
+      }
+      if (nsIps.length === 0) {
+        logger.warn(`권위 NS 주소를 찾지 못해 DNS 전파 확인을 건너뜁니다 (CA 검증에 위임): ${zoneName}`);
+        return;
+      }
+      resolver = new Resolver();
+      resolver.setServers(nsIps);
+    } catch {
+      logger.warn(`권위 NS 조회 실패로 DNS 전파 확인을 건너뜁니다 (CA 검증에 위임): ${zoneName}`);
+      return;
+    }
+
+    for (let i = 0; i < DNS_PROPAGATION_MAX_TRIES; i++) {
+      try {
+        const records = await resolver.resolveTxt(recordName);
+        if (records.some((chunks) => chunks.join("").includes(expected))) return;
+      } catch {
+        // 아직 미전파
+      }
+      await new Promise((resolve) => setTimeout(resolve, DNS_PROPAGATION_INTERVAL_MS));
+    }
+    logger.warn(`DNS 전파 확인 타임아웃. CA 검증에 위임합니다: ${recordName}`);
   }
 
   private _scheduleRenewal(notAfter: Date): void {

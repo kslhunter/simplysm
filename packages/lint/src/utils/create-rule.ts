@@ -6,16 +6,6 @@ import { ESLintUtils } from "@typescript-eslint/utils";
  * @remarks
  * `@typescript-eslint/utils`의 `RuleCreator`를 래핑하며
  * 규칙 문서 URL을 자동으로 생성합니다.
- *
- * @example
- * ```typescript
- * export default createRule({
- *   name: "my-rule",
- *   meta: { ... },
- *   defaultOptions: [],
- *   create(context) { ... },
- * });
- * ```
  */
 export const createRule = ESLintUtils.RuleCreator(
   (name) =>

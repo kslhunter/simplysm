@@ -103,7 +103,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
               content: "";
               height: 4px;
               width: 100%;
-              transition: 0.1s ease-in;
+              transition: var(--animation-duration) ease-in;
               transition-property: transform;
               transform-origin: left;
               transform: scaleX(0);
@@ -124,7 +124,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
         &[data-sd-type="spinner"] {
           > ._screen > ._rect {
             transform: translateY(-100%);
-            transition: 0.1s ease-in;
+            transition: var(--animation-duration) ease-in;
             transition-property: transform;
 
             > ._indicator {
@@ -157,7 +157,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
           &[data-sd-busy="true"] {
             > ._screen > ._rect {
               transform: none;
-              transition: 0.1s ease-out;
+              transition: var(--animation-duration) ease-out;
             }
           }
         }

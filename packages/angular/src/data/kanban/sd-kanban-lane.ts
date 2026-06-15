@@ -102,7 +102,7 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
               height: 0;
               margin-bottom: 0;
               visibility: hidden;
-              transition: 0.1s linear;
+              transition: var(--animation-duration) linear;
               transition-property: height, margin-bottom, visibility;
             }
           }

@@ -10,9 +10,6 @@ import { TimeoutError } from "../errors/timeout-error";
  * @param maxCount 최대 시도 횟수 (undefined이면 무제한)
  *
  * @note 첫 번째 호출에서 조건이 true이면 즉시 반환.
- * @example
- * // maxCount=3: 최대 3번 조건 확인, 모두 false이면 TimeoutError 발생
- * await waitUntil(() => someCondition, 100, 3);
  * @throws TimeoutError 최대 시도 횟수를 초과했을 때
  */
 export async function until(

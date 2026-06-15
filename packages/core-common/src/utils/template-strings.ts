@@ -8,12 +8,6 @@
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const code = js`
- *   function hello() {
- *     return "world";
- *   }
- * `;
  */
 export function js(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
@@ -24,13 +18,6 @@ export function js(strings: TemplateStringsArray, ...values: unknown[]): string 
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const code = ts`
- *   interface User {
- *     name: string;
- *     age: number;
- *   }
- * `;
  */
 export function ts(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
@@ -41,12 +28,6 @@ export function ts(strings: TemplateStringsArray, ...values: unknown[]): string 
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const markup = html`
- *   <div class="container">
- *     <span>${name}</span>
- *   </div>
- * `;
  */
 export function html(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
@@ -57,12 +38,6 @@ export function html(strings: TemplateStringsArray, ...values: unknown[]): strin
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const query = tsql`
- *   SELECT TOP 10 *
- *   FROM Users
- *   WHERE Name LIKE '%${keyword}%'
- * `;
  */
 export function tsql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
@@ -73,12 +48,6 @@ export function tsql(strings: TemplateStringsArray, ...values: unknown[]): strin
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const query = mysql`
- *   SELECT *
- *   FROM users
- *   LIMIT 10
- * `;
  */
 export function mysql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);
@@ -89,12 +58,6 @@ export function mysql(strings: TemplateStringsArray, ...values: unknown[]): stri
  * @param strings 템플릿 문자열 배열
  * @param values 보간된 값들
  * @returns 들여쓰기가 정규화된 문자열
- * @example
- * const query = pgsql`
- *   SELECT *
- *   FROM users
- *   OFFSET 0 LIMIT 10
- * `;
  */
 export function pgsql(strings: TemplateStringsArray, ...values: unknown[]): string {
   return _combine(strings, values);

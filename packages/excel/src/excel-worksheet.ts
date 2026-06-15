@@ -339,17 +339,6 @@ export class ExcelWorksheet {
    * @remarks
    * 같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적된다.
    * 정적 셀 스타일과 조건부 서식의 합성은 Excel native CF 오버레이에 위임한다.
-   *
-   * @example
-   * ```typescript
-   * await ws.addConditionalFormat({
-   *   ref: "B2:B100",
-   *   rules: [
-   *     { type: "cellIs", op: "<", value: 1000, style: { background: "00FF0000" } },
-   *     { type: "cellIs", op: "<", value: 4999, style: { background: "00FFFF00" } },
-   *   ],
-   * });
-   * ```
    */
   async addConditionalFormat(opts: {
     ref: string;

@@ -129,18 +129,6 @@ export interface ServiceDefinition<TMethods = Record<string, (...args: any[]) =>
 
 /**
  * 이름과 팩토리 함수로 서비스를 정의한다.
- *
- * @example
- * // 기본 서비스
- * const HealthService = defineService("Health", (ctx) => ({
- *   check: () => ({ status: "ok" }),
- * }));
- *
- * // 인증이 필요한 서비스
- * const UserService = defineService("User", auth((ctx) => ({
- *   getProfile: () => ctx.authInfo,
- *   adminOnly: auth(["admin"], () => "admin"),
- * })));
  */
 export function defineService<TMethods extends Record<string, (...args: any[]) => any>>(
   name: string | string[],
@@ -164,10 +152,6 @@ export function defineService<TMethods extends Record<string, (...args: any[]) =
 
 /**
  * 클라이언트 측 타입 공유를 위해 ServiceDefinition에서 메서드 시그니처를 추출한다.
- *
- * @example
- * export type UserServiceType = ServiceMethods<typeof UserService>;
- * // 클라이언트: client.getService<UserServiceType>("User");
  */
 export type ServiceMethods<TDefinition> =
   TDefinition extends ServiceDefinition<infer M> ? M : never;

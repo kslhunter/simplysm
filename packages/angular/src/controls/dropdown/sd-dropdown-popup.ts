@@ -33,7 +33,7 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
         z-index: var(--z-index-dropdown);
         opacity: 0;
         transform: translateY(-0.625rem);
-        transition: 0.1s linear;
+        transition: var(--animation-duration) linear;
         transition-property: transform, opacity;
         pointer-events: none;
         background: var(--control-color);
@@ -70,7 +70,7 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
           opacity: 1;
           pointer-events: auto;
           transform: none;
-          animation: sd-dropdown-slide-up 0.2s ease-out;
+          animation: sd-dropdown-slide-up var(--animation-duration) ease-out;
           @include mixins.elevation(8);
         }
       }

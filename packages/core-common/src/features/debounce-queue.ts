@@ -9,16 +9,6 @@
  * 실행 중에 추가된 요청은 디바운스 지연 없이 현재 실행이
  * 완료된 직후 즉시 처리됨. 이는 실행 완료 전에 도착한
  * 요청을 놓치지 않기 위한 의도적인 설계임.
- *
- * @example
- * const queue = new DebounceQueue(300); // 300ms 지연
- * queue.run(() => console.log("1")); // 무시됨
- * queue.run(() => console.log("2")); // 무시됨
- * queue.run(() => console.log("3")); // 300ms 후 실행
- *
- * @example
- * // 에러 처리
- * queue.on("error", (err) => console.error(err));
  */
 import { SdError } from "../errors/sd-error";
 import { EventEmitter } from "./event-emitter";

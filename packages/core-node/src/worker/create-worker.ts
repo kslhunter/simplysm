@@ -6,20 +6,6 @@ import type { WorkerRequest, WorkerResponse } from "./types";
 
 /**
  * Worker thread에서 사용하기 위한 워커 팩토리.
- *
- * @example
- * // 이벤트 없는 워커
- * export default createWorker({
- *   add: (a: number, b: number) => a + b,
- * });
- *
- * // 이벤트가 있는 워커
- * interface MyEvents { progress: number; }
- * const methods = {
- *   calc: (x: number) => { sender.send("progress", 50); return x * 2; },
- * };
- * const sender = createWorker<typeof methods, MyEvents>(methods);
- * export default sender;
  */
 export function createWorker<
   TMethods extends Record<string, (...args: any[]) => unknown>,

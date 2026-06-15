@@ -54,7 +54,9 @@ export class SdCollapse {
 
   contentTransition = computed(() => {
     if (!this._initialized()) return "";
-    return this.open() ? "margin-top 0.1s ease-out" : "margin-top 0.1s ease-in";
+    return this.open()
+      ? "margin-top var(--animation-duration) ease-out"
+      : "margin-top var(--animation-duration) ease-in";
   });
 
   constructor() {

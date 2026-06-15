@@ -52,12 +52,12 @@ $breakpoint-sm: 1280px;
 
 $vars: (
   theme: (
-    "gray": color-map(map.get($colors, gray)),
+    "gray": color-map(map.get($colors, zinc)),
     blue-gray: color-map(map.get($colors, slate)),
     primary: color-map(map.get($colors, blue)),
     secondary: color-map(map.get($colors, blue)),
     info: color-map(map.get($colors, cyan)),
-    success: color-map(map.get($colors, lime)),
+    success: color-map(map.get($colors, lime), 5),
     warning: color-map(map.get($colors, orange)),
     danger: color-map(map.get($colors, red)),
   ),
@@ -106,14 +106,21 @@ $vars: (
     0: 0,
     auto: "auto",
   ),
-  border-color: color-map(map.get($colors, gray), 5%),
+  border-color: color-map(map.get($colors, zinc), 5%),
   border-radius: (
-    xs: var(--gap-xs),
+    xs: var(--gap-xxs),
+    sm: var(--gap-xs),
+    default: var(--gap-sm),
+    lg: var(--gap-default),
+    xl: var(--gap-lg),
+    xxl: var(--gap-xl),
+
+    /*xs: var(--gap-xs),
     sm: var(--gap-sm),
     default: var(--gap-default),
     lg: var(--gap-lg),
     xl: var(--gap-xl),
-    xxl: var(--gap-xxl),
+    xxl: var(--gap-xxl),*/
   ),
   z-index: (
     toast: 9999,
@@ -124,8 +131,8 @@ $vars: (
   ),
   line-height: 1.5em,
   line-height-strip-unit: 1.5,
-  font-family: sans-serif,
-  font-family-monospace: monospace,
+  font-family: "sans-serif",
+  font-family-monospace: "monospace",
   background-color: white,
   background-rev-color: black,
   control-color: white,

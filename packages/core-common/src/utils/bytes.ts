@@ -28,11 +28,6 @@ const BASE64_LOOKUP: number[] = Array.from({ length: 256 }, (_, i) => {
  * 여러 Uint8Array 결합
  * @param arrays 결합할 Uint8Array 배열
  * @returns 결합된 새 Uint8Array
- * @example
- * const a = new Uint8Array([1, 2]);
- * const b = new Uint8Array([3, 4]);
- * concat([a, b]);
- * // Uint8Array([1, 2, 3, 4])
  */
 export function concat(arrays: Bytes[]): Bytes {
   const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
@@ -49,9 +44,6 @@ export function concat(arrays: Bytes[]): Bytes {
  * hex 문자열로 변환
  * @param bytes 변환할 Uint8Array
  * @returns 소문자 hex 문자열
- * @example
- * toHex(new Uint8Array([255, 0, 127]));
- * // "ff007f"
  */
 export function toHex(bytes: Bytes): string {
   const h = hexTable;
@@ -67,9 +59,6 @@ export function toHex(bytes: Bytes): string {
  * @param hex 변환할 hex 문자열 (대소문자 허용)
  * @returns 변환된 Uint8Array
  * @throws {ArgumentError} 홀수 길이이거나 유효하지 않은 hex 문자가 포함된 경우
- * @example
- * fromHex("ff007f");
- * // Uint8Array([255, 0, 127])
  */
 export function fromHex(hex: string): Bytes {
   if (hex.length % 2 !== 0) {
@@ -89,9 +78,6 @@ export function fromHex(hex: string): Bytes {
  * Bytes를 base64 문자열로 변환
  * @param bytes 변환할 Uint8Array
  * @returns Base64 인코딩된 문자열
- * @example
- * toBase64(new Uint8Array([72, 101, 108, 108, 111]));
- * // "SGVsbG8="
  */
 export function toBase64(bytes: Bytes): string {
   if (bytes.length === 0) {
@@ -117,9 +103,6 @@ export function toBase64(bytes: Bytes): string {
  * @param base64 변환할 base64 문자열
  * @returns 디코딩된 Uint8Array
  * @throws {ArgumentError} 유효하지 않은 base64 문자가 포함된 경우
- * @example
- * fromBase64("SGVsbG8=");
- * // Uint8Array([72, 101, 108, 108, 111])
  */
 export function fromBase64(base64: string): Bytes {
   // 공백 제거 및 패딩 정규화

@@ -21,29 +21,6 @@ import {
  * @template TData - View 데이터 레코드 타입
  * @template TRelations - 관계 정의 레코드 타입
  *
- * @example
- * ```typescript
- * // View definition
- * const UserSummary = View("UserSummary")
- *   .database("mydb")
- *   .query((db: MyDb) =>
- *     db.user()
- *       .select(u => ({
- *         id: u.id,
- *         name: u.name,
- *         postCount: expr.subquery(
- *           db.post().where(p => [expr.eq(p.authorId, u.id)]),
- *           q => expr.count(q.id)
- *         ),
- *       }))
- *   );
- *
- * // Used in DbContext
- * class MyDb extends DbContext {
- *   readonly userSummary = queryable(this, UserSummary);
- * }
- * ```
- *
  * @see {@link View} factory 함수
  * @see {@link queryable} Queryable 생성
  */
@@ -92,11 +69,6 @@ export class ViewBuilder<
    *
    * @param db - Database 이름
    * @returns 새 ViewBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const UserSummary = View("UserSummary").database("mydb");
-   * ```
    */
   database(db: string): ViewBuilder<TDbContext, TData, TRelations> {
     return new ViewBuilder({ ...this.meta, database: db });
@@ -123,21 +95,6 @@ export class ViewBuilder<
    * @template TDb - DbContext 타입
    * @param viewFn - DbContext를 받아 Queryable을 반환하는 함수
    * @returns 새 ViewBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const ActiveUsers = View("ActiveUsers")
-   *   .database("mydb")
-   *   .query((db: MyDb) =>
-   *     db.user()
-   *       .where(u => [expr.eq(u.status, "active")])
-   *       .select(u => ({
-   *         id: u.id,
-   *         name: u.name,
-   *         email: u.email,
-   *       }))
-   *   );
-   * ```
    */
   query<TViewData extends DataRecord, TDb extends DbContextBase>(
     viewFn: (db: TDb) => Queryable<TViewData, any>,
@@ -153,15 +110,6 @@ export class ViewBuilder<
    * @template T - 관계 정의 타입
    * @param fn - 관계 factory를 받아 관계 정의를 반환하는 함수
    * @returns 새 ViewBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const UserSummary = View("UserSummary")
-   *   .query((db: MyDb) => db.user().select(...))
-   *   .relations((r) => ({
-   *     posts: r.foreignKeyTarget(Post, "author"),
-   *   }));
-   * ```
    *
    * @see {@link ForeignKeyBuilder} FK builder
    * @see {@link ForeignKeyTargetBuilder} FK reverse-reference builder
@@ -187,30 +135,6 @@ export class ViewBuilder<
  *
  * @param name - View 이름
  * @returns ViewBuilder 인스턴스
- *
- * @example
- * ```typescript
- * // Basic usage
- * const ActiveUsers = View("ActiveUsers")
- *   .database("mydb")
- *   .query((db: MyDb) =>
- *     db.user()
- *       .where(u => [expr.eq(u.status, "active")])
- *       .select(u => ({ id: u.id, name: u.name }))
- *   );
- *
- * // 집계 View
- * const UserStats = View("UserStats")
- *   .database("mydb")
- *   .query((db: MyDb) =>
- *     db.user()
- *       .groupBy(u => ({ status: u.status }))
- *       .select(u => ({
- *         status: u.status,
- *         count: expr.count(u.id),
- *       }))
- *   );
- * ```
  *
  * @see {@link ViewBuilder} builder 클래스
  */

@@ -153,9 +153,7 @@ export interface EqualOptions {
  * @param target 비교 대상 2
  * @param options 비교 옵션
  * @param options.topLevelIncludes 비교할 key 목록. 지정 시 해당 key만 비교 (최상위 레벨에만 적용)
- *   @example `{ topLevelIncludes: ["id", "name"] }` - id와 name key만 비교
  * @param options.topLevelExcludes 비교에서 제외할 key 목록 (최상위 레벨에만 적용)
- *   @example `{ topLevelExcludes: ["updatedAt"] }` - updatedAt key를 제외하고 비교
  * @param options.ignoreArrayIndex array 순서를 무시할지 여부. true면 O(n²) 복잡도
  * @param options.shallow 얕은 비교 여부. true면 1단계만 비교 (참조 비교)
  *
@@ -549,14 +547,6 @@ export interface Merge3KeyOptions {
  *   - `excludes`: 비교에서 제외할 하위 key 목록
  *   - `ignoreArrayIndex`: array 순서를 무시할지 여부
  * @returns conflict: 충돌 발생 여부, result: 병합 결과
- *
- * @example
- * const { conflict, result } = merge3(
- *   { a: 1, b: 2 },  // source
- *   { a: 1, b: 1 },  // origin
- *   { a: 2, b: 1 },  // target
- * );
- * // conflict: false, result: { a: 2, b: 2 }
  */
 export function merge3<
   S extends Record<string, unknown>,
@@ -601,10 +591,6 @@ export function merge3<
  * @param item 원본 객체
  * @param omitKeys 제외할 key 배열
  * @returns 지정된 key가 제외된 새 객체
- * @example
- * const user = { name: "Alice", age: 30, email: "alice@example.com" };
- * omit(user, ["email"]);
- * // { name: "Alice", age: 30 }
  */
 export function omit<T extends Record<string, unknown>, K extends keyof T>(
   item: T,
@@ -625,10 +611,6 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
  * @param item 원본 객체
  * @param omitKeyFn key를 받아 제외 여부를 반환하는 함수 (true면 제외)
  * @returns 조건에 맞는 key가 제외된 새 객체
- * @example
- * const data = { name: "Alice", _internal: "secret", age: 30 };
- * omitByFilter(data, (key) => key.startsWith("_"));
- * // { name: "Alice", age: 30 }
  */
 export function omitByFilter<T extends Record<string, unknown>>(
   item: T,
@@ -648,10 +630,6 @@ export function omitByFilter<T extends Record<string, unknown>>(
  * @param item 원본 객체
  * @param keys 선택할 key 배열
  * @returns 지정된 key만 포함된 새 객체
- * @example
- * const user = { name: "Alice", age: 30, email: "alice@example.com" };
- * pick(user, ["name", "age"]);
- * // { name: "Alice", age: 30 }
  */
 export function pick<T extends Record<string, unknown>, K extends keyof T>(
   item: T,
@@ -692,7 +670,6 @@ function getChainSplits(chain: string): (string | number)[] {
 
 /**
  * 체인 경로로 값 조회
- * @example getChainValue(obj, "a.b[0].c")
  */
 export function getChainValue(obj: unknown, chain: string, optional: true): unknown | undefined;
 export function getChainValue(obj: unknown, chain: string): unknown;
@@ -721,7 +698,6 @@ export function getChainValue(
  * @param depth 하강 깊이 (1 이상)
  * @param optional true이면 중간에 null/undefined를 만나도 에러 없이 undefined 반환
  * @throws ArgumentError depth가 1 미만인 경우
- * @example getChainValueByDepth({ parent: { parent: { name: 'a' } } }, 'parent', 2) => { name: 'a' }
  */
 export function getChainValueByDepth<TObject, TKey extends keyof TObject>(
   obj: TObject,
@@ -756,7 +732,6 @@ export function getChainValueByDepth<TObject, TKey extends keyof TObject>(
 
 /**
  * 체인 경로로 값 설정
- * @example setChainValue(obj, "a.b[0].c", value)
  */
 export function setChainValue(obj: unknown, chain: string, value: unknown): void {
   const splits = getChainSplits(chain);
@@ -776,7 +751,6 @@ export function setChainValue(obj: unknown, chain: string, value: unknown): void
 
 /**
  * 체인 경로로 값 삭제
- * @example deleteChainValue(obj, "a.b[0].c")
  */
 export function deleteChainValue(obj: unknown, chain: string): void {
   const splits = getChainSplits(chain);
@@ -882,7 +856,6 @@ function nullToUndefinedImpl<TObject>(obj: TObject, seen: WeakSet<object>): TObj
 /**
  * 평탄화된 객체를 중첩 객체로 변환
  * @internal
- * @example unflatten({ "a.b.c": 1 }) => { a: { b: { c: 1 } } }
  */
 export function unflatten(flatObj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
@@ -914,7 +887,6 @@ export function unflatten(flatObj: Record<string, unknown>): Record<string, unkn
 
 /**
  * undefined를 가진 속성을 optional로 변환
- * @example { a: string; b: string | undefined } → { a: string; b?: string | undefined }
  */
 export type UndefToOptional<TObject> = {
   [K in keyof TObject as undefined extends TObject[K] ? K : never]?: TObject[K];
@@ -922,7 +894,6 @@ export type UndefToOptional<TObject> = {
 
 /**
  * optional 속성을 필수 + undefined 유니온으로 변환
- * @example { a: string; b?: string } → { a: string; b: string | undefined }
  */
 export type OptionalToUndef<TObject> = {
   [K in keyof TObject]-?: {} extends Pick<TObject, K> ? TObject[K] | undefined : TObject[K];
@@ -964,16 +935,6 @@ type Entries<TObject> = { [K in keyof TObject]: [K, TObject[K]] }[keyof TObject]
  * @param obj 변환할 객체
  * @param fn 변환 함수 (key, value) => [newKey, newValue]
  * @returns key와 value가 변환된 새 객체
- * @example
- * const colors = { primary: "255, 0, 0", secondary: "0, 255, 0" };
- *
- * // 값만 변환
- * map(colors, (key, rgb) => [null, `rgb(${rgb})`]);
- * // { primary: "rgb(255, 0, 0)", secondary: "rgb(0, 255, 0)" }
- *
- * // key와 값 모두 변환
- * map(colors, (key, rgb) => [`${key}Light`, `rgb(${rgb})`]);
- * // { primaryLight: "rgb(255, 0, 0)", secondaryLight: "rgb(0, 255, 0)" }
  */
 export function map<TSource extends object, TNewKey extends string, TNewValue>(
   obj: TSource,

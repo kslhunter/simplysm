@@ -39,23 +39,6 @@ export const SD_BUILDER = Symbol("sdBuilder");
  *
  * defineDbContext/createDbContext의 class 기반 대체.
  * 각 프로퍼티가 독립 직렬화되어 40+ 테이블에서도 TS7056이 발생하지 않는다.
- *
- * @example
- * ```typescript
- * class MainDb extends DbContext {
- *   user = this.queryable(User);
- *   post = this.queryable(Post);
- *   activeUsers = this.queryable(ActiveUsers);
- *   getUserById = this.executable(GetUserById);
- *
- *   migrations = [{ name: "001", up: async (db) => { ... } }];
- * }
- *
- * const db = new MainDb(executor, { database: "mydb" });
- * await db.connect(async () => {
- *   const users = await db.user().execute();
- * });
- * ```
  */
 export abstract class DbContext implements DbContextBase {
   // ── 상태 ──

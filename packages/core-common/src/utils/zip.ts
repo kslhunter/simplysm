@@ -22,37 +22,6 @@ export interface ZipArchiveProgress {
  *
  * ZIP 파일의 읽기, 쓰기, 압축, 해제를 처리.
  * 동일 파일의 중복 해제를 방지하기 위해 내부 캐싱 사용.
- *
- * @example
- * // ZIP 파일 읽기
- * const archive = new ZipArchive(zipBytes);
- * try {
- *   const content = await archive.get("file.txt");
- * } finally {
- *   await archive.close();
- * }
- *
- * @example
- * // ZIP 파일 생성
- * const archive = new ZipArchive();
- * try {
- *   archive.write("file.txt", textBytes);
- *   archive.write("data.json", jsonBytes);
- *   const zipBytes = await archive.compress();
- * } finally {
- *   await archive.close();
- * }
- *
- * @example
- * // 모든 파일 추출 (진행률 보고 포함)
- * const archive = new ZipArchive(zipBytes);
- * try {
- *   const files = await archive.extractAll((progress) => {
- *     console.log(`${progress.fileName}: ${progress.extractedSize}/${progress.totalSize}`);
- *   });
- * } finally {
- *   await archive.close();
- * }
  */
 export class ZipArchive {
   private readonly _reader?: ZipReader<Blob | Bytes>;

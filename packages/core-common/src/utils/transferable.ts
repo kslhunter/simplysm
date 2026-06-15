@@ -25,14 +25,6 @@ type Transferable = ArrayBuffer;
  *
  * @note 순환 참조 시 transferableEncode에서 TypeError 발생 (경로 정보 포함)
  * @note 같은 객체가 여러 곳에서 참조되면 캐싱된 인코딩 결과를 재사용
- *
- * @example
- * // Worker로 데이터 전송
- * const { result, transferList } = transferableEncode(data);
- * worker.postMessage(result, transferList);
- *
- * // Worker에서 데이터 수신
- * const decoded = decode(event.data);
  */
 
 //#region encode

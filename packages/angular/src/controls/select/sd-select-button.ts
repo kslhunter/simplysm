@@ -22,7 +22,7 @@ import { setupRipple } from "../../core/ripple/setupRipple";
         font-weight: bold;
         cursor: pointer;
         color: var(--theme-primary-default);
-        transition: background 0.1s linear;
+        transition: background var(--animation-duration) linear;
 
         &:hover {
           color: var(--theme-primary-darker);

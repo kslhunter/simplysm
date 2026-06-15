@@ -22,21 +22,6 @@ export enum DbErrorCode {
  *
  * DBMS별 네이티브 에러를 표준화된 에러 코드로 래핑하여
  * DBMS 독립적인 에러 처리를 지원한다
- *
- * @example
- * ```typescript
- * try {
- *   await db.rollbackTransaction();
- * } catch (err) {
- *   if (err instanceof DbTransactionError) {
- *     if (err.code === DbErrorCode.NO_ACTIVE_TRANSACTION) {
- *       // 이미 롤백된 경우 무시
- *       return;
- *     }
- *   }
- *   throw err;
- * }
- * ```
  */
 export class DbTransactionError extends Error {
   override readonly name = "DbTransactionError";

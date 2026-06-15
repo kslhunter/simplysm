@@ -154,6 +154,7 @@ export function generateProductionFiles(
     const ignoreWatch = JSON.stringify([
       "node_modules",
       "www",
+      ".acme",
       ...(info.pm2.ignoreWatchPaths ?? []),
     ]);
     const envObj: Record<string, string> = {

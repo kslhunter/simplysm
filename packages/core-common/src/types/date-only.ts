@@ -6,11 +6,6 @@ import { format, normalizeMonth } from "../utils/date-format";
  *
  * 시간 정보 없이 날짜만 저장하는 불변 클래스.
  * 로컬 타임존 기준으로 동작함.
- *
- * @example
- * const today = new DateOnly();
- * const specific = new DateOnly(2025, 1, 15);
- * const parsed = DateOnly.parse("2025-01-15");
  */
 export class DateOnly {
   private static readonly _MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -99,12 +94,6 @@ export class DateOnly {
    * @param weekStartDay 주 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
    * @param minDaysInFirstWeek 첫 번째 주로 간주되기 위한 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
    * @returns 이 날짜가 포함된 주의 기준 연도와 월
-   *
-   * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)
-   * new DateOnly(2024, 1, 1).getBaseYearMonthSeqForWeekSeq(1, 4)
-   * // 미국식 (일요일 시작, 첫 주 최소 1일)
-   * new DateOnly(2024, 1, 1).getBaseYearMonthSeqForWeekSeq(0, 1)
    */
   getBaseYearMonthSeqForWeekSeq(weekStartDay: number = 1, minDaysInFirstWeek: number = 4) {
     // 주 시작 요일 기준 요일 인덱스 계산 (0 = 주 시작 요일)
@@ -155,13 +144,6 @@ export class DateOnly {
    * @param weekStartDay 주 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
    * @param minDaysInFirstWeek 첫 번째 주로 간주되기 위한 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
    * @returns 해당 연도와 그 연도 내의 주차 번호
-   *
-   * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)
-   * new DateOnly(2025, 1, 6).getWeekSeqOfYear(); // { year: 2025, weekSeq: 2 }
-   *
-   * // 미국식 (일요일 시작, 첫 주 최소 1일)
-   * new DateOnly(2025, 1, 1).getWeekSeqOfYear(0, 1); // { year: 2025, weekSeq: 1 }
    */
   getWeekSeqOfYear(
     weekStartDay: number = 1,
@@ -186,13 +168,6 @@ export class DateOnly {
    * @param weekStartDay 주 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
    * @param minDaysInFirstWeek 첫 번째 주로 간주되기 위한 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
    * @returns 연도, 월, 해당 월 내의 주차 번호
-   *
-   * @example
-   * // ISO 8601 표준 (월요일 시작, 첫 주 최소 4일)
-   * new DateOnly(2025, 1, 15).getWeekSeqOfMonth(); // { year: 2025, monthSeq: 1, weekSeq: 3 }
-   *
-   * // 미국식 (일요일 시작, 첫 주 최소 1일)
-   * new DateOnly(2025, 1, 15).getWeekSeqOfMonth(0, 1); // { year: 2025, monthSeq: 1, weekSeq: 3 }
    */
   getWeekSeqOfMonth(
     weekStartDay: number = 1,
@@ -219,13 +194,6 @@ export class DateOnly {
    * @param weekStartDay 주 시작 요일 (0=일요일, 1=월요일, ..., 6=토요일). 기본값: 1(월요일)
    * @param minDaysInFirstWeek 첫 번째 주로 간주되기 위한 최소 일수 (1~7). 기본값: 4 (ISO 8601 표준)
    * @returns 지정된 주의 시작 날짜
-   *
-   * @example
-   * // 2025년 2주차 시작 날짜 (ISO 8601 표준)
-   * DateOnly.getDateByYearWeekSeq({ year: 2025, weekSeq: 2 }); // 2025-01-06 (월요일)
-   *
-   * // 2025년 1월 3주차 시작 날짜
-   * DateOnly.getDateByYearWeekSeq({ year: 2025, month: 1, weekSeq: 3 }); // 2025-01-13 (월요일)
    */
   static getDateByYearWeekSeq(
     arg: { year: number; month?: number; weekSeq: number },

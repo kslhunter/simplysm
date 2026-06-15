@@ -11,21 +11,6 @@ declare global {
      * **주의**: V 타입이 함수인 경우 (예: `Map<string, () => void>`),
      * 함수를 두 번째 인자로 직접 전달하면 팩토리로 인식되어 호출됨.
      * 함수 자체를 값으로 저장하려면 팩토리로 감싸야 함.
-     *
-     * @example
-     * ```typescript
-     * // 일반 값
-     * map.getOrCreate("key", 0);
-     * map.getOrCreate("key", []);
-     *
-     * // 팩토리 함수 (비용이 큰 연산에 사용)
-     * map.getOrCreate("key", () => expensiveComputation());
-     *
-     * // 함수를 값으로 저장
-     * const fnMap = new Map<string, () => void>();
-     * const myFn = () => console.log("hello");
-     * fnMap.getOrCreate("key", () => myFn);  // 팩토리로 감싸기
-     * ```
      */
     getOrCreate(key: K, newValue: V): V;
     getOrCreate(key: K, newValueFn: () => V): V;
@@ -39,18 +24,6 @@ declare global {
      * @remarks
      * key가 존재하지 않아도 updateFn이 호출되어 새 값이 설정됨.
      * 기존 값 기반 계산(카운터 증가, array에 추가 등)에 유용함.
-     *
-     * @example
-     * ```typescript
-     * const countMap = new Map<string, number>();
-     *
-     * // 카운터 증가
-     * countMap.update("key", (v) => (v ?? 0) + 1);
-     *
-     * // array에 항목 추가
-     * const arrayMap = new Map<string, string[]>();
-     * arrayMap.update("key", (v) => [...(v ?? []), "item"]);
-     * ```
      */
     update(key: K, updateFn: (v: V | undefined) => V): void;
   }

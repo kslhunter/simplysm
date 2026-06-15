@@ -25,26 +25,6 @@ import {
  * @template TColumns - Column 정의 레코드 타입
  * @template TRelations - 관계 정의 레코드 타입
  *
- * @example
- * ```typescript
- * // Table definition
- * const User = Table("User")
- *   .database("mydb")
- *   .columns((c) => ({
- *     id: c.bigint().autoIncrement(),
- *     name: c.varchar(100),
- *     email: c.varchar(200).nullable(),
- *     status: c.varchar(20).default("active"),
- *   }))
- *   .primaryKey("id")
- *   .indexes((i) => [i.index("email").unique()]);
- *
- * // Used in DbContext
- * class MyDb extends DbContext {
- *   readonly user = queryable(this, User);
- * }
- * ```
- *
  * @see {@link Table} factory 함수
  * @see {@link queryable} Queryable 생성
  */
@@ -107,11 +87,6 @@ export class TableBuilder<
    *
    * @param db - Database 이름
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const User = Table("User").database("mydb");
-   * ```
    */
   database(db: string): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({ ...this.meta, database: db });
@@ -124,13 +99,6 @@ export class TableBuilder<
    *
    * @param schema - Schema 이름 (MSSQL: dbo, PostgreSQL: public)
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const User = Table("User")
-   *   .database("mydb")
-   *   .schema("custom_schema");
-   * ```
    */
   schema(schema: string): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({ ...this.meta, schema });
@@ -144,17 +112,6 @@ export class TableBuilder<
    * @template TNewColumnDefs - 새 Column 정의 타입
    * @param fn - Column factory를 받아 column 정의를 반환하는 함수
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const User = Table("User")
-   *   .columns((c) => ({
-   *     id: c.bigint().autoIncrement(),
-   *     name: c.varchar(100),
-   *     email: c.varchar(200).nullable(),
-   *     createdAt: c.datetime().default("CURRENT_TIMESTAMP"),
-   *   }));
-   * ```
    */
   columns<TNewColumnDefs extends ColumnBuilderRecord>(
     fn: (c: ReturnType<typeof createColumnFactory>) => TNewColumnDefs,
@@ -170,22 +127,6 @@ export class TableBuilder<
    *
    * @param columns - PK를 구성하는 column 이름 (복합 PK 지원)
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * // 단일 PK
-   * const User = Table("User")
-   *   .columns((c) => ({ id: c.bigint() }))
-   *   .primaryKey("id");
-   *
-   * // 복합 PK
-   * const UserRole = Table("UserRole")
-   *   .columns((c) => ({
-   *     userId: c.bigint(),
-   *     roleId: c.bigint(),
-   *   }))
-   *   .primaryKey("userId", "roleId");
-   * ```
    */
   primaryKey(...columns: (keyof TColumns & string)[]): TableBuilder<TName, TColumns, TRelations> {
     return new TableBuilder({
@@ -199,20 +140,6 @@ export class TableBuilder<
    *
    * @param fn - Index factory를 받아 index 배열을 반환하는 함수
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const User = Table("User")
-   *   .columns((c) => ({
-   *     id: c.bigint(),
-   *     email: c.varchar(200),
-   *     name: c.varchar(100),
-   *   }))
-   *   .indexes((i) => [
-   *     i.index("email").unique(),
-   *     i.index("name").orderBy("ASC"),
-   *   ]);
-   * ```
    */
   indexes(
     fn: (
@@ -233,32 +160,6 @@ export class TableBuilder<
    * @template T - 관계 정의 타입
    * @param fn - 관계 factory를 받아 관계 정의를 반환하는 함수
    * @returns 새 TableBuilder 인스턴스
-   *
-   * @example
-   * ```typescript
-   * const Post = Table("Post")
-   *   .columns((c) => ({
-   *     id: c.bigint().autoIncrement(),
-   *     authorId: c.bigint(),
-   *     title: c.varchar(200),
-   *   }))
-   *   .primaryKey("id")
-   *   .relations((r) => ({
-   *     // FK relation (N:1)
-   *     author: r.foreignKey(["authorId"], () => User),
-   *   }));
-   *
-   * const User = Table("User")
-   *   .columns((c) => ({
-   *     id: c.bigint().autoIncrement(),
-   *     name: c.varchar(100),
-   *   }))
-   *   .primaryKey("id")
-   *   .relations((r) => ({
-   *     // Reverse-reference (1:N)
-   *     posts: r.foreignKeyTarget(() => Post, "author"),
-   *   }));
-   * ```
    *
    * @see {@link ForeignKeyBuilder} FK builder
    * @see {@link ForeignKeyTargetBuilder} FK reverse-reference builder
@@ -284,34 +185,6 @@ export class TableBuilder<
  *
  * @param name - Table 이름
  * @returns TableBuilder 인스턴스
- *
- * @example
- * ```typescript
- * // Basic usage
- * const User = Table("User")
- *   .database("mydb")
- *   .columns((c) => ({
- *     id: c.bigint().autoIncrement(),
- *     name: c.varchar(100),
- *     email: c.varchar(200).nullable(),
- *   }))
- *   .primaryKey("id")
- *   .indexes((i) => [i.index("email").unique()]);
- *
- * // With relations
- * const Post = Table("Post")
- *   .database("mydb")
- *   .columns((c) => ({
- *     id: c.bigint().autoIncrement(),
- *     authorId: c.bigint(),
- *     title: c.varchar(200),
- *     content: c.text(),
- *   }))
- *   .primaryKey("id")
- *   .relations((r) => ({
- *     author: r.foreignKey(["authorId"], () => User),
- *   }));
- * ```
  *
  * @see {@link TableBuilder} builder 클래스
  */

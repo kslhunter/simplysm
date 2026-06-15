@@ -183,7 +183,7 @@ interface SdPostPublishScriptConfig { type: "script"; cmd: string; args: string[
 
 ```typescript
 "excel": { target: "neutral", publish: { type: "npm" } },
-"client": { target: "client", server: "server", publish: { type: "ftp", host: "...", path: "/www" } },
+"client-admin": { target: "client", server: "server", publish: { type: "ftp", host: "...", path: "/www/client-admin" } },
 ```
 
 ## Capacitor 설정 (SdCapacitorConfig)

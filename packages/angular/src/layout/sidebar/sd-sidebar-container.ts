@@ -25,11 +25,11 @@ import { filter } from "rxjs";
         position: relative;
         height: 100%;
         padding-left: var(--sidebar-width);
-        transition: padding-left 0.1s ease-out;
+        transition: padding-left var(--animation-duration) ease-out;
 
         &[data-sd-toggle="true"] {
           padding-left: 0;
-          transition: padding-left 0.1s ease-in;
+          transition: padding-left var(--animation-duration) ease-in;
         }
 
         > ._backdrop {
@@ -52,7 +52,7 @@ import { filter } from "rxjs";
             background: var(--background-rev-color);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity var(--animation-duration) ease-in-out;
           }
 
           &[data-sd-toggle="true"] {

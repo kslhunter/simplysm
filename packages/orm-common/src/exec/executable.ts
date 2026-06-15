@@ -13,12 +13,6 @@ import { expr } from "../expr/expr";
  * @template TParams - 프로시저 파라미터 타입
  * @template TReturns - 프로시저 반환 타입
  *
- * @example
- * ```typescript
- * // 프로시저 실행
- * const result = await db.getUserById().execute({ userId: 1n });
- * ```
- *
  * @see {@link executable} 팩토리 함수
  * @see {@link ProcedureBuilder} 프로시저 정의
  */
@@ -81,24 +75,6 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
  * @param db - DbContext 인스턴스
  * @param builder - ProcedureBuilder 인스턴스
  * @returns Executable 팩토리 함수
- *
- * @example
- * ```typescript
- * // 프로시저 정의
- * const GetUserById = Procedure("GetUserById")
- *   .database("mydb")
- *   .params((c) => ({ userId: c.bigint() }))
- *   .returns((c) => ({ id: c.bigint(), name: c.varchar(100) }))
- *   .body("SELECT id, name FROM User WHERE id = userId");
- *
- * // DbContext에 등록
- * class MyDb extends DbContext {
- *   getUserById = executable(this, GetUserById);
- * }
- *
- * // 사용
- * const result = await db.getUserById().execute({ userId: 1n });
- * ```
  *
  * @see {@link Executable} 실행 클래스
  * @see {@link ProcedureBuilder} 프로시저 정의

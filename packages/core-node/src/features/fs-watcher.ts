@@ -60,7 +60,6 @@ const EVENT_MERGE: Record<string, FsWatcherEvent | null> = {
 
 /**
  * Glob 패턴에서 메타문자 이전까지의 base 디렉토리를 추출한다.
- * @example "/home/user/src/**\/*.ts" → "/home/user/src"
  */
 function extractGlobBase(globPath: string): string {
   const baseSegments: string[] = [];
@@ -78,12 +77,6 @@ function extractGlobBase(globPath: string): string {
  *
  * `options.ignoreInitial: false`인 경우 첫 콜백이 빈 배열로 호출된다 (실제 초기 파일 목록은
  * 포함하지 않음 — 이벤트 병합과의 충돌 방지).
- *
- * @example
- * const watcher = await FsWatcher.watch(["src/**\/*.ts"]);
- * watcher.onChange({ delay: 300 }, (changes) => {
- *   for (const { path, event } of changes) console.log(`${event}: ${path}`);
- * });
  */
 export class FsWatcher {
   private static readonly _MAX_RETRIES = 3;

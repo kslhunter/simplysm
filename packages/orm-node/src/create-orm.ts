@@ -62,34 +62,6 @@ export interface Orm<T extends DbContext> {
  *
  * DbContext와 DB 연결을 관리하는 인스턴스를 생성한다.
  * DbContext 서브클래스와 연결 설정을 받아 트랜잭션을 관리한다.
- *
- * @example
- * ```typescript
- * class MyDb extends DbContext {
- *   user = this.queryable(User);
- * }
- *
- * const orm = createOrm(MyDb, {
- *   dialect: "mysql",
- *   host: "localhost",
- *   port: 3306,
- *   username: "root",
- *   password: "password",
- *   database: "mydb",
- * });
- *
- * // 트랜잭션 내에서 실행
- * await orm.connect(async (db) => {
- *   const users = await db.user().execute();
- *   return users;
- * });
- *
- * // 트랜잭션 없이 실행
- * await orm.connectWithoutTransaction(async (db) => {
- *   const users = await db.user().execute();
- *   return users;
- * });
- * ```
  */
 export function createOrm<T extends DbContext>(
   DbClass: new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T,

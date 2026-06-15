@@ -5,21 +5,6 @@ import { SdError } from "./sd-error";
  *
  * 아직 구현되지 않은 기능이 호출되었을 때 발생하는 에러.
  * 추상 메서드 스텁, 향후 구현 예정인 분기 등에 사용된다.
- *
- * @example
- * // 추상 메서드 구현 전
- * class BaseService {
- *   process(): void {
- *     throw new NotImplementedError("서브클래스에서 구현 필요");
- *   }
- * }
- *
- * @example
- * // 향후 구현 예정인 분기
- * switch (type) {
- *   case "A": return handleA();
- *   case "B": throw new NotImplementedError(`타입 ${type} 처리`);
- * }
  */
 export class NotImplementedError extends SdError {
   /**

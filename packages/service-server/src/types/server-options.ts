@@ -20,6 +20,12 @@ export interface ServiceServerOptions {
           domains: string[];
           email: string;
           staging?: boolean;
+          /**
+           * Cloudflare API 토큰(`Zone:Read` + `Zone.DNS:Edit` 권한).
+           * 지정 시 DNS-01 챌린지(Cloudflare 자동 TXT 등록)로 발급한다.
+           * 미지정 시 기존 TLS-ALPN-01 챌린지로 발급한다.
+           */
+          cloudflareApiToken?: string;
         };
       };
   auth?:

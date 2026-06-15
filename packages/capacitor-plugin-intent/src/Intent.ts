@@ -23,17 +23,6 @@ export abstract class Intent {
   /**
    * 브로드캐스트 수신기 등록
    * @returns 구독 해제 함수
-   *
-   * @example
-   * ```ts
-   * const unsub = await Intent.subscribe(
-   *   ["com.symbol.datawedge.api.RESULT_ACTION"],
-   *   (result) => console.log(result.extras)
-   * );
-   *
-   * // 구독 해제
-   * unsub();
-   * ```
    */
   static async subscribe(
     filters: string[],
@@ -59,16 +48,6 @@ export abstract class Intent {
 
   /**
    * 브로드캐스트 전송
-   *
-   * @example
-   * ```ts
-   * await Intent.send({
-   *   action: "com.symbol.datawedge.api.ACTION",
-   *   extras: {
-   *     "com.symbol.datawedge.api.SOFT_SCAN_TRIGGER": "TOGGLE_SCANNING"
-   *   }
-   * });
-   * ```
    */
   static async send(options: { action: string; extras?: Record<string, unknown> }): Promise<void> {
     await intentPlugin.send(options);
@@ -101,17 +80,6 @@ export abstract class Intent {
 
   /**
    * startActivityForResult로 외부 Activity를 실행하고 결과를 수신한다
-   *
-   * @example
-   * ```ts
-   * const result = await Intent.startActivityForResult({
-   *   action: "com.example.PAY",
-   *   extras: { amount: 1000 },
-   * });
-   * if (result.resultCode === -1) {
-   *   // RESULT_OK
-   * }
-   * ```
    */
   static async startActivityForResult(
     options: StartActivityForResultOptions,

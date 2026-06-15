@@ -47,7 +47,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           text-align: center;
           cursor: pointer;
 
-          transition: 0.1s linear;
+          transition: var(--animation-duration) linear;
           transition-property: border, background;
 
           &:hover {

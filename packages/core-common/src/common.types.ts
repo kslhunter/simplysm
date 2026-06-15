@@ -49,22 +49,6 @@ export type PrimitiveType = PrimitiveTypeMap[PrimitiveTypeStr] | undefined;
  * 객체의 모든 속성을 재귀적으로 optional로 만든다.
  * 원시 타입(string, number, boolean 등)은 그대로 유지하고,
  * object/array 타입에만 재귀적으로 Partial을 적용한다.
- *
- * @example
- * ```typescript
- * interface User {
- *   name: string;
- *   profile: {
- *     age: number;
- *     address: { city: string };
- *   };
- * }
- *
- * // 모든 깊이의 속성이 optional이 됨
- * const partial: DeepPartial<User> = {
- *   profile: { address: {} }
- * };
- * ```
  */
 export type DeepPartial<TObject> = Partial<{
   [K in keyof TObject]: TObject[K] extends PrimitiveType ? TObject[K] : DeepPartial<TObject[K]>;
@@ -75,14 +59,6 @@ export type DeepPartial<TObject> = Partial<{
  *
  * 클래스 생성자를 타입으로 표현할 때 사용한다.
  * 주로 의존성 주입, 팩토리 패턴, instanceof 체크에 활용된다.
- *
- * @example
- * function create<T>(ctor: Type<T>): T {
- *   return new ctor();
- * }
- *
- * class MyClass { name = "test"; }
- * const instance = create(MyClass); // MyClass 인스턴스
  */
 export interface Type<TInstance> extends Function {
   new (...args: unknown[]): TInstance;

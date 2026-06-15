@@ -97,16 +97,6 @@ export class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
    * @remarks
    * 반환된 워크북의 리소스 관리는 호출자의 책임이다.
    * 사용 후 `close()`를 호출해야 한다.
-   *
-   * @example
-   * ```typescript
-   * const wb = await wrapper.write("Sheet1", records);
-   * try {
-   *   const bytes = await wb.toBytes();
-   * } finally {
-   *   await wb.close();
-   * }
-   * ```
    */
   async write(
     wsName: string,

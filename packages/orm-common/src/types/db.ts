@@ -19,14 +19,6 @@ export type Dialect = "mysql" | "mssql" | "postgresql";
  * 지원하는 모든 Database dialect 목록
  *
  * 테스트에서 dialect별 검증에 사용
- *
- * @example
- * ```typescript
- * it.each(dialects)("[%s] SQL Validation", (dialect) => {
- *   const builder = createQueryBuilder(dialect);
- *   expect(builder.build(def)).toMatchSql(expected[dialect]);
- * });
- * ```
  */
 export const dialects: Dialect[] = ["mysql", "mssql", "postgresql"];
 
@@ -70,20 +62,6 @@ export type IsolationLevel =
  * Query 결과 데이터 레코드 타입
  *
  * 재귀적 구조로 중첩 관계(include) 결과를 표현
- *
- * @example
- * ```typescript
- * // 단순 레코드
- * type User = { id: number; name: string; }
- *
- * // 중첩 관계 include
- * type UserWithPosts = {
- *   id: number;
- *   name: string;
- *   posts: { id: number; title: string; }[]  // 1:N 관계
- *   company: { id: number; name: string; }   // N:1 관계
- * }
- * ```
  */
 export type DataRecord = {
   [key: string]: ColumnPrimitive | DataRecord | DataRecord[];
@@ -98,17 +76,6 @@ export type DataRecord = {
  *
  * 실제 DB 연결과 query 실행을 담당
  * NodeDbContextExecutor(서버) 또는 SdOrmServiceClientDbContextExecutor(클라이언트)로 구현
- *
- * @example
- * ```typescript
- * // 서버 측 구현 예시
- * class NodeDbContextExecutor implements IDbContextExecutor {
- *   async connect(): Promise<void> {
- *     await this.connection.connect();
- *   }
- *   // ...
- * }
- * ```
  *
  * @see {@link DbContext} DbContext에서 사용
  */
@@ -178,27 +145,6 @@ export interface ResultMeta {
  *
  * @property name - 고유 Migration 이름 (타임스탬프 권장)
  * @property up - Migration 실행 함수
- *
- * @example
- * ```typescript
- * const migrations: Migration[] = [
- *   {
- *     name: "20260105_001_create_user_table",
- *     up: async (db) => {
- *       await db.createTable(User);
- *     },
- *   },
- *   {
- *     name: "20260105_002_add_email_column",
- *     up: async (db) => {
- *       await db.addColumn(User, "email", {
- *         type: "varchar",
- *         length: 200,
- *       });
- *     },
- *   },
- * ];
- * ```
  *
  * @see {@link DbContext.initialize} migration 실행
  */

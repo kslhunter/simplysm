@@ -15,9 +15,6 @@ import { XMLBuilder, XMLParser } from "fast-xml-parser";
  *   - 속성: `$` 객체에 그룹화
  *   - 텍스트 노드: `_` key에 저장
  *   - 자식 요소: array로 변환 (루트 요소 제외)
- * @example
- * xmlParse('<root id="1"><item>hello</item></root>');
- * // { root: { $: { id: "1" }, item: [{ _: "hello" }] } }
  */
 export function parse(str: string, options?: { stripTagPrefix?: boolean }): unknown {
   const result = new XMLParser({
@@ -44,14 +41,6 @@ export function parse(str: string, options?: { stripTagPrefix?: boolean }): unkn
  * @param obj 직렬화할 객체
  * @param options fast-xml-parser XmlBuilderOptions (선택사항)
  * @returns XML 문자열
- * @example
- * xmlStringify({
- *   root: {
- *     $: { id: "1" },
- *     item: [{ _: "hello" }, { _: "world" }],
- *   },
- * });
- * // '<root id="1"><item>hello</item><item>world</item></root>'
  */
 export function stringify(obj: unknown, options?: XmlBuilderOptions): string {
   return new XMLBuilder({

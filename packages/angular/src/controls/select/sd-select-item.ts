@@ -40,17 +40,17 @@ import { SdGap } from "../gap/sd-gap";
         display: block;
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
-        transition: background 0.1s ease-in;
+        transition: background var(--animation-duration) ease-in;
         background: var(--control-color);
 
         &:hover {
-          transition: background 0.1s ease-out;
+          transition: background var(--animation-duration) ease-out;
           background: rgba(0, 0, 0, 0.07);
         }
 
         &:focus {
           outline: none;
-          transition: background 0.1s ease-out;
+          transition: background var(--animation-duration) ease-out;
           background: rgba(0, 0, 0, 0.07);
         }
 

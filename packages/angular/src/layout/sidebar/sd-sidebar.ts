@@ -37,21 +37,21 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
         //border-right: 1px solid var(--border-color-lighter);
 
         @media not all and (max-width: variables.$breakpoint-mobile) {
-          transition: transform 0.1s ease-out;
+          transition: transform var(--animation-duration) ease-out;
 
           &[data-sd-toggle="true"] {
             transform: translateX(-100%);
-            transition: transform 0.1s ease-in;
+            transition: transform var(--animation-duration) ease-in;
           }
         }
 
         @media all and (max-width: variables.$breakpoint-mobile) {
-          transition: transform 0.3s ease-in;
+          transition: transform var(--animation-duration) ease-in;
           transform: translateX(-100%);
 
           &[data-sd-toggle="true"] {
             transform: none;
-            transition: transform 0.3s ease-out;
+            transition: transform var(--animation-duration) ease-out;
             @include mixins.elevation(16);
           }
         }

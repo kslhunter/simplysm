@@ -59,15 +59,6 @@ export function parseFloat(text: unknown): number | undefined {
  *
  * @param val 검사할 값
  * @returns undefined, null, 또는 0이면 true
- * @example
- * const count: number | undefined = getValue();
- * if (isNullOrEmpty(count)) {
- *   // count: 0 | undefined
- *   console.log("Empty");
- * } else {
- *   // count: number (non-zero value)
- *   console.log(`Count: ${count}`);
- * }
  */
 export function isNullOrEmpty(val: number | undefined): val is 0 | undefined {
   return val == null || val === 0;
@@ -83,9 +74,6 @@ export function isNullOrEmpty(val: number | undefined): val is 0 | undefined {
  * @param digit 소수점 옵션
  * @param digit.max 최대 소수점 자릿수
  * @param digit.min 최소 소수점 자릿수 (부족하면 0으로 채움)
- * @example
- * format(1234.567, { max: 2 }) // "1,234.57"
- * format(1234, { min: 2 }) // "1,234.00"
  */
 export function format(val: number, digit?: { max?: number; min?: number }): string;
 export function format(

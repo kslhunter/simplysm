@@ -23,17 +23,6 @@ import type { ExcelStyleOptions } from "./types";
  * - ZIP 내부의 XML은 접근 시점에만 읽고 파싱함
  * - SharedStrings, Styles 등 대용량 XML은 필요할 때만 로드함
  * - 극단적인 경우에도 메모리 효율적 (예: 1TB SharedStrings가 있는 파일에서 숫자 셀 하나만 읽기)
- *
- * @example
- * ```typescript
- * const wb = new ExcelWorkbook(bytes);
- * try {
- *   const ws = await wb.getWorksheet(0);
- *   // ... 작업 수행
- * } finally {
- *   await wb.close();
- * }
- * ```
  */
 export class ExcelWorkbook {
   readonly zipCache: ZipCache;
@@ -173,15 +162,6 @@ export class ExcelWorkbook {
    *
    * 옵션이 없는 자원은 0번 슬롯이 빈 슬롯 (`{}` / patternType="none") 으로 reset 된다.
    * 미호출 시 `cellXfs[0]` 과 0번 슬롯 모두 원본이 그대로 보존된다.
-   *
-   * @example
-   * ```typescript
-   * const wb = new ExcelWorkbook();
-   * await wb.setDefaultStyle({
-   *   font: { family: "맑은 고딕", size: 10 },
-   *   horizontalAlign: "center",
-   * });
-   * ```
    */
   async setDefaultStyle(opts: ExcelStyleOptions): Promise<void> {
     this._ensureNotClosed();

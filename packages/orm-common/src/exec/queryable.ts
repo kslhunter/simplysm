@@ -207,23 +207,6 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  *
  * @template TData - Query 결과의 데이터 타입
  * @template TFrom - 소스 table (CUD 연산에 필요)
- *
- * @example
- * ```typescript
- * // Basic query
- * const users = await db.user()
- *   .where((u) => [expr.eq(u.isActive, true)])
- *   .orderBy((u) => u.name)
- *   .execute();
- *
- * // JOIN query
- * const posts = await db.post()
- *   .include((p) => p.user)
- *   .execute();
- *
- * // INSERT
- * await db.user().insert([{ name: "Gildong Hong", email: "test@test.com" }]);
- * ```
  */
 export class Queryable<
   TData extends DataRecord,
@@ -238,14 +221,6 @@ export class Queryable<
    *
    * @param fn - Column 매핑 함수. 원본 column을 받아 새 column 구조를 반환
    * @returns 새 column 구조가 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user().select((u) => ({
-   *   userName: u.name,
-   *   userEmail: u.email,
-   * }))
-   * ```
    */
   select<R extends Record<string, any>>(
     fn: (columns: QueryableRecord<TData>) => R,
@@ -263,13 +238,6 @@ export class Queryable<
    * 중복 행 제거를 위한 DISTINCT 옵션 적용
    *
    * @returns DISTINCT가 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user()
-   *   .select((u) => ({ name: u.name }))
-   *   .distinct()
-   * ```
    */
   distinct(): Queryable<TData, never> {
     return new Queryable({
@@ -284,16 +252,6 @@ export class Queryable<
    * 트랜잭션 내에서 선택된 행에 대한 배타적 잠금 획득
    *
    * @returns 잠금이 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * await db.connect(async () => {
-   *   const user = await db.user()
-   *     .where((u) => [expr.eq(u.id, 1)])
-   *     .lock()
-   *     .single();
-   * });
-   * ```
    */
   lock(): Queryable<TData, TFrom> {
     return new Queryable({
@@ -311,14 +269,6 @@ export class Queryable<
    *
    * @param count - 선택할 행 수
    * @returns TOP이 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * // Latest 10 users
-   * db.user()
-   *   .orderBy((u) => u.createdAt, "DESC")
-   *   .top(10)
-   * ```
    */
   top(count: number): Queryable<TData, TFrom> {
     return new Queryable({
@@ -335,13 +285,6 @@ export class Queryable<
    * @param take - 가져올 행 수 (LIMIT)
    * @returns 페이지네이션이 적용된 Queryable
    * @throws ORDER BY 절이 없으면 에러
-   *
-   * @example
-   * ```typescript
-   * db.user
-   *   .orderBy((u) => u.createdAt)
-   *   .limit(0, 20) // first 20
-   * ```
    */
   limit(skip: number, take: number): Queryable<TData, TFrom> {
     if (!this.meta.orderBy) {
@@ -370,15 +313,6 @@ export class Queryable<
    * @param fnOrKey - 정렬할 column을 반환하는 함수 또는 체인 경로 문자열
    * @param orderBy - 정렬 방향 (ASC/DESC). 기본값: ASC
    * @returns 정렬 조건이 추가된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user
-   *   .orderBy((u) => u.name)           // name ASC
-   *   .orderBy((u) => u.age, "DESC")    // age DESC
-   *   .orderBy("id", "DESC")            // string overload
-   *   .orderBy("user.name")             // chain path
-   * ```
    */
   orderBy(
     fnOrKey: string | ((columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>),
@@ -407,13 +341,6 @@ export class Queryable<
    *
    * @param predicate - 조건 배열을 반환하는 함수
    * @returns 조건이 추가된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user
-   *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .where((u) => [expr.gte(u.age, 18)])
-   * ```
    */
   where(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, TFrom> {
     const conditions = predicate(this.meta.columns);
@@ -435,12 +362,6 @@ export class Queryable<
    * @param fn - 검색 대상 column을 반환하는 함수
    * @param searchText - 검색 텍스트
    * @returns 검색 조건이 추가된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user()
-   *   .search((u) => [u.name, u.email], "John Doe -withdrawn")
-   * ```
    */
   search(
     fn: (columns: QueryableRecord<TData>) => ExprUnit<string | undefined>[],
@@ -498,16 +419,6 @@ export class Queryable<
    *
    * @param fn - 그룹화할 column을 반환하는 함수
    * @returns GROUP BY가 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.order()
-   *   .select((o) => ({
-   *     userId: o.userId,
-   *     totalAmount: expr.sum(o.amount),
-   *   }))
-   *   .groupBy((o) => [o.userId])
-   * ```
    */
   groupBy(
     fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>[],
@@ -522,17 +433,6 @@ export class Queryable<
    *
    * @param predicate - 조건 배열을 반환하는 함수
    * @returns HAVING이 적용된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.order()
-   *   .select((o) => ({
-   *     userId: o.userId,
-   *     totalAmount: expr.sum(o.amount),
-   *   }))
-   *   .groupBy((o) => [o.userId])
-   *   .having((o) => [expr.gte(o.totalAmount, 10000)])
-   * ```
    */
   having(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, never> {
     const conditions = predicate(this.meta.columns);
@@ -553,16 +453,6 @@ export class Queryable<
    * @param as - 결과에 추가할 속성 이름
    * @param fn - 조인 조건을 정의하는 콜백 함수
    * @returns 조인 결과가 배열로 추가된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.user()
-   *   .join("posts", (qr, u) =>
-   *     qr.from(Post)
-   *       .where((p) => [expr.eq(p.userId, u.id)])
-   *   )
-   * // Result: { id, name, posts: [{ id, title }, ...] }
-   * ```
    */
   join<A extends string, R extends DataRecord>(
     as: A,
@@ -597,16 +487,6 @@ export class Queryable<
    * @param as - 결과에 추가할 속성 이름
    * @param fn - 조인 조건을 정의하는 콜백 함수
    * @returns 조인 결과가 단일 객체로 추가된 Queryable
-   *
-   * @example
-   * ```typescript
-   * db.post()
-   *   .joinSingle("user", (qr, p) =>
-   *     qr.from(User)
-   *       .where((u) => [expr.eq(u.id, p.userId)])
-   *   )
-   * // Result: { id, title, user: { id, name } | undefined }
-   * ```
    */
   joinSingle<A extends string, R extends DataRecord>(
     as: A,
@@ -649,20 +529,6 @@ export class Queryable<
    * @param fn - 포함할 관계를 선택하는 함수 (PathProxy를 통해 타입 체크)
    * @returns JOIN이 추가된 Queryable
    * @throws 관계가 정의되지 않은 경우 에러
-   *
-   * @example
-   * ```typescript
-   * // Single relationship include
-   * db.post.include((p) => p.user)
-   *
-   * // Nested relationship include
-   * db.post.include((p) => p.user.company)
-   *
-   * // Multiple relationship include
-   * db.user
-   *   .include((u) => u.company)
-   *   .include((u) => u.posts)
-   * ```
    */
   include(fn: (item: PathProxy<TData>) => PathProxy<unknown>): Queryable<TData, TFrom> {
     const proxy = createPathProxy<TData>();
@@ -818,16 +684,6 @@ export class Queryable<
    * Required when using count() after distinct() or groupBy()
    *
    * @returns Queryable wrapped as a Subquery
-   *
-   * @example
-   * ```typescript
-   * // Count after DISTINCT
-   * const count = await db.user()
-   *   .select((u) => ({ name: u.name }))
-   *   .distinct()
-   *   .wrap()
-   *   .count();
-   * ```
    */
   wrap(): Queryable<TData, never> {
     // 현재 Queryable을 서브쿼리로 래핑
@@ -846,14 +702,6 @@ export class Queryable<
    * @param queries - Array of Queryables to UNION (minimum 2)
    * @returns UNION-ed Queryable
    * @throws If less than 2 queryables are passed
-   *
-   * @example
-   * ```typescript
-   * const combined = Queryable.union(
-   *   db.user().where((u) => [expr.eq(u.type, "admin")]),
-   *   db.user().where((u) => [expr.eq(u.type, "manager")]),
-   * );
-   * ```
    */
   static union<TData extends DataRecord>(
     ...queries: Queryable<TData, any>[]
@@ -886,17 +734,6 @@ export class Queryable<
    *
    * @param fn - Callback function that defines the recursive part
    * @returns Queryable with the recursive CTE applied
-   *
-   * @example
-   * ```typescript
-   * // Query org chart hierarchy
-   * db.employee()
-   *   .where((e) => [expr.null(e.managerId)]) // Root nodes
-   *   .recursive((cte) =>
-   *     cte.from(Employee)
-   *       .where((e) => [expr.eq(e.managerId, e.self[0].id)])
-   *   )
-   * ```
    */
   recursive(
     fn: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>,
@@ -931,13 +768,6 @@ export class Queryable<
    * Execute a SELECT query and return the result array
    *
    * @returns Query result array
-   *
-   * @example
-   * ```typescript
-   * const users = await db.user()
-   *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .execute();
-   * ```
    */
   async execute(): Promise<TData[]> {
     const results = await this.meta.db.executeDefs<TData>(
@@ -952,13 +782,6 @@ export class Queryable<
    *
    * @returns Single result or undefined
    * @throws When more than one result is returned
-   *
-   * @example
-   * ```typescript
-   * const user = await db.user()
-   *   .where((u) => [expr.eq(u.id, 1)])
-   *   .single();
-   * ```
    */
   async single(): Promise<TData | undefined> {
     const result = await this.execute();
@@ -989,13 +812,6 @@ export class Queryable<
    * Return the first result (only the first even if multiple exist)
    *
    * @returns First result or undefined
-   *
-   * @example
-   * ```typescript
-   * const latestUser = await db.user()
-   *   .orderBy((u) => u.createdAt, "DESC")
-   *   .first();
-   * ```
    */
   async first(): Promise<TData | undefined> {
     const results = await this.top(1).execute();
@@ -1008,13 +824,6 @@ export class Queryable<
    * @param fn - Function to specify the column to count (optional)
    * @returns Number of rows
    * @throws Error when called directly after distinct() or groupBy() (use wrap() first)
-   *
-   * @example
-   * ```typescript
-   * const count = await db.user()
-   *   .where((u) => [expr.eq(u.isActive, true)])
-   *   .count();
-   * ```
    */
   async count(fn?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>): Promise<number> {
     if (this.meta.distinct) {
@@ -1037,13 +846,6 @@ export class Queryable<
    * Check whether data matching the conditions exists
    *
    * @returns true if exists, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const hasAdmin = await db.user()
-   *   .where((u) => [expr.eq(u.role, "admin")])
-   *   .exists();
-   * ```
    */
   async exists(): Promise<boolean> {
     const result = await this.top(1).execute();
@@ -1189,20 +991,6 @@ export class Queryable<
    * @param records - Array of records to insert
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of inserted records
-   *
-   * @example
-   * ```typescript
-   * // Simple insert
-   * await db.user().insert([
-   *   { name: "Gildong Hong", email: "hong@test.com" },
-   * ]);
-   *
-   * // Return ID after insert
-   * const [inserted] = await db.user().insert(
-   *   [{ name: "Gildong Hong" }],
-   *   ["id"],
-   * );
-   * ```
    */
   async insert(records: TFrom["$inferInsert"][]): Promise<void>;
   async insert<K extends keyof TFrom["$inferColumns"] & string>(
@@ -1245,13 +1033,6 @@ export class Queryable<
    * @param record - Record to insert
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns the inserted record
-   *
-   * @example
-   * ```typescript
-   * await db.user()
-   *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .insertIfNotExists({ name: "testing", email: "test@test.com" });
-   * ```
    */
   async insertIfNotExists(record: TFrom["$inferInsert"]): Promise<void>;
   async insertIfNotExists<K extends keyof TFrom["$inferColumns"] & string>(
@@ -1278,14 +1059,6 @@ export class Queryable<
    * @param targetTable - Target Table to insert into
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of inserted records
-   *
-   * @example
-   * ```typescript
-   * await db.user()
-   *   .select((u) => ({ name: u.name, createdAt: u.createdAt }))
-   *   .where((u) => [expr.eq(u.isArchived, false)])
-   *   .insertInto(ArchivedUser);
-   * ```
    */
   async insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>>(
     targetTable: TTable,
@@ -1390,23 +1163,6 @@ export class Queryable<
    * @param recordFwd - Function that returns the columns and values to update
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of updated records
-   *
-   * @example
-   * ```typescript
-   * // Simple update
-   * await db.user()
-   *   .where((u) => [expr.eq(u.id, 1)])
-   *   .update((u) => ({
-   *     name: expr.val("string", "New Name"),
-   *     updatedAt: expr.val("DateTime", DateTime.now()),
-   *   }));
-   *
-   * // Reference existing value
-   * await db.product()
-   *   .update((p) => ({
-   *     price: expr.mul(p.price, expr.val("number", 1.1)),
-   *   }));
-   * ```
    */
   async update(
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
@@ -1434,19 +1190,6 @@ export class Queryable<
    *
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of deleted records
-   *
-   * @example
-   * ```typescript
-   * // Simple delete
-   * await db.user()
-   *   .where((u) => [expr.eq(u.id, 1)])
-   *   .delete();
-   *
-   * // Return deleted data
-   * const deleted = await db.user()
-   *   .where((u) => [expr.eq(u.isExpired, true)])
-   *   .delete(["id", "name"]);
-   * ```
    */
   async delete(): Promise<void>;
   async delete<K extends keyof TFrom["$inferColumns"] & string>(
@@ -1526,25 +1269,6 @@ export class Queryable<
    * @param insertFn - Function that returns the record to insert (optional, defaults to same as updateFn)
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of affected records
-   *
-   * @example
-   * ```typescript
-   * // Same data for UPDATE/INSERT
-   * await db.user()
-   *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .upsert(() => ({
-   *     name: expr.val("string", "testing"),
-   *     email: expr.val("string", "test@test.com"),
-   *   }));
-   *
-   * // Different data for UPDATE/INSERT
-   * await db.user()
-   *   .where((u) => [expr.eq(u.email, "test@test.com")])
-   *   .upsert(
-   *     () => ({ loginCount: expr.val("number", 1) }),
-   *     (update) => ({ ...update, email: expr.val("string", "test@test.com") }),
-   *   );
-   * ```
    */
   async upsert(
     updateFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
@@ -1862,15 +1586,6 @@ export type UnwrapQueryableRecord<R> = {
 /**
  * include()에서 타입 안전하게 관계 경로를 지정하기 위한 Proxy 타입
  * non-ColumnPrimitive 필드(FK, FKT 관계)만 접근 가능
- *
- * @example
- * ```typescript
- * // item.user.company 접근 시 내부적으로 경로 ["user", "company"]를 수집
- * db.post.include(item => item.user.company)
- *
- * // item.title은 string(ColumnPrimitive)이므로 컴파일 에러
- * db.post.include(item => item.title) // 컴파일 에러
- * ```
  */
 /**
  * 배열이면 요소 타입 추출
@@ -1930,21 +1645,6 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
  * @param tableOrView - TableBuilder 또는 ViewBuilder 인스턴스
  * @param as - Alias 지정 (선택, 미지정 시 자동 생성)
  * @returns Queryable을 반환하는 factory 함수
- *
- * @example
- * ```typescript
- * class AppDbContext extends DbContext {
- *   // 호출할 때마다 새 alias가 할당됨
- *   user = queryable(this, User);
- *
- *   // 사용 예시
- *   async getActiveUsers() {
- *     return this.user()
- *       .where((u) => [expr.eq(u.isActive, true)])
- *       .execute();
- *   }
- * }
- * ```
  */
 export function queryable<TBuilder extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
   db: DbContextBase,

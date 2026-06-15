@@ -91,7 +91,7 @@ import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resi
           height: 0;
           margin-bottom: 0;
           visibility: hidden;
-          transition: 0.1s linear;
+          transition: var(--animation-duration) linear;
           transition-property: height, margin-bottom, visibility;
         }
 

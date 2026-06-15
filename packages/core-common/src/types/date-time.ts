@@ -6,11 +6,6 @@ import { convert12To24, format, normalizeMonth } from "../utils/date-format";
  *
  * JavaScript Date 객체를 래핑하여 불변성과 편리한 API를 제공.
  * 밀리초 정밀도를 지원하고 로컬 타임존 기준으로 동작함.
- *
- * @example
- * const now = new DateTime();
- * const specific = new DateTime(2025, 1, 15, 10, 30, 0);
- * const parsed = DateTime.parse("2025-01-15 10:30:00");
  */
 export class DateTime {
   readonly date: Date;
@@ -65,13 +60,6 @@ export class DateTime {
    * @param str DateTime 문자열
    * @returns 파싱된 DateTime 인스턴스
    * @throws ArgumentError 지원하지 않는 형식인 경우
-   *
-   * @example
-   * DateTime.parse("2025-01-15 10:30:00")     // yyyy-MM-dd HH:mm:ss
-   * DateTime.parse("2025-01-15 10:30:00.123") // yyyy-MM-dd HH:mm:ss.fff
-   * DateTime.parse("20250115103000")          // yyyyMMddHHmmss
-   * DateTime.parse("2025-01-15 AM 10:30:00")  // yyyy-MM-dd AM/PM HH:mm:ss
-   * DateTime.parse("2025-01-15T10:30:00Z")    // ISO 8601
    */
   static parse(str: string): DateTime {
     const parsedTick = Date.parse(str);

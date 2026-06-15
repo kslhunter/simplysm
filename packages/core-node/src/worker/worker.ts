@@ -161,17 +161,6 @@ class WorkerInternal extends EventEmitter<Record<string, unknown>> {
 
 /**
  * 타입 안전한 Worker 래퍼.
- *
- * @example
- * // worker.ts
- * export default createWorker({
- *   add: (a: number, b: number) => a + b,
- * });
- *
- * // main.ts
- * const worker = Worker.create<typeof import("./worker")>("./worker.ts");
- * const result = await worker.add(10, 20);  // 30
- * await worker.terminate();
  */
 export const Worker = {
   /**

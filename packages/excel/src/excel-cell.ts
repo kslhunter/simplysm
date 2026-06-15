@@ -200,9 +200,6 @@ export class ExcelCell {
    * 현재 셀에서 지정된 끝 좌표까지 셀 병합
    * @param r 병합 끝 행 인덱스 (0 기반)
    * @param c 병합 끝 열 인덱스 (0 기반)
-   * @example
-   * // A1 셀에서 호출하여 A1:C3 범위 병합 (3행 x 3열)
-   * await ws.cell(0, 0).merge(2, 2);
    */
   async merge(r: number, c: number): Promise<void> {
     const wsData = await this._getWsData();

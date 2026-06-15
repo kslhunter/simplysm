@@ -475,19 +475,6 @@ export interface ExcelFont {
 
 /**
  * 셀 스타일 옵션
- * @example
- * ```typescript
- * await cell.setStyle({
- *   background: "00FF0000",  // 빨강
- *   border: ["left", "right", "top", "bottom"],
- *   horizontalAlign: "center",
- *   verticalAlign: "center",
- *   numberFormat: "number",
- * });
- *
- * // 임의의 Excel formatCode 지정
- * await cell.setStyle({ numberFormatCode: "0.000000" });
- * ```
  */
 export interface ExcelStyleOptions {
   /** 배경색 (ARGB 형식, 예: "00FF0000") */

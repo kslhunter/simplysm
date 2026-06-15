@@ -18,20 +18,6 @@ import type { ViewBuilder } from "../view-builder";
  * @template TOwner - 소유 Table builder 타입
  * @template TTargetFn - 대상 Table builder factory 타입
  *
- * @example
- * ```typescript
- * const Post = Table("Post")
- *   .columns((c) => ({
- *     id: c.bigint().autoIncrement(),
- *     authorId: c.bigint(),  // FK column
- *   }))
- *   .primaryKey("id")
- *   .relations((r) => ({
- *     // N:1 relationship - Post → User
- *     author: r.foreignKey(["authorId"], () => User, { description: "작성자" }),
- *   }));
- * ```
- *
  * @see {@link ForeignKeyTargetBuilder} 역참조 builder
  * @see {@link RelationKeyBuilder} DB FK 없는 관계
  */
@@ -67,26 +53,6 @@ export class ForeignKeyBuilder<
  *
  * @template TTargetTableFn - 참조하는 Table builder factory 타입
  * @template TIsSingle - 단일 객체 여부
- *
- * @example
- * ```typescript
- * const User = Table("User")
- *   .columns((c) => ({
- *     id: c.bigint().autoIncrement(),
- *     name: c.varchar(100),
- *   }))
- *   .primaryKey("id")
- *   .relations((r) => ({
- *     // 1:N relationship - User ← Post.author
- *     posts: r.foreignKeyTarget(() => Post, "author"),
- *
- *     // 1:1 relation (single object)
- *     profile: r.foreignKeyTarget(() => Profile, "user", { single: true }),
- *
- *     // with description
- *     comments: r.foreignKeyTarget(() => Comment, "user", { description: "댓글목록" }),
- *   }));
- * ```
  *
  * @see {@link ForeignKeyBuilder} FK builder
  */
@@ -126,17 +92,6 @@ export class ForeignKeyTargetBuilder<
  * @template TOwner - 소유 Table/View builder 타입
  * @template TTargetFn - 대상 Table/View builder factory 타입
  *
- * @example
- * ```typescript
- * // View에서 Table로의 관계 정의
- * const UserSummary = View("UserSummary")
- *   .query((db: MyDb) => db.user().select(...))
- *   .relations((r) => ({
- *     // View → Table (FK 미생성)
- *     company: r.relationKey(["companyId"], () => Company, { description: "소속회사" }),
- *   }));
- * ```
- *
  * @see {@link ForeignKeyBuilder} DB FK 생성 버전
  */
 export class RelationKeyBuilder<
@@ -170,18 +125,6 @@ export class RelationKeyBuilder<
  *
  * @template TTargetTableFn - 참조하는 Table/View builder factory 타입
  * @template TIsSingle - 단일 객체 여부
- *
- * @example
- * ```typescript
- * const Company = Table("Company")
- *   .columns((c) => ({ id: c.bigint() }))
- *   .relations((r) => ({
- *     // 역참조 (FK 미생성)
- *     employees: r.relationKeyTarget(() => UserSummary, "company"),
- *     // 단일 객체 + 설명
- *     ceo: r.relationKeyTarget(() => UserSummary, "company", { single: true, description: "대표" }),
- *   }));
- * ```
  *
  * @see {@link ForeignKeyTargetBuilder} DB FK 생성 버전
  */
@@ -275,26 +218,6 @@ type RelationRkFactory<
  * @template TColumnKey - Column key 타입
  * @param ownerFn - 소유 Table/View factory 함수
  * @returns 관계 builder factory
- *
- * @example
- * ```typescript
- * // Table - FK와 RelationKey 모두 사용 가능
- * const Post = Table("Post")
- *   .columns((c) => ({
- *     id: c.bigint(),
- *     authorId: c.bigint(),
- *   }))
- *   .relations((r) => ({
- *     author: r.foreignKey(["authorId"], () => User),  // FK 생성
- *   }));
- *
- * // View - RelationKey만 사용 가능
- * const UserSummary = View("UserSummary")
- *   .query(...)
- *   .relations((r) => ({
- *     posts: r.relationKeyTarget(() => Post, "author"),  // FK 미생성
- *   }));
- * ```
  */
 export function createRelationFactory<
   TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
@@ -415,12 +338,6 @@ export type ExtractRelationTargetResult<TRelation, TVisited extends string = nev
  * include() 없이 접근 시 undefined가 되도록 모든 관계를 optional로 설정
  *
  * @template TRelations - 관계 builder 레코드 타입
- *
- * @example
- * ```typescript
- * type UserRelations = InferDeepRelations<typeof User.$relations>;
- * // { posts?: Post[]; profile?: Profile; }
- * ```
  */
 export type InferDeepRelations<TRelations extends RelationBuilderRecord, TVisited extends string = never> = {
   [K in keyof TRelations]?:

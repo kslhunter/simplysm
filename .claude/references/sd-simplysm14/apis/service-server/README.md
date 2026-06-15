@@ -29,17 +29,22 @@ function createServiceServer<TAuthInfo = unknown>(options: ServiceServerOptions)
 
 - `rootPath: string` — 서버 작업 루트. 정적 파일·업로드·자동업데이트는 `rootPath/www` 하위를, 설정은 `rootPath/.config.json` 을 기준으로 한다. 절대경로 권장.
 - `port: number` — 리슨 포트(바인딩 호스트는 `"0.0.0.0"` 고정). `0` 을 주면 OS 가 임의 포트를 할당하므로 테스트에 쓰고, 실제 포트는 `server.fastify.server.address()` 로 확인한다.
-- `ssl?: { pfxBytes: Uint8Array; passphrase?: string } | { pemKeyBytes: Uint8Array; certBytes: Uint8Array; caBytes?: Uint8Array; passphrase?: string } | { letsencrypt: { domains: string[]; email: string; staging?: boolean } }` — HTTPS 인증서. 형식은 들어온 필드로 구분한다.
+- `ssl?: { pfxBytes: Uint8Array; passphrase?: string } | { pemKeyBytes: Uint8Array; certBytes: Uint8Array; caBytes?: Uint8Array; passphrase?: string } | { letsencrypt: { domains: string[]; email: string; staging?: boolean; cloudflareApiToken?: string } }` — HTTPS 인증서. 형식은 들어온 필드로 구분한다.
   - `pfxBytes` 가 있으면 PFX 방식(인증서+키 번들, `passphrase` 는 PFX 비밀번호).
   - `pemKeyBytes`+`certBytes` 가 있으면 PEM 방식(`pemKeyBytes` 개인키·`certBytes` 인증서, 선택적으로 `caBytes` 중간 CA 체인·`passphrase` 암호화된 키 비밀번호). 바이트는 내부에서 `Buffer` 로 변환.
-  - `letsencrypt` 가 있으면 Let's Encrypt 자동 발급/갱신. `domains` 인증서를 TLS-ALPN-01 챌린지로 발급해 `rootPath/.acme/`(계정키·인증서·키)에 저장하고, 만료 30일 전 자동 갱신 후 무중단 교체한다. `email` 은 LE 계정 연락처, `staging: true` 면 LE 스테이징(레이트리밋 회피, 테스트용)을 쓴다. 캐시된 유효 인증서가 있으면 즉시 적용하고, 없으면 최초 발급 완료까지 `listen()` 이 대기하며 발급 실패 시 throw 한다(`SD_ACME_DIRECTORY_URL` 환경변수로 ACME 디렉토리 URL 재정의 가능 — 사설 CA·테스트용).
+  - `letsencrypt` 가 있으면 Let's Encrypt 자동 발급/갱신. `domains` 인증서를 발급해 `rootPath/.acme/`(계정키·인증서·키)에 저장하고, 만료 30일 전 자동 갱신 후 무중단 교체한다. 챌린지 방식은 `cloudflareApiToken` 유무로 갈린다 — **미지정 시 TLS-ALPN-01**(서버가 443 핸드셰이크로 직접 응답), **지정 시 DNS-01**(Cloudflare 에 `_acme-challenge` TXT 를 자동 등록·삭제; 토큰은 `Zone:Read`+`Zone.DNS:Edit` 권한 필요, zone 은 도메인으로 자동 조회). `email` 은 LE 계정 연락처, `staging: true` 면 LE 스테이징(레이트리밋 회피, 테스트용)을 쓴다. 캐시된 유효 인증서가 있으면 즉시 적용하고, 없으면 최초 발급 완료까지 `listen()` 이 대기하며 발급 실패 시 throw 한다(`SD_ACME_DIRECTORY_URL` 로 ACME 디렉토리 URL, `SD_CLOUDFLARE_API_BASE_URL` 로 Cloudflare API base URL 재정의 가능 — 사설 CA·테스트용).
 
   지정 시(어느 방식이든) HTTPS 로 기동하고 HSTS·`crossOriginOpenerPolicy` 보안 헤더가 켜진다. 미지정 시 HTTP(평문)로 뜨고 `upgrade-insecure-requests` CSP 가 해제된다. 사내망 평문이면 생략, 외부 노출이면 지정.
 
   `letsencrypt` 전제(코드 밖, 운영자 책임):
-  - **Node 20.18.0+ 또는 22.9.0+** — 핸드셰이크 중 인증서를 주입하는 `TLSSocket.setKeyCert` 가 필요하다. 미만이면 기동 시 throw.
-  - TLS-ALPN-01 은 **와일드카드 불가** — `domains` 는 정확한 FQDN.
-  - 검증 connection 이 포트 443 으로 인입되어 이 서버에 도달해야 한다: 공개 DNS A 레코드 → 서버, 앞단에 L4 프록시가 있으면 SNI 기준으로 이 서버에 패스스루(예: nginx `stream` + `ssl_preread`). 도메인 CAA 가 `letsencrypt.org` 를 허용하고, 서버에서 LE API 로 아웃바운드가 가능해야 한다.
+  - **TLS-ALPN-01**(`cloudflareApiToken` 미지정):
+    - **Node 20.18.0+ 또는 22.9.0+** — 핸드셰이크 중 인증서를 주입하는 `TLSSocket.setKeyCert` 가 필요하다. 미만이면 기동 시 throw.
+    - **와일드카드 불가** — `domains` 는 정확한 FQDN.
+    - 검증 connection 이 포트 443 으로 인입되어 이 서버에 도달해야 한다: 공개 DNS A 레코드 → 서버, 앞단에 L4 프록시가 있으면 SNI 기준으로 이 서버에 패스스루(예: nginx `stream` + `ssl_preread`). 지역 차단(geo-block) 방화벽이면 LE 의 해외 검증 노드가 막혀 발급이 실패할 수 있다.
+  - **DNS-01**(`cloudflareApiToken` 지정):
+    - 인바운드 검증이 없어 방화벽/NAT 환경에서도 발급 가능하며 **와일드카드 가능**.
+    - 도메인 DNS 가 Cloudflare 로 관리되어야 하고, 서버에서 Cloudflare API 로 아웃바운드가 가능해야 한다.
+  - 공통: 도메인 CAA 가 `letsencrypt.org` 를 허용하고, 서버에서 LE API 로 아웃바운드가 가능해야 한다.
 - `auth?: { jwtSecret: string } | false` — JWT 인증 설정. 객체면 `jwtSecret` 으로 토큰을 서명·검증한다. `false` 면 인증을 **의도적으로 비활성화**(`auth(...)` 래핑 메서드도 인증 검사 스킵). `undefined`(미지정)인데 권한 요구(`auth(...)` 래핑) 서비스가 하나라도 등록돼 있으면 `listen()` 이 throw — 설정 누락과 의도적 비활성화를 구분한다.
 - `services: ServiceDefinition[]` — `defineService` 로 만든 서비스 정의 배열. RPC 로 노출할 서비스 전부를 여기 등록한다. 라우팅은 정의의 `names` 매칭으로 이뤄진다.
 - `legacyV1Handlers?: V1RequestHandler[]` — V1(ver≠2) 레거시 클라이언트용 커스텀 요청 핸들러(선택). 자세히: [v1-legacy.md](./v1-legacy.md).

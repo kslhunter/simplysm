@@ -26,10 +26,6 @@ const suffixTable = {
  *   - `"랑"`: 이랑/랑 (접속 조사)
  *   - `"로"`: 으로/로 (도구격 조사)
  *   - `"라"`: 이라/라 (서술격 조사)
- *
- * @example
- * getKoreanSuffix("Apple", "을") // "를"
- * getKoreanSuffix("책", "이") // "이"
  */
 export function getKoreanSuffix(
   text: string,
@@ -145,10 +141,6 @@ const fullWidthCharRegex = new RegExp(`[${Object.keys(fullWidthCharMap).join("")
  * - 전각 숫자 (０-９ → 0-9)
  * - 전각 공백 (　 → 일반 공백)
  * - 전각 괄호 (（） → ())
- *
- * @example
- * replaceFullWidth("Ａ１２３") // "A123"
- * replaceFullWidth("（株）") // "(株)"
  */
 export function replaceFullWidth(str: string): string {
   return str.replace(fullWidthCharRegex, (char) => fullWidthCharMap[char] ?? char);
@@ -160,9 +152,6 @@ export function replaceFullWidth(str: string): string {
 
 /**
  * PascalCase로 변환
- * @example "hello-world" → "HelloWorld"
- * @example "hello_world" → "HelloWorld"
- * @example "hello.world" → "HelloWorld"
  */
 export function toPascalCase(str: string): string {
   return str
@@ -172,9 +161,6 @@ export function toPascalCase(str: string): string {
 
 /**
  * camelCase로 변환
- * @example "hello-world" → "helloWorld"
- * @example "hello_world" → "helloWorld"
- * @example "HelloWorld" → "helloWorld"
  */
 export function toCamelCase(str: string): string {
   return str
@@ -184,13 +170,6 @@ export function toCamelCase(str: string): string {
 
 /**
  * kebab-case로 변환
- *
- * @example "HelloWorld" → "hello-world"
- * @example "helloWorld" → "hello-world"
- * @example "hello_world" → "hello_world" (소문자만이면 변환 없음)
- * @example "Hello_World" → "hello-_world" (기존 구분자 유지)
- * @example "Hello-World" → "hello--world" (기존 구분자 유지)
- * @example "XMLParser" → "x-m-l-parser" (연속 대문자 분리)
  */
 export function toKebabCase(str: string): string {
   return toCaseWithSeparator(str, "-");
@@ -198,13 +177,6 @@ export function toKebabCase(str: string): string {
 
 /**
  * snake_case로 변환
- *
- * @example "HelloWorld" → "hello_world"
- * @example "helloWorld" → "hello_world"
- * @example "hello-world" → "hello-world" (소문자만이면 변환 없음)
- * @example "Hello-World" → "hello_-world" (기존 구분자 유지)
- * @example "Hello_World" → "hello__world" (기존 구분자 유지)
- * @example "XMLParser" → "x_m_l_parser" (연속 대문자 분리)
  */
 export function toSnakeCase(str: string): string {
   return toCaseWithSeparator(str, "_");
@@ -225,16 +197,6 @@ function toCaseWithSeparator(str: string, separator: string): string {
  *
  * @param str 검사할 문자열
  * @returns undefined, null, 또는 빈 문자열이면 true
- *
- * @example
- * const name: string | undefined = getValue();
- * if (isNullOrEmpty(name)) {
- *   // name: "" | undefined
- *   console.log("Name is empty");
- * } else {
- *   // name: string (non-empty string)
- *   console.log(`Name: ${name}`);
- * }
  */
 export function isNullOrEmpty(str: string | undefined): str is "" | undefined {
   return str == null || str === "";
@@ -247,11 +209,6 @@ export function isNullOrEmpty(str: string | undefined): str is "" | undefined {
  * @param index 삽입할 위치 (0부터 시작)
  * @param insertString 삽입할 문자열
  * @returns 삽입이 적용된 새 문자열
- *
- * @example
- * insert("Hello World", 5, ","); // "Hello, World"
- * insert("abc", 0, "X"); // "Xabc"
- * insert("abc", 3, "X"); // "abcX"
  */
 export function insert(str: string, index: number, insertString: string): string {
   return str.substring(0, index) + insertString + str.substring(index);

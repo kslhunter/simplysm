@@ -16,10 +16,6 @@ export interface DtNormalizedMonth {
  * @param month 설정할 월 (1-12 범위 밖의 값 허용)
  * @param day 기준 일
  * @returns 정규화된 연도, 월, 일
- *
- * @example
- * normalizeMonth(2025, 13, 15) // { year: 2026, month: 1, day: 15 }
- * normalizeMonth(2025, 2, 31)  // { year: 2025, month: 2, day: 28 }
  */
 export function normalizeMonth(year: number, month: number, day: number): DtNormalizedMonth {
   // 월 오버플로우/언더플로우 정규화
@@ -123,18 +119,6 @@ const weekStrings = ["일", "월", "화", "수", "목", "금", "토"];
  * | zzz | 타임존 오프셋 (±HH:mm) | +09:00 |
  * | zz | 타임존 오프셋 (±HH) | +09 |
  * | z | 타임존 오프셋 (±H) | +9 |
- *
- * @example
- * ```typescript
- * formatDate("yyyy-MM-dd", { year: 2024, month: 3, day: 15 });
- * // "2024-03-15"
- *
- * formatDate("yyyy-M-d (ddd)", { year: 2024, month: 3, day: 15 });
- * // "2024-3-15 (Fri)"
- *
- * formatDate("tt h:mm:ss", { hour: 14, minute: 30, second: 45 });
- * // "PM 2:30:45"
- * ```
  */
 export function format(
   formatString: string,

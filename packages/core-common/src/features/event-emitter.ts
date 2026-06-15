@@ -5,20 +5,6 @@
  * 내부적으로 EventTarget을 사용하여 구현됨.
  *
  * @typeParam TEvents 이벤트 타입 맵. key는 이벤트 이름, value는 이벤트 데이터 타입
- *
- * @example
- * interface MyEvents {
- *   data: string;
- *   error: Error;
- *   done: void;
- * }
- *
- * class MyEmitter extends EventEmitter<MyEvents> {}
- *
- * const emitter = new MyEmitter();
- * emitter.on("data", (data) => console.log(data)); // data: string
- * emitter.emit("data", "hello");
- * emitter.emit("done"); // void 타입은 인자 없이 호출
  */
 export class EventEmitter<
   TEvents extends { [K in keyof TEvents]: unknown } = Record<string, unknown>,

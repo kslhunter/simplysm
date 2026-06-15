@@ -18,18 +18,6 @@ declare global {
      *
      * @remarks
      * addOrDel 매개변수로 조건부 추가/제거를 간결하게 표현할 수 있음.
-     *
-     * @example
-     * ```typescript
-     * const set = new Set<number>([1, 2, 3]);
-     *
-     * set.toggle(2);  // 2가 있으므로 제거 → {1, 3}
-     * set.toggle(4);  // 4가 없으므로 추가 → {1, 3, 4}
-     *
-     * // 조건부 토글
-     * const isAdmin = true;
-     * set.toggle(5, isAdmin ? "add" : "del");  // 강제 추가
-     * ```
      */
     toggle(value: T, addOrDel?: "add" | "del"): this;
   }

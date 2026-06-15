@@ -1,20 +1,6 @@
 /**
  * 트리 구조 조합을 지원하는 에러 클래스
  * ES2024 cause 속성을 활용
- *
- * @example
- * // 원인 에러를 감싸기
- * try {
- *   await fetch(url);
- * } catch (err) {
- *   throw new SdError(err, "API 호출 실패", "사용자 로드 실패");
- * }
- * // 결과 메시지: "사용자 로드 실패 => API 호출 실패 => 원본 에러 메시지"
- *
- * @example
- * // 메시지만으로 생성
- * throw new SdError("잘못된 상태", "처리 불가");
- * // 결과 메시지: "처리 불가 => 잘못된 상태"
  */
 export class SdError extends Error {
   override cause?: Error;

@@ -20,9 +20,6 @@ export type PosixPath = string & {
 /**
  * POSIX 스타일 경로로 변환한다 (백슬래시 → 슬래시).
  * 경로 결합이나 resolve는 수행하지 않는다.
- *
- * @example
- * posix("C:\\Users\\test"); // "C:/Users/test"
  */
 export function posix(p: string): PosixPath {
   return p.replace(/\\/g, "/") as PosixPath;
@@ -30,10 +27,6 @@ export function posix(p: string): PosixPath {
 
 /**
  * 절대 경로로 resolve한 뒤 POSIX 스타일로 변환한다.
- *
- * @example
- * posixResolve("/base", "sub", "file.txt"); // "/base/sub/file.txt"
- * posixResolve("relative/path"); // "D:/cwd/relative/path"
  */
 export function posixResolve(...args: string[]): PosixPath {
   return path.resolve(...args).replace(/\\/g, "/") as PosixPath;
@@ -41,10 +34,6 @@ export function posixResolve(...args: string[]): PosixPath {
 
 /**
  * 파일 경로의 디렉토리를 변경한다.
- *
- * @example
- * changeFileDirectory("/a/b/c.txt", "/a", "/x");
- * // → "/x/b/c.txt"
  *
  * @throws 파일이 fromDirectory 내부에 없는 경우 에러 발생
  */
@@ -69,10 +58,6 @@ export function changeFileDirectory(
 
 /**
  * 확장자를 제외한 파일명(basename)을 반환한다.
- *
- * @example
- * basenameWithoutExt("file.txt"); // "file"
- * basenameWithoutExt("/path/to/file.spec.ts"); // "file.spec"
  */
 export function basenameWithoutExt(filePath: string): string {
   return path.basename(filePath, path.extname(filePath));
@@ -84,11 +69,6 @@ export function basenameWithoutExt(filePath: string): string {
  *
  * 경로는 내부적으로 `posixResolve()`를 사용하여 정규화되며,
  * POSIX 슬래시(`/`)를 구분자로 사용하여 비교한다.
- *
- * @example
- * isChildPath("/a/b/c", "/a/b"); // true
- * isChildPath("/a/b", "/a/b/c"); // false
- * isChildPath("/a/b", "/a/b"); // false (동일 경로)
  */
 export function isChildPath(childPath: string, parentPath: string): boolean {
   const normalizedChild = posixResolve(childPath);
@@ -115,11 +95,6 @@ export function isChildPath(childPath: string, parentPath: string): boolean {
  * @param targets - 대상 경로 (cwd 기준 상대 경로, POSIX 스타일 권장)
  * @param cwd - 현재 작업 디렉토리 (절대 경로)
  * @returns targets가 비어있으면 files를 그대로 반환; 그렇지 않으면 대상 경로 하위의 파일만 반환
- *
- * @example
- * const files = ["/proj/src/a.ts", "/proj/src/b.ts", "/proj/tests/c.ts"];
- * filterByTargets(files, ["src"], "/proj");
- * // → ["/proj/src/a.ts", "/proj/src/b.ts"]
  */
 export function filterByTargets(files: string[], targets: string[], cwd: string): string[] {
   if (targets.length === 0) return files;

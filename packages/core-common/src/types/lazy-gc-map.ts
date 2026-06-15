@@ -6,14 +6,6 @@ import { createLogger } from "../features/logger";
  *
  * @note 사용 후 반드시 dispose()를 호출해야 함.
  *       그렇지 않으면 GC 타이머가 계속 실행되어 메모리 누수 발생.
- *
- * @example
- * const map = new LazyGcMap({ gcInterval: 10000, expireTime: 60000 });
- * try {
- *   // ... 사용
- * } finally {
- *   map.dispose();
- * }
  */
 export class LazyGcMap<TKey, TValue> {
   private static readonly _logger = createLogger("LazyGcMap");
