@@ -31,6 +31,39 @@ describe("Feature 1.2.1 Slice 2: SdThemeProvider 단순화", () => {
   });
 });
 
+describe("블루프린트 테마: SdThemeProvider", () => {
+  let provider: SdThemeProvider;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    provider = TestBed.inject(SdThemeProvider);
+    document.body.className = "";
+  });
+
+  it("blueprint signal의 기본값이 false이다", () => {
+    expect(provider.blueprint()).toBe(false);
+  });
+
+  it("blueprint true일 때 body에 sd-theme-blueprint 클래스가 설정된다", () => {
+    provider.blueprint.set(true);
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);
+  });
+
+  it("blueprint false일 때 body에 sd-theme-blueprint 클래스가 없다", () => {
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
+  });
+
+  it("blueprint와 dark는 독립적으로 동시 적용된다(직교)", () => {
+    provider.dark.set(true);
+    provider.blueprint.set(true);
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-theme-dark")).toBe(true);
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);
+  });
+});
+
 describe("Feature 1.1 Slice 1: SdThemeProvider 폰트 크기 — Unit", () => {
   let provider: SdThemeProvider;
 

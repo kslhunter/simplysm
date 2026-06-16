@@ -1,5 +1,5 @@
 import type { ExcelCell } from "./excel-cell";
-import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
+import type { IWorksheetModel } from "./models/i-worksheet-model";
 import type { ZipCache } from "./utils/zip-cache";
 
 /** Excel 워크시트의 행을 나타내는 클래스. 셀 접근 기능을 제공한다. */
@@ -29,7 +29,7 @@ export class ExcelRow {
     return result;
   }
 
-  private async _getWsData(): Promise<ExcelXmlWorksheet> {
-    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as ExcelXmlWorksheet;
+  private async _getWsData(): Promise<IWorksheetModel> {
+    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as IWorksheetModel;
   }
 }

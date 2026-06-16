@@ -1,30 +1,17 @@
 @use "sass:map";
 @use "sass:color";
-
-@use "../commons/variables";
-
-@function color-map($base) {
-  @return (
-    darkest: color.mix(white, $base, 80%),
-    darker: color.mix(white, $base, 60%),
-    dark: color.mix(white, $base, 40%),
-    default: color.mix(black, $base, 20%),
-    light: color.mix(black, $base, 55%),
-    lighter: color.mix(black, $base, 70%),
-    lightest: color.mix(black, $base, 80%)
-  );
-}
+@use "../commons/colors";
 
 $vars: (
   theme: (
-    "gray": color-map(map.get(variables.$colors, gray)),
-    blue-gray: color-map(map.get(variables.$colors, slate)),
-    primary: color-map(map.get(variables.$colors, blue)),
-    secondary: color-map(map.get(variables.$colors, blue)),
-    info: color-map(map.get(variables.$colors, cyan)),
-    success: color-map(map.get(variables.$colors, lime)),
-    warning: color-map(map.get(variables.$colors, orange)),
-    danger: color-map(map.get(variables.$colors, red)),
+    "gray": colors.variants-dark(colors.get(gray)),
+    blue-gray: colors.variants-dark(colors.get(slate)),
+    primary: colors.variants-dark(colors.get(blue)),
+    secondary: colors.variants-dark(colors.get(blue)),
+    info: colors.variants-dark(colors.get(cyan)),
+    success: colors.variants-dark(colors.get(lime)),
+    warning: colors.variants-dark(colors.get(orange)),
+    danger: colors.variants-dark(colors.get(red)),
   ),
   trans: (
     darkest: rgba(255, 255, 255, 0.5),

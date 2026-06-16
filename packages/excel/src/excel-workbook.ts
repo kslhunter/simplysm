@@ -1,12 +1,10 @@
 import type { Bytes } from "@simplysm/core-common";
 import { ExcelWorksheet } from "./excel-worksheet";
+import type { IRelationshipModel } from "./models/i-relationship-model";
+import type { IWorkbookModel } from "./models/i-workbook-model";
+import type { ExcelFormat } from "./models/excel-format";
+import { convertExcelStyleOptions } from "./models/shared/excel-style";
 import { ZipCache } from "./utils/zip-cache";
-import { ExcelXmlContentType } from "./xml/excel-xml-content-type";
-import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
-import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
-import { ExcelXmlWorkbook as ExcelXmlWorkbookClass } from "./xml/excel-xml-workbook";
-import { ExcelXmlWorksheet as ExcelXmlWorksheetClass } from "./xml/excel-xml-worksheet";
-import { convertExcelStyleOptions } from "./xml/excel-xml-style";
 import { getOrCreateStyleData } from "./utils/excel-style-data";
 import type { ExcelStyleOptions } from "./types";
 
@@ -32,32 +30,29 @@ export class ExcelWorkbook {
   /**
    * @param arg 기존 Excel 파일 데이터 (Blob 또는 Uint8Array). 생략하면 새 워크북을 생성한다.
    */
-  constructor(arg?: Blob | Bytes) {
-    if (arg != null) {
+  constructor(arg?: Blob | Bytes | { format?: ExcelFormat }) {
+    if (arg instanceof Blob || ArrayBuffer.isView(arg)) {
       this.zipCache = new ZipCache(arg);
     } else {
-      this.zipCache = new ZipCache();
+      const format = arg?.format ?? "xlsx";
+      this.zipCache = new ZipCache(undefined, format);
 
-      // 전역 ContentTypes
-      const typeXml = new ExcelXmlContentType();
-      this.zipCache.set("[Content_Types].xml", typeXml);
+      // 전역 ContentTypes (포맷별 골격)
+      this.zipCache.set("[Content_Types].xml", this.zipCache.createContentType());
 
-      // 전역 Rels
+      // 전역 Rels (xlsb 는 workbook.bin 을 가리킨다)
+      const wbPartName = format === "xlsb" ? "xl/workbook.bin" : "xl/workbook.xml";
       this.zipCache.set(
         "_rels/.rels",
-        new ExcelXmlRelationship().add(
-          "xl/workbook.xml",
+        this.zipCache.createRelationship().add(
+          wbPartName,
           "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
         ),
       );
 
-      // 워크북
-      const wbXml = new ExcelXmlWorkbookClass();
-      this.zipCache.set("xl/workbook.xml", wbXml);
-
-      // 워크북 Rels
-      const wbRelXml = new ExcelXmlRelationship();
-      this.zipCache.set("xl/_rels/workbook.xml.rels", wbRelXml);
+      // 워크북 + 워크북 Rels
+      this.zipCache.set("xl/workbook.xml", this.zipCache.createWorkbook());
+      this.zipCache.set("xl/_rels/workbook.xml.rels", this.zipCache.createRelationship());
     }
   }
 
@@ -72,39 +67,21 @@ export class ExcelWorkbook {
   /** 워크북의 모든 워크시트 이름 반환 */
   async getWorksheetNames(): Promise<string[]> {
     this._ensureNotClosed();
-    const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
+    const wbData = (await this.zipCache.get("xl/workbook.xml")) as IWorkbookModel;
     return wbData.sheetNames;
   }
 
   /** 새 워크시트를 생성하여 반환 */
   async addWorksheet(name: string): Promise<ExcelWorksheet> {
     this._ensureNotClosed();
-    // 워크북
-    const wbXml = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
+    // 워크북에 시트 엔트리 추가
+    const wbXml = (await this.zipCache.get("xl/workbook.xml")) as IWorkbookModel;
     const newWsRelId = wbXml.addWorksheet(name).lastWsRelId!;
 
-    // Content Types 갱신
-    const typeXml = (await this.zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
-    typeXml.add(
-      `/xl/worksheets/sheet${newWsRelId}.xml`,
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
-    );
+    // content-type·rels·빈 worksheet 파트 등록 (포맷별 처리는 ZipCache 위임)
+    const fileName = await this.zipCache.registerWorksheet(newWsRelId);
 
-    // 워크북 Rels 갱신
-    const wbRelXml = (await this.zipCache.get(
-      "xl/_rels/workbook.xml.rels",
-    )) as ExcelXmlRelationship;
-    wbRelXml.insert(
-      newWsRelId,
-      `worksheets/sheet${newWsRelId}.xml`,
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
-    );
-
-    // 워크시트
-    const wsXml = new ExcelXmlWorksheetClass();
-    this.zipCache.set(`xl/worksheets/sheet${newWsRelId}.xml`, wsXml);
-
-    const ws = new ExcelWorksheet(this.zipCache, newWsRelId, `sheet${newWsRelId}.xml`);
+    const ws = new ExcelWorksheet(this.zipCache, newWsRelId, fileName);
     this._wsMap.set(newWsRelId, ws);
     return ws;
   }
@@ -112,7 +89,7 @@ export class ExcelWorkbook {
   /** 이름 또는 인덱스(0 기반)로 워크시트 조회 */
   async getWorksheet(nameOrIndex: string | number): Promise<ExcelWorksheet> {
     this._ensureNotClosed();
-    const wbData = (await this.zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
+    const wbData = (await this.zipCache.get("xl/workbook.xml")) as IWorkbookModel;
     const wsId =
       typeof nameOrIndex === "string"
         ? wbData.getWsRelIdByName(nameOrIndex)
@@ -130,7 +107,7 @@ export class ExcelWorkbook {
       return this._wsMap.get(wsId)!;
     }
 
-    const relData = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
+    const relData = (await this.zipCache.get("xl/_rels/workbook.xml.rels")) as IRelationshipModel;
     const targetFilePath = relData.getTargetByRelId(wsId);
     if (targetFilePath == null) {
       throw new Error(`시트 관계 정보를 찾을 수 없습니다: rId${wsId}`);

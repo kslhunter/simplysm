@@ -1,11 +1,11 @@
+import type { Bytes } from "@simplysm/core-common";
+import { num, obj, xml as xmlU } from "@simplysm/core-common";
+import "@simplysm/core-common";
+import type { IStyleModel } from "../models/i-style-model";
+import { convertExcelStyleOptions, type ExcelStyle } from "../models/shared/excel-style";
 import type {
-  ExcelBorderPosition,
   ExcelConditionalRuleStyle,
   ExcelFont,
-  ExcelHorizontalAlign,
-  ExcelStyleOptions,
-  ExcelVerticalAlign,
-  ExcelXml,
   ExcelXmlStyleData,
   ExcelXmlStyleDataBorder,
   ExcelXmlStyleDataDxf,
@@ -13,73 +13,21 @@ import type {
   ExcelXmlStyleDataFont,
   ExcelXmlStyleDataXf,
 } from "../types";
-import "@simplysm/core-common";
-import { num, obj } from "@simplysm/core-common";
-import { ExcelUtils } from "../utils/excel-utils";
+import type { ExcelBorderPosition } from "../types";
 
-export interface ExcelStyle {
-  numFmtId?: string;
-  numFmtCode?: string;
-  border?: ExcelBorderPosition[];
-  background?: string;
-  verticalAlign?: ExcelVerticalAlign;
-  horizontalAlign?: ExcelHorizontalAlign;
-  font?: ExcelFont;
-}
-
-/**
- * `ExcelStyleOptions` (사용자 표면) → 내부 `ExcelStyle` 변환.
- * cell.setStyle 과 wb.setDefaultStyle 이 공유한다.
- *
- * - background ARGB 8자리 형식 검증
- * - numberFormatCode 가 numberFormat 보다 우선
- * - font 는 그대로 전달 (구체 검증은 ExcelXmlStyle 내부에서 수행)
- */
-export function convertExcelStyleOptions(opts: ExcelStyleOptions): ExcelStyle {
-  const style: ExcelStyle = {};
-
-  if (opts.background != null) {
-    if (!/^[0-9A-F]{8}$/i.test(opts.background)) {
-      throw new Error("잘못된 색상 형식입니다. (형식: 00000000: alpha(반전)+rgb)");
-    }
-    style.background = opts.background;
-  }
-
-  if (opts.border != null) {
-    style.border = opts.border;
-  }
-
-  if (opts.horizontalAlign != null) {
-    style.horizontalAlign = opts.horizontalAlign;
-  }
-
-  if (opts.verticalAlign != null) {
-    style.verticalAlign = opts.verticalAlign;
-  }
-
-  if (opts.numberFormatCode != null) {
-    style.numFmtCode = opts.numberFormatCode;
-  } else if (opts.numberFormat != null) {
-    style.numFmtId = ExcelUtils.convertNumFmtNameToId(opts.numberFormat).toString();
-  }
-
-  if (opts.font != null) {
-    style.font = opts.font;
-  }
-
-  return style;
-}
+// 구현 중립 위치(models/shared)로 이전. 기존 import 경로 호환을 위해 re-export 유지.
+export { convertExcelStyleOptions, type ExcelStyle };
 
 /**
  * xl/styles.xml을 관리하는 클래스.
  * 숫자 형식, 배경색, 테두리, 정렬 등의 스타일을 처리한다.
  */
-export class ExcelXmlStyle implements ExcelXml {
-  data: ExcelXmlStyleData;
+export class ExcelXmlStyle implements IStyleModel {
+  private readonly _data: ExcelXmlStyleData;
 
   constructor(data?: ExcelXmlStyleData) {
     if (data == null) {
-      this.data = {
+      this._data = {
         styleSheet: {
           $: {
             xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -114,8 +62,13 @@ export class ExcelXmlStyle implements ExcelXml {
         },
       };
     } else {
-      this.data = data;
+      this._data = data;
     }
+  }
+
+  /** @internal 테스트·디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
+  get data(): ExcelXmlStyleData {
+    return this._data;
   }
 
   add(style: ExcelStyle): string {
@@ -134,17 +87,17 @@ export class ExcelXmlStyle implements ExcelXml {
    * 미호출 시 기존 cellXfs[0]·0번 슬롯 모두 그대로 보존된다.
    */
   setDefaultStyle(style: ExcelStyle): void {
-    this.data.styleSheet.fonts[0].font[0] = {};
-    this.data.styleSheet.fills[0].fill[0] = { patternFill: [{ $: { patternType: "none" } }] };
-    this.data.styleSheet.borders[0].border[0] = {};
+    this._data.styleSheet.fonts[0].font[0] = {};
+    this._data.styleSheet.fills[0].fill[0] = { patternFill: [{ $: { patternType: "none" } }] };
+    this._data.styleSheet.borders[0].border[0] = {};
 
     if (style.font != null) {
       this._validateFont(style.font);
-      this.data.styleSheet.fonts[0].font[0] = this._buildFontXml(style.font);
+      this._data.styleSheet.fonts[0].font[0] = this._buildFontXml(style.font);
     }
 
     if (style.background != null) {
-      this.data.styleSheet.fills[0].fill[0] = {
+      this._data.styleSheet.fills[0].fill[0] = {
         patternFill: [
           {
             $: { patternType: "solid" },
@@ -155,7 +108,7 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     if (style.border != null) {
-      this.data.styleSheet.borders[0].border[0] = this._createBorderFromPositions(style.border);
+      this._data.styleSheet.borders[0].border[0] = this._createBorderFromPositions(style.border);
     }
 
     const newXf: ExcelXmlStyleDataXf = { $: { numFmtId: "0" } };
@@ -170,7 +123,7 @@ export class ExcelXmlStyle implements ExcelXml {
     }
 
     this._applyAlignment(newXf, style);
-    this.data.styleSheet.cellXfs[0].xf[0] = newXf;
+    this._data.styleSheet.cellXfs[0].xf[0] = newXf;
   }
 
   addWithClone(id: string, style: ExcelStyle): string {
@@ -178,7 +131,7 @@ export class ExcelXmlStyle implements ExcelXml {
     if (idNum == null) {
       throw new Error(`잘못된 스타일 ID: ${id}`);
     }
-    const xfArray = this.data.styleSheet.cellXfs[0].xf;
+    const xfArray = this._data.styleSheet.cellXfs[0].xf;
     if (idNum < 0 || idNum >= xfArray.length) {
       throw new Error(`존재하지 않는 스타일 ID: ${id} (범위: 0-${xfArray.length - 1})`);
     }
@@ -197,7 +150,7 @@ export class ExcelXmlStyle implements ExcelXml {
     if (style.background != null) {
       const fillIdNum = cloneXf.$.fillId != null ? num.parseInt(cloneXf.$.fillId) : undefined;
       const prevFill =
-        fillIdNum != null ? this.data.styleSheet.fills[0].fill[fillIdNum] : undefined;
+        fillIdNum != null ? this._data.styleSheet.fills[0].fill[fillIdNum] : undefined;
 
       if (prevFill != null) {
         const cloneFill = obj.clone(prevFill);
@@ -229,7 +182,7 @@ export class ExcelXmlStyle implements ExcelXml {
       const borderIdNum =
         cloneXf.$.borderId != null ? num.parseInt(cloneXf.$.borderId) : undefined;
       const prevBorder =
-        borderIdNum != null ? this.data.styleSheet.borders[0].border[borderIdNum] : undefined;
+        borderIdNum != null ? this._data.styleSheet.borders[0].border[borderIdNum] : undefined;
 
       if (prevBorder != null) {
         const cloneBorder = obj.clone(prevBorder);
@@ -263,7 +216,7 @@ export class ExcelXmlStyle implements ExcelXml {
     if (idNum == null) {
       throw new Error(`잘못된 스타일 ID: ${id}`);
     }
-    const xf = this.data.styleSheet.cellXfs[0].xf[idNum] as ExcelXmlStyleDataXf | undefined;
+    const xf = this._data.styleSheet.cellXfs[0].xf[idNum] as ExcelXmlStyleDataXf | undefined;
 
     const result: ExcelStyle = {};
 
@@ -273,12 +226,12 @@ export class ExcelXmlStyle implements ExcelXml {
       if (xf.$.fillId != null) {
         const fillIdNum = num.parseInt(xf.$.fillId);
         if (fillIdNum != null) {
-          const fill = this.data.styleSheet.fills[0].fill[fillIdNum] as
+          const fill = this._data.styleSheet.fills[0].fill[fillIdNum] as
             | ExcelXmlStyleDataFill
             | undefined;
           if (fill == null) {
             throw new Error(
-              `존재하지 않는 fill ID: ${xf.$.fillId} (범위: 0-${this.data.styleSheet.fills[0].fill.length - 1})`,
+              `존재하지 않는 fill ID: ${xf.$.fillId} (범위: 0-${this._data.styleSheet.fills[0].fill.length - 1})`,
             );
           }
           result.background = fill.patternFill[0].fgColor?.[0].$.rgb;
@@ -290,12 +243,12 @@ export class ExcelXmlStyle implements ExcelXml {
         if (borderIdNum == null) {
           throw new Error(`잘못된 border ID: ${xf.$.borderId}`);
         }
-        const border = this.data.styleSheet.borders[0].border[borderIdNum] as
+        const border = this._data.styleSheet.borders[0].border[borderIdNum] as
           | ExcelXmlStyleDataBorder
           | undefined;
         if (border == null) {
           throw new Error(
-            `존재하지 않는 border ID: ${xf.$.borderId} (범위: 0-${this.data.styleSheet.borders[0].border.length - 1})`,
+            `존재하지 않는 border ID: ${xf.$.borderId} (범위: 0-${this._data.styleSheet.borders[0].border.length - 1})`,
           );
         }
         if (
@@ -326,7 +279,7 @@ export class ExcelXmlStyle implements ExcelXml {
       if (xf.$.fontId != null) {
         const fontIdNum = num.parseInt(xf.$.fontId);
         if (fontIdNum != null) {
-          const font = this.data.styleSheet.fonts[0].font[fontIdNum] as
+          const font = this._data.styleSheet.fonts[0].font[fontIdNum] as
             | ExcelXmlStyleDataFont
             | undefined;
           if (font != null) {
@@ -369,7 +322,7 @@ export class ExcelXmlStyle implements ExcelXml {
       ];
     }
 
-    const dxfs = (this.data.styleSheet.dxfs = this.data.styleSheet.dxfs ?? [
+    const dxfs = (this._data.styleSheet.dxfs = this._data.styleSheet.dxfs ?? [
       { $: { count: "0" }, dxf: [] },
     ]);
 
@@ -384,21 +337,26 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   getNumFmtCode(numFmtId: string): string | undefined {
-    return (this.data.styleSheet.numFmts?.[0].numFmt ?? []).single(
+    return (this._data.styleSheet.numFmts?.[0].numFmt ?? []).single(
       (item) => item.$.numFmtId === numFmtId,
     )?.$.formatCode;
   }
 
-  cleanup(): void {
+  serialize(): Bytes {
+    this._cleanup();
+    return new TextEncoder().encode(xmlU.stringify(this._data));
+  }
+
+  private _cleanup(): void {
     const result = {} as ExcelXmlStyleData["styleSheet"];
 
     // 정렬 순서 (numFmts를 먼저)
 
-    if (this.data.styleSheet.numFmts != null) {
-      result.numFmts = this.data.styleSheet.numFmts;
+    if (this._data.styleSheet.numFmts != null) {
+      result.numFmts = this._data.styleSheet.numFmts;
     }
 
-    const styleSheetRec = this.data.styleSheet as Record<string, unknown>;
+    const styleSheetRec = this._data.styleSheet as Record<string, unknown>;
     const resultRec = result as Record<string, unknown>;
     for (const key of Object.keys(styleSheetRec)) {
       if (key === "numFmts") continue;
@@ -406,45 +364,45 @@ export class ExcelXmlStyle implements ExcelXml {
       resultRec[key] = styleSheetRec[key];
     }
 
-    this.data.styleSheet = result;
+    this._data.styleSheet = result;
   }
 
   //#region Private Methods
 
   private _setNumFmtCode(numFmtCode: string): string {
     // 코드가 이미 존재하면 건너뛰기
-    const existsNumFmtId = (this.data.styleSheet.numFmts?.[0].numFmt ?? []).single(
+    const existsNumFmtId = (this._data.styleSheet.numFmts?.[0].numFmt ?? []).single(
       (item) => item.$.formatCode === numFmtCode,
     )?.$.numFmtId;
     if (existsNumFmtId != null) {
       return existsNumFmtId;
     }
 
-    this.data.styleSheet.numFmts = this.data.styleSheet.numFmts ?? [
+    this._data.styleSheet.numFmts = this._data.styleSheet.numFmts ?? [
       {
         $: { count: "0" },
         numFmt: [],
       },
     ];
 
-    this.data.styleSheet.numFmts[0].numFmt = this.data.styleSheet.numFmts[0].numFmt ?? [];
+    this._data.styleSheet.numFmts[0].numFmt = this._data.styleSheet.numFmts[0].numFmt ?? [];
 
     // Excel 사용자 정의 숫자 형식은 ID 180+부터 시작 (0-163: 내장, 164-179: 예약)
-    const numFmts = this.data.styleSheet.numFmts[0].numFmt;
+    const numFmts = this._data.styleSheet.numFmts[0].numFmt;
     const maxItem =
       numFmts.length > 0
         ? numFmts.orderByDesc((item) => num.parseInt(item.$.numFmtId) ?? 180).first()
         : undefined;
     const maxId = maxItem ? (num.parseInt(maxItem.$.numFmtId) ?? 180) : 180;
     const nextNumFmtId = (maxId + 1).toString();
-    this.data.styleSheet.numFmts[0].numFmt.push({
+    this._data.styleSheet.numFmts[0].numFmt.push({
       $: {
         numFmtId: nextNumFmtId,
         formatCode: numFmtCode,
       },
     });
-    this.data.styleSheet.numFmts[0].$.count = (
-      (num.parseInt(this.data.styleSheet.numFmts[0].$.count) ?? 0) + 1
+    this._data.styleSheet.numFmts[0].$.count = (
+      (num.parseInt(this._data.styleSheet.numFmts[0].$.count) ?? 0) + 1
     ).toString();
 
     return nextNumFmtId;
@@ -542,13 +500,13 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateFont(item: ExcelXmlStyleDataFont): string {
-    const prevSameFont = this.data.styleSheet.fonts[0].font.single((f) => obj.equal(f, item));
+    const prevSameFont = this._data.styleSheet.fonts[0].font.single((f) => obj.equal(f, item));
     if (prevSameFont != null) {
-      return this.data.styleSheet.fonts[0].font.indexOf(prevSameFont).toString();
+      return this._data.styleSheet.fonts[0].font.indexOf(prevSameFont).toString();
     } else {
-      this.data.styleSheet.fonts[0].font.push(item);
-      this.data.styleSheet.fonts[0].$.count = this.data.styleSheet.fonts[0].font.length.toString();
-      return (this.data.styleSheet.fonts[0].font.length - 1).toString();
+      this._data.styleSheet.fonts[0].font.push(item);
+      this._data.styleSheet.fonts[0].$.count = this._data.styleSheet.fonts[0].font.length.toString();
+      return (this._data.styleSheet.fonts[0].font.length - 1).toString();
     }
   }
 
@@ -609,44 +567,44 @@ export class ExcelXmlStyle implements ExcelXml {
   }
 
   private _getSameOrCreateXf(xfItem: ExcelXmlStyleDataXf): string {
-    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => obj.equal(item, xfItem));
+    const prevSameXf = this._data.styleSheet.cellXfs[0].xf.single((item) => obj.equal(item, xfItem));
 
     if (prevSameXf != null) {
-      return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
+      return this._data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
     } else {
-      this.data.styleSheet.cellXfs[0].xf.push(xfItem);
-      this.data.styleSheet.cellXfs[0].$.count =
-        this.data.styleSheet.cellXfs[0].xf.length.toString();
-      return (this.data.styleSheet.cellXfs[0].xf.length - 1).toString();
+      this._data.styleSheet.cellXfs[0].xf.push(xfItem);
+      this._data.styleSheet.cellXfs[0].$.count =
+        this._data.styleSheet.cellXfs[0].xf.length.toString();
+      return (this._data.styleSheet.cellXfs[0].xf.length - 1).toString();
     }
   }
 
   private _getSameOrCreateFill(fillItem: ExcelXmlStyleDataFill): string {
-    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) =>
+    const prevSameFill = this._data.styleSheet.fills[0].fill.single((item) =>
       obj.equal(item, fillItem),
     );
 
     if (prevSameFill != null) {
-      return this.data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
+      return this._data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
     } else {
-      this.data.styleSheet.fills[0].fill.push(fillItem);
-      this.data.styleSheet.fills[0].$.count = this.data.styleSheet.fills[0].fill.length.toString();
-      return (this.data.styleSheet.fills[0].fill.length - 1).toString();
+      this._data.styleSheet.fills[0].fill.push(fillItem);
+      this._data.styleSheet.fills[0].$.count = this._data.styleSheet.fills[0].fill.length.toString();
+      return (this._data.styleSheet.fills[0].fill.length - 1).toString();
     }
   }
 
   private _getSameOrCreateBorder(borderItem: ExcelXmlStyleDataBorder): string {
-    const prevSameBorder = this.data.styleSheet.borders[0].border.single((item) =>
+    const prevSameBorder = this._data.styleSheet.borders[0].border.single((item) =>
       obj.equal(item, borderItem),
     );
 
     if (prevSameBorder != null) {
-      return this.data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();
+      return this._data.styleSheet.borders[0].border.indexOf(prevSameBorder).toString();
     } else {
-      this.data.styleSheet.borders[0].border.push(borderItem);
-      this.data.styleSheet.borders[0].$.count =
-        this.data.styleSheet.borders[0].border.length.toString();
-      return (this.data.styleSheet.borders[0].border.length - 1).toString();
+      this._data.styleSheet.borders[0].border.push(borderItem);
+      this._data.styleSheet.borders[0].$.count =
+        this._data.styleSheet.borders[0].border.length.toString();
+      return (this._data.styleSheet.borders[0].border.length - 1).toString();
     }
   }
 

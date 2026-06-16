@@ -1,0 +1,95 @@
+@use "sass:map";
+@use "sass:color";
+@use "../commons/colors";
+
+$paper: (
+  theme: (
+    "gray": (
+      lightest: colors.get(stone, 50),
+      lighter: colors.get(stone, 100),
+      light: colors.get(stone, 300),
+      default: colors.get(stone, 500),
+      dark: colors.get(stone, 600),
+      darker: colors.get(stone, 700),
+      darkest: colors.get(stone, 800)
+    ),
+    blue-gray: (
+      lightest: colors.get(slate, 50),
+      lighter: colors.get(slate, 100),
+      light: colors.get(slate, 300),
+      default: colors.get(slate, 500),
+      dark: colors.get(slate, 600),
+      darker: colors.get(slate, 700),
+      darkest: colors.get(slate, 800)
+    ),
+    primary: (
+      lightest: colors.get(blue, 100),
+      lighter: colors.get(blue, 300),
+      light: colors.get(blue, 500),
+      default: colors.get(blue, 900),
+      dark: colors.get(blue, 950),
+      darker: colors.get(blue, 950),
+      darkest: colors.get(blue, 950)
+    ),
+    secondary: (
+      lightest: colors.get(blue, 50),
+      lighter: colors.get(blue, 100),
+      light: colors.get(blue, 300),
+      default: colors.get(blue, 500),
+      dark: colors.get(blue, 600),
+      darker: colors.get(blue, 700),
+      darkest: colors.get(blue, 800)
+    ),
+    info: (
+      lightest: colors.get(cyan, 50),
+      lighter: colors.get(cyan, 100),
+      light: colors.get(cyan, 300),
+      default: colors.get(cyan, 500),
+      dark: colors.get(cyan, 600),
+      darker: colors.get(cyan, 700),
+      darkest: colors.get(cyan, 800)
+    ),
+    success: (
+      lightest: colors.get(green, 50),
+      lighter: colors.get(green, 100),
+      light: colors.get(green, 300),
+      default: colors.get(green, 500),
+      dark: colors.get(green, 600),
+      darker: colors.get(green, 700),
+      darkest: colors.get(green, 800)
+    ),
+    warning: (
+      lightest: colors.get(orange, 50),
+      lighter: colors.get(orange, 100),
+      light: colors.get(orange, 200),
+      default: colors.get(orange, 400),
+      dark: colors.get(orange, 600),
+      darker: colors.get(orange, 700),
+      darkest: colors.get(orange, 800)
+    ),
+    danger: (
+      lightest: colors.get(red, 50),
+      lighter: colors.get(red, 100),
+      light: colors.get(red, 200),
+      default: colors.get(red, 400),
+      dark: colors.get(red, 600),
+      darker: colors.get(red, 700),
+      darkest: colors.get(red, 800)
+    )
+  ),
+  background-color: var(--theme-gray-lightest),
+  control-color: white,
+  border-radius: (
+    xs: 0,
+    sm: 0,
+    default: 0,
+    lg: 0,
+    xl: 0,
+    xxl: 0,
+  ),
+  elevation-blur-mult: 0,
+  sheet: (
+    bg: var(--theme-gray-lightest),
+  ),
+  border-color: colors.variants(colors.get(zinc, 500)),
+);

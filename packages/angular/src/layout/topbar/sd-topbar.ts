@@ -43,7 +43,7 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
         user-select: none;
 
         //background: var(--control-color);
-        background: var(--theme-gray-lightest);
+        //background: var(--theme-gray-lightest);
         color: var(--text-trans-default);
         border-bottom: 1px solid var(--border-color-lighter);
         padding-left: var(--gap-xs);

@@ -8,7 +8,7 @@
 
 | 파일명 형식                  | 역할                                                               |
 | ---------------------------- | ------------------------------------------------------------------ |
-| `<domain>.view.ts`           | list/detail 합성 화면. list/detail 자식을 두고 상호 트리거를 중계. |
+| `<domain>.view.ts`           | 여러 영역을 합성·분할한 화면. list/detail 자식 합성형(트리거 중계) 또는 분할·리포트형(영역 직접 포함·직접 페치). |
 | `<domain>.list.ts`           | 목록. `sd-crud-list` 사용.                                         |
 | `<domain>.detail.ts`         | 단건 보기/편집. `sd-crud-detail` 사용.                             |
 | `<domain>.modal.ts`          | 모달 전용 화면.                                                    |
@@ -97,7 +97,9 @@ Angular 기본과 다른 부분만 명시:
 
 - **`*.list.ts`** — 자체 검색·페이지·정렬·재조회를 책임. `selectMode` 같은 입력을 받아 부모가 선택 동작을 제어할 수 있게 노출.
 - **`*.detail.ts`** — 식별자(`input.required`) 를 받아 자체 로드·저장. 변경·삭제 후 `submitted` output 으로 부모에게 알림.
-- **`*.view.ts`** — list/detail 합성 + 자식 간 트리거 중계. 데이터 페치는 view 에서 수행 금지.
+- **`*.view.ts`** — 여러 영역을 합성·분할한 화면. 두 형태:
+  - (a) **합성형** — list/detail 자식을 두고 자식 간 트리거만 중계. 데이터 페치는 자식에 위임하고 view 가 직접 페치하지 않음.
+  - (b) **분할·리포트형** — 재사용 list/detail 로 나누지 않고 필터·시트 등 영역을 view 가 직접 품는 읽기 전용 리포트·대시보드. 이 경우 view 가 직접 페치함.
 
 화면이 list 또는 detail 하나로 끝나면 view 를 만들지 않음. 이 경우 list/detail 자체가 라우팅 진입 단위.
 
@@ -624,6 +626,22 @@ async onSubmit(): Promise<void> {
 </sd-sheet-column>
 ```
 
+**다단(그룹) 헤더**: `[header]` 에 문자열 배열을 주면 다단 헤더가 됨. 배열의 각 원소가 위에서 아래로 헤더 행이 되고, 인접 컬럼이 같은 상위 행 텍스트를 가지면 그 상위 셀이 가로로 병합되어 그룹 헤더로 묶임. 단일 문자열 컬럼은 전체 헤더 높이를 세로로 차지.
+
+```html
+<sd-sheet-column [key]="'salesAmount'" [header]="['홈택스', '매출']">
+  <ng-template [cell]="items()" let-item="item">
+    <div class="p-xs-sm tx-right">{{ item.salesAmount | number }}</div>
+  </ng-template>
+</sd-sheet-column>
+<sd-sheet-column [key]="'salesVat'" [header]="['홈택스', '부가세']">
+  <ng-template [cell]="items()" let-item="item">...</ng-template>
+</sd-sheet-column>
+```
+
+- 두 컬럼이 상위 행에 같은 `'홈택스'` 를 가지므로 상단에 `홈택스` 그룹 헤더가 두 컬럼 위로 병합됨.
+- 배열 길이가 컬럼마다 달라도 됨 — 짧은 쪽은 마지막 원소가 아래 행까지 세로로 채워짐.
+
 **폭 약속**:
 
 - `[width]` 는 **미명시가 기본** (자동). px 지정은 사용자가 명시 지시한 경우에만 적용.
@@ -676,10 +694,24 @@ async onSubmit(): Promise<void> {
 
 - 컬럼 중 하나라도 `#summaryTpl` 을 가지면 요약 행 전체가 활성화됨. 정의 없는 컬럼은 빈 셀로 표시.
 - 셀 본문 약속(`p-xs-sm`, 정렬 클래스 등) 은 요약 셀에도 동일하게 적용.
-- 합계·평균 등 집계 값은 시트가 계산하지 않음. 화면 컴포넌트에서 `computed` 로 직접 만들어 노출.
+- 합계·평균 등 집계 값은 시트가 계산하지 않음. 집계 출처는 목록의 **페이징 여부** 로 갈림.
+
+**페이징 없는 전건 로드 목록** (자식·상세 목록 등) — `items()` 가 곧 전체이므로 `computed` 합산.
 
 ```ts
 totalQuantity = computed(() => this.items().sum((i) => i.quantity) ?? 0);
+```
+
+**페이징 목록** — `items()` 는 현재 페이지뿐이라 `computed` 합산 금지 (페이지 합계만 나와 요약이 틀어짐). 전체 결과의 집계값을 별도 시그널로 받아 바인딩. 집계는 데이터 로딩 시 별도 쿼리로 구함 ([client-crud.md](./client-crud.md) 의 "페이징 목록 요약 집계" 참조).
+
+```ts
+summaryData = signal<{ amount: number }>({ amount: 0 });
+```
+
+```html
+<ng-template #summaryTpl>
+  <div class="p-xs-sm tx-right">{{ summaryData().amount | number }}</div>
+</ng-template>
 ```
 
 ## 폼·입력 컨트롤

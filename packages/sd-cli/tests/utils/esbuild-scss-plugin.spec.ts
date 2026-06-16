@@ -130,6 +130,61 @@ describe("createScssPlugin — Unit", () => {
     expect(error.location!.line).toBeGreaterThan(0);
   });
 
+  it("sass 에러 시 에러 위치 파일과 진입 파일을 watchFiles로 보존한다", async () => {
+    const plugin = createScssPlugin({ loadPaths: [] });
+    const { callback } = captureOnLoad(plugin);
+
+    const result = await callback({
+      path: path.join(tmpDir, "broken.scss"),
+      namespace: "file",
+      suffix: "",
+      pluginData: undefined,
+      with: {},
+    });
+
+    expect(result).toBeDefined();
+    expect(result!.errors).toBeDefined();
+    expect(result!.watchFiles).toBeDefined();
+    // 에러 위치 파일(= 진입 파일 broken.scss)이 watch 대상으로 유지되어야
+    // 해당 파일 수정 시 rebuild가 다시 트리거된다.
+    const hasBroken = result!.watchFiles!.some((f) => f.includes("broken.scss"));
+    expect(hasBroken).toBe(true);
+  });
+
+  it("직전 성공 컴파일의 의존성을 에러 시 watchFiles로 재사용한다", async () => {
+    const depErrorPath = path.join(tmpDir, "dep-then-error.scss");
+    const plugin = createScssPlugin({ loadPaths: [path.join(tmpDir, "scss")] });
+    const { callback } = captureOnLoad(plugin);
+
+    // 1. 의존성(_vars.scss)을 사용하는 정상 컴파일
+    fs.writeFileSync(depErrorPath, `@use "vars";\n.box { background: vars.$bg; }`);
+    const okResult = await callback({
+      path: depErrorPath,
+      namespace: "file",
+      suffix: "",
+      pluginData: undefined,
+      with: {},
+    });
+    expect(okResult!.errors).toBeUndefined();
+
+    // 2. 같은 진입 파일을 에러나는 내용으로 교체 후 재컴파일
+    fs.writeFileSync(depErrorPath, `.box { color: $undefined-var; }`);
+    const errResult = await callback({
+      path: depErrorPath,
+      namespace: "file",
+      suffix: "",
+      pluginData: undefined,
+      with: {},
+    });
+
+    expect(errResult!.errors).toBeDefined();
+    expect(errResult!.watchFiles).toBeDefined();
+    // 직전 성공 시의 의존성(_vars.scss)이 watch에 유지되어야
+    // 해당 의존 파일 수정 시에도 rebuild가 트리거된다.
+    const hasVars = errResult!.watchFiles!.some((f) => f.includes("_vars.scss"));
+    expect(hasVars).toBe(true);
+  });
+
   it("loadPaths가 sass 컴파일에 올바르게 전달된다", async () => {
     const plugin = createScssPlugin({ loadPaths: [path.join(tmpDir, "scss")] });
     const { callback } = captureOnLoad(plugin);

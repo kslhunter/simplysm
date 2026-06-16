@@ -54,6 +54,10 @@ import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
             <span>다크 모드</span>
             <sd-switch [(value)]="_sdTheme.dark" />
           </div>
+          <div class="flex-row gap-sm cross-align-center">
+            <span>블루프린트</span>
+            <sd-switch [(value)]="_sdTheme.blueprint" />
+          </div>
         </div>
       </sd-dropdown-popup>
     </sd-dropdown>

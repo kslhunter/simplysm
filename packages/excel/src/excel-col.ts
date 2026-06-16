@@ -1,5 +1,5 @@
 import type { ExcelCell } from "./excel-cell";
-import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
+import type { IWorksheetModel } from "./models/i-worksheet-model";
 import type { ZipCache } from "./utils/zip-cache";
 
 /** Excel 워크시트의 열을 나타내는 클래스. 셀 접근 및 열 너비 설정 기능을 제공한다. */
@@ -35,7 +35,7 @@ export class ExcelCol {
     wsData.setColWidth((this._c + 1).toString(), size.toString());
   }
 
-  private async _getWsData(): Promise<ExcelXmlWorksheet> {
-    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as ExcelXmlWorksheet;
+  private async _getWsData(): Promise<IWorksheetModel> {
+    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as IWorksheetModel;
   }
 }

@@ -5,6 +5,9 @@ import { isPlatformBrowser } from "@angular/common";
 export class SdThemeProvider {
   dark = signal<boolean>(false);
 
+  // 블루프린트(엔지니어링 도면) 테마 — dark 토글과 직교. dark 와 조합해 4면을 만든다.
+  blueprint = signal<boolean>(false);
+
   readonly fontSizePresets: readonly number[] = [12, 14, 16, 20, 24, 28];
 
   fontSize = signal<number>(12);
@@ -15,6 +18,10 @@ export class SdThemeProvider {
 
     effect(() => {
       document.body.classList.toggle("sd-theme-dark", this.dark());
+    });
+
+    effect(() => {
+      document.body.classList.toggle("sd-theme-blueprint", this.blueprint());
     });
 
     effect(() => {

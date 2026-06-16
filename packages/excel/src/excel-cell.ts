@@ -1,8 +1,8 @@
-import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
-import type { ExcelXmlContentType } from "./xml/excel-xml-content-type";
-import type { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
-import type { ExcelXmlStyle, ExcelStyle } from "./xml/excel-xml-style";
-import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
+import type { IWorksheetModel } from "./models/i-worksheet-model";
+import type { IStyleModel } from "./models/i-style-model";
+import type { ISharedStringModel } from "./models/i-shared-string-model";
+import type { ExcelStyle } from "./models/shared/excel-style";
+import { convertExcelStyleOptions } from "./models/shared/excel-style";
 import type { ZipCache } from "./utils/zip-cache";
 import type { ExcelAddressPoint, ExcelStyleOptions, ExcelValueType } from "./types";
 import {
@@ -12,8 +12,6 @@ import {
   str,
   Time,
 } from "@simplysm/core-common";
-import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
-import { convertExcelStyleOptions } from "./xml/excel-xml-style";
 import { ExcelUtils } from "./utils/excel-utils";
 import { getOrCreateStyleData } from "./utils/excel-style-data";
 
@@ -246,8 +244,8 @@ export class ExcelCell {
     wsData.deleteCell(addr);
   }
 
-  private async _getWsData(): Promise<ExcelXmlWorksheet> {
-    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as ExcelXmlWorksheet;
+  private async _getWsData(): Promise<IWorksheetModel> {
+    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as IWorksheetModel;
   }
 
   private async _setStyleInternal(style: ExcelStyle): Promise<void> {
@@ -262,44 +260,15 @@ export class ExcelCell {
     wsData.setCellStyleId(this.addr, styleId);
   }
 
-  private async _getTypeData(): Promise<ExcelXmlContentType> {
-    return (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
+  private async _getStyleData(): Promise<IStyleModel | undefined> {
+    return (await this._zipCache.get("xl/styles.xml")) as IStyleModel | undefined;
   }
 
-  private async _getSsData(): Promise<ExcelXmlSharedString | undefined> {
-    return (await this._zipCache.get("xl/sharedStrings.xml")) as ExcelXmlSharedString | undefined;
+  private async _getOrCreateSsData(): Promise<ISharedStringModel> {
+    return this._zipCache.ensureSharedStrings();
   }
 
-  private async _getWbRelData(): Promise<ExcelXmlRelationship> {
-    return (await this._zipCache.get("xl/_rels/workbook.xml.rels")) as ExcelXmlRelationship;
-  }
-
-  private async _getStyleData(): Promise<ExcelXmlStyle | undefined> {
-    return (await this._zipCache.get("xl/styles.xml")) as ExcelXmlStyle | undefined;
-  }
-
-  private async _getOrCreateSsData(): Promise<ExcelXmlSharedString> {
-    let ssData = await this._getSsData();
-    if (ssData == null) {
-      ssData = new ExcelXmlSharedStringClass();
-      this._zipCache.set("xl/sharedStrings.xml", ssData);
-
-      const typeData = await this._getTypeData();
-      typeData.add(
-        "/xl/sharedStrings.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
-      );
-
-      const wbRelData = await this._getWbRelData();
-      wbRelData.add(
-        "sharedStrings.xml",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
-      );
-    }
-    return ssData;
-  }
-
-  private async _getOrCreateStyleData(): Promise<ExcelXmlStyle> {
+  private async _getOrCreateStyleData(): Promise<IStyleModel> {
     return getOrCreateStyleData(this._zipCache);
   }
 

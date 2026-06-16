@@ -1,0 +1,81 @@
+//
+// 블루프린트 모눈 그리드 면 — body(앱 배경)와 chrome(사이드바·탑바)에만 적용.
+// 콘텐츠(카드·시트·폼·드롭다운·모달) 내부는 무지(가독 우선) — 브랜드 패턴과 동일.
+//
+// ⚠ 언레이어드(@layer 밖)로 둔다. 면 배경은 컴포넌트 스타일(언레이어드)이
+//   `background: var(--theme-gray-lightest)` 같은 단축으로 background-image 를 none 으로
+//   리셋하므로, 같은(언레이어드) 우선순위에서 더 높은 명시도의 자손 셀렉터로 background-image
+//   만 다시 얹어야 그리드가 살아남는다. background-color 는 컴포넌트 단축이 그대로 유지한다.
+//
+
+// 모눈: 24px 헤어라인 + 120px 메이저
+@mixin grid-image($strong, $weak) {
+  background-image:
+    linear-gradient(#{$strong} 1px, transparent 1px),
+    linear-gradient(90deg, #{$strong} 1px, transparent 1px),
+    linear-gradient(#{$weak} 1px, transparent 1px),
+    linear-gradient(90deg, #{$weak} 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+}
+
+body.sd-theme-blueprint,
+.sd-theme-blueprint sd-sheet > ._sheet-container {
+  @include grid-image(rgba(28, 62, 156, 0.055), rgba(28, 62, 156, 0.022));
+}
+
+.sd-theme-blueprint sd-sheet > ._sheet-container > table {
+  box-shadow: 1px 1px 0 rgba(28, 62, 156, 0.1);
+}
+
+.sd-theme-blueprint .card {
+  border: 1px solid var(--border-color-default);
+  box-shadow: 3px 3px 0 rgba(28, 62, 156, 0.1);
+
+  &:hover,
+  &:focus-within {
+    box-shadow: 5px 5px 0 rgba(28, 62, 156, 0.14);
+  }
+}
+
+.sd-theme-blueprint sd-permission-table table > * > tr > * {
+  border-bottom: 1px solid var(--border-color-lighter);
+}
+
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._before,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._title,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._after {
+  background: var(--trans-lighter);
+  border-top: 1px solid var(--border-color-default);
+  border-bottom: 1px solid var(--border-color-default);
+  color: var(--text-trans-default);
+  font-weight: 700;
+
+  > * {
+    color: var(--text-trans-default) !important;
+  }
+}
+
+// 하위 depth 틴트(info/warning/success lightest) 제거 → 무지, 행 헤어라인으로만 구분
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="info"] > *._title,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="info"] > *._after,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="warning"] > *._title,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="warning"] > *._after,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="success"] > *._title,
+.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="success"] > *._after {
+  background: transparent;
+}
+
+.sd-theme-blueprint {
+  sd-modal > ._dialog > ._header {
+    background: var(--theme-primary-default);
+    color: var(--text-trans-rev-default);
+  }
+
+  sd-crud-detail > sd-base-container > sd-busy-container > .bg-control > .main-align-end {
+    background: var(--theme-gray-lightest);
+  }
+}

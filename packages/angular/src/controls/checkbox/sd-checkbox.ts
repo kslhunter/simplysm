@@ -62,7 +62,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
 
           width: calc(var(--font-size-default) + 2px);
           height: calc(var(--font-size-default) + 2px);
-          border: 1px solid var(--trans-light);
+          border: 1px solid var(--border-color-light);
           background: var(--theme-secondary-lightest);
 
           > ._indicator {
@@ -114,19 +114,20 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
               }
             }
 
-            &:focus {
-              > ._indicator_rect {
-                border-color: var(--theme-#{$key}-default);
-              }
-            }
-
             &[data-sd-checked="true"] {
               > ._indicator_rect {
+                border-color: var(--theme-#{$key}-default);
                 background: var(--theme-#{$key}-default);
 
                 > ._indicator {
                   color: var(--text-trans-rev-default);
                 }
+              }
+            }
+
+            &:focus {
+              > ._indicator_rect {
+                border-color: var(--theme-#{$key}-dark);
               }
             }
           }
@@ -138,15 +139,16 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
             border-color: var(--text-trans-lightest);
           }
 
-          &:focus {
+          &[data-sd-checked="true"] {
             > ._indicator_rect {
-              border-color: var(--text-trans-default);
+              border-color: var(--theme-primary-default);
+              background: var(--theme-primary-default);
             }
           }
 
-          &[data-sd-checked="true"] {
+          &:focus {
             > ._indicator_rect {
-              background: var(--theme-primary-default);
+              border-color: var(--theme-primary-dark);
             }
           }
         }

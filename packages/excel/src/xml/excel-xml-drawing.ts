@@ -1,15 +1,18 @@
-import type { ExcelXml, ExcelXmlDrawingData } from "../types";
+import type { Bytes } from "@simplysm/core-common";
+import { xml as xmlU } from "@simplysm/core-common";
+import type { IDrawingModel } from "../models/i-drawing-model";
+import type { ExcelXmlDrawingData } from "../types";
 
 /**
  * xl/drawings/drawing*.xml 파일을 관리하는 클래스.
  * 이미지 삽입을 위한 위치 및 참조 정보를 처리한다.
  */
-export class ExcelXmlDrawing implements ExcelXml {
-  data: ExcelXmlDrawingData;
+export class ExcelXmlDrawing implements IDrawingModel {
+  private readonly _data: ExcelXmlDrawingData;
 
   constructor(data?: ExcelXmlDrawingData) {
     if (data == null) {
-      this.data = {
+      this._data = {
         wsDr: {
           $: {
             "xmlns": "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
@@ -20,8 +23,13 @@ export class ExcelXmlDrawing implements ExcelXml {
         },
       };
     } else {
-      this.data = data;
+      this._data = data;
     }
+  }
+
+  /** @internal 테스트·디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
+  get data(): ExcelXmlDrawingData {
+    return this._data;
   }
 
   addPicture(opts: {
@@ -29,13 +37,13 @@ export class ExcelXmlDrawing implements ExcelXml {
     to: { r: number; c: number; rOff?: number | string; cOff?: number | string };
     blipRelId: string;
   }): void {
-    this.data.wsDr.twoCellAnchor = this.data.wsDr.twoCellAnchor ?? [];
+    this._data.wsDr.twoCellAnchor = this._data.wsDr.twoCellAnchor ?? [];
 
-    const anchors = this.data.wsDr.twoCellAnchor;
+    const anchors = this._data.wsDr.twoCellAnchor;
     const picId = anchors.length + 1;
     const name = `Picture ${picId}`;
 
-    this.data.wsDr.twoCellAnchor.push({
+    this._data.wsDr.twoCellAnchor.push({
       from: [
         {
           col: [opts.from.c.toString()],
@@ -83,5 +91,7 @@ export class ExcelXmlDrawing implements ExcelXml {
     });
   }
 
-  cleanup(): void {}
+  serialize(): Bytes {
+    return new TextEncoder().encode(xmlU.stringify(this._data));
+  }
 }

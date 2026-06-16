@@ -1,12 +1,14 @@
 @use "mixins";
 @use "variables";
+@use "colors";
 @use "../themes/variables-dark" as dark;
+@use "../themes/variables-blueprint" as blueprint;
 
 @layer base, theme-variant, utilities;
 
 @layer base {
   :root {
-    @include mixins.writeVars(variables.$colors, "color");
+    @include mixins.writeVars(colors.$colors, "color");
     @include mixins.writeVars(variables.$vars, "");
   }
 }
@@ -19,5 +21,10 @@
   // D7: opt-out 방식 이미지 반전
   .sd-theme-dark img:not(.no-invert) {
     filter: invert(1) hue-rotate(180deg);
+  }
+
+  // 블루프린트 — 다크 토글과 직교. 트레이싱지(라이트 면)
+  .sd-theme-blueprint {
+    @include mixins.writeVars(blueprint.$paper, "");
   }
 }

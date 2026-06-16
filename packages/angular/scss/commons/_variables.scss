@@ -1,11 +1,12 @@
 @use "sass:map";
 @use "sass:color";
+@use "./colors";
 
-@function to-rgb($oklch-color) {
+/*@function to-rgb($oklch-color) {
   @return color.to-space($oklch-color, rgb);
-}
+}*/
 
-$colors: (
+/*$colors: (
   red: to-rgb(oklch(0.704 0.191 22.216)),
   orange: to-rgb(oklch(0.75 0.183 55.934)),
   amber: to-rgb(oklch(0.828 0.189 84.429)),
@@ -28,21 +29,21 @@ $colors: (
   zinc: to-rgb(oklch(0.705 0.015 286.067)),
   neutral: to-rgb(oklch(0.708 0 0)),
   stone: to-rgb(oklch(0.709 0.01 56.259)),
-);
+);*/
 
 // D6: lightest~darkest가 실제 밝기와 일치하도록 수정
 // lightest(+90%) > lighter(+75%) > light(+60%) > default > dark(-10%) > darker(-25%) > darkest(-40%)
-@function color-map($base, $offset: 0%) {
-  @return (
-    lightest: color.scale($base, $lightness: 90% + $offset),
-    lighter: color.scale($base, $lightness: 75% + $offset),
-    light: color.scale($base, $lightness: 60% + $offset),
-    default: $base,
-    dark: color.scale($base, $lightness: -10% + $offset),
-    darker: color.scale($base, $lightness: -25% + $offset),
-    darkest: color.scale($base, $lightness: -40% + $offset)
-  );
-}
+//@function color-map($base, $offset: 0%) {
+//  @return (
+//    lightest: color.scale($base, $lightness: 90% + $offset),
+//    lighter: color.scale($base, $lightness: 75% + $offset),
+//    light: color.scale($base, $lightness: 60% + $offset),
+//    default: $base,
+//    dark: color.scale($base, $lightness: -10% + $offset),
+//    darker: color.scale($base, $lightness: -25% + $offset),
+//    darkest: color.scale($base, $lightness: -40% + $offset)
+//  );
+//}
 
 // Breakpoints for media queries (CSS custom properties cannot be used in media queries)
 $breakpoint-mobile: 520px;
@@ -52,14 +53,14 @@ $breakpoint-sm: 1280px;
 
 $vars: (
   theme: (
-    "gray": color-map(map.get($colors, zinc)),
-    blue-gray: color-map(map.get($colors, slate)),
-    primary: color-map(map.get($colors, blue)),
-    secondary: color-map(map.get($colors, blue)),
-    info: color-map(map.get($colors, cyan)),
-    success: color-map(map.get($colors, lime), 5),
-    warning: color-map(map.get($colors, orange)),
-    danger: color-map(map.get($colors, red)),
+    "gray": colors.variants(colors.get(zinc, 400)),
+    blue-gray: colors.variants(colors.get(slate, 400)),
+    primary: colors.variants(colors.get(blue, 400)),
+    secondary: colors.variants(colors.get(blue, 400)),
+    info: colors.variants(colors.get(cyan, 400)),
+    success: colors.variants(colors.get(lime, 400)),
+    warning: colors.variants(colors.get(orange, 400)),
+    danger: colors.variants(colors.get(red, 400)),
   ),
   trans: (
     darkest: rgba(0, 0, 0, 0.5),
@@ -106,7 +107,7 @@ $vars: (
     0: 0,
     auto: "auto",
   ),
-  border-color: color-map(map.get($colors, zinc), 5%),
+  border-color: colors.variants(colors.get(zinc, 400)),
   border-radius: (
     xs: var(--gap-xxs),
     sm: var(--gap-xs),
@@ -114,13 +115,6 @@ $vars: (
     lg: var(--gap-default),
     xl: var(--gap-lg),
     xxl: var(--gap-xl),
-
-    /*xs: var(--gap-xs),
-    sm: var(--gap-sm),
-    default: var(--gap-default),
-    lg: var(--gap-lg),
-    xl: var(--gap-xl),
-    xxl: var(--gap-xxl),*/
   ),
   z-index: (
     toast: 9999,
@@ -134,12 +128,14 @@ $vars: (
   font-family: "sans-serif",
   font-family-field: "ui-sans-serif, system-ui, sans-serif",
   font-family-monospace: "ui-monospace, monospace",
-  background-color: white,
+  background-color: var(--theme-gray-lightest),
   background-rev-color: black,
   control-color: white,
   busy-overlay-bg: rgba(255, 255, 255, 0.6),
   animation-duration: 0.2s,
   elevation-size: 0.0833rem,
+  // elevation 그림자 blur 배수 (기본 1 = 현재 동작 유지). 테마에서 0으로 덮으면 하드 섀도.
+  elevation-blur-mult: 1,
   sidebar: (
     width: 14rem,
   ),

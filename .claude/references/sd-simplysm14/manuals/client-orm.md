@@ -32,6 +32,7 @@ export class AppOrmProvider {
 - `@Injectable({ providedIn: "root" })`.
 - DbContext 는 앱별로 정의 (예: `@adtek/db-main` 의 `MainDbContext`). 스키마 정의는 [orm.md](./orm.md).
 - 진입 메서드는 `connectAsync` (트랜잭션 포함).
+- `connectAsync` 는 콜백 안에서 난 FK(외래키) 제약 위반을 잡아 사용자 안내 메시지(`SdError`) 로 자동 변환함 — 참조 중인 데이터를 삭제하려 하면 "연관된 작업으로 인해 작업이 거부되었습니다" 류 경고가 화면에 뜸. 화면에서 같은 메시지를 따로 만들지 않음.
 - 콜백의 반환값이 그대로 메서드의 반환값이 됨.
 
 ## 화면·프로바이더에서 쿼리를 실행하려면

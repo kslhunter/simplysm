@@ -82,13 +82,13 @@ import {
           overflow: auto;
           width: 100%;
 
-          border: 1px solid var(--trans-lighter);
+          border: 1px solid var(--border-color-light);
           border-radius: var(--border-radius-default);
           background: var(--theme-secondary-lightest);
 
           &:focus {
             outline: none;
-            border-color: var(--theme-secondary-default);
+            border-color: var(--theme-primary-default);
           }
 
           &[type="date"],
@@ -265,7 +265,7 @@ import {
         &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
-            background: var(--theme-gray-lightest);
+            background: var(--trans-lightest);
             color: var(--text-trans-light);
           }
 

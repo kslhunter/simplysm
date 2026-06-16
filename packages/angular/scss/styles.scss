@@ -1,6 +1,9 @@
 @use "commons/theme-variables";
 @use "commons/styles";
 
+// 블루프린트 모눈 그리드 면 (언레이어드 — 파일 내 주석 참조)
+@use "themes/blueprint-surfaces";
+
 @use "controls/flex";
 @use "controls/grid";
 @use "controls/card";

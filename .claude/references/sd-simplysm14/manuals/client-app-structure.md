@@ -134,4 +134,22 @@ this._sdAppStructure.usableModules.set(["scheduling"]);
 - `modules`: 나열한 모듈 중 **하나라도** 활성이면 표시(OR).
 - `requiredModules`: 나열한 모듈이 **모두** 활성이어야 표시(AND).
 - 조건을 건 항목은 해당 모듈이 `usableModules` 에 없으면 메뉴·권한에서 빠짐. 조건이 없는 항목은 모듈 설정과 무관하게 표시됨.
-- 모듈 기능을 쓰지 않는 앱은 `usableModules.set([])` 로 둠.
+- 모듈을 쓰지 않는 앱은 `usableModules` 설정을 생략 가능 — 모듈 조건(`modules`/`requiredModules`) 이 없는 항목은 `usableModules` 가 미설정(undefined) 이어도 항상 표시됨.
+
+## 6. 정의한 메뉴를 화면에 띄우기
+
+정의한 구조는 `SdAppStructureProvider.usableMenus()` 로 읽어 `<sd-sidebar-menu>` 에 바인딩. `usableMenus()` 는 권한(`permRecord`)·모듈(`usableModules`) 필터를 이미 적용한 최종 메뉴 트리를 반환.
+
+```ts
+private readonly _sdAppStructure = inject(SdAppStructureProvider);
+
+menus = computed(() => this._sdAppStructure.usableMenus());
+```
+
+```html
+<sd-sidebar-menu [menus]="menus()" />
+```
+
+- `usableMenus()` 는 권한 없는 화면·비활성 모듈을 이미 걸러낸 트리 — 컴포넌트에서 추가 필터를 두지 않음.
+- 권한 필터가 걸리려면 `permRecord` 가 set 돼 있어야 함(§4). 로그인 전에는 빈 권한이라 권한 화면이 메뉴에 안 나옴.
+- 사이드바·탑바 등 앱 셸 레이아웃 컴포넌트(`sd-sidebar`/`sd-sidebar-menu` 등) 자체는 [apis/angular/README.md](../apis/angular/README.md) 참조.

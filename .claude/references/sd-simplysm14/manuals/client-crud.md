@@ -291,6 +291,31 @@ if (!this.sortingDefs().some((s) => s.key === "id")) {
 - 컬럼마다 `if (sort.key === "X") orderBy((c) => c.X, ...)` 식 분기 금지 — `sort.key` 가 select 별칭과 일치하므로 한 줄로 처리.
 - `obj` 는 `@simplysm/core-common`, `SortingDef` 는 `@simplysm/angular`.
 
+### 페이징 목록 요약 집계
+
+시트 요약 행([client-component.md](./client-component.md) 의 "요약 행")의 합계·평균은 **전체 필터 결과** 기준이어야 함. `items()` 는 현재 페이지뿐이라 컴포넌트에서 합산하면 페이지 합으로 틀어짐. `_search` 안에서 정렬·`limit` 적용 전 쿼리에 집계 쿼리를 별도로 실행해 받음.
+
+```ts
+summaryData = signal<{ amount: number }>({ amount: 0 });
+
+// _search 안 — 필터까지 적용한 쿼리(qr)에, orderBy·limit 적용 전 단계에서 집계
+const summary = { amount: 0 };
+if (usePagination) {
+  const row = await qr.select((r) => ({ amount: expr.sum(r.amount) })).single();
+  summary.amount = row?.amount ?? 0;
+}
+// 이후 qr 에 orderBy·limit 적용(→ qr2)해 items 조회, { items, pageLength, summary } 반환
+```
+
+```ts
+// _refresh 안 — 받은 집계를 시그널에 반영
+this.summaryData.set(r.summary);
+```
+
+- 집계는 `orderBy`·`limit` 적용 전 쿼리에 실행 — 정렬·현재 페이지와 무관한 전체 합. 정렬·페이지를 적용한 `qr2` 에 실행하면 페이지 합으로 잘못 나옴.
+- `usePagination=false`(엑셀 내보내기 등 전건 조회)면 집계 쿼리를 건너뜀 — 받은 전건을 컴포넌트에서 합산하면 됨.
+- 누적값(잔액 등)은 합산하지 않음 — 행별 누적값이라 합계가 의미 없음.
+
 ## `sd-crud-detail`
 
 단일 레코드 편집 화면의 표준 골격. 다음 기능을 일괄 제공: 폼 래핑, CTRL+S 단축키 저장, 저장 버튼, 모달의 "확인" 버튼 자동 처리.

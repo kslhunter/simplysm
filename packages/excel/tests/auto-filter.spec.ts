@@ -7,10 +7,10 @@ import type { ExcelXmlWorksheetData } from "../src/types";
 async function getWsData(
   wb: ExcelWorkbook,
   sheetFile = "xl/worksheets/sheet1.xml",
-): Promise<{ data: ExcelXmlWorksheetData; cleanup: () => void }> {
+): Promise<{ data: ExcelXmlWorksheetData; serialize: () => unknown }> {
   return (await (wb as any).zipCache.get(sheetFile)) as {
     data: ExcelXmlWorksheetData;
-    cleanup: () => void;
+    serialize: () => unknown;
   };
 }
 
@@ -55,7 +55,7 @@ describe("ExcelWorksheet.setAutoFilter", () => {
     });
 
     const wsData = await getWsData(wb);
-    wsData.cleanup();
+    wsData.serialize();
 
     const keys = Object.keys(wsData.data.worksheet);
     expect(keys.indexOf("autoFilter")).toBeGreaterThan(keys.indexOf("sheetData"));

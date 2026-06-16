@@ -1,14 +1,16 @@
+import type { Bytes } from "@simplysm/core-common";
 import type {
   ExcelAddressRangePoint,
   ExcelCellData,
   ExcelCellType,
   ExcelRowData,
-  ExcelXml,
   ExcelXmlCfRuleData,
   ExcelXmlWorksheetData,
 } from "../types";
+import type { ICfRuleSpec } from "../models/shared/excel-cf-spec";
+import type { IWorksheetModel } from "../models/i-worksheet-model";
 import { ExcelUtils } from "../utils/excel-utils";
-import { num, obj } from "@simplysm/core-common";
+import { num, obj, xml as xmlU } from "@simplysm/core-common";
 import "@simplysm/core-common";
 
 interface RowInfo {
@@ -20,14 +22,14 @@ interface RowInfo {
  * xl/worksheets/sheet*.xml 파일을 관리하는 클래스.
  * 셀 데이터, 병합, 열 너비, 행 높이 등을 처리한다.
  */
-export class ExcelXmlWorksheet implements ExcelXml {
-  data: ExcelXmlWorksheetData;
+export class ExcelXmlWorksheet implements IWorksheetModel {
+  private readonly _data: ExcelXmlWorksheetData;
 
   private readonly _dataMap: Map<number, RowInfo>;
 
   constructor(data?: ExcelXmlWorksheetData) {
     if (data == null) {
-      this.data = {
+      this._data = {
         worksheet: {
           $: {
             xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -43,10 +45,10 @@ export class ExcelXmlWorksheet implements ExcelXml {
         },
       };
     } else {
-      this.data = data;
+      this._data = data;
     }
 
-    this._dataMap = (this.data.worksheet.sheetData[0].row ?? []).toMap(
+    this._dataMap = (this._data.worksheet.sheetData[0].row ?? []).toMap(
       (row) => ExcelUtils.parseRowAddr(row.$.r),
       (row) => ({
         data: row,
@@ -56,6 +58,11 @@ export class ExcelXmlWorksheet implements ExcelXml {
         ),
       }),
     );
+  }
+
+  /** @internal 테스트·디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
+  get data(): ExcelXmlWorksheetData {
+    return this._data;
   }
 
   get range(): ExcelAddressRangePoint {
@@ -153,7 +160,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   setMergeCells(startAddr: { r: number; c: number }, endAddr: { r: number; c: number }): void {
-    const mergeCells = (this.data.worksheet.mergeCells = this.data.worksheet.mergeCells ?? [
+    const mergeCells = (this._data.worksheet.mergeCells = this._data.worksheet.mergeCells ?? [
       {
         $: { count: "0" },
         mergeCell: [],
@@ -194,17 +201,17 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   getMergeCells(): { s: { r: number; c: number }; e: { r: number; c: number } }[] {
-    const mergeCells = this.data.worksheet.mergeCells;
+    const mergeCells = this._data.worksheet.mergeCells;
     if (mergeCells == null) return [];
     return mergeCells[0].mergeCell.map((item) => ExcelUtils.parseRangeAddr(item.$.ref));
   }
 
   removeMergeCells(fromAddr: { r: number; c: number }, toAddr: { r: number; c: number }): void {
-    if (this.data.worksheet.mergeCells == null) return;
+    if (this._data.worksheet.mergeCells == null) return;
 
     const range = { s: fromAddr, e: toAddr };
 
-    const filteredMergeCells = this.data.worksheet.mergeCells[0].mergeCell.filter((item) => {
+    const filteredMergeCells = this._data.worksheet.mergeCells[0].mergeCell.filter((item) => {
       const rangeAddr = ExcelUtils.parseRangeAddr(item.$.ref);
       return !(
         rangeAddr.s.r >= range.s.r &&
@@ -215,10 +222,10 @@ export class ExcelXmlWorksheet implements ExcelXml {
     });
 
     if (filteredMergeCells.length === 0) {
-      delete this.data.worksheet.mergeCells;
+      delete this._data.worksheet.mergeCells;
     } else {
-      this.data.worksheet.mergeCells[0].mergeCell = filteredMergeCells;
-      this.data.worksheet.mergeCells[0].$.count = filteredMergeCells.length.toString();
+      this._data.worksheet.mergeCells[0].mergeCell = filteredMergeCells;
+      this._data.worksheet.mergeCells[0].$.count = filteredMergeCells.length.toString();
     }
   }
 
@@ -226,9 +233,9 @@ export class ExcelXmlWorksheet implements ExcelXml {
    * `<conditionalFormatting>` 블록을 시트에 push.
    * priority 는 시트 전역 카운터(기존 cfRule 의 최대 priority + 1)부터 호출 내 rules 순서대로 부여.
    */
-  addConditionalFormatting(sqref: string, rules: { dxfId: string; cfRule: Omit<ExcelXmlCfRuleData["$"], "priority" | "dxfId"> & { formula: string[] } }[]): void {
-    const cfList = (this.data.worksheet.conditionalFormatting =
-      this.data.worksheet.conditionalFormatting ?? []);
+  addConditionalFormatting(sqref: string, rules: { dxfId: string; cfRule: ICfRuleSpec }[]): void {
+    const cfList = (this._data.worksheet.conditionalFormatting =
+      this._data.worksheet.conditionalFormatting ?? []);
 
     let nextPriority = 1;
     for (const block of cfList) {
@@ -258,7 +265,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   shiftMergeCells(fromRow: number, delta: number): void {
-    const mergeCells = this.data.worksheet.mergeCells;
+    const mergeCells = this._data.worksheet.mergeCells;
     if (mergeCells == null) return;
 
     for (const mergeCell of mergeCells[0].mergeCell) {
@@ -290,7 +297,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
       throw new Error(`잘못된 열 인덱스: ${colIndex}`);
     }
 
-    const cols = this.data.worksheet.cols?.[0];
+    const cols = this._data.worksheet.cols?.[0];
 
     // 대상 열을 포함하는 기존 범위 찾기
     const col = cols
@@ -357,8 +364,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
       }
     } else {
       // 기존 범위 없음: 새 범위 생성
-      this.data.worksheet.cols = this.data.worksheet.cols ?? [{ col: [] }];
-      this.data.worksheet.cols[0].col.push({
+      this._data.worksheet.cols = this._data.worksheet.cols ?? [{ col: [] }];
+      this._data.worksheet.cols[0].col.push({
         $: {
           min: colIndex,
           max: colIndex,
@@ -371,24 +378,24 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   setTabColor(rgb: string): void {
-    this.data.worksheet.sheetPr = this.data.worksheet.sheetPr ?? [{}];
-    this.data.worksheet.sheetPr[0].tabColor = [{ $: { rgb } }];
+    this._data.worksheet.sheetPr = this._data.worksheet.sheetPr ?? [{}];
+    this._data.worksheet.sheetPr[0].tabColor = [{ $: { rgb } }];
   }
 
   setZoom(percent: number): void {
-    this.data.worksheet.sheetViews = this.data.worksheet.sheetViews ?? [
+    this._data.worksheet.sheetViews = this._data.worksheet.sheetViews ?? [
       { sheetView: [{ $: { workbookViewId: "0" } }] },
     ];
 
-    this.data.worksheet.sheetViews[0].sheetView[0].$.zoomScale = percent.toString();
+    this._data.worksheet.sheetViews[0].sheetView[0].$.zoomScale = percent.toString();
   }
 
   freezeAt(point: { r?: number; c?: number }): void {
-    this.data.worksheet.sheetViews = this.data.worksheet.sheetViews ?? [
+    this._data.worksheet.sheetViews = this._data.worksheet.sheetViews ?? [
       { sheetView: [{ $: { workbookViewId: "0" } }] },
     ];
 
-    this.data.worksheet.sheetViews[0].sheetView[0].pane = [
+    this._data.worksheet.sheetViews[0].sheetView[0].pane = [
       {
         $: {
           ...(point.c != null
@@ -413,7 +420,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   }
 
   setAutoFilter(range: ExcelAddressRangePoint): void {
-    this.data.worksheet.autoFilter = [
+    this._data.worksheet.autoFilter = [
       { $: { ref: ExcelUtils.stringifyRangeAddr(range) } },
     ];
   }
@@ -482,12 +489,25 @@ export class ExcelXmlWorksheet implements ExcelXml {
     }
   }
 
-  cleanup(): void {
+  setDrawingRelId(relId: string): void {
+    this._data.worksheet.$["xmlns:r"] =
+      this._data.worksheet.$["xmlns:r"] ??
+      "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    this._data.worksheet.drawing = this._data.worksheet.drawing ?? [];
+    this._data.worksheet.drawing.push({ $: { "r:id": relId } });
+  }
+
+  serialize(): Bytes {
+    this._cleanup();
+    return new TextEncoder().encode(xmlU.stringify(this._data));
+  }
+
+  private _cleanup(): void {
     const result = {} as ExcelXmlWorksheetData["worksheet"];
 
     // 정렬 순서 ("sheetData" 기준, 나머지는 원래 위치 유지)
 
-    for (const key of Object.keys(this.data.worksheet)) {
+    for (const key of Object.keys(this._data.worksheet)) {
       if (key === "mergeCells") continue;
       if (key === "cols") continue;
       if (key === "sheetViews") continue;
@@ -499,32 +519,32 @@ export class ExcelXmlWorksheet implements ExcelXml {
 
       if (key === "sheetData") {
         // OOXML CT_Worksheet 자식 순서: sheetPr → dimension → sheetViews → sheetFormatPr → cols → sheetData → autoFilter → mergeCells → conditionalFormatting
-        if (this.data.worksheet.sheetPr != null) {
-          result.sheetPr = this.data.worksheet.sheetPr;
+        if (this._data.worksheet.sheetPr != null) {
+          result.sheetPr = this._data.worksheet.sheetPr;
         }
-        result.dimension = this.data.worksheet.dimension ?? [{ $: { ref: "A1" } }];
-        if (this.data.worksheet.sheetViews != null) {
-          result.sheetViews = this.data.worksheet.sheetViews;
+        result.dimension = this._data.worksheet.dimension ?? [{ $: { ref: "A1" } }];
+        if (this._data.worksheet.sheetViews != null) {
+          result.sheetViews = this._data.worksheet.sheetViews;
         }
-        if (this.data.worksheet.sheetFormatPr != null) {
-          result.sheetFormatPr = this.data.worksheet.sheetFormatPr;
+        if (this._data.worksheet.sheetFormatPr != null) {
+          result.sheetFormatPr = this._data.worksheet.sheetFormatPr;
         }
-        if (this.data.worksheet.cols != null) {
-          result.cols = this.data.worksheet.cols;
+        if (this._data.worksheet.cols != null) {
+          result.cols = this._data.worksheet.cols;
         }
-        result.sheetData = this.data.worksheet.sheetData;
+        result.sheetData = this._data.worksheet.sheetData;
 
-        if (this.data.worksheet.autoFilter != null) {
-          result.autoFilter = this.data.worksheet.autoFilter;
+        if (this._data.worksheet.autoFilter != null) {
+          result.autoFilter = this._data.worksheet.autoFilter;
         }
-        if (this.data.worksheet.mergeCells != null) {
-          result.mergeCells = this.data.worksheet.mergeCells;
+        if (this._data.worksheet.mergeCells != null) {
+          result.mergeCells = this._data.worksheet.mergeCells;
         }
-        if (this.data.worksheet.conditionalFormatting != null) {
-          result.conditionalFormatting = this.data.worksheet.conditionalFormatting;
+        if (this._data.worksheet.conditionalFormatting != null) {
+          result.conditionalFormatting = this._data.worksheet.conditionalFormatting;
         }
       } else {
-        const worksheetRec = this.data.worksheet as Record<string, unknown>;
+        const worksheetRec = this._data.worksheet as Record<string, unknown>;
         const resultRec = result as Record<string, unknown>;
         resultRec[key] = worksheetRec[key];
       }
@@ -547,7 +567,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
     const dimension = (result.dimension ??= [{ $: { ref: "A1" } }]);
     dimension[0].$.ref = ExcelUtils.stringifyRangeAddr(this.range);
 
-    this.data.worksheet = result;
+    this._data.worksheet = result;
   }
 
   private _getCellData(addr: { r: number; c: number }): ExcelCellData | undefined {
@@ -583,8 +603,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
     this._deleteRow(r);
 
     // 시트에 쓰기
-    this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
-    this.data.worksheet.sheetData[0].row.push(rowData);
+    this._data.worksheet.sheetData[0].row = this._data.worksheet.sheetData[0].row ?? [];
+    this._data.worksheet.sheetData[0].row.push(rowData);
 
     // 캐시에 쓰기
     const rowInfo = {
@@ -616,7 +636,7 @@ export class ExcelXmlWorksheet implements ExcelXml {
   private _deleteRow(r: number): void {
     const targetRowInfo = this._dataMap.get(r);
     if (targetRowInfo != null) {
-      const rows = this.data.worksheet.sheetData[0].row;
+      const rows = this._data.worksheet.sheetData[0].row;
       if (rows) {
         const rowIndex = rows.indexOf(targetRowInfo.data);
         if (rowIndex !== -1) rows.splice(rowIndex, 1);
@@ -625,8 +645,8 @@ export class ExcelXmlWorksheet implements ExcelXml {
     this._dataMap.delete(r);
 
     // 행이 남아있지 않으면 XML에서 행 섹션 삭제
-    if (this.data.worksheet.sheetData[0].row?.length === 0) {
-      delete this.data.worksheet.sheetData[0].row;
+    if (this._data.worksheet.sheetData[0].row?.length === 0) {
+      delete this._data.worksheet.sheetData[0].row;
     }
   }
 }

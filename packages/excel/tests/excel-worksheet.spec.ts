@@ -395,7 +395,7 @@ describe("ExcelWorksheet", () => {
       await ws.setTabColor("00FF0000");
 
       const wsData = await ws["_getWsData"]();
-      expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("00FF0000");
+      expect((wsData as any).data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("00FF0000");
     });
 
     it("should preserve tab color after roundtrip", async () => {
@@ -439,8 +439,8 @@ describe("ExcelWorksheet", () => {
       await ws.setTabColor("000000FF");
 
       const wsData = await ws["_getWsData"]();
-      expect(wsData.data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("000000FF");
-      expect(wsData.data.worksheet.sheetPr?.length).toBe(1);
+      expect((wsData as any).data.worksheet.sheetPr?.[0].tabColor?.[0].$.rgb).toBe("000000FF");
+      expect((wsData as any).data.worksheet.sheetPr?.length).toBe(1);
     });
   });
 

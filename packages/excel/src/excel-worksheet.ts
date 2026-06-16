@@ -5,24 +5,22 @@ import mime from "mime";
 import { ExcelCell } from "./excel-cell";
 import { ExcelCol } from "./excel-col";
 import { ExcelRow } from "./excel-row";
+import type { IContentTypeModel } from "./models/i-content-type-model";
+import type { IDrawingModel } from "./models/i-drawing-model";
+import type { IRelationshipModel } from "./models/i-relationship-model";
+import type { ISharedStringModel } from "./models/i-shared-string-model";
+import type { IStyleModel } from "./models/i-style-model";
+import type { IWorkbookModel } from "./models/i-workbook-model";
+import type { IWorksheetModel } from "./models/i-worksheet-model";
+import type { ICfRuleSpec } from "./models/shared/excel-cf-spec";
 import type {
   ExcelAddressPoint,
   ExcelAddressRangePoint,
   ExcelConditionalRule,
   ExcelValueType,
-  ExcelXmlCfRuleData,
 } from "./types";
 import { ExcelUtils } from "./utils/excel-utils";
 import type { ZipCache } from "./utils/zip-cache";
-import type { ExcelXmlContentType } from "./xml/excel-xml-content-type";
-import { ExcelXmlDrawing } from "./xml/excel-xml-drawing";
-import { ExcelXmlRelationship } from "./xml/excel-xml-relationship";
-import type { ExcelXmlSharedString } from "./xml/excel-xml-shared-string";
-import { ExcelXmlSharedString as ExcelXmlSharedStringClass } from "./xml/excel-xml-shared-string";
-import type { ExcelXmlStyle } from "./xml/excel-xml-style";
-import { ExcelXmlStyle as ExcelXmlStyleClass } from "./xml/excel-xml-style";
-import type { ExcelXmlWorkbook } from "./xml/excel-xml-workbook";
-import type { ExcelXmlWorksheet } from "./xml/excel-xml-worksheet";
 
 /**
  * Excel 워크시트를 나타내는 클래스.
@@ -350,15 +348,7 @@ export class ExcelWorksheet {
     const styleData = await this._ensureStyleData();
     const topLeft = opts.ref.split(":")[0];
 
-    const dxfRules: {
-      dxfId: string;
-      cfRule: {
-        type: ExcelXmlCfRuleData["$"]["type"];
-        operator?: ExcelXmlCfRuleData["$"]["operator"];
-        formula: string[];
-        text?: string;
-      };
-    }[] = [];
+    const dxfRules: { dxfId: string; cfRule: ICfRuleSpec }[] = [];
 
     for (const rule of opts.rules) {
       const dxfId = styleData.addDxf(rule.style);
@@ -372,12 +362,7 @@ export class ExcelWorksheet {
   private static _buildCfRuleSpec(
     rule: ExcelConditionalRule,
     topLeft: string,
-  ): {
-    type: ExcelXmlCfRuleData["$"]["type"];
-    operator?: ExcelXmlCfRuleData["$"]["operator"];
-    formula: string[];
-    text?: string;
-  } {
+  ): ICfRuleSpec {
     const encodeLiteral = (v: number | string): string =>
       typeof v === "number" ? v.toString() : `"${v.replaceAll('"', '""')}"`;
 
@@ -423,7 +408,7 @@ export class ExcelWorksheet {
       }
     }
 
-    const operator: ExcelXmlCfRuleData["$"]["operator"] = (() => {
+    const operator: ICfRuleSpec["operator"] = (() => {
       switch (rule.op) {
         case "<":
           return "lessThan";
@@ -482,36 +467,34 @@ export class ExcelWorksheet {
     this._zipCache.set(mediaPath, opts.bytes);
 
     // 2. [Content_Types].xml 갱신
-    const typeXml = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
+    const typeXml = (await this._zipCache.get("[Content_Types].xml")) as IContentTypeModel;
     typeXml.add(`/xl/media/image${mediaIndex}.${opts.ext}`, mimeType);
 
     // 3. 워크시트의 기존 drawing 확인
     const wsXml = await this._getWsData();
     const sheetRelsPath = `xl/worksheets/_rels/${this._targetFileName}.rels`;
-    let sheetRels = (await this._zipCache.get(sheetRelsPath)) as ExcelXmlRelationship | undefined;
+    let sheetRels = (await this._zipCache.get(sheetRelsPath)) as IRelationshipModel | undefined;
 
     // 기존 drawing 찾기
     let drawingIndex: number | undefined;
     let drawingPath: string | undefined;
-    let drawing: ExcelXmlDrawing | undefined;
-    let drawingRels: ExcelXmlRelationship | undefined;
+    let drawing: IDrawingModel | undefined;
+    let drawingRels: IRelationshipModel | undefined;
 
     if (sheetRels != null) {
-      const existingDrawingRel = sheetRels.data.Relationships.Relationship?.find(
-        (r) =>
-          r.$.Type ===
-          "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+      const existingDrawingRel = sheetRels.findRelByType(
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
       );
       if (existingDrawingRel != null) {
         // 기존 drawing 경로에서 인덱스 추출
-        const match = existingDrawingRel.$.Target.match(/drawing(\d+)\.xml$/);
+        const match = existingDrawingRel.target.match(/drawing(\d+)\.xml$/);
         if (match != null) {
           drawingIndex = parseInt(match[1], 10);
           drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
-          drawing = (await this._zipCache.get(drawingPath)) as ExcelXmlDrawing | undefined;
+          drawing = (await this._zipCache.get(drawingPath)) as IDrawingModel | undefined;
           drawingRels = (await this._zipCache.get(
             `xl/drawings/_rels/drawing${drawingIndex}.xml.rels`,
-          )) as ExcelXmlRelationship | undefined;
+          )) as IRelationshipModel | undefined;
         }
       }
     }
@@ -523,13 +506,13 @@ export class ExcelWorksheet {
         drawingIndex++;
       }
       drawingPath = `xl/drawings/drawing${drawingIndex}.xml`;
-      drawing = new ExcelXmlDrawing();
+      drawing = this._zipCache.createDrawing();
 
       // [Content_Types].xml에 drawing 타입 추가
       typeXml.add("/" + drawingPath, "application/vnd.openxmlformats-officedocument.drawing+xml");
 
       // 워크시트 rels에 drawing 추가
-      sheetRels = sheetRels ?? new ExcelXmlRelationship();
+      sheetRels = sheetRels ?? this._zipCache.createRelationship();
       const sheetRelNum = sheetRels.addAndGetId(
         `../drawings/drawing${drawingIndex}.xml`,
         "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
@@ -538,16 +521,12 @@ export class ExcelWorksheet {
       this._zipCache.set(sheetRelsPath, sheetRels);
 
       // 워크시트 XML에 drawing 추가
-      wsXml.data.worksheet.$["xmlns:r"] =
-        wsXml.data.worksheet.$["xmlns:r"] ??
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-      wsXml.data.worksheet.drawing = wsXml.data.worksheet.drawing ?? [];
-      wsXml.data.worksheet.drawing.push({ $: { "r:id": drawingRelIdOnWorksheet } });
+      wsXml.setDrawingRelId(drawingRelIdOnWorksheet);
       this._zipCache.set(`xl/worksheets/${this._targetFileName}`, wsXml);
     }
 
     // 5. drawing rels 준비 (없으면 생성)
-    drawingRels = drawingRels ?? new ExcelXmlRelationship();
+    drawingRels = drawingRels ?? this._zipCache.createRelationship();
     const mediaFileName = mediaPath.slice(3);
     const drawingTarget = `../${mediaFileName}`;
     const relNum = drawingRels.addAndGetId(
@@ -570,66 +549,27 @@ export class ExcelWorksheet {
 
   //#region Private Methods
 
-  private async _getWsData(): Promise<ExcelXmlWorksheet> {
-    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as ExcelXmlWorksheet;
+  private async _getWsData(): Promise<IWorksheetModel> {
+    return (await this._zipCache.get(`xl/worksheets/${this._targetFileName}`)) as IWorksheetModel;
   }
 
-  private async _getWbData(): Promise<ExcelXmlWorkbook> {
-    return (await this._zipCache.get("xl/workbook.xml")) as ExcelXmlWorkbook;
+  private async _getWbData(): Promise<IWorkbookModel> {
+    return (await this._zipCache.get("xl/workbook.xml")) as IWorkbookModel;
   }
 
-  private async _ensureSsData(): Promise<ExcelXmlSharedString> {
-    let ssData = (await this._zipCache.get("xl/sharedStrings.xml")) as
-      | ExcelXmlSharedString
-      | undefined;
-    if (ssData == null) {
-      ssData = new ExcelXmlSharedStringClass();
-      this._zipCache.set("xl/sharedStrings.xml", ssData);
-
-      const typeData = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
-      typeData.add(
-        "/xl/sharedStrings.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
-      );
-
-      const wbRelData = (await this._zipCache.get(
-        "xl/_rels/workbook.xml.rels",
-      )) as ExcelXmlRelationship;
-      wbRelData.add(
-        "sharedStrings.xml",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
-      );
-    }
-    return ssData;
+  private async _ensureSsData(): Promise<ISharedStringModel> {
+    return this._zipCache.ensureSharedStrings();
   }
 
-  private async _ensureStyleData(): Promise<ExcelXmlStyle> {
-    let styleData = (await this._zipCache.get("xl/styles.xml")) as ExcelXmlStyle | undefined;
-    if (styleData == null) {
-      styleData = new ExcelXmlStyleClass();
-      this._zipCache.set("xl/styles.xml", styleData);
-
-      const typeData = (await this._zipCache.get("[Content_Types].xml")) as ExcelXmlContentType;
-      typeData.add(
-        "/xl/styles.xml",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
-      );
-
-      const wbRelData = (await this._zipCache.get(
-        "xl/_rels/workbook.xml.rels",
-      )) as ExcelXmlRelationship;
-      wbRelData.add(
-        "styles.xml",
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
-      );
-    }
-    return styleData;
+  private async _ensureStyleData(): Promise<IStyleModel> {
+    // styles 파트 content-type·rel 은 포맷(xlsx/.xml, xlsb/.bin)에 맞춰야 하므로 zipCache 에 위임.
+    return this._zipCache.ensureStyles();
   }
 
   private _setCellValueSync(
-    wsData: ExcelXmlWorksheet,
-    ssData: ExcelXmlSharedString,
-    styleData: ExcelXmlStyle,
+    wsData: IWorksheetModel,
+    ssData: ISharedStringModel,
+    styleData: IStyleModel,
     addr: ExcelAddressPoint,
     val: ExcelValueType,
   ): void {

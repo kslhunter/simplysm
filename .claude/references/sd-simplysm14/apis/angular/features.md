@@ -6,16 +6,21 @@
 
 ### `SdThemeProvider`
 
-`@Injectable({ providedIn: "root" })`. (`provideSdAngular` 가 dark/fontSize 를 `SdLocalStorageProvider` 에 영속화)
+`@Injectable({ providedIn: "root" })`. (`provideSdAngular` 가 dark/blueprint/fontSize 를 `SdLocalStorageProvider` 에 영속화)
 
 - `dark: WritableSignal<boolean>` (초기 false) — `effect` 로 body `sd-theme-dark` 클래스 토글(브라우저 전용).
+- `blueprint: WritableSignal<boolean>` (초기 false) — `effect` 로 body `sd-theme-blueprint` 클래스 토글. dark 와 직교(독립).
 - `fontSize: WritableSignal<number>` (초기 12) — `effect` 로 `documentElement.style.fontSize` 설정.
 - `fontSizePresets: readonly number[]` = `[12, 14, 16, 20, 24, 28]`.
 - `increaseFontSize()` / `decreaseFontSize()` — 다음/이전 프리셋으로(경계에서 no-op).
 
+#### 블루프린트(엔지니어링 도면) 테마
+
+`blueprint`·`dark` 직교 조합으로 4면: 디폴트-라이트/다크, 블루프린트-트레이싱지(라이트)/시아노타입(다크). CSS 변수 오버라이드(`.sd-theme-blueprint` / `.sd-theme-blueprint.sd-theme-dark`)로 구현 — primary=제도 블루·danger=리드라인, 직각(라운드 0), 하드 오프셋 섀도(`--elevation-blur-mult: 0`). 모눈 그리드는 body·chrome(`sd-sidebar`·`sd-topbar`)에만, 콘텐츠(카드·시트 등)는 무지. 폰트는 앱 책임(프레임워크 미번들).
+
 ### `SdThemeSelector` — `<sd-theme-selector>`
 
-팔레트 아이콘 드롭다운(폰트 +/- · 다크모드 스위치). input 없음. `isMinFontSize`/`isMaxFontSize: computed` 로 +/- 버튼 비활성.
+팔레트 아이콘 드롭다운(폰트 +/- · 다크모드 스위치 · 블루프린트 스위치). input 없음. `isMinFontSize`/`isMaxFontSize: computed` 로 +/- 버튼 비활성.
 
 ## 주소
 

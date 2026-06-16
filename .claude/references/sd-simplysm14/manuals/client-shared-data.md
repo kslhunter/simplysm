@@ -69,7 +69,7 @@ export interface ISharedCustomer extends SharedDataBase<number> {
 
 ## 부트스트랩에 연결하려면 (새 앱 1회성)
 
-라이브러리 공유데이터 컨트롤(`sd-shared-data-select` · `sd-shared-data-select-list`)은 base 토큰 `SdSharedDataProvider` 를 inject 하므로, 부트스트랩 providers 에 앱 provider 를 그 토큰의 별칭으로 등록.
+CRUD 기반 컨테이너(`SdBaseContainer`)가 base 토큰 `SdSharedDataProvider` 를 optional inject(`inject(SdSharedDataProvider, { optional: true })`) 하므로, 부트스트랩 providers 에 앱 provider 를 그 토큰의 별칭으로 등록.
 
 ```ts
 // 앱 부트스트랩 (main.ts)
@@ -81,7 +81,7 @@ bootstrapApplication(AppRoot, {
 });
 ```
 
-- 이 별칭이 없으면 컨트롤이 데이터가 등록된 `AppSharedDataProvider` 가 아니라 빈 base 인스턴스를 잡아, 공유데이터 select 컨트롤에 항목이 표시되지 않음.
+- 이 별칭이 없으면 `SdBaseContainer` 의 optional inject 가 `null` 이 되어(추상 provider 라 `providedIn` 없음) 공유데이터 로딩 대기(`wait()`)를 건너뜀. select 컨트롤 자체는 화면의 `useSharedSignal(...)` → `items` 입력으로 데이터를 받으므로 이 별칭과 무관함.
 
 ## 마스터 데이터 항목을 추가하려면
 
@@ -154,6 +154,24 @@ sharedProducts = useSharedSignal("품목");
 ```
 
 - `register` 에 쓴 이름 문자열을 그대로 넘기면 `TAppSharedData` 에서 타입이 추론됨.
+
+## 변경을 통지하려면
+
+마스터를 CRUD(등록·수정·삭제·복구) 한 뒤 `emitAsync("<이름>", [changeKeys])` 로 통지하면, 그 마스터를 구독 중인 모든 화면의 공유 시그널이 자동 갱신됨. `register` 의 `getter(changeKeys)` 수신측과 짝을 이루는 발신측 — `emitAsync` 가 그 `changeKeys` 분기를 발동시킴.
+
+```ts
+private readonly _appSharedData = inject(AppSharedDataProvider);
+
+// 데이터 변경 트랜잭션이 커밋된 뒤 통지
+await this._appOrm.connectAsync(async (db) => {
+  // ... insert / update / soft delete ...
+});
+await this._appSharedData.emitAsync("역할", changedIds);
+```
+
+- 둘째 인자 `changeKeys` — 변경된 항목의 키 배열. 주면 수신측이 그 키들만 다시 조회해 부분 갱신(incremental refresh), 생략(`undefined`) 하면 전체 리로드.
+- 호출 위치는 변경 트랜잭션이 커밋된 뒤(= `connectAsync` 콜백 밖). 변경과 통지가 한 사용자 동작 안에서 이어짐.
+- `register` 안 한 이름을 넘기면 throw — 등록한 이름과 일치시킬 것.
 
 ## 선택 컨트롤에서 관리·선택 모달 띄우기
 
@@ -235,4 +253,5 @@ constructor() {
 - 항목 추가 시 세 곳(`register` · `TAppSharedData` · 인터페이스)을 모두 갱신. 하나라도 빠지면 타입 불일치 또는 미등록 데이터가 됨.
 - select 결과에 매직 필드(`__valueKey` · `__searchText` · `__isHidden`)를 빠짐없이 포함.
 - `changeKeys` 분기를 생략하지 않음 — incremental refresh 가 동작하지 않으면 변경 시 전체 재조회가 됨.
+- 마스터 CRUD 후 `emitAsync` 통지를 빠뜨리지 않음 — 통지가 없으면 다른 화면의 공유 시그널이 옛 데이터를 유지함.
 - 공유데이터는 서버 연결을 전제하므로 프리렌더(SSG) 대상 화면의 초기화 경로에서 사용 금지 — 제약은 [client-ssg.md](./client-ssg.md) 참조.

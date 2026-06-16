@@ -33,7 +33,7 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
         width: var(--sidebar-width);
         height: 100%;
         //background: var(--control-color);
-        background: var(--theme-gray-lightest);
+        //background: var(--theme-gray-lightest);
         //border-right: 1px solid var(--border-color-lighter);
 
         @media not all and (max-width: variables.$breakpoint-mobile) {

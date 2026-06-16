@@ -1,93 +1,224 @@
 import type { Bytes } from "@simplysm/core-common";
-import { ZipArchive, xml as xmlU } from "@simplysm/core-common";
-import type {
-  ExcelXml,
-  ExcelXmlContentTypeData,
-  ExcelXmlDrawingData,
-  ExcelXmlRelationshipData,
-  ExcelXmlSharedStringData,
-  ExcelXmlStyleData,
-  ExcelXmlWorkbookData,
-  ExcelXmlWorksheetData,
-} from "../types";
-import { ExcelXmlContentType } from "../xml/excel-xml-content-type";
-import { ExcelXmlDrawing } from "../xml/excel-xml-drawing";
-import { ExcelXmlRelationship } from "../xml/excel-xml-relationship";
-import { ExcelXmlSharedString } from "../xml/excel-xml-shared-string";
-import { ExcelXmlStyle } from "../xml/excel-xml-style";
-import { ExcelXmlUnknown } from "../xml/excel-xml-unknown";
-import { ExcelXmlWorkbook } from "../xml/excel-xml-workbook";
-import { ExcelXmlWorksheet } from "../xml/excel-xml-worksheet";
+import { ZipArchive } from "@simplysm/core-common";
+import { BiffModelFactory } from "../biff/biff-model-factory";
+import type { ExcelFormat } from "../models/excel-format";
+import type { IExcelModel } from "../models/excel-model";
+import type { IExcelModelFactory } from "../models/excel-model-factory";
+import type { IContentTypeModel } from "../models/i-content-type-model";
+import type { IDrawingModel } from "../models/i-drawing-model";
+import type { IRelationshipModel } from "../models/i-relationship-model";
+import type { ISharedStringModel } from "../models/i-shared-string-model";
+import type { IStyleModel } from "../models/i-style-model";
+import type { IWorkbookModel } from "../models/i-workbook-model";
+import type { IWorksheetModel } from "../models/i-worksheet-model";
+import { XmlModelFactory } from "../xml/xml-model-factory";
 
 /**
  * Excel ZIP 아카이브의 파일 캐시를 관리하는 클래스.
- * XML 파일은 ExcelXml 객체로 파싱하고, 기타 파일은 바이트 배열로 캐싱한다.
+ * 모델 파트는 포맷별 팩토리로 파싱/직렬화하고, 기타 파일(media 등)은 바이트 배열로 캐싱한다.
  *
  * @remarks
- * ## Lazy Loading 캐시 전략
+ * ## 포맷 판별·경로 정규화
  *
- * - 파일은 최초 접근 시에만 ZIP에서 읽고 파싱함
- * - 이후 접근은 캐싱된 객체를 반환함
- * - 대용량 Excel 파일에서 필요한 부분만 로드하여 메모리 효율적
+ * 기존 파일은 `xl/workbook.bin` 존재 여부로 xlsx/xlsb 를 1회 판별한다(없으면 xlsx).
+ * 상위 레이어는 `xl/workbook.xml` 같은 OOXML(.xml) 경로를 사용하므로, xlsb 워크북에서는
+ * 이를 `.bin` 경로로 정규화하여 상위 레이어가 포맷을 모르게 한다.
+ *
+ * ## Lazy Loading
+ *
+ * 파일은 최초 접근 시에만 ZIP 에서 읽고 파싱하며, 이후 접근은 캐싱된 객체를 반환한다.
  */
 export class ZipCache {
-  private readonly _cache = new Map<string, ExcelXml | Bytes | undefined>();
+  private readonly _cache = new Map<string, IExcelModel | Bytes | undefined>();
   private readonly _zip: ZipArchive;
+  private _factory: IExcelModelFactory | undefined;
 
-  constructor(arg?: Blob | Bytes) {
+  constructor(arg?: Blob | Bytes, format?: ExcelFormat) {
     this._zip = new ZipArchive(arg);
+    if (format != null) {
+      this._factory = format === "xlsb" ? new BiffModelFactory() : new XmlModelFactory();
+    }
   }
 
-  async get(filePath: string): Promise<ExcelXml | Bytes | undefined> {
-    if (this._cache.has(filePath)) {
-      return this._cache.get(filePath);
+  /** 워크북 포맷. 미판별 시 xlsx 로 간주. */
+  get format(): ExcelFormat {
+    return (this._factory ??= new XmlModelFactory()).format;
+  }
+
+  /** 기존 파일 포맷을 1회 판별해 팩토리 확정 (async). */
+  private async _resolveFactory(): Promise<IExcelModelFactory> {
+    if (this._factory == null) {
+      const isXlsb = (await this._zip.get("xl/workbook.bin")) != null;
+      this._factory = isXlsb ? new BiffModelFactory() : new XmlModelFactory();
+    }
+    return this._factory;
+  }
+
+  /** 새(빈) 워크북의 동기 생성 경로용 팩토리. 빈 워크북은 xlsx 로 본다. */
+  private get _syncFactory(): IExcelModelFactory {
+    return (this._factory ??= new XmlModelFactory());
+  }
+
+  /** 상위 레이어의 .xml 고정 경로를 xlsb 의 실제 .bin 경로로 정규화. */
+  private _resolvePath(filePath: string): string {
+    if (this._factory?.format !== "xlsb") return filePath;
+    switch (filePath) {
+      case "xl/workbook.xml":
+        return "xl/workbook.bin";
+      case "xl/sharedStrings.xml":
+        return "xl/sharedStrings.bin";
+      case "xl/styles.xml":
+        return "xl/styles.bin";
+      case "xl/_rels/workbook.xml.rels":
+        return "xl/_rels/workbook.bin.rels";
+      default: {
+        const m = /^(xl\/worksheets\/_rels\/sheet\d+)\.xml\.rels$/.exec(filePath);
+        return m != null ? `${m[1]}.bin.rels` : filePath;
+      }
+    }
+  }
+
+  async get(filePath: string): Promise<IExcelModel | Bytes | undefined> {
+    const factory = await this._resolveFactory();
+    const path = this._resolvePath(filePath);
+
+    if (this._cache.has(path)) {
+      return this._cache.get(path);
     }
 
-    const fileData = await this._zip.get(filePath);
+    const fileData = await this._zip.get(path);
     if (fileData == null) {
-      this._cache.set(filePath, undefined);
+      this._cache.set(path, undefined);
       return undefined;
     }
 
-    if (filePath.endsWith(".xml") || filePath.endsWith(".rels")) {
-      const fileText = new TextDecoder().decode(fileData);
-      const xml = xmlU.parse(fileText, { stripTagPrefix: true });
-      if (filePath.endsWith(".rels")) {
-        this._cache.set(filePath, new ExcelXmlRelationship(xml as ExcelXmlRelationshipData));
-      } else if (filePath === "[Content_Types].xml") {
-        this._cache.set(filePath, new ExcelXmlContentType(xml as ExcelXmlContentTypeData));
-      } else if (filePath === "xl/workbook.xml") {
-        this._cache.set(filePath, new ExcelXmlWorkbook(xml as ExcelXmlWorkbookData));
-      } else if (filePath.startsWith("xl/worksheets/sheet") && filePath.endsWith(".xml")) {
-        this._cache.set(filePath, new ExcelXmlWorksheet(xml as ExcelXmlWorksheetData));
-      } else if (filePath.startsWith("xl/drawings/drawing") && filePath.endsWith(".xml")) {
-        this._cache.set(filePath, new ExcelXmlDrawing(xml as ExcelXmlDrawingData));
-      } else if (filePath === "xl/sharedStrings.xml") {
-        this._cache.set(filePath, new ExcelXmlSharedString(xml as ExcelXmlSharedStringData));
-      } else if (filePath === "xl/styles.xml") {
-        this._cache.set(filePath, new ExcelXmlStyle(xml as ExcelXmlStyleData));
-      } else {
-        this._cache.set(filePath, new ExcelXmlUnknown(xml as Record<string, unknown>));
-      }
+    if (factory.isModelPart(path)) {
+      this._cache.set(path, factory.parse(path, fileData));
     } else {
-      this._cache.set(filePath, fileData);
+      this._cache.set(path, fileData);
     }
 
-    return this._cache.get(filePath);
+    return this._cache.get(path);
   }
 
-  set(filePath: string, content: ExcelXml | Bytes): void {
-    this._cache.set(filePath, content);
+  set(filePath: string, content: IExcelModel | Bytes): void {
+    this._cache.set(this._resolvePath(filePath), content);
   }
+
+  //#region Factory Delegation (빈 모델 생성)
+
+  createWorkbook(): IWorkbookModel {
+    return this._syncFactory.createWorkbook();
+  }
+  createWorksheet(): IWorksheetModel {
+    return this._syncFactory.createWorksheet();
+  }
+  createStyle(): IStyleModel {
+    return this._syncFactory.createStyle();
+  }
+  createSharedString(): ISharedStringModel {
+    return this._syncFactory.createSharedString();
+  }
+  createContentType(): IContentTypeModel {
+    return this._syncFactory.createContentType();
+  }
+  createRelationship(): IRelationshipModel {
+    return this._syncFactory.createRelationship();
+  }
+  createDrawing(): IDrawingModel {
+    return this._syncFactory.createDrawing();
+  }
+
+  //#endregion
+
+  //#region Part 등록 (포맷별 content-type·rel·part 생성)
+
+  /**
+   * 워크시트 파트를 등록한다. content-type override, workbook rels, 빈 worksheet 모델을 포맷에 맞게 생성하고
+   * worksheet 파일명(`sheetN.xml` | `sheetN.bin`)을 반환한다.
+   */
+  async registerWorksheet(relId: number): Promise<string> {
+    const xlsb = this.format === "xlsb";
+    const fileName = `sheet${relId}.${xlsb ? "bin" : "xml"}`;
+
+    const typeXml = (await this.get("[Content_Types].xml")) as IContentTypeModel;
+    typeXml.add(
+      `/xl/worksheets/${fileName}`,
+      xlsb
+        ? "application/vnd.ms-excel.worksheet"
+        : "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
+    );
+
+    const wbRel = (await this.get("xl/_rels/workbook.xml.rels")) as IRelationshipModel;
+    wbRel.insert(
+      relId,
+      `worksheets/${fileName}`,
+      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
+    );
+
+    this.set(`xl/worksheets/${fileName}`, this.createWorksheet());
+    return fileName;
+  }
+
+  /** sharedStrings 파트를 보장(없으면 생성+등록)하고 모델을 반환한다. */
+  async ensureSharedStrings(): Promise<ISharedStringModel> {
+    let ss = (await this.get("xl/sharedStrings.xml")) as ISharedStringModel | undefined;
+    if (ss == null) {
+      const xlsb = this.format === "xlsb";
+      ss = this.createSharedString();
+      this.set("xl/sharedStrings.xml", ss);
+
+      const typeXml = (await this.get("[Content_Types].xml")) as IContentTypeModel;
+      typeXml.add(
+        `/xl/sharedStrings.${xlsb ? "bin" : "xml"}`,
+        xlsb
+          ? "application/vnd.ms-excel.sharedStrings"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
+      );
+
+      const wbRel = (await this.get("xl/_rels/workbook.xml.rels")) as IRelationshipModel;
+      wbRel.add(
+        `sharedStrings.${xlsb ? "bin" : "xml"}`,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
+      );
+    }
+    return ss;
+  }
+
+  /** styles 파트를 보장(없으면 생성+등록)하고 모델을 반환한다. */
+  async ensureStyles(): Promise<IStyleModel> {
+    let st = (await this.get("xl/styles.xml")) as IStyleModel | undefined;
+    if (st == null) {
+      const xlsb = this.format === "xlsb";
+      st = this.createStyle();
+      this.set("xl/styles.xml", st);
+
+      const typeXml = (await this.get("[Content_Types].xml")) as IContentTypeModel;
+      typeXml.add(
+        `/xl/styles.${xlsb ? "bin" : "xml"}`,
+        xlsb
+          ? "application/vnd.ms-excel.styles"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
+      );
+
+      const wbRel = (await this.get("xl/_rels/workbook.xml.rels")) as IRelationshipModel;
+      wbRel.add(
+        `styles.${xlsb ? "bin" : "xml"}`,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+      );
+    }
+    return st;
+  }
+
+  //#endregion
 
   async toBytes(): Promise<Bytes> {
     for (const filePath of this._cache.keys()) {
       const content = this._cache.get(filePath);
       if (content == null) continue;
 
-      if ("cleanup" in content) {
-        content.cleanup();
-        this._zip.write(filePath, new TextEncoder().encode(xmlU.stringify(content.data)));
+      if ("serialize" in content) {
+        this._zip.write(filePath, content.serialize());
       } else {
         this._zip.write(filePath, content);
       }

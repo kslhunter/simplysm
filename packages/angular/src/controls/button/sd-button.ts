@@ -40,7 +40,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           width: 100%;
 
           background: var(--control-color);
-          border-color: var(--border-color-light);
+          border-color: var(--theme-primary-default);
           border-radius: var(--border-radius-default);
 
           font-weight: bold;

@@ -361,9 +361,9 @@ import { SdEvents } from "../../core/events/sd-events";
       $z-index-focus-row-indicator: 6;
       $z-index-resize-indicator: 7;
 
-      $border-color: var(--theme-gray-lighter);
-      $border-color-dark: var(--theme-gray-lighter);
-      $border-color-darker: var(--theme-gray-light);
+      $border-color: var(--border-color-lighter);
+      $border-color-dark: var(--border-color-lighter);
+      $border-color-darker: var(--border-color-light);
 
       $border-radius: var(--border-radius-default);
 
