@@ -59,9 +59,9 @@ $paper: (
       darkest: colors.get(green, 800)
     ),
     warning: (
-      lightest: colors.get(orange, 50),
-      lighter: colors.get(orange, 100),
-      light: colors.get(orange, 200),
+      lightest: colors.get(orange, 100),
+      lighter: colors.get(orange, 200),
+      light: colors.get(orange, 300),
       default: colors.get(orange, 400),
       dark: colors.get(orange, 600),
       darker: colors.get(orange, 700),

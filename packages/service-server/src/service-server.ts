@@ -243,7 +243,17 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
         });
       }
     };
-    this.fastify.get("/", { websocket: true }, onWebSocketConnected.bind(this));
+    // 루트("/")는 WS 업그레이드면 소켓 핸들러로, 일반 GET이면 정적 파일(www/index.html)로 분기
+    this.fastify.route({
+      method: "GET",
+      url: "/",
+      wsHandler: onWebSocketConnected.bind(this),
+      handler: async (req, reply) => {
+        const urlObj = new URL(req.raw.url!, "http://localhost");
+        const urlPath = decodeURI(urlObj.pathname.slice(1));
+        await handleStaticFile(req, reply, this.options.rootPath, urlPath);
+      },
+    });
     this.fastify.get("/ws", { websocket: true }, onWebSocketConnected.bind(this));
 
     // 정적 파일 와일드카드 핸들러

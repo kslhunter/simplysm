@@ -41,34 +41,6 @@ body.sd-theme-blueprint,
   }
 }
 
-.sd-theme-blueprint sd-permission-table table > * > tr > * {
-  border-bottom: 1px solid var(--border-color-lighter);
-}
-
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._before,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._title,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="first"] > *._after {
-  background: var(--trans-lighter);
-  border-top: 1px solid var(--border-color-default);
-  border-bottom: 1px solid var(--border-color-default);
-  color: var(--text-trans-default);
-  font-weight: 700;
-
-  > * {
-    color: var(--text-trans-default) !important;
-  }
-}
-
-// 하위 depth 틴트(info/warning/success lightest) 제거 → 무지, 행 헤어라인으로만 구분
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="info"] > *._title,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="info"] > *._after,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="warning"] > *._title,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="warning"] > *._after,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="success"] > *._title,
-.sd-theme-blueprint sd-permission-table table > * > tr[data-sd-theme="success"] > *._after {
-  background: transparent;
-}
-
 .sd-theme-blueprint {
   sd-modal > ._dialog > ._header {
     background: var(--theme-primary-default);
@@ -85,5 +57,31 @@ body.sd-theme-blueprint,
 
   sd-crud-detail > sd-base-container > sd-busy-container > .bg-control > .main-align-end {
     background: var(--theme-gray-lightest);
+  }
+
+  sd-permission-table {
+    > table > * > tr[data-sd-theme="first"] > *._before,
+    > table > * > tr[data-sd-theme="first"] > *._title,
+    > table > * > tr[data-sd-theme="first"] > *._after {
+      border-radius: 0;
+      box-shadow: inset 0 -1px 0 var(--border-color-lighter);
+      background: var(--theme-gray-lighter);
+      font-weight: bold;
+
+      > * {
+        color: var(--text-trans-default) !important;
+      }
+    }
+
+    > table > * > tr[data-sd-theme="info"] > *._title,
+    > table > * > tr[data-sd-theme="info"] > *._after,
+    > table > * > tr[data-sd-theme="warning"] > *._title,
+    > table > * > tr[data-sd-theme="warning"] > *._after,
+    > table > * > tr[data-sd-theme="success"] > *._title,
+    > table > * > tr[data-sd-theme="success"] > *._after {
+      border-radius: 0;
+      box-shadow: inset 0 -1px 0 var(--border-color-lighter);
+      background: var(--theme-gray-lightest);
+    }
   }
 }

@@ -81,6 +81,24 @@ describe("handleStaticFile", () => {
     });
   });
 
+  it("루트 요청(urlPath 빈 문자열)이면 리다이렉트 없이 www/index.html을 전송한다", async () => {
+    fs.writeFileSync(path.join(wwwPath, "index.html"), "<html>root</html>");
+
+    const reply = new FakeReply();
+    await handleStaticFile(
+      createFakeRequest("/"),
+      reply as unknown as FastifyReply,
+      rootPath,
+      "",
+    );
+
+    expect(reply.sentFile).toEqual({
+      filename: "index.html",
+      directory: wwwPath,
+    });
+    expect(reply.redirectedTo).toBeUndefined();
+  });
+
   it("파일이 없고 셸(index.csr.html)도 없으면 404 (기존 동작 불변)", async () => {
     fs.mkdirSync(path.join(wwwPath, "my-client"), { recursive: true });
     fs.writeFileSync(path.join(wwwPath, "my-client", "index.html"), "<html>spa</html>");

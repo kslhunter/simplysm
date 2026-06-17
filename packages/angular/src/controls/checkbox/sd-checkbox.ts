@@ -96,6 +96,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
 
         &[data-sd-checked="true"] {
           > ._indicator_rect {
+            border-color: var(--theme-primary-default);
             background: var(--theme-primary-default);
 
             > ._indicator {

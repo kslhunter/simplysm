@@ -20,8 +20,9 @@ export async function handleStaticFile(
   }
 
   // 디렉토리에 대해 슬래시를 추가하여 리다이렉트 (표준 웹 서버 동작)
+  // 단, 루트("/", urlPath="")는 이미 정규 슬래시 경로이므로 리다이렉트하지 않고 index.html로 진행
   if ((await fsx.exists(targetFilePath)) && (await fsx.stat(targetFilePath)).isDirectory()) {
-    if (!urlPath.endsWith("/")) {
+    if (urlPath !== "" && !urlPath.endsWith("/")) {
       const urlObj = new URL(req.raw.url!, "http://localhost");
       reply.redirect(urlObj.pathname + "/" + urlObj.search);
       return;
