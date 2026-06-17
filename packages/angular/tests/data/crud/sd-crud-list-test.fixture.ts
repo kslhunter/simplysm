@@ -10,7 +10,9 @@ import type { SortingDef } from "../../../src/core/selection/useSortingManager";
     [initialized]="initialized()"
     [(busyCount)]="busyCount"
     [restricted]="restricted()"
-    [readonly]="readonly()"
+    [canCreate]="canCreate()"
+    [canEdit]="canEdit()"
+    [canDelete]="canDelete()"
     [inlineEdit]="inlineEdit()"
     [viewType]="viewType()"
     [selectMode]="selectMode()"
@@ -33,7 +35,9 @@ export class SdCrudListTestHost {
   initialized = input(false);
   busyCount = model(0);
   restricted = input(false);
-  readonly = input(false);
+  canCreate = input(true);
+  canEdit = input(true);
+  canDelete = input(true);
   inlineEdit = input(true);
   viewType = input<SdViewType>("page");
   selectMode = input<"single" | "multi">();

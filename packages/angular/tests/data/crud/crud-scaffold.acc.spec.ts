@@ -184,7 +184,6 @@ describe("Feature 1.1: CRUD 스캐폴드 컴포넌트 라이브러리 추가", (
       const fixture = TestBed.createComponent(SdCrudListTestHost);
       fixture.componentRef.setInput("initialized", true);
       fixture.componentRef.setInput("viewType", "page");
-      fixture.componentRef.setInput("readonly", false);
       fixture.componentRef.setInput("items", [
         { id: 1, name: "item1" },
         { id: 2, name: "item2" },
@@ -203,7 +202,6 @@ describe("Feature 1.1: CRUD 스캐폴드 컴포넌트 라이브러리 추가", (
       const fixture = TestBed.createComponent(SdCrudListTestHost);
       fixture.componentRef.setInput("initialized", true);
       fixture.componentRef.setInput("viewType", "page");
-      fixture.componentRef.setInput("readonly", false);
       fixture.componentRef.setInput("inlineEdit", false);
       fixture.componentRef.setInput("items", [
         { id: 1, name: "item1" },
@@ -216,6 +214,44 @@ describe("Feature 1.1: CRUD 스캐폴드 컴포넌트 라이브러리 추가", (
       const el = fixture.nativeElement as HTMLElement;
       const buttons = Array.from(el.querySelectorAll("sd-button"));
       expect(buttons.some((b) => b.textContent.includes("저장"))).toBe(false);
+      expect(el.querySelectorAll("sd-anchor").length).toBe(0);
+    });
+
+    it("canCreate=false면 등록 버튼이 사라지고, canDelete가 true면 per-row 삭제 앵커는 유지된다", async () => {
+      const fixture = TestBed.createComponent(SdCrudListTestHost);
+      fixture.componentRef.setInput("initialized", true);
+      fixture.componentRef.setInput("viewType", "page");
+      fixture.componentRef.setInput("canCreate", false);
+      fixture.componentRef.setInput("items", [
+        { id: 1, name: "item1" },
+        { id: 2, name: "item2" },
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el = fixture.nativeElement as HTMLElement;
+      const buttons = Array.from(el.querySelectorAll("sd-button"));
+      expect(buttons.some((b) => b.textContent.includes("등록"))).toBe(false);
+      expect(el.querySelectorAll("sd-anchor").length).toBeGreaterThan(0);
+    });
+
+    it("canDelete=false면 per-row 삭제 앵커가 사라지고, canEdit가 true면 저장 버튼은 유지된다", async () => {
+      const fixture = TestBed.createComponent(SdCrudListTestHost);
+      fixture.componentRef.setInput("initialized", true);
+      fixture.componentRef.setInput("viewType", "page");
+      fixture.componentRef.setInput("canDelete", false);
+      fixture.componentRef.setInput("items", [
+        { id: 1, name: "item1" },
+        { id: 2, name: "item2" },
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el = fixture.nativeElement as HTMLElement;
+      const buttons = Array.from(el.querySelectorAll("sd-button"));
+      expect(buttons.some((b) => b.textContent.includes("저장"))).toBe(true);
       expect(el.querySelectorAll("sd-anchor").length).toBe(0);
     });
   });

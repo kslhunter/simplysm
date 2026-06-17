@@ -199,7 +199,7 @@ describe("SdCrudList 내부 동작", () => {
   });
 
   describe("inlineEditEnabled", () => {
-    function setupList(readonly: boolean, inlineEdit: boolean) {
+    function setupList(canEdit: boolean, inlineEdit: boolean) {
       TestBed.configureTestingModule({
         imports: [SdCrudListTestHost],
         providers: [
@@ -210,26 +210,26 @@ describe("SdCrudList 내부 동작", () => {
       const fixture = TestBed.createComponent(SdCrudListTestHost);
       fixture.componentRef.setInput("initialized", true);
       fixture.componentRef.setInput("viewType", "page");
-      fixture.componentRef.setInput("readonly", readonly);
+      fixture.componentRef.setInput("canEdit", canEdit);
       fixture.componentRef.setInput("inlineEdit", inlineEdit);
       fixture.detectChanges();
       return fixture.debugElement.children[0].componentInstance as SdCrudList<any, any>;
     }
 
-    it("readonly=false, inlineEdit=true이면 true를 반환한다", () => {
-      expect(setupList(false, true).inlineEditEnabled()).toBe(true);
+    it("canEdit=true, inlineEdit=true이면 true를 반환한다", () => {
+      expect(setupList(true, true).inlineEditEnabled()).toBe(true);
     });
 
-    it("readonly=false, inlineEdit=false이면 false를 반환한다", () => {
-      expect(setupList(false, false).inlineEditEnabled()).toBe(false);
-    });
-
-    it("readonly=true, inlineEdit=true이면 false를 반환한다", () => {
-      expect(setupList(true, true).inlineEditEnabled()).toBe(false);
-    });
-
-    it("readonly=true, inlineEdit=false이면 false를 반환한다", () => {
+    it("canEdit=true, inlineEdit=false이면 false를 반환한다", () => {
       expect(setupList(true, false).inlineEditEnabled()).toBe(false);
+    });
+
+    it("canEdit=false, inlineEdit=true이면 false를 반환한다", () => {
+      expect(setupList(false, true).inlineEditEnabled()).toBe(false);
+    });
+
+    it("canEdit=false, inlineEdit=false이면 false를 반환한다", () => {
+      expect(setupList(false, false).inlineEditEnabled()).toBe(false);
     });
   });
 });

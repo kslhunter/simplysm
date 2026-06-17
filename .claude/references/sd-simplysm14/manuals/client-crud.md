@@ -14,7 +14,9 @@
   [initialized]="initialized()"
   [(busyCount)]="busyCount"
   [restricted]="!perms().includes('use')"
-  [readonly]="!canEdit()"
+  [canCreate]="canEdit()"
+  [canEdit]="canEdit()"
+  [canDelete]="canEdit()"
   [viewType]="viewType()"
   [selectMode]="selectMode() ?? 'multi'"
   [key]="'<도메인-키>'"
@@ -65,9 +67,9 @@
 
 ### 편집 방식 (`inlineEdit`, 기본 `true`)
 
-- `true` — 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 저장 버튼/CTRL+S + per-row 삭제 컬럼 제공.
+- `true` — `canEdit` 면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 저장 버튼/CTRL+S. per-row 삭제 컬럼은 `canDelete` 면 표시.
 - `false` — 인라인 편집 chrome 제거. 시트는 조회·선택 전용이며, 편집은 호스트가 `selectedKeys`(또는 별도 진입)로 상세/모달을 열어 처리. 등록·선택 삭제·복구·필터·페이징은 그대로 유지. 이 모드에선 `submit` 출력이 발화하지 않음.
-- `readonly` 와 직교: `readonly=true` 면 편집 자체 불가, `readonly=false` + `inlineEdit=false` 면 편집은 가능하되 인라인이 아님(외부 모달·상세).
+- `canCreate`/`canEdit`/`canDelete` 와 직교: `inlineEdit` 은 편집을 인라인으로 표현할지만 정함. `canEdit=false` 면 `inlineEdit` 값과 무관하게 인라인 편집 비활성, `canEdit=true` + `inlineEdit=false` 면 편집은 가능하되 인라인이 아님(외부 모달·상세). 각 동작 사용여부는 세 입력이 정함(읽기 전용 = 셋 다 false).
 
 ### 모달 선택 모드
 
@@ -78,7 +80,7 @@
 
 호출측은 `_sdModal.showAsync(...)` 결과로 `{ selectedKeys }` 페이로드 수신.
 
-`selectMode` 는 `readonly` 와 독립 — selectMode 지정만으로는 편집이 막히지 않음. 등록·인라인 편집은 그대로 유지되고, `single` 일 때 "선택 삭제/복구" 버튼만 숨김. 읽기 전용이 필요하면 `readonly=true` 를 별도로 전달. `sd-shared-data-select-list` 가 모달을 띄울 때도 `selectMode="single"` 만 주입하므로 모달 내용은 편집 가능 상태로 유지됨.
+`selectMode` 는 capability 입력과 독립 — selectMode 지정만으로는 편집·삭제가 막히지 않음. 등록·인라인 편집·삭제는 각 `canCreate`/`canEdit`/`canDelete` 로 정해지고, `single` 일 때 "선택 삭제/복구" 버튼만 숨김. 읽기 전용이 필요하면 `canCreate`/`canEdit`/`canDelete` 를 false 로 전달. `sd-shared-data-select-list` 가 모달을 띄울 때도 `selectMode="single"` 만 주입하므로 모달 내용은 편집 가능 상태로 유지됨.
 
 ### 행을 클릭해 상세 편집으로 진입하려면 (inlineEdit=false)
 

@@ -43,10 +43,12 @@ busy 컨테이너로 감싸고(`page` 면 탑바 포함) 권한 없음 placehold
 목록 골격(`sd-base-container` + `sd-sheet`). 시트·검색 폼·등록/삭제/복구·CTRL+S 저장·페이징·정렬·선택·인라인 편집·모달 선택을 일괄 제공. `SdCommandDirective` 호스트.
 
 - `ready: model(false)` / `initialized: input(false)` / `busyCount: model(0)` / `restricted: input(false)` — base 로 전달.
-- `readonly: input(false)` — true 면 등록/삭제/복구 버튼 숨김 + 인라인 편집 비활성 + 삭제 행 취소선.
-- `inlineEdit: input(true)` — true(비-readonly)면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 삭제 컬럼 + 저장. false 면 인라인 편집 chrome 제거(조회·선택 전용, `submit` 미발화).
+- `canCreate: input(true)` — false 면 등록 버튼 숨김.
+- `canEdit: input(true)` — false 면 인라인 편집(저장 버튼·`<sd-form>` 래핑) 비활성. `inlineEdit` 과 AND(둘 다 true 여야 인라인 편집).
+- `canDelete: input(true)` — false 면 선택 삭제/복구 버튼·per-row 삭제 컬럼 숨김 + 멀티선택 기본값 해제(`undefined`).
+- `inlineEdit: input(true)` — `canEdit` 면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 저장. per-row 삭제 컬럼은 `canDelete` 면 표시. false 면 인라인 편집 chrome 제거(조회·선택 전용, `submit` 미발화).
 - `viewType: input.required<SdViewType>` — `"page"` = 탑바 저장 버튼(인라인 편집 시); `"modal"` = 하단 선택 명령바("선택 해제", multi 면 "확인(n)").
-- `selectMode: "single"|"multi"|undefined` — `"single"` = 선택 삭제/복구 숨김·클릭 즉시 modal close; `"multi"` = 다중 선택·삭제/복구·"확인(n)"; `undefined`(비-modal) = 비-readonly 면 `'multi'`.
+- `selectMode: "single"|"multi"|undefined` — `"single"` = 선택 삭제/복구 숨김·클릭 즉시 modal close; `"multi"` = 다중 선택·삭제/복구·"확인(n)"; `undefined`(비-modal) = `canDelete` 면 `'multi'`.
 - `key: input.required<string>` — 시트 설정 키(내부 시트는 `key()+'-sheet'`).
 - `items: TItem[]` (기본 `[]`) — 행 데이터.
 - `currDeletedItems: TItem[]` (기본 `[]`) — 삭제(soft delete) 행. 취소선·복구 버튼·삭제/복구 아이콘 토글에. 삭제항목 포함 검색 목록은 필수.
@@ -58,7 +60,7 @@ busy 컨테이너로 감싸고(`page` 면 탑바 포함) 권한 없음 placehold
 - 슬롯: `#filterTpl`(검색 폼; 내부가 이미 `form-box-inline`) / `#toolTpl`(도구 버튼) / `#commandTpl` / `#bottomCommandTpl`. `<sd-sheet-column>` 직속 자식은 내부 시트로 자동 투영.
 
 ```html
-<sd-crud-list [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" [restricted]="!perms().includes('use')" [readonly]="!canEdit()" [viewType]="viewType()" [selectMode]="selectMode() ?? 'multi'" [key]="'role'" [items]="items()" [currDeletedItems]="deletedItems()" [trackByFn]="trackByFn" [(selectedKeys)]="selectedKeys" [(currentPage)]="page" [totalPageCount]="pageLength()" [(sorts)]="sortingDefs" (filterSubmit)="onFilterSubmit()" (submit)="onSubmit()" (create)="onCreate()" (delete)="onDelete($event)" (restore)="onRestore($event)">
+<sd-crud-list [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" [restricted]="!perms().includes('use')" [canCreate]="canEdit()" [canEdit]="canEdit()" [canDelete]="canEdit()" [viewType]="viewType()" [selectMode]="selectMode() ?? 'multi'" [key]="'role'" [items]="items()" [currDeletedItems]="deletedItems()" [trackByFn]="trackByFn" [(selectedKeys)]="selectedKeys" [(currentPage)]="page" [totalPageCount]="pageLength()" [(sorts)]="sortingDefs" (filterSubmit)="onFilterSubmit()" (submit)="onSubmit()" (create)="onCreate()" (delete)="onDelete($event)" (restore)="onRestore($event)">
   <ng-template #filterTpl>...</ng-template>
   <sd-sheet-column [key]="'name'" [header]="'이름'"><ng-template [cell]="items()" let-item="item">...</ng-template></sd-sheet-column>
 </sd-crud-list>

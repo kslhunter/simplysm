@@ -73,6 +73,14 @@ body.sd-theme-blueprint,
   sd-modal > ._dialog > ._header {
     background: var(--theme-primary-default);
     color: var(--text-trans-rev-default);
+
+    > ._close-btn {
+      color: var(--text-trans-rev-dark);
+
+      &:hover {
+        color: var(--text-trans-rev-default);
+      }
+    }
   }
 
   sd-crud-detail > sd-base-container > sd-busy-container > .bg-control > .main-align-end {

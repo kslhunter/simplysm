@@ -5,13 +5,13 @@
 $paper: (
   theme: (
     "gray": (
-      lightest: colors.get(stone, 50),
-      lighter: colors.get(stone, 100),
-      light: colors.get(stone, 300),
-      default: colors.get(stone, 500),
-      dark: colors.get(stone, 600),
-      darker: colors.get(stone, 700),
-      darkest: colors.get(stone, 800)
+      lightest: colors.get(zinc, 50),
+      lighter: colors.get(zinc, 100),
+      light: colors.get(zinc, 300),
+      default: colors.get(zinc, 500),
+      dark: colors.get(zinc, 600),
+      darker: colors.get(zinc, 700),
+      darkest: colors.get(zinc, 800)
     ),
     blue-gray: (
       lightest: colors.get(slate, 50),

@@ -131,33 +131,33 @@ import {
             </sd-form>
           }
 
-          @if (!readonly() || toolTplRef()) {
+          @if (canCreate() || canDelete() || toolTplRef()) {
             <div class="flex-row gap-sm p-xs-default">
-              @if (!readonly()) {
+              @if (canCreate()) {
                 <sd-button [size]="'sm'" [theme]="'link-primary'" (click)="create.emit()">
                   <ng-icon [svg]="tablerCirclePlus" />
                   등록
                 </sd-button>
-                @if (selectMode() !== "single") {
+              }
+              @if (canDelete() && selectMode() !== "single") {
+                <sd-button
+                  [size]="'sm'"
+                  [theme]="'link-danger'"
+                  (click)="delete.emit(currSelectedItems())"
+                  [disabled]="!hasSelectedNotDeleted()"
+                >
+                  <ng-icon [svg]="tablerEraser" />
+                  선택 삭제
+                </sd-button>
+                @if (hasSelectedDeleted()) {
                   <sd-button
                     [size]="'sm'"
-                    [theme]="'link-danger'"
-                    (click)="delete.emit(currSelectedItems())"
-                    [disabled]="!hasSelectedNotDeleted()"
+                    [theme]="'link-warning'"
+                    (click)="restore.emit(currSelectedItems())"
                   >
-                    <ng-icon [svg]="tablerEraser" />
-                    선택 삭제
+                    <ng-icon [svg]="tablerRestore" />
+                    선택 복구
                   </sd-button>
-                  @if (hasSelectedDeleted()) {
-                    <sd-button
-                      [size]="'sm'"
-                      [theme]="'link-warning'"
-                      (click)="restore.emit(currSelectedItems())"
-                    >
-                      <ng-icon [svg]="tablerRestore" />
-                      선택 복구
-                    </sd-button>
-                  }
                 }
               }
 
@@ -190,7 +190,7 @@ import {
         [visiblePageCount]="visiblePageCount()"
         [(sorts)]="sorts"
         [useAutoSort]="totalPageCount() === 0"
-        [selectMode]="selectMode() ?? (readonly() ? undefined : 'multi')"
+        [selectMode]="selectMode() ?? (canDelete() ? 'multi' : undefined)"
         [(selectedKeys)]="selectedKeys"
         [getItemSelectableFn]="getItemSelectableFn()"
         [trackByFn]="trackByFn()"
@@ -199,7 +199,7 @@ import {
         [columnControlsInput]="columnControls()"
         (selectedKeysChange)="onSelectedKeysChange()"
       >
-        @if (inlineEditEnabled()) {
+        @if (canDelete() && inlineEdit()) {
           <sd-sheet-column
             [fixed]="true"
             [key]="'deleteButton'"
@@ -234,7 +234,9 @@ export class SdCrudList<TItem, TKey> {
   initialized = input(false);
   busyCount = model(0);
   restricted = input(false);
-  readonly = input(false);
+  canCreate = input(true);
+  canEdit = input(true);
+  canDelete = input(true);
   inlineEdit = input(true);
   viewType = input.required<SdViewType>();
   selectMode = input<"single" | "multi">();
@@ -277,7 +279,7 @@ export class SdCrudList<TItem, TKey> {
 
   columnControls = contentChildren(SdSheetColumn);
 
-  inlineEditEnabled = computed(() => !this.readonly() && this.inlineEdit());
+  inlineEditEnabled = computed(() => this.canEdit() && this.inlineEdit());
 
   hasSelectedDeleted = computed(() => this.currSelectedItems().some((it) => this.isDeleted(it)));
   hasSelectedNotDeleted = computed(() =>
