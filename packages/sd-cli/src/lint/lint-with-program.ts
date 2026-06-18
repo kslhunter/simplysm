@@ -138,6 +138,10 @@ export class LintWithProgramRunner {
 
       this._eslint = new ESLint({
         cwd: this._cwd,
+        // program의 모든 소스 파일을 명시적으로 lintFiles()에 넘기므로,
+        // eslint ignore 패턴에 매칭되는 파일(fixture 등)은 조용히 스킵한다.
+        // (이 옵션이 없으면 "File ignored because of a matching ignore pattern" 경고 발생)
+        warnIgnored: false,
         overrideConfig: {
           languageOptions: {
             parserOptions,

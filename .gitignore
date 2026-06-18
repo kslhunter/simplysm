@@ -1,5 +1,5 @@
-.claude/skills/*
-!.claude/skills/sd-*
+.claude/skills/angular-developer
+.claude/skills/playwright-cli
 
 .playwright-cli
 __pycache__
@@ -16,7 +16,6 @@ tests/*/dist
 *.~*
 ~*.*
 
-packages/sd-claude/claude
 packages/angular/styles.css
 signCert.der
 signPri.key

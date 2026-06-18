@@ -9,8 +9,10 @@ import os from "node:os";
 import path from "node:path";
 
 // pebble 의 self-signed ACME API 인증서 수용 + ACME 디렉토리를 pebble 로 재정의
+/* eslint-disable no-restricted-properties -- 테스트 인프라: 환경변수 설정 필요 */
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 process.env["SD_ACME_DIRECTORY_URL"] = "https://localhost:14000/dir";
+/* eslint-enable no-restricted-properties */
 
 const DOMAIN = "acme-test.example";
 // pebble 기본 config 의 tlsPort 와 동일해야 함 (pebble 이 이 포트로 TLS-ALPN-01 검증)

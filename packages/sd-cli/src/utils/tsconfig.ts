@@ -118,10 +118,36 @@ export function getPackageSourceFiles(
 
 /**
  * 패키지의 모든 파일(src + tests)을 파싱된 tsconfig 기준으로 필터링하여 반환한다.
+ *
+ * 단, 패키지 하위에 자체 tsconfig.json을 가진 디렉토리(예: SSG fixture, Angular 빌드 fixture)는
+ * 별도 컴파일 단위이므로 rootNames에서 제외한다. 그렇지 않으면 부모 패키지의 컴파일 환경
+ * (예: node env로 인한 DOM lib 제거)으로 fixture가 타입체크되어 잘못된 에러가 발생한다.
  */
 export function getPackageFiles(
   pkgDir: string,
   parsedConfig: ts.ParsedCommandLine,
 ): string[] {
-  return parsedConfig.fileNames.filter((f) => pathx.isChildPath(f, pkgDir));
+  const pkgDirResolved = pathx.posixResolve(pkgDir);
+  const nestedProjectCache = new Map<string, boolean>();
+
+  // 디렉토리가 패키지 하위의 중첩 tsconfig 프로젝트(자체 tsconfig.json 보유)에 속하는지 판정한다.
+  const isInNestedProject = (dir: string): boolean => {
+    const resolved = pathx.posixResolve(dir);
+    if (resolved === pkgDirResolved) return false;
+    if (!pathx.isChildPath(dir, pkgDir)) return false;
+    const cached = nestedProjectCache.get(resolved);
+    if (cached != null) return cached;
+    const hasOwnTsconfig = fs.existsSync(path.join(dir, "tsconfig.json"));
+    const result = hasOwnTsconfig || isInNestedProject(path.dirname(dir));
+    nestedProjectCache.set(resolved, result);
+    return result;
+  };
+
+  const files = parsedConfig.fileNames.filter(
+    (f) => pathx.isChildPath(f, pkgDir) && !isInNestedProject(path.dirname(f)),
+  );
+  logger.debug(
+    `패키지 파일 필터링: ${parsedConfig.fileNames.length}개 중 ${files.length}개 (중첩 tsconfig 디렉토리 제외)`,
+  );
+  return files;
 }

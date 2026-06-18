@@ -24,7 +24,7 @@
     }
   },
   "dependencies": {
-    "@angular/build": "^21.2.15",
+    "@angular/build": "^21.2.16",
     "@angular/compiler-cli": "^21.2.17",
     "@fastify/http-proxy": "^11.5.0",
     "@inquirer/prompts": "^8.5.2",

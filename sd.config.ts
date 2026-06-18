@@ -15,20 +15,6 @@ const config: SdConfigFn = () => ({
     "excel": { target: "neutral", publish: { type: "npm" } },
     "orm-common": { target: "neutral", publish: { type: "npm" } },
     "orm-node": { target: "node", publish: { type: "npm" } },
-    "sd-claude": {
-      target: "scripts",
-      publish: { type: "npm" },
-      watch: {
-        target: [
-          "../../.claude/**/sd-*", // 파일들
-          "../../.claude/**/sd-*/**", // sd-*폴더내 파일 및 폴더들
-          "../../.claude/settings.json", // 세팅 파일
-          "../../.claude/simplysm.json", // 설정 파일
-        ],
-        cmd: "node",
-        args: ["scripts/sync.mjs"],
-      },
-    },
     "service-client": { target: "neutral", publish: { type: "npm" } },
     "service-common": { target: "neutral", publish: { type: "npm" } },
     "service-server": { target: "node", publish: { type: "npm" } },

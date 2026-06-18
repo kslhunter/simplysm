@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "14.0.102",
+  "version": "14.1.0",
   "description": "심플리즘 패키지",
   "author": "심플리즘",
   "repository": {
@@ -23,7 +23,6 @@
     "lint": "pnpm sd-cli check --type lint",
     "----": "",
     "sd-cli": "tsx packages/sd-cli/src/sd-cli.ts",
-    "cc-auth": "node packages/sd-claude/scripts/cli.mjs auth",
     "postinstall": "npx -y skills add angular/skills --skill angular-developer -a claude-code -y && playwright-cli install --skills && playwright install chromium"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // pebble ACME API 는 자체 self-signed 인증서를 쓰므로 검증 비활성화
+// eslint-disable-next-line no-restricted-properties -- 테스트 인프라: 환경변수 설정 필요
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,7 +39,7 @@ export async function setup() {
   console.log(`[acme] 준비 완료. 검증 도메인 → ${hostIp}:5001 (호스트 테스트 서버)`);
 }
 
-export async function teardown() {
+export function teardown() {
   console.log("[acme] Docker 컨테이너 종료 중...");
   try {
     execaSync("docker", ["compose", "-f", composePath, "down"], {
@@ -64,7 +65,7 @@ function getHostGatewayIp(): string {
   ]).stdout.trim();
   // 예: "192.168.65.254  STREAM host.docker.internal" (첫 줄 첫 토큰이 IPv4)
   const ip = out.split(/\s+/)[0];
-  if (ip == null || !/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
+  if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
     throw new Error(`[acme] host-gateway IPv4 확인 실패: "${out}"`);
   }
   return ip;

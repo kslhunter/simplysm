@@ -42,7 +42,7 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## 환경
 
-- Node 20, pnpm 11, Python 3 (`mise.toml` 참조). `.claude/` 훅이 Python 사용.
+- Node 20, pnpm 11, Python 3 (`mise.toml` 참조). `sd` 플러그인 훅이 Python 사용.
 - TypeScript 경로 alias: `@simplysm/*` → `packages/*/src/index.ts`. 워크스페이스 내부 의존성은 빌드 없이 곧바로 소스 import 됨.
 - ESM 전용 (`"type": "module"`), `verbatimModuleSyntax` 활성. type-only import 는 반드시 `import type` 로 작성.
 
@@ -55,7 +55,7 @@ docker compose -f tests/orm/docker-compose.test.yml down
 - `node` / `browser` / `neutral` — esbuild 라이브러리 패키지. npm 배포용.
 - `client` — Frontend 앱 (Angular + Capacitor/Electron + PWA 옵션). esbuild + define 으로 env 주입.
 - `server` — Fastify 서버 앱. esbuild banner 로 env 주입, PM2 옵션.
-- `scripts` — 유틸 패키지. `watch` 훅으로 임의 명령 실행 가능 (예: `sd-claude` 패키지가 `.claude/sd-*` 변경을 감지해 `scripts/sync.mjs` 호출).
+- `scripts` — 유틸 패키지. `watch` 훅으로 임의 명령 실행 가능.
 
 타입 정의는 `packages/sd-cli/src/sd-config.types.ts` 가 권위 있는 소스.
 
@@ -68,9 +68,9 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 서브커맨드 구현은 `packages/sd-cli/src/commands/` 에, 빌드 엔진/오케스트레이터는 `engines/`, `orchestrators/` 에 있음.
 
-### sd-claude 동기화
+### sd 플러그인
 
-`.claude/` 의 `sd-*` 에셋(스킬·룰·훅 스크립트·`settings.json`)은 `packages/sd-claude/scripts/sync.mjs` 를 통해 `packages/sd-claude/claude/` 로 증분 복사된 뒤 npm 배포됨. Windows EPERM 회피를 위해 `rmSync(recursive)` 대신 mtime+size 비교 후 변경분만 unlink/copy 함.
+sd-* 스킬·훅·레퍼런스는 Claude Code 플러그인(`plugins/sd/`)으로 제공됨. 루트 `.claude-plugin/marketplace.json` 이 카탈로그. hook·skill 은 `${CLAUDE_PLUGIN_ROOT}` 기준으로 자기완결, 캐시·statusline 복제본은 `${CLAUDE_PLUGIN_DATA}`, 개인 위키는 `~/.claude/wiki`. 개발 중엔 `claude --plugin-dir ./plugins/sd` 로 로드(소스 편집 후 `/reload-plugins`). rules(행동·설계·위키)는 SessionStart hook 이 `additionalContext` 로 주입하고, references 버전 폴더는 프로젝트의 `@simplysm/sd-cli` major 로 런타임 선택됨.
 
 ## Vitest 프로젝트 구조
 
@@ -90,8 +90,8 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ## 개발 시 주의사항
 
-- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist`, `packages/sd-claude/claude` 등)는 **사용자가 명시적으로 첨부하지 않는 한 읽지 않음**. 자세한 행동 지침은 시스템 프롬프트의 "행동 규칙" 및 `.claude/rules/sd-design-rules.md`(자동 로드됨) 참조.
+- 코드베이스 분석/변경에서 `.back/`, `.gitignore` 등재 경로(`.tmp`, `.logs`, `.tasks`, `.cache`, `node_modules`, `dist` 등)는 **사용자가 명시적으로 첨부하지 않는 한 읽지 않음**. 자세한 행동 지침은 `sd` 플러그인이 SessionStart 로 주입하는 행동·설계 규칙(`sd-behavior-rules`·`sd-design-rules`) 참조.
 - Pre-tool 훅(`.claude/settings.json`)이 Edit/Write/Bash 호출 전 검증 수행. 훅 차단 시 우회하지 말고 원인 해결.
-- ESLint 글로벌 무시: `packages/sd-claude/claude/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
-- `@simplysm/*` 패키지의 공개 API/동작 변경 시 `.claude/references/sd-simplysm14/apis/<패키지>/README.md` 갱신 필요 여부 검토.
+- ESLint 글로벌 무시: `plugins/sd/**`, `packages/sd-cli/src/commands/init/templates/**` (`@simplysm/lint/eslint-recommended` 에서 처리).
+- `@simplysm/*` 패키지의 공개 API/동작 변경 시 `plugins/sd/references/simplysm<major>/apis/<패키지>/README.md` 갱신 필요 여부 검토.
 - 기본 응답 언어는 한국어.

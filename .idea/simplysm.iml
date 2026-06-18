@@ -53,6 +53,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.tasks" />
       <excludeFolder url="file://$MODULE_DIR$/.playwright" />
       <excludeFolder url="file://$MODULE_DIR$/.docs" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/sd-cli-client/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/service-server-acme/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/ssg/.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
