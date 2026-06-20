@@ -6,18 +6,18 @@ model: haiku
 
 # sd-commit
 
-system prompt 의 "Committing changes with git" 절차를 따르되, 아래 항목만 본 스킬의 규칙으로 덮어씀.
+에이전트 기본 커밋 절차를 따르되, 아래 항목만 본 스킬의 규칙으로 덮어씀.
 
 ## git 호출 prefix
 
 - 대상: 모든 git 호출 (`status`·`diff`·`log`·`add`·`commit`).
 - 목적: Pre-tool 훅의 전역 git 조회 차단을 우회하는 마커. `add`·`commit` 도 일관성을 위해 동일 prefix.
-- **도구별 prefix** — 사용 도구에 맞는 문법 1개만 선택:
-  - Bash 도구 → `SDGIT=1 git ...`.
-  - PowerShell 도구 → `$env:SDGIT='1'; git ...`.
+- **셸별 prefix** — 사용 셸에 맞는 문법 1개만 선택:
+  - bash 계열 셸 → `SDGIT=1 git ...`.
+  - PowerShell → `$env:SDGIT='1'; git ...`.
 - 금지:
-  - Bash 도구에 `$env:...` 사용 — PowerShell 문법.
-  - PowerShell 도구에 `SDGIT=1 git ...` 사용 — bash inline env 문법, PowerShell 파서 에러.
+  - bash 계열 셸에 `$env:...` 사용 — PowerShell 문법.
+  - PowerShell 에 `SDGIT=1 git ...` 사용 — bash inline env 문법, PowerShell 파서 에러.
 
 ## staging
 

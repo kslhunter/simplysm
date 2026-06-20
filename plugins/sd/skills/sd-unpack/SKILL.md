@@ -72,9 +72,9 @@ meeting_eml/
 모든 jsonl 출력은 **한 줄 = 한 노드 (또는 한 행/셀)**. 빈 키 생략. JSON 네이티브 타입 보존. datetime → ISO 8601 문자열.
 
 조회 패턴:
-- 좌표·인덱스로 직접 grep (`"r":11`·`"slide":5`·`"node":42`).
-- 키 grep (`"type":"heading"`·`"_f"` 수식 행만).
-- Read offset = 행/노드 인덱스 1:1 (빈 노드도 한 줄 유지).
+- 좌표·인덱스로 직접 검색 (`"r":11`·`"slide":5`·`"node":42`).
+- 키 검색 (`"type":"heading"`·`"_f"` 수식 행만).
+- 읽기 offset = 행/노드 인덱스 1:1 (빈 노드도 한 줄 유지).
 
 ## xlsx jsonl 규약
 
@@ -90,7 +90,7 @@ meeting_eml/
   - `r`: 1-based 행번호 (Excel 동일).
   - 열문자 키 (`A`·`B`·...·`AA`·...): 셀 값. 빈 셀은 키 생략.
   - `_f`: 같은 행 수식 맵 `{열문자: 수식문자열}`. 수식 없는 행은 키 생략.
-- 빈 행도 `{"r":N}` 한 줄 유지 → Read offset = 행번호 (오프바이원 방지).
+- 빈 행도 `{"r":N}` 한 줄 유지 → 읽기 offset = 행번호 (오프바이원 방지).
 - 값 타입: JSON 네이티브 (`int`·`float`·`bool`·`str`), datetime 은 ISO 8601 문자열.
 
 ### Chartsheet (시트 자체가 차트)
@@ -112,7 +112,7 @@ xlsx 안 시트는 일반 Worksheet 외에 **Chartsheet** (셀 없이 차트 1�
 
 ## pptx jsonl 규약
 
-슬라이드별 `slides/<idx>_<title>.jsonl` 생성. 원본 XML 순서 (shape_idx 순) 그대로 유지. 시각 순서는 `pos` 좌표 기반으로 Claude 가 필요시 정렬.
+슬라이드별 `slides/<idx>_<title>.jsonl` 생성. 원본 XML 순서 (shape_idx 순) 그대로 유지. 시각 순서는 `pos` 좌표 기반으로 필요시 정렬.
 
 - 첫 줄: `{"_meta":{"slide":N, "title":"슬라이드 제목 또는 빈 문자열", "size":[w,h], "shapes":S}}`.
   - `size`: 슬라이드 폭/높이 (EMU 단위, python-pptx 원본).
@@ -143,7 +143,7 @@ paragraph 안 hyperlink 가 있으면 `hyperlinks`: `[{"text":"...", "url":"..."
 
 - 첫 줄: `{"_meta":{"paragraphs":P, "tables":T, "images":I}}`.
 - 노드 줄: `{"node":N, "type":"<type>", ...추가 키}`.
-  - `node`: 0-based 시퀀스 인덱스 (Read offset = node).
+  - `node`: 0-based 시퀀스 인덱스 (읽기 offset = node).
 
 노드 type:
 - `heading`: 키 `text`·`level` (1·2·3·...) — docx Heading 스타일 기반만 (휴리스틱 추정 금지).
@@ -157,7 +157,7 @@ paragraph 안 hyperlink 가 있으면 `hyperlinks`: `[{"text":"...", "url":"..."
 페이지 매핑 별도 `pages.meta.json`:
 - `{"001":{"text":"<페이지 평문>"}, "002":{...}, ...}` (PNG 페이지 ↔ fitz 추출 raw text).
 - PNG 는 fitz 페이지 분할 그대로 (시각 검증용).
-- 노드 인덱스 자동 매핑은 미적용 (fitz·python-docx 의 텍스트 분할 차이로 오매핑 위험) — Claude 가 페이지 text 와 content.jsonl 의 노드 text 를 직접 grep 비교.
+- 노드 인덱스 자동 매핑은 미적용 (fitz·python-docx 의 텍스트 분할 차이로 오매핑 위험) — 페이지 text 와 content.jsonl 의 노드 text 를 직접 검색 비교.
 
 ## pdf jsonl 규약
 
@@ -170,7 +170,7 @@ paragraph 안 hyperlink 가 있으면 `hyperlinks`: `[{"text":"...", "url":"..."
   - `table_cell`: `{"page":N, "type":"table_cell", "table_idx":T, "table_bbox":[...], "row":R, "col":C, "text":"..."}`.
   - `form_field`: `{"page":N, "type":"form_field", "name":"...", "field_type":"text", "value":"...", "bbox":[...]}` (PDF 양식 입력란).
   - `annotation`: `{"page":N, "type":"annotation", "subtype":"Highlight", "bbox":[...], "content":"...", "author":"..."}` (주석·highlight·sticky note).
-- 모든 블록 보존 (표 영역과 겹쳐도 skip 안 함) — find_tables 정확도 100% 가정 시 정보 손실 위험을 회피. text_block·image_block·table_cell 노드가 동일 영역에 중복 출력될 수 있음. Claude 가 양쪽을 비교하여 판단.
+- 모든 블록 보존 (표 영역과 겹쳐도 skip 안 함) — find_tables 정확도 100% 가정 시 정보 손실 위험을 회피. text_block·image_block·table_cell 노드가 동일 영역에 중복 출력될 수 있음. 양쪽을 비교하여 판단.
 - bbox 는 PDF 기준 좌표 (left-top, pt 단위, raw float).
 
 heading 추출은 미적용 (PDF 는 style 정보 없음). OCR 미적용 (스캔 PDF 는 image_block 만 추출).
@@ -213,9 +213,9 @@ Outlook RTF 메일이 첨부를 `winmail.dat` 단일 binary (TNEF, Transport Neu
 
 ## 산출물 사용
 
-후속 스킬 (sd-spec 등) 은 결과 폴더의 `README.md` 를 한 번 Read 하여 본문 위치·헤더·첨부 목록·손실 영역을 모두 파악 가능. 컨테이너 첨부는 자체 `README.md` 를 가지므로 같은 방식으로 재귀 진입.
+후속 스킬 (sd-spec 등) 은 결과 폴더의 `README.md` 를 한 번 읽어 본문 위치·헤더·첨부 목록·손실 영역을 모두 파악 가능. 컨테이너 첨부는 자체 `README.md` 를 가지므로 같은 방식으로 재귀 진입.
 
-각 형식별 jsonl 의 grep 패턴:
+각 형식별 jsonl 의 검색 패턴:
 - xlsx: `"r":<행>` · `"_f"` (수식 행) · 열문자 키.
 - pptx: `"slide":<N>` · `"type":"<type>"` · `"shape_idx":<S>`.
 - docx: `"node":<N>` · `"type":"heading"` · `"table_idx":<T>`.

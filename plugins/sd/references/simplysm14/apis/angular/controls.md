@@ -1,6 +1,6 @@
 # @simplysm/angular — 폼·입력 컨트롤
 
-버튼·앵커, 텍스트/숫자/날짜 입력, 체크박스/스위치/그룹, 셀렉트/드롭다운, 폼/접기/탭/리스트/갭/페이지네이션 등 폼·UI 기본 컨트롤 군. 화면 폼·필터·시트 셀에서 함께 쓰임. 화면 폼·버튼 스타일 규약은 [client-component.md](../manuals/client-component.md) 의 '폼·입력 컨트롤' / '버튼 스타일' 참조.
+버튼·앵커, 텍스트/숫자/날짜 입력, 체크박스/스위치/그룹, 셀렉트/드롭다운, 폼/접기/탭/리스트/갭/페이지네이션 등 폼·UI 기본 컨트롤 군. 화면 폼·필터·시트 셀에서 함께 쓰임. 화면 폼·버튼 스타일 규약은 [client-component.md](../../manuals/client-component.md) 의 '폼·입력 컨트롤' / '버튼 스타일' 참조.
 
 공통 약속: 대부분 컨트롤이 `size: "sm"|"lg"`(미지정=기본 중간), `inline`(인라인 배치·폭 auto), `inset`(테두리·라운드 제거, 셀/다른 컨트롤 내장용), `disabled`, `theme` 을 가짐. 모든 boolean input 은 `booleanAttribute` 변환이라 `<sd-x inline>` 처럼 빈 속성=`true`. **표준 테마 셋** = `primary | secondary | info | success | warning | danger | gray | blue-gray`. 검증 컨트롤은 `required`/`validatorFn` 으로 `sd-form` 의 native validity 에 연동.
 
@@ -26,7 +26,7 @@
 - `theme` — 표준 테마 셋(기본 `"primary"`). 텍스트 색; hover 시 밑줄·진해짐.
 - `disabled: boolean` — true 면 opacity 0.3·`pointer-events:none`·tabindex 제거.
 
-시트 셀 안 진입점 앵커 등에 사용([client-crud.md](../manuals/client-crud.md) 의 '#' 컬럼 편집 진입 패턴).
+시트 셀 안 진입점 앵커 등에 사용([client-crud.md](../../manuals/client-crud.md) 의 '#' 컬럼 편집 진입 패턴).
 
 ### `SdAdditionalButton` — `<sd-additional-button>`
 
@@ -230,7 +230,7 @@ native `<form novalidate>` + 숨김 submit 버튼 래퍼. 폼 안 Enter 자동 �
 
 ### `SdTab` / `SdTabItem` — `<sd-tab>` / `<sd-tab-item>`
 
-현재 탭 값을 고르는 **선택 컨트롤**(콘텐츠 컨테이너 아님). 콘텐츠는 바깥 `@if`/`@switch` 로 분기. 표준 패턴은 [client-tab.md](../manuals/client-tab.md).
+현재 탭 값을 고르는 **선택 컨트롤**(콘텐츠 컨테이너 아님). 콘텐츠는 바깥 `@if`/`@switch` 로 분기. 표준 패턴은 [client-tab.md](../../manuals/client-tab.md).
 
 - 탭: `value: model<any>` — 현재 선택값(양방향 필수).
 - 탭아이템: `value: any` — 이 항목 식별값. 클릭 시 부모 `value` 로 set, 부모 값과 비교해 선택 자동 결정.

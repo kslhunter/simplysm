@@ -1,6 +1,6 @@
 # @simplysm/angular — 라우팅·메뉴·권한(app-structure)
 
-라우터 링크·현재 페이지 식별·뷰 컨텍스트(page/control/modal)·이탈 가드, 그리고 앱 구조 트리에서 메뉴·권한을 파생하는 군. 화면 컴포넌트의 표준 시그널 `viewType`, 권한 가드 `injectPermsSignal`, 사이드바/탑바 메뉴가 이 군에 의존. 메뉴·권한 정의 절차는 [client-app-structure.md](../manuals/client-app-structure.md) 참조.
+라우터 링크·현재 페이지 식별·뷰 컨텍스트(page/control/modal)·이탈 가드, 그리고 앱 구조 트리에서 메뉴·권한을 파생하는 군. 화면 컴포넌트의 표준 시그널 `viewType`, 권한 가드 `injectPermsSignal`, 사이드바/탑바 메뉴가 이 군에 의존. 메뉴·권한 정의 절차는 [client-app-structure.md](../../manuals/client-app-structure.md) 참조.
 
 ## 라우팅 디렉티브·프로바이더
 
@@ -51,7 +51,7 @@ type SdViewType = "page" | "modal" | "control"
 function setupCanDeactivate(fn: () => boolean): void
 ```
 
-- 이탈 가드 등록. 모달 컨텍스트면 `SdActivatedModalProvider.canDeactivateFn = fn`; 라우트 페이지면 route config 의 `canDeactivate` 에 `fn()` 반환 가드를 push(파괴 시 제거). `fn()` 이 false 면 이탈 차단. detail 의 미저장 변경 가드에 사용([client-component.md](../manuals/client-component.md)).
+- 이탈 가드 등록. 모달 컨텍스트면 `SdActivatedModalProvider.canDeactivateFn = fn`; 라우트 페이지면 route config 의 `canDeactivate` 에 `fn()` 반환 가드를 push(파괴 시 제거). `fn()` 이 false 면 이탈 차단. detail 의 미저장 변경 가드에 사용([client-component.md](../../manuals/client-component.md)).
 
 ## 메뉴 유틸
 

@@ -4,13 +4,14 @@ import type { AuthTokenPayload } from "./auth-token-payload";
 export async function signJwt<TAuthInfo = unknown>(
   jwtSecret: string,
   payload: AuthTokenPayload<TAuthInfo>,
+  expiresHours: number = 12,
 ): Promise<string> {
   const secret = new TextEncoder().encode(jwtSecret);
 
   return new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("12h")
+    .setExpirationTime(`${expiresHours}h`)
     .sign(secret);
 }
 

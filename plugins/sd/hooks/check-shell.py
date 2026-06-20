@@ -1,7 +1,25 @@
-import json, re, sys
+import json, os, re, sys
 
 data = json.load(sys.stdin)
 cmd = data["tool_input"].get("command", "")
+
+# Codex 는 native PLUGIN_ROOT 를 set(Claude 는 CLAUDE_PLUGIN_ROOT 만) → 호스트 판별.
+IS_CODEX = bool(os.environ.get("PLUGIN_ROOT"))
+
+
+def block(reason):
+    # Claude: exit 2 + stderr (기존 동작 그대로). Codex: stdout JSON permissionDecision(deny).
+    if IS_CODEX:
+        print(json.dumps({
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": "deny",
+                "permissionDecisionReason": f"Blocked: {reason}",
+            }
+        }, ensure_ascii=False))
+        sys.exit(0)
+    print(f"Blocked: {reason}", file=sys.stderr)
+    sys.exit(2)
 
 # Command position prefix: start of line or after command separator (&&, ||, ;, |)
 CMD_POS = r"(^|&&|\|\||;|\|)\s*"
@@ -28,19 +46,14 @@ BLOCKED = [
 
 for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
-        print(f"Blocked: {label}", file=sys.stderr)
-        sys.exit(2)
+        block(label)
 
 # Git read-only inspection block (working-tree-only policy).
-# Bypass: any occurrence of `SDGIT` token in the command.
 GIT_READ_VERBS = r"status|diff|log|show|blame|reflog|rev-list|rev-parse|ls-files|ls-tree|cat-file|describe|whatchanged|shortlog|grep"
 if not re.search(r"\bSDGIT\b", cmd):
     m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
     if m:
-        print(
-            f"Blocked: git {m.group('verb')} "
-            "(working-tree inspection via git is forbidden; use Read/Grep/Glob). "
-            "If intentional, prefix the command with `SDGIT=1 ` (bash) or `$env:SDGIT='1'; ` (PowerShell).",
-            file=sys.stderr,
+        block(
+            f"git {m.group('verb')} "
+            "(working-tree inspection via git is forbidden; use Read/Grep/Glob)."
         )
-        sys.exit(2)

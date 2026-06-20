@@ -262,7 +262,7 @@ qr1 = qr1.search(
 - **`resultAsync(): Promise<T[]>`** — 목록 전체. JOIN 트리까지 파싱된 배열.
 - **`singleAsync(): Promise<T | undefined>`** — 1건 조회(상세 화면). 2건 이상이면 throw 하므로 PK 조건과 함께 쓴다. centurymes `GoodsDetail.load` 는 `where(id).select(...).singleAsync()` 로 단건을 읽는다.
 - **`countAsync(): Promise<number>`** — 행 수. 페이지 수 계산(`Math.ceil(count / 50)`)에 쓴다.
-- **`existsAsync(): Promise<boolean>`** — 1건이라도 있으면 true. 중복 검증에 쓴다(아래 [중복 검증](#등록전-중복을-검증하려면)).
+- **`existsAsync(): Promise<boolean>`** — 1건이라도 있으면 true. 중복 검증에 쓴다(아래 [중복 검증](#등록-전-중복을-검증하려면)).
 
 `select(...).resultAsync()` vs `where(...).existsAsync()` 처럼, 무엇을 받느냐에 따라 조립 끝에 붙이는 실행 메서드만 달라진다.
 

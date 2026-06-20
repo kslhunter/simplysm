@@ -1,6 +1,6 @@
 # @simplysm/angular — CRUD 화면 골격·권한표·상태프리셋
 
-목록/단건 화면의 표준 컨테이너 골격. `sd-base-container`(공통 셸) 위에 `sd-crud-list`(목록)·`sd-crud-detail`(단건)이 얹힘. 표준 시그널(`ready`/`initialized`/`busyCount`/`viewType`)·page/modal/control 컨텍스트별 탑바·하단바 자동 구성·CTRL+S 저장을 내장. 화면 작성 절차·데이터 흐름은 [client-crud.md](../manuals/client-crud.md) · [client-component.md](../manuals/client-component.md) 참조. 함께 쓰는 권한 테이블·상태 프리셋도 이 군에 둠.
+목록/단건 화면의 표준 컨테이너 골격. `sd-base-container`(공통 셸) 위에 `sd-crud-list`(목록)·`sd-crud-detail`(단건)이 얹힘. 표준 시그널(`ready`/`initialized`/`busyCount`/`viewType`)·page/modal/control 컨텍스트별 탑바·하단바 자동 구성·CTRL+S 저장을 내장. 화면 작성 절차·데이터 흐름은 [client-crud.md](../../manuals/client-crud.md) · [client-component.md](../../manuals/client-component.md) 참조. 함께 쓰는 권한 테이블·상태 프리셋도 이 군에 둠.
 
 공통: 세 컨테이너 모두 `viewType: SdViewType`(required, `"page"|"modal"|"control"`)에 따라 동작이 갈림. `"page"` = 라우팅 진입(탑바에 액션), `"modal"` = 모달(하단 명령바·확인 버튼), `"control"` = view 임베드(명령 영역에 액션).
 
@@ -78,7 +78,7 @@ busy 컨테이너로 감싸고(`page` 면 탑바 포함) 권한 없음 placehold
 
 ## `SdPermissionTable<TModule>` — `<sd-permission-table>`
 
-권한 트리(사용/편집 체크박스)를 계층 표시. 부모/자식·use→edit 의존 규칙 강제. 권한 관리 화면에서 `getPermissionsByStructure` 결과를 넘김([client-app-structure.md](../manuals/client-app-structure.md)).
+권한 트리(사용/편집 체크박스)를 계층 표시. 부모/자식·use→edit 의존 규칙 강제. 권한 관리 화면에서 `getPermissionsByStructure` 결과를 넘김([client-app-structure.md](../../manuals/client-app-structure.md)).
 
 - `value: model<Record<string, boolean>>({})` — `"<codeChain>.<use|edit>" → boolean` 맵. 토글이 자식에 캐스케이드, `use` 해제 시 `edit` 자동 해제, `use` 미체크면 `edit` 체크 무시.
 - `items: SdPermission<TModule>[]` (기본 `[]`) — 권한 트리.

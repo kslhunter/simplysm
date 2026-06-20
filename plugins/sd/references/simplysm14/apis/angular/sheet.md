@@ -1,6 +1,6 @@
 # @simplysm/angular — 시트(sd-sheet)
 
-다건 목록·편집 표(그리드). 컬럼 디렉티브 + 셀 템플릿으로 구성하며 선택·정렬·페이지·트리펼침·셀 편집·컬럼 고정/리사이즈/설정저장을 내장. `sd-crud-list` 가 이 시트를 감싼 표준 골격([crud.md](./crud.md)). 셀 본문·요약 행 작성 규약은 [client-component.md](../manuals/client-component.md) 의 '시트 컬럼·셀 표준' 참조.
+다건 목록·편집 표(그리드). 컬럼 디렉티브 + 셀 템플릿으로 구성하며 선택·정렬·페이지·트리펼침·셀 편집·컬럼 고정/리사이즈/설정저장을 내장. `sd-crud-list` 가 이 시트를 감싼 표준 골격([crud.md](./crud.md)). 셀 본문·요약 행 작성 규약은 [client-component.md](../../manuals/client-component.md) 의 '시트 컬럼·셀 표준' 참조.
 
 ## `SdSheet<TItem>` — `<sd-sheet>`
 
@@ -37,7 +37,7 @@
 
 컬럼 1개 선언. `sd-sheet`/`sd-crud-list` 직속 자식으로 두면 자동 투영.
 
-- `key: string` (required) — 컬럼 키(설정·셀/헤더 템플릿 lookup·정렬 키). select 별칭과 일치시키면 서버 정렬에 컬럼 분기 없이 처리([client-crud.md](../manuals/client-crud.md)).
+- `key: string` (required) — 컬럼 키(설정·셀/헤더 템플릿 lookup·정렬 키). select 별칭과 일치시키면 서버 정렬에 컬럼 분기 없이 처리([client-crud.md](../../manuals/client-crud.md)).
 - `header: string | string[]` (기본 `""`) — 헤더 텍스트; `string[]` = 다단/그룹 헤더.
 - `headerStyle: string` / `tooltip: string` — 헤더 셀 스타일/툴팁.
 - `width: string` — 컬럼 폭(미지정=자동; px 지정은 명시 지시 시만, 매뉴얼 '폭 약속').

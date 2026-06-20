@@ -1,6 +1,9 @@
 import hashlib, json, os, sys, tempfile
 from pathlib import Path
 
+if os.environ.get("PLUGIN_ROOT"):
+    sys.exit(0)
+
 data = json.load(sys.stdin)
 tool_input = data["tool_input"]
 file_path = tool_input.get("file_path", "")

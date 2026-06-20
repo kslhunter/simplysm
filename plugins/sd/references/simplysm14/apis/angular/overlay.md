@@ -1,6 +1,6 @@
 # @simplysm/angular — 오버레이(모달·토스트·busy·인쇄·파일)
 
-화면에서 프로그래밍 방식으로 모달을 띄우거나, 토스트로 알림·진행률을 표시하거나, busy 인디케이터·인쇄/PDF·파일 다이얼로그를 호출할 때 함께 읽히는 군. provider 는 모두 `providedIn: "root"`, 동적으로 body 에 attach 하므로 컴포넌트를 템플릿에 직접 둘 일은 거의 없음. 화면에서의 호출 규약은 [client-component.md](../manuals/client-component.md) 의 '모달 호출' / '에러·토스트' 참조.
+화면에서 프로그래밍 방식으로 모달을 띄우거나, 토스트로 알림·진행률을 표시하거나, busy 인디케이터·인쇄/PDF·파일 다이얼로그를 호출할 때 함께 읽히는 군. provider 는 모두 `providedIn: "root"`, 동적으로 body 에 attach 하므로 컴포넌트를 템플릿에 직접 둘 일은 거의 없음. 화면에서의 호출 규약은 [client-component.md](../../manuals/client-component.md) 의 '모달 호출' / '에러·토스트' 참조.
 
 ## 모달
 
@@ -129,7 +129,7 @@ getPdfBufferAsync<T extends SdPrint>(template: SdPrintInput<T>, options?: { orie
 
 ### `SdFileDialogProvider`
 
-`@Injectable({ providedIn: "root" })`. (단순 파일 선택은 `@simplysm/core-browser` 의 `openFileDialog` 도 사용 — [client-crud.md](../manuals/client-crud.md) 엑셀 업로드 레시피)
+`@Injectable({ providedIn: "root" })`. (단순 파일 선택은 `@simplysm/core-browser` 의 `openFileDialog` 도 사용 — [client-crud.md](../../manuals/client-crud.md) 엑셀 업로드 레시피)
 
 ```ts
 showAsync(multiple?: false, accept?: string): Promise<File | undefined>

@@ -7,8 +7,8 @@ sd-service 클라이언트/서버가 공유하는 통신 프로토콜(메시지 
 - **SdServiceProtocol** — WebSocket 등 바이너리 채널로 보낼 서비스 메시지를 인코딩(자동 분할)하거나, 수신 패킷을 디코딩(분할 조립)할 때.
 - **TSdServiceMessage 계열 타입** — 클라/서버가 주고받는 메시지의 형태(요청·응답·이벤트·에러·인증)를 타입으로 다룰 때.
 - **ISdServiceMessageDecodeResult** — `decode()` 결과가 진행 중(progress)인지 완료(complete)인지 분기할 때.
-- **서비스 인터페이스 계약** (`ISdOrmService`, `ISdCryptoService`, `ISdSmtpClientService`, `ISdAutoUpdateService`) — 서버 측 서비스 구현체 또는 클라 측 호출 프록시의 메서드 시그니처를 맞출 때.
-- **설정/옵션 타입** (`ICryptoConfig`, `ISmtpClient*`, `TDbConnOptions`) — 해당 서비스 호출 시 넘길 옵션 객체를 구성할 때.
+- **서비스 인터페이스 계약** — (`ISdOrmService`, `ISdCryptoService`, `ISdSmtpClientService`, `ISdAutoUpdateService`) 서버 측 서비스 구현체 또는 클라 측 호출 프록시의 메서드 시그니처를 맞출 때.
+- **설정/옵션 타입** — (`ICryptoConfig`, `ISmtpClient*`, `TDbConnOptions`) 해당 서비스 호출 시 넘길 옵션 객체를 구성할 때.
 - **SdServiceEventListenerBase / ISdServiceUploadResult** — 서비스 이벤트 리스너 정의나 파일 업로드 응답을 다룰 때.
 
 ## 프로토콜 인코딩/디코딩 (SdServiceProtocol)

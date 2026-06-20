@@ -1,6 +1,6 @@
 # @simplysm/angular — 공유 마스터 데이터·선택 매니저
 
-고객사·품목 등 자주 참조하는 마스터 데이터를 한 번 등록해 어느 화면에서든 공유 시그널로 쓰고, 그 데이터를 선택하는 드롭다운/버튼/리스트 컨트롤과, 시트·리스트의 선택/정렬/펼침 상태를 관리하는 composable 매니저를 제공하는 군. 등록·항목 추가·선택 모달·좌측목록+우측상세 절차는 [client-shared-data.md](../manuals/client-shared-data.md) 참조.
+고객사·품목 등 자주 참조하는 마스터 데이터를 한 번 등록해 어느 화면에서든 공유 시그널로 쓰고, 그 데이터를 선택하는 드롭다운/버튼/리스트 컨트롤과, 시트·리스트의 선택/정렬/펼침 상태를 관리하는 composable 매니저를 제공하는 군. 등록·항목 추가·선택 모달·좌측목록+우측상세 절차는 [client-shared-data.md](../../manuals/client-shared-data.md) 참조.
 
 ## `SdSharedDataProvider<T>`
 
@@ -31,7 +31,7 @@
 - `disabled`/`inset`/`inline`/`size: "sm"|"lg"`/`selectClass`/`multiSelectionDisplayDirection: "vertical"`.
 - `filterFn: (item, index, ...params) => boolean` + `filterFnParams: any[]` — 표시 전 필터.
 - `getIsHiddenFn` (기본 `(item) => item.__isHidden`) / `getSearchTextFn` (기본 `(item) => item.__searchText`) / `displayOrderByFn` — 숨김/검색텍스트/정렬 커스터마이즈.
-- `modal: SdSelectModalInfo<TModal>` — 설정 시 검색 모달 버튼(선택 갱신). `editModal: SdModalInfo<SdModalContentDef<boolean>>` — 관리 전용 모달 버튼(선택 안 바꿈). (선택/관리 모달 규약은 [client-shared-data.md](../manuals/client-shared-data.md))
+- `modal: SdSelectModalInfo<TModal>` — 설정 시 검색 모달 버튼(선택 갱신). `editModal: SdModalInfo<SdModalContentDef<boolean>>` — 관리 전용 모달 버튼(선택 안 바꿈). (선택/관리 모달 규약은 [client-shared-data.md](../../manuals/client-shared-data.md))
 - 콘텐츠: `[itemOf]` 항목 템플릿, `#undefinedTpl`("미지정" 라벨).
 
 ```html

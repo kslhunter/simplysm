@@ -8,7 +8,7 @@ Fastify 기반 sd-service 서버 런타임 — WebSocket(V2)·HTTP API·정적 �
 - **ISdServiceServerOptions** — `SdServiceServer` 생성자에 넘길 옵션(포트·SSL·인증·프록시·서비스 목록·미들웨어)을 구성할 때.
 - **SdServiceBase** — 서버 측 서비스 클래스를 만들 때 상속하는 베이스. 메서드 안에서 `authInfo`·`clientName`·`clientPath`·`getConfigAsync()`에 접근.
 - **Authorize / IAuthTokenPayload / SdServiceJwtManager** — 서비스 메서드·클래스에 권한을 걸거나, JWT 페이로드 타입을 정의하거나, 토큰을 직접 서명/검증할 때.
-- **내장 서비스** (`SdOrmService`, `SdCryptoService`, `SdSmtpClientService`, `SdAutoUpdateService`) — `services` 옵션에 그대로 등록해 DB·암호화·메일·앱 업데이트 기능을 클라이언트에 노출할 때.
+- **내장 서비스** — (`SdOrmService`, `SdCryptoService`, `SdSmtpClientService`, `SdAutoUpdateService`) `services` 옵션에 그대로 등록해 DB·암호화·메일·앱 업데이트 기능을 클라이언트에 노출할 때.
 - **SdConfigManager** — `.config.json` 파일을 캐시·실시간 감시하며 읽을 때(보통 `SdServiceBase.getConfigAsync`가 내부 호출).
 - **SdServiceProtocolWrapper / ISdServiceProtocolWorker** — 대용량 메시지를 워커 스레드로 자동 분기해 인코딩/디코딩할 때(소켓 내부에서 사용).
 - **SdServiceExecutor** — 서비스명·메서드명·파라미터로 서비스 메서드를 실행하는 내부 디스패처(권한·경로 검증 포함). 직접 쓸 일은 드묾.

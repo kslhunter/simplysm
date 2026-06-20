@@ -4,7 +4,7 @@ dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로
 
 ## 사용 트리거 인덱스
 
-- **엔티티 정의 데코레이터** (`@Table`, `@Column`, `@ForeignKey`, `@ForeignKeyTarget`, `@ReferenceKey`, `@ReferenceKeyTarget`, `@Index`) — 클래스로 DB 테이블/뷰/프로시저, 컬럼, 관계, 인덱스를 선언할 때. 자세히: [decorators.md](./decorators.md)
+- **엔티티 정의 데코레이터** — (`@Table`, `@Column`, `@ForeignKey`, `@ForeignKeyTarget`, `@ReferenceKey`, `@ReferenceKeyTarget`, `@Index`) 클래스로 DB 테이블/뷰/프로시저, 컬럼, 관계, 인덱스를 선언할 때. 자세히: [decorators.md](./decorators.md)
 - **DbContext** — DB 연결/트랜잭션 관리, 마이그레이션·초기화, 스키마 조회, prepare 큐 실행의 진입점. 자세히: [DbContext.md](./DbContext.md)
 - **Queryable** — `db.<테이블>.where(...).select(...).resultAsync()` 형태로 SELECT/INSERT/UPDATE/DELETE/UPSERT 를 체이닝 조립·실행할 때. 자세히: [Queryable.md](./Queryable.md)
 - **QueryHelper (`db.qh`)** — WHERE 조건·SQL 함수(집계, 문자열, 날짜, CASE, 캐스팅 등)를 `QueryUnit` 으로 표현할 때. 자세히: [QueryHelper.md](./QueryHelper.md)
@@ -15,7 +15,7 @@ dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로
 - **DbDefUtils** — 클래스의 `@Table` 메타데이터를 직접 읽고/병합할 때(데코레이터 내부 및 도구성 코드). 자세히: [internals.md](./internals.md)
 - **QueryBuilder** — `TQueryDef` 를 dialect별 SQL 문자열로 변환. 어댑터(드라이버) 패키지 구현 시. 자세히: [adapter-layer.md](./adapter-layer.md)
 - **IDbConn / IDbContextExecutor / TQueryDef 군** — 새 DB 드라이버/실행기를 구현할 때 따르는 인터페이스 및 쿼리 정의(IR). 자세히: [adapter-layer.md](./adapter-layer.md)
-- **데이터 타입 / 옵션 타입** (`TSdOrmDataType`, `TDbContextOption`, `TDbConnConf`, `ISOLATION_LEVEL`) — `@Column({ dataType })` 지정, DbContext/접속 설정, 트랜잭션 격리수준 지정 시. 인라인(아래).
+- **데이터 타입 / 옵션 타입** — (`TSdOrmDataType`, `TDbContextOption`, `TDbConnConf`, `ISOLATION_LEVEL`) `@Column({ dataType })` 지정, DbContext/접속 설정, 트랜잭션 격리수준 지정 시. 인라인(아래).
 
 ## 데이터 타입 / 옵션 타입 (인라인)
 

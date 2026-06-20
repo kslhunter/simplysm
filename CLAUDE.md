@@ -70,7 +70,7 @@ docker compose -f tests/orm/docker-compose.test.yml down
 
 ### sd 플러그인
 
-sd-* 스킬·훅·레퍼런스는 Claude Code 플러그인(`plugins/sd/`)으로 제공됨. 루트 `.claude-plugin/marketplace.json` 이 카탈로그. hook·skill 은 `${CLAUDE_PLUGIN_ROOT}` 기준으로 자기완결, 캐시·statusline 복제본은 `${CLAUDE_PLUGIN_DATA}`, 개인 위키는 `~/.claude/wiki`. 개발 중엔 `claude --plugin-dir ./plugins/sd` 로 로드(소스 편집 후 `/reload-plugins`). rules(행동·설계·위키)는 SessionStart hook 이 `additionalContext` 로 주입하고, references 버전 폴더는 프로젝트의 `@simplysm/sd-cli` major 로 런타임 선택됨.
+sd-* 스킬·훅·레퍼런스는 Claude Code 플러그인(`plugins/sd/`)으로 제공되고, 팀 공용 원격 지식 위키는 별도 플러그인(`plugins/sd-wiki/`)으로 분리됨(목차 주입·조회 CLI·작성 규칙·인증 토큰). 둘 다 루트 `.claude-plugin/marketplace.json` 카탈로그에 등재. hook·skill 은 `${CLAUDE_PLUGIN_ROOT}` 기준으로 자기완결, 캐시·statusline 복제본과 위키 인증 토큰은 `${CLAUDE_PLUGIN_DATA}`. 개발 중엔 `claude --plugin-dir ./plugins/sd`(위키는 `./plugins/sd-wiki`) 로 로드(소스 편집 후 `/reload-plugins`). sd 의 rules(행동·설계)와 sd-wiki 의 rules(위키)는 각 SessionStart hook 이 `additionalContext` 로 주입하고, references 버전 폴더는 프로젝트의 `@simplysm/sd-cli` major 로 런타임 선택됨.
 
 ## Vitest 프로젝트 구조
 

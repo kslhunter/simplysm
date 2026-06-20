@@ -23,9 +23,9 @@ import 시 `Array`/`Map`/`Set` 프로토타입이 전역 확장된다(`index.ts`
 - **`NetUtils`** — URL 을 진행률 콜백과 함께 Buffer 로 다운로드할 때. (아래 인라인)
 - **`DateTimeFormatUtils`** — C# 스타일 날짜포맷 문자열을 직접 적용할 때(보통 DateOnly/DateTime/Time 내부에서 사용). (아래 인라인)
 - **`FnUtils`** — 함수 소스에서 파라미터명·return 식을 문자열로 추출할 때. (아래 인라인)
-- **데코레이터** (`NotifyPropertyChange` / `PropertyValidate` / `PropertyGetSetDecoratorBase`) — 클래스 속성의 get/set 을 가로채 변경알림·검증을 걸 때. (아래 인라인)
-- **템플릿 문자열 태그** (`html`/`javascript`/`typescript`/`string`/`tsql`/`mysql`) — 멀티라인 리터럴의 공통 들여쓰기를 자동 제거할 때. (아래 인라인)
-- **타입 유틸** (`Type`/`TFlatType`/`DeepPartial`/`WrappedType`/`UnwrappedType`/`TreeMap`/`LazyGcMap`) — 제네릭 타입 헬퍼 및 특수 컬렉션. (아래 인라인)
+- **데코레이터** — (`NotifyPropertyChange` / `PropertyValidate` / `PropertyGetSetDecoratorBase`) 클래스 속성의 get/set 을 가로채 변경알림·검증을 걸 때. (아래 인라인)
+- **템플릿 문자열 태그** — (`html`/`javascript`/`typescript`/`string`/`tsql`/`mysql`) 멀티라인 리터럴의 공통 들여쓰기를 자동 제거할 때. (아래 인라인)
+- **타입 유틸** — (`Type`/`TFlatType`/`DeepPartial`/`WrappedType`/`UnwrappedType`/`TreeMap`/`LazyGcMap`) 제네릭 타입 헬퍼 및 특수 컬렉션. (아래 인라인)
 
 ---
 

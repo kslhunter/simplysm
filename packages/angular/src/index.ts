@@ -264,6 +264,7 @@ export {
 
 // features/editor
 export { SdTiptapEditor } from "./features/editor/sd-tiptap-editor";
+export { SdMarkdownEditor } from "./features/editor/sd-markdown-editor";
 
 // features/visual
 export { SdLabel } from "./features/visual/sd-label";

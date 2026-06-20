@@ -319,9 +319,9 @@ export class ServiceServer<TAuthInfo = unknown> extends EventEmitter<{
     await this._wsHandler.emit<TEventDef>(eventDef.eventName, infoSelector, data);
   }
 
-  async signAuthToken(payload: AuthTokenPayload<TAuthInfo>) {
+  async signAuthToken(payload: AuthTokenPayload<TAuthInfo>, expiresHours?: number) {
     if (this._jwtSecret == null) throw new Error("JWT Secret이 정의되지 않았습니다.");
-    return signJwt(this._jwtSecret, payload);
+    return signJwt(this._jwtSecret, payload, expiresHours);
   }
 
   async verifyAuthToken(token: string): Promise<AuthTokenPayload<TAuthInfo>> {

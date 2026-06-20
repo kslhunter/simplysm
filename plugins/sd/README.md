@@ -28,7 +28,7 @@ claude --plugin-dir ./plugins/sd
 | 컴포넌트 | 내용 |
 | --- | --- |
 | skills | `sd-commit`·`sd-review`·`sd-debug`·`sd-spec`·`sd-dev`·`sd-impl`·`sd-demo`·`sd-docs`·`sd-manual`·`sd-config`·`sd-use`·`sd-unpack`·`sd-proposal`·`sd-estimate` (호출명 `/sd:<name>`) |
-| hooks | PreToolUse(편집·셸 가드), PostToolUse(read-hash 기록), SessionStart(위키 목차·행동/설계 규칙·활성 references·statusline 셋업), UserPromptSubmit(매 프롬프트 제출 시 위키 갱신 의무 1줄 재노출) |
+| hooks | PreToolUse(편집·셸 가드), PostToolUse(read-hash 기록), SessionStart(행동/설계 규칙·활성 references·statusline 셋업) |
 | references | `@simplysm/*` 버전별 API·매뉴얼(`references/simplysm<major>/`) + 버전 무관 공통 |
 
 SessionStart 가 프로젝트의 `@simplysm/sd-cli` major 를 읽어 활성 references 버전을 컨텍스트에 주입함.
@@ -36,7 +36,8 @@ SessionStart 가 프로젝트의 `@simplysm/sd-cli` major 를 읽어 활성 refe
 ## 데이터 위치
 
 - 캐시(read-hash·unpack) + statusline 복제본 → `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/{id}/`, 플러그인 버전 업에도 유지).
-- 개인 지식 위키 → `~/.claude/wiki/` (플러그인 제거와 무관하게 보존).
+
+원격 지식 위키는 별도 플러그인 `sd-wiki` 로 분리됨(목차 주입·CLI·작성 규칙·인증 토큰).
 
 ## 수동 설정 (플러그인이 직접 못 넣는 것)
 

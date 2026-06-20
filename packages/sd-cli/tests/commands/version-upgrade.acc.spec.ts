@@ -141,6 +141,52 @@ describe("upgradeVersion", () => {
     expect(templateChanges).toHaveLength(0);
   });
 
+  it("plugins 하위의 *-plugin manifest 버전을 함께 업데이트한다", async () => {
+    writeJson(path.join(tmpDir, "package.json"), {
+      name: "@simplysm/root",
+      version: "14.0.0",
+    });
+    fs.mkdirSync(path.join(tmpDir, "packages", "sd-cli", "templates"), {
+      recursive: true,
+    });
+
+    const codexPluginPath = path.join(tmpDir, "plugins", "sd", ".codex-plugin", "plugin.json");
+    const claudePluginPath = path.join(tmpDir, "plugins", "sd", ".claude-plugin", "plugin.json");
+    const anotherPluginPath = path.join(tmpDir, "plugins", "extra", "custom-plugin", "plugin.json");
+    const nonMatchingPluginPath = path.join(tmpDir, "plugins", "extra", "plugin.json");
+    writeJson(codexPluginPath, {
+      name: "sd",
+      version: "14.0.0",
+      description: "Codex plugin",
+    });
+    writeJson(claudePluginPath, {
+      name: "sd",
+      version: "14.0.0",
+      description: "Claude plugin",
+    });
+    writeJson(anotherPluginPath, {
+      name: "custom",
+      version: "14.0.0",
+      description: "Custom plugin",
+    });
+    writeJson(nonMatchingPluginPath, {
+      name: "ignored",
+      version: "14.0.0",
+      description: "Ignored plugin",
+    });
+
+    const result = await upgradeVersion(tmpDir, [], false);
+
+    expect(readJson<{ version: string }>(codexPluginPath).version).toBe("14.0.1");
+    expect(readJson<{ version: string }>(claudePluginPath).version).toBe("14.0.1");
+    expect(readJson<{ version: string }>(anotherPluginPath).version).toBe("14.0.1");
+    expect(readJson<{ version: string }>(nonMatchingPluginPath).version).toBe("14.0.0");
+    expect(result.changedFiles).toContain(path.resolve(codexPluginPath));
+    expect(result.changedFiles).toContain(path.resolve(claudePluginPath));
+    expect(result.changedFiles).toContain(path.resolve(anotherPluginPath));
+    expect(result.changedFiles).not.toContain(path.resolve(nonMatchingPluginPath));
+  });
+
   it("changedFiles[0]이 프로젝트 루트 package.json 경로이다", async () => {
     // Given: allPkgPaths에 3개 패키지가 있다
     writeJson(path.join(tmpDir, "package.json"), {
