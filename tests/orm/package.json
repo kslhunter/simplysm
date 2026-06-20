@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/orm",
   "sideEffects": false,
-  "version": "14.0.102",
+  "version": "14.1.1",
   "description": "심플리즘 패키지 - ORM 통합 테스트",
   "author": "김석래",
   "repository": {
@@ -19,7 +19,7 @@
     "@types/pg-copy-streams": "^1.2.5",
     "execa": "^9.6.1",
     "mysql2": "^3.22.5",
-    "pg": "^8.21.0",
+    "pg": "^8.22.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^19.2.1"
   }

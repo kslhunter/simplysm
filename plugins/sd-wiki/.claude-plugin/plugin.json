@@ -1,7 +1,7 @@
 {
-  "name": "sd",
+  "name": "sd-wiki",
   "version": "14.1.1",
-  "description": "심플리즘 Claude Code 셋업",
+  "description": "심플리즘 팀 공용 지식 위키",
   "author": {
     "name": "심플리즘"
   },
