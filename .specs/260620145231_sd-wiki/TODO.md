@@ -115,12 +115,10 @@ opus(2~5)가 먼저 있어야 plugins(6~8)가 붙는다.
 - 위키 관련 plugins/sd 파일 전수(9개) 점검 완료: session-start.py(8)·wiki.py·wiki_auth.py(6·7)·test_*·위 4건. 누락 없음.
 - 호출 경로: `${CLAUDE_PLUGIN_ROOT}` 는 hook command 에서만 치환되고 에이전트의 일반 Bash/PowerShell 도구 셸엔 미노출(이 세션에서 둘 다 빈 값 확인). 그래서 wiki.md 는 정확한 실행 경로를 빼고 `read`/`write`/`search`/`toc` 명령 메커니즘만 기재. 동일 패턴을 쓰는 `skills/sd-unpack/SKILL.md` L12 의 `python "${CLAUDE_PLUGIN_ROOT}/.../unpack.py"` 호출도 같은 문제일 수 있어 별도 점검 필요.
 
-## 10. [여기] 기존 로컬 위키 데이터 마이그레이션 (마지막 단계) — 의존: 1~9 전부
+## 10. [여기] 기존 로컬 위키 데이터 마이그레이션 (마지막 단계) — [x] 완료
 
-- [ ] 각 개발자 로컬 `~/.claude/wiki` 의 기존 페이지를 원격 공용 위키로 1회 이전
+- [x] 로컬 `~/.claude/wiki` 의 기존 페이지를 원격 공용 위키로 1회 이전
 
 메모:
-- **반드시 마지막** — opus(2~5) · plugins(6~8) · 정책 문서(9)가 모두 끝나 원격 위키가 정상 동작한 뒤에 실제 데이터를 옮긴다.
-- 이전 수단: 위키 CLI(7번 `wiki.py write`)로 로컬 `index.md`·`<topic>.md` 들을 원격에 등록.
-- 4명의 로컬 위키가 제각각이라 **통합·중복·충돌 처리 필요** — 누구 것을 기준으로 할지/합칠지·동명 페이지 충돌 해소 [OPEN].
-- 이전 후 로컬 `~/.claude/wiki` 처리(폐기/보존) + `session-start` 가 더는 로컬을 안 읽는지 확인 [OPEN].
+- 로컬 `~/.claude/wiki` 7건을 `wiki.py write` 로 원격 공용 위키에 신규 등록(각 version 1). 원격 `toc` 7건·본문 무결성 확인 후 로컬 디렉터리 폐기.
+- `session-start` 는 원격 전용(로컬 위키 미참조)이라 폐기 후에도 정상.

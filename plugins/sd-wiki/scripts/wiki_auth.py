@@ -98,7 +98,9 @@ def save_token(token: str) -> None:
 def clear_token() -> None:
     try:
         _token_path().unlink()
-    except (FileNotFoundError, WikiAuthError):
+    except FileNotFoundError:
+        # 이미 없음 = 폐기 목적 달성. 단 _data_dir() 의 WikiAuthError(토큰 위치 결정 불가)는
+        # 폐기 실패이므로 삼키지 않고 전파.
         pass
 
 

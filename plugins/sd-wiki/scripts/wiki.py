@@ -151,11 +151,16 @@ def _build_parser() -> argparse.ArgumentParser:
     write_parser.add_argument("--body")
     write_parser.add_argument("--body-file")
     write_parser.add_argument("--base-version", type=int)
+    write_parser.add_argument("--parent", help="상위 페이지 topic. 생략 시 기존 상위 유지(신규는 최상위).")
 
     search_parser = subparsers.add_parser("search", help="키워드로 페이지를 검색합니다.")
     search_parser.add_argument("keyword")
 
     subparsers.add_parser("toc", help="목차를 조회합니다.")
+    subparsers.add_parser("rootmap", help="최상위 노드의 라우팅 목록을 조회합니다.")
+
+    children_parser = subparsers.add_parser("children", help="직속 자식 노드의 라우팅 목록을 조회합니다.")
+    children_parser.add_argument("topic")
     return parser
 
 
@@ -166,6 +171,10 @@ def _run_command(args: argparse.Namespace, token: str) -> Any:
         return call_service("search", [args.keyword], token)
     if args.command == "toc":
         return call_service("toc", [], token)
+    if args.command == "rootmap":
+        return call_service("rootMap", [], token)
+    if args.command == "children":
+        return call_service("children", [args.topic], token)
     if args.command == "write":
         input_data: dict[str, Any] = {
             "topic": args.topic,
@@ -175,6 +184,8 @@ def _run_command(args: argparse.Namespace, token: str) -> Any:
         }
         if args.base_version is not None:
             input_data["baseVersion"] = args.base_version
+        if args.parent is not None:
+            input_data["parentTopic"] = args.parent
         return write_with_retry(input_data, token)
     raise WikiApiError(f"알 수 없는 명령: {args.command}")
 

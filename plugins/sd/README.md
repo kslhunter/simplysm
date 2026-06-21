@@ -27,7 +27,7 @@ claude --plugin-dir ./plugins/sd
 
 | 컴포넌트 | 내용 |
 | --- | --- |
-| skills | `sd-commit`·`sd-review`·`sd-debug`·`sd-spec`·`sd-dev`·`sd-impl`·`sd-demo`·`sd-docs`·`sd-manual`·`sd-config`·`sd-use`·`sd-unpack`·`sd-proposal`·`sd-estimate` (호출명 `/sd:<name>`) |
+| skills | `sd-commit`·`sd-review`·`sd-debug`·`sd-spec`·`sd-dev`·`sd-impl`·`sd-demo`·`sd-docs`·`sd-manual`·`sd-use`·`sd-unpack`·`sd-proposal`·`sd-estimate` (호출명 `/sd:<name>`) |
 | hooks | PreToolUse(편집·셸 가드), PostToolUse(read-hash 기록), SessionStart(행동/설계 규칙·활성 references·statusline 셋업) |
 | references | `@simplysm/*` 버전별 API·매뉴얼(`references/simplysm<major>/`) + 버전 무관 공통 |
 

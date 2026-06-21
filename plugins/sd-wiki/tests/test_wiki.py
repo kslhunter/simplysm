@@ -99,6 +99,46 @@ class WikiCliTest(unittest.TestCase):
         self.assertEqual(json.loads(self.urlopen_calls[0][2].decode("utf-8")), ["keyword"])
         self.assertEqual(self.urlopen_calls[0][0].full_url, "https://wiki.example/api/WikiService/search")
 
+    def test_rootmap_posts_no_parameters(self):
+        code, stdout, _ = self._run_cli(
+            ["rootmap"],
+            [[{"topic": "a", "title": "A", "summary": "S", "hasChildren": True}]],
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(stdout), [{"topic": "a", "title": "A", "summary": "S", "hasChildren": True}])
+        self.assertEqual(json.loads(self.urlopen_calls[0][2].decode("utf-8")), [])
+        self.assertEqual(self.urlopen_calls[0][0].full_url, "https://wiki.example/api/WikiService/rootMap")
+
+    def test_children_posts_parent_topic_parameter_array(self):
+        code, stdout, _ = self._run_cli(
+            ["children", "topic-a"],
+            [[{"topic": "b", "title": "B", "summary": "S", "hasChildren": False}]],
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(stdout), [{"topic": "b", "title": "B", "summary": "S", "hasChildren": False}])
+        self.assertEqual(json.loads(self.urlopen_calls[0][2].decode("utf-8")), ["topic-a"])
+        self.assertEqual(self.urlopen_calls[0][0].full_url, "https://wiki.example/api/WikiService/children")
+
+    def test_write_includes_parent_topic_when_parent_given(self):
+        code, stdout, _ = self._run_cli(
+            ["write", "topic-a", "--title", "A", "--summary", "S", "--body", "B", "--parent", "parent-a"],
+            [{"version": 1}],
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(stdout), {"version": 1})
+        write_input = json.loads(self.urlopen_calls[0][2].decode("utf-8"))[0]
+        self.assertEqual(write_input["parentTopic"], "parent-a")
+        self.assertEqual(write_input["topic"], "topic-a")
+
+    def test_write_omits_parent_topic_when_parent_absent(self):
+        code, _, _ = self._run_cli(
+            ["write", "topic-a", "--title", "A", "--summary", "S", "--body", "B"],
+            [{"version": 1}],
+        )
+        self.assertEqual(code, 0)
+        write_input = json.loads(self.urlopen_calls[0][2].decode("utf-8"))[0]
+        self.assertNotIn("parentTopic", write_input)
+
     def test_write_retries_after_conflict_with_latest_version(self):
         conflict_body = io.BytesIO(
             json.dumps({"message": "저장 충돌: 읽은 이후 다른 기록이 있었습니다."}, ensure_ascii=False).encode("utf-8")

@@ -46,7 +46,12 @@ class SessionStartHookTest(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def _run_hook(self, extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    def _run_hook(
+        self,
+        extra_env: dict[str, str] | None = None,
+        part: int = 0,
+        last: bool = False,
+    ) -> subprocess.CompletedProcess[str]:
         env = os.environ.copy()
         env.update(
             {
@@ -59,8 +64,11 @@ class SessionStartHookTest(unittest.TestCase):
         if extra_env:
             env.update(extra_env)
 
+        argv = [sys.executable, str(HOOK_PATH), "--part", str(part)]
+        if last:
+            argv.append("--last")
         return subprocess.run(
-            [sys.executable, str(HOOK_PATH), "--part", "0"],
+            argv,
             input=json.dumps({"cwd": str(self.project_dir), "session_id": "session-1"}),
             text=True,
             encoding="utf-8",
@@ -71,7 +79,7 @@ class SessionStartHookTest(unittest.TestCase):
             check=False,
         )
 
-    def test_remote_toc_is_injected_when_token_is_valid(self):
+    def test_remote_rootmap_is_injected_when_token_is_valid(self):
         self._write_script(
             "wiki_auth.py",
             """
@@ -90,7 +98,7 @@ class SessionStartHookTest(unittest.TestCase):
             "wiki.py",
             """
             def call_service(method, params, token):
-                assert method == "toc"
+                assert method == "rootMap"
                 assert params == []
                 assert token == "token-1"
                 return [
@@ -98,11 +106,13 @@ class SessionStartHookTest(unittest.TestCase):
                         "topic": "codex-cli-plugin-hooks.md",
                         "title": "Codex CLI 플러그인·훅",
                         "summary": "Codex 훅 구조를 볼 때.",
+                        "hasChildren": True,
                     },
                     {
                         "topic": "empty-summary.md",
                         "title": "빈 요약",
                         "summary": "",
+                        "hasChildren": False,
                     },
                 ]
             """,
@@ -111,12 +121,16 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook()
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("## 개인 지식 위키 목차 (원격)", result.stdout)
+        self.assertIn("## 개인 지식 위키 ROOT MAP (원격·최상위)", result.stdout)
+        self.assertIn("# 지식 위키 ROOT MAP (최상위)", result.stdout)
+        # hub(hasChildren=True): 줄 끝에 하위 있음 마커.
         self.assertIn(
-            "- [Codex CLI 플러그인·훅](codex-cli-plugin-hooks.md) — Codex 훅 구조를 볼 때.",
+            "- [Codex CLI 플러그인·훅](codex-cli-plugin-hooks.md) — Codex 훅 구조를 볼 때. (하위 있음)",
             result.stdout,
         )
+        # leaf(hasChildren=False, 빈 요약): summary·마커 모두 없음.
         self.assertIn("- [빈 요약](empty-summary.md)", result.stdout)
+        self.assertNotIn("- [빈 요약](empty-summary.md) (하위 있음)", result.stdout)
         self.assertNotIn(".claude/wiki/index.md", result.stdout)
 
     def test_invalid_remote_toc_is_fail_open_without_injection(self):
@@ -144,7 +158,36 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook()
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
+
+    def test_rootmap_item_without_haschildren_is_fail_open_without_injection(self):
+        self._write_script(
+            "wiki_auth.py",
+            """
+            class WikiAuthError(Exception):
+                pass
+
+            class WikiAuthExpired(WikiAuthError):
+                pass
+
+            def get_token(allow_browser=True):
+                return "token-1"
+            """,
+        )
+        self._write_script(
+            "wiki.py",
+            """
+            def call_service(method, params, token):
+                return [{"topic": "a.md", "title": "A", "summary": "S"}]
+            """,
+        )
+
+        result = self._run_hook()
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        # 필수 필드(hasChildren) 누락 = 응답 손상 → 기존 strict 검증과 동일하게 주입 없이 fail-open.
+        self.assertNotIn("[A](a.md)", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
 
     def test_auth_error_is_fail_open_without_injection(self):
         self._write_script(
@@ -171,7 +214,7 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook()
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
 
     def test_toc_error_is_fail_open_without_injection(self):
         self._write_script(
@@ -198,7 +241,7 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook()
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
 
     def test_missing_token_starts_one_nonblocking_login(self):
         counter_path = self.base_dir / "login-count.txt"
@@ -241,8 +284,8 @@ class SessionStartHookTest(unittest.TestCase):
 
         self.assertEqual(first.returncode, 0, first.stderr)
         self.assertEqual(second.returncode, 0, second.stderr)
-        self.assertNotIn("개인 지식 위키 목차", first.stdout)
-        self.assertNotIn("개인 지식 위키 목차", second.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", first.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", second.stdout)
 
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:
@@ -295,7 +338,7 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook({"LOGIN_COUNTER_PATH": str(counter_path)})
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
 
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:
@@ -313,10 +356,11 @@ class SessionStartHookTest(unittest.TestCase):
                 break
             time.sleep(0.05)
 
-    def test_existing_login_lock_prevents_new_login_even_when_old(self):
+    def test_existing_login_lock_prevents_new_login_regardless_of_age(self):
         counter_path = self.base_dir / "login-count.txt"
         lock_path = self.plugin_data / "wiki-login.lock"
-        lock_path.write_text(json.dumps({"startedAt": 1}), encoding="utf-8")
+        # lock 내용은 코드가 읽지 않음(존재만 판정) — age 를 암시하지 않는 빈 객체로 둠.
+        lock_path.write_text("{}", encoding="utf-8")
         self._write_script(
             "wiki_auth.py",
             """
@@ -349,7 +393,7 @@ class SessionStartHookTest(unittest.TestCase):
         result = self._run_hook({"LOGIN_COUNTER_PATH": str(counter_path)})
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
         self.assertFalse(counter_path.exists())
         self.assertTrue(lock_path.exists())
 
@@ -409,7 +453,7 @@ class SessionStartHookTest(unittest.TestCase):
         second = self._run_hook(env)
 
         self.assertEqual(second.returncode, 0, second.stderr)
-        self.assertNotIn("개인 지식 위키 목차", second.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", second.stdout)
         self.assertEqual(token_calls_path.read_text(encoding="utf-8"), "1")
         self.assertFalse(toc_called_path.exists())
 
@@ -458,6 +502,75 @@ class SessionStartHookTest(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertNotIn("개인 지식 위키 목차", result.stdout)
+        self.assertNotIn("개인 지식 위키 ROOT MAP", result.stdout)
         self.assertFalse(token_calls_path.exists())
         self.assertFalse(toc_called_path.exists())
+
+    def _write_auth_error_scripts(self) -> None:
+        # 목차 fetch 를 fail-open(인증 오류) 시켜 out 을 rules 만으로 구성. 백그라운드
+        # 로그인도 트리거되지 않아(WikiAuthError 경로) 청킹 검증에 잡음이 없음.
+        self._write_script(
+            "wiki_auth.py",
+            """
+            class WikiAuthError(Exception):
+                pass
+
+            class WikiAuthExpired(WikiAuthError):
+                pass
+
+            def get_token(allow_browser=True):
+                raise WikiAuthError("auth disabled in this test")
+            """,
+        )
+        self._write_script(
+            "wiki.py",
+            """
+            def call_service(method, params, token):
+                raise AssertionError("toc must not be called when auth errors")
+            """,
+        )
+
+    def _write_multi_section_rules(self, section_count: int = 5, section_size: int = 5000) -> int:
+        # 각 H2 섹션을 CHUNK_LIMIT(8000) 미만이되 둘을 합치면 초과하도록 잡아, 섹션 수 =
+        # 청크 수가 되게 함(chunk_by_section 의 그리디 패킹 기준). 단일 큰 섹션은 1청크로
+        # 남으므로 멀티청크 유발에는 여러 H2 섹션이 필요.
+        sections = [f"## 섹션 {i}\n\n" + ("본문 " * (section_size // 3)) for i in range(section_count)]
+        (self.plugin_root / "rules" / "big.md").write_text("\n\n".join(sections), encoding="utf-8")
+        return section_count
+
+    def test_insufficient_last_slot_emits_truncation_warning(self):
+        self._write_auth_error_scripts()
+        chunk_count = self._write_multi_section_rules()
+
+        # 첫 슬롯이 곧 마지막 슬롯(--part 0 --last)이면 모든 청크가 한 슬롯에 몰려
+        # ~10,000자에서 잘릴 수 있음 → silent 하지 않게 경고+해결법을 출력해야 함.
+        result = self._run_hook(part=0, last=True)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("## ⚠️ [시스템] SessionStart 룰 주입 슬롯 부족", result.stdout)
+        self.assertIn(f"{chunk_count} 청크", result.stdout)
+        # 경고 뒤에 남은 청크 전부가 붙어 나옴(누락 보고가 silent 하지 않음).
+        for i in range(chunk_count):
+            self.assertIn(f"## 섹션 {i}", result.stdout)
+
+    def test_part_slots_emit_distinct_deterministic_chunks(self):
+        self._write_auth_error_scripts()
+        self._write_multi_section_rules()
+
+        part0 = self._run_hook(part=0)
+        part1 = self._run_hook(part=1)
+
+        self.assertEqual(part0.returncode, 0, part0.stderr)
+        self.assertEqual(part1.returncode, 0, part1.stderr)
+        # 각 part 가 같은 콘텐츠를 동일하게 재청킹해 자기 인덱스 청크만 출력 → 서로 다른 청크.
+        self.assertIn("## 섹션 0", part0.stdout)
+        self.assertNotIn("## 섹션 0", part1.stdout)
+        self.assertIn("## 섹션 1", part1.stdout)
+        self.assertNotIn("## 섹션 1", part0.stdout)
+        # 결정성: 같은 part 를 재실행해도 동일 출력.
+        part0_again = self._run_hook(part=0)
+        self.assertEqual(part0.stdout, part0_again.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

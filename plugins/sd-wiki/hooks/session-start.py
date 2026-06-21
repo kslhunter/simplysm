@@ -14,7 +14,7 @@ stdout(=주입 컨텍스트)은 hook command 당 약 10,000자에서 잘리고 �
 잘림(주입 누락)이 생기므로 silent skip 대신 경고+해결법을 컨텍스트에 출력함.
 
 책무:
-  1. 원격 지식 위키 목차 주입(인증 없으면 백그라운드 로그인 트리거 후 fail-open).
+  1. 원격 지식 위키 ROOT MAP 주입(인증 없으면 백그라운드 로그인 트리거 후 fail-open).
   2. ${CLAUDE_PLUGIN_ROOT}/rules/*.md 위키 작성·활용 규칙 주입.
 """
 import argparse, json, os, re, sys, subprocess, time
@@ -47,13 +47,6 @@ def _load_wiki_auth():
     import wiki_auth
 
     return wiki_auth
-
-
-def _load_wiki_modules():
-    wiki_auth = _load_wiki_auth()
-    import wiki
-
-    return wiki_auth, wiki
 
 
 def _run_wiki_login_worker(lock_path_str):
@@ -93,29 +86,34 @@ out = []  # plain stdout 으로 주입할 컨텍스트 조각
 
 def _format_remote_wiki_toc(toc):
     if not isinstance(toc, list):
-        raise ValueError("위키 목차 응답은 배열이어야 합니다.")
+        raise ValueError("위키 ROOT MAP 응답은 배열이어야 합니다.")
 
     lines = []
     for item in toc:
         if not isinstance(item, dict):
-            raise ValueError("위키 목차 항목은 객체여야 합니다.")
+            raise ValueError("위키 ROOT MAP 항목은 객체여야 합니다.")
         topic = item.get("topic")
         if not isinstance(topic, str) or not topic:
-            raise ValueError("위키 목차 항목에 topic 이 없습니다.")
+            raise ValueError("위키 ROOT MAP 항목에 topic 이 없습니다.")
         title = item.get("title")
         if not isinstance(title, str) or not title:
-            raise ValueError("위키 목차 항목에 title 이 없습니다.")
+            raise ValueError("위키 ROOT MAP 항목에 title 이 없습니다.")
         summary = item.get("summary")
         if not isinstance(summary, str):
-            raise ValueError("위키 목차 항목에 summary 가 없습니다.")
+            raise ValueError("위키 ROOT MAP 항목에 summary 가 없습니다.")
+        has_children = item.get("hasChildren")
+        if not isinstance(has_children, bool):
+            raise ValueError("위키 ROOT MAP 항목에 hasChildren 가 없습니다.")
 
         line = f"- [{title}]({topic})"
         if summary:
             line += f" — {summary}"
+        if has_children:
+            line += " (하위 있음)"
         lines.append(line)
 
     body = "\n".join(lines)
-    return "# 지식 위키 목차\n\n" + (body + "\n" if body else "")
+    return "# 지식 위키 ROOT MAP (최상위)\n\n" + (body + "\n" if body else "")
 
 
 def _trigger_background_wiki_login():
@@ -148,14 +146,13 @@ def _trigger_background_wiki_login():
     log_file = None
     try:
         log_file = open(log_path, "a", encoding="utf-8")
-        proc = subprocess.Popen(
+        subprocess.Popen(
             [sys.executable, str(Path(__file__).resolve()), "--wiki-login-worker", str(lock_path)],
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=log_file,
             env=os.environ.copy(),
         )
-        lock_path.write_text(json.dumps({"startedAt": now, "pid": proc.pid}), encoding="utf-8")
     except Exception:
         try:
             lock_path.unlink()
@@ -193,7 +190,9 @@ def _fetch_remote_wiki_text():
     if _is_wiki_session_without_context():
         return None
 
-    wiki_auth, wiki = _load_wiki_modules()
+    wiki_auth = _load_wiki_auth()
+    import wiki  # wiki.py 가 top-level 에서 wiki_auth 를 import 하므로 _load_wiki_auth() 이후여야 함
+
     try:
         token = wiki_auth.get_token(allow_browser=False)
     except wiki_auth.WikiAuthExpired:
@@ -209,7 +208,7 @@ def _fetch_remote_wiki_text():
         return None
 
     try:
-        return _format_remote_wiki_toc(wiki.call_service("toc", [], token))
+        return _format_remote_wiki_toc(wiki.call_service("rootMap", [], token))
     except wiki_auth.WikiAuthExpired:
         _mark_wiki_session_without_context()
         _trigger_background_wiki_login()
@@ -218,11 +217,11 @@ def _fetch_remote_wiki_text():
         return None
 
 
-# --- 1. 위키 목차 ---
+# --- 1. 위키 ROOT MAP ---
 try:
     wiki_text = _fetch_remote_wiki_text()
     if wiki_text:
-        out.append("## 개인 지식 위키 목차 (원격)\n\n" + wiki_text)
+        out.append("## 개인 지식 위키 ROOT MAP (원격·최상위)\n\n" + wiki_text)
 except Exception:
     pass
 
