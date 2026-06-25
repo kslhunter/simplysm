@@ -4,6 +4,7 @@ import {
   type IndexHtmlTransform,
 } from "@angular/build/private";
 import path from "path";
+import { pathx } from "@simplysm/core-node";
 
 /** metafile.outputs에서 추출된 파일 정보 (IndexHtmlGenerator.FileInfo 호환) */
 export interface FileInfo {
@@ -43,19 +44,19 @@ export function extractFilesFromMetafile(
   outdir: string,
 ): FileInfo[] {
   const files: FileInfo[] = [];
-  const normalizedOutdir = outdir.replace(/\\/g, "/");
+  const normalizedOutdir = pathx.posix(outdir);
 
   // cssBundle → entry name 매핑 (JS entry의 cssBundle로 CSS에 name 전파)
   const cssBundleToName = new Map<string, string>();
   for (const output of Object.values(metafile.outputs)) {
     if (output.entryPoint != null && output.cssBundle != null) {
       const name = path.basename(output.entryPoint, path.extname(output.entryPoint));
-      cssBundleToName.set(output.cssBundle.replace(/\\/g, "/"), name);
+      cssBundleToName.set(pathx.posix(output.cssBundle), name);
     }
   }
 
   for (const [outputPath, output] of Object.entries(metafile.outputs)) {
-    const normalizedPath = outputPath.replace(/\\/g, "/");
+    const normalizedPath = pathx.posix(outputPath);
     const ext = path.extname(normalizedPath);
 
     if (ext !== ".js" && ext !== ".css") {
@@ -64,7 +65,7 @@ export function extractFilesFromMetafile(
 
     const relativePath = normalizedPath.startsWith(normalizedOutdir)
       ? normalizedPath.slice(normalizedOutdir.length).replace(/^\//, "")
-      : path.relative(normalizedOutdir, normalizedPath).replace(/\\/g, "/");
+      : pathx.posix(path.relative(normalizedOutdir, normalizedPath));
 
     const fileInfo: FileInfo = {
       file: relativePath,

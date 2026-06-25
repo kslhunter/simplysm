@@ -1,4 +1,4 @@
-import { env } from "@simplysm/core-common";
+import { env, wait } from "@simplysm/core-common";
 
 /**
  * 환경변수 치환 (%VAR% 형식)
@@ -32,7 +32,7 @@ export async function waitWithCountdown(message: string, seconds: number): Promi
       process.stdout.cursorTo(0);
     }
     process.stdout.write(`${message} ${i}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await wait.time(1000);
   }
 
   if (process.stdout.isTTY) {

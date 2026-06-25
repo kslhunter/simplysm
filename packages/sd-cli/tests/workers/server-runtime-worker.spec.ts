@@ -9,8 +9,10 @@ import fsp from "fs/promises";
 let workerFns: Record<string, (...args: any[]) => any>;
 let mockSend: ReturnType<typeof vi.fn>;
 
-// @simplysm/core-node createWorker는 Worker thread 부작용이 있어 mock 유지
-vi.mock("@simplysm/core-node", () => ({
+// @simplysm/core-node createWorker는 Worker thread 부작용이 있어 mock 유지.
+// fsx 등 나머지 export는 실제 구현을 사용한다(.dev-port 실제 기록 검증).
+vi.mock("@simplysm/core-node", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@simplysm/core-node")>()),
   createWorker: vi.fn((fns: Record<string, Function>) => {
     workerFns = fns as any;
     mockSend = vi.fn();

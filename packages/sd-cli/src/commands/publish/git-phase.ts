@@ -1,8 +1,10 @@
 import type { ConsolaInstance } from "consola";
 import { cpx } from "@simplysm/core-node";
+import { err as errNs } from "@simplysm/core-common";
+import { runCommit } from "../commit";
 
 /**
- * 미커밋 변경사항을 감지하고 Claude CLI로 자동 커밋을 시도한다.
+ * 미커밋 변경사항을 감지하고 자동 커밋(runCommit)을 시도한다.
  * @throws 자동 커밋 실패 시 Error
  */
 export async function ensureCleanWorkingTree(
@@ -18,42 +20,14 @@ export async function ensureCleanWorkingTree(
 
   if (diff.trim() === "" && stagedDiff.trim() === "") return;
 
-  logger.info("커밋되지 않은 변경사항 감지. claude로 자동 커밋 시도 중...");
+  logger.info("커밋되지 않은 변경사항 감지. 자동 커밋 시도 중...");
   try {
-    await cpx.spawn(
-      "claude",
-      [
-        "-p",
-        "/sd-commit",
-        "--dangerously-skip-permissions",
-        "--model",
-        "claude-haiku-4-5",
-        "--no-session-persistence",
-        "--strict-mcp-config",
-      ],
-      {
-        stdio: "inherit",
-        env: {
-          // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
-          ...process.env,
-          CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
-          CLAUDE_CODE_SKIP_PROMPT_HISTORY: "1"
-        },
-      },
-    );
+    await runCommit();
   } catch (e) {
     throw new Error(
       "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도해주세요.\n" +
-      (e instanceof Error ? e.message : String(e)),
+      errNs.message(e),
     );
-  }
-
-  // claude의 종료 코드만으로는 실제 커밋 성공을 보장할 수 없으므로 워킹트리를 재확인한다.
-  const { stdout: diffAfter } = await cpx.spawn("git", ["diff", "--name-only"]);
-  const { stdout: stagedAfter } = await cpx.spawn("git", ["diff", "--cached", "--name-only"]);
-
-  if (diffAfter.trim() !== "" || stagedAfter.trim() !== "") {
-    throw new Error("자동 커밋 후에도 미커밋 변경이 남아 있습니다. 수동으로 커밋 후 다시 시도해주세요.");
   }
 }
 
@@ -91,7 +65,7 @@ export async function commitTagAndPush(
     logger.debug("Git 작업 완료");
   } catch (err) {
     throw new Error(
-      `Git 작업 실패: ${err instanceof Error ? err.message : err}\n` +
+      `Git 작업 실패: ${errNs.message(err)}\n` +
       "수동 복구가 필요할 수 있습니다:\n" +
       `  git revert HEAD  # 버전 커밋 되돌리기\n` +
       `  git tag -d v${version}  # 태그 삭제`,

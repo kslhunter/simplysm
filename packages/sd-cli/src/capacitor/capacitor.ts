@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 import { configureAndroid, findAndroidSdk, findJava21 } from "./capacitor-android.js";
 import { buildAndroid, configureSigningConfig, copyBuildOutput } from "./capacitor-build.js";
@@ -316,7 +316,7 @@ export class Capacitor {
             await this._exec("adb", ["kill-server"], this._capPath);
             Capacitor._logger.debug(`[${platform}] adb kill-server 완료`);
           } catch (adbErr) {
-            const adbErrMsg = adbErr instanceof Error ? adbErr.message : String(adbErr);
+            const adbErrMsg = errNs.message(adbErr);
             Capacitor._logger.debug(
               `[${platform}] adb kill-server 실패 (무시): ${adbErrMsg}`,
             );

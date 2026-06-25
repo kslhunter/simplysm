@@ -1,6 +1,7 @@
 import type { ConsolaInstance } from "consola";
 import type { SdPostPublishScriptConfig } from "../../sd-config.types";
 import { cpx } from "@simplysm/core-node";
+import { err as errNs } from "@simplysm/core-common";
 import { replaceEnvVariables } from "./env-utils";
 
 /**
@@ -36,7 +37,7 @@ export async function runPostPublish(
     } catch (err) {
       // postPublish 실패 시 경고만 출력 (배포 롤백 불가)
       logger.warn(
-        `postPublish 스크립트 실패 (계속 진행): ${err instanceof Error ? err.message : err}`,
+        `postPublish 스크립트 실패 (계속 진행): ${errNs.message(err)}`,
       );
     }
   }

@@ -1,7 +1,6 @@
 import path from "path";
-import fs from "fs";
 import ts from "typescript";
-import { pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 
 const logger = createLogger("sd:cli:tsconfig");
@@ -17,11 +16,11 @@ const DOM_LIB_PATTERNS = ["dom", "webworker"] as const;
  */
 export function getTypesFromPackageJson(packageDir: string): string[] {
   const packageJsonPath = path.join(packageDir, "package.json");
-  if (!fs.existsSync(packageJsonPath)) {
+  if (!fsx.existsSync(packageJsonPath)) {
     return [];
   }
   try {
-    const content = fs.readFileSync(packageJsonPath, "utf-8");
+    const content = fsx.readSync(packageJsonPath);
     const packageJson: { devDependencies?: Record<string, string> } = JSON.parse(content);
     const devDeps = packageJson.devDependencies ?? {};
     return Object.keys(devDeps)
@@ -137,7 +136,7 @@ export function getPackageFiles(
     if (!pathx.isChildPath(dir, pkgDir)) return false;
     const cached = nestedProjectCache.get(resolved);
     if (cached != null) return cached;
-    const hasOwnTsconfig = fs.existsSync(path.join(dir, "tsconfig.json"));
+    const hasOwnTsconfig = fsx.existsSync(path.join(dir, "tsconfig.json"));
     const result = hasOwnTsconfig || isInNestedProject(path.dirname(dir));
     nestedProjectCache.set(resolved, result);
     return result;

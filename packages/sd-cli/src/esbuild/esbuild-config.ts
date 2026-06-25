@@ -1,6 +1,5 @@
 import path from "path";
-import { readFileSync, existsSync } from "fs";
-import fs from "fs/promises";
+import { fsx } from "@simplysm/core-node";
 import { createRequire } from "module";
 import type esbuild from "esbuild";
 import { createLogger } from "@simplysm/core-common";
@@ -24,14 +23,13 @@ export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[])
         : file.text;
 
       try {
-        const existing = await fs.readFile(file.path, "utf-8");
+        const existing = await fsx.read(file.path);
         if (existing === finalText) return;
       } catch {
         // 파일이 아직 존재하지 않음
       }
 
-      await fs.mkdir(path.dirname(file.path), { recursive: true });
-      await fs.writeFile(file.path, finalText);
+      await fsx.write(file.path, finalText);
     }),
   );
   logger.debug("변경된 출력 파일 쓰기 완료");
@@ -123,7 +121,7 @@ function scanDependencyTree(
   }
 
   const depDir = path.dirname(pkgJsonPath);
-  const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8")) as PkgJson;
+  const pkgJson = JSON.parse(fsx.readSync(pkgJsonPath)) as PkgJson;
 
   // predicate에 의해 external로 표시된 패키지 수집
   const toExternal = collector(pkgName, depDir, pkgJson);
@@ -155,7 +153,7 @@ export function collectAllDependencyExternals(pkgDir: string): {
   const visited = new Set<string>();
 
   const pkgJson = JSON.parse(
-    readFileSync(path.join(pkgDir, "package.json"), "utf-8"),
+    fsx.readSync(path.join(pkgDir, "package.json")),
   ) as PkgJson;
   const deps = Object.keys(pkgJson.dependencies ?? {});
   logger.debug(
@@ -187,7 +185,7 @@ export function collectAllDependencyExternals(pkgDir: string): {
         }
 
         // 네이티브 모듈 확인
-        if (existsSync(path.join(depDir, "binding.gyp"))) {
+        if (fsx.existsSync(path.join(depDir, "binding.gyp"))) {
           nativeModules.add(pkgName);
         }
 

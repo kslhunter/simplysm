@@ -30,8 +30,10 @@ import {
   globSync,
   glob,
   clearEmptyDirectory,
-  findAllParentChildPathsSync,
-  findAllParentChildPaths,
+  findUpSync,
+  findUp,
+  findUpAllSync,
+  findUpAll,
 } from "../../src/utils/fs";
 import { SdError } from "@simplysm/core-common";
 
@@ -593,16 +595,60 @@ describe("fs functions", () => {
 
   //#endregion
 
-  //#region findAllParentChildPaths
+  //#region findUp
 
-  describe("findAllParentChildPathsSync", () => {
-    it("finds specific file in parent directories", () => {
+  describe("findUpSync", () => {
+    it("finds the nearest matching file walking up", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "marker.txt"), "");
       fs.writeFileSync(path.join(testDir, "a/marker.txt"), "");
 
-      const results = findAllParentChildPathsSync("marker.txt", deepDir, testDir);
+      const result = findUpSync("marker.txt", deepDir, testDir);
+
+      expect(result).toBe(path.resolve(testDir, "a", "marker.txt"));
+    });
+
+    it("returns undefined when no matching file is found", () => {
+      const deepDir = path.join(testDir, "a/b/c");
+      fs.mkdirSync(deepDir, { recursive: true });
+
+      const result = findUpSync("nonexistent-file.txt", deepDir, testDir);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("findUp", () => {
+    it("finds the nearest matching file walking up asynchronously", async () => {
+      const deepDir = path.join(testDir, "x/y/z");
+      fs.mkdirSync(deepDir, { recursive: true });
+      fs.writeFileSync(path.join(testDir, "config.json"), "");
+      fs.writeFileSync(path.join(testDir, "x/config.json"), "");
+
+      const result = await findUp("config.json", deepDir, testDir);
+
+      expect(result).toBe(path.resolve(testDir, "x", "config.json"));
+    });
+
+    it("returns undefined asynchronously when no matching file is found", async () => {
+      const deepDir = path.join(testDir, "x/y/z");
+      fs.mkdirSync(deepDir, { recursive: true });
+
+      const result = await findUp("nonexistent-file.txt", deepDir, testDir);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("findUpAllSync", () => {
+    it("collects matching files in all parent directories", () => {
+      const deepDir = path.join(testDir, "a/b/c");
+      fs.mkdirSync(deepDir, { recursive: true });
+      fs.writeFileSync(path.join(testDir, "marker.txt"), "");
+      fs.writeFileSync(path.join(testDir, "a/marker.txt"), "");
+
+      const results = findUpAllSync("marker.txt", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -611,20 +657,20 @@ describe("fs functions", () => {
       const deepDir = path.join(testDir, "a/b/c");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = findAllParentChildPathsSync("nonexistent-file.txt", deepDir, testDir);
+      const results = findUpAllSync("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });
   });
 
-  describe("findAllParentChildPaths", () => {
-    it("finds specific file in parent directories asynchronously", async () => {
+  describe("findUpAll", () => {
+    it("collects matching files in all parent directories asynchronously", async () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
       fs.writeFileSync(path.join(testDir, "config.json"), "");
       fs.writeFileSync(path.join(testDir, "x/config.json"), "");
 
-      const results = await findAllParentChildPaths("config.json", deepDir, testDir);
+      const results = await findUpAll("config.json", deepDir, testDir);
 
       expect(results.length).toBe(2);
     });
@@ -633,7 +679,7 @@ describe("fs functions", () => {
       const deepDir = path.join(testDir, "x/y/z");
       fs.mkdirSync(deepDir, { recursive: true });
 
-      const results = await findAllParentChildPaths("nonexistent-file.txt", deepDir, testDir);
+      const results = await findUpAll("nonexistent-file.txt", deepDir, testDir);
 
       expect(results).toEqual([]);
     });

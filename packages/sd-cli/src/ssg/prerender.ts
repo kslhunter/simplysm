@@ -1,7 +1,7 @@
-import fs from "node:fs";
+import { fsx } from "@simplysm/core-node";
 import path from "path";
 import { pathToFileURL } from "node:url";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 
 const logger = createLogger("sd:cli:ssg:prerender");
 
@@ -42,7 +42,7 @@ export async function prerenderRoutes(options: PrerenderOptions): Promise<void> 
       const html = await bundleModule.render(url, options.documentHtml);
       rendered.push({ route: normalizedRoute, html });
     } catch (err) {
-      throw new Error(`프리렌더 실패 (라우트: ${route}): ${err instanceof Error ? err.message : String(err)}`, {
+      throw new Error(`프리렌더 실패 (라우트: ${route}): ${errNs.message(err)}`, {
         cause: err,
       });
     }
@@ -51,8 +51,7 @@ export async function prerenderRoutes(options: PrerenderOptions): Promise<void> 
   // 2. 라우트별 <경로>/index.html 기록 ("/"는 index.html)
   for (const { route, html } of rendered) {
     const htmlPath = path.join(options.outdir, route, "index.html");
-    fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
-    fs.writeFileSync(htmlPath, html);
+    fsx.writeSync(htmlPath, html);
   }
 }
 

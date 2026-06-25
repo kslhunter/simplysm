@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import esbuild from "esbuild";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import { AngularSourceFileCache } from "../angular/angular-compiler.js";
@@ -235,13 +235,13 @@ export async function createClientEsbuildContext(
                     f.endsWith(".js"),
                   );
                   for (const file of jsFiles) {
-                    const code = await fs.promises.readFile(file, "utf-8");
+                    const code = await fsx.read(file);
                     if (!code.includes("import(")) continue;
                     const replaced = code.replace(
                       /\bimport\s*\(/g,
                       '(function(){return Promise.reject(new Error("Dynamic import not supported"))})(',
                     );
-                    await fs.promises.writeFile(file, replaced);
+                    await fsx.write(file, replaced);
                   }
                 });
               },

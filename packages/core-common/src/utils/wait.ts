@@ -35,3 +35,17 @@ export async function until(
 export async function time(millisecond: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, millisecond));
 }
+
+/**
+ * 이벤트 루프에 한 번 양보한다.
+ *
+ * Node 환경에서는 `setImmediate`(타이머 throttling 없이 check 단계에서 양보)를 우선 사용하고,
+ * 브라우저 등 미지원 환경에서는 `setTimeout(0)`으로 폴백한다.
+ */
+export async function immediate(): Promise<void> {
+  const setImmediateFn = (globalThis as { setImmediate?: (callback: () => void) => void })
+    .setImmediate;
+  return setImmediateFn != null
+    ? new Promise<void>((resolve) => setImmediateFn(() => resolve()))
+    : new Promise<void>((resolve) => setTimeout(resolve, 0));
+}

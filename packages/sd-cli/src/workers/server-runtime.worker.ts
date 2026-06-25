@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "path";
-import { createWorker } from "@simplysm/core-node";
+import { createWorker, fsx } from "@simplysm/core-node";
 import { env, err as errNs } from "@simplysm/core-common";
 import { createLogger } from "@simplysm/core-common";
 import proxy from "@fastify/http-proxy";
@@ -187,8 +187,7 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
 
     // .dev-port 기록 (device 명령어에서 자동 탐지용)
     mainJsDir = path.dirname(info.mainJsPath);
-    fs.mkdirSync(mainJsDir, { recursive: true });
-    fs.writeFileSync(path.join(mainJsDir, ".dev-port"), String(server.options.port));
+    fsx.writeSync(path.join(mainJsDir, ".dev-port"), String(server.options.port));
 
     logger.debug(
       `런타임 총 시작 시간: ${Math.round(performance.now() - startTime)}ms`,

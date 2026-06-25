@@ -256,7 +256,7 @@ describe("Electron", () => {
       expect(mockEsbuildBuild).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: "node",
-          target: "node20",
+          target: "node24",
           format: "esm",
           bundle: true,
           external: expect.arrayContaining(["electron", "better-sqlite3"]),
@@ -494,7 +494,7 @@ describe("Electron", () => {
       expect(callArgs.define).toBeUndefined();
 
       expect(callArgs.platform).toBe("node");
-      expect(callArgs.target).toBe("node20");
+      expect(callArgs.target).toBe("node24");
       expect(callArgs.format).toBe("esm");
       expect(callArgs.bundle).toBe(true);
       expect(callArgs.external).toContain("electron");

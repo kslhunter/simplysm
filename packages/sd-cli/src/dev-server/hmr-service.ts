@@ -1,6 +1,6 @@
 import type http from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import fs from "node:fs";
+import { fsx } from "@simplysm/core-node";
 import path from "path";
 import crypto from "crypto";
 import type esbuild from "esbuild";
@@ -68,7 +68,7 @@ export function createHmrService(options: HmrServiceOptions): HmrService {
             const filePath = path.isAbsolute(normalizedPath)
               ? normalizedPath
               : path.resolve(outDir, normalizedPath);
-            const content = fs.readFileSync(filePath);
+            const content = fsx.readBytesSync(filePath);
             fingerprint = crypto.createHash("md5").update(content).digest("hex");
           } catch {
             // 파일 읽기 실패 시 bytes 폴백

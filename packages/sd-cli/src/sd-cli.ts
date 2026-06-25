@@ -11,7 +11,7 @@ import { cpx, setupConsola } from "@simplysm/core-node";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +43,7 @@ if (isDev) {
       // sd.config.ts가 없거나 replaceDeps가 설정되지 않으면 건너뜀
       const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
       if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
-        logger.warn("replaceDeps 사전 설정 실패:", err instanceof Error ? err.message : err);
+        logger.warn("replaceDeps 사전 설정 실패:", errNs.message(err));
       }
     }
   }
@@ -107,7 +107,7 @@ function configureAffinityAndPriority(pid: number): void {
   cpx.spawn(command, [], { shell: true }).catch((err: unknown) => {
     logger.warn(
       "CPU affinity/priority 설정 실패:",
-      err instanceof Error ? err.message : String(err),
+      errNs.message(err),
     );
   });
 }

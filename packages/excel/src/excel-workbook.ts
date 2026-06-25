@@ -1,4 +1,4 @@
-import type { Bytes } from "@simplysm/core-common";
+import { path, type Bytes } from "@simplysm/core-common";
 import { ExcelWorksheet } from "./excel-worksheet";
 import type { IRelationshipModel } from "./models/i-relationship-model";
 import type { IWorkbookModel } from "./models/i-workbook-model";
@@ -113,9 +113,8 @@ export class ExcelWorkbook {
       throw new Error(`시트 관계 정보를 찾을 수 없습니다: rId${wsId}`);
     }
 
-    // path.basename 대신 직접 파일명 추출 (브라우저 호환성)
-    const fileName = targetFilePath.split("/").pop();
-    if (fileName == null) {
+    const fileName = path.basename(targetFilePath);
+    if (fileName === "") {
       throw new Error(`시트 파일명을 추출할 수 없습니다: ${targetFilePath}`);
     }
 

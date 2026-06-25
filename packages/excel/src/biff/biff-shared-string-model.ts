@@ -1,6 +1,6 @@
-import type { Bytes } from "@simplysm/core-common";
+import { bytes as bytesUtil, type Bytes } from "@simplysm/core-common";
 import type { ISharedStringModel } from "../models/i-shared-string-model";
-import { concatBytes, REC } from "./biff12-codec";
+import { REC } from "./biff12-codec";
 import {
   encodeBrtBeginSst,
   encodeBrtSSTItem,
@@ -47,6 +47,6 @@ export class BiffSharedStringModel implements ISharedStringModel {
       parts.push(encodeBrtSSTItem(s));
     }
     parts.push(encodeMarker(REC.BrtEndSst));
-    return concatBytes(parts);
+    return bytesUtil.concat(parts);
   }
 }

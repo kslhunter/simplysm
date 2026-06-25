@@ -22,7 +22,7 @@ function toDbContextBase(name: string): string {
 
 function toDbContextClassName(name: string): string {
   const trimmed = toDbContextBase(name);
-  const pascal = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  const pascal = str.toPascalCase(trimmed);
   return `${pascal}DbContext`;
 }
 

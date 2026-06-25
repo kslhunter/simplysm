@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -198,7 +197,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
 
     // 임시 CSV 파일 생성
     const tmpDir = os.tmpdir();
-    const tmpFile = path.join(tmpDir, `mysql_bulk_${randomUUID()}.csv`);
+    const tmpFile = path.join(tmpDir, `mysql_bulk_${Uuid.generate().toString()}.csv`);
 
     try {
       // CSV 데이터 생성

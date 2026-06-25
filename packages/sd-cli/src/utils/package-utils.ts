@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { SdError } from "@simplysm/core-common";
-import { pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 import type {
   SdPackageConfig,
@@ -13,13 +13,9 @@ const logger = createLogger("sd:cli:package-utils");
  * import.meta.dirname에서 위로 탐색하여 package.json을 찾고 패키지 루트를 반환한다.
  */
 export function findPackageRoot(startDir: string): string {
-  let dir = startDir;
-  while (!fs.existsSync(pathx.posix(path.join(dir, "package.json")))) {
-    const parent = pathx.posix(path.dirname(dir));
-    if (parent === dir) throw new Error("package.json not found");
-    dir = parent;
-  }
-  return dir;
+  const match = fsx.findUpSync("package.json", startDir);
+  if (match == null) throw new Error("package.json not found");
+  return pathx.posix(path.dirname(match));
 }
 
 /**

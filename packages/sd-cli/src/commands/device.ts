@@ -1,7 +1,6 @@
-import fs from "node:fs";
 import http from "node:http";
 import path from "path";
-import { pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { SdError } from "@simplysm/core-common";
 import { createLogger } from "@simplysm/core-common";
 import { loadSdConfig } from "../utils/sd-config";
@@ -70,7 +69,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       const portFile = path.join(serverPkgDir, "dist", ".dev-port");
       let portStr: string;
       try {
-        portStr = fs.readFileSync(portFile, "utf-8").trim();
+        portStr = fsx.readSync(portFile).trim();
       } catch {
         throw new SdError(
           "dev 서버가 실행 중이 아닙니다. 먼저 pnpm dev를 실행해주세요.",
@@ -82,7 +81,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       // 클라이언트 dev server 포트 (HMR WebSocket용 adb reverse)
       const clientPortFile = path.join(pkgDir, "dist", ".dev-port");
       try {
-        const clientPort = Number(fs.readFileSync(clientPortFile, "utf-8").trim());
+        const clientPort = Number(fsx.readSync(clientPortFile).trim());
         if (clientPort !== port) {
           extraReversePorts = [clientPort];
         }

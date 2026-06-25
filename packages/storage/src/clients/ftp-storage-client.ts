@@ -1,5 +1,5 @@
 import type { Bytes } from "@simplysm/core-common";
-import { bytes, SdError } from "@simplysm/core-common";
+import { bytes, path, SdError } from "@simplysm/core-common";
 import ftp from "basic-ftp";
 import { PassThrough, Readable } from "stream";
 import type { StorageClient, FileInfo } from "../types/storage";
@@ -99,7 +99,7 @@ export class FtpStorageClient implements StorageClient {
       try {
         const lastSlash = filePath.lastIndexOf("/");
         const dirPath = lastSlash > 0 ? filePath.substring(0, lastSlash) : "/";
-        const fileName = filePath.substring(lastSlash + 1);
+        const fileName = path.basename(filePath);
         const list = await this._requireClient().list(dirPath);
         return list.some((item) => item.name === fileName);
       } catch {

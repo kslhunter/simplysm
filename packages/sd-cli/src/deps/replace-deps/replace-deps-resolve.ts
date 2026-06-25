@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { glob } from "glob";
 import type { ConsolaInstance } from "consola";
-import { pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 
 /**
  * replaceDeps 설정의 glob 패턴을 대상 패키지 목록과 매칭하여
@@ -108,11 +108,11 @@ async function collectSearchRoots(projectRoot: string): Promise<string[]> {
 
   const workspaceYamlPath = pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml"));
   try {
-    const yamlContent = await fs.promises.readFile(workspaceYamlPath, "utf-8");
+    const yamlContent = await fsx.read(workspaceYamlPath);
     const workspaceGlobs = parseWorkspaceGlobs(yamlContent);
 
     for (const pattern of workspaceGlobs) {
-      const dirs = await glob(pattern, { cwd: projectRoot, absolute: true });
+      const dirs = await fsx.glob(pattern, { cwd: projectRoot });
       searchRoots.push(...dirs);
     }
   } catch {
@@ -156,9 +156,7 @@ export async function resolveAllReplaceDepEntries(
     if (searchedDirs.has(nodeModulesDir)) continue;
     searchedDirs.add(nodeModulesDir);
 
-    try {
-      await fs.promises.access(nodeModulesDir);
-    } catch {
+    if (!(await fsx.exists(nodeModulesDir))) {
       logger.debug(`[replace-deps] 접근 불가: ${nodeModulesDir}`);
       continue;
     }
@@ -170,7 +168,7 @@ export async function resolveAllReplaceDepEntries(
       ),
     );
     const targetNames = globResults.flatMap((matches) =>
-      matches.map((m) => m.replaceAll("\\", "/")),
+      matches.map((m) => pathx.posix(m)),
     );
 
     logger.debug(`[replace-deps] 탐색: ${nodeModulesDir} → ${targetNames.length}개 매칭 (${targetNames.join(", ")})`);
@@ -185,9 +183,7 @@ export async function resolveAllReplaceDepEntries(
       const resolvedSourcePath = pathx.posixResolve(projectRoot, sourcePath);
 
       // 소스 경로 존재 확인
-      try {
-        await fs.promises.access(resolvedSourcePath);
-      } catch {
+      if (!(await fsx.exists(resolvedSourcePath))) {
         logger.warn(`소스 경로가 존재하지 않아 건너뜀: ${resolvedSourcePath}`);
         continue;
       }

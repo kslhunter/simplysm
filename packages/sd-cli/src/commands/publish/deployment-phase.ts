@@ -6,6 +6,7 @@ import { publishToStorage } from "./storage-publisher";
 import { publishToLocal } from "./local-publisher";
 import { computePublishLevels } from "./version-upgrade";
 import { replaceEnvVariables } from "./env-utils";
+import { wait, err as errNs } from "@simplysm/core-common";
 
 export interface DeploymentPackage {
   name: string;
@@ -78,7 +79,7 @@ export async function runDeployment(
             } else {
               logger.debug(`${pkg.name} (retry ${attempt + 1}/${maxRetries})`);
             }
-            await new Promise((resolve) => setTimeout(resolve, delay));
+            await wait.time(delay);
           } else {
             throw err;
           }
@@ -97,7 +98,7 @@ export async function runDeployment(
     if (rejectedResults.length > 0) {
       publishFailed = true;
       for (const r of rejectedResults) {
-        logger.error(r.reason instanceof Error ? r.reason.message : r.reason);
+        logger.error(errNs.message(r.reason));
       }
       logger.error(`Level ${levelIdx + 1}/${levels.length}`);
     } else {

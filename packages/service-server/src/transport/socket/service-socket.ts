@@ -108,7 +108,7 @@ export function createServiceSocket(
       socket.send(chunk);
     }
 
-    return chunks.reduce((acc, item) => acc + item.length, 0);
+    return chunks.sum((item) => item.length);
   }
 
   function emitEvent<K extends keyof typeof eventHandlers>(

@@ -1,6 +1,7 @@
 import type esbuild from "esbuild";
 import { fileURLToPath } from "url";
 import { compileScssFileAsync } from "../angular/scss-compiler";
+import { err as errNs } from "@simplysm/core-common";
 
 export interface CreateScssPluginOptions {
   loadPaths: string[];
@@ -50,7 +51,7 @@ export function createScssPlugin(options: CreateScssPluginOptions): esbuild.Plug
           return {
             errors: [
               {
-                text: (e as any)?.sassMessage ?? (e instanceof Error ? e.message : String(e)),
+                text: (e as any)?.sassMessage ?? errNs.message(e),
                 location,
               },
             ],

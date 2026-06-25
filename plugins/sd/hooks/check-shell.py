@@ -34,10 +34,9 @@ for pattern, label in BLOCKED:
 
 # Git read-only inspection block (working-tree-only policy).
 GIT_READ_VERBS = r"status|diff|log|show|blame|reflog|rev-list|rev-parse|ls-files|ls-tree|cat-file|describe|whatchanged|shortlog|grep"
-if not re.search(r"\bSDGIT\b", cmd):
-    m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
-    if m:
-        deny(
-            f"git {m.group('verb')} "
-            "(working-tree inspection via git is forbidden; use Read/Grep/Glob)."
-        )
+m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
+if m:
+    deny(
+        f"git {m.group('verb')} "
+        "(working-tree inspection via git is forbidden; use Read/Grep/Glob)."
+    )

@@ -1,6 +1,5 @@
 import path from "path";
-import fs from "node:fs";
-import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
+import { createWorker, FsWatcher, fsx, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import {
@@ -85,9 +84,7 @@ function resolvePackageInfo(info: ClientBuildInfo): {
   postcssPlugins: [string, (object | string)?][] | undefined;
 } {
   const pkgJsonPath = path.join(info.pkgDir, "package.json");
-  const pkgName = (
-    JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string }
-  ).name;
+  const pkgName = fsx.readJsonSync<{ name: string }>(pkgJsonPath).name;
   return {
     pkgName,
     legacyModule: info.browserSupport?.legacyModule === true,
@@ -112,7 +109,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
 
     // 2. polyfills 감지
     const polyfillsPath = path.join(info.pkgDir, "src", "polyfills.ts");
-    const polyfills = fs.existsSync(polyfillsPath) ? ["src/polyfills.ts"] : undefined;
+    const polyfills = fsx.existsSync(polyfillsPath) ? ["src/polyfills.ts"] : undefined;
 
     // 3. esbuild context 생성
     const entryNames = ["main", ...(polyfills != null ? ["polyfills"] : [])];
@@ -152,12 +149,12 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       postTransform: pwaHtmlTransform,
     });
 
-    fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+    fsx.writeSync(path.join(outdir, "index.html"), indexResult.content);
 
     // 5.5. SSG 프리렌더 (opt-in — prerender 설정이 있을 때만)
     if (info.prerender != null && info.prerender.length > 0 && indexResult.errors.length === 0) {
       // SPA 셸 별도 보존 (비프리렌더 라우트 딥링크 폴백용 — 서버 정적 핸들러가 사용)
-      fs.writeFileSync(path.join(outdir, "index.csr.html"), indexResult.content);
+      fsx.writeSync(path.join(outdir, "index.csr.html"), indexResult.content);
 
       const { bundlePath } = await buildSsrBundle({
         pkgDir: info.pkgDir,
@@ -288,7 +285,7 @@ function createDevBuildEndHandler(
           entryNames,
           postTransform: hmrPostTransform,
         });
-        fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+        fsx.writeSync(path.join(outdir, "index.html"), indexResult.content);
       }
 
       // HMR 메시지 디스패치
@@ -351,14 +348,14 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const basePath = info.base ?? `/${name}/`;
 
     // 1. dist/ 초기화
-    fs.rmSync(outdir, { recursive: true, force: true });
+    fsx.rmSync(outdir);
 
     // 2. public/ 복사 + 감시
     publicWatcher = await watchPublicFiles(info.pkgDir, true);
 
     // 3. polyfills 감지
     const polyfillsPath = path.join(info.pkgDir, "src", "polyfills.ts");
-    const polyfills = fs.existsSync(polyfillsPath) ? ["src/polyfills.ts"] : undefined;
+    const polyfills = fsx.existsSync(polyfillsPath) ? ["src/polyfills.ts"] : undefined;
     const entryNames = ["main", ...(polyfills != null ? ["polyfills"] : [])];
 
     // 4. templateUpdates Map
@@ -422,7 +419,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
           entryNames,
           postTransform: hmrPostTransform,
         });
-        fs.writeFileSync(path.join(outdir, "index.html"), indexResult.content);
+        fsx.writeSync(path.join(outdir, "index.html"), indexResult.content);
         hmrService?.broadcast({ type: "full-reload" });
         sender.send("build", { success: true });
       } catch (err) {
@@ -435,7 +432,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
 
     // 11. .config.json + .dev-port 기록
     writeConfigJson(outdir, info.configs);
-    fs.writeFileSync(path.join(outdir, ".dev-port"), String(actualPort));
+    fsx.writeSync(path.join(outdir, ".dev-port"), String(actualPort));
 
     return initialResult;
   } catch (err) {
@@ -494,11 +491,7 @@ function writeConfigJson(
   distDir: string,
   configs?: Record<string, unknown>,
 ): void {
-  fs.mkdirSync(distDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(distDir, ".config.json"),
-    JSON.stringify(configs ?? {}, undefined, 2),
-  );
+  fsx.writeJsonSync(path.join(distDir, ".config.json"), configs ?? {}, { space: 2 });
 }
 
 const sender = createWorker<

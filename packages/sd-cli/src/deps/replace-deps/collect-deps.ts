@@ -1,6 +1,5 @@
 import path from "path";
-import fs from "fs";
-import { pathx } from "@simplysm/core-node";
+import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 import { discoverWorkspacePackages } from "../../utils/package-utils";
 
@@ -22,8 +21,8 @@ function buildWorkspacePkgMap(cwd: string): Map<string, string> {
   for (const [, relDir] of wsPkgs) {
     if (relDir.startsWith("tests/")) continue;
     const pkgJsonPath = pathx.posix(path.join(cwd, relDir, "package.json"));
-    if (!fs.existsSync(pkgJsonPath)) continue;
-    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as { name: string };
+    if (!fsx.existsSync(pkgJsonPath)) continue;
+    const pkgJson = fsx.readJsonSync<{ name: string }>(pkgJsonPath);
     map.set(pkgJson.name, relDir);
   }
   return map;
@@ -54,11 +53,11 @@ export function collectDeps(
 
   function traverse(dir: string): void {
     const pkgJsonPath = pathx.posix(path.join(dir, "package.json"));
-    if (!fs.existsSync(pkgJsonPath)) return;
+    if (!fsx.existsSync(pkgJsonPath)) return;
 
-    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf-8")) as {
+    const pkgJson = fsx.readJsonSync<{
       dependencies?: Record<string, string>;
-    };
+    }>(pkgJsonPath);
     const deps = Object.keys(pkgJson.dependencies ?? {});
 
     for (const dep of deps) {
@@ -78,7 +77,7 @@ export function collectDeps(
       if (matched != null) {
         replaceDeps.push(dep);
         const depNodeModulesDir = pathx.posix(path.join(cwd, "node_modules", ...dep.split("/")));
-        if (fs.existsSync(pathx.posix(path.join(depNodeModulesDir, "package.json")))) {
+        if (fsx.existsSync(pathx.posix(path.join(depNodeModulesDir, "package.json")))) {
           traverse(depNodeModulesDir);
         }
         continue;

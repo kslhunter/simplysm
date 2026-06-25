@@ -19,7 +19,7 @@
     "---": "",
     "check": "pnpm sd-cli check",
     "typecheck": "pnpm sd-cli check --type typecheck",
-    "test": "vitest run --reporter=dot --silent=passed-only",
+    "test": "tsx node_modules/vitest/vitest.mjs run --configLoader native --reporter=dot --silent=passed-only",
     "lint": "pnpm sd-cli check --type lint",
     "----": "",
     "sd-cli": "tsx packages/sd-cli/src/sd-cli.ts",

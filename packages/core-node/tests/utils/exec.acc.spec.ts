@@ -27,6 +27,11 @@ describe("spawn", () => {
     expect(result.stdout.trim()).toBe("hello");
   });
 
+  it("shell 옵션 + 비어있지 않은 args 조합에서도 셸 명령으로 실행 (DEP0190 회피)", async () => {
+    const result = await spawn("echo", ["hello", "world"], { shell: true });
+    expect(result.stdout.trim()).toBe("hello world");
+  });
+
   it("kill()로 프로세스 종료", async () => {
     const proc = spawn("node", ["-e", "setTimeout(() => {}, 60000)"], { reject: false });
     proc.kill();
@@ -57,5 +62,10 @@ describe("spawnSync", () => {
     const result = spawnSync("node", ["-v"]);
     expect(result.stdout.trim()).toMatch(/^v\d+/);
     expect(result.exitCode).toBe(0);
+  });
+
+  it("shell 옵션 + args 조합 동기 실행 (DEP0190 회피)", () => {
+    const result = spawnSync("echo", ["sync"], { shell: true });
+    expect(result.stdout.trim()).toBe("sync");
   });
 });

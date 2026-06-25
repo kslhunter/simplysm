@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import esbuild from "esbuild";
 import { createWorker, FsWatcher, pathx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
@@ -209,7 +209,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     // JS 출력이 요청된 경우에만 프로덕션 아티팩트 생성
     if (info.output.js) {
       const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
-      fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
+      fsx.writeJsonSync(confDistPath, info.configs ?? {}, { space: 2 });
 
       await copyPublicFiles(info.pkgDir, false);
 
@@ -336,7 +336,7 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
 
     // 첫 빌드 시 .config.json 작성
     const confDistPath = path.join(info.pkgDir, "dist", ".config.json");
-    fs.writeFileSync(confDistPath, JSON.stringify(info.configs ?? {}, undefined, 2));
+    fsx.writeJsonSync(confDistPath, info.configs ?? {}, { space: 2 });
 
     sender.send("build", initialResult);
 

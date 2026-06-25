@@ -1,7 +1,6 @@
 import type { Bytes } from "@simplysm/core-common";
-import { EventEmitter, Uuid } from "@simplysm/core-common";
+import { err as errNs, EventEmitter, Uuid } from "@simplysm/core-common";
 import type {
-  ServiceErrorMessage,
   ServiceResponseMessage,
   ServiceClientMessage,
 } from "@simplysm/service-common";
@@ -149,7 +148,7 @@ export function createServiceTransport(
           // 에러 수신으로 Map에서 제거
           pendingRequests.delete(decoded.uuid);
 
-          listenerInfo?.reject(toError(decoded.message.body));
+          listenerInfo?.reject(errNs.fromObject(decoded.message.body));
         } else if (decoded.message.name === "evt:on") {
           const body = decoded.message.body;
           emitter.emit("event", { keys: body.keys, data: body.data });
@@ -169,12 +168,6 @@ export function createServiceTransport(
     }
     pendingRequests.clear();
     responseProgressTotalSize.clear();
-  }
-
-  function toError(body: ServiceErrorMessage["body"]): Error {
-    let err = new Error(body.message);
-    err = Object.assign(err, body);
-    return err;
   }
 
   return {

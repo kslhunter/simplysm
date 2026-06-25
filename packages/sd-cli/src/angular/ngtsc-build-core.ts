@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
 import { createLogger } from "@simplysm/core-common";
 import { compileScssFile, compileScssString } from "./scss-compiler";
@@ -142,8 +142,7 @@ export function compileSideEffectScss(
     }
     try {
       const result = compileScssFile(entry.scssAbsPath, loadPaths);
-      fs.mkdirSync(path.dirname(entry.cssAbsPath), { recursive: true });
-      fs.writeFileSync(entry.cssAbsPath, result.css, "utf-8");
+      fsx.writeSync(entry.cssAbsPath, result.css);
       trackDeps(scssDependencies, entry.sourceFileName, result.dependencies);
       // 의존성 기록 (증분 판별용)
       if (sideEffectScssDeps != null) {
@@ -165,13 +164,13 @@ export function compileGlobalScss(
   loadPaths: string[],
 ): string[] {
   const stylesPath = path.join(pkgDir, "scss", "styles.scss");
-  if (!fs.existsSync(stylesPath)) return [];
+  if (!fsx.existsSync(stylesPath)) return [];
   logger.debug("global SCSS 컴파일 시작");
 
   const errors: string[] = [];
   try {
     const result = compileScssFile(stylesPath, loadPaths);
-    fs.writeFileSync(path.join(pkgDir, "styles.css"), result.css, "utf-8");
+    fsx.writeSync(path.join(pkgDir, "styles.css"), result.css);
   } catch (err) {
     errors.push(`Global SCSS error: ${errNs.message(err)}`);
   }
@@ -261,8 +260,7 @@ export function writeEmitResults(
 
           try {
             const result = compileScssFile(scssAbsPath, scss.loadPaths);
-            fs.mkdirSync(path.dirname(cssAbsPath), { recursive: true });
-            fs.writeFileSync(cssAbsPath, result.css, "utf-8");
+            fsx.writeSync(cssAbsPath, result.css);
             trackDeps(scss.scssDependencies, sourceFileName, result.dependencies);
             // side-effect SCSS 의존성 기록 (증분 판별용)
             if (scss.sideEffectScssDeps != null) {
@@ -275,8 +273,7 @@ export function writeEmitResults(
       }
     }
 
-    fs.mkdirSync(path.dirname(newPath), { recursive: true });
-    fs.writeFileSync(newPath, newContent, "utf-8");
+    fsx.writeSync(newPath, newContent);
   }
   logger.debug("emit 결과 파일 쓰기 완료");
 }

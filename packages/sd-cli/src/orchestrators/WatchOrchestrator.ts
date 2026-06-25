@@ -1,5 +1,5 @@
-import { spawn, type ChildProcess } from "child_process";
-import { FsWatcher, pathx } from "@simplysm/core-node";
+import { type ChildProcess } from "child_process";
+import { cpx, FsWatcher, pathx } from "@simplysm/core-node";
 import type {
   SdBuildPackageConfig,
   SdConfig,
@@ -189,8 +189,12 @@ export class WatchOrchestrator extends BaseOrchestrator implements OrchestratorL
       prev.kill();
     }
 
-    const child = spawn(cmd, args ?? [], { cwd, stdio: "inherit", shell: true });
+    const proc = cpx.spawn(cmd, args ?? [], { cwd, stdio: "inherit", shell: true, reject: false });
+    const child = proc.process;
     this._watchHookChildren.set(pkgName, child);
+    // cpx.spawn 은 실패 시 reject 하는 Promise 도 만든다. 여기선 child 이벤트로 직접 처리하므로
+    // unhandled rejection 방지를 위해 Promise 는 무시한다.
+    void proc.catch(() => {});
 
     child.on("error", (err) => {
       this._logger.error(`[${pkgName}] 워치 훅 에러: ${err.message}`);

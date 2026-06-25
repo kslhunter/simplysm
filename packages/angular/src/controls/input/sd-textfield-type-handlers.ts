@@ -1,6 +1,7 @@
 import {
   DateOnly,
   DateTime,
+  num,
   SdError,
   Time,
 } from "@simplysm/core-common";
@@ -153,17 +154,14 @@ function createNumberHandler(): TextfieldTypeHandler {
       return Number.isNaN(result) ? undefined : result;
     },
     toControlValue(value, opts) {
-      const num = value as number;
+      const numValue = value as number;
       return opts.useNumberComma !== false
-        ? num.toLocaleString(undefined, { maximumFractionDigits: 10 })
-        : num.toString(10);
+        ? num.format(numValue, { max: 10 })
+        : numValue.toString(10);
     },
     toDisplayText(value, opts) {
       if (opts.minDigits != null) {
-        return (value as number).toLocaleString(undefined, {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: opts.minDigits,
-        });
+        return num.format(value as number, { max: 10, min: opts.minDigits });
       }
       return undefined;
     },

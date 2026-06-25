@@ -1,17 +1,13 @@
 import type { ConsolaOptions, ConsolaReporter, LogObject } from "consola";
 import fs from "fs";
 import path from "path";
+import { DateTime } from "@simplysm/core-common";
 import { PrettyReporter } from "./pretty-reporter";
 
 const pretty = new PrettyReporter();
 
 function formatTimestamp(date: Date): string {
-  const p2 = (n: number): string => String(n).padStart(2, "0");
-  const p3 = (n: number): string => String(n).padStart(3, "0");
-  return (
-    `${date.getFullYear()}-${p2(date.getMonth() + 1)}-${p2(date.getDate())} ` +
-    `${p2(date.getHours())}:${p2(date.getMinutes())}:${p2(date.getSeconds())}.${p3(date.getMilliseconds())}`
-  );
+  return new DateTime(date).toFormatString("yyyy-MM-dd HH:mm:ss.fff");
 }
 
 export interface FileReporterOptions {
@@ -64,7 +60,7 @@ export function createFileReporter(options?: FileReporterOptions): ConsolaReport
         `${pretty.formatPlain(logObj, ctx.options.formatOptions)}\n`;
 
       const date = logObj.date;
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const dateStr = new DateTime(date).toFormatString("yyyy-MM-dd");
 
       if (dateStr !== currentDate || currentSize + line.length >= maxSize) {
         rotate(dateStr);
@@ -106,7 +102,7 @@ function cleanOldFiles(outDir: string, maxDays: number): void {
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - maxDays);
-  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+  const cutoffStr = new DateTime(cutoff).toFormatString("yyyy-MM-dd");
 
   for (const entry of entries) {
     const match = /^app\.(\d{4}-\d{2}-\d{2})(?:\.\d+)?\.log$/.exec(entry);

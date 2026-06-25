@@ -1,9 +1,9 @@
-import type { Bytes } from "@simplysm/core-common";
+import { bytes as bytesUtil, type Bytes } from "@simplysm/core-common";
 import type { IWorksheetModel } from "../models/i-worksheet-model";
 import type { ICfRuleSpec } from "../models/shared/excel-cf-spec";
 import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelCellType } from "../types";
 import { ExcelUtils } from "../utils/excel-utils";
-import { concatBytes, readAllRecords, readUint32LE, readXLWideString, REC } from "./biff12-codec";
+import { readAllRecords, readUint32LE, readXLWideString, REC } from "./biff12-codec";
 import { decodeFormula, encodeFormula } from "./biff-ptg";
 import {
   decodeBiffCell,
@@ -524,7 +524,7 @@ export class BiffWorksheetModel implements IWorksheetModel {
     }
 
     parts.push(encodeMarker(REC.BrtEndSheet));
-    return concatBytes(parts);
+    return bytesUtil.concat(parts);
   }
 
   private _encodeCell(

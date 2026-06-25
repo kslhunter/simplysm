@@ -1,5 +1,5 @@
 import path from "path";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import { fsx } from "@simplysm/core-node";
 import "@simplysm/core-common";
 import type { SdConfig, SdPublishConfig } from "../../sd-config.types";
@@ -64,7 +64,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     sdConfig = await loadSdConfig({ cwd, dev: false, opt: options.options });
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
-    logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
     process.exitCode = 1;
     return;
   }
@@ -158,7 +158,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   try {
     await ensureSshAuth(publishPackages, logger);
   } catch (err) {
-    logger.error(`SSH 인증 설정 실패: ${err instanceof Error ? err.message : err}`);
+    logger.error(`SSH 인증 설정 실패: ${errNs.message(err)}`);
     process.exitCode = 1;
     return;
   }
@@ -168,7 +168,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     try {
       await ensureCleanWorkingTree(hasGit, logger);
     } catch (err) {
-      logger.error(err instanceof Error ? err.message : err);
+      logger.error(errNs.message(err));
       process.exitCode = 1;
       return;
     }
@@ -232,7 +232,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     try {
       await commitTagAndPush(hasGit, version, _changedFiles, logger, dryRun);
     } catch (err) {
-      logger.error(err instanceof Error ? err.message : err);
+      logger.error(errNs.message(err));
       process.exitCode = 1;
       return;
     }

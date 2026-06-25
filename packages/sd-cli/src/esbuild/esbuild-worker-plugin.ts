@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import type esbuild from "esbuild";
 import * as acorn from "acorn";
 import * as walk from "acorn-walk";
@@ -408,7 +408,7 @@ export function createWorkerBundlePlugin(): esbuild.Plugin {
       }> = [];
 
       build.onLoad({ filter: /\.[cm]?[jt]sx?$/ }, (args) => {
-        const content = fs.readFileSync(args.path, "utf-8");
+        const content = fsx.readSync(args.path);
         const result = transformWorkerPatterns(content, args.path, build);
         if (result == null) return undefined;
 

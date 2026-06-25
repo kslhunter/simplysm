@@ -174,7 +174,7 @@ describe("WatchOrchestrator", () => {
     );
 
     // watch hook executed
-    expect(spawn).toHaveBeenCalledWith("node", ["run-task.js"], expect.objectContaining({ shell: true }));
+    expect(spawn).toHaveBeenCalledWith("node run-task.js", [], expect.objectContaining({ shell: true }));
   });
 
   // --- Acceptance: Scenario "공통 초기화 로직 실행" (BaseOrchestrator) ---
@@ -400,7 +400,7 @@ describe("WatchOrchestrator", () => {
 
     expect(mockBuildEngines).toHaveLength(1);
     expect(mockBuildEngines[0].startWatch).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
-    expect(spawn).toHaveBeenCalledWith("node", ["sync.mjs"], expect.objectContaining({ shell: true }));
+    expect(spawn).toHaveBeenCalledWith("node sync.mjs", [], expect.objectContaining({ shell: true }));
   });
 
   it("does not run watch hook for library package without watch config", async () => {

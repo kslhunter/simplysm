@@ -110,6 +110,10 @@ export class SpawnProcess implements PromiseLike<SpawnResult> {
     return this._process.pid;
   }
 
+  get process(): ChildProcess {
+    return this._process;
+  }
+
   then<TResult1 = SpawnResult, TResult2 = never>(
     onfulfilled?: ((value: SpawnResult) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
@@ -137,6 +141,14 @@ export function spawn(
   args: string[],
   options?: SpawnOptions & { reject?: boolean },
 ): SpawnProcess {
+  // shell 옵션 + 비어있지 않은 args 조합은 DEP0190 경고를 유발한다.
+  // Node 가 shell 모드에서 내부적으로 수행하는 `${cmd} ${args.join(" ")}` 합치기를
+  // 미리 수행해 args 를 비우면, 셸 라인은 동일하면서 경고 조건만 사라진다.
+  if (options?.shell != null && options.shell !== false && args.length > 0) {
+    cmd = [cmd, ...args].join(" ");
+    args = [];
+  }
+
   // eslint-disable-next-line no-restricted-properties -- 자식 프로세스에 env 전달
   const opts: SpawnOptions = { stdio: "pipe", ...options, env: { ...process.env, ...options?.env } };
 
@@ -181,6 +193,12 @@ export function spawnSync(
   args: string[],
   options?: SpawnSyncOptions & { reject?: boolean },
 ): SpawnResult {
+  // shell 옵션 + 비어있지 않은 args 조합은 DEP0190 경고를 유발한다. (spawn 과 동일 처리)
+  if (options?.shell != null && options.shell !== false && args.length > 0) {
+    cmd = [cmd, ...args].join(" ");
+    args = [];
+  }
+
   const opts: SpawnSyncOptions = {
     stdio: "pipe",
     ...options,

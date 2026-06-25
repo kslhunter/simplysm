@@ -1,8 +1,8 @@
-import type { Bytes } from "@simplysm/core-common";
+import { bytes as bytesUtil, type Bytes } from "@simplysm/core-common";
 import type { IStyleModel } from "../models/i-style-model";
 import type { ExcelStyle } from "../models/shared/excel-style";
 import type { ExcelConditionalRuleStyle } from "../types";
-import { concatBytes, encodeRecord, readAllRecords, readXLWideString, REC } from "./biff12-codec";
+import { encodeRecord, readAllRecords, readXLWideString, REC } from "./biff12-codec";
 import { encodeBeginCount, encodeBrtDXF, encodeBrtFmt, encodeCellXF, encodeMarker } from "./biff-records";
 
 const HEX = (n: number): string => n.toString(16).padStart(2, "0").toUpperCase();
@@ -214,6 +214,6 @@ export class BiffStyleModel implements IStyleModel {
     }
 
     parts.push(encodeMarker(REC.BrtEndStyleSheet));
-    return concatBytes(parts);
+    return bytesUtil.concat(parts);
   }
 }

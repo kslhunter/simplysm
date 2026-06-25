@@ -15,12 +15,12 @@ describe("createServerEsbuildOptions", () => {
     entryPoints: ["/pkg/src/index.ts"],
   };
 
-  it("produces ESM bundle with platform=node and target=node20", () => {
+  it("produces ESM bundle with platform=node and target=node24", () => {
     const result = createServerEsbuildOptions(baseOptions);
     expect(result.format).toBe("esm");
     expect(result.bundle).toBe(true);
     expect(result.platform).toBe("node");
-    expect(result.target).toBe("node20");
+    expect(result.target).toBe("node24");
   });
 
   it("minifies by default (production build)", () => {

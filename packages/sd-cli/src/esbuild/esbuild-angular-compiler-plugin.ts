@@ -1,10 +1,10 @@
 import path from "path";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import os from "os";
 import ts from "typescript";
 import type esbuild from "esbuild";
 import { JavaScriptTransformer, Cache as AngularCache } from "@angular/build/private";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import type { AngularSourceFileCache } from "../angular/angular-compiler";
 import type {
   SerializedDiagnostic,
@@ -263,7 +263,7 @@ export function createAngularCompilerPlugin(
             path.join(pluginOptions.persistentCachePath, "angular-compiler.db"),
           );
         } catch (e) {
-          logger.warn("LMDB 캐시 초기화 실패:", e instanceof Error ? e.message : String(e));
+          logger.warn("LMDB 캐시 초기화 실패:", errNs.message(e));
         }
       }
 
@@ -531,7 +531,7 @@ export function createAngularCompilerPlugin(
           }
 
           // Angular 데코레이터 여부 검사
-          const directContents = await fs.promises.readFile(request, "utf-8");
+          const directContents = await fsx.read(request);
           if (!requiresAngularCompiler(directContents)) {
             return {
               warnings: [createMissingFileDiagnostic(request, args.path, cwd, false)],

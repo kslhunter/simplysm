@@ -1,11 +1,12 @@
 import type esbuild from "esbuild";
 import type { AcceptedPlugin } from "postcss";
 import postcss from "postcss";
-import fs from "fs";
+import { fsx } from "@simplysm/core-node";
 import path from "path";
 import { createRequire } from "module";
 import * as acorn from "acorn";
 import * as walk from "acorn-walk";
+import { err as errNs } from "@simplysm/core-common";
 
 export interface CreatePostcssPluginOptions {
   /** 이미 로딩된 PostCSS 플러그인 인스턴스 배열 */
@@ -44,14 +45,14 @@ export function createPostcssPlugin(options: CreatePostcssPluginOptions): esbuil
           if (!file.endsWith(".css")) continue;
 
           try {
-            const css = await fs.promises.readFile(file, "utf-8");
+            const css = await fsx.read(file);
             const processed = await processor.process(css, { from: file });
-            await fs.promises.writeFile(file, processed.css);
+            await fsx.write(file, processed.css);
           } catch (e: unknown) {
             result.errors.push({
               id: "",
               pluginName: "sd-postcss",
-              text: `PostCSS error in ${file}: ${e instanceof Error ? e.message : String(e)}`,
+              text: `PostCSS error in ${file}: ${errNs.message(e)}`,
               location: null,
               notes: [],
               detail: undefined,
@@ -64,7 +65,7 @@ export function createPostcssPlugin(options: CreatePostcssPluginOptions): esbuil
           if (!file.endsWith(".js")) continue;
 
           try {
-            const code = await fs.promises.readFile(file, "utf-8");
+            const code = await fsx.read(file);
             if (!code.includes("styles")) continue;
 
             const ast = acorn.parse(code, {
@@ -120,12 +121,12 @@ export function createPostcssPlugin(options: CreatePostcssPluginOptions): esbuil
             chunks.push(code.slice(cursor));
             const modified = chunks.join("");
 
-            await fs.promises.writeFile(file, modified);
+            await fsx.write(file, modified);
           } catch (e: unknown) {
             result.errors.push({
               id: "",
               pluginName: "sd-postcss",
-              text: `PostCSS error in ${file}: ${e instanceof Error ? e.message : String(e)}`,
+              text: `PostCSS error in ${file}: ${errNs.message(e)}`,
               location: null,
               notes: [],
               detail: undefined,

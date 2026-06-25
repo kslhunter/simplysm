@@ -1,5 +1,4 @@
 import path from "path";
-import { existsSync } from "node:fs";
 import { createRequire } from "module";
 import { consola, LogLevels } from "consola";
 import { fsx, pathx } from "@simplysm/core-node";
@@ -83,7 +82,7 @@ export async function setupCapNpmConfig(
     if (typeof version === "string" && version.startsWith("workspace:")) {
       const pluginPkgJsonPath = pkgRequire.resolve(`${plugin}/package.json`);
       const pluginDir = path.dirname(pluginPkgJsonPath);
-      const relativePath = path.relative(capPath, pluginDir).replace(/\\/g, "/");
+      const relativePath = pathx.posix(path.relative(capPath, pluginDir));
       capNpmConf.dependencies[plugin] = `link:${relativePath}`;
       logger.debug(`workspace 플러그인 (link): ${plugin} → ${relativePath}`);
     } else if (!(plugin in capNpmConf.dependencies)) {
@@ -176,15 +175,7 @@ export async function initCapNpmProject(
 }
 
 function findWorkspaceRoot(pkgPath: string): string {
-  let dir = pkgPath;
-  while (true) {
-    const parent = path.dirname(dir);
-    if (parent === dir) {
-      throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${pkgPath}`);
-    }
-    if (existsSync(pathx.posixResolve(parent, "pnpm-workspace.yaml"))) {
-      return parent;
-    }
-    dir = parent;
-  }
+  const match = fsx.findUpSync("pnpm-workspace.yaml", path.dirname(pkgPath));
+  if (match == null) throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${pkgPath}`);
+  return path.dirname(match);
 }

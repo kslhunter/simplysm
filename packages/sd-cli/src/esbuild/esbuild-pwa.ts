@@ -3,6 +3,7 @@ import type { SdPwaConfig } from "../sd-config.types.js";
 import { augmentAppWithServiceWorker } from "@angular/build/private";
 import { generatePwaIcons } from "../utils/generate-pwa-icons.js";
 import fs from "node:fs";
+import { fsx } from "@simplysm/core-node";
 import path from "path";
 
 export interface ApplyPwaOptions {
@@ -50,11 +51,11 @@ export async function applyPwa(options: ApplyPwaOptions): Promise<void> {
       // Copy generated icons from public/icons/ to dist/icons/
       const srcIconsDir = path.join(options.pkgDir, "public", "icons");
       const dstIconsDir = path.join(options.outdir, "icons");
-      fs.mkdirSync(dstIconsDir, { recursive: true });
+      fsx.mkdirSync(dstIconsDir);
       for (const icon of generated) {
         const srcPath = path.join(srcIconsDir, path.basename(icon.src));
         const dstPath = path.join(dstIconsDir, path.basename(icon.src));
-        fs.copyFileSync(srcPath, dstPath);
+        fsx.copySync(srcPath, dstPath);
       }
       iconsField = { icons: generated };
     }
@@ -79,7 +80,7 @@ export async function applyPwa(options: ApplyPwaOptions): Promise<void> {
 
   // 3. Ensure ngsw-config.json exists
   const ngswConfigPath = path.join(options.pkgDir, "ngsw-config.json");
-  if (!fs.existsSync(ngswConfigPath)) {
+  if (!fsx.existsSync(ngswConfigPath)) {
     const defaultConfig = {
       $schema: "./node_modules/@angular/service-worker/config/schema.json",
       index: "/index.html",

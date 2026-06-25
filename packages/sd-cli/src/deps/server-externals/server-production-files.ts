@@ -1,9 +1,8 @@
 import type { ServerBuildInfo } from "../../workers/server-build.worker";
 import path from "path";
-import fs from "fs";
 import YAML from "yaml";
 import TOML from "smol-toml";
-import { cpx } from "@simplysm/core-node";
+import { cpx, fsx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 import { collectAllDependencyExternals } from "../../esbuild/esbuild-config";
 
@@ -36,11 +35,11 @@ export function collectAllExternals(
  */
 export function parseLockfileVersions(cwd: string): Map<string, string> {
   const lockfilePath = path.join(cwd, "pnpm-lock.yaml");
-  if (!fs.existsSync(lockfilePath)) {
+  if (!fsx.existsSync(lockfilePath)) {
     throw new Error(`pnpm-lock.yaml not found in ${cwd}. Run "pnpm install" first.`);
   }
 
-  const content = fs.readFileSync(lockfilePath, "utf-8");
+  const content = fsx.readSync(lockfilePath);
   const parsed = YAML.parse(content) as { packages?: Record<string, unknown> };
   const map = new Map<string, string>();
 
@@ -88,7 +87,7 @@ export function generateProductionFiles(
   externals: string[],
 ): void {
   const distDir = path.join(info.pkgDir, "dist");
-  const pkgJson = JSON.parse(fs.readFileSync(path.join(info.pkgDir, "package.json"), "utf-8"));
+  const pkgJson = JSON.parse(fsx.readSync(path.join(info.pkgDir, "package.json")));
 
   // dist/package.json
   const distPkgJson: Record<string, unknown> = {
@@ -103,25 +102,25 @@ export function generateProductionFiles(
     const nodeVersion = cpx.spawnSync("node", ["-v"]).stdout.trim();
     distPkgJson["volta"] = { node: nodeVersion };
   }
-  fs.writeFileSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
+  fsx.writeSync(path.join(distDir, "package.json"), JSON.stringify(distPkgJson, undefined, 2));
 
   // dist/mise.toml
   if (info.packageManager === "mise") {
     const rootMiseTomlPath = path.join(info.cwd, "mise.toml");
     let nodeVersion = "24";
-    if (fs.existsSync(rootMiseTomlPath)) {
-      const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
+    if (fsx.existsSync(rootMiseTomlPath)) {
+      const miseContent = fsx.readSync(rootMiseTomlPath);
       // mise.toml은 저장소에서 관리되는 설정 파일이므로, 파싱 실패 시 폴백하지 않고 예외를 전파하여 설정 오류를 즉시 드러낸다.
       const miseConfig = TOML.parse(miseContent) as { tools?: { node?: string } };
       if (miseConfig.tools?.node != null) {
         nodeVersion = miseConfig.tools.node;
       }
     }
-    fs.writeFileSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);
+    fsx.writeSync(path.join(distDir, "mise.toml"), `[tools]\nnode = "${nodeVersion}"\n`);
   }
 
   // dist/openssl.cnf
-  fs.writeFileSync(
+  fsx.writeSync(
     path.join(distDir, "openssl.cnf"),
     [
       "nodejs_conf = openssl_init",
@@ -182,6 +181,6 @@ export function generateProductionFiles(
       `};`,
     ].join("\n");
 
-    fs.writeFileSync(path.join(distDir, "pm2.config.cjs"), pm2Config);
+    fsx.writeSync(path.join(distDir, "pm2.config.cjs"), pm2Config);
   }
 }

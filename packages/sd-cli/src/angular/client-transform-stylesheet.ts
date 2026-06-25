@@ -3,6 +3,7 @@ import fsp from "fs/promises";
 import path from "path";
 import postcss from "postcss";
 import { compileScssFileAsync, compileScssStringAsync } from "./scss-compiler.js";
+import { err as errNs } from "@simplysm/core-common";
 
 export interface ClientTransformStylesheetOptions {
   loadPaths: string[];
@@ -150,7 +151,7 @@ export function createClientTransformStylesheet(
           }
           return css;
         } catch (err) {
-          scssErrors.push(`SCSS error in ${stylesheetFile}: ${err instanceof Error ? err.message : String(err)}`);
+          scssErrors.push(`SCSS error in ${stylesheetFile}: ${errNs.message(err)}`);
           return "/* SCSS compilation error */";
         }
       }
@@ -173,7 +174,7 @@ export function createClientTransformStylesheet(
       }
       return css;
     } catch (err) {
-      scssErrors.push(`SCSS error in ${containingFile}: ${err instanceof Error ? err.message : String(err)}`);
+      scssErrors.push(`SCSS error in ${containingFile}: ${errNs.message(err)}`);
       return "/* SCSS compilation error */";
     }
   };

@@ -521,28 +521,84 @@ export async function clearEmptyDirectory(dirPath: string): Promise<void> {
 }
 
 /**
- * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는 파일을 검색한다.
- * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집한다.
- * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
+ * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는
+ * 가장 가까운 파일 1개를 찾는다. 첫 매칭에서 즉시 중단한다.
+ * @param fileGlob - 각 디렉토리에서 검색할 glob 패턴
  * @param fromPath - 검색을 시작할 경로
- * @param rootPath - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색).
- *                   **주의**: fromPath는 rootPath의 하위 경로여야 한다.
- *                   그렇지 않으면 파일 시스템 루트까지 검색한다.
+ * @param stopAt - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색)
+ * @returns 가장 가까운 매칭 파일의 절대 경로, 없으면 undefined
  */
-export function findAllParentChildPathsSync(
-  childGlob: string,
+export function findUpSync(
+  fileGlob: string,
   fromPath: string,
-  rootPath?: string,
+  stopAt?: string,
+): string | undefined {
+  let current = fromPath;
+  while (current) {
+    const matches = globSync(path.resolve(current, fileGlob));
+    if (matches.length > 0) return matches[0];
+
+    if (current === stopAt) break;
+
+    const next = path.dirname(current);
+    if (next === current) break;
+    current = next;
+  }
+
+  return undefined;
+}
+
+/**
+ * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는
+ * 가장 가까운 파일 1개를 찾는다 (비동기). 첫 매칭에서 즉시 중단한다.
+ * @param fileGlob - 각 디렉토리에서 검색할 glob 패턴
+ * @param fromPath - 검색을 시작할 경로
+ * @param stopAt - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색)
+ * @returns 가장 가까운 매칭 파일의 절대 경로, 없으면 undefined
+ */
+export async function findUp(
+  fileGlob: string,
+  fromPath: string,
+  stopAt?: string,
+): Promise<string | undefined> {
+  let current = fromPath;
+  while (current) {
+    const matches = await glob(path.resolve(current, fileGlob));
+    if (matches.length > 0) return matches[0];
+
+    if (current === stopAt) break;
+
+    const next = path.dirname(current);
+    if (next === current) break;
+    current = next;
+  }
+
+  return undefined;
+}
+
+/**
+ * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는
+ * 모든 파일 경로를 수집한다.
+ * @param fileGlob - 각 디렉토리에서 검색할 glob 패턴
+ * @param fromPath - 검색을 시작할 경로
+ * @param stopAt - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색).
+ *                 **주의**: fromPath는 stopAt의 하위 경로여야 한다.
+ *                 그렇지 않으면 파일 시스템 루트까지 검색한다.
+ */
+export function findUpAllSync(
+  fileGlob: string,
+  fromPath: string,
+  stopAt?: string,
 ): string[] {
   const resultPaths: string[] = [];
 
   let current = fromPath;
   while (current) {
-    const potential = path.resolve(current, childGlob);
+    const potential = path.resolve(current, fileGlob);
     const globResults = globSync(potential);
     resultPaths.push(...globResults);
 
-    if (current === rootPath) break;
+    if (current === stopAt) break;
 
     const next = path.dirname(current);
     if (next === current) break;
@@ -553,18 +609,18 @@ export function findAllParentChildPathsSync(
 }
 
 /**
- * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는 파일을 검색한다 (비동기).
- * 각 디렉토리에서 childGlob 패턴에 매칭되는 모든 파일 경로를 수집한다.
- * @param childGlob - 각 디렉토리에서 검색할 glob 패턴
+ * 시작 경로에서 루트 방향으로 부모 디렉토리를 순회하며 glob 패턴에 매칭되는
+ * 모든 파일 경로를 수집한다 (비동기).
+ * @param fileGlob - 각 디렉토리에서 검색할 glob 패턴
  * @param fromPath - 검색을 시작할 경로
- * @param rootPath - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색).
- *                   **주의**: fromPath는 rootPath의 하위 경로여야 한다.
- *                   그렇지 않으면 파일 시스템 루트까지 검색한다.
+ * @param stopAt - 검색을 중단할 경로 (지정하지 않으면 파일 시스템 루트까지 검색).
+ *                 **주의**: fromPath는 stopAt의 하위 경로여야 한다.
+ *                 그렇지 않으면 파일 시스템 루트까지 검색한다.
  */
-export async function findAllParentChildPaths(
-  childGlob: string,
+export async function findUpAll(
+  fileGlob: string,
   fromPath: string,
-  rootPath?: string,
+  stopAt?: string,
 ): Promise<string[]> {
   const dirs: string[] = [];
 
@@ -572,14 +628,14 @@ export async function findAllParentChildPaths(
   while (current) {
     dirs.push(current);
 
-    if (current === rootPath) break;
+    if (current === stopAt) break;
 
     const next = path.dirname(current);
     if (next === current) break;
     current = next;
   }
 
-  const results = await Promise.all(dirs.map((dir) => glob(path.resolve(dir, childGlob))));
+  const results = await Promise.all(dirs.map((dir) => glob(path.resolve(dir, fileGlob))));
 
   return results.flat();
 }

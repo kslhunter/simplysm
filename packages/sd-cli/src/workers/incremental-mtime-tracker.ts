@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { fsx } from "@simplysm/core-node";
 
 /**
  * 증분 방식으로 파일 mtime을 추적하여 변경 파일을 감지한다.
@@ -14,7 +14,7 @@ export class IncrementalMtimeTracker {
     const changedFiles = new Set<string>();
     for (const file of watchTargets) {
       try {
-        const mtime = fs.statSync(file).mtimeMs;
+        const mtime = fsx.statSync(file).mtimeMs;
         const prev = this._prevMtimes.get(file);
         if (prev != null && prev !== mtime) {
           changedFiles.add(file);
@@ -46,7 +46,7 @@ export class IncrementalMtimeTracker {
     for (const file of this._lastChangedFiles) {
       if (!targetSet.has(file)) continue;
       try {
-        this._prevMtimes.set(file, fs.statSync(file).mtimeMs);
+        this._prevMtimes.set(file, fsx.statSync(file).mtimeMs);
       } catch {
         this._prevMtimes.delete(file);
       }
@@ -56,7 +56,7 @@ export class IncrementalMtimeTracker {
     for (const file of targetSet) {
       if (!this._prevMtimes.has(file)) {
         try {
-          this._prevMtimes.set(file, fs.statSync(file).mtimeMs);
+          this._prevMtimes.set(file, fsx.statSync(file).mtimeMs);
         } catch {
           // 삭제된 파일 — 무시
         }

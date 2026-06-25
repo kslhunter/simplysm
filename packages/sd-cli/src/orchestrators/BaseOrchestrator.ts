@@ -1,5 +1,5 @@
 import { type ConsolaInstance } from "consola";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import type { SdConfig } from "../sd-config.types";
 import { loadSdConfig } from "../utils/sd-config";
 import { getVersion } from "../utils/build-env";
@@ -56,7 +56,7 @@ export abstract class BaseOrchestrator {
       });
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
-      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
       process.exitCode = 1;
       throw err;
     }

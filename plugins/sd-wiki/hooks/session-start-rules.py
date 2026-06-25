@@ -25,7 +25,7 @@ try:
     if PLUGIN_ROOT:
         ctx_dir = Path(PLUGIN_ROOT) / "rules"
         for md in sorted(ctx_dir.glob("*.md")):
-            out.append(md.read_text(encoding="utf-8"))
+            out.append(md.read_text(encoding="utf-8").replace("${CLAUDE_PLUGIN_ROOT}", PLUGIN_ROOT))
 except Exception:
     pass
 

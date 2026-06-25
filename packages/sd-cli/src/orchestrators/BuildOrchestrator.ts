@@ -1,5 +1,5 @@
 import { fsx, pathx } from "@simplysm/core-node";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import type {
   SdConfig,
   SdBuildPackageConfig,
@@ -151,7 +151,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
       });
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
-      this._logger.error(`sd.config.ts 로드 실패: ${err instanceof Error ? err.message : err}`);
+      this._logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
       process.exitCode = 1;
       throw err;
     }

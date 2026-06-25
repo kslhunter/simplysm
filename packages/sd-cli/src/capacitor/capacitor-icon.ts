@@ -1,6 +1,6 @@
 import { cpx, fsx, pathx } from "@simplysm/core-node";
 import { consola, LogLevels } from "consola";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 
 const _logger = createLogger("sd:cli:capacitor");
 
@@ -70,7 +70,7 @@ export async function setupIcon(
     );
   } catch (err) {
     _logger.warn(
-      `아이콘 생성에 실패했습니다: ${err instanceof Error ? err.message : err}`,
+      `아이콘 생성에 실패했습니다: ${errNs.message(err)}`,
     );
   }
 }

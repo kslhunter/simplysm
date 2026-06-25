@@ -20,7 +20,7 @@ export const AutoUpdateService = defineService(["AutoUpdate", "SdAutoUpdateServi
     const versions = updates
       .map((item) => ({
         fileName: item,
-        version: path.basename(item, path.extname(item)),
+        version: pathx.basenameWithoutExt(item),
         extName: path.extname(item),
       }))
       .filter((item) => {

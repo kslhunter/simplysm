@@ -174,19 +174,6 @@ export function encodeRecord(type: number, payload: Uint8Array): Uint8Array {
   return out;
 }
 
-/** 여러 Uint8Array 를 하나로 concat. */
-export function concatBytes(arrs: Uint8Array[]): Uint8Array {
-  let total = 0;
-  for (const a of arrs) total += a.length;
-  const out = new Uint8Array(total);
-  let off = 0;
-  for (const a of arrs) {
-    out.set(a, off);
-    off += a.length;
-  }
-  return out;
-}
-
 /** UInt32LE write. */
 export function writeUint32LE(buf: Uint8Array, off: number, v: number): void {
   buf[off] = v & 0xff;

@@ -1,4 +1,4 @@
-import type { Bytes } from "@simplysm/core-common";
+import { path, type Bytes } from "@simplysm/core-common";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 import type { BlobInput, FileCollection } from "../types/browser-compat";
 
@@ -13,7 +13,7 @@ export interface FileClient {
 export function createFileClient(hostUrl: string, clientName: string): FileClient {
   async function download(relPath: string): Promise<Bytes> {
     // URL 생성
-    const url = `${hostUrl}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
+    const url = path.join(hostUrl, relPath);
 
     const res = await fetch(url);
     if (!res.ok) {

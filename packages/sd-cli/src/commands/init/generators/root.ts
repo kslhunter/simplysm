@@ -5,13 +5,12 @@ import type { RenderData } from "../types";
 
 const TPL = path.join(TEMPLATES_ROOT, "workspace-root");
 
-// npm 은 패킹 시 `.gitignore`·`.npmrc` 를 특수 처리해 배포 tarball 에서 제외함.
+// npm 은 패킹 시 `.gitignore` 를 특수 처리해 배포 tarball 에서 제외함.
 // 이를 회피하려고 점 없는 이름으로 저장한 뒤, 생성 시 실제 이름으로 복사함.
 // [저장명, 출력명] 형태면 rename, 단일 문자열이면 동일명 복사.
 const FIXED: (string | [string, string])[] = [
   ".editorconfig",
   ["gitignore", ".gitignore"],
-  ["npmrc", ".npmrc"],
   ".prettierrc.yaml",
   "eslint.config.ts",
   "pnpm-workspace.yaml",

@@ -7,6 +7,7 @@ import { DateOnly } from "../types/date-only";
 import { Time } from "../types/time";
 import { Uuid } from "../types/uuid";
 import { nullToUndefined } from "./obj";
+import { fromObject } from "./error";
 import { SdError } from "../errors/sd-error";
 import { toHex, fromHex } from "./bytes";
 import { env, parseBoolEnv } from "../env";
@@ -207,10 +208,7 @@ export function parse<TResult = unknown>(json: string): TResult {
               return new Map(typed.data as [unknown, unknown][]);
             }
             if (typed.__type__ === "Error" && typeof typed.data === "object") {
-              const errorData = typed.data as Record<string, unknown>;
-              const error = new Error(errorData["message"] as string);
-              Object.assign(error, errorData);
-              return error;
+              return fromObject(typed.data as Record<string, unknown>);
             }
             if (typed.__type__ === "Uint8Array" && typeof typed.data === "string") {
               if (typed.data === "__hidden__") {

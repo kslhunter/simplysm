@@ -1,6 +1,6 @@
-import type { Bytes } from "@simplysm/core-common";
+import { bytes as bytesUtil, type Bytes } from "@simplysm/core-common";
 import type { IWorkbookModel } from "../models/i-workbook-model";
-import { concatBytes, REC } from "./biff12-codec";
+import { REC } from "./biff12-codec";
 import {
   encodeBrtBookView,
   encodeBrtBundleSh,
@@ -78,6 +78,6 @@ export class BiffWorkbookModel implements IWorkbookModel {
       parts.push(encodeBrtBundleSh(this._sheets[i].relId, this._sheets[i].name, i + 1));
     }
     parts.push(encodeMarker(REC.BrtEndBundleShs), encodeMarker(REC.BrtEndBook));
-    return concatBytes(parts);
+    return bytesUtil.concat(parts);
   }
 }

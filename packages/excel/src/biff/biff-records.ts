@@ -1,9 +1,9 @@
+import { bytes as bytesUtil } from "@simplysm/core-common";
 import type { ICfRuleSpec } from "../models/shared/excel-cf-spec";
 import type { ExcelCellType } from "../types";
 import { ExcelUtils } from "../utils/excel-utils";
 import type { IRecord } from "./biff12-codec";
 import {
-  concatBytes,
   decodeRkNumber,
   encodeRecord,
   encodeXLWideString,
@@ -509,7 +509,7 @@ export function encodeBrtDXF(background?: string, fontColor?: string, bold?: boo
   if (bold === true) {
     props.push(encodeXFProp(0x19, Uint8Array.from([0xbc, 0x02]))); // Bold = 700
   }
-  const body = concatBytes(props);
+  const body = bytesUtil.concat(props);
   const payload = new Uint8Array(6 + body.length);
   payload[1] = 0x80; // header: fNewBorder(bit15) — 빈 워크북/boa 정답지 기본값
   payload[4] = props.length & 0xff; // cprops
@@ -680,7 +680,7 @@ export function encodeBrtBeginCFRule(
 
   const parts: Uint8Array[] = [head, encodeXLNullableWideString(strParam), cf1];
   if (cf2 != null) parts.push(cf2);
-  return encodeRecord(REC.BrtBeginCFRule, concatBytes(parts));
+  return encodeRecord(REC.BrtBeginCFRule, bytesUtil.concat(parts));
 }
 
 //#endregion

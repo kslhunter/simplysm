@@ -1,3 +1,5 @@
+import { SdError } from "@simplysm/core-common";
+
 /**
  * 트랜잭션 관련 에러 코드
  *
@@ -23,7 +25,7 @@ export enum DbErrorCode {
  * DBMS별 네이티브 에러를 표준화된 에러 코드로 래핑하여
  * DBMS 독립적인 에러 처리를 지원한다
  */
-export class DbTransactionError extends Error {
+export class DbTransactionError extends SdError {
   override readonly name = "DbTransactionError";
 
   constructor(
@@ -31,9 +33,9 @@ export class DbTransactionError extends Error {
     public readonly code: DbErrorCode,
     /** 에러 메시지 */
     message: string,
-    /** 원본 DBMS 에러 (디버깅용) */
-    public readonly originalError?: unknown,
+    /** 원본 DBMS 에러 (cause 체인으로 보존) */
+    cause?: Error,
   ) {
-    super(message);
+    super(cause as Error, message);
   }
 }

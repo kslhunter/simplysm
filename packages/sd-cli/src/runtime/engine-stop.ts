@@ -5,6 +5,8 @@
  * 패턴의 중복을 방지하기 위해 추출하였다.
  */
 
+import { wait } from "@simplysm/core-common";
+
 const SHUTDOWN_TIMEOUT = 3000;
 
 interface StoppableWorker {
@@ -29,7 +31,7 @@ export async function stopEngineWorker(
     try {
       await Promise.race([
         worker.stopWatch(),
-        new Promise<void>((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT)),
+        wait.time(SHUTDOWN_TIMEOUT),
       ]);
     } catch {
       // stopWatch 실패해도 계속 진행

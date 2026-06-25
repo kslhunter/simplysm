@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "node:fs";
+import { fsx } from "@simplysm/core-node";
 import sharp from "sharp";
 
 /** PWA manifest icon entry */
@@ -25,7 +25,7 @@ export async function generatePwaIcons(pkgDir: string): Promise<PwaIcon[]> {
   let sourceFile: string | undefined;
   for (const name of ICON_SOURCES) {
     const candidate = path.join(publicDir, name);
-    if (fs.existsSync(candidate)) {
+    if (fsx.existsSync(candidate)) {
       sourceFile = candidate;
       break;
     }
@@ -37,7 +37,7 @@ export async function generatePwaIcons(pkgDir: string): Promise<PwaIcon[]> {
 
   // icons/ 디렉토리 생성
   const iconsDir = path.join(publicDir, "icons");
-  fs.mkdirSync(iconsDir, { recursive: true });
+  fsx.mkdirSync(iconsDir);
 
   // 각 크기로 리사이즈
   const icons: PwaIcon[] = [];

@@ -9,3 +9,18 @@
 export function message(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
+
+/**
+ * Error 속성을 담은 plain object 를 Error 인스턴스로 복원한다.
+ *
+ * 직렬화된 에러(JSON 역직렬화·RPC 전송 등)를 Error 로 되살릴 때 사용한다.
+ * `message` 로 Error 를 만든 뒤 나머지 속성(name·stack·code 등)을 그대로 복사한다.
+ *
+ * @param obj - message·name·stack 등 Error 속성을 담은 객체
+ * @returns 복원된 Error 인스턴스
+ */
+export function fromObject(obj: Record<string, unknown>): Error {
+  const error = new Error(obj["message"] as string | undefined);
+  Object.assign(error, obj);
+  return error;
+}

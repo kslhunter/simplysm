@@ -1,8 +1,6 @@
-import { bytes, obj, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
+import { bytes, obj, wait, DateOnly, DateTime, Time, Uuid } from "@simplysm/core-common";
 import type { ColumnPrimitiveStr } from "../types/column";
 import type { ResultMeta } from "../types/db";
-
-declare function setImmediate(callback: () => void): void;
 
 // ============================================
 // 타입 파서
@@ -164,12 +162,6 @@ function isEmptyJoinObject(record: Record<string, unknown>): boolean {
 /** 양보 간격: N개 레코드마다 이벤트 루프에 양보 */
 const YIELD_INTERVAL = 100;
 
-/** 이벤트 루프 양보: Node.js는 setImmediate, 브라우저는 setTimeout 폴백 */
-const yieldToEventLoop: () => Promise<void> =
-  typeof setImmediate !== "undefined"
-    ? () => new Promise<void>((resolve) => setImmediate(resolve))
-    : () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-
 /**
  * ResultMeta를 통해 DB 쿼리 결과를 TypeScript 객체로 변환
  *
@@ -217,7 +209,7 @@ async function parseSimpleRecords<TRecord>(
   for (let i = 0; i < rawResults.length; i++) {
     // 이벤트 루프에 양보
     if (i > 0 && i % YIELD_INTERVAL === 0) {
-      await yieldToEventLoop();
+      await wait.immediate();
     }
 
     const parsed = flatToNested(rawResults[i], columnInfos);
@@ -256,7 +248,7 @@ async function parseJoinedRecords<TRecord>(
   const nestedRecords: Record<string, unknown>[] = [];
   for (let i = 0; i < rawResults.length; i++) {
     if (i > 0 && i % YIELD_INTERVAL === 0) {
-      await yieldToEventLoop();
+      await wait.immediate();
     }
     nestedRecords.push(flatToNested(rawResults[i], columnInfos));
   }

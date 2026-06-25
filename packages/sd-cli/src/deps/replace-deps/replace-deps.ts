@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { type ConsolaInstance } from "consola";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import { fsx, pathx, FsWatcher } from "@simplysm/core-node";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -15,8 +15,8 @@ import { resolveAllReplaceDepEntries } from "./replace-deps-resolve";
 async function isFileContentSame(pathA: string, pathB: string): Promise<boolean> {
   try {
     const [statA, statB] = await Promise.all([
-      fs.promises.stat(pathA),
-      fs.promises.stat(pathB),
+      fsx.stat(pathA),
+      fsx.stat(pathB),
     ]);
     if (statA.size !== statB.size) return false;
     if (statA.mtimeMs === statB.mtimeMs) return true;
@@ -43,27 +43,27 @@ async function copyWithUnlink(
 ): Promise<void> {
   let stats: fs.Stats;
   try {
-    stats = await fs.promises.lstat(sourcePath);
+    stats = await fsx.lstat(sourcePath);
   } catch {
     return;
   }
 
   if (stats.isDirectory()) {
     await fsx.mkdir(targetPath);
-    const names = await fs.promises.readdir(sourcePath);
+    const names = await fsx.readdir(sourcePath);
     const allowedChildren = names
       .map((name) => path.resolve(sourcePath, name))
       .filter((child) => filter == null || filter(child));
     const allowedBasenames = new Set(allowedChildren.map((c) => path.basename(c)));
 
     // 고아 엔트리 정리: filter 범위 내이면서 소스에 없는 타겟 엔트리 삭제
-    const targetNames = await fs.promises.readdir(targetPath).catch(() => [] as string[]);
+    const targetNames = await fsx.readdir(targetPath).catch(() => [] as string[]);
     await Promise.all(
       targetNames.map(async (name) => {
         const targetChild = path.join(targetPath, name);
         if (filter != null && !filter(targetChild)) return;
         if (allowedBasenames.has(name)) return;
-        await fs.promises.rm(targetChild, { recursive: true, force: true });
+        await fsx.rm(targetChild);
       }),
     );
 
@@ -105,7 +105,7 @@ async function runPostinstall(
     logger.success(`[${entry.targetName}] postinstall 실행 완료`);
   } catch (err) {
     logger.error(
-      `[${entry.targetName}] postinstall 실패: ${err instanceof Error ? err.message : err}`,
+      `[${entry.targetName}] postinstall 실패: ${errNs.message(err)}`,
     );
   }
 }
@@ -189,7 +189,7 @@ export async function setupReplaceDeps(
       await copyWithUnlink(entry.resolvedSourcePath, entry.actualTargetPath, filter);
       return entry;
     } catch (err) {
-      logger.error(`[${entry.targetName}] 복사 실패: ${err instanceof Error ? err.message : err}`);
+      logger.error(`[${entry.targetName}] 복사 실패: ${errNs.message(err)}`);
       return undefined;
     }
   }));
@@ -265,7 +265,7 @@ export async function watchReplaceDeps(
           logger.debug(`[${sourceEntries[0].targetName}] 감시 경로 추가: ${wp}`);
         }
 
-        const rootEntries = await fs.promises
+        const rootEntries = await fsx
           .readdir(sourcePath)
           .catch(() => [] as string[]);
         for (const name of rootEntries) {
@@ -277,7 +277,7 @@ export async function watchReplaceDeps(
         }
       } catch (err) {
         logger.error(
-          `[${sourceEntries[0].targetName}] 감시 설정 실패: ${err instanceof Error ? err.message : err}`,
+          `[${sourceEntries[0].targetName}] 감시 설정 실패: ${errNs.message(err)}`,
         );
         sourceMap.delete(sourcePath);
       }
@@ -364,16 +364,10 @@ export async function watchReplaceDeps(
           const destPath = pathx.posix(path.join(e.actualTargetPath, relativePath));
 
           try {
-            let sourceExists = false;
-            try {
-              await fs.promises.access(changedPath);
-              sourceExists = true;
-            } catch {
-              // 소스가 삭제됨
-            }
+            const sourceExists = await fsx.exists(changedPath);
 
             if (sourceExists) {
-              const stat = await fs.promises.stat(changedPath);
+              const stat = await fsx.stat(changedPath);
               if (stat.isDirectory()) {
                 logger.debug(`[${e.targetName}] mkdir: ${relativePath}`);
                 await fsx.mkdir(destPath);
@@ -396,7 +390,7 @@ export async function watchReplaceDeps(
             }
           } catch (err) {
             logger.error(
-              `[${e.targetName}] 복사 실패 (${relativePath}): ${err instanceof Error ? err.message : err}`,
+              `[${e.targetName}] 복사 실패 (${relativePath}): ${errNs.message(err)}`,
             );
           }
         }
