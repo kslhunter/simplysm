@@ -240,7 +240,7 @@ export class Electron {
     }
 
     const devDependencies: Record<string, string> = {};
-    devDependencies["electron"] = "^41";
+    devDependencies["electron"] = "^42";
     devDependencies["@electron/rebuild"] = "^4";
     devDependencies["electron-builder"] = "^26";
 
@@ -290,7 +290,7 @@ export class Electron {
       entryPoints: [entryPoint],
       outfile: pathx.posixResolve(this._srcPath, "electron-main.js"),
       platform: "node",
-      target: "node20",
+      target: "node24",
       format: "esm",
       bundle: true,
       external: ["electron", ...builtinModules, ...reinstallDeps, ...this._exclude],

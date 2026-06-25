@@ -35,7 +35,8 @@ SessionStart 가 프로젝트의 `@simplysm/sd-cli` major 를 읽어 활성 refe
 
 ## 데이터 위치
 
-- 캐시(read-hash·unpack) + statusline 복제본 → `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/{id}/`, 플러그인 버전 업에도 유지).
+- statusline 복제본 → `~/.claude/sd/` (hook·Bash 양쪽이 동일 경로로 접근하도록 고정).
+- 캐시(read-hash·unpack) → 시스템 임시폴더(세션 휘발물).
 
 원격 지식 위키는 별도 플러그인 `sd-wiki` 로 분리됨(목차 주입·CLI·작성 규칙·인증 토큰).
 

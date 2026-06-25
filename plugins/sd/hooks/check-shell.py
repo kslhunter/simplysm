@@ -1,25 +1,9 @@
-import json, os, re, sys
+import re
 
-data = json.load(sys.stdin)
+from _common import load_stdin, deny
+
+data = load_stdin()
 cmd = data["tool_input"].get("command", "")
-
-# Codex 는 native PLUGIN_ROOT 를 set(Claude 는 CLAUDE_PLUGIN_ROOT 만) → 호스트 판별.
-IS_CODEX = bool(os.environ.get("PLUGIN_ROOT"))
-
-
-def block(reason):
-    # Claude: exit 2 + stderr (기존 동작 그대로). Codex: stdout JSON permissionDecision(deny).
-    if IS_CODEX:
-        print(json.dumps({
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "deny",
-                "permissionDecisionReason": f"Blocked: {reason}",
-            }
-        }, ensure_ascii=False))
-        sys.exit(0)
-    print(f"Blocked: {reason}", file=sys.stderr)
-    sys.exit(2)
 
 # Command position prefix: start of line or after command separator (&&, ||, ;, |)
 CMD_POS = r"(^|&&|\|\||;|\|)\s*"
@@ -46,14 +30,14 @@ BLOCKED = [
 
 for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
-        block(label)
+        deny(label)
 
 # Git read-only inspection block (working-tree-only policy).
 GIT_READ_VERBS = r"status|diff|log|show|blame|reflog|rev-list|rev-parse|ls-files|ls-tree|cat-file|describe|whatchanged|shortlog|grep"
 if not re.search(r"\bSDGIT\b", cmd):
     m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
     if m:
-        block(
+        deny(
             f"git {m.group('verb')} "
             "(working-tree inspection via git is forbidden; use Read/Grep/Glob)."
         )

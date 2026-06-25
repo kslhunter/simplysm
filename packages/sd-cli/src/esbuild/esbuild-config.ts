@@ -82,7 +82,7 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     minify: options.dev !== true,
     sourcemap: options.dev === true ? "linked" : undefined,
     platform: "node",
-    target: "node20",
+    target: "node24",
     bundle: true,
     banner: { js: bannerJs },
     external: options.external,

@@ -416,18 +416,22 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   }
 
   onInputPaste(event: ClipboardEvent): void {
+    // preventDefault 로 기본 붙여넣기를 막으므로, 포커스 중 동기화를 건너뛰는 effect 대신
+    // 핸들러에서 직접 input.value 를 모델 기준값으로 되써야 화면에 반영됨 (onBlur 와 동일 패턴)
     event.preventDefault();
+    const inputEl = event.target as HTMLInputElement;
     const text = event.clipboardData?.getData("text/plain").trim();
     if (text == null || text === "") {
       this.value.set(undefined);
+      inputEl.value = "";
       return;
     }
     const parsed = this._handler().parse(text, { format: this.format() });
     if (parsed == null) {
-      const inputEl = event.target as HTMLInputElement;
       inputEl.value = this.controlValue();
       return;
     }
     this.value.set(parsed as SdTextfieldTypes[K] | undefined);
+    inputEl.value = this.controlValue();
   }
 }

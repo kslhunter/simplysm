@@ -3,7 +3,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import type { Connection } from "mysql2/promise";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import {
   bytes,
   str,
@@ -322,7 +322,7 @@ export class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn
     this._stopTimeout();
     this._connTimeout = setTimeout(() => {
       this.close().catch((err) => {
-        logger.error("연결 종료 오류", err instanceof Error ? err.message : String(err));
+        logger.error("연결 종료 오류", errNs.message(err));
       });
     }, this._timeout * 2);
   }

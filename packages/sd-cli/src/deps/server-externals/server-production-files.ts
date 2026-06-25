@@ -108,7 +108,7 @@ export function generateProductionFiles(
   // dist/mise.toml
   if (info.packageManager === "mise") {
     const rootMiseTomlPath = path.join(info.cwd, "mise.toml");
-    let nodeVersion = "20";
+    let nodeVersion = "24";
     if (fs.existsSync(rootMiseTomlPath)) {
       const miseContent = fs.readFileSync(rootMiseTomlPath, "utf-8");
       // mise.toml은 저장소에서 관리되는 설정 파일이므로, 파싱 실패 시 폴백하지 않고 예외를 전파하여 설정 오류를 즉시 드러낸다.

@@ -1,6 +1,6 @@
 # sd-wiki
 
-심플리즘 팀 공용 원격 지식 위키를 Claude Code / Codex 세션에 연결하는 플러그인. 세션 시작 시 위키 목차를 컨텍스트에 주입하고, 조회·작성 CLI 와 작성 규칙을 제공한다.
+심플리즘 팀 공용 원격 지식 위키를 Claude Code 세션에 연결하는 플러그인. 세션 시작 시 위키 목차를 컨텍스트에 주입하고, 조회·작성 CLI 와 작성 규칙을 제공한다.
 
 ## 요구사항
 
@@ -46,7 +46,7 @@ claude --plugin-dir ./plugins/sd-wiki
 
 ## 데이터 위치
 
-- 위키 인증 토큰(`wiki-token.json`) → `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/{id}/`, 플러그인 버전 업에도 유지).
+- 위키 인증 토큰(`wiki-token.json`) → `~/.claude/sd/` (hook·Bash 양쪽이 동일 경로로 접근하도록 고정).
 - 위키 본문·목차는 팀 공용 원격 서버에 있고, 로컬엔 접근 토큰만 둠(위키 자체는 플러그인 제거와 무관하게 원격에 보존).
 
 ## 팀 공유

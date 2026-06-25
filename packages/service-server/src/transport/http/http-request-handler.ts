@@ -1,4 +1,4 @@
-import { json } from "@simplysm/core-common";
+import { json, err as errNs } from "@simplysm/core-common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { verifyJwt } from "../../auth/jwt-manager";
 import type { AuthTokenPayload } from "../../auth/auth-token-payload";
@@ -33,7 +33,7 @@ export async function handleHttpRequest<TAuthInfo = unknown>(
   } catch (err) {
     reply.status(401).send({
       error: "인증 실패",
-      message: err instanceof Error ? err.message : String(err),
+      message: errNs.message(err),
     });
     return;
   }

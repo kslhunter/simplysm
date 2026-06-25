@@ -6,7 +6,7 @@ import { fsx } from "@simplysm/core-node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { ServiceUploadResult } from "@simplysm/service-common";
 import { verifyJwt } from "../../auth/jwt-manager";
-import { createLogger } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 
 const logger = createLogger("service-server:UploadHandler");
 
@@ -35,7 +35,7 @@ export async function handleUpload(
   } catch (err) {
     reply.status(401).send({
       error: "인증 실패",
-      message: err instanceof Error ? err.message : String(err),
+      message: errNs.message(err),
     });
     return;
   }

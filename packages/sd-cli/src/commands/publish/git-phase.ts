@@ -47,6 +47,14 @@ export async function ensureCleanWorkingTree(
       (e instanceof Error ? e.message : String(e)),
     );
   }
+
+  // claude의 종료 코드만으로는 실제 커밋 성공을 보장할 수 없으므로 워킹트리를 재확인한다.
+  const { stdout: diffAfter } = await cpx.spawn("git", ["diff", "--name-only"]);
+  const { stdout: stagedAfter } = await cpx.spawn("git", ["diff", "--cached", "--name-only"]);
+
+  if (diffAfter.trim() !== "" || stagedAfter.trim() !== "") {
+    throw new Error("자동 커밋 후에도 미커밋 변경이 남아 있습니다. 수동으로 커밋 후 다시 시도해주세요.");
+  }
 }
 
 /**

@@ -1,4 +1,4 @@
-# @simplysm 라이브러리 API 문서
+# @simplysm/* v12 개발 안내
 
 ## 패키지 인덱스
 

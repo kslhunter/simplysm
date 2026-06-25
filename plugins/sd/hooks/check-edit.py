@@ -1,11 +1,11 @@
-import json, os, sys
+import os, sys
 from pathlib import Path
 
+from _common import load_stdin, deny, project_root
 
-data = json.load(sys.stdin)
+data = load_stdin()
 tool_input = data.get("tool_input") or {}
-root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or data.get("cwd") or os.getcwd()).resolve()
-IS_CODEX = bool(os.environ.get("PLUGIN_ROOT"))
+root = project_root(data)
 
 
 def norm_key(path):
@@ -18,44 +18,9 @@ BLOCKED_FILES = {
 }
 
 
-def block(file_path):
-    reason = f"forbidden file - {file_path}"
-    if IS_CODEX:
-        print(json.dumps({
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "deny",
-                "permissionDecisionReason": f"Blocked: {reason}",
-            }
-        }, ensure_ascii=False))
-        sys.exit(0)
-    print(f"Blocked: {reason}", file=sys.stderr)
-    sys.exit(2)
-
-
-def resolve_patch_path(raw_path):
-    path = Path(raw_path.strip().replace("\\", "/"))
-    if not path.is_absolute():
-        path = root / path
-    return path.resolve()
-
-
-if IS_CODEX:
-    command = tool_input.get("command", "")
-    touched_paths = []
-    for line in command.splitlines():
-        for marker in ("*** Add File: ", "*** Delete File: ", "*** Update File: ", "*** Move to: "):
-            if line.startswith(marker):
-                touched_paths.append(resolve_patch_path(line[len(marker):]))
-                break
-    for touched_path in touched_paths:
-        if norm_key(touched_path) in BLOCKED_FILES:
-            block(touched_path)
-    sys.exit(0)
-
 file_path = tool_input.get("file_path")
 if not file_path:
     sys.exit(0)
 
 if norm_key(Path(file_path)) in BLOCKED_FILES:
-    block(Path(file_path))
+    deny(f"forbidden file - {Path(file_path)}")

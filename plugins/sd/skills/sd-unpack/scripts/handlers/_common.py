@@ -86,7 +86,7 @@ def copy(src: Path, dst: Path) -> None:
 
 
 def _ensure_tmp_base() -> Path:
-    base = Path(os.environ.get("CLAUDE_PLUGIN_DATA") or tempfile.gettempdir()) / "tmp" / "unpack"
+    base = Path(tempfile.gettempdir()) / "tmp" / "unpack"
     base.mkdir(parents=True, exist_ok=True)
     return base
 

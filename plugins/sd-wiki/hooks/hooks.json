@@ -6,15 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\" --part 0"
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-rootmap.py\""
           },
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\" --part 1"
-          },
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.py\" --part 2 --last"
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-rules.py\""
           }
         ]
       }

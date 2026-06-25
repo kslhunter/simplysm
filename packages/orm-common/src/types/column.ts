@@ -1,4 +1,4 @@
-import { DateOnly, DateTime, Time, Uuid, type Bytes } from "@simplysm/core-common";
+import { primitive, type PrimitiveType, type PrimitiveTypeMap, type PrimitiveTypeStr } from "@simplysm/core-common";
 
 // ============================================
 // DataType (SQL 타입 정의)
@@ -45,31 +45,20 @@ export type DataType =
 
 /**
  * Column 원시 타입 매핑
- *
- * TypeScript 타입 이름 (문자열) → 실제 TypeScript 타입 매핑
  */
-export type ColumnPrimitiveMap = {
-  string: string;
-  number: number;
-  boolean: boolean;
-  DateTime: DateTime;
-  DateOnly: DateOnly;
-  Time: Time;
-  Uuid: Uuid;
-  Bytes: Bytes;
-};
+export type ColumnPrimitiveMap = PrimitiveTypeMap;
 
 /**
  * Column 원시 타입 이름 (문자열)
  */
-export type ColumnPrimitiveStr = keyof ColumnPrimitiveMap;
+export type ColumnPrimitiveStr = PrimitiveTypeStr;
 
 /**
  * Column에 저장 가능한 모든 원시 타입
  *
  * undefined는 NULL을 나타냄
  */
-export type ColumnPrimitive = ColumnPrimitiveMap[ColumnPrimitiveStr] | undefined;
+export type ColumnPrimitive = PrimitiveType;
 
 // ============================================
 // DataType ↔ ColumnPrimitive Mapping
@@ -108,18 +97,10 @@ export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
  *
  * @param value - Column 값
  * @returns ColumnPrimitiveStr 타입 이름
- * @throws 값 타입이 알 수 없을 때 Error
+ * @throws 값 타입이 알 수 없을 때 ArgumentError
  */
 export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr {
-  if (typeof value === "string") return "string";
-  if (typeof value === "number") return "number";
-  if (typeof value === "boolean") return "boolean";
-  if (value instanceof DateTime) return "DateTime";
-  if (value instanceof DateOnly) return "DateOnly";
-  if (value instanceof Time) return "Time";
-  if (value instanceof Uuid) return "Uuid";
-  if (value instanceof Uint8Array) return "Bytes";
-  throw new Error("NULL 값으로는 타입을 추론할 수 없습니다.");
+  return primitive.typeStr(value as Exclude<ColumnPrimitive, undefined>);
 }
 
 // ============================================

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm-test/sd-cli-client",
-  "version": "14.1.3",
+  "version": "14.1.5",
   "description": "심플리즘 패키지 - esbuild define env 주입 통합 테스트",
   "author": "김석래",
   "repository": {
@@ -13,7 +13,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^24.13.2",
     "esbuild": "^0.28.1"
   }
 }

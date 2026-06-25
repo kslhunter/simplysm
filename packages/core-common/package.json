@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/core-common",
-  "version": "14.1.3",
+  "version": "14.1.5",
   "description": "심플리즘 패키지 - 코어 (common)",
   "author": "심플리즘",
   "license": "Apache-2.0",
@@ -27,7 +27,7 @@
     "./dist/index.js"
   ],
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^24.13.2"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.8.26",

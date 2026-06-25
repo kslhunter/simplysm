@@ -11,7 +11,7 @@ opus(client/server)가 제공하는 브라우저 authorization-code 인증을 �
   3. get_token(): 저장 토큰을 refresh 로 갱신해 반환. 토큰이 없거나 만료(401)면
      브라우저 로그인으로 재발급(allow_browser=True)하거나 None 반환.
 
-저장: ${CLAUDE_PLUGIN_DATA}/wiki-token.json — 토큰만 보관(비밀번호는 브라우저에만).
+저장: ~/.claude/sd/wiki-token.json — 토큰만 보관(비밀번호는 브라우저에만).
 opus 는 redirect_uri 의 hostname 을 localhost/127.0.0.1 로 제한(open redirect 차단)하므로
 콜백은 127.0.0.1 고정. opus admin 은 해시 라우팅이라 redirect_uri·state 쿼리는
 로그인 URL 의 해시(`#/login`) 뒤에 붙인다.
@@ -63,10 +63,7 @@ class WikiAuthExpired(WikiAuthError):
 
 
 def _data_dir() -> Path:
-    base = os.environ.get("CLAUDE_PLUGIN_DATA") or os.environ.get("PLUGIN_DATA")
-    if not base:
-        raise WikiAuthError("CLAUDE_PLUGIN_DATA 환경변수가 없습니다.")
-    d = Path(base)
+    d = Path.home() / ".claude" / "sd"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -99,8 +96,7 @@ def clear_token() -> None:
     try:
         _token_path().unlink()
     except FileNotFoundError:
-        # 이미 없음 = 폐기 목적 달성. 단 _data_dir() 의 WikiAuthError(토큰 위치 결정 불가)는
-        # 폐기 실패이므로 삼키지 않고 전파.
+        # 이미 없음 = 폐기 목적 달성.
         pass
 
 

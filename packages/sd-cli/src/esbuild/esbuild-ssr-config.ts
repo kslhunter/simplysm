@@ -121,7 +121,7 @@ export async function buildSsrBundle(options: BuildSsrBundleOptions): Promise<Ss
       sourcefile: "sd-ssg-entry.ts",
       loader: "ts",
     },
-    target: "node20",
+    target: "node24",
     bundle: true,
     splitting: false,
     format: "esm",

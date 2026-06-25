@@ -653,6 +653,7 @@ async onSubmit(): Promise<void> {
 - 시트 셀에는 패딩이 없으므로 본문 div 에 `p-xs-sm` 클래스 적용이 기본.
 - 정렬 클래스(`tx-right` / `tx-center` / `tx-left`) 는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정 (브라우저 기본 left). "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
 - 단, **숫자 셀은 `tx-right` 기본 적용** (수량·금액·단가·합계 등 숫자값 컬럼).
+- 숫자값 출력은 **`| number` 파이프 기본 적용** (천단위 구분). 예: `{{ item.quantity | number }}`.
 - `[cell]="items()"` 는 타입 추론용 더미. 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 보유.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
 - 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등) 를 토글할 때는 빈 값 자리에 `&nbsp;` 를 채워 div 가 셀 높이를 유지하게 함 (table cell 자식 div 가 콘텐츠 없을 시 높이 0 → bg 가 셀을 채우지 못함).
@@ -684,10 +685,10 @@ async onSubmit(): Promise<void> {
 ```html
 <sd-sheet-column [key]="'quantity'" [header]="'수량'">
   <ng-template #summaryTpl>
-    <div class="p-xs-sm tx-right">{{ totalQuantity() }}</div>
+    <div class="p-xs-sm tx-right">{{ totalQuantity() | number }}</div>
   </ng-template>
   <ng-template [cell]="items()" let-item="item">
-    <div class="p-xs-sm tx-right">{{ item.quantity }}</div>
+    <div class="p-xs-sm tx-right">{{ item.quantity | number }}</div>
   </ng-template>
 </sd-sheet-column>
 ```

@@ -59,7 +59,7 @@ if (!result) return;
 
 `@Injectable({ providedIn: "root" })`.
 
-- `SdToastSeverity` = `"info" | "success" | "warning" | "danger"` — 심각도. `info`/`success` = polite(aria), `warning`/`danger` = assertive. (심각도 분류 기준은 design-rules.md)
+- `SdToastSeverity` = `"info" | "success" | "warning" | "danger"` — 심각도. `info`/`success` = polite(aria), `warning`/`danger` = assertive. (심각도 분류 기준은 sd 규칙의 심각도 분류)
 - `SdToastTheme` = `"primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray"`.
 - 심각도 헬퍼(각 overload): `info`/`success`/`warning`/`danger`. `useProgress=true` 면 `WritableSignal<number>`(진행률 0~100) 반환, 아니면 `void`. 비-progress 토스트는 3초 후 자동 소멸(hover 중 일시정지), progress 토스트는 ≥100 도달 1초 후 소멸.
 

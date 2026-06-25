@@ -1,4 +1,4 @@
 [tools]
-node = "20"
+node = "24"
 pnpm = "11"
 python = "3"
