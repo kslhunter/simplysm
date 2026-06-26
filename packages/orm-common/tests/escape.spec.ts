@@ -42,8 +42,8 @@ describe("MysqlExprRenderer.escapeValue", () => {
     expect(result).toBe("'O''Reilly'");
   });
 
-  it("returns 'NULL' string for null", () => {
-    const result = renderer.escapeValue(null);
+  it("returns 'NULL' string for undefined", () => {
+    const result = renderer.escapeValue(undefined);
     expect(result).toBe("NULL");
   });
 

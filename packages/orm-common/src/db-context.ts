@@ -42,7 +42,10 @@ export const SD_BUILDER = Symbol("sdBuilder");
  */
 export abstract class DbContext implements DbContextBase {
   // ── 상태 ──
-  status: DbContextStatus = "ready";
+  private _status: DbContextStatus = "ready";
+  get status(): DbContextStatus {
+    return this._status;
+  }
   private _aliasCounter = 0;
   private _relationsValidated = false;
 
@@ -83,7 +86,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   getQueryDefObjectName(
-    tableOrView: TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
+    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName {
     return getQueryDefObjectNameImpl(this, tableOrView);
   }
@@ -94,9 +97,9 @@ export abstract class DbContext implements DbContextBase {
 
   // ── 등록 메서드 ──
 
-  protected queryable<T extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
+  protected queryable<T extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
     builder: T,
-  ): () => Queryable<T["$inferSelect"], T extends TableBuilder<any, any, any> ? T : never> {
+  ): () => Queryable<T["$inferSelect"], T extends TableBuilder<any, any> ? T : never> {
     const fn = createQueryable(this, builder);
     Object.defineProperty(fn, SD_BUILDER, { value: builder });
     return fn;
@@ -128,18 +131,18 @@ export abstract class DbContext implements DbContextBase {
     this.resetAliasCounter();
 
     await this._executor.connect();
-    this.status = "connect";
+    this._status = "connect";
 
     try {
       await this._executor.beginTransaction(isolationLevel);
-      this.status = "transact";
+      this._status = "transact";
 
       let result: TResult;
       try {
         result = await fn();
 
         await this._executor.commitTransaction();
-        this.status = "connect";
+        this._status = "connect";
       } catch (err) {
         try {
           await this._executor.rollbackTransaction();
@@ -151,7 +154,7 @@ export abstract class DbContext implements DbContextBase {
             (err as Error).cause = err1;
           }
         }
-        this.status = "connect";
+        this._status = "connect";
         throw err;
       }
 
@@ -160,7 +163,7 @@ export abstract class DbContext implements DbContextBase {
       try {
         await this._executor.close();
       } finally {
-        this.status = "ready";
+        this._status = "ready";
       }
     }
   }
@@ -178,7 +181,7 @@ export abstract class DbContext implements DbContextBase {
     this.resetAliasCounter();
 
     await this._executor.connect();
-    this.status = "connect";
+    this._status = "connect";
 
     try {
       return await callback();
@@ -186,7 +189,7 @@ export abstract class DbContext implements DbContextBase {
       try {
         await this._executor.close();
       } finally {
-        this.status = "ready";
+        this._status = "ready";
       }
     }
   }
@@ -200,14 +203,14 @@ export abstract class DbContext implements DbContextBase {
     }
 
     await this._executor.beginTransaction(isolationLevel);
-    this.status = "transact";
+    this._status = "transact";
 
     let result: TResult;
     try {
       result = await fn();
 
       await this._executor.commitTransaction();
-      this.status = "connect";
+      this._status = "connect";
     } catch (err) {
       try {
         await this._executor.rollbackTransaction();
@@ -219,7 +222,7 @@ export abstract class DbContext implements DbContextBase {
           (err as Error).cause = err1;
         }
       }
-      this.status = "connect";
+      this._status = "connect";
       throw err;
     }
 
@@ -228,7 +231,7 @@ export abstract class DbContext implements DbContextBase {
 
   // ── DDL 실행 메서드 ──
 
-  async createTable(table: TableBuilder<any, any, any>): Promise<void> {
+  async createTable(table: TableBuilder<any, any>): Promise<void> {
     await this.executeDefs([tableDdl.getCreateTableQueryDef(this, table)]);
   }
 
@@ -241,7 +244,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   async createView(view: ViewBuilder<any, any, any>): Promise<void> {
-    await this.executeDefs([tableDdl.getCreateViewQueryDef(this as any, view)]);
+    await this.executeDefs([tableDdl.getCreateViewQueryDef(this, view)]);
   }
 
   async dropView(view: QueryDefObjectName): Promise<void> {
@@ -291,7 +294,7 @@ export abstract class DbContext implements DbContextBase {
   async addForeignKey(
     table: QueryDefObjectName,
     relationName: string,
-    relationDef: ForeignKeyBuilder<any, any>,
+    relationDef: ForeignKeyBuilder<any>,
   ): Promise<void> {
     await this.executeDefs([
       relationDdl.getAddForeignKeyQueryDef(this, table, relationName, relationDef),
@@ -325,7 +328,7 @@ export abstract class DbContext implements DbContextBase {
 
   // ── DDL QueryDef 생성기 ──
 
-  getCreateTableQueryDef(table: TableBuilder<any, any, any>): QueryDef {
+  getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef {
     return tableDdl.getCreateTableQueryDef(this, table);
   }
 
@@ -338,7 +341,7 @@ export abstract class DbContext implements DbContextBase {
   }
 
   getCreateObjectQueryDef(
-    builder: TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
+    builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef {
     return tableDdl.getCreateObjectQueryDef(this, builder);
   }
@@ -394,7 +397,7 @@ export abstract class DbContext implements DbContextBase {
   getAddForeignKeyQueryDef(
     table: QueryDefObjectName,
     relationName: string,
-    relationDef: ForeignKeyBuilder<any, any>,
+    relationDef: ForeignKeyBuilder<any>,
   ): QueryDef {
     return relationDdl.getAddForeignKeyQueryDef(this, table, relationName, relationDef);
   }

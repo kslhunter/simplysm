@@ -11,7 +11,7 @@ export function injectSdSystemConfigResource<T>(options: { key: Signal<string | 
   const res: ResourceRef<T | undefined> = resource({
     params: () => options.key(),
     loader: async ({ params: key }) => {
-      return (await sdSystemConfig.getAsync(`${elTag}.${key}`)) as T | undefined;
+      return sdSystemConfig.getAsync(`${elTag}.${key}`);
     },
   });
 

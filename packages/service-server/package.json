@@ -37,6 +37,7 @@
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@types/node": "^24.13.2",
     "@types/semver": "^7.7.1",
     "@types/ws": "^8.18.1"
   }

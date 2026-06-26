@@ -18,6 +18,25 @@ export interface TiptapActiveStates {
   alignJustify: boolean;
 }
 
+export type TiptapCommand =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strike"
+  | "h1"
+  | "h2"
+  | "bulletList"
+  | "orderedList"
+  | "indent"
+  | "outdent"
+  | "blockquote"
+  | "codeBlock"
+  | "alignLeft"
+  | "alignCenter"
+  | "alignRight"
+  | "alignJustify"
+  | "clean";
+
 export const DEFAULT_ACTIVE_STATES: TiptapActiveStates = {
   h1: false,
   h2: false,
@@ -44,7 +63,7 @@ export function useTiptapToolbar(opt: TiptapToolbarOptions): {
   activeColor: WritableSignal<string>;
   activeBgColor: WritableSignal<string>;
   colorPickerMode: WritableSignal<"text" | "bg" | undefined>;
-  execCmd: (cmd: string) => void;
+  execCmd: (cmd: TiptapCommand) => void;
   refreshActiveStates: () => void;
   toggleColorPicker: (mode: "text" | "bg") => void;
   applyColor: (color: string | undefined) => void;
@@ -54,7 +73,7 @@ export function useTiptapToolbar(opt: TiptapToolbarOptions): {
   const activeBgColor = signal("");
   const colorPickerMode = signal<"text" | "bg" | undefined>(undefined);
 
-  function execCmd(cmd: string): void {
+  function execCmd(cmd: TiptapCommand): void {
     const ed = opt.editor();
     if (ed == null) return;
 

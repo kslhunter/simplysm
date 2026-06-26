@@ -26,16 +26,16 @@
     }
   },
   "dependencies": {
-    "@angular-eslint/utils": "^21.4.0",
-    "@angular/compiler": "^21.2.17",
+    "@angular-eslint/utils": "^22.0.0",
+    "@angular/compiler": "^22.0.3",
     "@typescript-eslint/utils": "^8.62.0",
-    "angular-eslint": "^21.4.0",
+    "angular-eslint": "^22.0.0",
     "eslint": "^9.39.4",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.7.0",
-    "typescript": "^5.9.3",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.62.0"
   },
   "devDependencies": {

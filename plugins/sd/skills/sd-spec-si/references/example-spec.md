@@ -1,6 +1,6 @@
 # WMS 요구 분석서 (예시)
 
-> sd-spec 스킬이 산출하는 `spec.md` 의 풀 example.
+> sd-spec-si 스킬이 산출하는 `spec.md` 의 풀 example.
 > 가상의 WMS 시나리오 — 박스 단위 Location 관리 + ERP 단방향 통보.
 > 시나리오 일자 = 2026-04-01 (사용자 확정 시작일 가정).
 

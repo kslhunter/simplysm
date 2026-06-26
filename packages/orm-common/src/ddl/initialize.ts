@@ -131,7 +131,7 @@ export async function initialize(
  */
 async function createAllObjects(
   db: DbContextBase,
-  builders: (TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[],
+  builders: (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[],
   targetDatabase: string,
 ): Promise<void> {
   // targetDatabase에 해당하는 builder만 필터링
@@ -188,16 +188,16 @@ async function createAllObjects(
  */
 function collectBuilders(
   dbContext: object,
-): (TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
+): (TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>)[] {
   const builders: (
-    | TableBuilder<any, any, any>
+    | TableBuilder<any, any>
     | ViewBuilder<any, any, any>
     | ProcedureBuilder<any, any>
   )[] = [];
 
   for (const value of Object.values(dbContext)) {
     if (typeof value === "function" && SD_BUILDER in value) {
-      builders.push(value[SD_BUILDER as keyof typeof value] as TableBuilder<any, any, any>);
+      builders.push(value[SD_BUILDER as keyof typeof value] as TableBuilder<any, any>);
     }
   }
 

@@ -14,7 +14,7 @@ import type { QueryDef, QueryDefObjectName } from "./query-def";
  * DbContext class가 이 인터페이스를 구현한다.
  */
 export interface DbContextBase {
-  status: DbContextStatus;
+  readonly status: DbContextStatus;
   readonly database: string | undefined;
   readonly schema: string | undefined;
   getNextAlias(): string;
@@ -24,7 +24,7 @@ export interface DbContextBase {
     resultMetas?: (ResultMeta | undefined)[],
   ): Promise<T[][]>;
   getQueryDefObjectName(
-    tableOrView: TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
+    tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
   ): QueryDefObjectName;
   switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
 }
@@ -32,7 +32,7 @@ export interface DbContextBase {
 export type DbContextStatus = "ready" | "connect" | "transact";
 
 export interface DbContextDdlMethods {
-  createTable(table: TableBuilder<any, any, any>): Promise<void>;
+  createTable(table: TableBuilder<any, any>): Promise<void>;
   dropTable(table: QueryDefObjectName): Promise<void>;
   renameTable(table: QueryDefObjectName, newName: string): Promise<void>;
   createView(view: ViewBuilder<any, any, any>): Promise<void>;
@@ -56,7 +56,7 @@ export interface DbContextDdlMethods {
   addForeignKey(
     table: QueryDefObjectName,
     relationName: string,
-    relationDef: ForeignKeyBuilder<any, any>,
+    relationDef: ForeignKeyBuilder<any>,
   ): Promise<void>;
   addIndex(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): Promise<void>;
   dropForeignKey(table: QueryDefObjectName, relationName: string): Promise<void>;
@@ -66,11 +66,11 @@ export interface DbContextDdlMethods {
   truncate(table: QueryDefObjectName): Promise<void>;
   switchFk(table: QueryDefObjectName, enabled: boolean): Promise<void>;
   // QueryDef 생성기
-  getCreateTableQueryDef(table: TableBuilder<any, any, any>): QueryDef;
+  getCreateTableQueryDef(table: TableBuilder<any, any>): QueryDef;
   getCreateViewQueryDef(view: ViewBuilder<any, any, any>): QueryDef;
   getCreateProcQueryDef(procedure: ProcedureBuilder<any, any>): QueryDef;
   getCreateObjectQueryDef(
-    builder: TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
+    builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
   ): QueryDef;
   getDropTableQueryDef(table: QueryDefObjectName): QueryDef;
   getRenameTableQueryDef(table: QueryDefObjectName, newName: string): QueryDef;
@@ -93,7 +93,7 @@ export interface DbContextDdlMethods {
   getAddForeignKeyQueryDef(
     table: QueryDefObjectName,
     relationName: string,
-    relationDef: ForeignKeyBuilder<any, any>,
+    relationDef: ForeignKeyBuilder<any>,
   ): QueryDef;
   getAddIndexQueryDef(table: QueryDefObjectName, indexBuilder: IndexBuilder<string[]>): QueryDef;
   getDropForeignKeyQueryDef(table: QueryDefObjectName, relationName: string): QueryDef;

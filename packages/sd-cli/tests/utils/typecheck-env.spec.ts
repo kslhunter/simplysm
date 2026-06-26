@@ -58,12 +58,12 @@ describe("getCompilerOptionsForEnv", () => {
     expect(result.lib).toEqual(["lib.esnext.d.ts", "lib.webworker.d.ts"]);
   });
 
-  // Scenario: node env에서 types 변화 없음
-  it("does not set types in node env", () => {
-    const pkgDir = makePkgDir();
+  // Scenario: node env에서 devDeps의 @types를 types로 설정 (node 포함, TS6 types=[] 기본값 대응)
+  it("sets types from devDeps (incl. node) in node env", () => {
+    const pkgDir = makePkgDir({ "@types/node": "^20", "@types/ws": "^8" });
     const base = { lib: ["lib.esnext.d.ts"] };
     const result = getCompilerOptionsForEnv(base, "node", pkgDir);
-    expect(result.types).toBeUndefined();
+    expect(result.types).toEqual(["node", "ws"]);
   });
 
   // Scenario: browser env에서 @types/node 제거

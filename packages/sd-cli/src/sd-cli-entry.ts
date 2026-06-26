@@ -13,7 +13,6 @@ import { runInit } from "./commands/init/init";
 import { runInitClient } from "./commands/init/init-client";
 import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
-import { runCommit } from "./commands/commit";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -35,7 +34,6 @@ const COMMAND_NAMES = [
   "publish",
   "replace-deps",
   "init",
-  "commit",
 ];
 
 async function collectYargsHelp(argv: string[]): Promise<string> {
@@ -353,14 +351,6 @@ export function createCliParser(argv: string[]): Argv {
         } else {
           await runInit({ cwd: process.cwd() });
         }
-      },
-    )
-    .command(
-      "commit",
-      "Generate an AI commit message and commit all changes",
-      (cmd) => cmd.version(false).hide("help"),
-      async () => {
-        await runCommit();
       },
     )
     .demandCommand(1, "Please specify a command.")

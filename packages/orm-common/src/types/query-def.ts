@@ -351,7 +351,7 @@ export interface CreateProcQueryDef {
     name: string;
     dataType: DataType;
     nullable?: boolean;
-    default?: unknown;
+    default?: ColumnPrimitive;
   }>;
   returns?: Array<{
     name: string;

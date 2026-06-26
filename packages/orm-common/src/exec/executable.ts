@@ -1,6 +1,7 @@
-import type { ColumnBuilderRecord, InferColumnExprs } from "../schema/factory/column-builder";
+import type { ColumnBuilderRecord, InferColumnExprs, InferColumns } from "../schema/factory/column-builder";
 import type { ProcedureBuilder } from "../schema/procedure-builder";
 import type { DbContextBase } from "../types/db-context-def";
+import type { ExecProcQueryDef } from "../types/query-def";
 import { ExprUnit } from "../expr/expr-unit";
 import { expr } from "../expr/expr";
 
@@ -25,7 +26,7 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
   /**
    * 프로시저 실행 QueryDef 생성
    */
-  getExecProcQueryDef(params?: InferColumnExprs<TParams>) {
+  getExecProcQueryDef(params?: InferColumnExprs<TParams>): ExecProcQueryDef {
     const meta = this._builder.meta;
     if (params && !meta.params) {
       throw new Error(`Procedure '${meta.name}'에 파라미터가 없습니다.`);
@@ -55,8 +56,8 @@ export class Executable<TParams extends ColumnBuilderRecord, TReturns extends Co
   /**
    * 프로시저 실행
    */
-  async execute(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]> {
-    return this._db.executeDefs<InferColumnExprs<TReturns>>([this.getExecProcQueryDef(params)]);
+  async execute(params: InferColumnExprs<TParams>): Promise<InferColumns<TReturns>[][]> {
+    return this._db.executeDefs<InferColumns<TReturns>>([this.getExecProcQueryDef(params)]);
   }
 }
 

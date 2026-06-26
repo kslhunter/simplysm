@@ -1,19 +1,29 @@
-"""원격 위키 CLI 래퍼 (플러그인 sd-wiki).
+"""원격 위키 CLI (플러그인 sd-wiki).
 
-opus `WikiService` HTTP API 를 Bash 에서 호출하기 위한 얇은 명령.
-인증 토큰 발급·갱신은 같은 디렉터리의 `wiki_auth.py` 가 담당한다.
+에이전트가 Bash 로 능동 호출하는 진입점. 인자 파싱 → `wiki_core` 위임 → JSON 출력만
+담당. 원격 호출·인증·충돌 재시도 등 메커니즘은 전부 `wiki_core` 에 있고 이 파일엔 없음
+(명령 추가·변경 시 이 파일만 보면 됨).
+
+  python "${CLAUDE_PLUGIN_ROOT}/scripts/wiki.py" <명령> ...
+
+stdout 은 서비스 응답 JSON, 오류는 stderr + 비0 종료코드.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any
 
-import wiki_auth
+# 에이전트의 일반 셸엔 CLAUDE_PLUGIN_* env 가 없으므로 코어는 env 가 아니라 형제 경로로
+# 찾음 — 직접 실행 시 sys.path[0] 이 이미 scripts/ 지만, 다른 cwd·import 경로에서도
+# 견고하도록 자신의 디렉터리를 보강한다.
+_SCRIPTS_DIR = str(Path(__file__).resolve().parent)
+if _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
+
+import wiki_core  # noqa: E402
 
 
 for _stream in (sys.stdout, sys.stderr):
@@ -23,116 +33,28 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 
-class WikiApiError(Exception):
-    def __init__(self, message: str, status_code: int | None = None):
-        super().__init__(message)
-        self.status_code = status_code
-
-    @property
-    def is_write_conflict(self) -> bool:
-        return "저장 충돌" in str(self)
-
-
-def _json_dumps(data: Any) -> str:
-    return json.dumps(data, ensure_ascii=False)
-
-
 def _print_json(data: Any) -> None:
     sys.stdout.write(json.dumps(data, ensure_ascii=False, indent=2))
     sys.stdout.write("\n")
 
 
-def _parse_http_error(err: urllib.error.HTTPError) -> str:
-    try:
-        body = err.read().decode("utf-8", errors="replace")
-    except Exception:
-        body = ""
-    if body:
-        try:
-            parsed = json.loads(body)
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, dict):
-            msg = parsed.get("message") or parsed.get("error")
-            if isinstance(msg, str) and msg:
-                return msg
-        return body.strip()
-    return f"HTTP {err.code}"
-
-
-def call_service(method: str, params: list[Any], token: str) -> Any:
-    req = urllib.request.Request(
-        f"{wiki_auth.API_BASE}/api/WikiService/{method}",
-        data=_json_dumps(params).encode("utf-8"),
-        method="POST",
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-            "X-sd-client-name": wiki_auth.CLIENT_NAME,
-        },
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            body = resp.read().decode("utf-8")
-    except urllib.error.HTTPError as err:
-        if err.code == 401:
-            wiki_auth.clear_token()
-            raise wiki_auth.WikiAuthExpired("위키 인증이 만료되었습니다.") from err
-        message = _parse_http_error(err)
-        raise WikiApiError(f"{method} 실패: {message}", err.code) from err
-    except urllib.error.URLError as err:
-        raise WikiApiError(f"{method} 실패: 위키 서버에 연결할 수 없습니다: {err.reason}") from err
-
-    if body == "":
-        return None
-    try:
-        return json.loads(body)
-    except json.JSONDecodeError as err:
-        raise WikiApiError(f"{method} 실패: 응답 JSON 을 해석할 수 없습니다.") from err
-
-
-def _read_latest_version(topic: str, token: str) -> int | None:
-    latest = call_service("read", [topic], token)
-    if latest is None:
-        return None
-    if not isinstance(latest, dict) or not isinstance(latest.get("version"), int):
-        raise WikiApiError("write 재시도 실패: 최신 페이지 응답에 version 이 없습니다.")
-    return latest["version"]
-
-
-def write_with_retry(input_data: dict[str, Any], token: str) -> Any:
-    try:
-        return call_service("write", [input_data], token)
-    except WikiApiError as err:
-        if not err.is_write_conflict:
-            raise
-
-    retry_input = dict(input_data)
-    latest_version = _read_latest_version(str(input_data["topic"]), token)
-    if latest_version is None:
-        retry_input.pop("baseVersion", None)
-    else:
-        retry_input["baseVersion"] = latest_version
-    return call_service("write", [retry_input], token)
-
-
 def _read_body_arg(args: argparse.Namespace) -> str:
     if args.body is not None and args.body_file is not None:
-        raise WikiApiError("--body 와 --body-file 은 함께 쓸 수 없습니다.")
+        raise wiki_core.WikiApiError("--body 와 --body-file 은 함께 쓸 수 없습니다.")
     if args.body is not None:
         return args.body
     if args.body_file is not None:
         try:
             return Path(args.body_file).read_text(encoding="utf-8")
         except OSError as err:
-            raise WikiApiError(f"본문 파일을 읽을 수 없습니다: {err}") from err
+            raise wiki_core.WikiApiError(f"본문 파일을 읽을 수 없습니다: {err}") from err
     if not sys.stdin.isatty():
         return sys.stdin.read()
-    raise WikiApiError("본문은 --body, --body-file 또는 stdin 으로 입력해야 합니다.")
+    raise wiki_core.WikiApiError("본문은 --body, --body-file 또는 stdin 으로 입력해야 합니다.")
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="원격 위키 CLI 래퍼")
+    parser = argparse.ArgumentParser(description="원격 위키 CLI")
     parser.add_argument(
         "--no-browser",
         action="store_true",
@@ -166,15 +88,15 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _run_command(args: argparse.Namespace, token: str) -> Any:
     if args.command == "read":
-        return call_service("read", [args.topic], token)
+        return wiki_core.call_service("read", [args.topic], token)
     if args.command == "search":
-        return call_service("search", [args.keyword], token)
+        return wiki_core.call_service("search", [args.keyword], token)
     if args.command == "toc":
-        return call_service("toc", [], token)
+        return wiki_core.call_service("toc", [], token)
     if args.command == "rootmap":
-        return call_service("rootMap", [], token)
+        return wiki_core.call_service("rootMap", [], token)
     if args.command == "children":
-        return call_service("children", [args.topic], token)
+        return wiki_core.call_service("children", [args.topic], token)
     if args.command == "write":
         input_data: dict[str, Any] = {
             "topic": args.topic,
@@ -186,8 +108,8 @@ def _run_command(args: argparse.Namespace, token: str) -> Any:
             input_data["baseVersion"] = args.base_version
         if args.parent is not None:
             input_data["parentTopic"] = args.parent
-        return write_with_retry(input_data, token)
-    raise WikiApiError(f"알 수 없는 명령: {args.command}")
+        return wiki_core.write_with_retry(input_data, token)
+    raise wiki_core.WikiApiError(f"알 수 없는 명령: {args.command}")
 
 
 def _main(argv: list[str]) -> int:
@@ -196,20 +118,20 @@ def _main(argv: list[str]) -> int:
     allow_browser = not args.no_browser
 
     try:
-        token = wiki_auth.get_token(allow_browser=allow_browser)
+        token = wiki_core.get_token(allow_browser=allow_browser)
         if token is None:
             return 1
         try:
             result = _run_command(args, token)
-        except wiki_auth.WikiAuthExpired:
+        except wiki_core.WikiAuthExpired:
             if not allow_browser:
                 raise
-            token = wiki_auth.browser_login()
+            token = wiki_core.browser_login()
             result = _run_command(args, token)
-    except wiki_auth.WikiAuthError as err:
+    except wiki_core.WikiAuthError as err:
         print(f"위키 인증 오류: {err}", file=sys.stderr)
         return 2
-    except WikiApiError as err:
+    except wiki_core.WikiApiError as err:
         print(f"위키 API 오류: {err}", file=sys.stderr)
         return 2
 

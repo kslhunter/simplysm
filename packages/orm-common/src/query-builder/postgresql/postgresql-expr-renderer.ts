@@ -65,7 +65,7 @@ import type {
   ExprSubquery,
   DateUnit,
 } from "../../types/expr";
-import type { DataType } from "../../types/column";
+import type { ColumnPrimitive, DataType } from "../../types/column";
 import { ExprRendererBase } from "../base/expr-renderer-base";
 
 /**
@@ -85,7 +85,7 @@ export class PostgresqlExprRenderer extends ExprRendererBase {
   }
 
   /** 값 이스케이프 */
-  escapeValue(value: unknown): string {
+  escapeValue(value: ColumnPrimitive): string {
     if (value == null) {
       return "NULL";
     }

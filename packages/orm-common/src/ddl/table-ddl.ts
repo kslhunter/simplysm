@@ -23,7 +23,7 @@ import { obj } from "@simplysm/core-common";
  */
 export function getCreateObjectQueryDef(
   db: DbContextBase,
-  builder: TableBuilder<any, any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
+  builder: TableBuilder<any, any> | ViewBuilder<any, any, any> | ProcedureBuilder<any, any>,
 ): QueryDef {
   if (builder instanceof TableBuilder) {
     return getCreateTableQueryDef(db, builder);
@@ -44,7 +44,7 @@ export function getCreateObjectQueryDef(
  * @returns CREATE TABLE QueryDef
  * @throws {Error} 테이블에 column이 없을 때
  */
-export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<any, any, any>): QueryDef {
+export function getCreateTableQueryDef(db: DbContextBase, table: TableBuilder<any, any>): QueryDef {
   const columns = table.meta.columns as ColumnBuilderRecord | undefined;
   if (columns == null) {
     throw new Error(`테이블 '${table.meta.name}'에 column이 없습니다.`);
@@ -179,7 +179,7 @@ export function getDropProcQueryDef(procedure: QueryDefObjectName): DropProcQuer
  */
 export function getQueryDefObjectName(
   db: DbContextBase,
-  tableOrView: TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
+  tableOrView: TableBuilder<any, any> | ViewBuilder<any, any, any>,
 ): QueryDefObjectName {
   return obj.clearUndefined({
     database: tableOrView.meta.database ?? db.database,

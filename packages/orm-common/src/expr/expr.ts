@@ -68,7 +68,7 @@ export const expr = {
    * @returns Column 참조 ExprUnit 인스턴스
    */
   col<TStr extends ColumnPrimitiveStr>(
-    dataType: ColumnPrimitiveStr,
+    dataType: TStr,
     ...path: string[]
   ): ExprUnit<ColumnPrimitiveMap[TStr] | undefined> {
     return new ExprUnit(dataType, { type: "column", path });
@@ -566,13 +566,16 @@ export const expr = {
   /**
    * 문자열 내 위치 찾기 (LOCATE/CHARINDEX)
    *
-   * 1부터 시작하는 인덱스 반환, 찾지 못하면 0 반환
+   * 0부터 시작하는 인덱스 반환, 찾지 못하면 -1 반환. source가 NULL이면 undefined.
    *
    * @param source - String to search in
    * @param search - String to find
-   * @returns Position (starting from 1, 0 if not found)
+   * @returns Position (0-based, -1 if not found; undefined if source is NULL)
    */
-  indexOf(source: ExprUnit<string | undefined>, search: ExprInput<string>): ExprUnit<number> {
+  indexOf<T extends string | undefined>(
+    source: ExprUnit<T>,
+    search: ExprInput<string>,
+  ): ExprUnit<T extends undefined ? number | undefined : number> {
     return new ExprUnit("number", {
       type: "indexOf",
       source: toExpr(source),
@@ -896,6 +899,9 @@ export const expr = {
    * CASE WHEN expression builder
    *
    * 메서드 체이닝으로 조건 분기 구성
+   *
+   * 타입 인자 생략 시 case/default 값 타입이 강제되지 않음.
+   * 분기 값 타입의 동질성을 컴파일 시점에 강제하려면 `expr.switch<T>()` 로 T 를 명시.
    *
    * @returns SwitchExprBuilder instance
    */

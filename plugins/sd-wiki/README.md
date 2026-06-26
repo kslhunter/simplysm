@@ -1,6 +1,6 @@
 # sd-wiki
 
-심플리즘 팀 공용 원격 지식 위키를 Claude Code 세션에 연결하는 플러그인. 세션 시작 시 위키 목차를 컨텍스트에 주입하고, 조회·작성 CLI 와 작성 규칙을 제공한다.
+심플리즘 팀 공용 원격 지식 위키를 Claude Code 세션에 연결하는 플러그인. 세션 시작 시 위키 ROOT MAP 을 컨텍스트에 주입하고, 조회·작성 CLI 와 작성 규칙을 제공한다.
 
 ## 요구사항
 
@@ -27,26 +27,18 @@ claude --plugin-dir ./plugins/sd-wiki
 
 | 컴포넌트 | 내용 |
 | --- | --- |
-| hooks | SessionStart(원격 위키 목차 주입 + 작성·활용 규칙 주입), UserPromptSubmit(매 프롬프트 제출 시 위키 갱신 의무 1줄 재노출) |
-| scripts | `wiki.py`(조회·작성 CLI), `wiki_auth.py`(브라우저 로그인·토큰 갱신) |
-| rules | `wiki.md`(위키에 무엇을 담고 담지 않는지·반영 방법) |
+| hooks | SessionStart 2 command — `session-start-rootmap.py`(원격 ROOT MAP 주입; 인증·네트워크·코어 의존) / `session-start-rules.py`(`rules/*.md` 주입; 의존 0). 하는 일·의존이 달라 별개 파일·별개 command(독립 truncation budget). UserPromptSubmit(매 프롬프트 제출 시 위키 갱신 의무 1줄 재노출). `wiki_login.py`=미인증·만료 시 비차단 백그라운드 로그인 격리 |
+| scripts | `wiki.py`(에이전트용 조회·작성 CLI 진입점), `wiki_core.py`(인증·WikiService HTTP 공유 코어 — 모든 원격 접근의 단일 출처) |
+| rules | `wiki.md`(위키에 무엇을 담고 담지 않는지·반영 방법 + CLI 명령 사용법) |
 
 ## 위키 CLI
 
-`scripts/wiki.py` 로 원격 위키를 조회·작성:
-
-| 명령 | 동작 |
-| --- | --- |
-| `read <topic>` | 페이지 1건 조회 — 제목·요약·본문·버전 |
-| `write <topic>` | 페이지 생성·갱신(낙관락) |
-| `search <키워드>` | 키워드 검색 |
-| `toc` | 목차 조회 |
-
-인증·토큰 갱신은 CLI 가 자동 처리(만료 시 브라우저 로그인). 결과는 JSON.
+에이전트는 `scripts/wiki.py` 로 원격 위키를 조회·작성한다 — `read`/`write`/`search`/`rootmap`/`children`/`toc`. 인증·토큰 갱신은 CLI 가 자동 처리(만료 시 브라우저 로그인), 결과는 JSON. **명령별 사용법·작성 규칙은 세션에 주입되는 `rules/wiki.md` 가 단일 출처(SSOT)** — 중복을 피해 README 엔 명령 목록만 둔다.
 
 ## 데이터 위치
 
-- 위키 인증 토큰(`wiki-token.json`) → `~/.claude/sd/` (hook·Bash 양쪽이 동일 경로로 접근하도록 고정).
+- 위키 인증 토큰(`wiki-token.json`) → `~/.claude/sd/` **고정**. 에이전트의 일반 셸엔 `CLAUDE_PLUGIN_*` env 가 주입되지 않아, hook 과 CLI 가 같은 토큰을 보려면 env 비의존 고정경로여야 함.
+- hook 전용 휘발 상태(`wiki-login.lock`·`wiki-login.log`·`wiki-session-no-context-*.lock`) → `CLAUDE_PLUGIN_DATA`.
 - 위키 본문·목차는 팀 공용 원격 서버에 있고, 로컬엔 접근 토큰만 둠(위키 자체는 플러그인 제거와 무관하게 원격에 보존).
 
 ## 팀 공유

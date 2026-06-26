@@ -189,20 +189,20 @@ export async function parseQueryResult<TRecord>(
 
   // JOIN 없음: 단순 타입 파싱만 수행
   if (joinKeys.length === 0) {
-    return parseSimpleRecords<TRecord>(rawResults, meta.columns);
+    return parseSimpleRecords(rawResults, meta.columns) as Promise<TRecord[] | undefined>;
   }
 
   // JOIN 있음: 그룹핑 + 중첩
-  return parseJoinedRecords<TRecord>(rawResults, meta);
+  return parseJoinedRecords(rawResults, meta) as Promise<TRecord[] | undefined>;
 }
 
 /**
  * JOIN이 없는 단순 레코드 파싱
  */
-async function parseSimpleRecords<TRecord>(
+async function parseSimpleRecords(
   rawResults: Record<string, unknown>[],
   columns: Record<string, ColumnPrimitiveStr>,
-): Promise<TRecord[] | undefined> {
+): Promise<Record<string, unknown>[] | undefined> {
   const columnInfos = buildColumnInfos(columns);
   const results: Record<string, unknown>[] = [];
 
@@ -221,7 +221,7 @@ async function parseSimpleRecords<TRecord>(
   }
 
   // 빈 배열은 undefined 반환
-  return results.length > 0 ? (results as TRecord[]) : undefined;
+  return results.length > 0 ? results : undefined;
 }
 
 /**
@@ -239,10 +239,10 @@ function sortJoinKeysByDepth(joinKeys: string[]): string[] {
 /**
  * JOIN이 있는 레코드 파싱 (재귀 그룹핑)
  */
-async function parseJoinedRecords<TRecord>(
+async function parseJoinedRecords(
   rawResults: Record<string, unknown>[],
   meta: ResultMeta,
-): Promise<TRecord[] | undefined> {
+): Promise<Record<string, unknown>[] | undefined> {
   // 1. 모든 레코드를 중첩 구조로 변환
   const columnInfos = buildColumnInfos(meta.columns);
   const nestedRecords: Record<string, unknown>[] = [];
@@ -262,7 +262,7 @@ async function parseJoinedRecords<TRecord>(
   // 4. 빈 결과 필터링
   const filteredResults = results.filter((r) => !isEmptyObject(r));
 
-  return filteredResults.length > 0 ? (filteredResults as TRecord[]) : undefined;
+  return filteredResults.length > 0 ? filteredResults : undefined;
 }
 
 /**

@@ -19,7 +19,7 @@ import { Editor, type AnyExtension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Markdown } from "@tiptap/markdown";
-import { useTiptapToolbar } from "./useTiptapToolbar";
+import { useTiptapToolbar, type TiptapCommand } from "./useTiptapToolbar";
 
 const DEFAULT_EXTENSIONS: AnyExtension[] = [
   StarterKit,
@@ -236,7 +236,7 @@ export class SdMarkdownEditor {
     });
   }
 
-  execCmd(cmd: string): void {
+  execCmd(cmd: TiptapCommand): void {
     if (this.disabled() || this.readonly()) return;
     this._toolbar.execCmd(cmd);
   }

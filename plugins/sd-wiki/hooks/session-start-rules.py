@@ -1,16 +1,15 @@
-"""SessionStart hook (플러그인 sd-wiki) — 위키 작성·활용 규칙 주입.
+"""SessionStart hook (플러그인 sd-wiki) — 작성·활용 규칙 주입.
 
-try/except 로 격리(fail-open, 세션을 막지 않음). 출력은 plain stdout —
-SessionStart 는 stdout 텍스트를 그대로 컨텍스트에 주입하므로, 진단/에러 로그를
-stdout 에 절대 찍지 않음(섞이면 컨텍스트가 오염됨). 필요한 로그는 stderr 로.
+rules/*.md 를 읽어 ${CLAUDE_PLUGIN_ROOT} 치환 후 stdout 주입. 네트워크·코어(wiki_core)
+의존이 전혀 없는 정적 주입 — 인증·네트워크에 의존하는 동적 ROOT MAP 주입
+(session-start-rootmap.py)과 별개 파일·별개 SessionStart command 로 분리돼 있다.
 
-rules 콘텐츠는 단일 출력으로 hook command 당 ~10,000자 truncation 한계 안에
-들어옴(청크 분할 불요).
-
-책무: ${CLAUDE_PLUGIN_ROOT}/rules/*.md 위키 작성·활용 규칙 주입.
-(원격 지식 위키 ROOT MAP 주입은 session-start-rootmap.py 가 담당.)
+출력은 plain stdout 으로 그대로 컨텍스트에 주입되므로 진단·에러는 stderr 만.
 """
-import os, sys
+from __future__ import annotations
+
+import os
+import sys
 from pathlib import Path
 
 try:
@@ -20,14 +19,25 @@ except Exception:
 
 PLUGIN_ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT")
 
-out = []
-try:
-    if PLUGIN_ROOT:
-        ctx_dir = Path(PLUGIN_ROOT) / "rules"
-        for md in sorted(ctx_dir.glob("*.md")):
-            out.append(md.read_text(encoding="utf-8").replace("${CLAUDE_PLUGIN_ROOT}", PLUGIN_ROOT))
-except Exception:
-    pass
 
-if out:
-    sys.stdout.write("\n\n".join(out))
+def inject_rules() -> None:
+    if not PLUGIN_ROOT:
+        return
+    ctx_dir = Path(PLUGIN_ROOT) / "rules"
+    out = []
+    for md in sorted(ctx_dir.glob("*.md")):
+        out.append(md.read_text(encoding="utf-8").replace("${CLAUDE_PLUGIN_ROOT}", PLUGIN_ROOT))
+    if out:
+        sys.stdout.write("\n\n".join(out))
+
+
+def _main() -> int:
+    try:
+        inject_rules()
+    except Exception:
+        pass
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(_main())

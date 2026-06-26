@@ -19,7 +19,7 @@ export interface SdSheetCellContext<T = unknown> {
   selector: "sd-sheet-column",
   standalone: true,
 })
-export class SdSheetColumn<T = unknown> {
+export class SdSheetColumn {
   key = input.required<string>();
   header = input<string | string[]>("");
   headerStyle = input<string>();
@@ -32,7 +32,7 @@ export class SdSheetColumn<T = unknown> {
   disableResizing = input(false, { transform: booleanAttribute });
   ordering = input(0);
 
-  cellTplRef = contentChild.required<SdSheetColumnCellTemplate<T>, TemplateRef<SdSheetCellContext<T>>>(
+  cellTplRef = contentChild.required<SdSheetColumnCellTemplate<unknown>, TemplateRef<SdSheetCellContext<unknown>>>(
     SdSheetColumnCellTemplate,
     { read: TemplateRef },
   );

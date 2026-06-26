@@ -7,20 +7,11 @@ const User = Table("User")
     id: c.bigint(),
     name: c.varchar(100),
   }))
-  .primaryKey("id")
-  .relations(() => ({}));
-
-const Post = Table("Post")
-  .columns((c) => ({
-    id: c.bigint(),
-    userId: c.bigint(),
-  }))
-  .primaryKey("id")
-  .relations(() => ({}));
+  .primaryKey("id");
 
 describe("Target 빌더 options 파라미터", () => {
   describe("foreignKeyTarget options", () => {
-    const factory = createRelationFactory(() => Post);
+    const factory = createRelationFactory();
 
     it("description을 options로 설정한다", () => {
       const builder = factory.foreignKeyTarget(() => User, "user", {
@@ -51,7 +42,7 @@ describe("Target 빌더 options 파라미터", () => {
   });
 
   describe("relationKeyTarget options", () => {
-    const factory = createRelationFactory(() => Post);
+    const factory = createRelationFactory();
 
     it("description을 options로 설정한다", () => {
       const builder = factory.relationKeyTarget(() => User, "user", {
@@ -73,7 +64,7 @@ describe("Target 빌더 options 파라미터", () => {
   });
 
   describe("Target 빌더에서 체이닝 메서드 제거", () => {
-    const factory = createRelationFactory(() => Post);
+    const factory = createRelationFactory();
 
     it("ForeignKeyTargetBuilder에 description 메서드가 없다", () => {
       const builder = factory.foreignKeyTarget(() => User, "user");

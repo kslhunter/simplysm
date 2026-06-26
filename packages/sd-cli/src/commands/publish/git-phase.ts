@@ -1,11 +1,11 @@
 import type { ConsolaInstance } from "consola";
 import { cpx } from "@simplysm/core-node";
 import { err as errNs } from "@simplysm/core-common";
-import { runCommit } from "../commit";
 
 /**
- * 미커밋 변경사항을 감지하고 자동 커밋(runCommit)을 시도한다.
- * @throws 자동 커밋 실패 시 Error
+ * 워킹트리에 미커밋 변경사항이 있으면 throw 한다.
+ * 배포는 깨끗한 워킹트리에서만 진행한다 — 커밋은 사용자가 직접 수행해야 한다.
+ * @throws 미커밋(unstaged·staged) 변경사항이 있을 때 Error
  */
 export async function ensureCleanWorkingTree(
   hasGit: boolean,
@@ -20,15 +20,7 @@ export async function ensureCleanWorkingTree(
 
   if (diff.trim() === "" && stagedDiff.trim() === "") return;
 
-  logger.info("커밋되지 않은 변경사항 감지. 자동 커밋 시도 중...");
-  try {
-    await runCommit();
-  } catch (e) {
-    throw new Error(
-      "자동 커밋에 실패했습니다. 수동으로 커밋 후 다시 시도해주세요.\n" +
-      errNs.message(e),
-    );
-  }
+  throw new Error("커밋되지 않은 변경사항이 있습니다. 변경사항을 커밋한 후 다시 시도해주세요.");
 }
 
 /**
@@ -66,9 +58,9 @@ export async function commitTagAndPush(
   } catch (err) {
     throw new Error(
       `Git 작업 실패: ${errNs.message(err)}\n` +
-      "수동 복구가 필요할 수 있습니다:\n" +
-      `  git revert HEAD  # 버전 커밋 되돌리기\n` +
-      `  git tag -d v${version}  # 태그 삭제`,
+        "수동 복구가 필요할 수 있습니다:\n" +
+        `  git revert HEAD  # 버전 커밋 되돌리기\n` +
+        `  git tag -d v${version}  # 태그 삭제`,
     );
   }
 }

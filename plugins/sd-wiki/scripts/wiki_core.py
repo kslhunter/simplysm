@@ -1,22 +1,16 @@
-"""위키 접근 인증 (플러그인 sd-wiki).
+"""원격 위키 공유 코어 (플러그인 sd-wiki).
 
-opus(client/server)가 제공하는 브라우저 authorization-code 인증을 받아 플러그인
-측에서 토큰을 보관·갱신하는 모듈.
+두 소비자 — 에이전트 CLI(`scripts/wiki.py`)와 런타임 hook(`hooks/*`) — 가 공유하는
+opus `WikiService` 접근 코어이자 모든 의존이 향하는 단일 싱크. 위→아래 6섹션으로
+레이어가 드러남: ①결합상수 ②예외 ③토큰저장 ④인증 ⑤HTTP ⑥낙관락.
 
-흐름:
-  1. browser_login(): 127.0.0.1 단발 콜백 서버를 띄우고 opus 로그인 페이지를
-     브라우저로 연다. 직원이 로그인하면 opus 가 콜백으로 토큰을 전달(redirect_uri
-     쿼리). state 를 왕복 검증해 토큰을 받아 저장.
-  2. refresh_token(): 유효 토큰을 `POST /api/AuthService/refresh` 로 슬라이딩 갱신.
-  3. get_token(): 저장 토큰을 refresh 로 갱신해 반환. 토큰이 없거나 만료(401)면
-     브라우저 로그인으로 재발급(allow_browser=True)하거나 None 반환.
+소비자는 이 모듈을 import 만 하고, 이 모듈은 소비자를 import 하지 않음(단방향 스타라
+순환·import 순서의존이 원천 차단됨). 진입점(`__main__`)은 소비자 쪽이며 여기엔 없음 —
+stdout/stderr 인코딩 설정도 진입점 책임이라 이 모듈에서 건드리지 않음.
 
-저장: ~/.claude/sd/wiki-token.json — 토큰만 보관(비밀번호는 브라우저에만).
 opus 는 redirect_uri 의 hostname 을 localhost/127.0.0.1 로 제한(open redirect 차단)하므로
-콜백은 127.0.0.1 고정. opus admin 은 해시 라우팅이라 redirect_uri·state 쿼리는
-로그인 URL 의 해시(`#/login`) 뒤에 붙인다.
-
-7(위키 CLI 래퍼)·8(session-start 원격 전환)이 이 모듈을 import 한다.
+콜백은 127.0.0.1 고정. opus admin 은 해시 라우팅이라 redirect_uri·state 쿼리는 로그인
+URL 의 해시(`#/login`) 뒤에 붙임.
 """
 from __future__ import annotations
 
@@ -30,17 +24,12 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse
 
-# Windows 콘솔(cp949) 에서 안내 메시지가 깨지지 않도록 UTF-8 로 통일.
-for _stream in (sys.stdout, sys.stderr):
-    try:
-        _stream.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
 
-# opus 위키 서버 접속 주소 — 회사 단일 내부 서버라 상수 고정.
-# dev·로컬 테스트는 환경변수로 덮는다.
+# ── ① 결합상수 ────────────────────────────────────────────────────────
+# opus 위키 서버 접속 주소 — 회사 단일 내부 서버라 상수 고정. dev·로컬 테스트는 env 로 덮음.
 LOGIN_URL = (
     os.environ.get("SD_WIKI_LOGIN_URL")
     or "https://opus.simplysm.co.kr/client-admin/#/login"
@@ -54,15 +43,9 @@ CLIENT_NAME = "sd-wiki"
 LOGIN_TIMEOUT_SEC = 300
 
 
-class WikiAuthError(Exception):
-    """위키 인증 실패(네트워크·서버 오류 등). 호출부가 fail-open 여부를 결정한다."""
-
-
-class WikiAuthExpired(WikiAuthError):
-    """저장 토큰이 만료·무효(refresh 401). 재로그인이 필요하다."""
-
-
 def _data_dir() -> Path:
+    # 토큰 고정경로: 에이전트의 일반 Bash 셸엔 CLAUDE_PLUGIN_* env 가 주입되지 않으므로,
+    # hook 과 CLI 가 같은 토큰을 보려면 env 비의존 고정경로여야 함.
     d = Path.home() / ".claude" / "sd"
     d.mkdir(parents=True, exist_ok=True)
     return d
@@ -72,6 +55,26 @@ def _token_path() -> Path:
     return _data_dir() / "wiki-token.json"
 
 
+# ── ② 예외 ────────────────────────────────────────────────────────────
+class WikiAuthError(Exception):
+    """위키 인증 실패(네트워크·서버 오류 등). 호출부가 fail-open 여부를 결정."""
+
+
+class WikiAuthExpired(WikiAuthError):
+    """저장 토큰이 만료·무효(refresh 401). 재로그인이 필요."""
+
+
+class WikiApiError(Exception):
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
+
+    @property
+    def is_write_conflict(self) -> bool:
+        return "저장 충돌" in str(self)
+
+
+# ── ③ 토큰 저장 ───────────────────────────────────────────────────────
 def load_token() -> str | None:
     """저장된 토큰을 반환. 없거나 형식이 깨졌으면 None."""
     p = _token_path()
@@ -100,6 +103,7 @@ def clear_token() -> None:
         pass
 
 
+# ── ④ 인증 ────────────────────────────────────────────────────────────
 def refresh_token(token: str) -> str:
     """유효 토큰을 슬라이딩 갱신해 새 토큰을 반환. 만료·무효면 WikiAuthExpired."""
     req = urllib.request.Request(
@@ -213,29 +217,81 @@ def get_token(allow_browser: bool = True) -> str | None:
     return None
 
 
-def _main(argv: list[str]) -> int:
-    cmd = argv[0] if argv else "token"
-    if cmd == "login":
-        browser_login()
-        print("위키 인증 완료.", file=sys.stderr)
-        return 0
-    if cmd == "token":
-        # 비차단: 브라우저를 띄우지 않고 유효 토큰만 stdout 으로(없으면 종료코드 1).
+# ── ⑤ HTTP ────────────────────────────────────────────────────────────
+def _json_dumps(data: Any) -> str:
+    return json.dumps(data, ensure_ascii=False)
+
+
+def _parse_http_error(err: urllib.error.HTTPError) -> str:
+    try:
+        body = err.read().decode("utf-8", errors="replace")
+    except Exception:
+        body = ""
+    if body:
         try:
-            token = get_token(allow_browser=False)
-        except WikiAuthError as err:
-            print(f"위키 인증 오류: {err}", file=sys.stderr)
-            return 2
-        if token is None:
-            return 1
-        sys.stdout.write(token)
-        return 0
-    if cmd == "logout":
-        clear_token()
-        return 0
-    print(f"알 수 없는 명령: {cmd} (login|token|logout)", file=sys.stderr)
-    return 2
+            parsed = json.loads(body)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            msg = parsed.get("message") or parsed.get("error")
+            if isinstance(msg, str) and msg:
+                return msg
+        return body.strip()
+    return f"HTTP {err.code}"
 
 
-if __name__ == "__main__":
-    sys.exit(_main(sys.argv[1:]))
+def call_service(method: str, params: list[Any], token: str) -> Any:
+    req = urllib.request.Request(
+        f"{API_BASE}/api/WikiService/{method}",
+        data=_json_dumps(params).encode("utf-8"),
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+            "X-sd-client-name": CLIENT_NAME,
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as err:
+        if err.code == 401:
+            clear_token()
+            raise WikiAuthExpired("위키 인증이 만료되었습니다.") from err
+        message = _parse_http_error(err)
+        raise WikiApiError(f"{method} 실패: {message}", err.code) from err
+    except urllib.error.URLError as err:
+        raise WikiApiError(f"{method} 실패: 위키 서버에 연결할 수 없습니다: {err.reason}") from err
+
+    if body == "":
+        return None
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as err:
+        raise WikiApiError(f"{method} 실패: 응답 JSON 을 해석할 수 없습니다.") from err
+
+
+# ── ⑥ 낙관락 ──────────────────────────────────────────────────────────
+def _read_latest_version(topic: str, token: str) -> int | None:
+    latest = call_service("read", [topic], token)
+    if latest is None:
+        return None
+    if not isinstance(latest, dict) or not isinstance(latest.get("version"), int):
+        raise WikiApiError("write 재시도 실패: 최신 페이지 응답에 version 이 없습니다.")
+    return latest["version"]
+
+
+def write_with_retry(input_data: dict[str, Any], token: str) -> Any:
+    try:
+        return call_service("write", [input_data], token)
+    except WikiApiError as err:
+        if not err.is_write_conflict:
+            raise
+
+    retry_input = dict(input_data)
+    latest_version = _read_latest_version(str(input_data["topic"]), token)
+    if latest_version is None:
+        retry_input.pop("baseVersion", None)
+    else:
+        retry_input["baseVersion"] = latest_version
+    return call_service("write", [retry_input], token)

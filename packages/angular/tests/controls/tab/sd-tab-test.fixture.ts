@@ -29,7 +29,7 @@ export class SdTabClickTest {
   imports: [SdTab, SdTabItem],
 })
 export class SdTabReclickTest {
-  value = signal<string>("A");
+  value = signal<string | undefined>("A");
 }
 
 @Component({
@@ -44,5 +44,5 @@ export class SdTabReclickTest {
   imports: [SdTab, SdTabItem],
 })
 export class SdTabSelectedStyleTest {
-  value = signal<string>("A");
+  value = signal<string | undefined>("A");
 }

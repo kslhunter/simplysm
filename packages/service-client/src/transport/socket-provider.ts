@@ -94,7 +94,9 @@ export function createSocketProvider(
     if (currentWs == null) {
       throw new Error("WebSocket이 연결되지 않았습니다.");
     }
-    currentWs.send(data);
+    // TS6: Bytes는 Uint8Array<ArrayBufferLike>로 추론되나 WebSocket.send는 ArrayBuffer 기반 BufferSource를 요구.
+    // 새 Uint8Array(ArrayBuffer 기반)로 복사해 캐스팅 없이 타입·런타임 모두 안전하게 전달.
+    currentWs.send(new Uint8Array(data));
   }
 
   async function createSocket(): Promise<void> {
@@ -117,8 +119,7 @@ export function createSocketProvider(
       newWs.onerror = (event: Event) => {
         // 연결 중 에러 발생 시 reject
         if (!isConnected()) {
-          const errorEvent = event as ErrorEvent;
-          const msg = errorEvent.message;
+          const msg = (event as { message?: string }).message;
           reject(new Error(msg));
         }
       };

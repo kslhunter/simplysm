@@ -22,6 +22,7 @@
     "@simplysm/orm-common": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^24.13.2",
     "@types/pg": "^8.20.0",
     "@types/pg-copy-streams": "^1.2.5",
     "mysql2": "^3.22.5",

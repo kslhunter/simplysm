@@ -57,10 +57,10 @@ import type { SelectModeValue } from "../../controls/select/sd-select";
 })
 export class SdSharedDataSelectButton<
   TItem extends SharedDataBase<string | number>,
-  TMode extends keyof SelectModeValue<string | number>,
+  TMode extends keyof SelectModeValue<TItem>,
   TModal extends SdSelectModal<any>,
 > {
-  value = model<SelectModeValue<string | number>[TMode]>();
+  value = model<SelectModeValue<TItem["__valueKey"] | undefined>[TMode]>();
   items = input<TItem[]>([]);
   modal = input.required<SdSelectModalInfo<TModal>>();
   selectMode = input<TMode>("single" as TMode);

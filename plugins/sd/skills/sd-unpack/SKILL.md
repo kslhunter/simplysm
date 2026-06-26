@@ -213,7 +213,7 @@ Outlook RTF 메일이 첨부를 `winmail.dat` 단일 binary (TNEF, Transport Neu
 
 ## 산출물 사용
 
-후속 스킬 (sd-spec 등) 은 결과 폴더의 `README.md` 를 한 번 읽어 본문 위치·헤더·첨부 목록·손실 영역을 모두 파악 가능. 컨테이너 첨부는 자체 `README.md` 를 가지므로 같은 방식으로 재귀 진입.
+후속 스킬 (sd-spec-si 등) 은 결과 폴더의 `README.md` 를 한 번 읽어 본문 위치·헤더·첨부 목록·손실 영역을 모두 파악 가능. 컨테이너 첨부는 자체 `README.md` 를 가지므로 같은 방식으로 재귀 진입.
 
 각 형식별 jsonl 의 검색 패턴:
 - xlsx: `"r":<행>` · `"_f"` (수식 행) · 열문자 키.

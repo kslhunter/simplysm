@@ -1,3 +1,4 @@
+import type { ColumnPrimitive } from "../../types/column";
 import type {
   Expr,
   WhereExpr,
@@ -96,7 +97,7 @@ export abstract class ExprRendererBase {
   /**
    * 값 이스케이프 (타입에 맞는 SQL 리터럴로 변환)
    */
-  abstract escapeValue(value: unknown): string;
+  abstract escapeValue(value: ColumnPrimitive): string;
 
   //#endregion
 

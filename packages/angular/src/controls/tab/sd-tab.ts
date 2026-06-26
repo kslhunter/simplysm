@@ -20,6 +20,6 @@ import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@a
     <ng-content></ng-content>
   `,
 })
-export class SdTab {
-  value = model<any>();
+export class SdTab<T> {
+  value = model<T>();
 }

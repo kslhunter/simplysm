@@ -33,7 +33,7 @@ export function getAddForeignKeyQueryDef(
   db: DbContextBase,
   table: QueryDefObjectName,
   relationName: string,
-  relationDef: ForeignKeyBuilder<any, any>,
+  relationDef: ForeignKeyBuilder<any>,
 ): QueryDef {
   const targetTable = relationDef.meta.targetFn();
   const fkColumns = relationDef.meta.columns;

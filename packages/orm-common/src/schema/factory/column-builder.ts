@@ -282,9 +282,9 @@ export type RequiredInsertKeys<TBuilders extends ColumnBuilderRecord> = {
       ? never
       : M["nullable"] extends true
         ? never
-        : M["default"] extends undefined
-          ? K
-          : never
+        : "default" extends keyof M
+          ? never
+          : K
     : never;
 }[keyof TBuilders];
 

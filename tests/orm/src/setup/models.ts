@@ -4,14 +4,17 @@ import { Table } from "@simplysm/orm-common";
  * 통합 테스트용 모델 팩토리
  *
  * DB별로 database/schema 설정이 다르므로 팩토리 패턴으로 생성
+ *
+ * 관계는 `.relations()` 체이닝으로 정의한다(TS5 작성법과 동일).
+ * 무제약 제네릭 패턴으로 `() => typeof X` 타겟이 const 형성 중 eager 평가되지 않아
+ * TS6 순환 const 없이 동작하며, include 의 다단계 관계 정밀도도 보존된다.
  */
 export function createModels(opts: { database: string; schema?: string }) {
   /**
    * Table에 database/schema를 적용한다.
    * schema가 없으면 빈 문자열을 넣지 않고, database만 적용된 builder를 반환한다.
-   * 반환 타입 통일을 위해 schema 존재 시에도 별도 분기 없이 chaining한다.
    */
-  function applyOpts(name: string) {
+  function applyOpts<TName extends string>(name: TName) {
     const builder = Table(name).database(opts.database);
     return opts.schema != null ? builder.schema(opts.schema) : builder;
   }

@@ -99,8 +99,8 @@ export type InferColumnPrimitiveFromDataType<TDataType extends DataType> =
  * @returns ColumnPrimitiveStr 타입 이름
  * @throws 값 타입이 알 수 없을 때 ArgumentError
  */
-export function inferColumnPrimitiveStr(value: ColumnPrimitive): ColumnPrimitiveStr {
-  return primitive.typeStr(value as Exclude<ColumnPrimitive, undefined>);
+export function inferColumnPrimitiveStr(value: Exclude<ColumnPrimitive, undefined>): ColumnPrimitiveStr {
+  return primitive.typeStr(value);
 }
 
 // ============================================

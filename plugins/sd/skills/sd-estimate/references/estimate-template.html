@@ -156,21 +156,36 @@
     text-align:center; font-size:11px; color:var(--muted); letter-spacing:.3px;
   }
 
-  /* ===== 인쇄 (A4 / PDF) — 이 블록은 수정하지 말 것 ===== */
+  /* ===== 페이지별 상하 여백 (running spacer) =====
+     @page margin:0 을 유지(브라우저 머리글·바닥글 차단)하면서 모든 페이지에 상하 여백을 주기 위해,
+     전체 콘텐츠를 표로 감싸고 표의 thead/tfoot 을 매 페이지 반복되는 여백 띠로 사용한다. */
+  .psheet{ width:100%; border-collapse:collapse; }
+  .psheet > thead > tr > td.psheet-cell,
+  .psheet > tbody > tr > td.psheet-cell,
+  .psheet > tfoot > tr > td.psheet-cell{ padding:0; border:0; }
+  .psheet > tbody > tr{ page-break-inside:auto; }
+  .run-top, .run-bot{ height:0; }
+
+  /* ===== 인쇄 (A4 / PDF) — @page margin:0 은 수정하지 말 것(머리글·바닥글 차단) ===== */
   /* @page 여백을 0 으로 둬야 브라우저 기본 머리글·바닥글(날짜·제목·URL·페이지번호)이 찍히지 않는다.
      A4 여백은 페이지가 아니라 .sheet 패딩으로 준다(화면과 동일한 16mm 15mm 14mm). */
   @page{ size:A4; margin:0; }
   @media print{
     html,body{background:#fff;}
     body{font-size:10.5pt;}
-    .sheet{ width:auto; min-height:0; margin:0; padding:16mm 15mm 14mm; box-shadow:none; }
+    .sheet{ width:auto; min-height:0; margin:0; padding:0 15mm; box-shadow:none; }  /* 상하 여백은 running spacer 가 담당 */
     .sheet::before{display:none;}
+    .run-top{ height:16mm; }   /* 매 페이지 상단 여백 */
+    .run-bot{ height:14mm; }   /* 매 페이지 하단 여백 */
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }  /* 네이비 헤더·배너 음영을 PDF 에 출력 */
   }
 </style>
 </head>
 <body>
 <div class="sheet">
+<table class="psheet">
+<thead><tr><td class="psheet-cell"><div class="run-top"></div></td></tr></thead>
+<tbody><tr><td class="psheet-cell">
 
   <!-- [공통·필수] 머리글 -->
   <header class="masthead">
@@ -290,6 +305,9 @@
     심플리즘(주) &nbsp;|&nbsp; 「건명」 견적서 &nbsp;|&nbsp; 「YYYY. MM. DD.」
   </div>
 
+</td></tr></tbody>
+<tfoot><tr><td class="psheet-cell"><div class="run-bot"></div></td></tr></tfoot>
+</table>
 </div>
 </body>
 </html>

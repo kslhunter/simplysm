@@ -15,26 +15,25 @@ import type { ViewBuilder } from "../view-builder";
  * description 설정은 factory 함수의 opts 파라미터로 전달한다.
  * 메서드 체이닝(.description())은 TypeScript 순환 참조 시 TS7022를 유발하므로 제거됨.
  *
- * @template TOwner - 소유 Table builder 타입
- * @template TTargetFn - 대상 Table builder factory 타입
+ * @template TTargetFn - 대상 Table builder factory 타입 (무제약)
+ *
+ * 대상 타겟을 잡는 제네릭은 **무제약**(`extends () => TableBuilder<...>` 제약 없음)이다.
+ * 제약이 있으면 모델 const 형성 중 `() => typeof X` 타겟 화살표를 eager 평가하여
+ * TS6 에서 순환 const(TS7022/7024)를 유발하기 때문이다. 대상 해소는 `$inferSelect`
+ * 접근 시점에 lazy 하게(`ExtractRelationTarget`) 이루어진다.
  *
  * @see {@link ForeignKeyTargetBuilder} 역참조 builder
  * @see {@link RelationKeyBuilder} DB FK 없는 관계
  */
-export class ForeignKeyBuilder<
-  TOwner extends TableBuilder<any, any, any>,
-  TTargetFn extends () => TableBuilder<any, any, any>,
-> {
+export class ForeignKeyBuilder<TTargetFn> {
   /**
    * @param meta - FK 메타데이터
-   * @param meta.ownerFn - 소유 Table factory
    * @param meta.columns - FK column 이름 배열
    * @param meta.targetFn - 대상 Table factory
    * @param meta.description - 관계 설명
    */
   constructor(
     readonly meta: {
-      ownerFn: () => TOwner;
       columns: string[];
       targetFn: TTargetFn;
       description?: string;
@@ -51,15 +50,12 @@ export class ForeignKeyBuilder<
  * description, single 설정은 factory 함수의 opts 파라미터로 전달한다.
  * 메서드 체이닝(.description(), .single())은 TypeScript 순환 참조 시 TS7022를 유발하므로 제거됨.
  *
- * @template TTargetTableFn - 참조하는 Table builder factory 타입
+ * @template TTargetTableFn - 참조하는 Table builder factory 타입 (무제약)
  * @template TIsSingle - 단일 객체 여부
  *
  * @see {@link ForeignKeyBuilder} FK builder
  */
-export class ForeignKeyTargetBuilder<
-  TTargetTableFn extends () => TableBuilder<any, any, any>,
-  TIsSingle extends boolean,
-> {
+export class ForeignKeyTargetBuilder<TTargetTableFn, TIsSingle> {
   /**
    * @param meta - FK 역참조 메타데이터
    * @param meta.targetTableFn - 참조하는 Table factory
@@ -89,25 +85,19 @@ export class ForeignKeyTargetBuilder<
  *
  * description 설정은 factory 함수의 opts 파라미터로 전달한다.
  *
- * @template TOwner - 소유 Table/View builder 타입
- * @template TTargetFn - 대상 Table/View builder factory 타입
+ * @template TTargetFn - 대상 Table/View builder factory 타입 (무제약)
  *
  * @see {@link ForeignKeyBuilder} DB FK 생성 버전
  */
-export class RelationKeyBuilder<
-  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  TTargetFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-> {
+export class RelationKeyBuilder<TTargetFn> {
   /**
    * @param meta - 관계 메타데이터
-   * @param meta.ownerFn - 소유 Table/View factory
    * @param meta.columns - 관계 column 이름 배열
    * @param meta.targetFn - 대상 Table/View factory
    * @param meta.description - 관계 설명
    */
   constructor(
     readonly meta: {
-      ownerFn: () => TOwner;
       columns: string[];
       targetFn: TTargetFn;
       description?: string;
@@ -123,15 +113,12 @@ export class RelationKeyBuilder<
  *
  * description, single 설정은 factory 함수의 opts 파라미터로 전달한다.
  *
- * @template TTargetTableFn - 참조하는 Table/View builder factory 타입
+ * @template TTargetTableFn - 참조하는 Table/View builder factory 타입 (무제약)
  * @template TIsSingle - 단일 객체 여부
  *
  * @see {@link ForeignKeyTargetBuilder} DB FK 생성 버전
  */
-export class RelationKeyTargetBuilder<
-  TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  TIsSingle extends boolean,
-> {
+export class RelationKeyTargetBuilder<TTargetTableFn, TIsSingle> {
   /**
    * @param meta - 관계 역참조 메타데이터
    * @param meta.targetTableFn - 참조하는 Table/View factory
@@ -149,26 +136,32 @@ export class RelationKeyTargetBuilder<
   ) {}
 }
 
+// ============================================
+// 관계 factory
+// ============================================
+
 /**
  * FK 관계 factory 타입 (table 전용)
  *
- * @template TOwner - 소유 Table builder 타입
+ * 컬럼 키 제약(`TColumnKey extends string`)은 self-contained 하므로 **유지**한다.
+ * 대상 타겟을 잡는 제네릭(`TTargetFn`/`TTargetTableFn`)은 **무제약**이다.
+ *
  * @template TColumnKey - Column key 타입
  */
-type RelationFkFactory<TOwner extends TableBuilder<any, any, any>, TColumnKey extends string> = {
+export type RelationFkFactory<TColumnKey extends string> = {
   /** N:1 FK 관계 정의 (DB FK 생성) */
-  foreignKey<TTargetFn extends () => TableBuilder<any, any, any>>(
+  foreignKey<TTargetFn>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
     opts?: { description?: string },
-  ): ForeignKeyBuilder<TOwner, TTargetFn>;
+  ): ForeignKeyBuilder<TTargetFn>;
   /** 1:N FK 역참조 정의 (single: true → 단일 객체) */
-  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any, any>>(
+  foreignKeyTarget<TTargetTableFn>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts: { single: true; description?: string },
   ): ForeignKeyTargetBuilder<TTargetTableFn, true>;
-  foreignKeyTarget<TTargetTableFn extends () => TableBuilder<any, any, any>>(
+  foreignKeyTarget<TTargetTableFn>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts?: { single?: false; description?: string },
@@ -178,30 +171,22 @@ type RelationFkFactory<TOwner extends TableBuilder<any, any, any>, TColumnKey ex
 /**
  * 논리적 관계 factory 타입 (table/View 공용)
  *
- * @template TOwner - 소유 Table/View builder 타입
  * @template TColumnKey - Column key 타입
  */
-type RelationRkFactory<
-  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  TColumnKey extends string,
-> = {
+export type RelationRkFactory<TColumnKey extends string> = {
   /** N:1 논리적 관계 정의 (DB FK 미생성) */
-  relationKey<TTargetFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
+  relationKey<TTargetFn>(
     columns: TColumnKey[],
     targetFn: TTargetFn,
     opts?: { description?: string },
-  ): RelationKeyBuilder<TOwner, TTargetFn>;
+  ): RelationKeyBuilder<TTargetFn>;
   /** 1:N 논리적 역참조 정의 (single: true → 단일 객체) */
-  relationKeyTarget<
-    TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  >(
+  relationKeyTarget<TTargetTableFn>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts: { single: true; description?: string },
   ): RelationKeyTargetBuilder<TTargetTableFn, true>;
-  relationKeyTarget<
-    TTargetTableFn extends () => TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  >(
+  relationKeyTarget<TTargetTableFn>(
     targetTableFn: TTargetTableFn,
     relationName: string,
     opts?: { single?: false; description?: string },
@@ -209,28 +194,29 @@ type RelationRkFactory<
 };
 
 /**
+ * Table용 관계 factory (FK + RelationKey 모두 사용 가능)
+ */
+export type TableRelationFactory<TColumnKey extends string> = RelationFkFactory<TColumnKey> &
+  RelationRkFactory<TColumnKey>;
+
+/**
+ * View용 관계 factory (RelationKey만 사용 가능)
+ */
+export type ViewRelationFactory<TColumnKey extends string> = RelationRkFactory<TColumnKey>;
+
+/**
  * 관계 builder factory 생성
  *
- * TableBuilder.relations()와 ViewBuilder.relations()에서 사용
- * Table은 FK + RelationKey 모두 사용 가능, View는 RelationKey만 사용 가능
+ * `TableBuilder.relations(fn)` / `ViewBuilder.relations(fn)` 의 콜백 인자로 전달된다.
+ * Table은 FK + RelationKey 모두 사용 가능, View는 RelationKey만 사용 가능.
  *
- * @template TOwner - 소유 Table/View builder 타입
  * @template TColumnKey - Column key 타입
- * @param ownerFn - 소유 Table/View factory 함수
  * @returns 관계 builder factory
  */
-export function createRelationFactory<
-  TOwner extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>,
-  TColumnKey extends string,
->(
-  ownerFn: () => TOwner,
-): TOwner extends TableBuilder<any, any, any>
-  ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
-  : RelationRkFactory<TOwner, TColumnKey> {
+export function createRelationFactory<TColumnKey extends string = string>(): TableRelationFactory<TColumnKey> {
   return {
     foreignKey(columns, targetFn, opts?) {
       return new ForeignKeyBuilder({
-        ownerFn: ownerFn as () => TableBuilder<any, any, any>,
         columns,
         targetFn,
         description: opts?.description,
@@ -246,7 +232,6 @@ export function createRelationFactory<
     },
     relationKey(columns, targetFn, opts?) {
       return new RelationKeyBuilder({
-        ownerFn: ownerFn,
         columns,
         targetFn,
         description: opts?.description,
@@ -260,9 +245,7 @@ export function createRelationFactory<
         isSingle: opts?.single,
       });
     },
-  } as TOwner extends TableBuilder<any, any, any>
-    ? RelationFkFactory<TOwner, TColumnKey> & RelationRkFactory<TOwner, TColumnKey>
-    : RelationRkFactory<TOwner, TColumnKey>;
+  } as TableRelationFactory<TColumnKey>;
 }
 
 // ============================================
@@ -272,52 +255,66 @@ export function createRelationFactory<
 /**
  * 관계 builder 레코드 타입
  *
- * TableBuilder.relations()와 ViewBuilder.relations()의 반환 타입
+ * `TableBuilder.relations(fn)` / `ViewBuilder.relations(fn)` 콜백의 반환 타입.
  */
 export type RelationBuilderRecord = Record<
   string,
-  | ForeignKeyBuilder<any, any>
+  | ForeignKeyBuilder<any>
   | ForeignKeyTargetBuilder<any, any>
-  | RelationKeyBuilder<any, any>
+  | RelationKeyBuilder<any>
   | RelationKeyTargetBuilder<any, any>
 >;
 
 // ============================================
-// Infer - 관계 타입 추론
+// Infer - 관계 타입 추론 (lazy 구조적 walk + 순환 방지 visited)
 // ============================================
+//
+// 핵심: 관계 대상을 `ReturnType<TFn>` 으로 즉시 풀지 않고
+// `TFn extends () => infer TTarget` 형태로 **lazy** 하게 푼다.
+// 이로써 `$inferSelect` phantom 필드에 접근하기 전까지 `() => typeof X` 타겟이
+// 평가되지 않아, 모델 const 형성 중 순환이 발생하지 않는다.
+// 같은 테이블/뷰 이름 재방문(`TVisited`) 시 컬럼만 반환하여 무한 재귀를 끊는다.
 
 /**
- * FK/RelationKey에서 대상 타입 추출 (단일 객체)
+ * FK/RelationKey에서 대상 타입 추출 (단일 객체, N:1)
  *
- * N:1 관계의 대상 타입
+ * 대상이 Table이면 컬럼 + 심층 관계, View면 데이터 + 심층 관계를 반환한다.
  *
- * @template T - FK 또는 RelationKey builder 타입
+ * @template TRelation - FK 또는 RelationKey builder 타입
+ * @template TVisited - 순환 방지를 위한 방문 테이블/뷰명 집합
  */
 export type ExtractRelationTarget<TRelation, TVisited extends string = never> = TRelation extends
-  | ForeignKeyBuilder<any, infer TTargetFn>
-  | RelationKeyBuilder<any, infer TTargetFn>
-  ? ReturnType<TTargetFn> extends TableBuilder<infer TName, infer TCols, infer TRels>
-    ? TName extends TVisited
-      ? InferColumns<TCols>
-      : InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>
-    : ReturnType<TTargetFn> extends ViewBuilder<any, infer TData, infer TRels>
-      ? TData & InferDeepRelations<TRels, TVisited>
-      : never
+  | ForeignKeyBuilder<infer TTargetFn>
+  | RelationKeyBuilder<infer TTargetFn>
+  ? TTargetFn extends () => infer TTarget
+    ? TTarget extends TableBuilder<infer TName, infer TCols, infer TRels>
+      ? TName extends TVisited
+        ? InferColumns<TCols>
+        : InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>
+      : TTarget extends ViewBuilder<any, infer TVName, infer TData, infer TVRels>
+        ? TVName extends TVisited
+          ? TData
+          : TData & InferDeepRelations<TVRels, TVisited | TVName>
+        : never
+    : never
   : never;
 
 /**
- * FKTarget/RelationKeyTarget에서 대상 타입 추출 (배열 또는 단일 객체)
+ * FKTarget/RelationKeyTarget에서 대상 타입 추출 (배열 또는 단일 객체, 1:N)
  *
- * 1:N 관계의 대상 타입 (opts.single: true 시 단일 객체)
- * TTargetTableFn: 순환 참조 방지를 위한 지연 평가용 () => Post 형태
+ * opts.single: true 시 단일 객체, 아니면 배열.
  *
- * @template T - FKTarget 또는 RelationKeyTarget builder 타입
+ * @template TRelation - FKTarget 또는 RelationKeyTarget builder 타입
+ * @template TVisited - 순환 방지를 위한 방문 테이블/뷰명 집합
  */
-export type ExtractRelationTargetResult<TRelation, TVisited extends string = never> =
-  TRelation extends
-    | ForeignKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
-    | RelationKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
-    ? ReturnType<TTargetTableFn> extends TableBuilder<infer TName, infer TCols, infer TRels>
+export type ExtractRelationTargetResult<
+  TRelation,
+  TVisited extends string = never,
+> = TRelation extends
+  | ForeignKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
+  | RelationKeyTargetBuilder<infer TTargetTableFn, infer TIsSingle>
+  ? TTargetTableFn extends () => infer TTarget
+    ? TTarget extends TableBuilder<infer TName, infer TCols, infer TRels>
       ? TName extends TVisited
         ? TIsSingle extends true
           ? InferColumns<TCols>
@@ -325,21 +322,28 @@ export type ExtractRelationTargetResult<TRelation, TVisited extends string = nev
         : TIsSingle extends true
           ? InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>
           : (InferColumns<TCols> & InferDeepRelations<TRels, TVisited | TName>)[]
-      : ReturnType<TTargetTableFn> extends ViewBuilder<any, infer TData, infer TRels>
-        ? TIsSingle extends true
-          ? TData & InferDeepRelations<TRels, TVisited>
-          : (TData & InferDeepRelations<TRels, TVisited>)[]
+      : TTarget extends ViewBuilder<any, infer TVName, infer TData, infer TVRels>
+        ? TVName extends TVisited
+          ? TIsSingle extends true
+            ? TData
+            : TData[]
+          : TIsSingle extends true
+            ? TData & InferDeepRelations<TVRels, TVisited | TVName>
+            : (TData & InferDeepRelations<TVRels, TVisited | TVName>)[]
         : never
-    : never;
+    : never
+  : never;
 
 /**
- * 관계 정의에서 심층 관계 타입 추론
+ * 관계 레코드에서 심층 관계 타입 추론
  *
- * include() 없이 접근 시 undefined가 되도록 모든 관계를 optional로 설정
+ * include() 없이 접근 시 undefined가 되도록 모든 관계를 optional로 설정.
+ * 입력 제약 없음(무제약) — 관계가 없는(`{}`) 테이블도 안전하게 빈 객체로 해소된다.
  *
- * @template TRelations - 관계 builder 레코드 타입
+ * @template TRelations - 관계 builder 레코드 타입 (무제약)
+ * @template TVisited - 순환 방지를 위한 방문 테이블/뷰명 집합
  */
-export type InferDeepRelations<TRelations extends RelationBuilderRecord, TVisited extends string = never> = {
+export type InferDeepRelations<TRelations, TVisited extends string = never> = {
   [K in keyof TRelations]?:
     | ExtractRelationTarget<TRelations[K], TVisited>
     | ExtractRelationTargetResult<TRelations[K], TVisited>;

@@ -42,10 +42,10 @@ import { SdTab } from "./sd-tab";
     `,
   ],
 })
-export class SdTabItem {
-  private readonly _parentControl = inject<SdTab>(forwardRef(() => SdTab));
+export class SdTabItem<T> {
+  private readonly _parentControl = inject<SdTab<T>>(forwardRef(() => SdTab));
 
-  value = input<any>();
+  value = input.required<T>();
 
   isSelected = computed(() => this._parentControl.value() === this.value());
 

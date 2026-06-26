@@ -1,40 +1,20 @@
 {
   "exclude": ["**/dist/**"],
   "compilerOptions": {
-    // Output
     "target": "ESNext",
-    "module": "ESNext",
     "lib": ["ESNext"],
-    "moduleResolution": "bundler",
-    "typeRoots": [],
-
-    // Strict
-    "strict": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "useUnknownInCatchVariables": true,
     "noPropertyAccessFromIndexSignature": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": true,
-
-    // Module
-    "esModuleInterop": true,
     "verbatimModuleSyntax": true,
-
-    // Build
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "inlineSourceMap": false,
     "skipLibCheck": true,
     "importHelpers": true,
-
-    // Path
-    "baseUrl": ".",
     "paths": {
-      "@simplysm/*": ["packages/*/src/index.ts"]
+      "@simplysm/*": ["./packages/*/src/index.ts"]
     }
   }
 }

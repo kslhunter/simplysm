@@ -1,9 +1,13 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createTestDb } from "../setup/TestDbContext";
 import { expr } from "../../src/expr/expr";
 import { User } from "../setup/models/User";
 import { Post } from "../setup/models/Post";
 import type { ExprUnit } from "../../src/expr/expr-unit";
+
+// 타입 일치 단언 (plain typecheck에서 검증 — vitest typecheck 미설정이므로 expectTypeOf 대신 사용)
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+function assertType<_T extends true>(): void {}
 
 describe("QueryableRecord 타입 추론", () => {
   it("optional relation (joinSingle) — NOT NULL 컬럼은 ExprUnit<T>", () => {
@@ -21,9 +25,9 @@ describe("QueryableRecord 타입 추론", () => {
     type UserNameType = Result extends { userName: { $infer: infer T } } ? T : never;
 
     // title: main table non-nullable → ExprUnit<string>
-    expectTypeOf<TitleType>().toEqualTypeOf<string>();
+    assertType<Equal<TitleType, string>>();
     // userName: optional relation의 non-nullable 컬럼 → ExprUnit<string> (nullable 전파 없음)
-    expectTypeOf<UserNameType>().toEqualTypeOf<string>();
+    assertType<Equal<UserNameType, string>>();
 
     expect(q).toBeDefined();
   });
@@ -41,7 +45,7 @@ describe("QueryableRecord 타입 추론", () => {
     type UserEmailType = Result extends { userEmail: { $infer: infer T } } ? T : never;
 
     // email: 스키마 nullable → ExprUnit<string | undefined> (스키마 nullability 유지)
-    expectTypeOf<UserEmailType>().toEqualTypeOf<string | undefined>();
+    assertType<Equal<UserEmailType, string | undefined>>();
 
     expect(q).toBeDefined();
   });
@@ -59,7 +63,7 @@ describe("QueryableRecord 타입 추론", () => {
         type TitleType = PostElement["title"] extends ExprUnit<infer T> ? T : never;
 
         // 배열 relation 요소의 non-nullable 컬럼 → ExprUnit<string>
-        expectTypeOf<TitleType>().toEqualTypeOf<string>();
+        assertType<Equal<TitleType, string>>();
 
         return { id: item.id };
       });
@@ -83,7 +87,7 @@ describe("QueryableRecord 타입 추론", () => {
         type UserNameType = NonNullable<UserType> extends { name: ExprUnit<infer T> }
           ? T
           : never;
-        expectTypeOf<UserNameType>().toEqualTypeOf<string>();
+        assertType<Equal<UserNameType, string>>();
 
         return { id: item.id };
       });
@@ -100,7 +104,7 @@ describe("QueryableRecord 타입 추론", () => {
         type UserElement = (typeof users)[number];
         type NameType = UserElement["name"] extends ExprUnit<infer T> ? T : never;
 
-        expectTypeOf<NameType>().toEqualTypeOf<string>();
+        assertType<Equal<NameType, string>>();
 
         return { id: item.id };
       });
@@ -123,8 +127,8 @@ describe("QueryableRecord 타입 추론", () => {
     type IdType = Result extends { id: { $infer: infer T } } ? T : never;
     type EmailType = Result extends { email: { $infer: infer T } } ? T : never;
 
-    expectTypeOf<IdType>().toEqualTypeOf<number>();
-    expectTypeOf<EmailType>().toEqualTypeOf<string | undefined>();
+    assertType<Equal<IdType, number>>();
+    assertType<Equal<EmailType, string | undefined>>();
 
     expect(q).toBeDefined();
   });
@@ -146,10 +150,10 @@ describe("QueryableRecord 타입 추론", () => {
     type ExecResult = Awaited<ReturnType<typeof q.execute>>;
     type Row = ExecResult[number];
 
-    expectTypeOf<Row["userNameOpt"]>().toEqualTypeOf<string | undefined>();
-    expectTypeOf<Row["userEmailOpt"]>().toEqualTypeOf<string | undefined>();
-    expectTypeOf<Row["userNameBang"]>().toEqualTypeOf<string>();
-    expectTypeOf<Row["userEmailBang"]>().toEqualTypeOf<string | undefined>();
+    assertType<Equal<Row["userNameOpt"], string | undefined>>();
+    assertType<Equal<Row["userEmailOpt"], string | undefined>>();
+    assertType<Equal<Row["userNameBang"], string>>();
+    assertType<Equal<Row["userEmailBang"], string | undefined>>();
 
     expect(q).toBeDefined();
   });

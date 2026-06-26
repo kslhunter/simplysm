@@ -5,16 +5,18 @@ from _common import load_stdin, deny
 data = load_stdin()
 cmd = data["tool_input"].get("command", "")
 
-# Command position prefix: start of line or after command separator (&&, ||, ;, |)
-CMD_POS = r"(^|&&|\|\||;|\|)\s*"
+# Command position prefix: line start or after a command-opening token (&& || ; | = ( { &)
+CMD_POS = r"(^|[;&|=({])\s*"
+
+# Git escape hatch: every git command is blocked unless this token appears in the command. The
+# agent learns the token only from a working context that explicitly opts in (e.g. a project
+# CLAUDE.md) and appends it as a trailing comment (e.g. `git push # sd-git-allow`); the shell
+# treats `#...` as a comment so execution is unaffected. The token is intentionally kept out of
+# the global system prompt, so git stays blocked wherever a project has not opted in.
+GIT_ALLOW_TOKEN = "sd-git-allow"
+git_allowed = GIT_ALLOW_TOKEN in cmd
 
 BLOCKED = [
-    # Blocked git commands
-    (CMD_POS + r"git\s+stash\b", "git stash"),
-    (CMD_POS + r"git\s+checkout\b", "git checkout"),
-    (CMD_POS + r"git\s+restore\b", "git restore"),
-    (CMD_POS + r"git\s+reset\b", "git reset"),
-    (CMD_POS + r"git\s+clean\b", "git clean"),
     # No directory change allowed
     (CMD_POS + r"cd\s+", "cd (directory change not allowed)"),
     # Use {PM} typecheck instead
@@ -32,11 +34,6 @@ for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
         deny(label)
 
-# Git read-only inspection block (working-tree-only policy).
-GIT_READ_VERBS = r"status|diff|log|show|blame|reflog|rev-list|rev-parse|ls-files|ls-tree|cat-file|describe|whatchanged|shortlog|grep"
-m = re.search(CMD_POS + rf"git\s+(?P<verb>{GIT_READ_VERBS})\b", cmd)
-if m:
-    deny(
-        f"git {m.group('verb')} "
-        "(working-tree inspection via git is forbidden; use Read/Grep/Glob)."
-    )
+# All git commands are blocked unless the allow-token is present in the command.
+if not git_allowed and re.search(CMD_POS + r"git\b", cmd):
+    deny("git (forbidden by default; only allowed where the working context provides the git-allow token).")

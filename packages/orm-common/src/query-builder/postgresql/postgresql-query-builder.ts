@@ -31,6 +31,7 @@ import type {
   UpdateQueryDef,
   UpsertQueryDef,
 } from "../../types/query-def";
+import type { WhereExpr } from "../../types/expr";
 import type { QueryBuildResult } from "../../types/db";
 import { QueryBuilderBase } from "../base/query-builder-base";
 import { PostgresqlExprRenderer } from "./postgresql-expr-renderer";
@@ -685,7 +686,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
    * ctid 기반 CTE로 변환한다.
    */
   private _buildLimitCte(
-    def: { table: QueryDefObjectName; as: string; top?: number; limit?: [number, number]; where?: unknown[]; joins?: SelectQueryDefJoin[] },
+    def: { table: QueryDefObjectName; as: string; top?: number; limit?: [number, number]; where?: WhereExpr[]; joins?: SelectQueryDefJoin[] },
     table: string,
     alias: string,
   ): string {
@@ -703,7 +704,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         .map((j) => this.expr.renderWhere(j.where!));
       const whereCondition =
         def.where != null && def.where.length > 0
-          ? this.expr.renderWhere(def.where as any)
+          ? this.expr.renderWhere(def.where)
           : null;
       const allConditions = [
         ...(whereCondition != null ? [whereCondition] : []),
@@ -713,7 +714,7 @@ export class PostgresqlQueryBuilder extends QueryBuilderBase {
         sql += ` WHERE ${allConditions.join(" AND ")}`;
       }
     } else if (def.where != null && def.where.length > 0) {
-      sql += ` WHERE ${this.expr.renderWhere(def.where as any)}`;
+      sql += ` WHERE ${this.expr.renderWhere(def.where)}`;
     }
 
     if (def.limit != null) {

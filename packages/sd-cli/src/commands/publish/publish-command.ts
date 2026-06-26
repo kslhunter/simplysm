@@ -163,7 +163,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     return;
   }
 
-  // 커밋되지 않은 변경사항 확인 및 자동 커밋 시도 (noBuild가 아닌 경우)
+  // 커밋되지 않은 변경사항 확인 (있으면 중단, noBuild가 아닌 경우)
   if (!noBuild) {
     try {
       await ensureCleanWorkingTree(hasGit, logger);

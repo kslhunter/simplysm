@@ -20,9 +20,9 @@ export class SdSystemConfigProvider<T> {
     }
   }
 
-  async getAsync(key: keyof T & string) {
+  async getAsync<K extends keyof T & string>(key: K): Promise<T[K] | undefined> {
     if (this.fn) {
-      return this.fn.get(key);
+      return (await this.fn.get(key)) as T[K] | undefined;
     } else {
       return this._sdLocalStorage.get(key);
     }

@@ -49,7 +49,7 @@ class JoinQueryable {
    * @param table - 조인할 table
    * @returns 조인된 Queryable
    */
-  from<T extends TableBuilder<any, any, any>>(table: T): Queryable<T["$inferSelect"], T> {
+  from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$inferSelect"], T> {
     return queryable(this._db, table, this._joinAlias)();
   }
 
@@ -113,7 +113,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
    * @param table - 재귀할 대상 table
    * @returns self 속성이 추가된 Queryable (자기 참조용)
    */
-  from<T extends TableBuilder<any, any, any>>(
+  from<T extends TableBuilder<any, any>>(
     table: T,
   ): Queryable<T["$inferSelect"] & { self?: TBaseData[] }, T> {
     const selfAlias = `${this._cteName}.self`;
@@ -210,7 +210,7 @@ class RecursiveQueryable<TBaseData extends DataRecord> {
  */
 export class Queryable<
   TData extends DataRecord,
-  TFrom extends TableBuilder<any, any, any> | never, // CUD 연산은 TableBuilder만 지원
+  TFrom extends TableBuilder<any, any> | never, // CUD 연산은 TableBuilder만 지원
 > {
   constructor(readonly meta: QueryableMeta<TData>) {}
 
@@ -1060,15 +1060,15 @@ export class Queryable<
    * @param outputColumns - Column name array to receive (optional)
    * @returns When outputColumns specified, returns array of inserted records
    */
-  async insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>>(
+  async insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>>(
     targetTable: TTable,
   ): Promise<void>;
   async insertInto<
-    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>,
+    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns: TOut[]): Promise<Pick<TData, TOut>[]>;
   async insertInto<
-    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>,
+    TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>,
     TOut extends keyof TTable["$inferColumns"] & string,
   >(targetTable: TTable, outputColumns?: TOut[]): Promise<Pick<TData, TOut>[] | void> {
     const results = await this.meta.db.executeDefs<Pick<TData, TOut>>(
@@ -1085,7 +1085,7 @@ export class Queryable<
     records: TFrom["$inferInsert"][],
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): InsertQueryDef {
-    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
+    const from = this._getCudFrom();
     const outputDef = this._getCudOutputDef();
 
     // AI column에 명시적 값이 있으면 overrideIdentity 설정
@@ -1113,7 +1113,7 @@ export class Queryable<
     record: TFrom["$inferInsert"],
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): InsertIfNotExistsQueryDef {
-    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
+    const from = this._getCudFrom();
     const outputDef = this._getCudOutputDef();
 
     const { select: _, ...existsSelectQuery } = this.getSelectQueryDef();
@@ -1133,7 +1133,7 @@ export class Queryable<
     });
   }
 
-  getInsertIntoQueryDef<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>, any>>(
+  getInsertIntoQueryDef<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>>(
     targetTable: TTable,
     outputColumns?: (keyof TTable["$inferColumns"] & string)[],
   ): InsertIntoQueryDef {
@@ -1212,7 +1212,7 @@ export class Queryable<
     recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpdateQueryDef {
-    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
+    const from = this._getCudFrom();
     const outputDef = this._getCudOutputDef();
 
     return obj.clearUndefined({
@@ -1235,7 +1235,7 @@ export class Queryable<
   }
 
   getDeleteQueryDef(outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): DeleteQueryDef {
-    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
+    const from = this._getCudFrom();
     const outputDef = this._getCudOutputDef();
 
     return obj.clearUndefined({
@@ -1325,7 +1325,7 @@ export class Queryable<
     insertRecordFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>,
     outputColumns?: (keyof TFrom["$inferColumns"] & string)[],
   ): UpsertQueryDef {
-    const from = this.meta.from as TableBuilder<any, any, any> | ViewBuilder<any, any, any>;
+    const from = this._getCudFrom();
     const outputDef = this._getCudOutputDef();
 
     const { select: _sel, ...existsSelectQuery } = this.getSelectQueryDef();
@@ -1380,6 +1380,11 @@ export class Queryable<
 
   //#region ========== CUD Common ==========
 
+  /** CUD QueryDef 생성용 from(Table/View) 캐스팅 통일 */
+  private _getCudFrom(): TableBuilder<any, any> | ViewBuilder<any, any, any> {
+    return this.meta.from as TableBuilder<any, any> | ViewBuilder<any, any, any>;
+  }
+
   private _getCudOutputDef(): {
     pkColNames: string[];
     aiColName?: string;
@@ -1422,7 +1427,7 @@ export class Queryable<
  */
 export function getMatchedPrimaryKeys(
   fkCols: string[],
-  targetTable: TableBuilder<any, any, any>,
+  targetTable: TableBuilder<any, any>,
 ): string[] {
   const pk = targetTable.meta.primaryKey;
   if (pk == null || fkCols.length !== pk.length) {
@@ -1470,7 +1475,7 @@ function transformColumnsAlias<TRecord extends DataRecord>(
     } else if (value == null) {
       result[key] = value;
     } else {
-      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as ColumnPrimitive), {
+      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as Exclude<ColumnPrimitive, undefined>), {
         type: "value",
         value: value as ColumnPrimitive,
       });
@@ -1500,7 +1505,7 @@ function wrapColumnsPrimitives<T>(columns: T): T {
     } else if (value == null) {
       result[key] = value;
     } else {
-      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as ColumnPrimitive), {
+      result[key] = new ExprUnit(inferColumnPrimitiveStr(value as Exclude<ColumnPrimitive, undefined>), {
         type: "value",
         value: value as ColumnPrimitive,
       });
@@ -1572,13 +1577,15 @@ export type QueryableWriteRecord<TData> = {
 export type UnwrapQueryableRecord<R> = {
   [K in keyof R as K extends symbol ? never : K]: NonNullable<R[K]> extends ExprUnit<infer T>
     ? T | Extract<R[K], undefined>
-    : NonNullable<R[K]> extends (infer U)[]
-      ? U extends Record<string, any>
-        ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>
-        : never
-      : NonNullable<R[K]> extends Record<string, any>
-        ? UnwrapQueryableRecord<NonNullable<R[K]>> | Extract<R[K], undefined>
-        : never;
+    : NonNullable<R[K]> extends ColumnPrimitive
+      ? R[K]
+      : NonNullable<R[K]> extends (infer U)[]
+        ? U extends Record<string, any>
+          ? UnwrapQueryableRecord<U>[] | Extract<R[K], undefined>
+          : never
+        : NonNullable<R[K]> extends Record<string, any>
+          ? UnwrapQueryableRecord<NonNullable<R[K]>> | Extract<R[K], undefined>
+          : never;
 };
 
 //#region ========== PathProxy - Type-safe path builder for include ==========
@@ -1646,11 +1653,11 @@ function createPathProxy<TObject>(path: string[] = []): PathProxy<TObject> {
  * @param as - Alias 지정 (선택, 미지정 시 자동 생성)
  * @returns Queryable을 반환하는 factory 함수
  */
-export function queryable<TBuilder extends TableBuilder<any, any, any> | ViewBuilder<any, any, any>>(
+export function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
   db: DbContextBase,
   tableOrView: TBuilder,
   as?: string,
-): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any, any> ? TBuilder : never> {
+): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any> ? TBuilder : never> {
   return () => {
     // as가 미지정이면 db.getNextAlias() 사용 (카운터 증가)
     // as가 지정되면 그대로 사용 (카운터 증가 없음)

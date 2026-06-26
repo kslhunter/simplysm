@@ -22,22 +22,27 @@ describe("ensureCleanWorkingTree", () => {
     vi.clearAllMocks();
   });
 
-  it("throws when auto-commit fails", async () => {
+  it("throws when there are uncommitted changes", async () => {
     const logger = createLogger();
     mocks.execa.mockImplementation(((cmd: string, args?: string[]) => {
       if (cmd === "git" && args?.[0] === "diff") {
         return { stdout: "file.txt", stderr: "", exitCode: 0 };
       }
-      // 자동 커밋 명령 실패 시뮬레이션
-      if (cmd !== "git") {
-        throw new Error("auto-commit failed");
-      }
       return { stdout: "", stderr: "", exitCode: 0 };
     }) as never);
 
     await expect(ensureCleanWorkingTree(true, logger)).rejects.toThrow(
-      "자동 커밋에 실패했습니다",
+      "커밋되지 않은 변경사항이 있습니다",
     );
+  });
+
+  it("passes when the working tree is clean", async () => {
+    const logger = createLogger();
+    mocks.execa.mockImplementation((() => {
+      return { stdout: "", stderr: "", exitCode: 0 };
+    }) as never);
+
+    await expect(ensureCleanWorkingTree(true, logger)).resolves.toBeUndefined();
   });
 });
 

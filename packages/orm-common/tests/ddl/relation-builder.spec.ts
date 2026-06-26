@@ -15,24 +15,13 @@ const User = Table("User")
     id: c.bigint(),
     name: c.varchar(100),
   }))
-  .primaryKey("id")
-  .relations(() => ({}));
+  .primaryKey("id");
 
 describe("DDL - 관계 빌더", () => {
   //#region ========== ForeignKeyBuilder ==========
 
   describe("ForeignKeyBuilder - 기본 FK", () => {
-    const Post = Table("Post")
-      .database("TestDb")
-      .schema("TestSchema")
-      .columns((c) => ({
-        id: c.bigint(),
-        userId: c.bigint(),
-      }))
-      .primaryKey("id")
-      .relations(() => ({}));
-
-    const RelationFactory = createRelationFactory(() => Post);
+    const RelationFactory = createRelationFactory();
     const fkBuilder = RelationFactory.foreignKey(["userId"], () => User);
 
     const db = createTestDb();
@@ -57,21 +46,9 @@ describe("DDL - 관계 빌더", () => {
         regionId: c.int(),
         name: c.varchar(100),
       }))
-      .primaryKey("id", "regionId")
-      .relations(() => ({}));
+      .primaryKey("id", "regionId");
 
-    const Employee = Table("Employee")
-      .database("TestDb")
-      .schema("TestSchema")
-      .columns((c) => ({
-        id: c.bigint(),
-        companyId: c.bigint(),
-        companyRegionId: c.int(),
-      }))
-      .primaryKey("id")
-      .relations(() => ({}));
-
-    const RelationFactory = createRelationFactory(() => Employee);
+    const RelationFactory = createRelationFactory();
     const fkBuilder = RelationFactory.foreignKey(["companyId", "companyRegionId"], () => Company);
 
     const db = createTestDb();

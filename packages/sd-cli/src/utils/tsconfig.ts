@@ -34,7 +34,7 @@ export function getTypesFromPackageJson(packageDir: string): string[] {
 /**
  * 지정된 타입체크 환경에 맞게 compilerOptions를 조정한다.
  *
- * - node 환경: 브라우저 관련 lib(dom, webworker 패턴)을 제거한다. types는 변경 없음.
+ * - node 환경: 브라우저 관련 lib(dom, webworker 패턴)을 제거한다. types는 devDeps의 @types/*를 명시 설정한다(TS6 types=[] 기본값 대응, typecheck 경로용).
  * - browser 환경: lib은 변경 없음. types를 devDeps에서 "node"를 제외하고 명시적으로 설정한다.
  */
 export function getCompilerOptionsForEnv(
@@ -51,6 +51,7 @@ export function getCompilerOptionsForEnv(
           (lib) => !DOM_LIB_PATTERNS.some((pattern) => lib.toLowerCase().includes(pattern)),
         );
       }
+      options.types = getTypesFromPackageJson(packageDir);
       break;
     case "browser": {
       const packageTypes = getTypesFromPackageJson(packageDir);
