@@ -36,9 +36,11 @@ disable-model-invocation: true
        - 헤더: `[<type>]: <해당 type 요약>`.
        - 변경 항목 bullet (`-`).
 
-3. 작성한 메시지를 **stdin** 으로 commit.py 에 넘겨 커밋(메시지를 셸 인자로 넣지 말 것 — 따옴표·백틱에서 깨짐). commit.py 가 staging 을 전담한다 — 매 호출 시 인덱스를 초기화한 뒤 대상만 다시 담아 커밋하므로, 아래 형식으로만 호출한다.
+3. 작성한 메시지를 **stdin** 으로 commit.py 에 넘겨 커밋(메시지를 셸 인자로 넣지 말 것 — 따옴표·백틱에서 깨짐). commit.py 가 staging 을 전담한다 — 매 호출 시 인덱스를 초기화한 뒤 대상만 다시 담아 커밋하므로, 아래 형식으로만 호출한다. stdin 전달 구문은 셸에 맞춘다 — bash 는 heredoc, PowerShell 은 here-string 파이프(`@'...'@ | python ...`). PowerShell 에서 heredoc(`<<`)은 파서 에러가 나며, here-string 의 닫는 `'@` 는 들여쓰기 없이 줄 맨 앞 단독 줄에 와야 한다(아래 예시는 마크다운 들여쓰기가 있으니 실제 실행 시 `'@` 를 줄 맨 앞으로).
 
    - **단일 커밋 (일반)**: 메시지만 stdin 으로 넘긴다.
+
+     bash:
 
      ```
      python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py" <<'COMMIT_MSG'
@@ -46,9 +48,19 @@ disable-model-invocation: true
      COMMIT_MSG
      ```
 
+     PowerShell:
+
+     ```
+     @'
+     <작성한 커밋 메시지>
+     '@ | python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py"
+     ```
+
    - **저장소 경계 분리 커밋 (절대 원칙의 예외 상황만)**: 경계별로 commit.py 를 반복 호출한다. 각 경계는 `--only <경로...>` 로 그 경로만 커밋하고, **마지막(나머지) 경계는 `--only` 를 생략**해 잔여 전체를 커밋한다(분류 누락 방지). 경계별 메시지는 각각 stdin 으로 넘긴다.
 
      예 — `shared/` 폴더만 별도 repo 로 가는 구조에서 `shared/` 와 그 외를 분리:
+
+     bash:
 
      ```
      python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py" --only shared/ <<'COMMIT_MSG'
@@ -58,4 +70,16 @@ disable-model-invocation: true
      python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py" <<'COMMIT_MSG'
      <나머지(개인) 변경 메시지>
      COMMIT_MSG
+     ```
+
+     PowerShell:
+
+     ```
+     @'
+     <shared/ 변경 메시지 — 그 별도 repo 에 공개돼도 무관한 내용만>
+     '@ | python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py" --only shared/
+
+     @'
+     <나머지(개인) 변경 메시지>
+     '@ | python "${CLAUDE_PLUGIN_ROOT}/skills/sd-commit/scripts/commit.py"
      ```
