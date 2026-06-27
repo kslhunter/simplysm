@@ -120,7 +120,7 @@ def _run_command(args: argparse.Namespace, token: str) -> Any:
             input_data["baseVersion"] = args.base_version
         if args.parent is not None:
             input_data["parentTopic"] = args.parent
-        return wiki_core.write_with_retry(input_data, token)
+        return wiki_core.write_page(input_data, token)
     if args.command == "delete":
         delete_input: dict[str, Any] = {"topic": args.topic}
         if args.base_version is not None:
@@ -150,6 +150,10 @@ def _main(argv: list[str]) -> int:
                 raise
             token = wiki_core.browser_login()
             result = _run_command(args, token)
+    except wiki_core.WikiWriteConflict as err:
+        # 충돌은 실패(비0 종료)로 알리되, 재통합에 필요한 최신 본문을 stdout 으로 함께 전달.
+        _print_json({"conflict": True, "message": str(err), "latest": err.latest})
+        return 3
     except wiki_core.WikiAuthError as err:
         print(f"위키 인증 오류: {err}", file=sys.stderr)
         return 2

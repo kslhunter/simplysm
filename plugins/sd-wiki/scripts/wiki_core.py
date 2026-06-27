@@ -74,6 +74,18 @@ class WikiApiError(Exception):
         return "저장 충돌" in str(self)
 
 
+class WikiWriteConflict(WikiApiError):
+    """write 낙관락 충돌 — 읽은 뒤 다른 작업자가 페이지를 먼저 바꿈.
+
+    머지 없는 자동 덮어쓰기 대신 최신 본문(`latest`)을 담아 raise — 호출부가
+    변경을 최신본에 재통합해 다시 write 하도록 유도(남의 수정 유실 방지).
+    """
+
+    def __init__(self, message: str, latest: Any):
+        super().__init__(message)
+        self.latest = latest
+
+
 # ── ③ 토큰 저장 ───────────────────────────────────────────────────────
 def load_token() -> str | None:
     """저장된 토큰을 반환. 없거나 형식이 깨졌으면 None."""
@@ -272,26 +284,28 @@ def call_service(method: str, params: list[Any], token: str) -> Any:
 
 
 # ── ⑥ 낙관락 ──────────────────────────────────────────────────────────
-def _read_latest_version(topic: str, token: str) -> int | None:
-    latest = call_service("read", [topic], token)
-    if latest is None:
-        return None
-    if not isinstance(latest, dict) or not isinstance(latest.get("version"), int):
-        raise WikiApiError("write 재시도 실패: 최신 페이지 응답에 version 이 없습니다.")
-    return latest["version"]
+# 충돌 시 에이전트에게 줄 안내 — 머지 없는 자동 덮어쓰기를 하지 않으므로,
+# 최신 본문(latest)에 변경을 재통합해 --base-version 으로 다시 쓰도록 유도.
+# ("저장 충돌" 단어를 피함 — is_write_conflict 의 서버 메시지 판별과 섞이지 않게.)
+_CONFLICT_GUIDE = (
+    "쓰기 충돌: 읽은 뒤 다른 작업자가 페이지를 먼저 바꿨습니다. "
+    "남의 수정을 덮어쓰지 않도록 자동 재시도하지 않습니다 — "
+    "아래 latest(최신 제목·요약·본문)에 이번 변경을 재통합한 뒤 "
+    "`--base-version <latest.version>` 으로 다시 write 하세요."
+)
 
 
-def write_with_retry(input_data: dict[str, Any], token: str) -> Any:
+def write_page(input_data: dict[str, Any], token: str) -> Any:
+    """페이지 write. 낙관락 충돌이면 최신 본문을 담아 WikiWriteConflict 로 알림.
+
+    머지 없는 자동 덮어쓰기를 하지 않음 — 충돌 해소는 호출부(에이전트)가
+    최신본에 변경을 재통합하는 방식으로만 가능.
+    """
     try:
         return call_service("write", [input_data], token)
     except WikiApiError as err:
         if not err.is_write_conflict:
             raise
 
-    retry_input = dict(input_data)
-    latest_version = _read_latest_version(str(input_data["topic"]), token)
-    if latest_version is None:
-        retry_input.pop("baseVersion", None)
-    else:
-        retry_input["baseVersion"] = latest_version
-    return call_service("write", [retry_input], token)
+    latest = call_service("read", [str(input_data["topic"])], token)
+    raise WikiWriteConflict(_CONFLICT_GUIDE, latest)
