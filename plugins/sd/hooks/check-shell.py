@@ -9,8 +9,8 @@ cmd = data["tool_input"].get("command", "")
 CMD_POS = r"(^|[;&|=({])\s*"
 
 # git 차단 기본값. 통과 경로는 둘:
-#  1. 조회 서브커맨드(status/diff/log/show)는 항상 허용 — 인자와 무관하게 작업트리·.git·네트워크를
-#     건드릴 수 없음. 단 명령 내 모든 git 호출이 조회이고, 서브커맨드가 `git` 바로 뒤에 와야 허용
+#  1. 조회만 가능한 형태는 항상 허용 — status/diff/log/show(인자 무관 부작용 없음)와 tag -l/--list
+#     (목록 조회). 단 명령 내 모든 git 호출이 조회이고, 서브커맨드가 `git` 바로 뒤에 와야 허용
 #     (`-c core.pager=...`·`-C <dir>` 같은 위험 전역 옵션이 끼면 → 조회 아님 → 토큰 필요.
 #     부작용 없는 `--no-pager` 만 서브커맨드 앞 예외로 허용).
 #  2. 그 외는 명령에 이 토큰이 있어야 함. 에이전트는 명시적으로 opt-in 한 작업 컨텍스트(예: 프로젝트
@@ -20,7 +20,7 @@ CMD_POS = r"(^|[;&|=({])\s*"
 GIT_ALLOW_TOKEN = "sd-git-allow"
 git_allowed = GIT_ALLOW_TOKEN in cmd
 # `git` 바로 뒤 조회 서브커맨드(부작용 없는 --no-pager 만 사이 허용).
-GIT_READONLY = CMD_POS + r"git\s+(?:--no-pager\s+)?(?:status|diff|log|show)\b"
+GIT_READONLY = CMD_POS + r"git\s+(?:--no-pager\s+)?(?:status|diff|log|show|tag\s+(?:-l|--list))\b"
 
 BLOCKED = [
     # 디렉토리 변경 금지
@@ -45,4 +45,4 @@ if not git_allowed:
     all_git = {m.start() for m in re.finditer(CMD_POS + r"git\b", cmd)}
     readonly_git = {m.start() for m in re.finditer(GIT_READONLY, cmd)}
     if all_git and not all_git <= readonly_git:
-        deny("git (forbidden by default; only read-only status/diff/log/show are allowed without the git-allow token).")
+        deny("git (forbidden by default; only read-only status/diff/log/show and tag -l/--list are allowed).")

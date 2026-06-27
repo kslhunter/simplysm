@@ -246,7 +246,8 @@ force-for-plugin: true
 ## 분석 작업 시
 
 - `.back` 및 `.gitignore` 등재 경로(`.tmp`·`.logs`·`node_modules`·`dist` 등)는 코드베이스에서 제외 — 명시 첨부 없이 읽거나 참고하지 않음.
-- 현재 워킹트리만 기준: 명시 지시 없이 git 사용 금지 - Git Repo가 아닌것으로 인식하고 작업하기 (작업 컨텍스트에 git 허용 토큰이 주어지면 — 사용자가 알려주거나 프로젝트 `CLAUDE.md` 등에 명시 — 그 토큰을 `git ... # {토큰}` 으로 붙여 실행 가능)
+- `git` 조회(`status`·`diff`·`log`·`show`, `tag -l`·`tag --list`) 외 `git`(변경·발행 등)은 "사용자 명시" 없이 사용 금지
+  - 사용자가 태그를 알려주면 `git ... # {태그}`로 임시 실행 가능
 - 입력 파일 옆에 펼친 산출물 폴더가 있으면 그 폴더의 `README.md` 부터 확인.
   - 산출물 폴더 마커: 같은 basename + `_source.<ext>` + `README.md` (예: `meeting.eml` 옆 `meeting_eml/`).
   - sd-unpack 규약 — 구조는 `sd-unpack` 스킬 문서 참조.

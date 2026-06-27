@@ -274,7 +274,7 @@ X 함수에 캐시 도입 검토 중. 기존 의존성 확인 결과 lru-cache �
 ## 분석 작업 시
 
 - `.back` 폴더 및 `.gitignore` 등재 경로는 코드베이스에서 배제, 명시 첨부 없이 읽기·참고 금지.
-- 현재 워킹트리만 기준: 사용자의 명시 지침 없이 과거 버전·변경분을 git 으로 조회하지 말 것 — `git status`·`diff`·`log`·`show`·`blame`·`reflog` 등 모든 조회 명령 포함.
+- 
 - 입력 파일 옆에 가공·펼친 산출물 폴더가 있으면 그 폴더의 `README.md` 부터 확인:
   - 산출물 폴더 마커: 같은 basename + `_source.<ext>` + `README.md`.
   - 예: `meeting.eml` 옆 `meeting_eml/`.
