@@ -1,8 +1,8 @@
 import { ESLint } from "eslint";
-import { createJiti } from "jiti";
 import path from "path";
 import { fsx, pathx } from "@simplysm/core-node";
 import { env, SdError, createLogger } from "@simplysm/core-common";
+import { importConfigModule } from "../utils/import-config-module";
 
 //#region Types
 
@@ -77,10 +77,9 @@ export async function loadIgnorePatterns(cwd: string): Promise<string[]> {
     );
   }
 
-  const jiti = createJiti(import.meta.url);
-  const configModule = await jiti.import<{ default: Record<string, unknown>[] } | undefined>(
-    configPath,
-  );
+  const configModule = (await importConfigModule(configPath)) as
+    | { default: Record<string, unknown>[] }
+    | undefined;
 
   let configs: unknown;
   if (Array.isArray(configModule)) {

@@ -25,7 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 특정 패키지만 대상: `--target <pkg>`(별칭 `-t`) 반복 지정. `<pkg>` 는 `sd.config.ts` 의 `packages` 키 — `@simplysm/` 접두사를 뺀 짧은 이름(예: `core-common`, `storage`, `sd-cli`). 예: `pnpm check --fix -t core-common -t storage`.
 - `test` 는 sd-cli 가 아니라 vitest 직접 호출(`tsx node_modules/vitest/vitest.mjs run`). 인자가 그대로 vitest 로 전달됨.
-- sd-cli 기타 명령: `device`(네이티브 앱 실행), `replace-deps`, `init`/`init client`(워크스페이스·클라이언트 부트스트랩), `commit`(AI 커밋 메시지).
+- sd-cli 기타 명령: `device`(네이티브 앱 실행), `replace-deps`, `reinstall`(lock·node_modules·dist·.cache 제거 후 빌드 승인 갱신하며 클린 재설치), `init`/`init client`(워크스페이스·클라이언트 부트스트랩).
 
 ### 단일 테스트 실행
 

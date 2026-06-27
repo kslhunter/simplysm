@@ -41,14 +41,14 @@ export async function setupCapNpmConfig(
 
   // 기본 의존성
   capNpmConf.dependencies = capNpmConf.dependencies ?? {};
-  capNpmConf.dependencies["@capacitor/core"] = "^7";
-  capNpmConf.dependencies["@capacitor/app"] = "^7";
+  capNpmConf.dependencies["@capacitor/core"] = "^8";
+  capNpmConf.dependencies["@capacitor/app"] = "^8";
   for (const platform of platforms) {
-    capNpmConf.dependencies[`@capacitor/${platform}`] = "^7";
+    capNpmConf.dependencies[`@capacitor/${platform}`] = "^8";
   }
 
   capNpmConf.devDependencies = capNpmConf.devDependencies ?? {};
-  capNpmConf.devDependencies["@capacitor/cli"] = "^7";
+  capNpmConf.devDependencies["@capacitor/cli"] = "^8";
   capNpmConf.devDependencies["@capacitor/assets"] = "^3";
 
   // 플러그인 패키지 설정

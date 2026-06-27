@@ -1,7 +1,7 @@
-import { createJiti } from "jiti";
 import { SdError } from "@simplysm/core-common";
 import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
+import { importConfigModule } from "./import-config-module";
 import type { SdConfig, SdConfigParams } from "../sd-config.types";
 
 const logger = createLogger("sd:cli:sd-config");
@@ -19,8 +19,7 @@ export async function loadSdConfig(params: SdConfigParams): Promise<SdConfig> {
     throw new SdError(`sd.config.ts file not found: ${sdConfigPath}`);
   }
 
-  const jiti = createJiti(import.meta.url);
-  const sdConfigModule = await jiti.import(sdConfigPath);
+  const sdConfigModule = await importConfigModule(sdConfigPath);
 
   if (
     sdConfigModule == null ||

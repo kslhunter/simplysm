@@ -366,13 +366,13 @@ describe("client 인증 로그인 (routes / login.view / ng-icons)", () => {
 
   it("client/package.json: 인증 ON + router → @ng-icons 포함", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(true));
-    expect(out).toContain('"@ng-icons/core": "^33.2.3"');
-    expect(out).toContain('"@ng-icons/tabler-icons": "^33.2.3"');
+    expect(out).toContain('"@ng-icons/core"');
+    expect(out).toContain('"@ng-icons/tabler-icons"');
   });
 
   it("client/package.json: 인증 OFF + DB ON → dev 모달용 @ng-icons 포함", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(false));
-    expect(out).toContain('"@ng-icons/core": "^33.2.3"');
+    expect(out).toContain('"@ng-icons/core"');
   });
 
   it("client/package.json: 인증 OFF + DB OFF → @ng-icons 없음", async () => {
@@ -429,7 +429,7 @@ describe("관리자 셸 (home/main/app-structure/main.ts 와이어링)", () => {
 
   it("common/package.json: 인증 ON → service-common 의존", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "common/package.json.hbs"), authClientCtx(true));
-    expect(out).toContain('"@simplysm/service-common": "^14.0.0"');
+    expect(out).toContain('"@simplysm/service-common"');
   });
 
   it("common/package.json: 인증 OFF → service-common 없음", async () => {
@@ -969,7 +969,7 @@ describe("SSG 클라이언트 스캐폴드", () => {
 
   it("client/package.json: SSG ON → @angular/platform-server 의존성 포함", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), ssgCtx(true));
-    expect(out).toContain('"@angular/platform-server": "^21.2.0"');
+    expect(out).toContain('"@angular/platform-server"');
   });
 
   it("client/package.json: SSG OFF → @angular/platform-server 없음", async () => {

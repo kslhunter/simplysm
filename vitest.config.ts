@@ -1,14 +1,12 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
-import tsconfigPaths from "vite-tsconfig-paths";
-// const { sdAngularPlugin } = await import("./packages/sd-cli/src/angular/vite-angular-plugin");
 import { sdAngularPlugin } from "@simplysm/sd-cli";
 
 process.env["DEV"] = "true";
 process.env["VER"] = "1.0.0-test";
 
 export default defineConfig({
-  plugins: [tsconfigPaths({ skip: (dir) => dir === "templates" })],
+  resolve: { tsconfigPaths: true },
   define: {
     "import.meta.env.DEV": JSON.stringify("true"),
     "import.meta.env.VER": JSON.stringify("1.0.0-test"),

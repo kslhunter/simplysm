@@ -17,7 +17,7 @@ beforeEach(() => {
   vi.spyOn(replaceDepsCmd, "runReplaceDeps").mockResolvedValue(undefined);
 });
 
-describe("sd-cli-entry COMMAND_NAMES", () => {
+describe("sd-cli-entry createCliParser", () => {
   it("includes expected commands", async () => {
     const { createCliParser } = await import("../src/sd-cli-entry");
     const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as never);

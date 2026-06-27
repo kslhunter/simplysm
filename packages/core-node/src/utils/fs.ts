@@ -3,6 +3,7 @@ import fs from "fs";
 import os from "os";
 import { glob as globRaw, type GlobOptions, globSync as globRawSync } from "glob";
 import { json, SdError } from "@simplysm/core-common";
+import { spawn } from "./cp";
 import "@simplysm/core-common";
 
 //#region 존재 여부 확인
@@ -76,9 +77,32 @@ export function rmSync(targetPath: string): void {
 /**
  * 파일 또는 디렉토리를 삭제한다 (비동기).
  * @param targetPath - 삭제할 경로
- * @remarks 비동기 버전은 파일 잠금 등 일시적 오류에 대해 최대 6회(500ms 간격) 재시도한다.
+ * @remarks
+ * - Windows + 디렉토리: `rd /s /q`로 우선 삭제한다. node_modules 처럼 소형 파일·junction 이
+ *   대량인 디렉토리에서 `fs.rm`(약 2배 느림)보다 빠르고 junction/symlink 에 안전하다.
+ *   rd 가 실패하거나(잠긴 파일 등) 경로가 남으면 아래 `fs.rm` 재시도 경로로 폴백한다.
+ * - 그 외(비Windows·파일·rd 실패): 파일 잠금 등 일시적 오류에 대해 최대 6회(500ms 간격) 재시도한다.
  */
 export async function rm(targetPath: string): Promise<void> {
+  if (process.platform === "win32") {
+    let isDirectory = false;
+    try {
+      isDirectory = (await fs.promises.lstat(targetPath)).isDirectory();
+    } catch {
+      return; // 존재하지 않으면 무시 (fs.rm 의 force 동작과 동일)
+    }
+
+    if (isDirectory) {
+      // rd 실패(잠긴 파일 잔존)·기동 실패(셸 부재 등) 모두 아래 fs.rm 재시도로 폴백
+      try {
+        await spawn("cmd", ["/c", "rd", "/s", "/q", targetPath]);
+      } catch {
+        // 폴백
+      }
+      if (!(await exists(targetPath))) return;
+    }
+  }
+
   try {
     await fs.promises.rm(targetPath, {
       recursive: true,

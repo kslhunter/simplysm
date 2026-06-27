@@ -83,6 +83,18 @@ def _build_parser() -> argparse.ArgumentParser:
 
     children_parser = subparsers.add_parser("children", help="직속 자식 노드의 라우팅 목록을 조회합니다.")
     children_parser.add_argument("topic")
+
+    delete_parser = subparsers.add_parser("delete", help="페이지를 삭제합니다(자식은 상위로 재배치).")
+    delete_parser.add_argument("topic")
+    delete_parser.add_argument("--base-version", type=int)
+
+    move_parser = subparsers.add_parser("move", help="내용 변경 없이 상위 페이지만 이동합니다(순수 이동).")
+    move_parser.add_argument("topic")
+    move_group = move_parser.add_mutually_exclusive_group(required=True)
+    move_group.add_argument("--parent", help="새 상위 페이지 topic.")
+    move_group.add_argument("--root", action="store_true", help="최상위(루트)로 이동.")
+
+    subparsers.add_parser("lint", help="위키 무결성·트리·링크를 점검합니다.")
     return parser
 
 
@@ -109,6 +121,16 @@ def _run_command(args: argparse.Namespace, token: str) -> Any:
         if args.parent is not None:
             input_data["parentTopic"] = args.parent
         return wiki_core.write_with_retry(input_data, token)
+    if args.command == "delete":
+        delete_input: dict[str, Any] = {"topic": args.topic}
+        if args.base_version is not None:
+            delete_input["baseVersion"] = args.base_version
+        return wiki_core.call_service("delete", [delete_input], token)
+    if args.command == "move":
+        parent_topic = None if args.root else args.parent
+        return wiki_core.call_service("move", [{"topic": args.topic, "parentTopic": parent_topic}], token)
+    if args.command == "lint":
+        return wiki_core.call_service("lint", [], token)
     raise wiki_core.WikiApiError(f"알 수 없는 명령: {args.command}")
 
 

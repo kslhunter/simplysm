@@ -3,9 +3,9 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "kr.co.simplysm.capacitor.usbstorage"
-    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
+    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 36
     defaultConfig {
-        minSdk project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 23
+        minSdk project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 24
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21

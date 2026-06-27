@@ -21,10 +21,10 @@
     "@simplysm/core-common": "workspace:*"
   },
   "devDependencies": {
-    "@capacitor/core": "^7.6.7"
+    "@capacitor/core": "^8.4.1"
   },
   "peerDependencies": {
-    "@capacitor/core": "^7"
+    "@capacitor/core": "^8"
   },
   "capacitor": {
     "android": {

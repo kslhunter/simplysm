@@ -3,6 +3,7 @@
 
 .playwright-cli
 __pycache__
+.venv
 
 .tmp
 .logs

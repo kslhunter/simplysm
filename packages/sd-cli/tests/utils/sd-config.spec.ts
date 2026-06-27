@@ -2,13 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fsx } from "@simplysm/core-node";
 
 const mockExists = vi.spyOn(fsx, "exists");
-const mockJitiImport = vi.fn();
+const mockImport = vi.fn();
 
-// jiti는 외부 npm으로 ESM namespace immutable이라 vi.mock 유지
-vi.mock("jiti", () => ({
-  createJiti: () => ({
-    import: (...args: unknown[]) => mockJitiImport(...args),
-  }),
+// import-config-module 헬퍼를 mock 해 동적 import 결과를 주입
+vi.mock("../../src/utils/import-config-module", () => ({
+  importConfigModule: (...args: unknown[]) => mockImport(...args),
 }));
 
 import { loadSdConfig } from "../../src/utils/sd-config";
@@ -22,7 +20,7 @@ describe("loadSdConfig", () => {
 
   it("returns SdConfig on valid config", async () => {
     mockExists.mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({
+    mockImport.mockResolvedValue({
       default: () => ({ packages: { core: { target: "node" } } }),
     });
 
@@ -39,21 +37,21 @@ describe("loadSdConfig", () => {
 
   it("throws when default export is not a function", async () => {
     mockExists.mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({ default: "not-a-function" });
+    mockImport.mockResolvedValue({ default: "not-a-function" });
 
     await expect(loadSdConfig(baseParams)).rejects.toThrow("must export a function as default");
   });
 
   it("throws when module has no default export", async () => {
     mockExists.mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({ notDefault: true });
+    mockImport.mockResolvedValue({ notDefault: true });
 
     await expect(loadSdConfig(baseParams)).rejects.toThrow("must export a function as default");
   });
 
   it("throws when config has no packages property", async () => {
     mockExists.mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({
+    mockImport.mockResolvedValue({
       default: () => ({ noPkgs: true }),
     });
 
@@ -65,7 +63,7 @@ describe("loadSdConfig", () => {
       packages: { [p.cwd]: { target: "node" } },
     }));
     mockExists.mockResolvedValue(true);
-    mockJitiImport.mockResolvedValue({ default: configFn });
+    mockImport.mockResolvedValue({ default: configFn });
 
     const result = await loadSdConfig({ cwd: "/project", dev: true, opt: ["key=val"] });
 

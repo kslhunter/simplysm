@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 
 // 사이드 이펙트: Map/Array prototype 확장 (getOrCreate 등)
 import { env } from "@simplysm/core-common";
@@ -13,6 +12,7 @@ import { runInit } from "./commands/init/init";
 import { runInitClient } from "./commands/init/init-client";
 import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
+import { runReinstall } from "./commands/reinstall";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -25,58 +25,11 @@ const logger = createLogger("sd:cli:entry");
 Error.stackTraceLimit = Infinity;
 EventEmitter.defaultMaxListeners = 100;
 
-const COMMAND_NAMES = [
-  "check",
-  "watch",
-  "dev",
-  "device",
-  "build",
-  "publish",
-  "replace-deps",
-  "init",
-];
-
-async function collectYargsHelp(argv: string[]): Promise<string> {
-  const lines: string[] = [];
-
-  const orig = console.log;
-
-  console.log = (...args: unknown[]) => lines.push(args.map(String).join(" "));
-  try {
-    await createCliParser(argv).exitProcess(false).parse();
-  } catch {
-    // yargs가 help 출력 후 throw할 수 있음
-  } finally {
-    console.log = orig;
-  }
-  return lines.join("\n");
-}
-
 /**
  * CLI 파서 생성
  * @internal 테스트용으로 export
  */
 export function createCliParser(argv: string[]): Argv {
-  // 최상위 --help/-h (서브커맨드 없이): 모든 명령어의 종합 도움말 표시
-  const hasHelp = argv.includes("--help") || argv.includes("-h");
-  const hasCommand = COMMAND_NAMES.some((cmd) => argv.includes(cmd));
-  if (hasHelp && !hasCommand) {
-    return yargs([]).command(
-      "$0",
-      false,
-      () => {},
-      async () => {
-        for (const cmdName of COMMAND_NAMES) {
-          const helpText = await collectYargsHelp([cmdName, "--help"]);
-
-          console.log(helpText);
-
-          console.log();
-        }
-      },
-    );
-  }
-
   return yargs(argv)
     .help("help", "Show help")
     .alias("help", "h")
@@ -331,6 +284,14 @@ export function createCliParser(argv: string[]): Argv {
         await runReplaceDeps({
           options: args.opt,
         });
+      },
+    )
+    .command(
+      "reinstall",
+      "Clean reinstall: delete node_modules/lock/dist/.cache then reinstall with build approval",
+      (cmd) => cmd.version(false).hide("help"),
+      async () => {
+        await runReinstall();
       },
     )
     .command(

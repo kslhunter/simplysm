@@ -14,11 +14,6 @@
       "name": "sd-wiki",
       "source": "./plugins/sd-wiki",
       "description": "심플리즘 팀 공용 지식 위키"
-    },
-    {
-      "name": "sd-claude",
-      "source": "./plugins/sd-claude",
-      "description": "심플리즘 Claude Code 플러그인"
     }
   ]
 }

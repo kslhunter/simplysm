@@ -2,10 +2,10 @@ import tseslint, { type FlatConfig } from "typescript-eslint";
 import angular from "angular-eslint";
 import globals from "globals";
 import plugin from "./eslint-plugin";
-import importPlugin from "eslint-plugin-import";
+import { importX } from "eslint-plugin-import-x";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import { ESLint } from "eslint";
-import { fileURLToPath } from "url";
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 
 const commonRules: FlatConfig.Rules = {
   "no-warning-comments": "warn",
@@ -117,7 +117,7 @@ export default tseslint.config(
       globals: globals.node,
     },
     plugins: {
-      "import": importPlugin,
+      "import-x": importX,
       "@simplysm": plugin as unknown as ESLint.Plugin,
       "unused-imports": unusedImportsPlugin,
     },
@@ -132,7 +132,7 @@ export default tseslint.config(
 
       ...unusedImportsRules,
 
-      "import/no-extraneous-dependencies": [
+      "import-x/no-extraneous-dependencies": [
         "error",
         {
           devDependencies: [
@@ -159,15 +159,15 @@ export default tseslint.config(
     plugins: {
       "@typescript-eslint": tseslint.plugin,
       "@simplysm": plugin as unknown as ESLint.Plugin,
-      "import": importPlugin,
+      "import-x": importX,
       "unused-imports": unusedImportsPlugin,
     },
     settings: {
-      "import/resolver": {
-        [fileURLToPath(import.meta.resolve("eslint-import-resolver-typescript"))]: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({
           alwaysTryTypes: true,
-        },
-      },
+        }),
+      ],
     },
     languageOptions: {
       parser: tseslint.parser,
@@ -237,7 +237,7 @@ export default tseslint.config(
       ...noNodeBuiltinsRules,
       ...noDirectEnvAccessRules,
 
-      "import/no-extraneous-dependencies": "error",
+      "import-x/no-extraneous-dependencies": "error",
     },
   },
   {
@@ -259,7 +259,7 @@ export default tseslint.config(
     files: ["**/tests/**/*.ts"],
     rules: {
       "no-console": "off",
-      "import/no-extraneous-dependencies": "off",
+      "import-x/no-extraneous-dependencies": "off",
       "@simplysm/ts-no-throw-not-implemented-error": "off",
     },
   },

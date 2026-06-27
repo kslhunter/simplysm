@@ -30,14 +30,13 @@
     "@types/node": "^24.13.2",
     "@vitest/browser-playwright": "^4.1.9",
     "@vitest/coverage-v8": "^4.1.9",
-    "eslint": "^9.39.4",
+    "eslint": "^10.6.0",
     "jiti": "^2.7.0",
     "playwright": "^1.61.1",
-    "prettier": "^3.8.4",
+    "prettier": "^3.8.5",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
-    "vite": "^7.3.6",
-    "vite-tsconfig-paths": "^6.1.1",
+    "vite": "^8.1.0",
     "vitest": "^4.1.9"
   }
 }

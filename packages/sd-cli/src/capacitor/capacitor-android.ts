@@ -292,7 +292,7 @@ async function _configureRootBuildGradle(androidPath: string): Promise<void> {
   if (!content.includes("kotlin-gradle-plugin")) {
     content = content.replace(
       /classpath 'com\.android\.tools\.build:gradle:[^']+'/,
-      `$&\n        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20'`,
+      `$&\n        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20'`,
     );
     await fsx.write(rootBuildGradlePath, content);
   }
@@ -325,16 +325,10 @@ async function _configureBuildGradle(
   content = content.replace(/versionCode \d+/, `versionCode ${versionCode}`);
   content = content.replace(/versionName "[^"]+"/, `versionName "${version}"`);
 
-  // SDK 버전 설정
+  // SDK 버전 설정 (미지정 시 cap 생성 기본값 rootProject.ext.* 를 그대로 둔다)
   if (sdkVersion != null) {
     content = content.replace(/minSdkVersion .+/, `minSdkVersion ${sdkVersion}`);
     content = content.replace(/targetSdkVersion .+/, `targetSdkVersion ${sdkVersion}`);
-  } else {
-    content = content.replace(/minSdkVersion .+/, `minSdkVersion rootProject.ext.minSdkVersion`);
-    content = content.replace(
-      /targetSdkVersion .+/,
-      `targetSdkVersion rootProject.ext.targetSdkVersion`,
-    );
   }
 
   await fsx.write(buildGradlePath, content);

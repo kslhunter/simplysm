@@ -1,12 +1,13 @@
 /* eslint-disable no-restricted-properties -- 테스트 환경변수 조작 필요 */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// eslint, jiti는 외부 npm 패키지로 ESM namespace immutable — vi.mock 유지
+// eslint 는 외부 npm 패키지로 ESM namespace immutable — vi.mock 유지.
+// import-config-module 헬퍼는 동적 import 결과 주입용으로 mock.
 const mocks = vi.hoisted(() => ({
   lintFiles: vi.fn<() => Promise<Array<{ errorCount: number; warningCount: number }>>>(),
   loadFormatter: vi.fn(),
   outputFixes: vi.fn(),
-  jitiImport: vi.fn(),
+  configImport: vi.fn(),
   eslintCtor: vi.fn(),
 }));
 
@@ -19,8 +20,8 @@ vi.mock("eslint", () => ({
   },
 }));
 
-vi.mock("jiti", () => ({
-  createJiti: vi.fn(() => ({ import: mocks.jitiImport })),
+vi.mock("../../src/utils/import-config-module", () => ({
+  importConfigModule: mocks.configImport,
 }));
 
 import { fsx } from "@simplysm/core-node";
@@ -38,7 +39,7 @@ describe("loadIgnorePatterns", () => {
     fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
-    mocks.jitiImport.mockResolvedValue({
+    mocks.configImport.mockResolvedValue({
       default: [
         { ignores: ["dist/**", "node_modules/**"] },
         { files: ["*.ts"], rules: {} }, // not globalIgnores — has files key
@@ -54,7 +55,7 @@ describe("loadIgnorePatterns", () => {
     fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
-    mocks.jitiImport.mockResolvedValue({
+    mocks.configImport.mockResolvedValue({
       default: [{ files: ["*.ts"], ignores: ["dist/**"] }],
     });
 
@@ -82,7 +83,7 @@ describe("executeLint", () => {
     fsxExists.mockImplementation((p) =>
       Promise.resolve(typeof p === "string" && p.endsWith("eslint.config.ts")),
     );
-    mocks.jitiImport.mockResolvedValue({ default: [] });
+    mocks.configImport.mockResolvedValue({ default: [] });
     fsxGlob.mockResolvedValue(["/project/src/a.ts", "/project/src/b.ts"]);
     mocks.lintFiles.mockResolvedValue([{ errorCount: 0, warningCount: 0 }]);
     mocks.loadFormatter.mockResolvedValue({

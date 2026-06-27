@@ -103,7 +103,7 @@ export interface ReplaceDepEntry {
  * @param projectRoot - 프로젝트 루트 경로
  * @returns [루트, ...워크스페이스 패키지 경로] 배열
  */
-async function collectSearchRoots(projectRoot: string): Promise<string[]> {
+export async function collectSearchRoots(projectRoot: string): Promise<string[]> {
   const searchRoots = [projectRoot];
 
   const workspaceYamlPath = pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml"));

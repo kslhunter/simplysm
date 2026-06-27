@@ -152,6 +152,21 @@ describe("fs functions", () => {
 
       expect(fs.existsSync(filePath)).toBe(false);
     });
+
+    it("deletes directory recursively asynchronously", async () => {
+      const dirPath = path.join(testDir, "async-rmdir");
+      fs.mkdirSync(path.join(dirPath, "sub"), { recursive: true });
+      fs.writeFileSync(path.join(dirPath, "file.txt"), "test");
+      fs.writeFileSync(path.join(dirPath, "sub", "nested.txt"), "test");
+
+      await rm(dirPath);
+
+      expect(fs.existsSync(dirPath)).toBe(false);
+    });
+
+    it("passes without error for nonexistent path", async () => {
+      await expect(rm(path.join(testDir, "nonexistent"))).resolves.toBeUndefined();
+    });
   });
 
   //#endregion
