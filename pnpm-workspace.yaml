@@ -1,7 +1,9 @@
 packages:
   - packages/*
   - tests/*
+  - plugins/*
 allowBuilds:
+  '@google/genai': true
   '@parcel/watcher': true
   bufferutil: true
   core-js: true
@@ -9,6 +11,7 @@ allowBuilds:
   esbuild: true
   lmdb: true
   msgpackr-extract: true
+  protobufjs: true
   ssh2: true
   unrs-resolver: true
   utf-8-validate: true

@@ -59,6 +59,12 @@ describe("Feature 2.1 Slice 1: mark() 함수 안전성 확보", () => {
       expect(derived()).toBe(4);
       expect(sig()).toEqual([1, 2, 3, 4]);
     });
+
+    it("undefined 값에 mark → undefined 유지(객체로 깨지지 않음)", () => {
+      const sig = signal<{ x: number } | undefined>(undefined);
+      mark(sig);
+      expect(sig()).toBeUndefined();
+    });
   });
 
   describe("Rule: update 불허 context에서는 에러를 던진다", () => {

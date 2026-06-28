@@ -11,16 +11,18 @@ CMD_POS = r"(^|[;&|=({])\s*"
 # git 차단 기본값. 통과 경로는 둘:
 #  1. 조회만 가능한 형태는 항상 허용 — status/diff/log/show(인자 무관 부작용 없음)와 tag -l/--list
 #     (목록 조회). 단 명령 내 모든 git 호출이 조회이고, 서브커맨드가 `git` 바로 뒤에 와야 허용
-#     (`-c core.pager=...`·`-C <dir>` 같은 위험 전역 옵션이 끼면 → 조회 아님 → 토큰 필요.
-#     부작용 없는 `--no-pager` 만 서브커맨드 앞 예외로 허용).
-#  2. 그 외는 명령에 이 토큰이 있어야 함. 에이전트는 명시적으로 opt-in 한 작업 컨텍스트(예: 프로젝트
-#     CLAUDE.md)에서만 토큰을 알게 되어 끝 주석으로 덧붙임(예: `git push # sd-git-allow`). 셸이
-#     `#...`을 주석 처리하므로 실행엔 영향 없음. 토큰은 전역 시스템 프롬프트에서 빼므로, opt-in 안 한
-#     프로젝트에선 변경·발행 git 이 계속 차단됨.
+#     (`-c core.pager=...` 같은 위험 전역 옵션(임의 config 주입)이 끼면 → 조회 아님 → 내부 허용 표식 필요.
+#     부작용 없는 `--no-pager`·`-C <dir>`(저장소 위치 지정) 만 서브커맨드 앞 예외로 허용).
+#  2. 그 외는 명령에 내부 허용 표식이 있어야 함. 표식은 일반 차단 메시지·공통 지침에 노출하지 않고,
+#     필요한 전용 workflow 문맥에만 둔다. 셸 주석으로 붙이면 실행엔 영향 없음.
 GIT_ALLOW_TOKEN = "sd-git-allow"
 git_allowed = GIT_ALLOW_TOKEN in cmd
-# `git` 바로 뒤 조회 서브커맨드(부작용 없는 --no-pager 만 사이 허용).
-GIT_READONLY = CMD_POS + r"git\s+(?:--no-pager\s+)?(?:status|diff|log|show|tag\s+(?:-l|--list))\b"
+# `-C <dir>` 의 dir: 따옴표 경로(공백 허용)·무따옴표 모두. 부작용 없는 조회만 통과해야 하므로
+# 명령치환·분리자·리다이렉트 우회를 차단 — 큰따옴표 안 `$`·백틱, 무따옴표의 셸 메타 제외
+# (작은따옴표 안은 셸이 전부 리터럴 처리하므로 그대로 허용).
+GIT_DIR = r'''(?:"[^"$`]*"|'[^']*'|[^\s"'$`;&|<>()]+)'''
+# `git` 바로 뒤 조회 서브커맨드(부작용 없는 --no-pager·-C <dir> 만 사이 허용, 순서·반복 무관).
+GIT_READONLY = CMD_POS + r"git\s+(?:(?:--no-pager|-C\s+" + GIT_DIR + r")\s+)*(?:status|diff|log|show|tag\s+(?:-l|--list))\b"
 
 BLOCKED = [
     # 디렉토리 변경 금지
@@ -40,9 +42,9 @@ for pattern, label in BLOCKED:
     if re.search(pattern, cmd):
         deny(label)
 
-# 허용 토큰이 있거나, 명령 내 모든 git 호출이 조회면 통과. 아니면 차단.
+# 내부 허용 표식이 있거나, 명령 내 모든 git 호출이 조회면 통과. 아니면 차단.
 if not git_allowed:
     all_git = {m.start() for m in re.finditer(CMD_POS + r"git\b", cmd)}
     readonly_git = {m.start() for m in re.finditer(GIT_READONLY, cmd)}
     if all_git and not all_git <= readonly_git:
-        deny("git (forbidden by default; only read-only status/diff/log/show and tag -l/--list are allowed).")
+        deny("git (forbidden by default; read-only status/diff/log/show and tag -l/--list are allowed; use the commit skill for commits).")

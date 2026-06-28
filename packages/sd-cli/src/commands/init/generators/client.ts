@@ -21,6 +21,7 @@ export async function generateClient(
     data,
   );
   await copyFixed(path.join(TPL, "src/polyfills.ts"), path.join(out, "src/polyfills.ts"));
+  await copyFixed(path.join(TPL, "src/sd-env.d.ts"), path.join(out, "src/sd-env.d.ts"));
   await copyFixed(path.join(TPL, "src/styles.scss"), path.join(out, "src/styles.scss"));
 
   if (client.isMobile) {

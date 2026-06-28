@@ -12,6 +12,11 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "client": ["./src/client.d.ts"]
+    }
+  },
   "style": "./styles.css",
   "files": [
     "dist",

@@ -109,3 +109,12 @@ core-common ─┬─ core-node ── (sd-cli, service-server, storage, orm-nod
 
 - 개발 매뉴얼·API 문서는 `plugins/sd/references/` 에 있음(`@simplysm/*` 심볼 사용·해석 시 `README.md` 트리거 표로 진입).
 - TS 설정이 엄격(`verbatimModuleSyntax`, `noPropertyAccessFromIndexSignature`, `useUnknownInCatchVariables`, `noImplicitOverride` 등) — import 는 `type` 한정자 구분, 인덱스 시그니처는 `obj["key"]` 접근, catch 변수는 `unknown` 전제.
+
+## Pi 확장 런타임
+
+`plugins/sd/`는 Pi 에이전트 및 Claude Code 를 위한 플러그인 확장 패키지이다.
+
+Pi 에이전트 확장 구현·검증은 Bun 기준으로 수행한다.
+
+- 실측상 현재 Pi 확장의 모든 스크립트는 Bun 런타임에서 실행된다.
+- 공식 문서의 Node 에서 jiti 로 수행된다는 근거는 실측상 맞지 않다.
