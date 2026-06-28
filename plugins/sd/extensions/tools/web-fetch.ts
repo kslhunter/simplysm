@@ -2,7 +2,7 @@ import type { LookupAddress } from "node:dns";
 import { lookup } from "node:dns/promises";
 import { request as httpRequest, type IncomingMessage } from "node:http";
 import { request as httpsRequest } from "node:https";
-import { isIP, type LookupFunction } from "node:net";
+import { isIP } from "node:net";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
@@ -190,30 +190,48 @@ async function fetchWithRedirects(startUrl: URL, signal?: AbortSignal): Promise<
 }
 
 async function requestPublicHttpUrl(url: URL, signal: AbortSignal): Promise<IncomingMessage> {
-  const resolved = await resolvePublicHttpUrl(url, signal);
-  const request = url.protocol === "https:" ? httpsRequest : httpRequest;
+  const resolvedAddresses = await resolvePublicHttpUrl(url, signal);
+  const errors: Error[] = [];
+
+  for (const resolvedAddress of resolvedAddresses) {
+    try {
+      return await requestResolvedPublicHttpUrl(url, resolvedAddress, signal);
+    } catch (error) {
+      if (signal.aborted) throw error;
+      errors.push(toError(error));
+    }
+  }
+
+  const attempts = resolvedAddresses.map(formatLookupAddress).join(", ") || "none";
+  const messages = errors.map((error) => error.message).join("; ") || "unknown";
+  throw new Error(`web_fetch 연결에 실패했습니다: ${url.toString()} (시도 주소: ${attempts}, 오류: ${messages})`);
+}
+
+async function requestResolvedPublicHttpUrl(
+  url: URL,
+  resolvedAddress: LookupAddress,
+  signal: AbortSignal,
+): Promise<IncomingMessage> {
   const tlsServername = url.protocol === "https:" ? getTlsServername(url) : undefined;
-  const fixedLookup: LookupFunction = (_hostname, options, callback) => {
-    if (options.all) callback(null, [{ address: resolved.address, family: resolved.family }]);
-    else callback(null, resolved.address, resolved.family);
+  const requestOptions = {
+    protocol: url.protocol,
+    hostname: resolvedAddress.address,
+    port: url.port || (url.protocol === "https:" ? 443 : 80),
+    path: `${url.pathname}${url.search}`,
+    method: "GET",
+    headers: {
+      "User-Agent": "simplysm-pi-web-fetch/0.1",
+      Accept: "text/html,text/plain,application/json,application/xml,text/markdown,*/*;q=0.8",
+      Host: url.host,
+    },
+    signal,
+    ...(tlsServername ? { servername: tlsServername } : {}),
   };
 
   return new Promise((resolve, reject) => {
-    const req = request(
-      url,
-      {
-        method: "GET",
-        headers: {
-          "User-Agent": "simplysm-pi-web-fetch/0.1",
-          Accept: "text/html,text/plain,application/json,application/xml,text/markdown,*/*;q=0.8",
-        },
-        lookup: fixedLookup,
-        signal,
-        // Bun's node:https can lose the original host when custom lookup returns an IP.
-        ...(tlsServername ? { servername: tlsServername } : {}),
-      },
-      resolve,
-    );
+    const req = url.protocol === "https:"
+      ? httpsRequest(requestOptions, resolve)
+      : httpRequest(requestOptions, resolve);
 
     req.on("error", reject);
     req.end();
@@ -236,7 +254,7 @@ function parseHttpUrl(value: string): URL {
   return url;
 }
 
-async function resolvePublicHttpUrl(url: URL, signal: AbortSignal): Promise<LookupAddress> {
+async function resolvePublicHttpUrl(url: URL, signal: AbortSignal): Promise<LookupAddress[]> {
   parseHttpUrl(url.toString());
 
   const hostname = normalizeHostname(url.hostname);
@@ -247,7 +265,7 @@ async function resolvePublicHttpUrl(url: URL, signal: AbortSignal): Promise<Look
   const literalIpType = isIP(hostname);
   if (literalIpType) {
     if (isBlockedIp(hostname)) throw new Error(`안전상 차단된 IP 주소입니다: ${hostname}`);
-    return { address: hostname, family: literalIpType };
+    return [{ address: hostname, family: literalIpType }];
   }
 
   const addresses = await waitForSignal(
@@ -263,7 +281,7 @@ async function resolvePublicHttpUrl(url: URL, signal: AbortSignal): Promise<Look
     }
   }
 
-  return addresses[0];
+  return addresses;
 }
 
 function normalizeHostname(hostname: string): string {
@@ -276,6 +294,14 @@ function normalizeHostname(hostname: string): string {
 function getTlsServername(url: URL): string | undefined {
   const hostname = normalizeHostname(url.hostname);
   return isIP(hostname) ? undefined : hostname;
+}
+
+function formatLookupAddress(address: LookupAddress): string {
+  return `${address.address}/${address.family}`;
+}
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
 }
 
 function isBlockedHostname(hostname: string): boolean {

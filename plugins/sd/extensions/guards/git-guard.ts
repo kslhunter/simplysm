@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const BLOCK_REASON =
-  "git 변경 명령은 기본 차단됩니다. 조회(status/diff/log/show, tag -l/--list)는 허용됩니다. 커밋 작업은 전용 skill을 사용하세요.";
+  "git 변경 명령은 기본 차단됩니다. 조회(status/diff/log/show/check-ignore, tag -l/--list)는 허용됩니다. 커밋 작업은 전용 skill을 사용하세요.";
 const GIT_ALLOW_TOKEN = "sd-git-allow";
 const COMMAND_POSITION_PATTERN = "(^|[;&|=({])\\s*";
 const GIT_EXECUTABLE_PATTERN = "git(?:\\.exe)?";
@@ -13,7 +13,7 @@ const GIT_COMMAND_PATTERN = new RegExp(
 const GIT_READONLY_COMMAND_PATTERN = new RegExp(
   `${COMMAND_POSITION_PATTERN}${GIT_EXECUTABLE_PATTERN}\\s+` +
     `(?:(?:--no-pager|-C\\s+${GIT_DIR_PATTERN})\\s+)*` +
-    `(?:status|diff|log|show|tag\\s+(?:-l|--list))\\b`,
+    `(?:status|diff|log|show|check-ignore|tag\\s+(?:-l|--list))\\b`,
   "gi",
 );
 

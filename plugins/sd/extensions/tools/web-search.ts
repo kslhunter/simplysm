@@ -48,8 +48,8 @@ export function registerWebSearch(pi: ExtensionAPI) {
         "Exa MCP 공개 엔드포인트를 통해 웹을 검색합니다. API 키 없이 동작하며, 검색 결과와 관련 문맥을 반환합니다. 결과가 256KB를 넘으면 부분 반환 없이 실패합니다.",
       promptSnippet: "Exa MCP를 통해 최신 웹 검색 결과와 출처를 가져옵니다.",
       promptGuidelines: [
-        "최신 정보, 외부 문서, 공개 웹 자료 확인이 필요할 때 web_search를 사용하세요.",
-        "web_search는 URL 본문 전체를 안정적으로 가져오는 도구가 아니라 검색 결과 도구입니다. 특정 URL 본문 전체가 필요하면 별도 fetch/curl 절차를 사용하세요.",
+        "최신 정보, 외부 문서, 공개 웹 자료 확인이 필요할 때 web_search를 적극 사용하세요.",
+        "web_search는 URL 본문 전체를 안정적으로 가져오는 도구가 아니라 검색 결과 도구입니다. 특정 URL 본문 전체가 필요하면 별도 web_fetch도구나 fetch/curl 절차를 사용하세요.",
       ],
       parameters: WebSearchParams,
 

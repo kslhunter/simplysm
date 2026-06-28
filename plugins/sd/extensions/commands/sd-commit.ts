@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Api, Model } from "@earendil-works/pi-ai";
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-
-const GPT_CODE_SPARK_MODEL_PATTERN = /^gpt-(\d+(?:\.\d+)*)-codex-spark$/;
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const sdCommitCommandPath = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -20,68 +17,9 @@ export function registerSdCommit(pi: ExtensionAPI) {
     handler: async (_args, ctx) => {
       if (!ctx.isIdle()) await ctx.waitForIdle();
 
-      await switchGptModelToCodeSpark(pi, ctx);
       pi.sendUserMessage(sdCommitCommand.content);
     },
   });
-}
-
-async function switchGptModelToCodeSpark(pi: ExtensionAPI, ctx: ExtensionCommandContext) {
-  const currentModel = ctx.model;
-  if (!currentModel?.id.startsWith("gpt-")) return;
-
-  const targetModel = findLatestCodeSparkModel(ctx, currentModel);
-  if (!targetModel) {
-    throw new Error(
-      `현재 provider(${currentModel.provider})에서 사용 가능한 gpt-*-codex-spark 모델을 찾을 수 없습니다.`,
-    );
-  }
-
-  if (targetModel.provider === currentModel.provider && targetModel.id === currentModel.id) return;
-
-  const switched = await pi.setModel(targetModel);
-  if (!switched) {
-    throw new Error(
-      `gpt code-spark 모델 인증이 설정되어 있지 않습니다: ${targetModel.provider}/${targetModel.id}`,
-    );
-  }
-}
-
-function findLatestCodeSparkModel(
-  ctx: ExtensionCommandContext,
-  currentModel: Model<Api>,
-): Model<Api> | undefined {
-  return pickLatestCodeSparkModel(
-    ctx.modelRegistry
-      .getAvailable()
-      .filter((item) => item.provider === currentModel.provider)
-      .filter(isCodeSparkModel),
-  );
-}
-
-function pickLatestCodeSparkModel(models: Model<Api>[]): Model<Api> | undefined {
-  return [...models].sort(compareCodeSparkModels).at(-1);
-}
-
-function compareCodeSparkModels(left: Model<Api>, right: Model<Api>): number {
-  const leftVersion = parseCodeSparkVersion(left.id);
-  const rightVersion = parseCodeSparkVersion(right.id);
-  const maxLength = Math.max(leftVersion.length, rightVersion.length);
-
-  for (let i = 0; i < maxLength; i++) {
-    const diff = (leftVersion[i] ?? 0) - (rightVersion[i] ?? 0);
-    if (diff !== 0) return diff;
-  }
-
-  return 0;
-}
-
-function parseCodeSparkVersion(modelId: string): number[] {
-  return GPT_CODE_SPARK_MODEL_PATTERN.exec(modelId)?.[1]?.split(".").map(Number) ?? [];
-}
-
-function isCodeSparkModel(model: Model<Api>): boolean {
-  return GPT_CODE_SPARK_MODEL_PATTERN.test(model.id);
 }
 
 function readCommandFile(filePath: string): {
