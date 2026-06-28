@@ -1,4 +1,5 @@
 import { registerAppendSystem } from "./append-system";
+import { registerSdCommit } from "./commands/sd-commit";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAltEnterNewline } from "./tui/alt-enter-newline";
 import { registerPasteTrim } from "./tui/paste-trim";
@@ -17,6 +18,9 @@ import { registerWebSearch } from "./tools/web-search";
 
 export default function (pi: ExtensionAPI) {
   registerAppendSystem(pi);
+
+  // commands
+  registerSdCommit(pi);
 
   // tui
   registerSelection(pi); // 항상 맨위 (Editor 갈아 끼움)

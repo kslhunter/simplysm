@@ -1,6 +1,5 @@
 ---
-name: sd-commit
-description: 변경분을 확인해 conventional commits 메시지를 작성하고 git commit까지 수행. Use when 사용자가 커밋 메시지 작성 또는 커밋 수행을 요청할 때.
+description: 변경분을 확인해 conventional commits 메시지를 작성하고 git commit까지 수행.
 model: haiku
 disable-model-invocation: true
 ---
@@ -10,7 +9,8 @@ disable-model-invocation: true
 변경분을 확인해 커밋 메시지를 만들고 커밋한다.
 
 - 발행(`push`, `tag` 등)은 하지 않는다.
-- git 변경 명령에는 내부 허용 주석 `# sd-git-allow`를 붙인다.
+- git 변경 명령(`git add`, `git commit` 등)에는 내부 허용 주석 `# sd-git-allow`를 붙인다.
+- 커밋 전 요청 범위에 따라 신규·수정·삭제를 stage 하고, staged 상태에서 누락·초과가 없음을 확인한다.
 
 ## 커밋 메시지 규칙
 

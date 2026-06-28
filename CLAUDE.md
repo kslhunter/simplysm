@@ -114,7 +114,7 @@ core-common ─┬─ core-node ── (sd-cli, service-server, storage, orm-nod
 
 `plugins/sd/`는 Pi 에이전트 및 Claude Code 를 위한 플러그인 확장 패키지이다.
 
-Pi 에이전트 확장 구현·검증은 Bun 기준으로 수행한다.
+Pi 에이전트 확장 구현·검증은 Bun 기준으로 수행한다. (node, tsx 아님 bun 임)
 
 - 실측상 현재 Pi 확장의 모든 스크립트는 Bun 런타임에서 실행된다.
 - 공식 문서의 Node 에서 jiti 로 수행된다는 근거는 실측상 맞지 않다.
