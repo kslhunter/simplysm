@@ -12,7 +12,7 @@ description: 임의의 범위 자료(spec.md·레거시 코드·회의록·기�
 ## 입출력
 
 - **Input (자유)**: 제안 대상 범위를 알 수 있는 자료라면 무엇이든. spec.md(요구 분석서)·레거시 코드베이스·회의록·기능/화면 목록·구두 범위 설명 등. 정형/비정형 무관. 입력에서 "As-Is(현행)·To-Be(제안) 재료" 를 도출하는 것이 1단계.
-- **Output**: 제안서 — **PPT식 16:9 슬라이드 deck (HTML + 고객 전달용 PDF)**, 단일 자기완결 HTML(외부 폰트·CDN 의존 없음). HTML 을 만든 뒤 `python ../../scripts/html_to_pdf.py <제안서.html> <제안서.pdf>` 로 PDF 를 출력함(설치된 Chrome/Edge 인쇄 엔진 — 템플릿 `@page` 1280×720 덕에 1 슬라이드 = 1 페이지).
+- **Output**: 제안서 — **PPT식 16:9 슬라이드 deck (HTML + 고객 전달용 PDF)**, 단일 자기완결 HTML(외부 폰트·CDN 의존 없음). HTML 을 만든 뒤 `python ../../shared/python/html_to_pdf.py <제안서.html> <제안서.pdf>` 로 PDF 를 출력함(설치된 Chrome/Edge 인쇄 엔진 — 템플릿 `@page` 1280×720 덕에 1 슬라이드 = 1 페이지).
 - **저장 위치**: 입력 자료(spec 등) 옆 또는 사용자 지정 경로(`제안서.html`).
 
 ## 핵심 원칙 (편향 차단 — 위반 시 제안서 무효)
@@ -57,7 +57,7 @@ description: 임의의 범위 자료(spec.md·레거시 코드·회의록·기�
 각 슬라이드 콘텐츠가 720px 안에 잘리지 않고 들어갔는지 점검(`.slide` 은 `overflow:hidden` — 넘치면 잘림). 넘치면 슬라이드를 쪼개거나 항목을 줄여 다시 맞춤.
 
 - **잘림 점검**: 헤드리스 브라우저로 슬라이드별 1280×720 스크린샷을 떠 잘림 여부를 확인하거나, 콘텐츠 양 기준으로 자가 점검. (스크린샷이 필요하면 워크스페이스의 playwright 로 `page.screenshot` — `npx playwright install chromium` 으로 브라우저 설치.)
-- **PDF 출력**: 잘림을 맞춘 뒤 `python ../../scripts/html_to_pdf.py <제안서.html> <제안서.pdf>` 로 고객 전달용 PDF 를 출력함(설치된 Chrome/Edge 인쇄 엔진, 별도 다운로드 불필요). 템플릿의 `@page`(1280×720) 덕에 1 슬라이드 = 1 페이지로 떨어짐.
+- **PDF 출력**: 잘림을 맞춘 뒤 `python ../../shared/python/html_to_pdf.py <제안서.html> <제안서.pdf>` 로 고객 전달용 PDF 를 출력함(설치된 Chrome/Edge 인쇄 엔진, 별도 다운로드 불필요). 템플릿의 `@page`(1280×720) 덕에 1 슬라이드 = 1 페이지로 떨어짐.
 
 ### 6. 근거·과장 점검 게이트 (출력 전 자가 점검)
 

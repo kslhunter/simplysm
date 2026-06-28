@@ -6,7 +6,7 @@
       콘텐츠 맨 아래를 측정해 빈 비율이 임계 이상이면 경고한다.
 
 사용: python check-page-fill.py <견적서.html 경로> [임계비율(기본 0.35)]
-의존: PyMuPDF(fitz) + 설치된 Chrome/Edge. PDF 생성은 ../../../scripts/html_to_pdf.py 공용.
+의존: PyMuPDF(fitz) + 설치된 Chrome/Edge. PDF 생성은 ../../../shared/python/html_to_pdf.py 공용.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared" / "python"))
 from html_to_pdf import html_to_pdf  # noqa: E402
 
 import fitz  # noqa: E402  (PyMuPDF)

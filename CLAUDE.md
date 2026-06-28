@@ -4,117 +4,137 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 개요
 
-`@simplysm/*` 라이브러리 17개를 담은 pnpm 모노레포. 자체 빌드·개발·배포 도구인 `sd-cli` 패키지가 워크스페이스 전체의 빌드/감시/개발서버/배포/검사를 담당. 모든 도구 실행은 `tsx` 로 TypeScript 를 컴파일 없이 직접 구동(빌드 산출물 불필요).
+`simplysm` 은 `@simplysm/*` 라이브러리와 에이전트 확장을 함께 관리하는 pnpm 모노레포이다.
 
-- 워크스페이스: `packages/*`(라이브러리) + `tests/*`(통합 테스트). `pnpm-workspace.yaml` 참조.
-- 모든 패키지 버전은 동일하게 묶여 함께 배포됨.
+- 워크스페이스: `packages/*`(npm 라이브러리 17개), `tests/*`(통합 테스트 패키지), `plugins/*`(LLM/Pi 확장 패키지). `pnpm-workspace.yaml` 참조.
+- `packages/sd-cli` 가 워크스페이스 전체의 빌드·감시·개발서버·배포·검사를 담당한다.
+- 루트 스크립트는 `tsx packages/sd-cli/src/sd-cli.ts` 를 직접 실행한다. 개발 중에는 빌드 산출물 없이 TypeScript 소스를 직접 사용한다.
+- 모든 npm 배포 패키지 버전은 루트 버전과 함께 맞춰 배포한다.
 
 ## 명령
 
-루트 `package.json` 스크립트로 실행. `pnpm sd-cli <command>` 는 `tsx packages/sd-cli/src/sd-cli.ts` 의 단축.
+루트 `package.json` 스크립트로 실행한다. `pnpm sd-cli <command>` 는 `tsx packages/sd-cli/src/sd-cli.ts <command>` 의 단축이다.
 
 | 명령               | 동작                                                                                       |
 | ------------------ | ------------------------------------------------------------------------------------------ |
 | `pnpm build`       | 프로덕션 빌드 (`sd-cli build`)                                                             |
 | `pnpm watch`       | 감시 모드 빌드 (`sd-cli watch`)                                                            |
-| `pnpm check --fix` | typecheck + lint 병렬 (`sd-cli check --fix`) - (우선 사용, `--fix` 옵션 기본으로 사용할것) |
-| `pnpm typecheck`   | 타입 검사만 (`sd-cli check --type typecheck`) - (오류발견 시 디버깅용)                     |
-| `pnpm lint`        | 린트만 (`sd-cli check --type lint`, `--fix` 로 자동수정) - (오류발견 시 디버깅용)          |
+| `pnpm dev`         | 서버 패키지 개발 모드 실행 (`sd-cli dev`)                                                  |
+| `pnpm check --fix` | typecheck + lint 일괄 실행 (`sd-cli check --fix`) — 우선 사용                              |
+| `pnpm typecheck`   | 타입 검사만 (`sd-cli check --type typecheck`) — 오류 분석용                                |
+| `pnpm lint --fix`  | 린트만 (`sd-cli check --type lint --fix`) — 오류 분석·자동수정용                           |
 | `pnpm test`        | vitest 전체 실행                                                                           |
 | `pnpm pub`         | 배포 (`sd-cli publish`)                                                                    |
 
-- 특정 패키지만 대상: `--target <pkg>`(별칭 `-t`) 반복 지정. `<pkg>` 는 `sd.config.ts` 의 `packages` 키 — `@simplysm/` 접두사를 뺀 짧은 이름(예: `core-common`, `storage`, `sd-cli`). 예: `pnpm check --fix -t core-common -t storage`.
-- `test` 는 sd-cli 가 아니라 vitest 직접 호출(`tsx node_modules/vitest/vitest.mjs run`). 인자가 그대로 vitest 로 전달됨.
-- sd-cli 기타 명령: `device`(네이티브 앱 실행), `replace-deps`, `reinstall`(lock·node_modules·dist·.cache 제거 후 빌드 승인 갱신하며 클린 재설치), `init`/`init client`(워크스페이스·클라이언트 부트스트랩).
+- `build`·`watch`·`dev`·`publish` 의 `--target/-t` 값은 `sd.config.ts` 의 `packages` 키이다. `@simplysm/` 접두사를 붙이지 않는다. 예: `pnpm build -t core-common -t storage`.
+- `check`·`typecheck`·`lint` 의 `--target/-t` 값은 `packages/*` 또는 `tests/*` 아래 워크스페이스 디렉터리명이다. 예: `pnpm check --fix -t core-common -t orm`.
+- `build`·`watch`·`dev`·`device`·`publish`·`replace-deps` 는 `--opt/-o` 값을 `sd.config.ts` 에 전달한다.
+- `test` 는 sd-cli 가 아니라 vitest 직접 호출이다: `tsx node_modules/vitest/vitest.mjs run --configLoader native --reporter=dot --silent=passed-only`. 추가 인자는 vitest 로 전달된다.
+- sd-cli 명령: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `reinstall`, `init`, `init client`.
 
 ### 단일 테스트 실행
 
-테스트는 vitest **projects** 로 분할됨(`vitest.config.ts`). 단일 실행 시 프로젝트 지정 필요.
+테스트는 vitest **projects** 로 분할된다(`vitest.config.ts`). 단일 실행 시 필요하면 프로젝트를 지정한다.
 
-- 프로젝트별: `pnpm test --project node` (이름: `node`, `browser`, `angular`, `orm`, `service`, `ssg`, `service-server-acme`, `sd-cli-server`, `sd-cli-client`).
-- 파일 지정: `pnpm test packages/core-common/tests/utils/obj.spec.ts`.
+- 프로젝트별: `pnpm test --project node`.
+- 프로젝트 이름: `node`, `browser`, `angular`, `sd-cli-server`, `sd-cli-client`, `ssg`, `orm`, `service-server-acme`, `service`.
+- 파일 지정: `pnpm test packages/core-common/tests/utils/obj.spec.ts` 또는 `pnpm test tests/ssg/src/ssg.spec.ts`.
 - 이름 패턴: `pnpm test -t "테스트명 일부"`.
-- `orm`·`service`·`service-server-acme` 프로젝트는 Docker(DB / pebble+challtestsrv) 필요.
+- `orm`·`service`·`service-server-acme` 프로젝트는 Docker(DB / pebble+challtestsrv 등)가 필요하다.
 
 ## 아키텍처
 
-### 패키지 의존 그래프
+### 패키지 구성
 
-`core-common` 이 모든 패키지의 토대. 화살표는 의존 방향.
-
-```
-core-common ─┬─ core-node ── (sd-cli, service-server, storage, orm-node …)
-             ├─ core-browser ── angular
-             ├─ orm-common ──┬─ orm-node
-             │               └─ service-common ──┬─ service-client ── angular
-             │                                    └─ service-server
-             ├─ excel
-             └─ storage
-```
-
-- `sd-cli` 는 `core-common`·`core-node`·`storage` 에 의존.
-- `service-*` 3종은 클라이언트(`service-client`)·서버(`service-server`)·공유(`service-common`)로 분리된 RPC/서비스 계층.
-- `orm-common`/`orm-node` 는 ORM 의 공유 정의 / Node 실행부 분리.
-- `capacitor-plugin-*` 는 Capacitor 네이티브 플러그인.
+- `packages/*`: 배포 대상 `@simplysm/*` 라이브러리.
+- `tests/*`: 통합 테스트용 워크스페이스 패키지. typecheck/check 대상에는 포함되지만 `sd.config.ts` 배포 패키지는 아니다.
+- `plugins/sd`: Pi 에이전트 및 Claude Code 를 위한 `@simplysm/sd` 확장 패키지.
 
 ### 패키지 target (`sd.config.ts`)
 
-각 패키지는 `browser` / `node` / `neutral` 중 하나로 선언. sd-cli 빌드가 이 target 으로 esbuild platform·번들 방식을 결정. 새 패키지 추가 시 `sd.config.ts` 의 `packages` 에 등록 필요.
+sd-cli 는 각 패키지의 `target` 으로 esbuild platform·번들 방식을 결정한다.
+
+| target    | 패키지 |
+| --------- | ------ |
+| `browser` | `angular`, `core-browser`, `capacitor-plugin-*` |
+| `node`    | `core-node`, `lint`, `orm-node`, `sd-cli`, `service-server`, `storage` |
+| `neutral` | `core-common`, `excel`, `orm-common`, `service-client`, `service-common` |
+
+새 배포 패키지를 추가할 때는 `sd.config.ts` 의 `packages` 에 등록한다.
+
+### 주요 의존 관계
+
+`core-common` 이 대부분 패키지의 기반이다. 아래는 현재 `package.json` 기준 요약이다.
+
+- `core-browser`·`core-node`·`excel`·`storage`·`orm-common` 은 `core-common` 에 의존한다.
+- `orm-node` 는 `core-common`·`orm-common` 에 의존한다.
+- `service-common` 은 `core-common`·`orm-common` 에 의존한다.
+- `service-client` 는 `core-common`·`orm-common`·`service-common` 에 의존한다.
+- `service-server` 는 `core-common`·`core-node`·`orm-common`·`orm-node`·`service-common` 에 의존한다.
+- `angular` 는 `core-browser`·`core-common`·`service-client`·`service-common` 에 의존한다.
+- `sd-cli` 는 `core-common`·`core-node`·`storage` 에 의존한다.
+- `capacitor-plugin-auto-update` 는 `capacitor-plugin-file-system`·`core-browser`·`core-common`·`service-client`·`service-common` 에 의존한다.
+- `capacitor-plugin-file-system`·`capacitor-plugin-usb-storage` 는 `core-browser`·`core-common` 에 의존한다.
+- `capacitor-plugin-intent` 는 `core-common` 에 의존한다.
+- `lint` 는 다른 `@simplysm/*` 패키지에 의존하지 않는 독립 ESLint 패키지이다.
 
 ### 워크스페이스 소스 직접 참조
 
-`tsconfig.json` 의 `paths` 가 `@simplysm/*` → `packages/*/src/index.ts` 로 매핑. 빌드된 `dist` 가 아니라 **소스를 직접** 참조하므로, 패키지 간 변경이 빌드 없이 즉시 반영됨(타입체크·테스트·개발 모두 동일).
+`tsconfig.json` 의 `paths` 가 `@simplysm/*` → `packages/*/src/index.ts` 로 매핑된다. 빌드된 `dist` 가 아니라 **소스를 직접** 참조하므로, 패키지 간 변경은 빌드 없이 타입체크·테스트·개발에 즉시 반영된다.
 
 ### sd-cli 내부 구조 (`packages/sd-cli/src`)
 
-워크스페이스 빌드 파이프라인의 핵심.
+워크스페이스 빌드 파이프라인의 핵심이다.
 
-- `commands/` — CLI 명령 진입점(`sd-cli-entry.ts` 가 yargs 로 등록).
-- `orchestrators/` — `Build`/`Watch`/`Dev`/`Typecheck` 오케스트레이터가 패키지 의존 순서대로 빌드·검사 조율.
-- `esbuild/` — esbuild 기반 번들링(클라이언트/서버/워커), postcss·scss 플러그인.
-- `angular/` — Angular 컴파일 통합(ngtsc, 스타일시트 변환). `@angular/build`·`@angular/compiler-cli` 사용.
-- `ts-compiler/`·`typecheck/` — TS 컴파일·타입체크. `dev-server/` — HMR 개발 서버. `ssg/` — 빌드타임 프리렌더. `electron/`·`capacitor/` — 네이티브 패키징.
-- sd-cli 의 `.js` 프로덕션 실행은 2단계(replaceDeps 인라인 → 새 프로세스에서 entry 실행). `.ts` 개발 실행은 직접 import. `sd-cli.ts` 주석 참조.
+- `commands/` — CLI 명령 진입점: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `reinstall`, `init`.
+- `orchestrators/` — `Build`/`Watch`/`Dev`/`Typecheck` 오케스트레이터와 서버 런타임 관리.
+- `engines/`·`workers/` — 패키지별 빌드·타입체크 실행 엔진과 워커.
+- `runtime/` — 결과 수집, 재빌드 관리, 시그널 처리 등 실행 공통 런타임.
+- `esbuild/` — esbuild 기반 번들링과 postcss·scss 플러그인.
+- `angular/` — Angular 컴파일 통합(`@angular/build`, `@angular/compiler-cli`, 스타일시트 변환).
+- `ts-compiler/`·`typecheck/` — TS 컴파일·타입체크 보조 로직.
+- `lint/` — ESLint 실행, ignore 패턴 로드, 워커 실행.
+- `dev-server/`·`ssg/` — HMR 개발 서버와 빌드타임 프리렌더.
+- `electron/`·`capacitor/` — 네이티브 패키징·실행 지원.
+- `deps/` — `replace-deps`, 서버 external 처리.
 
-### core-common 사이드이펙트 (prototype 확장)
+`sd-cli` 의 `.js` 프로덕션 실행은 2단계(replaceDeps 사전 처리 → 새 Node 프로세스에서 `sd-cli-entry.js` 실행)이고, `.ts` 개발 실행은 `sd-cli-entry` 를 직접 import 한다. 자세한 흐름은 `packages/sd-cli/src/sd-cli.ts` 주석을 따른다.
 
-`packages/core-common/src/index.ts` 가 import 시 `Array`/`Set`/`Map` prototype 을 확장(`getOrCreate` 등). 이 import 가 다른 코드보다 먼저 평가돼야 확장 메서드가 동작 — index.ts 의 import 순서를 임의로 바꾸지 말 것.
+### core-common 사이드이펙트
+
+`packages/core-common/src/index.ts` 는 import 시 `Array`/`Set`/`Map` prototype 확장(`getOrCreate` 등)을 먼저 로드한다. 이 import 순서를 임의로 바꾸면 확장 메서드 평가 순서가 깨질 수 있다.
 
 ### ESLint (`packages/lint`)
 
-커스텀 ESLint 플러그인 + recommended config 를 제공하는 자체 패키지. 루트 `eslint.config.ts` 가 `@simplysm/lint` 의 `eslint-recommended` 를 사용. 린트 규칙 변경은 이 패키지에서.
+`packages/lint` 는 커스텀 ESLint 플러그인과 recommended flat config 를 제공한다. 루트 `eslint.config.ts` 는 `@simplysm/lint` 의 `eslint-recommended` 를 사용하며, 현재 `plugins/**`, init 템플릿, 일부 fixtures 는 전역 ignore 한다. 린트 규칙 변경은 `packages/lint` 에서 수행한다.
 
 ## 라이브러리 타입 설계 원칙
 
-`@simplysm/*` 는 외부 앱이 import 하는 공개 라이브러리이므로, 타입을 "누가 보는가" 로 나눠 우선순위를 둠 — `소비자타입 >> IDE속도 > 내부타입`. 충돌하면 항상 소비자 타입이 이김.
+`@simplysm/*` 는 외부 앱이 import 하는 공개 라이브러리이므로 타입 우선순위는 `소비자타입 >> IDE속도 > 내부타입` 이다. 충돌하면 항상 소비자 타입이 우선이다.
 
-**가장 실수하기 쉬운 지점은 타입이 타고타고 전파되는 연쇄·재귀 추론**(관계 추론·체이닝 결과·제네릭 전파 등). 같은 연쇄 추론을 청중에 따라 정반대로 처리.
-
-- **소비자타입** (최우선 사수·강화): 라이브러리를 import 하는 앱 코드가 직접·간접으로 닿는 타입.
-  - 입력 강제: 잘못 쓰면 컴파일 에러가 나게 하는 타입(공개 메서드 인자·제네릭 제약·오버로드 등). 소비자 실수 차단이 목적이므로 줄이지 말고 더 조임.
-  - 출력 결과 정확도: 소비자가 받는 결과·추론 타입(`$infer*`·체이닝 결과·관계 추론 등). **연쇄 추론이 끝까지 전파돼야 함** — 중간을 `any`·고정 타입으로 끊으면 그 지점부터 소비자 결과가 부정확해지므로 끊기 금지.
-- **내부타입** (포기 가능): 라이브러리 구현끼리만 맞물려 소비자에 도달하지 않는 타입(변환 헬퍼·IR·phantom 등). **연쇄 추론을 끊고 고정 타입(명시 반환 annotation·`as`)으로 박는 편이 오히려 나음** — 추론을 덜 굴릴수록 tsserver 가 빨라지므로, 고정 가능하면 추론에 맡기지 말고 고정. 끊어진 정확성은 테스트가 보증함.
-- **불변식**: 소비자 관점 타입 정확도는 어떤 경우에도 후퇴 금지. "고정으로 추론 비용 절감" 은 소비자가 받는 타입이 동일하게 정확할 때만 허용 — 결과가 같으면 고정 가능, 결과가 달라지면(끊김) 금지.
-
-판정·적용:
-
-- export 됐다고 다 소비자타입은 아님 — 소비자가 그 타입을 실제 인자·결과·제네릭으로 다루는지로 판정. 의심되면 소비자타입으로 보수적 분류.
-- 내부타입으로 보여 끊거나 고정하기 전, 그 타입이 소비자 강제·결과에 간접 기여하는 참조 경로(인덱스 접근·다른 공개 타입 경유·연쇄 추론 경유 포함)가 없는지 먼저 전수 확인. 하나라도 있으면 사수.
-- IDE 속도를 명분으로 소비자타입을 건드리는 변경은, 실측(`tsc --extendedDiagnostics` 의 인스턴스화 수·체크 시간)으로 이득을 확인하기 전엔 금지. 추정만으로 큰 타입 재설계 금지.
-- 나쁜 예 1(연쇄 단절): include 중첩 결과의 중간 관계 타입을 `any` 로 끊음 → 소비자가 `item.user.name` 의 타입을 못 받음.
-- 나쁜 예 2(소비자 타입 오인): 참조 0건처럼 보이는 phantom 필드를 제거 → 사실 다른 공개 타입이 인덱스 접근(`T["$params"]`)으로 읽어 소비자 입력 강제가 붕괴.
-- 좋은 예: 내부 변환 헬퍼는 제네릭 추론을 타게 두지 말고 반환을 고정 타입으로 박고 호출부에서 캐스트 → 같은 소비자 결과를 유지하며 추론 비용만 제거.
+- **소비자타입**: 외부 앱 코드가 직접·간접으로 닿는 공개 입력·출력·추론 타입.
+  - 잘못된 입력은 컴파일 에러가 나도록 강하게 제한한다.
+  - 결과 타입(`$infer*`, 체이닝 결과, 관계 추론 등)은 끝까지 정확히 전파한다.
+  - 중간을 `any`·고정 타입으로 끊어 소비자 결과가 부정확해지는 변경은 금지한다.
+- **내부타입**: 라이브러리 구현끼리만 맞물리고 소비자 결과에 도달하지 않는 타입.
+  - 소비자 타입 정확도가 동일하게 유지되는 범위에서, 연쇄·재귀 추론 비용이 커 IDE/typecheck 성능 이득이 있을 때는 명시 반환 타입·`as` 등으로 추론을 끊고 고정하는 편을 권장한다.
+  - 성능상 이득이 없거나 단순한 내부 타입은 굳이 끊지 않아도 된다.
+  - 끊어진 내부 정확성은 테스트로 보증한다.
+- **판정 원칙**: export 여부가 아니라 소비자가 실제 인자·결과·제네릭·인덱스 접근·연쇄 추론 경유로 접하는지로 판단한다. 의심되면 소비자타입으로 분류한다.
+- IDE 속도 개선을 이유로 소비자타입을 재설계하려면 `tsc --extendedDiagnostics` 등 실측 근거가 필요하다. 추정만으로 소비자 타입을 약화하지 않는다.
 
 ## 환경·제약
 
-- 개발 매뉴얼·API 문서는 `plugins/sd/references/` 에 있음(`@simplysm/*` 심볼 사용·해석 시 `README.md` 트리거 표로 진입).
-- TS 설정이 엄격(`verbatimModuleSyntax`, `noPropertyAccessFromIndexSignature`, `useUnknownInCatchVariables`, `noImplicitOverride` 등) — import 는 `type` 한정자 구분, 인덱스 시그니처는 `obj["key"]` 접근, catch 변수는 `unknown` 전제.
+- `@simplysm/*` v14 개발 매뉴얼과 API 인덱스는 `plugins/sd/references/simplysm14/README.md` 에서 시작한다. 패키지 심볼·API 를 사용하거나 해석할 때 해당 README 의 트리거 표에 따라 관련 문서를 읽는다.
+- 비정형 요구사항 원본(회의록·메일·문서 등)을 분석할 때는 `sd-context-requirement-source` 배경 가이드 스킬을 적용한다.
+- TS 설정은 엄격하다: `verbatimModuleSyntax`, `noPropertyAccessFromIndexSignature`, `useUnknownInCatchVariables`, `noImplicitOverride`, `noImplicitReturns` 등. import 는 `type` 한정자를 구분하고, 인덱스 시그니처는 `obj["key"]` 로 접근하며, catch 변수는 `unknown` 전제로 처리한다.
+- 의존성 조사는 `node_modules` 가 아니라 lock 파일과 package manifest 를 우선 사용한다.
 
-## Pi 확장 런타임
+## 에이전트 확장 런타임
 
-`plugins/sd/`는 Pi 에이전트 및 Claude Code 를 위한 플러그인 확장 패키지이다.
+`plugins/sd` 는 Pi 에이전트 및 Claude Code 가 함께 사용하는 `@simplysm/sd` 확장 패키지이다.
 
-Pi 에이전트 확장 구현·검증은 Bun 기준으로 수행한다. (node, tsx 아님 bun 임)
-
+- Pi 에이전트 확장 구현·검증은 Bun 기준으로 수행한다. Node/tsx 기준으로 판단하지 않는다.
 - 실측상 현재 Pi 확장의 모든 스크립트는 Bun 런타임에서 실행된다.
-- 공식 문서의 Node 에서 jiti 로 수행된다는 근거는 실측상 맞지 않다.
+- 공식 문서의 “Node 에서 jiti 로 수행” 설명은 이 저장소의 현재 실측과 맞지 않는다.
+- `plugins/sd/package.json` 은 Pi 에이전트 배포용이다. `files` 에 Claude Code 에서만 사용하는 폴더를 넣을 필요는 없다.

@@ -107,7 +107,7 @@ description: 임의의 요구 범위 자료(spec.md·회의록·기능 목록·�
 
 **생성 후 PDF 출력 + 텅 빔 점검**: 견적서는 고객에게 PDF 로 전달되므로 HTML 을 만든 뒤 `python scripts/check-page-fill.py <견적서.html>` 로 점검한다. 이 스크립트는 HTML 을 실제 PDF 로 출력(설치된 Chrome/Edge 인쇄 엔진)한 뒤 페이지별 하단 빈 공간을 실측한다. 견적 항목이 많으면 page-break-inside:avoid 블록(거래조건·전제·부록 section 등)이 통째로 다음 페이지로 밀려 첫·중간 페이지가 크게 빌 수 있는데, 경고가 나오면 표 셀 padding·폰트를 축소해 압축하거나 밀린 섹션을 조정해 다시 점검한다(빈 정도는 출력해봐야 알 수 있어 견적서별로 그때 확인). 의존: PyMuPDF(fitz) + 설치된 Chrome/Edge.
 
-고객 전달용 PDF 는 점검 통과 후 `python ../../scripts/html_to_pdf.py <견적서.html> <견적서.pdf>` 로 출력한다(점검과 동일 인쇄 엔진이라 결과가 일치).
+고객 전달용 PDF 는 점검 통과 후 `python ../../shared/python/html_to_pdf.py <견적서.html> <견적서.pdf>` 로 출력한다(점검과 동일 인쇄 엔진이라 결과가 일치).
 
 세부 작성 규칙은 아래 "출력 형식 (템플릿)" 을 따른다. 산정 과정(3점 추정 표·O/M/P·가정·방법론)은 견적서에 넣지 않고 **별도 내부 산정 내역서**로 둠 (위 "핵심 원칙" 6 참조).
 

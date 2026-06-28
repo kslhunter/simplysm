@@ -1,5 +1,5 @@
 import { registerAppendSystem } from "./append-system";
-import { registerSdCommit } from "./commands/sd-commit";
+import { registerExit } from "./commands/exit";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAltEnterNewline } from "./tui/alt-enter-newline";
 import { registerPasteTrim } from "./tui/paste-trim";
@@ -9,8 +9,7 @@ import { registerCodexFastMode } from "./codex/fast-mode";
 import { registerCodexReasoningSummary } from "./codex/reasoning-summary";
 import { registerCodexStatusline } from "./codex/statusline";
 import { registerAutoUpdate } from "./update/auto-update";
-import { registerGitGuard } from "./guards/git-guard";
-import { registerWriteHashGuard } from "./guards/write-hash-guard";
+import { registerHooks } from "./hooks/register.ts";
 import { registerSubagent } from "./tools/subagent";
 import { registerSkill } from "./tools/skill";
 import { registerWebFetch } from "./tools/web-fetch";
@@ -20,7 +19,7 @@ export default function (pi: ExtensionAPI) {
   registerAppendSystem(pi);
 
   // commands
-  registerSdCommit(pi);
+  registerExit(pi);
 
   // tui
   registerSelection(pi); // 항상 맨위 (Editor 갈아 끼움)
@@ -36,9 +35,8 @@ export default function (pi: ExtensionAPI) {
   // update
   registerAutoUpdate(pi);
 
-  // guards
-  registerGitGuard(pi);
-  registerWriteHashGuard(pi);
+  // hooks
+  registerHooks(pi);
 
   // tools
   registerSubagent(pi);
