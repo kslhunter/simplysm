@@ -1,9 +1,10 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { runWikiBackgroundLoginWorkerFromArgv } from "../shared/wiki-login.ts";
-import { registerWikiContext, wikiLoginWorkerConfig } from "./wiki-context.ts";
+import { registerWikiHooks } from "./hooks/register.ts";
+import { wikiLoginWorkerConfig } from "./hooks/rootmap.ts";
 
 export default function (pi: ExtensionAPI) {
-  registerWikiContext(pi);
+  registerWikiHooks(pi);
 }
 
 if (import.meta.main) {

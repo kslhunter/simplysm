@@ -246,6 +246,7 @@ export class DevOrchestrator extends BaseOrchestrator implements OrchestratorLif
             onServerReady: () => this._schedulePrintServers(),
           }).catch((err: unknown) => {
             this._logger.error(`[${name}] 서버 런타임 시작 실패:`, errNs.message(err));
+            this._logger.debug(`[${name}] 서버 런타임 시작 실패 스택:\n${errNs.stack(err)}`);
             this._resultCollector.add({
               name,
               target: "server",

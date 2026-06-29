@@ -103,6 +103,23 @@ describe("setupWatchEvents", () => {
       worker.emit("error", { message: "crash again" });
       expect(resolver).toHaveBeenCalledOnce();
     });
+
+    it("error 이벤트의 stack은 사용자 출력용 message에 섞지 않는다", () => {
+      const worker = new MockWorker();
+      const resultCollector = new ResultCollector();
+
+      setupWatchEvents(worker, {
+        name: "test-pkg",
+        target: "node",
+        resultCollector,
+        normalizeBuild: (d) => d as any,
+      });
+
+      worker.emit("error", { message: "crash", stack: "Error: crash\n    at test" });
+
+      const result = resultCollector.get("test-pkg:build");
+      expect(result?.message).toBe("crash");
+    });
   });
 
   describe("resolveInitialBuild", () => {

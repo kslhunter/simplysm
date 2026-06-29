@@ -99,6 +99,7 @@ export async function runDeployment(
       publishFailed = true;
       for (const r of rejectedResults) {
         logger.error(errNs.message(r.reason));
+        logger.debug(`배포 실패 스택:\n${errNs.stack(r.reason)}`);
       }
       logger.error(`Level ${levelIdx + 1}/${levels.length}`);
     } else {

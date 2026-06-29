@@ -1,6 +1,6 @@
 /** 원격 위키 공유 코어 (플러그인 sd-wiki).
  *
- * 두 소비자 — 에이전트 CLI(`scripts/wiki.ts`)와 런타임 hook(`hooks/*`) — 가 공유하는
+ * 두 소비자 — 에이전트 CLI(`cli/wiki.ts`)와 런타임 hook(`hooks/*`, `extensions/*`) — 가 공유하는
  * opus `WikiService` 접근 코어이자 모든 의존이 향하는 단일 싱크. 위→아래 6섹션으로
  * 레이어가 드러남: ①결합상수 ②예외 ③토큰저장 ④인증 ⑤HTTP ⑥낙관락.
  *
@@ -16,7 +16,6 @@
 import { randomBytes } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import { homedir } from "node:os";
-import { dirname } from "node:path";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 

@@ -143,6 +143,21 @@ describe("writeChangedOutputFiles", () => {
     );
   });
 
+  it("can skip .js extension rewriting", async () => {
+    const filePath = path.join(tmpDir, "dist", "foo.js");
+    const source = 'import { bar } from "./bar";';
+
+    await writeChangedOutputFiles([
+      {
+        path: filePath,
+        text: source,
+      },
+    ] as any, { rewriteJsExtensions: false });
+
+    const written = await fs.readFile(filePath, "utf8");
+    expect(written).toBe(source);
+  });
+
   it("preserves imports that already have extensions", async () => {
     const filePath = path.join(tmpDir, "dist", "foo.js");
 

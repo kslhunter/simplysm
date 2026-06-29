@@ -17,8 +17,8 @@
     "extensions",
     "skills",
     "shared",
-    "rules",
-    "scripts"
+    "references",
+    "cli"
   ],
   "pi": {
     "extensions": [

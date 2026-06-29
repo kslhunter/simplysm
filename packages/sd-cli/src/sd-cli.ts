@@ -44,6 +44,7 @@ if (isDev) {
       const code = err instanceof Error && "code" in err ? (err as NodeJS.ErrnoException).code : undefined;
       if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") {
         logger.warn("replaceDeps 사전 설정 실패:", errNs.message(err));
+        logger.debug(`replaceDeps 사전 설정 실패 스택:\n${errNs.stack(err)}`);
       }
     }
   }
@@ -109,5 +110,6 @@ function configureAffinityAndPriority(pid: number): void {
       "CPU affinity/priority 설정 실패:",
       errNs.message(err),
     );
+    logger.debug(`CPU affinity/priority 설정 실패 스택:\n${errNs.stack(err)}`);
   });
 }

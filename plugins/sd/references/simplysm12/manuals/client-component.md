@@ -265,7 +265,7 @@ constructor() {
 
 ```ts
 this.#sdToast.success("저장되었습니다.");
-this.#sdToast.danger("바코드 스캔이 잘 못되었습니다.");   // info/warning/danger 동일
+this.#sdToast.danger("바코드 스캔이 잘못되었습니다.");   // info/warning/danger 동일
 ```
 
 `Abs*` 를 상속한 목록/편집 화면은 `busyCount` / `initialized` / busy 표시를 기반 클래스가 처리하므로, 화면 코드에서는 `search()` / `submit()` 같은 오버라이드 메서드 본문만 작성한다(상세는 [client-data-sheet.md](./client-data-sheet.md)). 위 패턴은 `Abs*` 를 쓰지 않는 화면(로그인·PDA·리포트·모달 등)에서 직접 적용한다.

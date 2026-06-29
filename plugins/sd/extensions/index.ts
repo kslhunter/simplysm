@@ -1,5 +1,5 @@
 import { registerAppendSystem } from "./append-system";
-import { registerExit } from "./commands/exit";
+import { registerExit } from "./exit";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAltEnterNewline } from "./tui/alt-enter-newline";
 import { registerPasteTrim } from "./tui/paste-trim";
@@ -18,7 +18,6 @@ import { registerWebSearch } from "./tools/web-search";
 export default function (pi: ExtensionAPI) {
   registerAppendSystem(pi);
 
-  // commands
   registerExit(pi);
 
   // tui

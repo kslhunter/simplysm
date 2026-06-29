@@ -65,6 +65,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     logger.debug("sd.config.ts 로드 완료");
   } catch (err) {
     logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
+    logger.debug(`sd.config.ts 로드 실패 스택:\n${errNs.stack(err)}`);
     process.exitCode = 1;
     return;
   }
@@ -159,6 +160,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     await ensureSshAuth(publishPackages, logger);
   } catch (err) {
     logger.error(`SSH 인증 설정 실패: ${errNs.message(err)}`);
+    logger.debug(`SSH 인증 설정 실패 스택:\n${errNs.stack(err)}`);
     process.exitCode = 1;
     return;
   }
@@ -169,6 +171,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       await ensureCleanWorkingTree(hasGit, logger);
     } catch (err) {
       logger.error(errNs.message(err));
+      logger.debug(`작업 트리 확인 실패 스택:\n${errNs.stack(err)}`);
       process.exitCode = 1;
       return;
     }
@@ -233,6 +236,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       await commitTagAndPush(hasGit, version, _changedFiles, logger, dryRun);
     } catch (err) {
       logger.error(errNs.message(err));
+      logger.debug(`Git 배포 단계 실패 스택:\n${errNs.stack(err)}`);
       process.exitCode = 1;
       return;
     }

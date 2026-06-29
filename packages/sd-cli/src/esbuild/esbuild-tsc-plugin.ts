@@ -1,11 +1,13 @@
 import type esbuild from "esbuild";
 import type ts from "typescript";
-import { err as errNs } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import type { ISdTsCompilerResult } from "../ts-compiler/sd-ts-compiler-result";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
 import type { TypecheckEnv } from "../utils/tsconfig";
+
+const logger = createLogger("sd:cli:esbuild-tsc-plugin");
 
 export interface TscPluginOptions {
   pkgDir: string;
@@ -69,6 +71,7 @@ export function createTscPlugin(options: TscPluginOptions): TscPluginResult {
           lastErrors = result.errors;
           lastLintResult = result.lint;
         } catch (err) {
+          logger.debug(`tsc plugin 예외 스택:\n${errNs.stack(err)}`);
           lastProgram = undefined;
           lastAffectedFiles = undefined;
           lastDiagnostics = [];

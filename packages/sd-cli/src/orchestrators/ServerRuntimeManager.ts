@@ -52,6 +52,9 @@ export class ServerRuntimeManager {
     });
 
     runtimeWorker.on("error", (errorData) => {
+      if (errorData.stack != null) {
+        this._logger.debug(`[${params.serverName}] 서버 런타임 에러 스택:\n${errorData.stack}`);
+      }
       params.resultCollector.add({
         name: params.serverName,
         target: "server",
@@ -65,6 +68,7 @@ export class ServerRuntimeManager {
       .start({ mainJsPath: params.mainJsPath, clientPorts: params.clientPorts, env: params.env })
       .catch((err: unknown) => {
         this._logger.error(`[${params.serverName}] 서버 런타임 워커 비정상 종료:`, errNs.message(err));
+        this._logger.debug(`[${params.serverName}] 서버 런타임 워커 비정상 종료 스택:\n${errNs.stack(err)}`);
         params.resultCollector.add({
           name: params.serverName,
           target: "server",

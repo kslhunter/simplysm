@@ -39,6 +39,7 @@ export async function runPostPublish(
       logger.warn(
         `postPublish 스크립트 실패 (계속 진행): ${errNs.message(err)}`,
       );
+      logger.debug(`postPublish 스크립트 실패 스택:\n${errNs.stack(err)}`);
     }
   }
 }

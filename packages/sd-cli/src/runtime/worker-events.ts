@@ -8,6 +8,7 @@ export interface BuildEventData {
 /** 워커 에러 이벤트 데이터 */
 export interface ErrorEventData {
   message: string;
+  stack?: string;
 }
 
 /** 워커 서버 준비 완료 이벤트 데이터 */

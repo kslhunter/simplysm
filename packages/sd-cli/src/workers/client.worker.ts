@@ -57,7 +57,7 @@ export interface ClientWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
   build: ClientBuildResult;
   serverReady: { port: number };
-  error: { message: string };
+  error: { message: string; stack?: string };
 }
 
 //#endregion
@@ -207,6 +207,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
       errors.push(errNs.message(err));
     }
     logger.debug(`[${info.name}] client worker build 예외: ${errors.join("\n")}`);
+    logger.debug(`[${info.name}] client worker build 예외 스택:\n${errNs.stack(err)}`);
     return { success: false, errors };
   }
 }
@@ -313,8 +314,10 @@ function createDevBuildEndHandler(
       }
     } catch (err) {
       const message = errNs.message(err);
+      const stack = errNs.stack(err);
+      logger.debug(`client dev build end 예외 스택:\n${stack}`);
       if (!isInitialBuild) {
-        sender.send("error", { message });
+        sender.send("error", { message, stack });
       } else {
         isInitialBuild = false;
         initialBuildResolve?.({
@@ -423,7 +426,7 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
         hmrService?.broadcast({ type: "full-reload" });
         sender.send("build", { success: true });
       } catch (err) {
-        sender.send("error", { message: errNs.message(err) });
+        sender.send("error", { message: errNs.message(err), stack: errNs.stack(err) });
       }
     });
 
@@ -437,7 +440,9 @@ async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
     return initialResult;
   } catch (err) {
     const message = errNs.message(err);
-    sender.send("error", { message });
+    const stack = errNs.stack(err);
+    logger.debug(`[${info.name}] client worker startWatch 예외 스택:\n${stack}`);
+    sender.send("error", { message, stack });
     return { success: false, errors: [message] };
   }
 }

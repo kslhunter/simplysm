@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-rules.ts\""
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-wiki.ts\""
           }
         ]
       }

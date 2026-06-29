@@ -7,18 +7,27 @@ import { addJsExtensionToImports } from "../utils/output-path-rewriter";
 
 const logger = createLogger("sd:cli:esbuild-config");
 
+export interface WriteChangedOutputFilesOptions {
+  /** .js 파일의 확장자 없는 상대 import/export 경로에 .js를 붙일지 여부 */
+  rewriteJsExtensions?: boolean;
+}
+
 /**
  * esbuild outputFiles에서 변경된 파일만 디스크에 쓴다.
  *
- * - .js 파일: 비교 전 ESM 상대 import 경로에 .js 확장자를 추가한다
+ * - .js 파일: 기본적으로 비교 전 ESM 상대 import 경로에 .js 확장자를 추가한다
  * - 기타 파일(.js.map 등): 원본 내용을 그대로 비교한다
  * - 기존 파일과 내용이 동일하면 타임스탬프 보존을 위해 쓰기를 스킵한다
  */
-export async function writeChangedOutputFiles(outputFiles: esbuild.OutputFile[]): Promise<void> {
+export async function writeChangedOutputFiles(
+  outputFiles: esbuild.OutputFile[],
+  options?: WriteChangedOutputFilesOptions,
+): Promise<void> {
+  const rewriteJsExtensions = options?.rewriteJsExtensions ?? true;
   logger.debug(`변경된 출력 파일 쓰기 시작 (${outputFiles.length}개)`);
   await Promise.all(
     outputFiles.map(async (file) => {
-      const finalText = file.path.endsWith(".js")
+      const finalText = file.path.endsWith(".js") && rewriteJsExtensions
         ? addJsExtensionToImports(file.text)
         : file.text;
 

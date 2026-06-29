@@ -66,7 +66,7 @@ export function triggerWikiBackgroundLogin(options: WikiBackgroundLoginOptions):
 
 export async function runWikiBackgroundLoginWorker(lockPath: string, pluginRoot: string): Promise<void> {
   try {
-    const wikiCore = (await import(pathToFileURL(join(pluginRoot, "scripts", "wiki_core.ts")).href)) as {
+    const wikiCore = (await import(pathToFileURL(join(pluginRoot, "shared", "wiki-service.ts")).href)) as {
       browserLogin: () => Promise<string>;
     };
     await wikiCore.browserLogin();

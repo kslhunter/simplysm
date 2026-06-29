@@ -32,6 +32,7 @@ export interface ServerRuntimeReadyEvent {
  */
 export interface ServerRuntimeErrorEvent {
   message: string;
+  stack?: string;
 }
 
 /**
@@ -73,18 +74,22 @@ async function cleanup(): Promise<void> {
 // 서버 listen() 이후 발생하는 런타임 에러를 잡아 커스텀 "error" 이벤트로 전송
 // (이 핸들러 없이는 워커가 크래시해도 빌드 Promise가 resolve되지 않아 프로세스가 중단될 수 있다)
 process.on("uncaughtException", (err) => {
-  logger.error("서버 런타임 미처리 에러", err);
+  logger.error("서버 런타임 미처리 에러", errNs.message(err));
+  logger.debug(`서버 런타임 미처리 에러 스택:\n${errNs.stack(err)}`);
   sender.send("error", {
     message: errNs.message(err),
+    stack: errNs.stack(err),
   });
   // 이벤트 전송 후 종료할 수 있도록 대기
   setTimeout(() => process.exit(1), 500);
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.error("서버 런타임 미처리 Promise 거부", reason);
+  logger.error("서버 런타임 미처리 Promise 거부", errNs.message(reason));
+  logger.debug(`서버 런타임 미처리 Promise 거부 스택:\n${errNs.stack(reason)}`);
   sender.send("error", {
     message: errNs.message(reason),
+    stack: errNs.stack(reason),
   });
   // 이벤트 전송 후 종료할 수 있도록 대기
   setTimeout(() => process.exit(1), 500);
@@ -195,9 +200,11 @@ async function start(info: ServerRuntimeStartInfo): Promise<void> {
 
     sender.send("serverReady", { port: server.options.port });
   } catch (err) {
-    logger.error("서버 런타임 시작 실패", err);
+    logger.error("서버 런타임 시작 실패", errNs.message(err));
+    logger.debug(`서버 런타임 시작 실패 스택:\n${errNs.stack(err)}`);
     sender.send("error", {
       message: errNs.message(err),
+      stack: errNs.stack(err),
     });
   }
 }

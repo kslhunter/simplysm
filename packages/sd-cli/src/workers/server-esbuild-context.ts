@@ -1,6 +1,6 @@
 import type ts from "typescript";
 import esbuild from "esbuild";
-import { err as errNs } from "@simplysm/core-common";
+import { createLogger, err as errNs } from "@simplysm/core-common";
 import { formatEsbuildMessages } from "../utils/output-utils";
 import {
   createServerEsbuildOptions,
@@ -11,6 +11,8 @@ import type { TypecheckEnv } from "../utils/tsconfig";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
 import { createWorkerBundlePlugin } from "../esbuild/esbuild-worker-plugin";
+
+const logger = createLogger("sd:cli:server-esbuild-context");
 
 /**
  * esbuild watch context 생성 옵션
@@ -87,6 +89,7 @@ export async function rebuild(): Promise<{
   try {
     result = await context.rebuild();
   } catch (err) {
+    logger.debug(`server esbuild rebuild 예외 스택:\n${errNs.stack(err)}`);
     const tscErrors = tscPlugin?.getErrors() ?? [];
     const allErrors = [errNs.message(err), ...tscErrors];
     return {
@@ -101,7 +104,7 @@ export async function rebuild(): Promise<{
   }
 
   if (result.outputFiles) {
-    await writeChangedOutputFiles(result.outputFiles);
+    await writeChangedOutputFiles(result.outputFiles, { rewriteJsExtensions: false });
   }
 
   const esbuildErrors = formatEsbuildMessages(result.errors, "error");

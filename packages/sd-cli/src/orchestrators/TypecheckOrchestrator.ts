@@ -229,11 +229,8 @@ export class TypecheckOrchestrator implements OrchestratorLifecycle<TypecheckRes
         return result;
       } catch (err) {
         const message = errNs.message(err);
-        const stack = err instanceof Error ? err.stack : undefined;
         this._logger.error(`[${label}] 엔진 작업 실패: ${message}`);
-        if (stack != null) {
-          this._logger.debug(`[${label}] 스택 트레이스:\n${stack}`);
-        }
+        this._logger.debug(`[${label}] 스택 트레이스:\n${errNs.stack(err)}`);
         return {
           build: {
             success: false,

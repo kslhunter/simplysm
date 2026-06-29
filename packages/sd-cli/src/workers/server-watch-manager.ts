@@ -25,7 +25,7 @@ export interface ServerWatchLoopConfig {
   /** 빌드 완료 이벤트 콜백 */
   onBuild: (result: { build: { success: boolean; errors?: string[]; warnings?: string[] }; mainJsPath: string }) => void;
   /** 에러 이벤트 콜백 */
-  onError: (message: string) => void;
+  onError: (message: string, stack?: string) => void;
   /** 리빌드 실행 콜백 */
   rebuild: () => Promise<{ build: { success: boolean; errors?: string[]; warnings?: string[] }; mainJsPath: string }>;
 }
@@ -116,7 +116,7 @@ export async function startServerWatchLoop(config: ServerWatchLoopConfig): Promi
         logger.debug("변경된 파일이 빌드에 포함되지 않아 리빌드 건너뜀");
       }
     } catch (err) {
-      config.onError(errNs.message(err));
+      config.onError(errNs.message(err), errNs.stack(err));
     }
   });
 

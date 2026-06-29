@@ -57,6 +57,7 @@ export abstract class BaseOrchestrator {
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
       this._logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
+      this._logger.debug(`sd.config.ts 로드 실패 스택:\n${errNs.stack(err)}`);
       process.exitCode = 1;
       throw err;
     }

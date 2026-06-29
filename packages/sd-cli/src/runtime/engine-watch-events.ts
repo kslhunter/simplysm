@@ -1,5 +1,8 @@
+import { createLogger } from "@simplysm/core-common";
 import type { BuildResult, ResultCollector } from "../runtime/ResultCollector";
 import type { RebuildManager } from "./rebuild-manager";
+
+const logger = createLogger("sd:cli:watch-events");
 
 /**
  * worker.on()으로 이벤트를 구독할 수 있는 최소 인터페이스
@@ -84,7 +87,10 @@ export function setupWatchEvents(
   });
 
   worker.on("error", (data: unknown) => {
-    const event = data as { message: string };
+    const event = data as { message: string; stack?: string };
+    if (event.stack != null) {
+      logger.debug(`[${name}] 워커 에러 스택:\n${event.stack}`);
+    }
 
     const buildResult: BuildResult = {
       name,

@@ -1,15 +1,15 @@
 /** SessionStart hook (플러그인 sd-wiki) — 원격 ROOT MAP 주입.
  *
  * 원격 위키에서 ROOT MAP(최상위 라우팅 목록)을 받아 주입. 미인증·만료면 백그라운드
- * 로그인을 wiki_login 에 위임한 뒤 무주입 fail-open. 인증·네트워크·코어(wiki_core)에
- * 의존하는 동적 주입 — 의존이 전혀 다른 정적 규칙 주입(session-start-rules.ts)과 별개
+ * 로그인을 wiki_login 에 위임한 뒤 무주입 fail-open. 인증·네트워크·서비스 코어(wiki-service)에
+ * 의존하는 동적 주입 — 의존이 전혀 다른 정적 reference 주입(session-start-reference-wiki.ts)과 별개
  * 파일·별개 SessionStart command 로 분리돼 있다.
  *
  * 출력은 plain stdout 으로 그대로 컨텍스트에 주입되므로 진단·에러는 stdout 에 절대
  * 찍지 않음(stderr 만).
  */
 
-import { importWikiCore } from "../shared/wiki-core.ts";
+import * as wikiCore from "../shared/wiki-service.ts";
 import { formatRootmap } from "../shared/wiki-rootmap.ts";
 import { isSessionSkipped, markSessionSkipped, triggerBackgroundLogin } from "./wiki_login.ts";
 
@@ -49,8 +49,6 @@ async function injectRootmap(): Promise<void> {
 
   if (sessionId && isSessionSkipped(sessionId)) return;
   if (!PLUGIN_ROOT) return;
-
-  const wikiCore = await importWikiCore(PLUGIN_ROOT);
 
   function deferLogin(): void {
     // 미인증·만료: 이 세션은 위키 없이 진행하고, 백그라운드 로그인만 1회 트리거.

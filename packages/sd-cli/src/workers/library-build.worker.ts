@@ -36,7 +36,7 @@ export interface CombinedBuildEvent {
 export interface LibraryBuildWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
   build: CombinedBuildEvent;
-  error: { message: string };
+  error: { message: string; stack?: string };
 }
 
 //#endregion
@@ -135,6 +135,7 @@ async function build(info: LibraryBuildInfo): Promise<LibraryBuildResult> {
   } catch (err) {
     const message = errNs.message(err);
     logger.debug(`[${info.name}] library worker build 예외 발생: ${message}`);
+    logger.debug(`[${info.name}] library worker build 예외 스택:\n${errNs.stack(err)}`);
     return {
       build: { success: false, errors: [message], diagnostics: [] },
     };
@@ -323,11 +324,11 @@ async function startWatch(info: LibraryBuildInfo): Promise<void> {
         const event = buildWatchEvent(info, result, changedScssFiles);
         sender.send("build", event);
       } catch (err) {
-        sender.send("error", { message: errNs.message(err) });
+        sender.send("error", { message: errNs.message(err), stack: errNs.stack(err) });
       }
     });
   } catch (err) {
-    sender.send("error", { message: errNs.message(err) });
+    sender.send("error", { message: errNs.message(err), stack: errNs.stack(err) });
   }
 }
 

@@ -1,10 +1,10 @@
 /** 원격 위키 CLI (플러그인 sd-wiki).
  *
- * 에이전트가 Bash 로 능동 호출하는 진입점. 인자 파싱 → `wiki_core` 위임 → JSON 출력만
- * 담당. 원격 호출·인증·충돌 재시도 등 메커니즘은 전부 `wiki_core` 에 있고 이 파일엔 없음
+ * 에이전트가 Bash 로 능동 호출하는 진입점. 인자 파싱 → `shared/wiki-service` 위임 → JSON 출력만
+ * 담당. 원격 호출·인증·충돌 재시도 등 메커니즘은 전부 `shared/wiki-service` 에 있고 이 파일엔 없음
  * (명령 추가·변경 시 이 파일만 보면 됨).
  *
- *   bun "${CLAUDE_PLUGIN_ROOT}/scripts/wiki.ts" <명령> ...
+ *   bun "${CLAUDE_PLUGIN_ROOT}/cli/wiki.ts" <명령> ...
  *
  * stdout 은 서비스 응답 JSON, 오류는 stderr + 비0 종료코드.
  */
@@ -19,7 +19,7 @@ import {
   callService,
   getToken,
   writePage,
-} from "./wiki_core.ts";
+} from "../shared/wiki-service.ts";
 
 interface BaseArgs {
   readonly command: string;

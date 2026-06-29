@@ -136,6 +136,7 @@ export async function runCheck(options: CheckOptions): Promise<void> {
       const value = r.value;
       return Array.isArray(value) ? value : [value];
     }
+    logger.debug(`체크 작업 예외 스택:\n${errNs.stack(r.reason)}`);
     return [{
       name: "UNKNOWN",
       success: false,

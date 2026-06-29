@@ -152,6 +152,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
       this._logger.debug("sd.config.ts 로드 완료");
     } catch (err) {
       this._logger.error(`sd.config.ts 로드 실패: ${errNs.message(err)}`);
+      this._logger.debug(`sd.config.ts 로드 실패 스택:\n${errNs.stack(err)}`);
       process.exitCode = 1;
       throw err;
     }
@@ -238,13 +239,10 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
     for (const settledResult of buildResults) {
       if (settledResult.status === "rejected") {
         const err = settledResult.reason;
-        const stack = err instanceof Error ? err.stack : undefined;
         this._logger.error("빌드 중 예기치 않은 에러", {
-          error: String(err),
+          error: errNs.message(err),
         });
-        if (stack != null) {
-          this._logger.debug(`빌드 예외 스택:\n${stack}`);
-        }
+        this._logger.debug(`빌드 예외 스택:\n${errNs.stack(err)}`);
         hasUntrackedError.value = true;
       }
     }

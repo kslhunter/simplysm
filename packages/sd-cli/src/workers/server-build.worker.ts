@@ -92,7 +92,7 @@ export interface ServerCombinedBuildEvent {
 export interface ServerBuildWorkerEvents extends Record<string, unknown> {
   buildStart: Record<string, never>;
   build: ServerCombinedBuildEvent;
-  error: { message: string };
+  error: { message: string; stack?: string };
 }
 
 //#endregion
@@ -169,7 +169,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       jsResult = await esbuild.build({ ...esbuildOptions, plugins: [createWorkerBundlePlugin(), tscPlugin.plugin] })
         .then(async (result) => {
           if (result.outputFiles) {
-            await writeChangedOutputFiles(result.outputFiles);
+            await writeChangedOutputFiles(result.outputFiles, { rewriteJsExtensions: false });
           }
           const errors = formatEsbuildMessages(result.errors, "error");
           const warnings = formatEsbuildMessages(result.warnings, "warning");
@@ -179,11 +179,14 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
             warnings: warnings.length > 0 ? warnings : undefined,
           };
         })
-        .catch((err) => ({
-          success: false,
-          errors: [errNs.message(err)],
-          warnings: undefined,
-        }));
+        .catch((err) => {
+          logger.debug(`[${info.name}] server esbuild build 예외 스택:\n${errNs.stack(err)}`);
+          return {
+            success: false,
+            errors: [errNs.message(err)],
+            warnings: undefined,
+          };
+        });
 
       tscErrors = tscPlugin.getErrors() ?? [];
       tscDiagnostics = tscPlugin.getDiagnostics();
@@ -231,11 +234,8 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     };
   } catch (err) {
     const message = errNs.message(err);
-    const stack = err instanceof Error ? err.stack : undefined;
     logger.debug(`[${info.name}] server worker build 예외: ${message}`);
-    if (stack != null) {
-      logger.debug(`[${info.name}] 스택 트레이스:\n${stack}`);
-    }
+    logger.debug(`[${info.name}] 스택 트레이스:\n${errNs.stack(err)}`);
     return {
       build: { success: false, errors: [message], diagnostics: [] },
       mainJsPath,
@@ -358,11 +358,11 @@ async function startWatch(info: ServerWatchInfo): Promise<void> {
       initialExternals: cachedExternal,
       onBuildStart: () => sender.send("buildStart", {}),
       onBuild: (result) => sender.send("build", result),
-      onError: (message) => sender.send("error", { message }),
+      onError: (message, stack) => sender.send("error", { message, stack }),
       rebuild: () => rebuildAll(),
     });
   } catch (err) {
-    sender.send("error", { message: errNs.message(err) });
+    sender.send("error", { message: errNs.message(err), stack: errNs.stack(err) });
   }
 }
 

@@ -21,7 +21,7 @@ export interface CommonBuildWorkerEvents extends Record<string, unknown> {
     build: { success: boolean; errors?: string[]; warnings?: string[] };
     lint?: LintWithProgramResult;
   };
-  error: { message: string };
+  error: { message: string; stack?: string };
 }
 
 /**
@@ -180,7 +180,8 @@ export abstract class BaseEngine<
     });
 
     this._callStartWatch(output).catch((err: unknown) => {
-      logger.debug(`[${this._pkg.name}] startWatch 실패:`, errNs.message(err));
+      logger.debug(`[${this._pkg.name}] startWatch 실패: ${errNs.message(err)}`);
+      logger.debug(`[${this._pkg.name}] startWatch 실패 스택:\n${errNs.stack(err)}`);
       this._resultCollector?.add({
         name: this._pkg.name,
         target: this._getTarget(),

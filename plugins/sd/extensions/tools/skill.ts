@@ -54,6 +54,7 @@ interface SkillCommand {
 interface SkillInvocationDetails {
   invocation: InvokedSkill;
   state: SkillInvocationState;
+  sourceText?: string;
 }
 
 export function registerSkill(pi: ExtensionAPI) {
@@ -120,7 +121,17 @@ export function registerSkill(pi: ExtensionAPI) {
         box.addChild(new Text(getMessageTextContent(message.content), 0, 0));
       }
 
-      return box;
+      const sourceText = message.details?.sourceText?.trim();
+      if (!sourceText) return box;
+
+      const sourceBox = new Box(1, 1, (text: string) => theme.bg("userMessageBg", text));
+      sourceBox.addChild(new Text(theme.fg("userMessageText", sourceText), 0, 0));
+
+      const container = new Container();
+      container.addChild(sourceBox);
+      container.addChild(new Spacer(1));
+      container.addChild(box);
+      return container;
     },
   );
 
@@ -187,13 +198,14 @@ export function registerSkill(pi: ExtensionAPI) {
     const content = event.images?.length
       ? [{ type: "text" as const, text: loaded.content }, ...event.images]
       : loaded.content;
+    const details: SkillInvocationDetails = { ...stateData, sourceText: event.text };
 
     pi.sendMessage<SkillInvocationDetails>(
       {
         customType: SKILL_MESSAGE_CUSTOM_TYPE,
         content,
         display: true,
-        details: stateData,
+        details,
       },
       event.streamingBehavior ? { deliverAs: event.streamingBehavior } : { triggerTurn: true },
     );
