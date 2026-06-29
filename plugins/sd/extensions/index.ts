@@ -2,6 +2,7 @@ import { registerAppendSystem } from "./append-system";
 import { registerExit } from "./exit";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAltEnterNewline } from "./tui/alt-enter-newline";
+import { registerClipboardImagePaste } from "./tui/clipboard-image-paste";
 import { registerPasteTrim } from "./tui/paste-trim";
 import { registerSelection } from "./tui/selection";
 import { registerWorkingElapsed } from "./tui/working-elapsed";
@@ -24,6 +25,7 @@ export default function (pi: ExtensionAPI) {
   registerSelection(pi); // 항상 맨위 (Editor 갈아 끼움)
   registerAltEnterNewline(pi);
   registerPasteTrim(pi);
+  registerClipboardImagePaste(pi);
   registerWorkingElapsed(pi);
 
   // codex
