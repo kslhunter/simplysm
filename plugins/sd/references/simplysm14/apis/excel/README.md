@@ -1,43 +1,79 @@
 # @simplysm/excel
 
-OOXML(.xlsx) 워크북을 ZIP 단위 lazy-load 로 읽고 쓰는 라이브러리. 접근한 셀에 필요한 XML 파트(SharedStrings/Styles 등)만 그때그때 로드하므로 거의 모든 셀/시트 I/O 메서드가 `async` 다. `ExcelWorkbook` 진입점에서 시트 추가·셀 값/수식·스타일·조건부 서식·이미지·행 복사·뷰를, `ExcelWrapper` 로 Zod 스키마 기반 레코드 배열 ↔ 엑셀 변환을, `ExcelUtils` 로 주소·날짜 시리얼·숫자형식 변환을 다룬다. 외부 의존은 `@simplysm/core-common`(DateOnly/DateTime/Time/Bytes), `zod`, `mime`.
+Excel 워크북을 `xlsx`/`xlsb` ZIP 파트 단위로 lazy-load 하며 읽고 쓰는 중립 패키지. `ExcelWorkbook` 에서 워크북·시트·셀 조작을 시작하고, `ExcelWrapper` 로 Zod 스키마 기반 레코드 변환을 수행하며, `ExcelUtils` 로 주소·날짜 serial·숫자 형식 변환을 보조한다.
 
 ## 사용 트리거 인덱스
 
-- **ExcelWorkbook / ExcelWorksheet** — .xlsx 를 열거나 새로 만들고, 시트 추가/조회/이름, 데이터 테이블·매트릭스·레코드 읽기·쓰기, 행 복사/삽입, 뷰(zoom/freeze/autoFilter/탭색), 이미지 삽입, 바이트/Blob 내보내기를 할 때. 자세히: [workbook-worksheet.md](./workbook-worksheet.md)
-- **ExcelCell / ExcelRow / ExcelCol** — 개별 셀의 값·수식·병합·스타일을 읽고 쓰거나, 행/열 단위로 셀을 순회하고 열 너비를 줄 때. 자세히: [cell.md](./cell.md)
-- **셀 스타일 (ExcelStyleOptions / ExcelFont)** — 셀(`cell.setStyle`)이나 워크북 default(`wb.setDefaultStyle`)의 배경·테두리·정렬·숫자형식·폰트를 지정할 때. 자세히: [style.md](./style.md)
-- **조건부 서식 (ExcelConditionalRule / ExcelConditionalRuleStyle)** — 셀/범위에 값 비교·텍스트 매칭·수식 기반 native CF 규칙을 추가할 때. 자세히: [conditional-format.md](./conditional-format.md)
-- **ExcelWrapper** — Zod 스키마로 헤더 매핑·타입 변환·유효성 검사를 자동화해 레코드 배열 ↔ 엑셀을 변환할 때(엑셀 다운로드/업로드). 자세히: [wrapper.md](./wrapper.md)
-- **ExcelUtils** — 셀 주소(A1 ↔ 좌표) 변환, 엑셀 날짜 시리얼 ↔ 타임스탬프 변환, 숫자형식 코드/ID/이름 상호 변환이 필요할 때. 자세히: [utils.md](./utils.md)
-- **값/주소/형식 타입** — 셀 값 유니온·숫자형식 프리셋·셀 타입·주소 좌표·정렬/테두리/밑줄 enum 을 시그니처에서 참조할 때. 아래 인라인 섹션.
-- **OOXML XML-shape 타입** — `ExcelXml*` / `Excel*Data` 류 내부 직렬화 타입. 아래 인라인 섹션.
+- **ExcelWorkbook / ExcelWorksheet** — 워크북을 열거나 생성하고 시트 추가·조회·이름 변경·데이터 표·행 복사·보기·이미지·내보내기를 다룰 때. 자세히: [workbook-worksheet.md](./workbook-worksheet.md)
+- **ExcelCell / ExcelRow / ExcelCol** — 개별 셀 값·수식·병합·스타일, 행/열 셀 순회, 열 너비를 다룰 때. 자세히: [cell.md](./cell.md)
+- **셀 스타일 타입** — `setStyle`/`setDefaultStyle` 의 배경·테두리·정렬·숫자 형식·폰트 옵션을 해석할 때. 자세히: [style.md](./style.md)
+- **조건부 서식 타입** — `addConditionalFormat` 으로 값 비교·텍스트 매칭·수식 기반 조건부 서식을 추가할 때. 자세히: [conditional-format.md](./conditional-format.md)
+- **ExcelWrapper** — Zod 스키마의 필드 설명을 Excel 헤더로 삼아 레코드 배열을 읽고 쓰며 검증할 때. 자세히: [wrapper.md](./wrapper.md)
+- **ExcelUtils** — A1 주소와 0 기반 좌표 변환, Excel 날짜 serial 변환, 숫자 형식 코드/ID/이름 변환이 필요할 때. 자세히: [utils.md](./utils.md)
+- **값/주소 공통 타입** — 셀 값 유니온, 주소 좌표, 셀 타입, `ExcelXml` 정리 계약을 시그니처에서 만날 때. 아래 인라인 섹션.
+- **OOXML XML-shape 타입** — `ExcelXml*Data` / `Excel*Data` 류의 직렬화 구조 타입을 해석할 때. 자세히: [xml-types.md](./xml-types.md)
 
-## 값/주소/형식 타입
+## 값/주소 공통 타입
 
-`./types` 가 노출하는 사용자 대면 값/형식 타입. 셀 값을 다루거나 메서드 시그니처를 해석할 때 참조.
+### ExcelValueType
 
-- `ExcelValueType` = `number | string | DateOnly | DateTime | Time | boolean | undefined` — 셀이 가질 수 있는 값 유니온. `getValue()` 반환·`setValue()` 인자 타입. `undefined` = "값 없음"(읽기 시 빈 셀, 쓰기 시 셀 삭제)이므로 결측을 끝까지 보존한다. `DateOnly`/`DateTime`/`Time` 은 `@simplysm/core-common` 타입이며 셀에 시리얼 숫자 + 날짜 numFmt 로 저장된다.
-- `ExcelNumberFormat` = `"number" | "string" | "DateOnly" | "DateTime" | "Time"` — 숫자형식 프리셋 이름. `"number"` = 일반 수치(numFmtId 0), `"string"` = 텍스트 형식(numFmtId 49), `"DateOnly"`(14)/`"DateTime"`(22)/`"Time"`(18) = 날짜/시간 시리얼 해석·표시. `ExcelStyleOptions.numberFormat` 와 `ExcelUtils` 변환의 공용 단위. 날짜 셀은 값으로 직접 `DateOnly`/`DateTime`/`Time` 을 넣으면 numFmt 가 자동 부여되므로 따로 지정할 필요가 적다.
-- `ExcelCellType` = `"s" | "b" | "str" | "n" | "inlineStr" | "e"` — OOXML 셀 `t` 속성. `"s"` = SharedString 인덱스 참조, `"b"` = boolean(`"1"`/`"0"`), `"str"` = 수식 결과 문자열, `"n"` = 숫자, `"inlineStr"` = 인라인 서식 텍스트, `"e"` = 에러(읽기 시 throw). 보통 `getValue`/`setValue` 가 자동 매핑하므로 외부 생성 파일의 셀 타입을 직접 분기할 때만 참조. 숫자/날짜 셀은 타입 코드가 `null` 이고 스타일 numFmt 로 구분된다.
-- `ExcelAddressPoint` = `{ r: number; c: number }` — 0 기반 행(`r`)·열(`c`) 좌표. 셀 단일 위치 단위. `cell(r, c)` 인덱스와 동일 0 기반.
-- `ExcelAddressRangePoint` = `{ s: ExcelAddressPoint; e: ExcelAddressPoint }` — 범위 좌표. `s` = 시작(좌상단), `e` = 끝(우하단, inclusive). `getRange()` 반환 타입이며 시트 순회 루프 경계로 쓴다.
-- `ExcelBorderPosition` = `"left" | "right" | "top" | "bottom"` — 테두리 적용 변. `ExcelStyleOptions.border` 배열 원소. 4변 전부면 4개를 배열에 모두 넣음.
-- `ExcelHorizontalAlign` = `"center" | "left" | "right"` — 가로 정렬 값. 미지정 시 셀 기본(엑셀 자동).
-- `ExcelVerticalAlign` = `"center" | "top" | "bottom"` — 세로 정렬 값. 미지정 시 셀 기본.
-- `ExcelFontUnderline` = `"single" | "double" | "singleAccounting" | "doubleAccounting"` — 밑줄 종류. OOXML `<u val="...">` 의 val 에 그대로 매핑. 회계용 밑줄이 필요할 때 `*Accounting`.
+```typescript
+type ExcelValueType = number | string | DateOnly | DateTime | Time | boolean | undefined;
+```
 
-## OOXML XML-shape 타입
+- `number` — 셀에 숫자 문자열로 저장되고, 숫자/날짜 형식 판별 결과가 `number` 일 때 `getValue()` 가 반환하는 값.
+- `string` — 공유 문자열(`t="s"`) 또는 문자열 수식 결과(`t="str"`)로 읽고 쓰는 값.
+- `DateOnly` — 셀에는 Excel 날짜 serial 숫자로 쓰고 `DateOnly` 숫자 형식 ID를 함께 적용하는 값.
+- `DateTime` — 셀에는 Excel 날짜/시간 serial 숫자로 쓰고 `DateTime` 숫자 형식 ID를 함께 적용하는 값.
+- `Time` — 셀에는 Excel 시간 serial 숫자로 쓰고 `Time` 숫자 형식 ID를 함께 적용하는 값.
+- `boolean` — 셀 타입 `b` 와 값 `"1"`/`"0"` 으로 저장하고 읽을 때 true/false 로 복원하는 값.
+- `undefined` — 읽기에서는 빈 셀 값, 쓰기에서는 셀 삭제를 의미한다.
 
-`./types` 가 함께 export 하는 다음 인터페이스·타입은 라이브러리 내부 XML 파서/직렬화기가 OOXML 파트의 파싱 결과(`$`=속성, 자식은 단일 원소 배열로 래핑되는 xml2js 스타일)를 표현하는 데이터 모델이다. 일반 사용 흐름(값/스타일/시트 API)에서는 직접 다루지 않으며, OOXML 노드를 직접 조작·검증할 때만 참조한다. 풀이는 각 타입이 표현하는 파트 1줄로 한정.
+### ExcelNumberFormat
 
-- `ExcelXmlContentTypeData` — `[Content_Types].xml` 의 `Types`(Default 확장자 매핑·Override 파트 등록) 구조.
-- `ExcelXmlRelationshipData` / `ExcelRelationshipData` — `*.rels` 의 `Relationships` 컨테이너 및 개별 `Relationship`(Id/Target/Type) 구조.
-- `ExcelXmlWorkbookData` — `xl/workbook.xml` 의 `workbook`(bookViews/sheets 등) 구조.
-- `ExcelXmlWorksheetData` — `xl/worksheets/sheetN.xml` 의 `worksheet`(sheetPr 탭색/dimension/sheetViews 뷰·틀고정/cols 열너비/sheetData 행·셀/autoFilter 헤더 필터/mergeCells/conditionalFormatting/drawing) 구조.
-- `ExcelXmlConditionalFormattingData` / `ExcelXmlCfRuleData` — `<conditionalFormatting sqref="...">` 블록과 `<cfRule>`(type/operator/priority/dxfId/text/formula) 구조. `ExcelXmlCfRuleData["$"]["type"|"operator"]` 인덱스 타입은 규칙 spec 빌드 시 내부에서 참조된다.
-- `ExcelRowData` / `ExcelCellData` — `<row r="..">` 과 `<c r=".." s="스타일ID" t="타입">`(v=값, f=수식, is=인라인 문자열) 구조.
-- `ExcelXmlDrawingData` — `xl/drawings/drawingN.xml` 의 `wsDr`(twoCellAnchor from/to 앵커, pic/blipFill/spPr 이미지 노드) 구조.
-- `ExcelXmlSharedStringData` / `ExcelXmlSharedStringDataSi` / `ExcelXmlSharedStringDataText` — `xl/sharedStrings.xml` 의 `sst` 와 `si` 항목(단순 `t` 또는 서식 run `r[]` 유니온), 텍스트 노드(`space="preserve"` 공백 보존) 구조.
-- `ExcelXmlStyleData` 및 하위(`...Font` / `...Fill` / `...Border` / `...Xf` / `...Dxf`) — `xl/styles.xml` 의 `styleSheet`(numFmts/fonts/fills/borders/cellXfs/dxfs) 와 각 자원 노드 구조.
-- `ExcelXml` = `{ readonly data: unknown; cleanup(): void }` — 모든 XML 파트 래퍼 클래스가 따르는 공통 인터페이스. `data` = 파싱된 노드 트리, `cleanup()` = 직렬화 직전 마무리 정리. 외부에서 구현할 일은 거의 없다.
+```typescript
+type ExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | "Time";
+```
+
+- `"number"` — 내장 numFmtId `0` 으로 변환되는 일반 숫자 형식.
+- `"string"` — 내장 numFmtId `49` 로 변환되는 텍스트 형식.
+- `"DateOnly"` — 내장 numFmtId `14` 로 변환되고 `getValue()` 에서 `DateOnly` 복원에 쓰이는 날짜 형식.
+- `"DateTime"` — 내장 numFmtId `22` 로 변환되고 `getValue()` 에서 `DateTime` 복원에 쓰이는 날짜+시간 형식.
+- `"Time"` — 내장 numFmtId `18` 로 변환되고 `getValue()` 에서 `Time` 복원에 쓰이는 시간 형식.
+
+### ExcelCellType
+
+```typescript
+type ExcelCellType = "s" | "b" | "str" | "n" | "inlineStr" | "e";
+```
+
+- `"s"` — shared string ID를 값으로 저장하는 셀 타입.
+- `"b"` — `"1"`/`"0"` 값을 boolean 으로 읽는 셀 타입.
+- `"str"` — 수식 결과 문자열 값을 그대로 읽는 셀 타입.
+- `"n"` — 값을 `parseFloat` 로 읽는 숫자 셀 타입.
+- `"inlineStr"` — inline string 텍스트를 문자열로 읽는 셀 타입.
+- `"e"` — 에러 값이 들어 있는 셀 타입이며 `getValue()` 가 throw 한다.
+
+### ExcelAddressPoint / ExcelAddressRangePoint
+
+```typescript
+interface ExcelAddressPoint { r: number; c: number }
+interface ExcelAddressRangePoint { s: ExcelAddressPoint; e: ExcelAddressPoint }
+```
+
+- `r` — 0 기반 행 인덱스. A1 주소의 행 숫자와 변환할 때 `+1`/`-1` 된다.
+- `c` — 0 기반 열 인덱스. A1 주소의 열 문자와 변환할 때 `0 = A` 기준으로 계산된다.
+- `s` — 범위 시작 좌표. `stringifyRangeAddr` 의 왼쪽 주소가 된다.
+- `e` — 범위 끝 좌표. 시작과 같으면 범위 문자열은 단일 주소가 된다.
+
+### ExcelXml
+
+```typescript
+interface ExcelXml {
+  readonly data: unknown;
+  cleanup(): void;
+}
+```
+
+- `data` — XML 모델의 원본 구조 트리.
+- `cleanup()` — 직렬화 전 정리용 메서드 계약.

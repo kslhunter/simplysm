@@ -6,9 +6,8 @@ import type { SdConfig, SdPublishConfig } from "../../sd-config.types";
 import { loadSdConfig } from "../../utils/sd-config";
 import { validateTargets } from "../../utils/package-utils";
 import { shellSpawn } from "../../utils/shell-spawn";
+import { collectWorkspacePackages } from "../../utils/workspace-utils";
 import { runBuild } from "../build";
-import { parseWorkspaceGlobs } from "../../deps/replace-deps/replace-deps-resolve";
-import fs from "fs";
 import { ensureSshAuth } from "./storage-publisher";
 import { type PackageJson, upgradeVersion } from "./version-upgrade";
 import { waitWithCountdown } from "./env-utils";
@@ -77,19 +76,8 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const projPkgPath = path.resolve(cwd, "package.json");
   const projPkg = await fsx.readJson<PackageJson>(projPkgPath);
 
-  // pnpm-workspace.yaml에서 워크스페이스 패키지 경로 수집
-  const workspaceYamlPath = path.resolve(cwd, "pnpm-workspace.yaml");
-  const workspaceGlobs: string[] = [];
-  if (await fsx.exists(workspaceYamlPath)) {
-    const yamlContent = await fsx.read(workspaceYamlPath);
-    workspaceGlobs.push(...parseWorkspaceGlobs(yamlContent));
-  }
-
-  const allPkgPaths = (
-    await Promise.all(workspaceGlobs.map((item) => fsx.glob(path.resolve(cwd, item))))
-  )
-    .flat()
-    .filter((item) => fs.existsSync(path.join(item, "package.json")));
+  // package.json#workspaces에서 워크스페이스 패키지 경로 수집
+  const allPkgPaths = collectWorkspacePackages(cwd).map((item) => item.absPath);
 
   // publish 설정이 있는 패키지 필터링
   const publishPackages: Array<{

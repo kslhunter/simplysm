@@ -1,57 +1,80 @@
-# @simplysm/core-node — worker
+# @simplysm/core-node — Worker / createWorker
 
-`worker_threads` 를 타입 안전하게 쓰기 위한 래퍼 (`packages/core-node/src/worker/*`). 워커 파일에서 `createWorker(methods)` 로 메서드 묶음을 만들어 `export default` 하고, 메인에서 `Worker.create<typeof import("./worker")>(path)` 로 프록시를 만들어 `await worker.method(...)` 처럼 호출한다. 메시지 직렬화는 `@simplysm/core-common` 의 `transfer`(Date 등 특수타입·transferList 지원)를 사용. 개발(`.ts`)·프로덕션(`.js`) 양쪽을 자동 분기한다.
+worker_threads 를 메서드 호출 프록시, typed event, stdout 전달 프로토콜로 감쌀 때 읽는 군. 워커 측은 `createWorker`, 메인 측은 `Worker.create` 를 사용한다.
 
-## createWorker (워커 스레드 측)
+## WorkerModule
 
-- `createWorker<TMethods, TEvents>(methods): { send; __methods; __events }` — 워커 스레드 진입 파일에서 호출하고 그 반환을 `export default`. `parentPort` 가 없으면(워커 컨텍스트 아님) `SdError` throw. 메서드 호출 메시지를 수신해 실행 후 결과/에러를 응답하고, 워커의 `process.stdout.write` 를 가로채 메인으로 로그를 전달한다.
-  - `methods: TMethods` (`Record<string, (...args: any[]) => unknown>`) — 워커가 제공할 메서드 맵. 동기/비동기 모두 가능(내부에서 await). 알 수 없는 메서드 호출 시 `SdError("알 수 없는 메서드: ...")` 로 응답, 잘못된 요청 형식이면 `SdError("잘못된 워커 요청 형식: ...")` 응답.
-  - 제네릭 `TEvents extends Record<string, unknown>`(기본 `Record<string, never>`) — 워커가 보낼 이벤트명→데이터 타입 맵(메인의 `on` 타입 추론에 사용).
-  - 반환 `send<K extends keyof TEvents & string>(event, data?): void` — 워커→메인 이벤트 전송. 진행률 등 메서드 반환과 별개의 통지에 사용.
-  - 반환 `__methods` / `__events` — 타입 추론용 마커. 런타임 값이 아니라 `Worker.create<typeof import(...)>` 의 타입에서만 참조됨.
+`interface WorkerModule { default: { __methods: Record<string, (...args: any[]) => unknown>; __events: Record<string, unknown> } }`
 
-```ts
-// worker.ts (워커 스레드 진입)
-import { createWorker } from "@simplysm/core-node";
-interface MyEvents { progress: number; }
-const methods = {
-  calc: (x: number) => { sender.send("progress", 50); return x * 2; },
-};
-const sender = createWorker<typeof methods, MyEvents>(methods);
-export default sender;
-```
+- `default` — 워커 모듈의 default export 구조.
+- `default.__methods: Record<string, (...args: any[]) => unknown>` — 워커가 노출하는 메서드 맵 타입.
+- `default.__events: Record<string, unknown>` — 워커가 보낼 수 있는 이벤트명과 데이터 타입 맵.
 
-## Worker.create (메인 측)
+## PromisifyMethods
 
-- `Worker.create<TModule extends WorkerModule>(filePath, opt?): WorkerProxy<TModule>` — 워커 스레드를 띄우고 메서드 프록시를 반환. 메서드 호출은 메시지로 전달되어 결과가 Promise 로 resolve/reject 된다. 워커 stdout/stderr 는 메인 프로세스로 파이프되며, 워커 비정상 종료(exit code≠0)·error 시 대기 중인 모든 호출이 reject 된다. 로거 태그 `sd-worker`.
-  - `filePath: string` — 워커 파일 경로. `file://` URL 또는 절대 경로. 확장자가 `.ts` 면 dev 모드로 `lib/worker-dev-proxy.js`(tsx 로 TS 동적 로드)를 통해 실행, `.js` 면 직접 실행.
-  - `opt?: Omit<WorkerRawOptions, "stdout" | "stderr">` — worker_threads 옵션(stdout/stderr 는 내부 고정이라 제외). `env` 는 `process.env` 와 병합되어 전달, `argv` 는 dev 모드에서 워커 경로 뒤에 이어 붙는다.
+`type PromisifyMethods<TMethods> = { [K in keyof TMethods]: TMethods[K] extends (...args: infer P) => infer R ? (...args: P) => Promise<Awaited<R>> : never }`
 
-```ts
-// main.ts (메인 측)
-import { Worker } from "@simplysm/core-node";
-const worker = Worker.create<typeof import("./worker")>("./worker.ts");
-worker.on("progress", (p) => console.log(p));
-const result = await worker.calc(10); // 20
-await worker.terminate();
-```
+- `TMethods` — 워커 메서드 맵 타입.
+- 반환 매핑 — 함수 멤버는 같은 인자 `P` 를 받고 `Promise<Awaited<R>>` 를 반환하는 함수가 된다.
+- 비함수 멤버 — 조건 타입의 false 분기 때문에 `never` 가 된다.
 
 ## WorkerProxy
 
-`Worker.create` 반환 프록시. 워커 메서드 + 예약 메서드 3종을 제공.
+`type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<TModule["default"]["__methods"]> & { on(...): void; off(...): void; terminate(): Promise<void> }`
 
-- 메서드 프록시: `TModule["default"]["__methods"]` 의 각 메서드가 `(...args) => Promise<Awaited<R>>` 로 노출(`PromisifyMethods`). 동기 메서드도 postMessage 기반이라 항상 Promise.
-- `on<TEventName>(event, listener): void` — 워커 `send` 이벤트 구독. `event`/`listener` 타입은 `TEvents` 에서 추론.
-- `off<TEventName>(event, listener): void` — 이벤트 구독 해제.
-- `terminate(): Promise<void>` — 워커 종료. 대기 중 호출은 "워커가 종료되었습니다" 로 reject 후 스레드 종료.
+- `TModule extends WorkerModule` — `Worker.create` 에 넘기는 워커 모듈 타입.
+- 메서드 프록시 — `default.__methods` 의 각 함수가 Promise 반환 함수로 노출된다.
+- `on<TEventName>(event, listener): void` — `default.__events` 의 key 를 event 로 받고, 해당 event 데이터 타입을 listener 인자로 받는다.
+- `off<TEventName>(event, listener): void` — 등록 해제용 event 와 listener 를 같은 타입 규칙으로 받는다.
+- `terminate(): Promise<void>` — 워커 종료 요청 메서드.
 
-## 타입
+## WorkerRequest
 
-- `interface WorkerModule { default: { __methods: Record<string, (...args: any[]) => unknown>; __events: Record<string, unknown> } }` — `Worker.create` 의 제네릭 제약. `typeof import("./worker")` 가 이 구조를 만족(=`createWorker` 반환을 default export)해야 한다.
-- `type PromisifyMethods<TMethods>` — 각 메서드 반환을 `Promise<Awaited<R>>` 로 바꾸는 매핑 타입. 함수가 아닌 멤버는 `never`.
-- `type WorkerProxy<TModule>` — 위 프록시 타입(Promise화 메서드 + on/off/terminate).
-- `interface WorkerRequest { id: string; method: string; params: unknown[] }` — 내부 요청 메시지.
-  - `id: string` — 요청 식별자(Uuid). 응답을 대기 중 호출과 매칭하는 키.
-  - `method: string` — 호출할 워커 메서드명.
-  - `params: unknown[]` — 메서드 인자 배열.
-- `type WorkerResponse` — 내부 응답 메시지 union: `return`(결과 body) / `error`(Error body) / `event`(워커 send: event+body) / `log`(stdout 전달 body). 직접 다룰 일은 거의 없음.
+`interface WorkerRequest { id: string; method: string; params: unknown[] }`
+
+- `id: string` — 요청-응답 매칭용 식별자. 메인 측 call 에서 `Uuid.generate().toString()` 으로 만든다.
+- `method: string` — 호출할 워커 메서드명.
+- `params: unknown[]` — 워커 메서드에 전달할 인자 배열.
+
+## WorkerResponse
+
+`type WorkerResponse = return | error | event | log union`
+
+- `{ request: WorkerRequest; type: "return"; body?: unknown }` — 메서드 실행 성공 응답. `body` 는 resolve 값이다.
+- `{ request: WorkerRequest; type: "error"; body: Error }` — 메서드 실행 실패 응답. `body` 는 reject 할 Error 이다.
+- `{ type: "event"; event: string; body?: unknown }` — 워커의 `send` 가 만든 이벤트 응답. 메인 측 EventEmitter 로 emit 된다.
+- `{ type: "log"; body: string }` — 워커 stdout 전달 응답. 메인 측 `process.stdout.write(body)` 로 출력된다.
+
+## createWorker
+
+`function createWorker<TMethods extends Record<string, (...args: any[]) => unknown>, TEvents extends Record<string, unknown> = Record<string, never>>(methods: TMethods): { send<TEventName extends keyof TEvents & string>(event: TEventName, data?: TEvents[TEventName]): void; __methods: TMethods; __events: TEvents }`
+
+- `TMethods` — 워커가 제공할 메서드 맵 타입. 각 값은 함수여야 한다.
+- `TEvents` — 워커가 메인으로 보낼 이벤트 타입 맵. 생략하면 `Record<string, never>`.
+- `methods: TMethods` — 요청의 `method` 값으로 조회되는 실제 함수 맵. 결과는 `await methodFn(...params)` 로 처리된다.
+- 반환 `send(event, data?): void` — `{ type: "event", event, body: data }` 응답을 `transfer.encode` 한 뒤 `parentPort.postMessage` 로 보낸다.
+- 반환 `__methods: TMethods` — `Worker.create<typeof import(...)>` 타입 추론용 필드.
+- 반환 `__events: TEvents` — `WorkerProxy.on/off` 이벤트 타입 추론용 필드.
+- parentPort 조건 — `parentPort == null` 이면 `SdError("이 스크립트는 worker thread에서 실행되어야 합니다 (parentPort 필요).")` 를 throw.
+- stdout 처리 — 워커의 `process.stdout.write` 를 덮어써 문자열 body 를 가진 `log` 응답으로 메인에 전달하고, callback 이 있으면 microtask 로 호출한다.
+- 요청 검증 — 디코딩된 메시지가 object 가 아니거나 `id`, `method`, `params` 필드가 없으면 `id/method` 가 `unknown` 인 `error` 응답을 보낸다.
+- 메서드 없음 — `methods[request.method]` 가 없으면 `SdError("알 수 없는 메서드: ...")` 를 담은 `error` 응답을 보낸다.
+- 실행 실패 — catch 한 값이 Error 이면 그대로, 아니면 `new Error(String(err))` 로 바꿔 `error` 응답을 보낸다.
+
+## Worker.create
+
+`Worker.create<TModule extends WorkerModule>(filePath: string, opt?: Omit<WorkerRawOptions, "stdout" | "stderr">): WorkerProxy<TModule>`
+
+- `TModule extends WorkerModule` — 워커 모듈 타입. 반환 프록시의 메서드·이벤트 타입을 결정한다.
+- `filePath: string` — 워커 파일 경로. JSDoc 기준으로 file:// URL 또는 절대 경로를 받는다. `file://` 로 시작하면 `fileURLToPath` 로 변환한다.
+- `opt?: Omit<WorkerRawOptions, "stdout" | "stderr">` — `worker_threads` 옵션. `stdout` 과 `stderr` 는 내부에서 `true` 로 고정되어 제외된다.
+- `opt.env` — object 인 경우 `process.env` 와 병합되어 워커 env 로 전달된다. object 가 아니면 추가 env 없이 `process.env` 만 전달된다.
+- `opt.argv` — 개발 분기에서 `[workerPath, ...(opt?.argv ?? [])]` 형태로 proxy worker 의 argv 가 된다.
+- 개발 분기 — `path.extname(import.meta.filename) === ".ts"` 이면 `../../lib/worker-dev-proxy.js` 를 WorkerRaw 로 실행하고, 실제 workerPath 는 argv 로 넘긴다.
+- 프로덕션 분기 — 위 조건이 아니면 workerPath 를 직접 WorkerRaw 에 넘긴다.
+- stdout/stderr — 생성된 워커의 stdout 과 stderr 를 각각 메인 `process.stdout`, `process.stderr` 로 pipe 한다.
+- 비정상 종료 — `_isTerminated` 가 아니고 exit code 가 0 이 아니면 `sd-worker` logger 로 error 를 남기고 대기 중 요청을 모두 reject 한다.
+- worker error — `error` 이벤트는 logger 로 출력하고 대기 중 요청을 모두 reject 한다.
+- message 처리 — `transfer.decode` 결과의 `type` 에 따라 event emit, stdout write, pending resolve, pending reject 를 수행한다. `type` 이 없으면 warn 로그 후 무시한다.
+- 반환 프록시 — property 가 `on`, `off`, `terminate` 이면 예약 메서드를 반환하고, 그 외 property 는 `internal.call(prop, args)` 를 실행하는 메서드 프록시가 된다.
+- 예약명 충돌 — 워커 메서드명이 `on`, `off`, `terminate` 이면 프록시 get 분기상 예약 메서드가 우선한다.

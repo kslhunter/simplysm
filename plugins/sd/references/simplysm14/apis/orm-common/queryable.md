@@ -1,186 +1,272 @@
-# @simplysm/orm-common — queryable
+# @simplysm/orm-common — Queryable / Executable / 검색
 
-`db.X()` 가 반환하는 `Queryable` 체이닝으로 SELECT/INSERT/UPDATE/DELETE/UPSERT 쿼리를 구성·실행하는 군. 모든 옵션 메서드는 새 `Queryable` 을 반환하는 불변 체이닝이며, 콜백은 컬럼 프록시(`QueryableRecord`)를 받아 `expr` 표현식을 만든다. 종단 메서드(`execute`/`single`/`count` 등)에서 QueryDef 를 빌드해 `db.executeDefs` 로 실행한다. 프로시저 실행은 `Executable`, 텍스트 검색 파싱은 `parseSearchQuery`.
+`db.X()` 가 반환하는 `Queryable` 로 SELECT·CUD·UPSERT QueryDef를 만들고 실행하거나, `Executable` 로 procedure를 실행하며, 검색 문자열을 LIKE 패턴으로 파싱할 때 같이 읽는 군. 사용법: [orm.md](../../manuals/orm.md), UNION 사용법: [orm-union.md](../../manuals/orm-union.md)
 
-`Queryable<TData, TFrom>` — `TData` 는 결과 행 타입, `TFrom` 은 소스 TableBuilder(CUD 연산에 필요, 커스텀 컬럼/조인 결과는 `never`).
+## Queryable
 
-## SELECT 옵션 (체이닝)
-
-- `select(fn)` — SELECT 컬럼 매핑. `fn` 은 컬럼 프록시를 받아 새 구조(`{ alias: 컬럼/표현식 }`)를 반환. 결과 타입이 매핑 형태로 바뀌고 `TFrom` 은 `never`(이후 CUD 불가). 리터럴 상수도 자동으로 `ExprUnit` 으로 래핑됨.
-- `distinct()` — 중복 행 제거(DISTINCT). 이후 `count()` 는 `wrap()` 필요.
-- `lock()` — 선택 행에 배타적 잠금(FOR UPDATE). 트랜잭션 내에서만 의미.
-- `top(count)` — 상위 N행. ORDER BY 없이도 가능.
-- `limit(skip, take)` — OFFSET/LIMIT 페이지네이션. **먼저 `orderBy()` 가 있어야 함**(없으면 throw).
-- `orderBy(fnOrKey, dir?)` — 정렬 추가(여러 번 누적). `fnOrKey` 는 컬럼 반환 함수 또는 체인 경로 문자열(`"id"`, `"user.name"` — `obj.getChainValue` 로 해석). `dir` 기본 `ASC`.
-
-```typescript
-const users = await db.user()
-  .select((u) => ({ userName: u.name, userEmail: u.email }))
-  .orderBy((u) => u.createdAt, "DESC")
-  .limit(0, 20)
-  .execute();
-```
-
-## WHERE / 검색
-
-- `where(predicate)` — 조건 배열을 반환하는 콜백. 여러 번 호출 시 AND 누적. 배열 안 여러 조건도 AND.
-- `search(fn, searchText)` — `fn` 이 반환한 문자열 컬럼들에 텍스트 검색을 적용. 구문은 `parseSearchQuery` 규칙(공백=OR, `+`=필수, `-`=제외, `"..."`=구문, `*`=와일드카드). 빈 검색어면 그대로 반환. 내부적으로 `LOWER(col) LIKE pattern` 조합.
-
-```typescript
-db.user()
-  .where((u) => [expr.eq(u.isActive, true)])
-  .search((u) => [u.name, u.email], "John Doe -withdrawn");
-```
-
-## GROUP BY / HAVING
-
-- `groupBy(fn)` — 그룹화 컬럼 배열 반환. 반환 `TFrom` 은 `never`.
-- `having(predicate)` — GROUP BY 이후 필터(여러 번 누적, AND). 반환 `TFrom` 은 `never`.
-
-```typescript
-db.order()
-  .select((o) => ({ userId: o.userId, total: expr.sum(o.amount) }))
-  .groupBy((o) => [o.userId])
-  .having((o) => [expr.gte(o.total, 10000)]);
-```
-
-## JOIN
-
-- `join(as, fn)` — 1:N LEFT JOIN. 결과에 `as` 프로퍼티가 **배열**로 추가됨. `fn(qr, cols)` 의 `qr.from(Table)` 로 조인 대상을 잡고 `where` 로 조건을 건다.
-- `joinSingle(as, fn)` — N:1/1:1 LEFT JOIN. 결과에 `as` 가 **단일 객체(optional)** 로 추가됨. 집계·도출 컬럼을 outer 행에 부착하는 표준 수단(orm.md: SELECT 절 subquery/exists 금지).
-- `include(fn)` — TableBuilder 의 FK/FKT 관계를 자동 JOIN. `fn` 은 타입 안전 path proxy 를 받아 관계 경로를 지정(`(p) => p.user.company` → 다단계). 비-컬럼(관계) 필드만 접근 가능. 관계 미정의 시 throw, TableBuilder 기반이 아니면 throw. 같은 경로 중복 호출은 무시.
-
-`join`/`joinSingle` 의 `fn` 첫 인자 `qr`(`JoinQueryable`)는 `from(Table)` / `select(columns)` / `union(...queries)` 를 제공한다.
-
-```typescript
-db.post().include((p) => p.user.company);
-
-db.product()
-  .joinSingle("state", (q, p) =>
-    q.from(StockLine).where((x) => [expr.eq(x.productId, p.id)])
-      .select((x) => ({ sumQty: expr.sum(x.qty), cnt: expr.count() })),
-  )
-  .select((p) => ({ id: p.id, totalQty: expr.coalesce(p.state!.sumQty, 0) }));
-```
-
-## 서브쿼리 / UNION / 재귀 CTE
-
-- `wrap()` — 현재 Queryable 을 서브쿼리(파생 테이블)로 감쌈. `distinct()`/`groupBy()` 이후 `count()` 호출 전에 필요.
-- `Queryable.union(...queries)` (static) — 2개 이상 Queryable 을 UNION(중복 제거). **2개 미만이면 `ArgumentError`**. 첫 쿼리의 컬럼 구조를 기준으로 alias 변환. 결과는 파생 테이블이라 이후 fluent 연산은 외부에 적용됨(예시 스타일은 orm-union.md).
-- `recursive(fn)` — WITH RECURSIVE CTE. `fn(cte)` 의 `cte.from(Table)`/`cte.select(...)`/`cte.union(...)` 로 재귀 본문 정의. 재귀 대상에 `self` 프로퍼티(베이스 행 참조)가 추가됨. 계층(조직도·트리) 조회용.
-
-```typescript
-const combined = Queryable.union(
-  db.user().where((u) => [expr.eq(u.type, "admin")]),
-  db.user().where((u) => [expr.eq(u.type, "manager")]),
-);
-
-db.employee()
-  .where((e) => [expr.null(e.managerId)])
-  .recursive((cte) => cte.from(Employee).where((e) => [expr.eq(e.managerId, e.self[0].id)]));
-```
-
-## 실행 — SELECT 종단
-
-- `execute(): Promise<TData[]>` — SELECT 실행, 결과 배열 반환.
-- `single(): Promise<TData | undefined>` — 단일 결과. 2건 이상이면 `ArgumentError`.
-- `first(): Promise<TData | undefined>` — 첫 결과만(`top(1)`).
-- `count(fn?): Promise<number>` — 행 수. `fn` 으로 특정 컬럼 카운트. `distinct()`/`groupBy()` 직후 호출 시 throw(먼저 `wrap()`). 결과 없으면 0.
-- `exists(): Promise<boolean>` — 조건에 맞는 행 존재 여부(`top(1)` 후 길이 검사).
-- `getSelectQueryDef(): SelectQueryDef` — 빌드된 SELECT AST. `getResultMeta(outputColumns?)` — 결과 파싱용 `ResultMeta`.
-
-```typescript
-const total = await db.user().where((u) => [expr.eq(u.isActive, true)]).count();
-const user = await db.user().where((u) => [expr.eq(u.id, 1)]).single();
-```
-
-## 실행 — INSERT (TableBuilder 기반만)
-
-- `insert(records)` / `insert(records, outputColumns)` — 레코드 배열 삽입. MSSQL 1000행 제한 때문에 1000개 단위 청크로 분할. `outputColumns` 지정 시 삽입된 레코드 배열 반환(`Pick<columns, K>[]`). 빈 배열이면 즉시 반환. AI 컬럼에 명시값이 있으면 자동 `overrideIdentity`.
-- `insertIfNotExists(record)` / `(record, outputColumns)` — WHERE 조건에 맞는 데이터가 없을 때만 단건 삽입. `outputColumns` 지정 시 단건 반환.
-- `insertInto(targetTable)` / `(targetTable, outputColumns)` — 현재 SELECT 결과를 다른 테이블에 INSERT(INSERT INTO ... SELECT). 대상 테이블 컬럼이 현재 데이터와 호환되어야 함(타입 제약).
-- `getInsertQueryDef` / `getInsertIfNotExistsQueryDef` / `getInsertIntoQueryDef` — 각 AST 생성기.
-
-```typescript
-const [inserted] = await db.user().insert([{ name: "Gildong Hong" }], ["id"]);
-
-await db.user()
-  .where((u) => [expr.eq(u.email, "t@t.com")])
-  .insertIfNotExists({ name: "t", email: "t@t.com" });
-```
-
-## 실행 — UPDATE / DELETE / UPSERT (TableBuilder 기반만)
-
-- `update(recordFwd)` / `(recordFwd, outputColumns)` — `recordFwd(cols)` 가 갱신 컬럼/값을 반환. 값은 `ExprInput`(리터럴 직접 가능). `outputColumns` 지정 시 갱신된 레코드 배열 반환. WHERE/JOIN/limit 가 함께 반영됨.
-- `delete()` / `delete(outputColumns)` — DELETE. `outputColumns` 지정 시 삭제된 레코드 배열 반환.
-- `upsert(updateFn)` / `upsert(updateFn, insertFn?, outputColumns?)` — WHERE 매칭 시 UPDATE, 아니면 INSERT(MERGE). `insertFn(updateRecord)` 미지정 시 update 와 동일 데이터로 삽입. `insertFn` 은 update 레코드를 인자로 받아 변형 가능.
-- `getUpdateQueryDef` / `getDeleteQueryDef` / `getUpsertQueryDef` — AST 생성기.
-- `switchFk(enabled)` — 이 Queryable 소스 테이블의 FK 제약 활성/비활성(트랜잭션 내 가능).
-
-```typescript
-await db.user().where((u) => [expr.eq(u.id, 1)]).update((u) => ({ name: "새이름" }));
-
-await db.user().where((u) => [expr.eq(u.isExpired, true)]).delete(["id", "name"]);
-
-await db.user()
-  .where((u) => [expr.eq(u.email, "t@t.com")])
-  .upsert(() => ({ loginCount: 1 }), (update) => ({ ...update, email: "t@t.com" }));
-```
-
-## Executable (프로시저 실행)
-
-`DbContext.executable(Procedure)` 가 반환하는 팩토리(`db.getUserById()`)가 `Executable` 을 만든다.
-
-```typescript
-class Executable<TParams, TReturns> {
-  execute(params: InferColumnExprs<TParams>): Promise<InferColumnExprs<TReturns>[][]>;
-  getExecProcQueryDef(params?): ExecProcQueryDef;
+```ts
+class Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any> | never> {
+  readonly meta: QueryableMeta<TData>;
+  constructor(meta: QueryableMeta<TData>);
 }
-function executable(db, builder): () => Executable;
 ```
 
-- `execute(params)` — 프로시저 실행. 파라미터는 `ExprInput`(리터럴 또는 `ExprUnit`). 결과는 다중 결과셋(`행[][]`). 파라미터 없는 프로시저에 params 를 주면 throw.
+- `TData` — SELECT 결과 행 타입. `select`/`join`/`include`/`wrap`/`union` 체이닝이 이 타입을 바꾼다.
+- `TFrom` — CUD 대상 TableBuilder 타입. `select`/집계/union 등 CUD 대상이 아닌 Queryable은 `never` 로 바뀐다.
+- `meta` — QueryDef 생성을 위한 내부 상태. public readonly지만 구조 타입은 export되지 않는다.
 
-```typescript
-const [rows] = await db.getUserById().execute({ userId: 1n });
+## Queryable SELECT 옵션
+
+```ts
+select<R extends Record<string, any>>(fn: (columns: QueryableRecord<TData>) => R): Queryable<UnwrapQueryableRecord<R>, never>;
+distinct(): Queryable<TData, never>;
+lock(): Queryable<TData, TFrom>;
+top(count: number): Queryable<TData, TFrom>;
+limit(skip: number, take: number): Queryable<TData, TFrom>;
+orderBy(fnOrKey: string | ((columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>), orderBy?: "ASC" | "DESC"): Queryable<TData, TFrom>;
 ```
 
-## 검색 파서 — parseSearchQuery
+- `select(fn)` — SELECT column 구조를 새로 지정한다. callback 반환 객체의 `ExprUnit` 은 값 타입으로, primitive literal은 literal 타입으로 역변환된다.
+- `fn.columns` — 현재 결과 구조의 column proxy. primitive field는 `ExprUnit`, 객체/배열 관계는 재귀 proxy.
+- `distinct()` — `meta.distinct = true` 를 설정한다. 이후 `count()` 를 직접 호출하면 throw한다.
+- `lock()` — `meta.lock = true` 를 설정한다. SQL 렌더러는 SELECT 잠금 구문을 붙인다.
+- `top(count)` — `meta.top = count` 를 설정한다.
+- `count: number` — 상위 N행 개수.
+- `limit(skip, take)` — `meta.limit = [skip, take]` 를 설정한다. `orderBy` 가 없으면 throw한다.
+- `skip: number` — 건너뛸 행 수.
+- `take: number` — 가져올 행 수.
+- `orderBy(fnOrKey, orderBy?)` — 정렬 조건을 누적한다.
+- `fnOrKey: string` — `obj.getChainValue(columns, fnOrKey, true)` 로 column proxy를 찾는 chain path.
+- `fnOrKey: (columns) => ExprUnit` — 정렬 expression을 직접 반환하는 callback.
+- `orderBy?: "ASC"|"DESC"` — 정렬 방향. 미지정이면 QueryDef tuple에 방향을 넣지 않는다.
+- `"ASC"` — 오름차순 정렬.
+- `"DESC"` — 내림차순 정렬.
 
-```typescript
+## Queryable WHERE / GROUP / JOIN
+
+```ts
+where(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, TFrom>;
+search(fn: (columns: QueryableRecord<TData>) => ExprUnit<string | undefined>[], searchText: string): Queryable<TData, TFrom>;
+groupBy(fn: (columns: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>[]): Queryable<TData, never>;
+having(predicate: (columns: QueryableRecord<TData>) => WhereExprUnit[]): Queryable<TData, never>;
+join<A extends string, R extends DataRecord>(as: A, fn: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>): Queryable<TData & { [K in A]?: R[] }, TFrom>;
+joinSingle<A extends string, R extends DataRecord>(as: A, fn: (qr: JoinQueryable, cols: QueryableRecord<TData>) => Queryable<R, any>): Queryable<Omit<TData, A> & { [K in A]?: R }, TFrom>;
+include(fn: (item: PathProxy<TData>) => PathProxy<unknown>): Queryable<TData, TFrom>;
+```
+
+- `where(predicate)` — 조건 배열을 `meta.where` 에 누적한다. 여러 `where` 호출 결과는 배열로 이어진다.
+- `predicate.columns` — 현재 column proxy.
+- `search(fn, searchText)` — `searchText.trim() === ""` 이면 현재 Queryable을 그대로 반환한다.
+- `fn` — 검색 대상 문자열 column 배열을 반환한다.
+- `searchText` — `parseSearchQuery` 로 `or`/`must`/`not` LIKE 패턴으로 파싱된다.
+- `search` OR terms — 각 term은 지정 column 중 하나라도 `lower(column) LIKE pattern` 이면 매칭된다.
+- `search` MUST terms — 각 term마다 지정 column 중 하나 이상이 매칭되어야 한다.
+- `search` NOT terms — 지정 column 어느 곳에도 매칭되지 않아야 한다.
+- `groupBy(fn)` — GROUP BY expression 배열을 설정하고 CUD 대상 타입을 `never` 로 바꾼다.
+- `having(predicate)` — HAVING 조건 배열을 `meta.having` 에 누적한다.
+- `join(as, fn)` — LEFT OUTER JOIN 결과를 `as?: R[]` 배열 relation으로 추가한다.
+- `joinSingle(as, fn)` — LEFT OUTER JOIN 결과를 `as?: R` 단일 relation으로 추가한다. 기존 `TData` 의 같은 key는 제거 후 대체된다.
+- `as: string` — 결과에 추가할 relation property 이름이자 join alias 경로 일부.
+- `fn.qr` — `from`/`select`/`union` 으로 join 대상 Queryable을 만드는 JoinQueryable.
+- `fn.cols` — parent Queryable column proxy.
+- `include(fn)` — TableBuilder 관계 메타를 따라 자동 JOIN을 추가한다.
+- `fn.item: PathProxy<TData>` — primitive field를 제외한 relation key만 접근 가능한 path proxy.
+- `include` FK/RelationKey — N:1 관계를 `joinSingle` 로 추가한다.
+- `include` FKTarget/RelationKeyTarget — `isSingle === true` 면 `joinSingle`, 아니면 `join` 으로 추가한다.
+- `include` 오류 — TableBuilder 기반이 아니면 throw, relation 이름이 없으면 throw, 역참조 relationName이 대상 table에 없거나 FK/RelationKey가 아니면 throw한다.
+
+## JoinQueryable / RecursiveQueryable callback API
+
+```ts
+// join/joinSingle callback의 qr
+from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$inferSelect"], T>;
+select<R extends DataRecord>(columns: QueryableRecord<R>): Queryable<R, never>;
+union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData, never>;
+
+// recursive callback의 qr
+from<T extends TableBuilder<any, any>>(table: T): Queryable<T["$inferSelect"] & { self?: TBaseData[] }, T>;
+select<R extends DataRecord>(columns: QueryableRecord<R>): Queryable<R & { self?: TBaseData[] }, never>;
+union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData & { self?: TBaseData[] }, never>;
+```
+
+- `from(table)` — 전달된 join/CTE alias로 TableBuilder queryable을 만든다.
+- `select(columns)` — 직접 만든 column record를 가진 custom Queryable을 만든다.
+- `union(...queries)` — 최소 2개 queryable을 UNION ALL source로 결합한다. 2개 미만이면 `ArgumentError`.
+- `recursive` callback 결과 — `self?: TBaseData[]` relation을 포함해 재귀 CTE self 참조를 표현한다.
+
+## Queryable subquery / union / recursive
+
+```ts
+wrap(): Queryable<TData, never>;
+static union<TData extends DataRecord>(...queries: Queryable<TData, any>[]): Queryable<TData, never>;
+recursive(fn: (qr: RecursiveQueryable<TData>) => Queryable<TData, any>): Queryable<TData, never>;
+```
+
+- `wrap()` — 현재 Queryable을 subquery FROM으로 감싸고 새 alias를 부여한다. `distinct`/`groupBy` 이후 `count()` 직접 호출이 막혀 있을 때 필요하다.
+- `Queryable.union(...queries)` — 최소 2개 Queryable을 UNION ALL source 배열로 저장한다. 2개 미만이면 `ArgumentError`.
+- `queries` — 같은 `TData` shape의 Queryable 목록. SQL 렌더러는 `from` 배열을 `UNION ALL` 로 렌더링한다.
+- `recursive(fn)` — base query와 recursive query를 `with: { name, base, recursive }` 로 저장한다.
+- `fn` — `RecursiveQueryable<TData>` 를 받아 recursive part Queryable을 반환한다.
+
+## Queryable SELECT 실행 / QueryDef
+
+```ts
+execute(): Promise<TData[]>;
+single(): Promise<TData | undefined>;
+first(): Promise<TData | undefined>;
+count(fn?: (cols: QueryableRecord<TData>) => ExprUnit<ColumnPrimitive>): Promise<number>;
+exists(): Promise<boolean>;
+getSelectQueryDef(): SelectQueryDef;
+getResultMeta(outputColumns?: string[]): ResultMeta;
+```
+
+- `execute()` — `getSelectQueryDef()` 와 `getResultMeta()` 를 `executeDefs` 에 넘기고 첫 result set을 반환한다.
+- `single()` — 결과가 2개 이상이면 `ArgumentError`, 0개면 `undefined`, 1개면 해당 row.
+- `first()` — `top(1).execute()` 의 첫 row를 반환한다.
+- `count(fn?)` — `select({ cnt: expr.count(...) }).single()` 로 row 수를 구하고 결과가 없으면 0.
+- `fn` — count 대상 column expression. 없으면 `COUNT(*)`.
+- `count` 제한 — `distinct` 또는 `groupBy` 직후에는 throw하고 `wrap()` 후 호출하라는 메시지를 낸다.
+- `exists()` — `top(1).execute()` 결과 길이가 0보다 크면 `true`.
+- `getSelectQueryDef()` — 현재 meta를 `SelectQueryDef` AST로 변환한다.
+- `getResultMeta(outputColumns?)` — column type과 join 단일/배열 정보를 만든다.
+- `outputColumns?: string[]` — 지정 시 해당 full key만 ResultMeta columns에 포함한다.
+
+## Queryable INSERT
+
+```ts
+insert(records: TFrom["$inferInsert"][]): Promise<void>;
+insert<K extends keyof TFrom["$inferColumns"] & string>(records: TFrom["$inferInsert"][], outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+insertIfNotExists(record: TFrom["$inferInsert"]): Promise<void>;
+insertIfNotExists<K extends keyof TFrom["$inferColumns"] & string>(record: TFrom["$inferInsert"], outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>>;
+insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>>(targetTable: TTable): Promise<void>;
+insertInto<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>, TOut extends keyof TTable["$inferColumns"] & string>(targetTable: TTable, outputColumns: TOut[]): Promise<Pick<TData, TOut>[]>;
+getInsertQueryDef(records: TFrom["$inferInsert"][], outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): InsertQueryDef;
+getInsertIfNotExistsQueryDef(record: TFrom["$inferInsert"], outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): InsertIfNotExistsQueryDef;
+getInsertIntoQueryDef<TTable extends TableBuilder<any, DataToColumnBuilderRecord<TData>>>(targetTable: TTable, outputColumns?: (keyof TTable["$inferColumns"] & string)[]): InsertIntoQueryDef;
+```
+
+- `records` — 삽입할 row 배열. `insert` 는 빈 배열이면 outputColumns가 있을 때 `[]`, 없을 때 `undefined` 를 반환한다.
+- `insert` chunk — MSSQL row limit 대응으로 1000개 단위로 나누어 실행한다.
+- `outputColumns?: K[]` — 지정하면 삽입/조건부 삽입/insertInto 결과 column을 반환한다.
+- `record` — `insertIfNotExists` 로 삽입할 단일 row.
+- `insertIfNotExists` — 현재 SELECT 조건을 `existsSelectQuery` 로 사용해 존재하지 않을 때만 삽입하는 QueryDef를 만든다.
+- `targetTable` — 현재 SELECT 결과 primitive shape와 호환되는 TableBuilder.
+- `insertInto` — 현재 SELECT 결과를 대상 table에 INSERT INTO SELECT 한다.
+- `getInsertQueryDef` — autoIncrement column에 명시값이 있으면 `overrideIdentity` 와 `aiColName` 을 설정한다.
+- `getInsertIfNotExistsQueryDef` — 현재 SelectQueryDef에서 `select` 를 제거한 exists query를 포함한다.
+- `getInsertIntoQueryDef` — `recordsSelectQuery` 로 현재 SelectQueryDef를 포함한다.
+
+## Queryable UPDATE / DELETE / UPSERT
+
+```ts
+update(recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>): Promise<void>;
+update<K extends keyof TFrom["$inferColumns"] & string>(recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>, outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+delete(): Promise<void>;
+delete<K extends keyof TFrom["$inferColumns"] & string>(outputColumns: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+upsert(updateFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>): Promise<void>;
+upsert<K extends keyof TFrom["$inferColumns"] & string>(insertFn: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferInsert"]>, outputColumns?: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+upsert<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(updateFn: (cols: QueryableRecord<TData>) => U, insertFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>): Promise<void>;
+upsert<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>, K extends keyof TFrom["$inferColumns"] & string>(updateFn: (cols: QueryableRecord<TData>) => U, insertFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>, outputColumns?: K[]): Promise<Pick<TFrom["$inferColumns"], K>[]>;
+getUpdateQueryDef(recordFwd: (cols: QueryableRecord<TData>) => QueryableWriteRecord<TFrom["$inferUpdate"]>, outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): UpdateQueryDef;
+getDeleteQueryDef(outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): DeleteQueryDef;
+getUpsertQueryDef<U extends QueryableWriteRecord<TFrom["$inferUpdate"]>>(updateRecordFn: (cols: QueryableRecord<TData>) => U, insertRecordFn: (updateRecord: U) => QueryableWriteRecord<TFrom["$inferInsert"]>, outputColumns?: (keyof TFrom["$inferColumns"] & string)[]): UpsertQueryDef;
+```
+
+- `recordFwd` — 현재 column proxy를 받아 update할 column/value expression record를 반환한다.
+- `outputColumns` — 지정하면 affected row의 해당 column 배열을 반환한다.
+- `delete(outputColumns?)` — 현재 where/join/top/limit 조건을 가진 delete QueryDef를 실행한다.
+- `upsert` — 현재 SELECT 조건으로 존재 여부를 판단해 있으면 update, 없으면 insert하는 QueryDef를 만든다.
+- `updateFn` — update record 생성 함수.
+- `insertFn` — insert record 생성 함수. 생략된 overload에서는 updateFn 결과를 insert record로도 사용한다.
+- `insertFn(updateRecord)` — `updateFn` 이 만든 raw update record를 받아 insert record를 만든다.
+- `getUpdateQueryDef` — table/as/record/top/where/joins/limit/output을 만든다.
+- `getDeleteQueryDef` — table/as/top/where/joins/limit/output을 만든다.
+- `getUpsertQueryDef` — 현재 SelectQueryDef에서 `select` 를 제거한 exists query와 updateRecord/insertRecord를 만든다.
+- CUD source 제한 — source가 TableBuilder가 아니거나 table columns가 없으면 CUD helper가 throw한다.
+
+## Queryable DDL helper
+
+```ts
+switchFk(enabled: boolean): Promise<void>;
+```
+
+- `enabled: boolean` — `true` 는 FK 활성화, `false` 는 FK 비활성화.
+- `switchFk` — source가 TableBuilder 또는 ViewBuilder가 아니면 throw하고, DbContext `switchFk(objectName, enabled)` 에 위임한다.
+
+## queryable factory
+
+```ts
+function queryable<TBuilder extends TableBuilder<any, any> | ViewBuilder<any, any, any>>(
+  db: DbContextBase,
+  tableOrView: TBuilder,
+  as?: string,
+): () => Queryable<TBuilder["$inferSelect"], TBuilder extends TableBuilder<any, any> ? TBuilder : never>;
+```
+
+- `db` — alias 발급, object name 해석, QueryDef 실행에 쓰는 DbContextBase.
+- `tableOrView` — TableBuilder 또는 ViewBuilder source.
+- `as?: string` — alias override. 미지정이면 `db.getNextAlias()` 로 새 alias를 받는다.
+- TableBuilder source — columns meta를 `expr.col(type, alias, key)` proxy로 바꾼다.
+- ViewBuilder source — `viewFn(db)` 의 columns를 새 alias로 변환한다.
+- 유효하지 않은 meta — Table columns 또는 View viewFn을 만들 수 없으면 throw한다.
+
+## Queryable 타입 유틸리티 / PathProxy
+
+```ts
+type QueryableRecord<TData extends DataRecord> = { [K in keyof TData]: ... };
+type QueryableWriteRecord<TData> = { [K in keyof TData]: TData[K] extends ColumnPrimitive ? ExprInput<TData[K]> : never };
+type UnwrapQueryableRecord<R> = { [K in keyof R as K extends symbol ? never : K]: ... };
+type PathProxy<TObject> = { [K in keyof TObject as TObject[K] extends ColumnPrimitive ? never : K]-?: PathProxy<UnwrapArray<TObject[K]>> } & { readonly [PATH_SYMBOL]: string[] };
+function getMatchedPrimaryKeys(fkCols: string[], targetTable: TableBuilder<any, any>): string[];
+```
+
+- `QueryableRecord` — query callback에서 쓰는 column proxy 타입. primitive는 `ExprUnit<T>`, object/array relation은 재귀 proxy.
+- `QueryableWriteRecord` — update/upsert write record 타입. primitive field만 `ExprInput<T>` 를 허용한다.
+- `UnwrapQueryableRecord` — `select` callback 반환에서 `ExprUnit<T>` 를 `T` 로, 중첩 객체/배열을 재귀적으로 DataRecord로 바꾼다.
+- `PathProxy` — `include` path 수집용 타입. primitive field는 접근 대상에서 제외된다.
+- `fkCols: string[]` — FK column 이름 배열.
+- `targetTable` — PK를 읽을 대상 TableBuilder.
+- `getMatchedPrimaryKeys` — 대상 table primaryKey가 없거나 FK/PK 길이가 다르면 throw하고, 맞으면 PK column 배열을 반환한다.
+
+## Executable / executable
+
+```ts
+class Executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord> {
+  constructor(db: DbContextBase, builder: ProcedureBuilder<TParams, TReturns>);
+  getExecProcQueryDef(params?: InferColumnExprs<TParams>): ExecProcQueryDef;
+  execute(params: InferColumnExprs<TParams>): Promise<InferColumns<TReturns>[][]>;
+}
+function executable<TParams extends ColumnBuilderRecord, TReturns extends ColumnBuilderRecord>(db: DbContextBase, builder: ProcedureBuilder<TParams, TReturns>): () => Executable<TParams, TReturns>;
+```
+
+- `db` — procedure object name 기본 database/schema와 execution 위임에 쓰는 DbContextBase.
+- `builder` — ProcedureBuilder meta(params/returns/query/name)를 가진 procedure 정의.
+- `params?: InferColumnExprs<TParams>` — procedure parameter expression record. params를 넘겼는데 builder meta.params가 없으면 throw한다.
+- `getExecProcQueryDef` — `type: "execProc"`, procedure object name, parameter expression map을 만든다.
+- `execute(params)` — ExecProcQueryDef 1개를 `db.executeDefs` 에 넘기고 반환 result set 배열을 그대로 반환한다.
+- `executable(db, builder)` — 호출할 때마다 새 `Executable` 을 반환하는 factory를 만든다.
+
+## parseSearchQuery / ParsedSearchQuery
+
+```ts
+interface ParsedSearchQuery {
+  or: string[];
+  must: string[];
+  not: string[];
+}
 function parseSearchQuery(searchText: string): ParsedSearchQuery;
-interface ParsedSearchQuery { or: string[]; must: string[]; not: string[]; } // 각각 LIKE 패턴
 ```
 
-검색 문자열을 SQL LIKE 패턴으로 파싱. `Queryable.search()` 내부에서 사용하지만 직접도 가능.
-
-| 구문 | 의미 |
-| ---- | ---- |
-| `term1 term2` | OR (하나 이상 일치) → `or` |
-| `+term` | 필수 포함(AND) → `must` |
-| `-term` | 제외(NOT) → `not` |
-| `"exact phrase"` | 정확한 구문(필수) → `must` |
-| `term*` / `*term` / `a*ple` | 와일드카드 `%` 로 변환(접두/접미/중간 일치) |
-| 와일드카드 없는 `term` | `%term%` (부분 문자열) |
-
-이스케이프: `\\` `\*` `\%` `\"` `\+` `\-` 는 각 리터럴 문자. 닫히지 않은 따옴표는 따옴표 포함 일반 텍스트로 처리.
-
-```typescript
-parseSearchQuery('apple "delicious fruit" -banana +strawberry');
-// { or: ["%apple%"], must: ["%delicious fruit%", "%strawberry%"], not: ["%banana%"] }
-```
-
-## 관련 타입 / 헬퍼 export
-
-- `QueryableRecord<TData>` — 컬럼이 `ExprUnit` 으로 래핑된 프록시 타입(콜백 인자).
-- `QueryableWriteRecord<TData>` — 쓰기(update/upsert) 값 레코드(`ExprInput`).
-- `UnwrapQueryableRecord<R>` — `select` 결과를 다시 데이터 타입으로 역변환.
-- `PathProxy<TObject>` — `include()` 의 타입 안전 경로 프록시(관계 필드만 접근).
-- `queryable(db, tableOrView, as?)` — Table/View 용 Queryable 팩토리 함수(`DbContext.queryable` 의 기반).
-- `getMatchedPrimaryKeys(fkCols, targetTable)` — FK 컬럼 배열과 대상 PK 매칭(개수 불일치 시 throw, include 내부용).
-
-## 주의사항
-
-- CUD(insert/update/delete/upsert)·`insertInto` 는 `TFrom` 이 살아있는(=`select`/`groupBy`/join 결과가 아닌) TableBuilder 기반 Queryable 에서만. 아니면 throw.
-- 도출 컬럼 위 필터·정렬은 `wrap()` 없이 `.select(...).where(...)` 로 — framework 가 projected AST 를 inline(orm.md). `wrap()` 은 `distinct`/`groupBy` 후 `count` 처럼 명시 요구 시에만.
-- where 비교·CUD 값은 리터럴 그대로 — `expr.val` 로 감싸지 말 것(orm.md). `expr.val` 은 `select` 에서 상수 컬럼 만들 때처럼 `ExprUnit` 이 요구되는 자리에서만.
+- `or: string[]` — 일반 검색어 LIKE 패턴. 공백 token 기본 대상.
+- `must: string[]` — 필수 포함 LIKE 패턴. `+term` 또는 따옴표 phrase가 들어간다.
+- `not: string[]` — 제외 LIKE 패턴. `-term` 이 들어간다.
+- `searchText: string` — 검색 쿼리 문자열. trim 결과가 빈 문자열이면 세 배열 모두 빈 배열.
+- `term1 term2` — 각 term을 `or` 에 넣는다.
+- `+term` — `term` 을 `must` 에 넣는다.
+- `-term` — `term` 을 `not` 에 넣는다.
+- `"exact phrase"` — 따옴표 내부를 `must` 에 넣는다.
+- `*` — SQL LIKE `%` wildcard로 바꾼다. wildcard가 없으면 term 양쪽에 `%` 를 붙인다.
+- `\\`, `\*`, `\%`, `\"`, `\+`, `\-` — backslash, 별표, percent, 따옴표, plus, minus literal 이스케이프.
+- 미정의 `\x` 이스케이프 — backslash를 제거하고 `x` literal로 처리한다.
+- 닫히지 않은 따옴표 — 따옴표를 포함한 일반 token으로 처리된다.
+- LIKE 특수 문자 escape — backslash, `%`, `_`, `[` 는 SQL LIKE pattern 안에서 escape 처리된다.

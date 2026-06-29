@@ -51,10 +51,10 @@ describe("watchReplaceDeps onChanged", () => {
     await fs.promises.mkdir(targetDir, { recursive: true });
     await fs.promises.writeFile(path.join(targetDir, "index.ts"), "export const v = 1;");
 
-    // pnpm-workspace.yaml
+    // package.json#workspaces
     await fs.promises.writeFile(
-      path.join(tmpDir, "project", "pnpm-workspace.yaml"),
-      "packages:\n",
+      path.join(tmpDir, "project", "package.json"),
+      JSON.stringify({ private: true, workspaces: [] }),
     );
   });
 

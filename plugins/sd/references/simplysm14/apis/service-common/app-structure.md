@@ -1,6 +1,6 @@
-# @simplysm/service-common — app-structure
+# @simplysm/service-common — AppStructure
 
-앱의 메뉴 트리·화면 권한·기능 모듈 on/off 를 한 배열(`AppStructureItem[]`)로 정의하는 타입과, 그 배열에서 평탄 권한 목록을 뽑거나 모듈 활성 여부를 판정하는 유틸. 메뉴를 정의할 때(타입)와 권한 페이지·메뉴 필터를 구성할 때(유틸) 같이 읽힌다. 공통 패키지에 클라이언트별 배열 상수를 두고 앱 부트스트랩에서 연결하는 패턴은 매뉴얼 `manuals/client-app-structure.md` 참조.
+앱 구조 항목 타입과, 항목 배열에서 모듈 조건을 판정하고 권한 코드를 평탄화하는 유틸 묶음이다. 사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
 
 ## AppStructureItem
 
@@ -8,11 +8,11 @@
 type AppStructureItem<TModule = unknown> = AppStructureGroupItem<TModule> | AppStructureLeafItem<TModule>
 ```
 
-메뉴 항목의 합집합 타입. `children` 을 가지면 그룹, 아니면 화면(leaf). `TModule` 은 기능 모듈 식별자 타입(보통 문자열 리터럴 유니언). 미지정 시 `unknown`.
+- `TModule = unknown` — `modules`/`requiredModules`/`modulesChain` 에 쓰이는 모듈 식별자 타입.
+- `AppStructureGroupItem<TModule>` — `children` 필드가 있는 그룹 항목 타입. `getFlatPermissions` 는 `"children" in item` 분기로 자식을 큐에 넣는다.
+- `AppStructureLeafItem<TModule>` — `perms`/`subPerms` 를 가질 수 있는 leaf 항목 타입. `getFlatPermissions` 는 `perms` 와 `subPerms` 가 있을 때 권한 결과를 만든다.
 
 ## AppStructureGroupItem
-
-하위 메뉴를 묶는 그룹. 라우팅 대상이 아니라 묶음.
 
 ```ts
 interface AppStructureGroupItem<TModule> {
@@ -25,16 +25,14 @@ interface AppStructureGroupItem<TModule> {
 }
 ```
 
-- `code: string` — 항목 코드. 부모부터 dot 으로 이어져 화면을 식별(예: `inventory.goods-inventory`). 라우팅 경로·권한 키의 기준.
-- `title: string` — 메뉴에 표시할 이름.
-- `modules?: TModule[]` — 표시 조건(OR). 나열한 모듈 중 하나라도 활성(`usableModules`)이면 표시. 없으면 모듈과 무관하게 표시.
-- `requiredModules?: TModule[]` — 표시 조건(AND). 나열한 모듈이 모두 활성이어야 표시.
-- `icon?: string` — 메뉴 아이콘(@ng-icons SVG 문자열 등).
-- `children: AppStructureItem<TModule>[]` — 하위 항목 배열. 그룹의 필수 필드(이게 있으면 그룹으로 판별). 표시 가능한 자식이 하나도 없으면 그룹도 메뉴에서 빠짐.
+- `code: string` — `getFlatPermissions` 가 부모 체인 뒤에 붙여 `codeChain` 을 만드는 항목 코드.
+- `title: string` — `getFlatPermissions` 가 부모 체인 뒤에 붙여 `titleChain` 을 만드는 항목 제목.
+- `modules?: TModule[]` — 모듈 OR 조건. 값이 없거나 빈 배열이면 통과, 값이 있으면 `usableModules` 에 하나 이상 포함되어야 통과한다.
+- `requiredModules?: TModule[]` — 모듈 AND 조건. 값이 있고 빈 배열이 아니면 모든 값이 `usableModules` 에 포함되어야 통과한다.
+- `icon?: string` — 문자열 필드. 이 패키지 유틸에서는 읽지 않는다.
+- `children: AppStructureItem<TModule>[]` — 하위 항목 배열. `getFlatPermissions` 는 현재 항목의 모듈 조건을 통과한 뒤 각 자식을 큐에 넣는다.
 
 ## AppStructureLeafItem
-
-실제 화면(라우팅 대상) 항목.
 
 ```ts
 interface AppStructureLeafItem<TModule> {
@@ -50,15 +48,17 @@ interface AppStructureLeafItem<TModule> {
 }
 ```
 
-- `code` / `title` / `modules` / `requiredModules` / `icon` — 그룹과 동일 의미.
-- `perms?: ("use" | "edit")[]` — 이 화면에 부여 가능한 권한 종류. `"use"` = 조회 권한, `"edit"` = 편집 권한. 지정한 화면만 권한 페이지·권한 체크 대상이 됨. 생략하면 제약 없는 화면.
-- `subPerms?: AppStructureSubPermission<TModule>[]` — 한 화면 안의 세부 기능 권한 목록.
-- `url?: string` — 외부 링크 등 이동 경로. 일반 화면 라우팅 대신 외부로 보낼 때.
-- `isNotMenu?: boolean` — 메뉴 노출 토글. `true` 면 사이드 메뉴에서 숨김(라우팅 대상 화면 자체는 유지). 홈·내정보 등 직접 진입 화면에 사용. 미지정/`false` 면 메뉴에 노출.
+- `code: string` — `getFlatPermissions` 가 부모 체인 뒤에 붙여 `codeChain` 을 만드는 항목 코드.
+- `title: string` — `getFlatPermissions` 가 부모 체인 뒤에 붙여 `titleChain` 을 만드는 항목 제목.
+- `modules?: TModule[]` — 모듈 OR 조건. 값이 없거나 빈 배열이면 통과, 값이 있으면 `usableModules` 에 하나 이상 포함되어야 통과한다.
+- `requiredModules?: TModule[]` — 모듈 AND 조건. 값이 있고 빈 배열이 아니면 모든 값이 `usableModules` 에 포함되어야 통과한다.
+- `perms?: ("use" | "edit")[]` — 직접 권한 코드 배열. `"use"` 와 `"edit"` 는 값 그대로 `codeChain` 끝에 붙으며 이 패키지 유틸 안의 값별 분기는 없다.
+- `subPerms?: AppStructureSubPermission<TModule>[]` — 하위 권한 배열. 각 항목의 모듈 조건을 통과하면 `subPerm.code` 와 `perm` 이 `codeChain` 뒤에 붙는다.
+- `icon?: string` — 문자열 필드. 이 패키지 유틸에서는 읽지 않는다.
+- `url?: string` — 문자열 필드. 이 패키지 유틸에서는 읽지 않는다.
+- `isNotMenu?: boolean` — boolean 필드. 이 패키지 유틸에서는 읽지 않는다.
 
 ## AppStructureSubPermission
-
-화면 내부의 세부 기능 권한.
 
 ```ts
 interface AppStructureSubPermission<TModule> {
@@ -70,15 +70,13 @@ interface AppStructureSubPermission<TModule> {
 }
 ```
 
-- `code: string` — 세부 권한 코드. 화면 코드 뒤에 이어 붙어 권한 키를 이룸(`...code.subCode.perm`).
-- `title: string` — 권한 페이지에 표시할 세부 기능 이름.
-- `modules?: TModule[]` — 세부 권한 자체의 모듈 표시 조건(OR). 모듈 비활성이면 이 세부 권한은 평탄화에서 제외.
-- `requiredModules?: TModule[]` — 세부 권한 자체의 모듈 표시 조건(AND).
-- `perms: ("use" | "edit")[]` — 이 세부 기능에 부여 가능한 권한 종류. `"use"` = 조회, `"edit"` = 편집. leaf 의 `perms` 와 달리 필수.
+- `code: string` — `getFlatPermissions` 가 leaf `codeChain` 뒤에 붙이는 하위 권한 코드.
+- `title: string` — 문자열 제목 필드. 이 패키지 유틸에서는 읽지 않는다.
+- `modules?: TModule[]` — 하위 권한의 모듈 OR 조건. 값이 없거나 빈 배열이면 통과, 값이 있으면 `usableModules` 에 하나 이상 포함되어야 통과한다.
+- `requiredModules?: TModule[]` — 하위 권한의 모듈 AND 조건. 값이 있고 빈 배열이 아니면 모든 값이 `usableModules` 에 포함되어야 통과한다.
+- `perms: ("use" | "edit")[]` — 하위 권한의 필수 권한 코드 배열. `"use"` 와 `"edit"` 는 값 그대로 `codeChain` 끝에 붙으며 이 패키지 유틸 안의 값별 분기는 없다.
 
 ## FlatPermission
-
-`getFlatPermissions` 가 돌려주는 평탄화된 권한 한 줄. 권한 페이지 표시·권한 매칭에 쓰는 표현.
 
 ```ts
 interface FlatPermission<TModule = unknown> {
@@ -88,61 +86,52 @@ interface FlatPermission<TModule = unknown> {
 }
 ```
 
-- `titleChain: string[]` — 루트부터 이 권한까지의 표시명(`title`) 경로. 권한 페이지에서 계층 라벨로 사용.
-- `codeChain: string[]` — 루트부터의 코드 경로 + 마지막에 권한 종류(`"use"`/`"edit"`)·세부코드가 붙은 전체 키. 권한 식별자.
-- `modulesChain: TModule[][]` — 경로상 `modules` 를 가진 각 레벨의 `modules` 배열들의 모음. 이 권한이 어떤 모듈 조건에 묶였는지 표현.
+- `TModule = unknown` — `modulesChain` 의 모듈 식별자 타입.
+- `titleChain: string[]` — `getFlatPermissions` 가 root 부터 현재 leaf 까지의 `title` 을 누적한 배열.
+- `codeChain: string[]` — `getFlatPermissions` 가 root 부터 현재 leaf 까지의 `code` 에 권한 리터럴 또는 `subPerm.code`/권한 리터럴을 덧붙인 배열.
+- `modulesChain: TModule[][]` — `getFlatPermissions` 가 경로상 존재하는 `modules` 배열을 누적한 배열. sub permission 결과에는 `subPerm.modules ?? []` 도 뒤에 붙는다.
 
 ## isUsableModules
 
 ```ts
-function isUsableModules<TModule>(modules: TModule[] | undefined, requiredModules: TModule[] | undefined, usableModules: TModule[] | undefined): boolean
+function isUsableModules<TModule>(
+  modules: TModule[] | undefined,
+  requiredModules: TModule[] | undefined,
+  usableModules: TModule[] | undefined,
+): boolean
 ```
 
-한 항목의 모듈 조건이 현재 활성 모듈로 충족되는지 판정.
-
-- `modules` — OR 조건. 나열 중 하나라도 `usableModules` 에 있으면 통과. `undefined`/빈 배열이면 무조건 통과.
-- `requiredModules` — AND 조건. 나열 전부가 `usableModules` 에 있어야 통과. `undefined`/빈 배열이면 통과로 간주.
-- `usableModules` — 현재 앱에서 활성인 모듈 목록. `undefined` 이면 `modules` 를 가진 항목은 매칭 실패(통과 불가).
-- 반환: requiredModules(AND)와 modules(OR)를 모두 만족하면 `true`.
-
-```ts
-import { isUsableModules } from "@simplysm/service-common";
-
-isUsableModules(["A", "B"], undefined, ["A"]); // true — OR
-isUsableModules(undefined, ["A", "B"], ["A"]); // false — AND 미충족
-```
+- `modules: TModule[] | undefined` — OR 조건 모듈 배열. `undefined` 또는 빈 배열이면 이 조건은 통과하고, 값이 있으면 하나 이상이 `usableModules` 에 포함되어야 통과한다.
+- `requiredModules: TModule[] | undefined` — AND 조건 모듈 배열. 값이 있고 빈 배열이 아니면 모든 값이 `usableModules` 에 포함되어야 통과한다.
+- `usableModules: TModule[] | undefined` — 활성 모듈 배열. 값이 `undefined` 이면 비어 있지 않은 `modules`/`requiredModules` 조건은 통과하지 못한다.
+- 반환 `boolean` — `requiredModules` 조건을 먼저 검사하고, 그다음 `modules` 조건을 검사한 결과.
 
 ## isUsableModulesChain
 
 ```ts
-function isUsableModulesChain<TModule>(modulesChain: TModule[][], requiredModulesChain: TModule[][], usableModules: TModule[] | undefined): boolean
+function isUsableModulesChain<TModule>(
+  modulesChain: TModule[][],
+  requiredModulesChain: TModule[][],
+  usableModules: TModule[] | undefined,
+): boolean
 ```
 
-경로상 모든 레벨의 모듈 조건이 충족되는지 판정(부모 조건 누적).
-
-- `modulesChain` — 각 레벨의 `modules` 배열들. 모든 레벨이 OR 조건을 통과해야 함.
-- `requiredModulesChain` — 각 레벨의 `requiredModules` 배열들. 모든 레벨이 AND 조건을 통과해야 함.
-- `usableModules` — 현재 활성 모듈 목록.
-- 반환: 빈 체인이면 `true`, 한 레벨이라도 막히면 `false`. 자식 표시 여부 판정에 사용.
+- `modulesChain: TModule[][]` — 경로상 OR 조건 배열들의 목록. 각 배열이 `isUsableModules(modules, undefined, usableModules)` 를 통과해야 한다.
+- `requiredModulesChain: TModule[][]` — 경로상 AND 조건 배열들의 목록. 각 배열이 `isUsableModules(undefined, requiredModules, usableModules)` 를 통과해야 한다.
+- `usableModules: TModule[] | undefined` — 활성 모듈 배열.
+- 반환 `boolean` — 모든 OR 조건 배열과 모든 AND 조건 배열을 통과하면 `true`, 하나라도 실패하면 `false`.
 
 ## getFlatPermissions
 
 ```ts
-function getFlatPermissions<TModule>(items: AppStructureItem<TModule>[], usableModules: TModule[] | undefined): FlatPermission<TModule>[]
+function getFlatPermissions<TModule>(
+  items: AppStructureItem<TModule>[],
+  usableModules: TModule[] | undefined,
+): FlatPermission<TModule>[]
 ```
 
-앱 구조 트리를 BFS 로 순회해 활성 모듈로 표시 가능한 권한만 평탄 목록으로 추출.
-
-- `items` — 앱 구조 배열(루트).
-- `usableModules` — 현재 활성 모듈. 모듈 조건을 통과하지 못한 가지(그 자식·권한 포함)는 결과에서 빠짐.
-- 동작: leaf 의 `perms` 각각, 그리고 `subPerms` 의 각 `perm` 을 한 줄(`FlatPermission`)로 펼침. `subPerms` 는 자체 모듈 조건도 추가로 검사. 빈 `items` 면 빈 배열.
-- 반환: 표시 가능한 권한들의 평탄 배열. 권한 관리 화면(`<sd-permission-table>` 입력)·권한 매칭의 기반.
-
-```ts
-import { getFlatPermissions } from "@simplysm/service-common";
-
-const perms = getFlatPermissions(adminAppStructureItems, ["scheduling"]);
-// 각 perm.codeChain 이 전체 권한 키
-```
-
-> 주의: 앱 레이어에서는 보통 `SdAppStructureProvider` 의 메서드(`getPermissionsByStructure` 등)를 거쳐 사용한다(매뉴얼 `manuals/client-app-structure.md`). 위 함수들은 그 하부의 순수 판정·평탄화 로직이다.
+- `items: AppStructureItem<TModule>[]` — 순회할 root 항목 배열. 함수는 큐를 만들어 항목과 자식을 순회한다.
+- `usableModules: TModule[] | undefined` — 항목과 sub permission 의 `modules`/`requiredModules` 조건 판정에 쓰는 활성 모듈 배열.
+- 반환 `FlatPermission<TModule>[]` — 모듈 조건을 통과한 leaf 의 직접 `perms` 와 `subPerms.perms` 를 평탄화한 권한 목록.
+- 직접 `perms` 결과 — `titleChain` 은 현재 항목까지, `codeChain` 은 현재 항목까지의 코드 뒤에 `perm` 을 붙이고, `modulesChain` 은 경로상 `modules` 배열 누적값을 쓴다.
+- `subPerms` 결과 — `subPerm.modules`/`subPerm.requiredModules` 조건을 통과한 경우에만 생성하며, `codeChain` 은 현재 항목 코드 뒤에 `subPerm.code` 와 `perm` 을 붙인다.

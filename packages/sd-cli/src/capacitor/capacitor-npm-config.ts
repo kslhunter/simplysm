@@ -4,6 +4,7 @@ import { consola, LogLevels } from "consola";
 import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 import { shellSpawn } from "../utils/shell-spawn";
+import { findWorkspaceRoot } from "../utils/workspace-utils";
 import type { NpmConfig, SdCapacitorConfig } from "../sd-config.types.js";
 
 const logger = createLogger("sd:cli:capacitor:npm-config");
@@ -19,7 +20,9 @@ export async function setupCapNpmConfig(
   platforms: string[],
   exclude: string[],
 ): Promise<boolean> {
-  const projNpmConfigPath = pathx.posixResolve(findWorkspaceRoot(pkgPath), "package.json");
+  const workspaceRoot = findWorkspaceRoot(pkgPath);
+  if (workspaceRoot == null) throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${pkgPath}`);
+  const projNpmConfigPath = pathx.posixResolve(workspaceRoot, "package.json");
 
   if (!(await fsx.exists(projNpmConfigPath))) {
     throw new Error(`루트 package.json을 찾을 수 없습니다: ${projNpmConfigPath}`);
@@ -113,7 +116,7 @@ export async function setupCapNpmConfig(
 }
 
 /**
- * Capacitor 프로젝트 NPM 초기화 (pnpm install, cap init, www placeholder).
+ * Capacitor 프로젝트 NPM 초기화 (bun install, cap init, www placeholder).
  * 의존성 변경 시 true를 반환한다.
  */
 export async function initCapNpmProject(
@@ -134,26 +137,20 @@ export async function initCapNpmProject(
     return false;
   }
 
-  // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
-  const workspaceYamlPath = pathx.posixResolve(capPath, "pnpm-workspace.yaml");
-  if (!(await fsx.exists(workspaceYamlPath))) {
-    await fsx.write(workspaceYamlPath, "");
-  }
-
-  // pnpm install (빌드 스크립트 자동 승인)
+  // bun install
   const isDebug = consola.level >= LogLevels.debug;
-  logger.debug("pnpm install 시작");
-  await shellSpawn("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], {
+  logger.debug("bun install 시작");
+  await shellSpawn("bun", ["install"], {
     cwd: capPath,
     ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
   });
-  logger.debug("pnpm install 완료");
+  logger.debug("bun install 완료");
 
   // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
   const configPath = pathx.posixResolve(capPath, "capacitor.config.ts");
   if (!(await fsx.exists(configPath))) {
     logger.debug("cap init 시작");
-    await shellSpawn("pnpm", ["exec", "cap", "init", config.appId, config.appId], {
+    await shellSpawn("bun", ["run", "cap", "init", config.appId, config.appId], {
       cwd: capPath,
       ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
     });
@@ -172,10 +169,4 @@ export async function initCapNpmProject(
   }
 
   return true;
-}
-
-function findWorkspaceRoot(pkgPath: string): string {
-  const match = fsx.findUpSync("pnpm-workspace.yaml", path.dirname(pkgPath));
-  if (match == null) throw new Error(`워크스페이스 루트를 찾을 수 없습니다: ${pkgPath}`);
-  return path.dirname(match);
 }

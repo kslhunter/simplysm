@@ -140,7 +140,7 @@ export async function runInitClient(opts: InitClientOptions): Promise<void> {
   }
 
   logger.info("의존성 설치 중...");
-  await shellSpawn("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], {
+  await shellSpawn("bun", ["install"], {
     cwd: opts.cwd,
     stdio: "inherit",
   });

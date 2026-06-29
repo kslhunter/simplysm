@@ -1,80 +1,96 @@
 # @simplysm/core-browser — IndexedDB 영속화
 
-브라우저 IndexedDB 를 다룰 때 함께 읽히는 묶음. `IndexedDbStore` 는 연결·트랜잭션·키-값 CRUD 를 담당하고, `IndexedDbVirtualFs` 는 그 한 스토어를 경로 키 기반 가상 파일트리(entry put/get, prefix 삭제, 자식 나열, 디렉터리 보장)로 다룬다.
+브라우저 IndexedDB를 저장소로 쓰는 작업에서 함께 읽는 묶음이다. `IndexedDbStore`는 연결·트랜잭션·CRUD를 감싸고, `IndexedDbVirtualFs`는 경로 키 기반 파일/디렉터리 엔트리를 그 위에 저장한다.
+
+## StoreConfig
+
+```ts
+interface StoreConfig {
+  name: string;
+  keyPath: string;
+}
+```
+
+- `name: string` — 오브젝트 스토어 이름. `onupgradeneeded`에서 없으면 `createObjectStore(name, { keyPath })`로 만든다.
+- `keyPath: string` — 스토어 레코드에서 키로 쓸 필드명. 스토어 생성 시 `keyPath` 옵션으로 전달된다.
 
 ## IndexedDbStore
 
-IndexedDB 연결을 지연 오픈·재사용하고, 스토어 단위 트랜잭션과 기본 키-값 작업을 비동기로 감싼 클래스.
-
 ```ts
-const store = new IndexedDbStore("appDb", 1, [{ name: "files", keyPath: "key" }]);
-await store.put("files", { key: "a", data: "..." });
-const v = await store.get<MyType>("files", "a");
-const all = await store.getAll<MyType>("files");
-await store.delete("files", "a");
-store.close();
+class IndexedDbStore {
+  constructor(dbName: string, dbVersion: number, storeConfigs: StoreConfig[]);
+  open(): Promise<IDBDatabase>;
+  withStore<TResult>(
+    storeName: string,
+    mode: IDBTransactionMode,
+    fn: (store: IDBObjectStore) => Promise<TResult>,
+  ): Promise<TResult>;
+  get<TValue>(storeName: string, key: IDBValidKey): Promise<TValue | undefined>;
+  put(storeName: string, value: unknown): Promise<void>;
+  delete(storeName: string, key: IDBValidKey): Promise<void>;
+  getAll<TItem>(storeName: string): Promise<TItem[]>;
+  close(): void;
+}
 ```
 
-시그니처:
+- `constructor.dbName: string` — 열 IndexedDB 데이터베이스 이름. `indexedDB.open(dbName, dbVersion)`에 전달된다.
+- `constructor.dbVersion: number` — 열 데이터베이스 버전. `indexedDB.open`의 두 번째 인자로 전달되고 upgrade 흐름을 결정한다.
+- `constructor.storeConfigs: StoreConfig[]` — upgrade 시 보장할 오브젝트 스토어 목록. 이미 있는 스토어는 다시 만들지 않는다.
+- `open()` — 이미 열린 `_db`가 있으면 재사용하고, 오픈 중인 `_opening`이 있으면 같은 Promise를 반환한다.
+- `open()` upgrade — `onupgradeneeded`에서 `storeConfigs`를 순회하며 누락된 스토어만 생성한다.
+- `open()` 성공 — `onversionchange` 또는 `onclose`가 발생하면 DB를 닫고 내부 `_db`/`_opening` 캐시를 비운다.
+- `open()` 실패 — `onerror`는 `req.error`로 reject하고, `onblocked`는 `Error("다른 연결에 의해 데이터베이스가 차단되었습니다")`로 reject한다.
+- `withStore.storeName: string` — `db.transaction(storeName, mode)`에 넘길 스토어 이름이다.
+- `withStore.mode: IDBTransactionMode` — 트랜잭션 모드. `get`/`getAll`은 내부에서 `"readonly"`, `put`/`delete`는 `"readwrite"`를 사용한다.
+- `withStore.fn: (store: IDBObjectStore) => Promise<TResult>` — 트랜잭션 안에서 실행할 작업. 먼저 await한 뒤 트랜잭션 완료를 기다린다.
+- `withStore` 성공 — `fn` 결과를 보관하고 `tx.oncomplete`에서 그 결과로 resolve한다.
+- `withStore` 실패 — `fn`이 throw하면 `tx.abort()`를 호출하고 원래 에러로 reject한다. 트랜잭션 오류는 `tx.error`로 reject한다.
+- `get.storeName: string` — 읽을 스토어 이름. 내부에서 `withStore(storeName, "readonly", ...)`를 호출한다.
+- `get.key: IDBValidKey` — `store.get(key)`에 전달할 키. 미존재 시 IndexedDB 결과 그대로 `undefined`가 반환된다.
+- `put.storeName: string` — 쓸 스토어 이름. 내부에서 `withStore(storeName, "readwrite", ...)`를 호출한다.
+- `put.value: unknown` — `store.put(value)`에 전달할 레코드다.
+- `delete.storeName: string` — 삭제할 스토어 이름. 내부에서 `withStore(storeName, "readwrite", ...)`를 호출한다.
+- `delete.key: IDBValidKey` — `store.delete(key)`에 전달할 키다.
+- `getAll.storeName: string` — 전체 조회할 스토어 이름. `store.getAll()` 결과를 `TItem[]`로 반환한다.
+- `close()` — 열린 DB가 있으면 닫고 `_db`/`_opening`을 `undefined`로 비운다. 이후 작업은 `open()`을 통해 다시 연결한다.
 
-- `new IndexedDbStore(dbName: string, dbVersion: number, storeConfigs: StoreConfig[])` — DB 이름·버전·스토어 설정으로 생성(연결은 지연, 첫 작업 시 오픈).
-  - `dbName: string` — IndexedDB 데이터베이스 이름.
-  - `dbVersion: number` — DB 버전. 올리면 `onupgradeneeded` 에서 누락 스토어를 생성. 스토어 추가 시 증가.
-  - `storeConfigs: StoreConfig[]` — 생성할 오브젝트 스토어 목록.
-- `StoreConfig` — 스토어 설정 항목.
-  - `name: string` — 오브젝트 스토어 이름. upgrade 시 미존재면 `createObjectStore` 로 생성.
-  - `keyPath: string` — 스토어 keyPath(레코드에서 키로 쓸 속성명).
-- `open(): Promise<IDBDatabase>` — 연결을 열어 반환. 이미 열렸으면 캐시(`_db`) 반환, 진행 중이면 같은 Promise(`_opening`) 공유(중복 오픈 방지). `onupgradeneeded` 시 없는 스토어만 생성. `onversionchange`/`onclose` 시 내부 캐시를 해제해 다음 호출에 재오픈. `onblocked` 면 `Error("다른 연결에 의해 데이터베이스가 차단되었습니다")`, `onerror` 면 원본 `req.error` 로 reject. CRUD 가 자동 호출하므로 직접 호출 불필요.
-- `withStore<TResult>(storeName: string, mode: IDBTransactionMode, fn: (store: IDBObjectStore) => Promise<TResult>): Promise<TResult>` — 트랜잭션 1건 안에서 `fn(store)` 를 먼저 await 한 뒤 완료까지 대기. `fn` 이 throw 하면 `tx.abort()` 후 그 에러로 reject(롤백), 정상이면 `oncomplete` 시 결과 resolve, `onerror` 면 `tx.error` 로 reject. 커서 등 저수준 IDB 작업을 감쌀 때.
-  - `storeName: string` — 트랜잭션 대상 스토어.
-  - `mode: IDBTransactionMode` — `"readonly"`(읽기 전용) | `"readwrite"`(읽기·쓰기) | `"versionchange"`(스키마 변경). 쓰기 작업이면 `"readwrite"`.
-  - `fn: (store: IDBObjectStore) => Promise<TResult>` — 스토어를 받아 작업하는 콜백.
-- `get<TValue>(storeName: string, key: IDBValidKey): Promise<TValue | undefined>` — 키로 단건 조회. 미존재 시 `undefined`(결측 그대로 반환).
-- `put(storeName: string, value: unknown): Promise<void>` — 레코드 upsert. `value` 에 keyPath 속성이 포함돼야 함.
-- `delete(storeName: string, key: IDBValidKey): Promise<void>` — 키로 단건 삭제.
-- `getAll<TItem>(storeName: string): Promise<TItem[]>` — 스토어 전체 레코드 배열 반환.
-- `close(): void` — 연결을 닫고 내부 캐시(`_db`/`_opening`) 해제. 다음 작업 시 자동 재오픈. 페이지 정리 시 호출.
+## VirtualFsEntry
 
-주의:
+```ts
+interface VirtualFsEntry {
+  kind: "file" | "dir";
+  dataBase64?: string;
+}
+```
 
-- `withStore` 의 `fn` 이 throw 하면 트랜잭션 전체가 abort — 다건 쓰기를 하나의 `withStore` 안에 묶으면 원자성이 보장된다.
-- 버전 변경(`onupgradeneeded`)은 누락 스토어 생성만 한다 — 기존 스토어 스키마 변경·인덱스 추가는 별도 처리가 필요하다.
+- `kind: "file" | "dir"` — 엔트리 종류. `"file"`은 파일, `"dir"`은 디렉터리이며 `listChildren`의 디렉터리 판정에 사용된다.
+- `dataBase64?: string` — 파일 데이터로 저장할 base64 문자열. `putEntry`에서 인자를 넘기지 않으면 필드 값은 `undefined`다.
 
 ## IndexedDbVirtualFs
 
-`IndexedDbStore` 의 한 스토어를 경로 키 기반 가상 파일시스템처럼 다루는 래퍼. 키는 `keyField` 속성에 들어가는 전체 경로 문자열이고, 각 레코드는 `VirtualFsEntry`(파일/디렉터리 + 선택적 base64 데이터). 범위 조회는 `IDBKeyRange.bound(prefix, prefix + "￿")` 커서 기반.
-
 ```ts
-const fs = new IndexedDbVirtualFs(store, "files", "key");
-await fs.ensureDir((p) => `/root${p}`, "/a/b"); // /root/a, /root/a/b 디렉터리 보장
-await fs.putEntry("/root/a/x.txt", "file", base64);
-const children = await fs.listChildren("/root/a/"); // [{ name, isDirectory }]
-const ok = await fs.deleteByPrefix("/root/a"); // 하위 전체 삭제, 삭제분 있으면 true
+class IndexedDbVirtualFs {
+  constructor(db: IndexedDbStore, storeName: string, keyField: string);
+  getEntry(fullKey: string): Promise<VirtualFsEntry | undefined>;
+  putEntry(fullKey: string, kind: "file" | "dir", dataBase64?: string): Promise<void>;
+  deleteByPrefix(keyPrefix: string): Promise<boolean>;
+  listChildren(prefix: string): Promise<{ name: string; isDirectory: boolean }[]>;
+  ensureDir(fullKeyBuilder: (path: string) => string, dirPath: string): Promise<void>;
+}
 ```
 
-시그니처:
-
-- `new IndexedDbVirtualFs(db: IndexedDbStore, storeName: string, keyField: string)` — 백엔드 store·스토어 이름·키 필드명으로 생성.
-  - `db: IndexedDbStore` — 백엔드 저장소.
-  - `storeName: string` — 사용할 오브젝트 스토어 이름.
-  - `keyField: string` — 레코드에서 경로 키를 담는 속성명(스토어 keyPath 와 일치해야 함).
-- `VirtualFsEntry` — 저장 엔트리 타입.
-  - `kind: "file" | "dir"` — 엔트리 종류. `"file"` = 파일, `"dir"` = 디렉터리. 자식 나열·디렉터리 판정에 사용.
-  - `dataBase64?: string` — 파일 내용 base64. 디렉터리거나 데이터를 안 넘기면 생략(undefined).
-- `getEntry(fullKey: string): Promise<VirtualFsEntry | undefined>` — 전체 경로 키로 단건 조회. 미존재 시 `undefined`.
-- `putEntry(fullKey: string, kind: "file" | "dir", dataBase64?: string): Promise<void>` — 엔트리 저장(upsert). `keyField` 에 `fullKey`, 그리고 `kind`/`dataBase64` 를 함께 기록.
-  - `fullKey: string` — 저장할 전체 경로 키.
-  - `kind: "file" | "dir"` — 저장할 엔트리 종류.
-  - `dataBase64?: string` — 파일 데이터(base64). 디렉터리면 생략.
-- `deleteByPrefix(keyPrefix: string): Promise<boolean>` — 커서로 키가 `keyPrefix` 자신이거나 `keyPrefix + "/"` 로 시작하는 엔트리를 전부 삭제(같은 접두어를 가진 형제 경로 오삭제 방지). 하나라도 지웠으면 `true`, 없으면 `false`. 디렉터리 트리 통째 삭제에.
-- `listChildren(prefix: string): Promise<{ name: string; isDirectory: boolean }[]>` — `prefix` 직계 자식만 집계. 키에서 `prefix` 를 제거한 나머지의 첫 세그먼트를 이름으로 삼고, 하위 세그먼트가 더 있거나 엔트리 `kind === "dir"` 면 디렉터리로 판정(중복 세그먼트는 Map 으로 1회만). 디렉터리 목록 표시용(재귀 아님).
-  - 반환 항목 `name: string` — 직계 자식 이름(첫 경로 세그먼트).
-  - 반환 항목 `isDirectory: boolean` — 디렉터리 여부.
-- `ensureDir(fullKeyBuilder: (path: string) => string, dirPath: string): Promise<void>` — `dirPath` 상의 각 중간 디렉터리를 부모부터 누적 경로마다 없으면(`store.get` 으로 확인) 생성. `dirPath === "/"` 면 루트 1건만 생성. 전체를 단일 `withStore("readwrite")` 트랜잭션으로 처리(원자적). 파일 쓰기 전 상위 디렉터리 보장에.
-  - `fullKeyBuilder: (path: string) => string` — 누적 경로(예: `/a`, `/a/b`)를 실제 저장 key 로 변환하는 콜백.
-  - `dirPath: string` — 보장할 디렉터리 경로(`/` 구분). 빈 세그먼트는 무시.
-
-주의:
-
-- 모든 범위 조회는 `IDBKeyRange.bound(prefix, prefix + "￿")` 기반 — 호출측이 fullKey 규칙을 일관되게 유지해 prefix 가 정확한 경로 경계를 갖게 해야 한다.
-- `listChildren` 은 직계만 반환(재귀 아님). 트리 전체 순회는 세그먼트별 반복 호출이 필요하다.
+- `constructor.db: IndexedDbStore` — 실제 IndexedDB 작업을 수행할 저장소 래퍼다.
+- `constructor.storeName: string` — 가상 파일트리 엔트리를 저장할 오브젝트 스토어 이름이다.
+- `constructor.keyField: string` — 저장 레코드에서 전체 경로 키를 담을 필드명. `putEntry`와 `ensureDir`가 `{ [keyField]: key, ... }` 형태로 기록한다.
+- `getEntry.fullKey: string` — 조회할 전체 경로 키. 내부에서 `db.get<VirtualFsEntry>(storeName, fullKey)`를 호출한다.
+- `putEntry.fullKey: string` — 저장할 전체 경로 키. 레코드의 `keyField` 값으로 들어간다.
+- `putEntry.kind: "file" | "dir"` — 저장할 엔트리 종류. `"file"`은 파일, `"dir"`은 디렉터리로 기록된다.
+- `putEntry.dataBase64?: string` — 함께 저장할 base64 데이터. 생략하면 `dataBase64` 값은 `undefined`다.
+- `deleteByPrefix.keyPrefix: string` — 삭제 기준 경로 키. 커서는 `IDBKeyRange.bound(keyPrefix, keyPrefix + "\uffff")`로 열고, 실제 삭제는 키가 `keyPrefix`와 같거나 `keyPrefix + "/"`로 시작할 때만 수행한다.
+- `deleteByPrefix` 반환 `boolean` — 삭제한 항목이 하나라도 있으면 `true`, 없으면 `false`다.
+- `listChildren.prefix: string` — 나열할 부모 prefix. 키가 prefix로 시작하면 나머지 경로의 첫 세그먼트를 직계 자식 이름으로 집계한다.
+- `listChildren` 반환 `name: string` — prefix 뒤의 첫 경로 세그먼트다.
+- `listChildren` 반환 `isDirectory: boolean` — 나머지 세그먼트가 더 있거나 엔트리 `kind`가 `"dir"`이면 `true`, 아니면 `false`다.
+- `ensureDir.fullKeyBuilder: (path: string) => string` — 누적 디렉터리 경로를 실제 저장 키로 바꾸는 콜백. 루트에서는 `"/"`, 중첩에서는 `"/a"`, `"/a/b"` 같은 누적 경로로 호출된다.
+- `ensureDir.dirPath: string` — 보장할 디렉터리 경로. `"/"`이면 루트 엔트리 1개를 저장하고, 그 외에는 `/`로 나눈 세그먼트를 부모부터 누적해 없는 디렉터리만 생성한다.
+- `ensureDir` 트랜잭션 — 전체 디렉터리 보장 작업은 `db.withStore(storeName, "readwrite", ...)` 하나 안에서 실행된다.

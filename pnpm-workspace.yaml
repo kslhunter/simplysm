@@ -1,18 +1,2 @@
-packages:
-  - packages/*
-  - tests/*
-  - plugins/*
 allowBuilds:
-  '@google/genai': true
-  '@parcel/watcher': true
-  bufferutil: true
-  core-js: true
-  cpu-features: true
-  esbuild: true
-  lmdb: true
-  msgpackr-extract: true
-  protobufjs: true
-  ssh2: true
-  unrs-resolver: true
-  utf-8-validate: true
-minimumReleaseAge: 0
+  esbuild: set this to true or false

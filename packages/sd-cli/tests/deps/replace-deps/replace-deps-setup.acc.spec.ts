@@ -11,12 +11,12 @@ describe("setupReplaceDeps 화이트리스트 복사", () => {
   beforeEach(async () => {
     tmpDir = pathx.posix(await fs.promises.mkdtemp(path.join(os.tmpdir(), "sd-replace-deps-")));
 
-    // pnpm-workspace.yaml
+    // package.json#workspaces
     const projectRoot = pathx.posix(path.join(tmpDir, "project"));
     await fs.promises.mkdir(projectRoot, { recursive: true });
     await fs.promises.writeFile(
-      pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml")),
-      "packages:\n",
+      pathx.posix(path.join(projectRoot, "package.json")),
+      JSON.stringify({ private: true, workspaces: [] }),
     );
 
     // 타겟 (node_modules에 기존 패키지)

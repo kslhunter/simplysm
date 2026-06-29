@@ -1,91 +1,160 @@
-# @simplysm/angular — CRUD 화면 골격·권한표·상태프리셋
+# @simplysm/angular — CRUD 골격·권한표·상태 프리셋
 
-목록/단건 화면의 표준 컨테이너 골격. `sd-base-container`(공통 셸) 위에 `sd-crud-list`(목록)·`sd-crud-detail`(단건)이 얹힘. 표준 시그널(`ready`/`initialized`/`busyCount`/`viewType`)·page/modal/control 컨텍스트별 탑바·하단바 자동 구성·CTRL+S 저장을 내장. 화면 작성 절차·데이터 흐름은 [client-crud.md](../../manuals/client-crud.md) · [client-component.md](../../manuals/client-component.md) 참조. 함께 쓰는 권한 테이블·상태 프리셋도 이 군에 둠.
+목록/단건 화면 shell, 권한 table, 상태 preset 저장 UI 군이다. `sd-crud-list`/`sd-crud-detail` 사용법: [client-crud.md](../../manuals/client-crud.md), 권한 구조 사용법: [client-app-structure.md](../../manuals/client-app-structure.md), 설정 저장 사용법: [client-system-config.md](../../manuals/client-system-config.md)
 
-공통: 세 컨테이너 모두 `viewType: SdViewType`(required, `"page"|"modal"|"control"`)에 따라 동작이 갈림. `"page"` = 라우팅 진입(탑바에 액션), `"modal"` = 모달(하단 명령바·확인 버튼), `"control"` = view 임베드(명령 영역에 액션).
+## base/detail/list container
 
-## `SdBaseContainer` — `<sd-base-container>`
+### `SdBaseContainer` — `<sd-base-container>`
 
-busy 컨테이너로 감싸고(`page` 면 탑바 포함) 권한 없음 placeholder 를 제공하는 공통 셸. `SdSharedDataProvider` 로드를 기다린 뒤 `ready` 를 set.
-
-- `ready: model(false)` — 공유데이터 로드 완료(또는 `restricted` 면 즉시) 후 자동 `true`. 자식 effect 발화 시점.
-- `initialized: input(false)` — true 일 때만 콘텐츠 렌더. busy 스피너는 `initialized() && busyCount() > 0` 일 때.
-- `busyCount: model(0)` — 진행 중 작업 수. `>0` 이면 busy.
-- `restricted: input(false)` — true 면 "사용권한 없음" 메시지 렌더 + `ready` 즉시 set(공유데이터 대기 스킵).
-- `viewType: input.required<SdViewType>` — `"page"` 면 `<sd-topbar-container>` + viewTitle 렌더, `"modal"`/`"control"` 면 탑바 없이 콘텐츠.
-- 슬롯: `#topbarTpl`(page 탑바 추가 버튼) / `#commandTpl`(콘텐츠 위 명령바) / `#contentTpl`(본문) / `#bottomCommandTpl`(하단 명령바).
-
-```html
-<sd-base-container [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" [restricted]="!perms().includes('use')" [viewType]="viewType()">
-  <ng-template #contentTpl>...</ng-template>
-</sd-base-container>
+```ts
+class SdBaseContainer {
+  ready: ModelSignal<boolean>;
+  initialized: InputSignal<boolean>;
+  busyCount: ModelSignal<number>;
+  restricted: InputSignal<boolean>;
+  viewType: InputSignal<SdViewType>;
+}
 ```
 
-## `SdCrudDetail` — `<sd-crud-detail>`
+- `ready` — restricted 처리 또는 shared-data wait 완료 후 true로 set되는 model.
+- `initialized` — false면 content를 렌더하지 않고 busy container만 유지한다.
+- `busyCount` — 0보다 크면 내부 busy container를 busy로 표시한다.
+- `restricted` — true면 권한 없음 안내를 표시하고 ready를 true로 set한다.
+- `viewType` — `"page"` 는 topbar shell을 만들고, `"modal"`/`"control"` 은 content만 렌더한다.
+- `topbarTpl` — page topbar 우측 content template.
+- `commandTpl` — content 상단 command bar template.
+- `contentTpl` — main content template.
+- `bottomCommandTpl` — content 하단 command bar template.
+- shared-data 동작 — optional `SdSharedDataProvider` 가 있으면 `wait()` 를 `SdToastProvider.try` 로 감싸고 busyCount를 증감한다.
 
-단건 편집 폼 골격(`sd-base-container` 기반). `readonly` 가 아니면 콘텐츠를 `<sd-form>` 으로 감싸고 저장 컨트롤 제공. `SdCommandDirective` 호스트(CTRL+S → 저장).
+### `SdCrudDetail` — `<sd-crud-detail>`
 
-- `ready: model(false)` / `initialized: input(false)` / `busyCount: model(0)` / `restricted: input(false)` — base 로 전달.
-- `readonly: input(false)` — true 면 저장 버튼 숨김 + `<sd-form>` 없이 plain `<div>` 렌더(제출 불가); false 면 `<sd-form>` 래핑 + 저장 컨트롤.
-- `viewType: input.required<SdViewType>` — `"page"` = 탑바 `#topbarTpl` 에 "저장 (CTRL+S)" 버튼; `"control"` = `#commandTpl` 에 저장 버튼; `"modal"` = 하단 명령바에 "확인" 버튼.
-- `submit: output()` — 내부 `<sd-form>` 의 유효 제출 시 emit.
-- 슬롯: `#contentTpl`(필수, 폼 본문) / `#commandTpl` / `#bottomCommandTpl`.
-- 메서드: `onSaveButtonClick()` — `formCtrl().requestSubmit()`.
+사용법: [client-crud.md](../../manuals/client-crud.md)
 
-```html
-<sd-crud-detail [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" [restricted]="!perms().includes('use')" [readonly]="!canEdit()" [viewType]="viewType()" (submit)="onSubmit()">
-  <ng-template #contentTpl>...</ng-template>
-</sd-crud-detail>
+```ts
+class SdCrudDetail {
+  ready: ModelSignal<boolean>;
+  initialized: InputSignal<boolean>;
+  busyCount: ModelSignal<number>;
+  restricted: InputSignal<boolean>;
+  readonly: InputSignal<boolean>;
+  viewType: InputSignal<SdViewType>;
+  submit: OutputEmitterRef<void>;
+}
 ```
 
-## `SdCrudList<TItem, TKey>` — `<sd-crud-list>`
+- `ready`/`initialized`/`busyCount`/`restricted`/`viewType` — 그대로 `SdBaseContainer` 에 전달한다.
+- `readonly` — true면 저장 버튼과 `SdForm` wrapper를 생략하고 content를 그대로 렌더한다.
+- `submit` — 내부 `SdForm.formSubmit` 에서 emit한다.
+- `commandTpl` — 저장 버튼 옆/상단 command 영역에 추가할 template.
+- `contentTpl` — form body template. readonly가 아니면 `SdForm` 으로 감싼다.
+- `bottomCommandTpl` — modal 하단 좌측 template. modal이면 우측 “확인” 버튼을 함께 렌더한다.
+- command key — host `SdCommandDirective.sdSaveCommand` 에서 form submit을 요청한다.
 
-목록 골격(`sd-base-container` + `sd-sheet`). 시트·검색 폼·등록/삭제/복구·CTRL+S 저장·페이징·정렬·선택·인라인 편집·모달 선택을 일괄 제공. `SdCommandDirective` 호스트.
+### `SdCrudList<TItem, TKey>` — `<sd-crud-list>`
 
-- `ready: model(false)` / `initialized: input(false)` / `busyCount: model(0)` / `restricted: input(false)` — base 로 전달.
-- `canCreate: input(true)` — false 면 등록 버튼 숨김.
-- `canEdit: input(true)` — false 면 인라인 편집(저장 버튼·`<sd-form>` 래핑) 비활성. `inlineEdit` 과 AND(둘 다 true 여야 인라인 편집).
-- `canDelete: input(true)` — false 면 선택 삭제/복구 버튼·per-row 삭제 컬럼 숨김 + 멀티선택 기본값 해제(`undefined`).
-- `inlineEdit: input(true)` — `canEdit` 면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 저장. per-row 삭제 컬럼은 `canDelete` 면 표시. false 면 인라인 편집 chrome 제거(조회·선택 전용, `submit` 미발화).
-- `viewType: input.required<SdViewType>` — `"page"` = 탑바 저장 버튼(인라인 편집 시); `"modal"` = 하단 선택 명령바("선택 해제", multi 면 "확인(n)").
-- `selectMode: "single"|"multi"|undefined` — `"single"` = 선택 삭제/복구 숨김·클릭 즉시 modal close; `"multi"` = 다중 선택·삭제/복구·"확인(n)"; `undefined`(비-modal) = `canDelete` 면 `'multi'`.
-- `key: input.required<string>` — 시트 설정 키(내부 시트는 `key()+'-sheet'`).
-- `items: TItem[]` (기본 `[]`) — 행 데이터.
-- `currDeletedItems: TItem[]` (기본 `[]`) — 삭제(soft delete) 행. 취소선·복구 버튼·삭제/복구 아이콘 토글에. 삭제항목 포함 검색 목록은 필수.
-- `trackByFn: input.required<(item: TItem) => TKey>` — 키 추출(선택 멤버십·시트 추적).
-- `getItemSelectableFn: (item) => boolean | string | undefined` — 시트로 전달, `string`=불가+툴팁.
-- `currentPage: model(0)` / `totalPageCount: input(0)`(서버 페이징; `0`이면 useAutoSort 활성) / `itemsPerPage: input(0)`(클라이언트 페이징) / `visiblePageCount: input(10)` / `sorts: model<SortingDef[]>([])` — 시트로 전달.
-- `selectedKeys: model<NonNullable<TKey>[]>([])` — 선택 키(시트와 양방향).
-- output: `filterSubmit`(조회 폼 제출) / `submit`(인라인 편집 저장) / `create`(등록) / `delete: TItem[]`(삭제 대상) / `restore: TItem[]`(복구 대상).
-- 슬롯: `#filterTpl`(검색 폼; 내부가 이미 `form-box-inline`) / `#toolTpl`(도구 버튼) / `#commandTpl` / `#bottomCommandTpl`. `<sd-sheet-column>` 직속 자식은 내부 시트로 자동 투영.
+사용법: [client-crud.md](../../manuals/client-crud.md)
 
-```html
-<sd-crud-list [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" [restricted]="!perms().includes('use')" [canCreate]="canEdit()" [canEdit]="canEdit()" [canDelete]="canEdit()" [viewType]="viewType()" [selectMode]="selectMode() ?? 'multi'" [key]="'role'" [items]="items()" [currDeletedItems]="deletedItems()" [trackByFn]="trackByFn" [(selectedKeys)]="selectedKeys" [(currentPage)]="page" [totalPageCount]="pageLength()" [(sorts)]="sortingDefs" (filterSubmit)="onFilterSubmit()" (submit)="onSubmit()" (create)="onCreate()" (delete)="onDelete($event)" (restore)="onRestore($event)">
-  <ng-template #filterTpl>...</ng-template>
-  <sd-sheet-column [key]="'name'" [header]="'이름'"><ng-template [cell]="items()" let-item="item">...</ng-template></sd-sheet-column>
-</sd-crud-list>
+```ts
+class SdCrudList<TItem, TKey> {
+  ready: ModelSignal<boolean>;
+  initialized: InputSignal<boolean>;
+  busyCount: ModelSignal<number>;
+  restricted: InputSignal<boolean>;
+  canCreate: InputSignal<boolean>;
+  canEdit: InputSignal<boolean>;
+  canDelete: InputSignal<boolean>;
+  inlineEdit: InputSignal<boolean>;
+  viewType: InputSignal<SdViewType>;
+  selectMode: InputSignal<"single" | "multi" | undefined>;
+  key: InputSignal<string>;
+  filterSubmit: OutputEmitterRef<void>;
+  submit: OutputEmitterRef<void>;
+  create: OutputEmitterRef<void>;
+  delete: OutputEmitterRef<TItem[]>;
+  restore: OutputEmitterRef<TItem[]>;
+  items: InputSignal<TItem[]>;
+  selectedKeys: ModelSignal<NonNullable<TKey>[]>;
+  currDeletedItems: InputSignal<TItem[]>;
+  currentPage: ModelSignal<number>;
+  totalPageCount: InputSignal<number>;
+  itemsPerPage: InputSignal<number>;
+  visiblePageCount: InputSignal<number>;
+  sorts: ModelSignal<SortingDef[]>;
+  trackByFn: InputSignal<(item: TItem) => TKey>;
+  getItemSelectableFn: InputSignal<((item: TItem) => boolean | string) | undefined>;
+}
 ```
 
-## `SdStatePreset<TState>` — `<sd-state-preset>`
+- `ready`/`initialized`/`busyCount`/`restricted`/`viewType` — `SdBaseContainer` 에 전달한다.
+- `canCreate` — true면 “등록” button을 렌더하고 click에서 `create` emit. 기본 true.
+- `canEdit` — true이고 `inlineEdit` true면 save button/form wrapper를 렌더한다. 기본 true.
+- `canDelete` — true면 sheet selectMode 기본값이 `"multi"` 이고 삭제/복구 UI를 렌더한다. 기본 true.
+- `inlineEdit` — true면 sheet를 `SdForm` 으로 감싸고 delete column을 추가할 수 있다. false면 조회/선택 전용 sheet로 렌더한다. 기본 true.
+- `selectMode` — modal 선택 모드. `"single"` 은 선택 즉시 modal close, `"multi"` 는 하단 확인 button으로 close한다.
+- `key` — 내부 sheet key를 `${key}-sheet` 로 만든다.
+- `filterSubmit` — filter form submit에서 emit한다.
+- `submit` — inline edit form submit에서 emit한다.
+- `create` — 등록 button click에서 emit한다.
+- `delete` — 선택 삭제 또는 row delete column click에서 대상 item 배열을 emit한다.
+- `restore` — 선택 복구 또는 row 복구 click에서 대상 item 배열을 emit한다.
+- `items` — sheet rows.
+- `selectedKeys` — sheet selected key model.
+- `currDeletedItems` — 삭제 상태 item 배열. 포함 item은 취소선 style, 삭제/복구 button 상태 계산에 쓰인다.
+- `currentPage`/`totalPageCount`/`itemsPerPage`/`visiblePageCount` — 내부 sheet pagination inputs/models.
+- `sorts` — 내부 sheet sort model.
+- `trackByFn` — item에서 key를 계산하는 required input.
+- `getItemSelectableFn` — 내부 sheet 선택 가능 함수.
+- `commandTpl`/`filterTpl`/`toolTpl`/`bottomCommandTpl` — 상단 command, filter form, tool bar, 하단 command template.
+- `sd-sheet-column` content children — 내부 sheet `columnControlsInput` 으로 전달된다.
 
-임의 상태의 명명 스냅샷을 저장·복원(system config 영속화). 필터 프리셋 등에.
+## 권한 table
 
-- `key: input.required<string>` — 프리셋 배열 저장 키.
-- `state: model.required<TState>` — 현재 상태(양방향). 프리셋 클릭 시 그 상태로 set(deep clone), 저장 시 현재 상태 clone 보관.
-- `size: "sm"|"lg"|undefined` — 추가 버튼/칩 패딩 스케일.
-- 메서드: `onAddClick()`(이름 입력·중복 거부·추가) / `onPresetClick(preset)`(적용) / `onSaveClick(preset)`(덮어쓰기) / `onDeleteClick(preset)`(확인 후 삭제).
-- `SdStatePresetDef<TState>` — `{ name: string; state: TState }`.
+### `SdPermissionTable<TModule>` — `<sd-permission-table>`
 
-## `SdPermissionTable<TModule>` — `<sd-permission-table>`
+사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
 
-권한 트리(사용/편집 체크박스)를 계층 표시. 부모/자식·use→edit 의존 규칙 강제. 권한 관리 화면에서 `getPermissionsByStructure` 결과를 넘김([client-app-structure.md](../../manuals/client-app-structure.md)).
-
-- `value: model<Record<string, boolean>>({})` — `"<codeChain>.<use|edit>" → boolean` 맵. 토글이 자식에 캐스케이드, `use` 해제 시 `edit` 자동 해제, `use` 미체크면 `edit` 체크 무시.
-- `items: SdPermission<TModule>[]` (기본 `[]`) — 권한 트리.
-- `disabled: boolean` — true 면 전체 체크박스 비활성.
-
-```html
-<sd-permission-table [items]="permissions()" [(value)]="data" />
+```ts
+class SdPermissionTable<TModule> {
+  value: ModelSignal<Record<string, boolean>>;
+  items: InputSignal<SdPermission<TModule>[]>;
+  disabled: InputSignal<boolean>;
+  collapsedItems: WritableSignal<Set<string>>;
+}
 ```
 
-(`SdPermission<TModule>` 타입은 [routing-appstructure.md](./routing-appstructure.md) 참조.)
+- `value` — `{ "code.chain.use": boolean, "code.chain.edit": boolean }` 형태 권한 체크 model.
+- `items` — `SdAppStructureProvider.getPermissionsByStructure()` 결과 permission tree.
+- `disabled` — true면 checkbox를 disabled하고 edit disabled 계산도 true가 된다.
+- `collapsedItems` — 접힌 permission code set.
+- 권한 표시 — `perms` 또는 하위에 해당 type 권한이 있을 때만 “사용”/“편집” checkbox를 표시한다.
+- edit 규칙 — use 권한이 존재하고 체크되어 있지 않으면 edit checkbox를 disabled한다.
+- cascade 규칙 — group checkbox 변경은 하위 권한까지 재귀 적용한다. use를 false로 바꾸면 edit도 false로 만든다.
+
+## 상태 프리셋
+
+### `SdStatePresetDef<TState>` / `SdStatePreset<TState>` — `<sd-state-preset>`
+
+사용법: [client-system-config.md](../../manuals/client-system-config.md)
+
+```ts
+interface SdStatePresetDef<TState> {
+  name: string;
+  state: TState;
+}
+class SdStatePreset<TState> {
+  key: InputSignal<string>;
+  state: ModelSignal<TState>;
+  size: InputSignal<"sm" | "lg" | undefined>;
+}
+```
+
+- `SdStatePresetDef.name` — 프리셋 표시명과 track key.
+- `SdStatePresetDef.state` — 저장된 state snapshot.
+- `key` — system config resource key. host tag와 합쳐 저장 key가 된다.
+- `state` — 저장/복원할 현재 상태 model. 저장 시 `obj.clone(state())`, 적용 시 clone을 다시 set한다.
+- `size` — `"sm"`/`"lg"` padding 크기.
+- add 동작 — `SdPromptModal` 로 이름을 받고 중복 이름이면 warning toast, 아니면 현재 state를 presets에 append한다.
+- preset click — 현재 state와 다르면 preset state clone을 set한다.
+- save click — 해당 preset의 state를 현재 state clone으로 교체한다.
+- delete click — `SdConfirmModal` 확인 뒤 preset을 제거한다.

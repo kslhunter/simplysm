@@ -1,57 +1,73 @@
-# @simplysm/sd-cli — SdTsCompiler
+# @simplysm/sd-cli — SdTsCompiler 컴파일러 API
 
-패키지 디렉토리 1개의 `.ts` 를 TypeScript 또는 Angular AOT 로 **증분** 컴파일하는 클래스. 한 번의 `compileAsync` 호출이 직렬화된 진단 + emit 결과 + lint + SCSS 결과를 한 묶음(`ISdTsCompilerResult`)으로 반환한다. tsconfig 의 `angularCompilerOptions` 존재 여부로 Angular/일반 모드를 자동 판별한다. 진단은 worker 경계를 통과하도록 `SerializedDiagnostic` 으로 직렬화되며, 내부 크래시는 단계별로 잡아 진단으로 보고(부분 복구)한다.
+패키지 디렉토리 1개를 TypeScript 또는 Angular AOT 로 컴파일하고, 진단·emit·lint·SCSS 결과를 `ISdTsCompilerResult` 로 받는 묶음. `tsconfig` 의 `angularCompilerOptions` 존재 여부로 Angular 모드를 판별한다.
 
-## 생성자 / ISdTsCompilerOptions
+## SdTsCompiler
 
 ```typescript
 class SdTsCompiler {
   constructor(options: ISdTsCompilerOptions);
+  get sideEffectScssRegistry(): Map<string, SideEffectScssEntry>;
+  compileSideEffectScss(): void;
+  findAffectedByScss(scssPath: string): string[];
+  compileAsync(
+    modifiedFiles?: ReadonlySet<string>,
+    emitOptions?: ISdTsCompilerEmitOptions,
+  ): Promise<ISdTsCompilerResult>;
 }
+```
 
+- `constructor(options)` — 컴파일 대상 패키지, 출력, Angular/lint/SCSS 옵션을 저장한다.
+- `sideEffectScssRegistry: Map<string, SideEffectScssEntry>` — side-effect SCSS 항목을 등록·조회하는 내부 레지스트리 참조.
+- `compileSideEffectScss(): void` — 레지스트리의 모든 side-effect SCSS 를 컴파일하고 에러·의존성을 컴파일러 상태에 누적한다.
+- `findAffectedByScss(scssPath: string): string[]` — posix 정규화한 SCSS 경로에 의존하는 owner 파일 목록을 반환한다.
+- `compileAsync(...)` — tsconfig 파싱, Angular 분석, affected 탐색, emit, 진단 수집, lint/global SCSS 처리를 실행하고 결과 객체를 반환한다.
+
+## ISdTsCompilerOptions
+
+```typescript
 interface ISdTsCompilerOptions {
   pkgDir: string;
   cwd: string;
   output: { js: boolean; dts: boolean };
   includeTests?: boolean;
-  env?: TypecheckEnv; // "node" | "browser"
-
-  // Angular 전용 (isForAngular 시 활성)
+  env?: TypecheckEnv;
   sourceFileCache?: AngularSourceFileCache;
-  transformStylesheet?: (data: string, containingFile: string, stylesheetFile?: string) => Promise<string | null>;
+  transformStylesheet?: (
+    data: string,
+    containingFile: string,
+    stylesheetFile?: string,
+  ) => Promise<string | null>;
   externalStylesheets?: Map<string, string>;
   compilerOptionsTransformer?: (options: ts.CompilerOptions) => ts.CompilerOptions;
-
-  // SCSS / lint 통합
   lint?: boolean;
   globalScss?: boolean;
 }
+
+type TypecheckEnv = "node" | "browser";
 ```
 
-- **pkgDir**: string — 컴파일 대상 패키지 디렉토리. 출력은 이 아래 `dist/`, 캐시는 `.cache/*.tsbuildinfo` 에 떨어진다.
-- **cwd**: string — workspace 루트. 진단 필터링(`isWorkspaceDiagnostic`)·경로 상대화에 사용.
-- **output**: `{ js: boolean; dts: boolean }` — 출력 제어. `js+dts` → JS+선언파일, `js` 만 → JS 만(`declaration:false`), `dts` 만 → 선언파일만(`emitDeclarationOnly:true`), 둘 다 false → `noEmit:true`(타입체크 전용). tsBuildInfo 파일명도 이에 따라 달라짐.
-- **includeTests**: boolean — `true` 면 `tests/` 파일을 rootNames 에 포함(`getPackageFiles`), 기본/`false` 면 소스만(`getPackageSourceFiles`).
-- **env**: `TypecheckEnv`(`"node" | "browser"`) — 지정 시 `getCompilerOptionsForEnv()` 로 env 별 lib 등을 조정. tsBuildInfo 파일명에 `-<env>` 접미사가 붙는다.
-- **sourceFileCache**: `AngularSourceFileCache` — Angular 증분 빌드용 SourceFile 캐시. 미제공 시 내부 생성. 여러 `compileAsync` 간 SourceFile 을 재사용.
-- **transformStylesheet**: `(data, containingFile, stylesheetFile?) => Promise<string|null>` — 스타일시트 변환 콜백(Angular only). 컴포넌트 인라인/외부 스타일을 변환. 미제공 + Angular 면 내부 라이브러리용 콜백을 자동 생성. 반환 `null` 이면 변환 없음.
-- **externalStylesheets**: `Map<string, string>` — 외부 스타일시트 맵(클라이언트 빌드용). 해석된 스타일 경로를 해시 ID 로 매핑해 `<id>.css` 가상 파일명으로 분리.
-- **compilerOptionsTransformer**: `(options) => options` — 최종 `compilerOptions` 후처리. 클라이언트의 target/module 강제, `inlineSourceMap` 등 강제에 사용(`sdAngularPlugin` 이 이걸 씀).
-- **lint**: boolean — `true` 면 `compileAsync` 가 ESLint 를 같은 Program 으로 실행하고 결과를 `result.lint` 에 담는다(중복 Program 생성 방지). 글로벌 SCSS 와 병렬 실행.
-- **globalScss**: boolean — `true` 면 `scss/styles.scss` → 패키지 루트 `styles.css` 를 생성. 에러는 `result.scssErrors` 에 누적.
+- `pkgDir: string` — 컴파일 대상 패키지 디렉토리.
+- `cwd: string` — workspace 루트; 진단 필터링과 경로 상대화에 사용된다.
+- `output: { js: boolean; dts: boolean }` — JS/선언파일 출력 제어 컨테이너.
+- `output.js: boolean` — `true` 면 JS emit 을 켜고, Angular 가 아닌 경우 source map 도 켠다.
+- `output.dts: boolean` — `true` 면 declaration/declarationMap 을 켜고 `declarationDir` 을 `pkgDir/dist` 로 둔다; `output.js` 가 `false` 이면 `emitDeclarationOnly` 가 된다.
+- `includeTests?: boolean` — `true` 면 패키지 하위 파일(src+tests)을 rootNames 에 포함하고, 미지정/`false` 면 `src/` 하위 소스만 포함한다.
+- `env?: "node" | "browser"` — 타입체크 환경; 지정 시 env 별 compilerOptions 변환을 적용하고 tsbuildinfo 파일명에 env 접미사를 붙인다.
+- `"node"` — DOM/webworker lib 패턴을 제거하고 package devDependencies 의 `@types/*` 를 types 로 설정한다.
+- `"browser"` — lib 은 유지하고 package devDependencies 의 `@types/*` 중 `node` 를 제외해 types 로 설정한다.
+- `sourceFileCache?: AngularSourceFileCache` — Angular 증분 빌드용 SourceFile 캐시; 미제공 시 내부에서 생성한다.
+- `transformStylesheet?: (...) => Promise<string | null>` — Angular style 리소스 변환 콜백; 미제공이고 Angular 모드이면 라이브러리용 SCSS 변환 콜백을 자동 생성한다.
+- `data: string` — 변환할 style 리소스 내용.
+- `containingFile: string` — style 을 포함한 파일 경로.
+- `stylesheetFile?: string` — 외부 style 리소스 파일 경로; 리소스 파일이 없으면 `undefined` 로 전달된다.
+- `Promise<string | null>` — `string` 은 변환된 content 로 사용되고, `null` 은 변환 결과 없음으로 처리된다.
+- `externalStylesheets?: Map<string, string>` — 외부 style 실제 경로를 해시 ID 에 매핑하는 맵; 외부 style 은 `<id>.css` 가상 파일명으로 반환된다.
+- `compilerOptionsTransformer?: (options) => ts.CompilerOptions` — 최종 compilerOptions 후처리 콜백.
+- `lint?: boolean` — `true` 면 같은 `ts.Program` 으로 ESLint 를 실행하고 결과를 `result.lint` 에 담는다.
+- `globalScss?: boolean` — `true` 면 `scss/styles.scss` 를 패키지 루트 `styles.css` 로 컴파일하고 에러를 `scssErrors` 에 담는다.
 
-```typescript
-import { SdTsCompiler } from "@simplysm/sd-cli";
-
-const compiler = new SdTsCompiler({
-  pkgDir: path.resolve(cwd, "packages/excel"),
-  cwd,
-  output: { js: true, dts: true },
-});
-const result = await compiler.compileAsync();
-```
-
-## compileAsync
+## compileAsync / ISdTsCompilerEmitOptions
 
 ```typescript
 compileAsync(
@@ -68,16 +84,14 @@ interface ISdTsCompilerEmitOptions {
 }
 ```
 
-- **modifiedFiles**: `ReadonlySet<string>` — 직전 호출 이후 변경된 파일 집합. 지정 시 SourceFile 캐시를 무효화하고, `node_modules` 경로가 포함되면 package.json 해석 캐시도 클리어. 미지정 시 전체 기준으로 진행. watch 재빌드에서 증분 컴파일에 쓴다.
-- **emitOptions.sourceFilter**: `(fileName) => boolean` — Angular only. emit 결과 중 이 필터를 통과한 소스만 `emitResults` 에 남긴다.
-- **emitOptions.additionalTransformers**: Angular only. Angular transformer 뒤에 `before`/`after` 커스텀 transformer 를 덧붙인다.
-
-여러 단계(analyze/affected 탐색/emit/진단 수집/lint+globalScss)를 각각 try-catch 로 감싸 한 단계가 크래시해도 나머지를 진행하고, 크래시는 `ISdTsCompilerResult.diagnostics` 에 에러 진단으로 합산된다.
-
-```typescript
-// watch 재빌드: 변경 파일만 넘겨 증분 컴파일
-const result = await compiler.compileAsync(new Set(["packages/excel/src/a.ts"]));
-```
+- `modifiedFiles?: ReadonlySet<string>` — 직전 호출 이후 변경된 파일 집합; 있으면 Angular SourceFile 캐시를 무효화하고 `node_modules` 경로가 포함될 때 packageJson cache 를 비운다.
+- `emitOptions?: ISdTsCompilerEmitOptions` — emit 단계 추가 옵션.
+- `sourceFilter?: (fileName: string) => boolean` — Angular emit 결과에서 지정한 소스 파일만 남기는 필터.
+- `fileName: string` — `sourceFilter` 에 전달되는 원본 소스 파일명.
+- `additionalTransformers?: { before?: ...; after?: ... }` — Angular `prepareEmit()` 으로 얻은 transformer 배열 뒤에 추가할 transformer 묶음.
+- `before?: ts.TransformerFactory<ts.SourceFile>[]` — Angular before transformer 뒤에 push 되는 추가 before transformer 목록.
+- `after?: ts.TransformerFactory<ts.SourceFile>[]` — Angular after transformer 뒤에 push 되는 추가 after transformer 목록.
+- 단계별 catch 대상 — Angular analyze, affected 탐색, emit, 진단 수집, lint+global SCSS 단계의 크래시는 `SerializedDiagnostic` 에러로 결과에 합산된다.
 
 ## ISdTsCompilerResult
 
@@ -92,29 +106,97 @@ interface ISdTsCompilerResult {
   warningCount: number;
   errors?: string[];
   ngtscProgram?: NgtscProgram;
-  emitResults?: EmitResult[];        // { filename, contents, sourceFileName }
-  lint?: LintWithProgramResult;      // { success, errorCount, warningCount, formattedOutput }
+  emitResults?: EmitResult[];
+  lint?: LintWithProgramResult;
   scssErrors: string[];
   scssDependencies: ReadonlyMap<string, ReadonlySet<string>>;
 }
 ```
 
-- **program / builderProgram**: TypeScript Program 과 Builder Program 참조(lint·외부 도구·증분 빌드용).
-- **isForAngular**: boolean — tsconfig 에 `angularCompilerOptions` 가 있어 Angular AOT 모드로 컴파일됐는지.
-- **affectedFiles**: `ReadonlySet<string> | undefined` — 이번 빌드에서 영향받은 파일(posix 경로). `undefined` 면 전역 변경(전체 리빌드).
-- **diagnostics**: `SerializedDiagnostic[]` — 직렬화된 진단(worker 경계 통과용). workspace 외부 진단은 필터링됨.
-- **errorCount / warningCount**: Error/Warning 카테고리 진단 수(크래시 진단 포함).
-- **errors**: string[] — Error 진단을 `"파일:줄:열: TS코드: 메시지"` 형식으로 포맷한 배열. 에러 없으면 `undefined`.
-- **ngtscProgram**: `NgtscProgram` — Angular only(HMR 용). Non-Angular 이면 `undefined`.
-- **emitResults**: `EmitResult[]` — Angular emit 결과(`{ filename, contents, sourceFileName }`). **Non-Angular 이면 `undefined`** — Non-Angular 은 writeFile 훅으로 디스크에 직접 쓰기 때문(메모리 반환 아님).
-- **lint**: `LintWithProgramResult` — `lint:true` 일 때만. `{ success, errorCount, warningCount, formattedOutput }`.
-- **scssErrors**: string[] — SCSS 컴파일 에러 목록(글로벌/side-effect/스타일시트 변환 누적).
-- **scssDependencies**: `ReadonlyMap<string, ReadonlySet<string>>` — 소유자 파일 → 의존 SCSS 경로 집합. watch 에서 SCSS 변경의 역방향 탐색에 사용.
+- `program: ts.Program` — 생성된 TypeScript Program 참조.
+- `builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram` — 증분 emit/diagnostics 에 사용하는 Builder Program 참조.
+- `isForAngular: boolean` — 파싱된 tsconfig 에 `angularCompilerOptions` 가 있으면 `true`.
+- `affectedFiles: ReadonlySet<string> | undefined` — 이번 빌드에서 영향받은 posix 파일 경로 집합; `undefined` 는 전역 변경이다.
+- `diagnostics: SerializedDiagnostic[]` — workspace 범위로 필터링한 직렬화 진단과 내부 크래시 진단 목록.
+- `errorCount: number` — Error category 진단 수; 내부 크래시 진단도 포함한다.
+- `warningCount: number` — Warning category 진단 수.
+- `errors?: string[]` — Error category 진단을 포맷한 문자열 배열; 에러가 없으면 `undefined`.
+- `ngtscProgram?: NgtscProgram` — Angular 모드에서 사용하는 Angular compiler program 참조.
+- `emitResults?: EmitResult[]` — Angular emit 메모리 결과; non-Angular 는 writeFile 훅으로 디스크에 쓰므로 `undefined` 다.
+- `lint?: LintWithProgramResult` — `lint: true` 일 때 실행한 ESLint 결과.
+- `scssErrors: string[]` — SCSS 컴파일 에러 목록.
+- `scssDependencies: ReadonlyMap<string, ReadonlySet<string>>` — owner 파일에서 의존 SCSS posix 경로 집합으로 가는 맵.
 
-## 보조 메서드
+## 반환값 내부 구조
 
-`SdTsCompiler` 는 SCSS 처리용 보조 멤버도 노출한다(주로 빌드 엔진 내부 배선용):
+```typescript
+interface EmitResult {
+  filename: string;
+  contents: string;
+  sourceFileName: string;
+}
 
-- **get sideEffectScssRegistry**: `Map<string, SideEffectScssEntry>` — side-effect SCSS 레지스트리 참조. emit 코드에서 항목 등록용.
-- **compileSideEffectScss()**: 레지스트리의 모든 항목을 CSS 로 컴파일. 에러는 `scssErrors` 에 누적.
-- **findAffectedByScss(scssPath)**: `string[]` — 주어진 SCSS 경로에 의존하는 파일 목록 반환(watch 역방향 탐색).
+interface LintWithProgramResult {
+  success: boolean;
+  errorCount: number;
+  warningCount: number;
+  formattedOutput: string;
+}
+
+interface SerializedDiagnostic {
+  category: number;
+  code: number;
+  messageText: string | SerializedMessageChain;
+  file?: { fileName: string };
+  start?: number;
+  length?: number;
+  relatedInformation?: SerializedDiagnosticRelatedInformation[];
+  reportsUnnecessary?: boolean;
+  reportsDeprecated?: boolean;
+  source?: string;
+}
+
+interface SerializedMessageChain {
+  messageText: string;
+  category: number;
+  code: number;
+  next?: SerializedMessageChain[];
+}
+
+interface SerializedDiagnosticRelatedInformation {
+  category: number;
+  code: number;
+  messageText: string | SerializedMessageChain;
+  file?: { fileName: string };
+  start?: number;
+  length?: number;
+}
+```
+
+- `EmitResult.filename: string` — emit 출력 파일명.
+- `contents: string` — emit 출력 내용.
+- `sourceFileName: string` — emit 의 원본 소스 파일 경로.
+- `LintWithProgramResult.success: boolean` — lint error count 가 0 이면 `true`.
+- `LintWithProgramResult.errorCount: number` — lint error 수.
+- `LintWithProgramResult.warningCount: number` — lint warning 수.
+- `formattedOutput: string` — ESLint formatter(`stylish`) 출력 문자열.
+- `SerializedDiagnostic.category: number` — TypeScript diagnostic category 값.
+- `code: number` — TypeScript diagnostic code 값.
+- `messageText: string | SerializedMessageChain` — 단순 메시지 또는 chain 구조로 보존된 메시지.
+- `file?: { fileName: string }` — 진단 파일명만 담은 축약 파일 정보.
+- `start?: number` — 진단 시작 위치.
+- `length?: number` — 진단 길이.
+- `relatedInformation?: SerializedDiagnosticRelatedInformation[]` — 관련 진단 정보 배열.
+- `reportsUnnecessary?: boolean` — TypeScript `reportsUnnecessary` 플래그가 있으면 `true`.
+- `reportsDeprecated?: boolean` — TypeScript `reportsDeprecated` 플래그가 있으면 `true`.
+- `source?: string` — TypeScript diagnostic source 값.
+- `SerializedMessageChain.messageText: string` — chain 노드의 diagnostic 메시지.
+- `SerializedMessageChain.category: number` — chain 노드의 diagnostic category 값.
+- `SerializedMessageChain.code: number` — chain 노드의 diagnostic code 값.
+- `SerializedMessageChain.next?: SerializedMessageChain[]` — 다음 하위 메시지 chain 목록.
+- `SerializedDiagnosticRelatedInformation.category: number` — 관련 진단의 category 값.
+- `SerializedDiagnosticRelatedInformation.code: number` — 관련 진단의 code 값.
+- `SerializedDiagnosticRelatedInformation.messageText: string | SerializedMessageChain` — 관련 진단 메시지.
+- `SerializedDiagnosticRelatedInformation.file?: { fileName: string }` — 관련 진단 파일명만 담은 축약 파일 정보.
+- `SerializedDiagnosticRelatedInformation.start?: number` — 관련 진단 시작 위치.
+- `SerializedDiagnosticRelatedInformation.length?: number` — 관련 진단 길이.

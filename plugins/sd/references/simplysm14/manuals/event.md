@@ -7,15 +7,21 @@
 흐름:
 
 ```
-[발생측]  client.emitEvent(EventDef, selector, data)   ← 클라이언트 (가장 흔함)
-          ctx.server.emitEvent(EventDef, selector, data)  ← 서버
-              │
-              ▼  서버가 selector 로 대상 구독을 추려 라우팅
-[구독측]  client.getEvent(EventDef).addListener(info, cb) 로 등록한 콜백 실행
+[구독측]  client.getEvent(EventDef).addListener(info, cb) 로 info + 콜백 등록
+
+[클라이언트 발생] client.emitEvent(EventDef, selector, data)
+  1) 서버에서 해당 eventName 의 listener info 목록 조회
+  2) 발생 클라이언트가 selector 로 대상 key 를 고름
+  3) 서버가 key 에 해당하는 연결로 data 전달
+
+[서버 발생] ctx.server.emitEvent(EventDef, selector, data)
+  1) 서버가 listener info 에 selector 를 적용해 대상 key 를 고름
+  2) 서버가 key 에 해당하는 연결로 data 전달
 ```
 
 - **구독(리스너 등록)은 클라이언트에만 있음**. 서버는 발생만 가능(구독 불가).
 - **발생은 클라이언트·서버 양쪽 가능**. 화면 동작에서 비롯되는 변경 알림이 대부분이라 클라이언트 발생이 더 흔함.
+- 클라이언트 발생의 `selector` 함수는 서버로 직렬화되지 않고 발생 클라이언트에서 실행됨. 서버 발생의 `selector` 는 서버에서 실행됨.
 
 ## 이벤트를 정의하려면
 
@@ -55,7 +61,7 @@ const listenerKey = await event.addListener(
 
 - `info` 는 정의의 `TInfo` 타입. 발생측의 selector 가 이 값을 보고 전달 여부를 결정(아래 "특정 구독자에게만").
 - 콜백의 `data` 는 정의의 `TData` 로 타입이 잡힘.
-- `addListener` 는 연결이 끊긴 상태에서 호출하면 throw(`서버에 연결되지 않았습니다.`). 부트스트랩의 `connectAsync()` 이후에 등록.
+- `addListener` 는 서버 연결 완료 후 등록. 앱 provider 패턴이면 `AppServiceProvider.connectAsync()`, raw `ServiceClient` 를 직접 쓰면 `client.connect()` 완료 뒤 호출.
 - AppServiceProvider 에서 이벤트 프록시를 getter 로 노출하는 패턴은 [client-service.md](./client-service.md) 참조.
 
 ## 구독을 해제하려면

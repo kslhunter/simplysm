@@ -1,7 +1,6 @@
 ---
 name: sd-use
 description: 사용자 요청을 분석해 워크스페이스의 sd-* 스킬 중 가장 적합한 스킬을 추천하는 스킬. Use when 어떤 sd-* 스킬을 써야 할지 모를 때.
-model: haiku
 ---
 
 # sd-use

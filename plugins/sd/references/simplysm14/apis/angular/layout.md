@@ -1,63 +1,122 @@
-# @simplysm/angular — 레이아웃(사이드바·탑바)
+# @simplysm/angular — 레이아웃
 
-앱 셸의 좌측 사이드바·상단바와 그 안의 메뉴/사용자 메뉴 컴포넌트 군. 앱 루트 레이아웃에서 한 번 구성. 메뉴 항목 타입(`SdMenu`)·라우터 링크는 [routing-appstructure.md](./routing-appstructure.md) 의 것을 사용.
+앱 shell의 sidebar/topbar와 menu/user menu 컴포넌트 군이다. 메뉴 타입·선택 판정은 [routing-appstructure.md](./routing-appstructure.md)의 `SdMenu`/helper를 사용한다.
 
-## 사이드바
+## sidebar
 
 ### `SdSidebarContainer` — `<sd-sidebar-container>`
 
-사이드바 + 본문을 감싸는 컨테이너.
+```ts
+class SdSidebarContainer {
+  toggle: WritableSignal<boolean>;
+  onBackdropClick(): void;
+}
+```
 
-- input 없음.
-- `toggle: WritableSignal<boolean>` (초기 false) — true 면 사이드바 접힘(컨테이너 좌패딩 0); 모바일에선 backdrop 표시. 라우터 있으면 `NavigationStart` 마다 `false` 로 리셋(라우트 전환 시 자동 닫힘).
-- `onBackdropClick(): void` — `toggle` 반전.
+- `toggle` — sidebar 접힘/열림 상태. desktop에서는 true가 padding-left 0/sidebar hidden, mobile에서는 true가 backdrop 표시/sidebar shown.
+- `onBackdropClick` — mobile backdrop click/Enter에서 `toggle` 을 반전한다.
+- Router 연동 — optional Router가 있으면 `NavigationStart` 때 `toggle` 을 false로 돌린다.
 
 ### `SdSidebar` — `<sd-sidebar>`
 
-- input 없음. `toggle: Signal<boolean>` — 부모 컨테이너 `toggle` 미러(슬라이드 transform 구동).
+```ts
+class SdSidebar { toggle: Signal<boolean> }
+```
+
+- `toggle` — parent `SdSidebarContainer.toggle()` 을 그대로 읽는 computed. host `data-sd-toggle` 과 transform style에 쓰인다.
+- 배치 — desktop은 absolute left sidebar, mobile은 기본 숨김이고 toggle true일 때 표시한다.
 
 ### `SdSidebarMenu` — `<sd-sidebar-menu>`
 
-- `menus: SdMenu[]` (기본 `[]`) — 메뉴 트리.
-- `layout: "accordion"|"accordion-expanded"|"flat"|undefined` — `"flat"` = 최상위 평면; `"accordion"` = 접힌 아코디언; `"accordion-expanded"` = 전체 펼친 아코디언; `undefined` = 자동(`menus.length <= 3` 이면 flat, 아니면 accordion).
-- `getMenuIsSelectedFn: (menu: SdMenu) => boolean` — 커스텀 선택 판정(미지정 시 fullPageCode 비교).
+```ts
+class SdSidebarMenu {
+  menus: InputSignal<SdMenu[]>;
+  layout: InputSignal<"accordion" | "accordion-expanded" | "flat" | undefined>;
+  getMenuIsSelectedFn: InputSignal<((menu: SdMenu) => boolean) | undefined>;
+}
+```
 
-### `SdSidebarUser` — `<sd-sidebar-user>`
+- `menus` — 렌더링할 `SdMenu` tree.
+- `layout` — `"accordion"` 은 접히는 root, `"accordion-expanded"` 는 children이 있는 항목을 처음부터 open, `"flat"` 은 root depth만 flat layout. 미지정이면 root menu 개수가 3개 이하일 때 `"flat"`, 아니면 `"accordion"`.
+- `getMenuIsSelectedFn` — menu 선택 판정을 덮어쓸 함수. 없으면 full page code와 `menu.codeChain.join(".")` 를 비교한다.
+- internal link — children/url 없는 leaf는 `getMenuRouterLinkOption(menu)` 를 `[sdRouterLink]` 로 전달한다.
+- external link — `menu.url` 이 있으면 click에서 `window.open(menu.url, "_blank")`.
 
-- `userMenu: SdSidebarUserMenu | undefined` — 설정 시 투영 콘텐츠 아래에 접이식 사용자 메뉴 버튼.
-- `SdSidebarUserMenu` = `{ icon?: string; title: string; menus: { title: string; onClick: () => Promise<void> | void }[] }`.
+### `SdSidebarUser` / `SdSidebarUserMenu` — `<sd-sidebar-user>`
 
-## 탑바
+```ts
+interface SdSidebarUserMenu {
+  icon?: string;
+  title: string;
+  menus: { title: string; onClick: () => Promise<void> | void }[];
+}
+class SdSidebarUser {
+  userMenu: InputSignal<SdSidebarUserMenu | undefined>;
+  menuOpen: WritableSignal<boolean>;
+}
+```
+
+- `userMenu.icon` — menu open button 앞에 표시할 icon 문자열.
+- `userMenu.title` — user menu open button label.
+- `userMenu.menus` — collapse 안에 렌더할 menu item 배열.
+- `menus.title` — user menu item label.
+- `menus.onClick` — item click 시 호출할 handler.
+- `userMenu` — undefined면 projected user content만 표시하고 menu button/collapse는 렌더하지 않는다.
+- `menuOpen` — collapse open 상태.
+
+## topbar
 
 ### `SdTopbarContainer` — `<sd-topbar-container>`
 
-탑바 + 본문 래퍼. input/메서드 없음.
+```ts
+class SdTopbarContainer {}
+```
+
+- 동작 — content를 column flex, height 100%로 감싸 topbar + body shell 구조를 만든다.
 
 ### `SdTopbar` — `<sd-topbar>`
 
-- `sidebarContainer: SdSidebarContainer | undefined` — 토글할 컨테이너(주입된 것 override). 사이드바 있으면 햄버거 토글 버튼(`tablerMenu2`) 표시.
+```ts
+class SdTopbar {
+  sidebarContainer: InputSignal<SdSidebarContainer | undefined>;
+  hasSidebar: Signal<boolean>;
+  onToggleButtonClick(): void;
+}
+```
+
+- `sidebarContainer` — toggle button이 조작할 container를 명시 주입할 때 쓴다.
+- `hasSidebar` — input container 또는 DI로 찾은 `SdSidebarContainer` 가 있으면 true.
+- `onToggleButtonClick` — 대상 container의 `toggle` 을 반전한다.
+- button 표시 — `hasSidebar` 가 true면 menu icon link button을 렌더한다.
 
 ### `SdTopbarMenu` — `<sd-topbar-menu>`
 
-- `menus: SdMenu[]` (기본 `[]`) — 각 최상위 메뉴를 드롭다운으로, 자식은 팝업 내 중첩 리스트로.
-- `getMenuIsSelectedFn: (menu: SdMenu) => boolean` — 커스텀 선택 판정.
-
-### `SdTopbarUser` — `<sd-topbar-user>`
-
-- `menus: input.required<SdTopbarUserMenu[]>` — 드롭다운 안 리스트 항목. 투영 콘텐츠가 트리거 라벨.
-- `SdTopbarUserMenu` = `{ title: string; onClick: () => void }`.
-
-```html
-<sd-sidebar-container>
-  <sd-sidebar>
-    <sd-sidebar-menu [menus]="menus()" />
-    <sd-sidebar-user [userMenu]="userMenu" />
-  </sd-sidebar>
-  <sd-topbar-container>
-    <sd-topbar>
-      <sd-topbar-user [menus]="userMenus">{{ userName() }}</sd-topbar-user>
-    </sd-topbar>
-    <router-outlet />
-  </sd-topbar-container>
-</sd-sidebar-container>
+```ts
+class SdTopbarMenu {
+  menus: InputSignal<SdMenu[]>;
+  getMenuIsSelectedFn: InputSignal<((menu: SdMenu) => boolean) | undefined>;
+}
 ```
+
+- `menus` — root마다 dropdown button을 만드는 `SdMenu` 배열.
+- `getMenuIsSelectedFn` — menu 선택 판정 override. 없으면 full page code 비교.
+- internal link — leaf는 `getMenuRouterLinkOption(menu)` 를 `[sdRouterLink]` 로 전달한다.
+- external link — `menu.url` 이 있으면 새 tab으로 연다.
+- close 동작 — children 없는 item click 후 해당 dropdown `open` 을 false로 set한다.
+
+### `SdTopbarUser` / `SdTopbarUserMenu` — `<sd-topbar-user>`
+
+```ts
+interface SdTopbarUserMenu {
+  title: string;
+  onClick: () => void;
+}
+class SdTopbarUser {
+  menus: InputSignal<SdTopbarUserMenu[]>;
+}
+```
+
+- `menus` — required user dropdown item 배열.
+- `menus.title` — dropdown item label.
+- `menus.onClick` — item click handler. 호출 후 dropdown을 닫는다.
+- projection — dropdown button 내부에 projected content를 표시한다.

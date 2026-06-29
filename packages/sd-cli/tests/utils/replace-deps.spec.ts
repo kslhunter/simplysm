@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveReplaceDepEntries, parseWorkspaceGlobs } from "../../src/deps/replace-deps/replace-deps-resolve";
+import { resolveReplaceDepEntries } from "../../src/deps/replace-deps/replace-deps-resolve";
 
 describe("resolveReplaceDepEntries", () => {
   it("matches exact package names", () => {
@@ -31,39 +31,5 @@ describe("resolveReplaceDepEntries", () => {
     );
 
     expect(results).toHaveLength(0);
-  });
-});
-
-describe("parseWorkspaceGlobs", () => {
-  it("parses packages section from workspace yaml", () => {
-    const content = `packages:
-  - "packages/*"
-  - "tools/*"
-`;
-    const globs = parseWorkspaceGlobs(content);
-    expect(globs).toEqual(["packages/*", "tools/*"]);
-  });
-
-  it("handles unquoted values", () => {
-    const content = `packages:
-  - packages/*
-`;
-    const globs = parseWorkspaceGlobs(content);
-    expect(globs).toEqual(["packages/*"]);
-  });
-
-  it("stops at next section", () => {
-    const content = `packages:
-  - packages/*
-other:
-  - something
-`;
-    const globs = parseWorkspaceGlobs(content);
-    expect(globs).toEqual(["packages/*"]);
-  });
-
-  it("returns empty array when no packages section", () => {
-    const globs = parseWorkspaceGlobs("other:\n  - foo\n");
-    expect(globs).toEqual([]);
   });
 });

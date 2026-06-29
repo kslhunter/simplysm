@@ -21,10 +21,10 @@ export async function publishNpm(
 
   if (dryRun) {
     args.push("--dry-run");
-    logger.info(`[DRY-RUN] [${pkgName}] pnpm ${args.join(" ")}`);
+    logger.info(`[DRY-RUN] [${pkgName}] bun ${args.join(" ")}`);
   } else {
-    logger.debug(`[${pkgName}] pnpm ${args.join(" ")}`);
+    logger.debug(`[${pkgName}] bun ${args.join(" ")}`);
   }
 
-  await shellSpawn("pnpm", args, { cwd: pkgPath });
+  await shellSpawn("bun", args, { cwd: pkgPath });
 }

@@ -4,8 +4,8 @@
 
 ## 원칙
 
-- 모든 로그는 `@simplysm/core-common` 의 `createLogger(tag)` 로 생성한 인스턴스로 출력. `console.*` 직접 호출 금지.
-- ESLint `no-console` 규칙은 의도된 게이트 — `eslint-disable`·`eslint-disable-next-line no-console` 로 우회 금지.
+- 제품/런타임 소스의 로그는 `@simplysm/core-common` 의 `createLogger(tag)` 로 생성한 인스턴스로 출력. `console.*` 직접 호출 금지.
+- ESLint `no-console` 규칙은 제품/런타임 소스의 의도된 게이트 — `eslint-disable`·`eslint-disable-next-line no-console` 로 우회 금지. 단, 현재 recommended config 는 `**/tests/**/*.ts` 에서 `no-console` 을 끄므로 테스트 진행 로그 등 제한적 용도는 예외.
 - 메시지 본문에 `[패키지명]` 같은 수동 prefix 추가 금지. prefix 역할은 tag 가 담당.
 
 ## 권장 패턴
@@ -44,7 +44,8 @@ console.error("[X] 실패:", err);
 
 ## 환경별 셋업
 
-- **Node 진입점(서버·CLI)**: 진입점에서 `setupConsola()` 를 1회 호출.
+- **Node 서버 진입점**: 진입점에서 `setupConsola()` 를 1회 호출.
+- **Node CLI 진입점**: 진입점 또는 CLI middleware 에서 `setupConsola({ cli: true })` 를 호출.
 - **Browser·Capacitor 진입점**: `setupConsola` 호출 금지 (Node 전용 API). consola 기본 reporter 가 브라우저 콘솔로 출력하며, tag·level·호출 방식의 일관성은 그대로 충족.
 
 ## 모듈-레벨 logger 주의
@@ -59,7 +60,7 @@ console.error("[X] 실패:", err);
 
 다음 경우에 한해 `/* eslint-disable no-console */` 파일 헤더 허용. 그 외는 모두 consola 로 교체.
 
-- **CLI 도움말·yargs help 텍스트** 처럼 stdout 자체를 사용자 출력 채널로 쓰는 경우 (예: `packages/sd-cli/src/sd-cli-entry.ts` 의 `collectYargsHelp`).
+- **CLI 도움말·yargs help 텍스트** 처럼 stdout 자체를 사용자 출력 채널로 쓰는 경우.
 - **ErrorHandler 의 마지막 안전망** 등 consola 자체가 죽었을 가능성이 있는 catch 블록 — 해당 라인만 `eslint-disable-next-line no-console` + 사유 주석.
 
 예외 적용 시 disable 주석 바로 위에 사유를 1줄로 기재.

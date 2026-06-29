@@ -1,65 +1,105 @@
 # @simplysm/service-client — 저수준 전송 계층
 
-`ServiceClient` 가 생성자에서 내부적으로 조립하는 저수준 모듈들. WebSocket 연결·하트비트·자동 재연결(SocketProvider), 요청/응답 uuid 매칭과 메시지 디스패치(ServiceTransport), 인코딩/디코딩의 Worker 오프로딩(ClientProtocolWrapper). 일반 사용에서는 `ServiceClient` 만 쓰면 되며, 이 계층은 소켓·청크·하트비트 동작을 이해해야 할 때만 읽는다.
+`ServiceClient` 가 내부에서 조립하는 WebSocket, 요청/응답 매칭, 프로토콜 Worker 오프로딩 API 묶음. 직접 조립하거나 연결·청크·Worker 동작을 확인할 때 읽는다.
 
 ## SocketProvider / createSocketProvider
 
-WebSocket 1개의 연결·하트비트·자동 재연결 담당.
+```ts
+interface SocketProviderEvents {
+  message: Bytes;
+  state: "connected" | "closed" | "reconnecting";
+}
+interface SocketProvider {
+  readonly clientName: string;
+  readonly connected: boolean;
+  on<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  off<K extends keyof SocketProviderEvents & string>(type: K, listener: (data: SocketProviderEvents[K]) => void): void;
+  connect(): Promise<void>;
+  close(): Promise<void>;
+  send(data: Bytes): Promise<void>;
+}
+function createSocketProvider(url: string, clientName: string, maxReconnectCount: number): SocketProvider;
+```
 
-`createSocketProvider(url, clientName, maxReconnectCount): SocketProvider` — 프로바이더 생성. 이 모듈은 import 시점에 글로벌 `WebSocket` 이 없으면 `ws` 패키지로 polyfill 한다(Node 환경).
-
-- `url: string` — `ws(s)://host:port/ws`. 접속 시 `ver=2`, 생성된 `clientId`(UUID), `clientName` 쿼리를 붙임.
-- `clientName: string` — 접속 쿼리에 실리는 식별명.
-- `maxReconnectCount: number` — 최대 재연결 시도 횟수. 0 이면 재연결 안 함.
-
-내부 상수: ping 5초 간격 전송, 30초 무수신 시 타임아웃, 재연결 3초 간격. 1바이트 `0x01` ping 전송, 수신한 1바이트 `0x02` pong 은 무시(하트비트 타임스탬프만 갱신).
-
-`SocketProvider` 멤버:
-
-- `clientName: string` (readonly) — 생성 시 받은 식별명.
-- `connected: boolean` (getter) — 소켓이 OPEN 상태인지.
-- `connect(): Promise<void>` — 접속 시작. 실패 시 throw, 성공 시 재연결 카운트 리셋 후 `state: "connected"` emit.
-- `close(): Promise<void>` — 수동 종료. 이후 자동 재연결 안 함. 소켓 CLOSED 까지 대기 후 `state: "closed"` emit.
-- `send(data: Bytes): Promise<void>` — 바이트 전송. 일정 시간 내 미연결이면 throw("서버에 연결되지 않았습니다. 인터넷 연결을 확인해 주세요.").
-- `on(type, listener)` / `off(type, listener)` — 이벤트 구독/해제.
-
-`SocketProviderEvents`:
-
-- `message: Bytes` — 수신 바이트(1바이트 ping/pong 제어 프레임 제외).
-- `state: "connected" | "closed" | "reconnecting"` — 연결 상태 전이. `"connected"` = 연결/재연결 성공, `"closed"` = 수동 종료 또는 재연결 한도 초과, `"reconnecting"` = 재연결 시도 중.
-
-하트비트 타임아웃 감지 시 소켓을 강제 정리하고(늦은 `onclose` 로 인한 중복 재연결 방지를 위해 핸들러 해제) 수동 종료가 아니면 재연결을 시도. 재연결은 재귀 대신 루프로 수행하며 최대 시도 초과 시 `state: "closed"` emit.
+- 모듈 import 동작 — `globalThis.WebSocket` 이 없으면 `ws` 패키지를 동적 import 해 `globalThis.WebSocket` 에 대입한다.
+- `url: string` — WebSocket 기준 URL. 실제 연결은 `ver=2`, 생성 UUID `clientId`, `clientName` 쿼리를 붙여 생성한다.
+- `clientName: string` — 접속 쿼리의 `clientName` 값이자 반환 객체의 readonly 값.
+- `maxReconnectCount: number` — 자동 재연결 루프의 최대 시도 횟수. 0이면 루프가 실행되지 않고 closed 상태로 끝난다.
+- `HEARTBEAT_TIMEOUT = 30000` — 마지막 메시지 이후 30초가 지나면 타임아웃으로 본다.
+- `HEARTBEAT_INTERVAL = 5000` — 5초마다 ping 전송 타이머를 실행한다.
+- `RECONNECT_DELAY = 3000` — 재연결 시도 사이 대기 시간.
+- `message: Bytes` — 수신 바이트 이벤트. 1바이트 `0x02` pong 은 heartbeat 갱신 후 emit 하지 않는다.
+- `state: "connected"|"closed"|"reconnecting"` — 연결 상태 이벤트.
+  - `"connected"` — 최초 연결 또는 재연결 성공.
+  - `"closed"` — 수동 종료 또는 재연결 한도 초과.
+  - `"reconnecting"` — 재연결 루프의 각 시도 시작.
+- `connected: boolean` — 현재 WebSocket `readyState === WebSocket.OPEN` 여부.
+- `on(type, listener)` / `off(type, listener)` — 내부 EventEmitter 에 이벤트 리스너를 등록·해제한다.
+- `connect()` — 이미 OPEN 이면 반환하고, 아니면 소켓 생성 → heartbeat 시작 → 재연결 카운트 초기화 → `connected` emit 순서로 동작한다. 초기 연결 실패는 throw 한다.
+- `close()` — 수동 종료 플래그를 세우고 heartbeat 를 멈춘 뒤 소켓 close 를 요청한다. CLOSED 대기 실패는 catch 후 무시하고 `closed` 를 emit 한다.
+- `send(data: Bytes)` — 연결될 때까지 대기한 뒤 바이트를 `Uint8Array` 로 복사해 `WebSocket.send` 에 전달한다. 연결 대기가 실패하면 인터넷 연결 확인 메시지를 throw 한다.
+- heartbeat ping — 연결 중이면 1바이트 `0x01` 을 보낸다. 전송 실패는 warn 로그만 남긴다.
+- heartbeat timeout — 기존 소켓 핸들러를 제거하고 close 를 시도한 뒤, 수동 종료가 아니면 재연결을 시작한다.
 
 ## ServiceTransport / createServiceTransport
 
-요청별 uuid 매칭, 응답/에러/진행률/서버이벤트 디스패치 담당.
+```ts
+interface ServiceTransportEvents {
+  event: { keys: string[]; data: unknown };
+}
+interface ServiceTransport {
+  on<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  off<K extends keyof ServiceTransportEvents & string>(type: K, listener: (data: ServiceTransportEvents[K]) => void): void;
+  send(message: ServiceClientMessage, progress?: ServiceProgress): Promise<unknown>;
+}
+function createServiceTransport(socket: SocketProvider, protocol: ClientProtocolWrapper): ServiceTransport;
+```
 
-`createServiceTransport(socket, protocol): ServiceTransport` — 트랜스포트 생성. 소켓 `message` 를 받아 decode 후 종류별 분기. 소켓이 `closed`/`reconnecting` 되면 대기 중인 모든 요청을 reject("요청 취소됨: ...") 하여 메모리 해제.
-
-- `socket: SocketProvider` — 하위 소켓.
-- `protocol: ClientProtocolWrapper` — 인코드/디코드 래퍼.
-
-`ServiceTransport` 멤버:
-
-- `send(message, progress?): Promise<unknown>` — 요청 1건 전송 후 응답 Promise 반환. uuid 생성 → 리스너 선등록 → encode → 청크 순차 전송. 응답(`response`) 수신 시 resolve, 에러(`error`) 수신 시 서버 에러 필드를 머지한 `Error` 로 reject. `message = ServiceClientMessage`, `progress = ServiceProgress`(선택).
-- `on(type, listener)` / `off(type, listener)` — 이벤트 구독/해제.
-
-`ServiceTransportEvents`:
-
-- `event: { keys: string[]; data: unknown }` — 서버가 푸시한 `evt:on` 메시지. `EventClient` 가 이걸 구독해 keys 에 매칭되는 로컬 리스너로 디스패치.
-
-decode 실패 시에도 헤더 16바이트에서 uuid 를 선추출해 해당 요청만 reject. 분할 응답이면 완료 시 `progress.response` 로 100% 를 한 번 더 보고. 서버측 진행 메시지(`name: "progress"`)는 `progress.server` 로 전달.
+- `socket: SocketProvider` — 메시지 바이트 송수신과 상태 이벤트 원천.
+- `protocol: ClientProtocolWrapper` — `ServiceClientMessage` encode 와 수신 바이트 decode 담당.
+- `event: { keys; data }` — 서버 `evt:on` 메시지를 EventClient 로 넘기는 이벤트.
+- `keys: string[]` — 서버가 전달한 대상 리스너 key 배열.
+- `data: unknown` — 서버가 전달한 이벤트 데이터.
+- `send(message, progress?)` — UUID 생성 → pending map 등록 → `protocol.encode` → 청크 순차 `socket.send` → 응답 Promise 반환 순서로 동작한다.
+- `message: ServiceClientMessage` — 전송할 클라이언트 메시지.
+- `progress?: ServiceProgress` — 요청·응답·서버 진행 콜백 묶음. 없으면 진행 콜백 호출을 건너뛴다.
+- 요청 progress — 인코딩 결과 `chunks.length > 1` 이면 `request({ uuid, totalSize, completedSize: 0 })` 를 호출한다.
+- 응답 progress — decode 결과가 `type: "progress"` 이면 totalSize 를 기억하고 `response` 콜백을 호출한다. 최종 response 수신 시 기억한 totalSize 가 있으면 100% 상태를 한 번 더 호출한다.
+- 서버 progress — 최종 메시지 이름이 `"progress"` 이면 body 의 `totalSize`·`completedSize` 로 `server` 콜백을 호출한다.
+- response 메시지 — pending map 에서 제거하고 body 를 resolve 한다.
+- error 메시지 — pending map 과 response progress totalSize 를 정리하고 `err.fromObject(body)` 로 reject 한다.
+- evt:on 메시지 — `{ keys, data }` 를 `event` 로 emit 한다.
+- decode 실패 — 헤더 첫 16바이트에서 UUID 를 먼저 추출해 해당 pending 요청만 reject 하고 정리한다.
+- socket `closed` 또는 `reconnecting` — 모든 pending 요청을 `요청 취소됨: ...` 에러로 reject 하고 progress totalSize map 을 비운다.
 
 ## ClientProtocolWrapper / createClientProtocolWrapper
 
-인코드/디코드를 크기 기준으로 Worker 에 오프로딩하는 래퍼. `@simplysm/service-common` 의 `ServiceProtocol` 을 감쌈. Worker 미가용·임계값(30KB) 이하면 메인 스레드 처리로 폴백.
+```ts
+interface ClientProtocolWrapper {
+  encode(uuid: string, message: ServiceMessage): Promise<{ chunks: Bytes[]; totalSize: number }>;
+  decode(bytes: Bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>>;
+  dispose(): void;
+}
+function createClientProtocolWrapper(protocol: ServiceProtocol): ClientProtocolWrapper;
+```
 
-`createClientProtocolWrapper(protocol): ClientProtocolWrapper` — 래퍼 생성.
-
-`ClientProtocolWrapper` 멤버:
-
-- `encode(uuid, message): Promise<{ chunks: Bytes[]; totalSize: number }>` — 메시지를 청크 배열로 인코드. body 가 `Uint8Array`, 30KB 초과 문자열, 길이 100 초과 배열, 또는 첫 항목이 `Uint8Array` 인 배열이면 Worker 사용(그 외·Worker 미가용 시 메인 스레드). `message = ServiceMessage`.
-- `decode(bytes): Promise<ServiceMessageDecodeResult<ServiceMessage>>` — 수신 바이트 디코드. 청크 재조립(stateful)은 한 메시지의 청크가 서로 다른 누적기로 흩어지지 않도록 항상 메인 스레드 단일 누적기에서 수행하고(#35), 재조립 완료 후 30KB 초과 JSON 파싱(stateless)만 Worker 에 위임. 미완료(progress) 상태면 그대로 반환.
-- `dispose(): void` — 프로토콜과 Worker 리졸버 정리. `ServiceClient.close()` 에서 호출.
-
-Worker 는 browser DOM Worker 또는 Node `worker_threads` 중 가용한 쪽을 lazy 초기화하며, Worker 작업이 60초 내 응답하지 않으면 해당 작업을 시간 초과로 reject 한다.
+- `protocol: ServiceProtocol` — 실제 encode, accumulate, parseMessage, dispose 를 수행하는 하위 프로토콜.
+- `uuid: string` — encode 대상 요청 식별자.
+- `message: ServiceMessage` — encode 대상 메시지. `body` 형태에 따라 Worker 사용 여부를 판단한다.
+- `chunks: Bytes[]` — 인코딩 결과 청크 배열.
+- `totalSize: number` — 인코딩 결과 전체 크기.
+- `bytes: Bytes` — decode 대상 수신 바이트.
+- `SIZE_THRESHOLD = 30 * 1024` — 문자열 encode 와 parseMessage Worker 분기 기준 크기.
+- Worker 지원 캐시 — `isWorkerSupported()` 결과를 `workerAvailable` 에 저장한다. Worker 초기화 실패 시 false 로 바뀐다.
+- 브라우저 Worker — `new Worker(new URL("../workers/client-protocol.worker.js", import.meta.url), { type: "module" })` 로 생성한다.
+- Node Worker — `import.meta.resolve("../workers/client-protocol.worker.js")` 와 `worker_threads.Worker` 로 생성하고 `BrowserWorker` 어댑터로 감싼다.
+- Worker 작업 timeout — `LazyGcMap` 이 60초 만료 시 해당 작업을 `Worker 작업 시간 초과` 에러로 reject 한다.
+- `encode` 메인 스레드 경로 — Worker 미지원이거나 메시지 body 가 Worker 조건에 맞지 않으면 `protocol.encode(uuid, message)` 를 호출한다.
+- `encode` Worker 조건 — body 가 `Uint8Array`, 30KB 초과 문자열, 길이 100 초과 배열, 또는 첫 항목이 `Uint8Array` 인 배열이면 Worker encode 를 시도한다.
+- `encode` fallback — Worker 결과가 `undefined` 이면 `protocol.encode` 로 fallback 한다.
+- `decode` accumulate — 청크 재조립은 항상 `protocol.accumulate(bytes)` 로 메인 스레드에서 수행한다.
+- `decode` progress — accumulate 결과가 `type: "progress"` 이면 그대로 반환한다.
+- `decode` parse 메인 스레드 경로 — 재조립된 바이트가 30KB 이하이거나 Worker 미지원이면 `protocol.parseMessage(resultBytes)` 를 호출한다.
+- `decode` parse Worker 경로 — 재조립된 바이트가 30KB 초과이면 `parseMessage` 작업을 Worker 에 보내고 `resultBytes.buffer` 를 transfer 한다.
+- `decode` Worker 결과 — Worker 결과를 `transfer.decode(rawResult) as ServiceMessage` 로 복원해 complete 결과에 넣는다.
+- `dispose()` — 하위 `protocol.dispose()` 와 `workerResolvers.dispose()` 를 호출한다.

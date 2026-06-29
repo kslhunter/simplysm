@@ -3,6 +3,7 @@ import path from "path";
 import { glob } from "glob";
 import type { ConsolaInstance } from "consola";
 import { fsx, pathx } from "@simplysm/core-node";
+import { collectWorkspacePackages } from "../../utils/workspace-utils";
 
 /**
  * replaceDeps 설정의 glob 패턴을 대상 패키지 목록과 매칭하여
@@ -45,45 +46,6 @@ export function resolveReplaceDepEntries(
 }
 
 /**
- * pnpm-workspace.yaml 내용을 파싱하여 워크스페이스 패키지 glob 배열을 반환한다.
- * 별도 YAML 라이브러리 없이 간단한 줄 파싱으로 처리한다.
- *
- * @param content - pnpm-workspace.yaml 파일 내용
- * @returns glob 패턴 배열 (예: ["packages/*", "tools/*"])
- */
-export function parseWorkspaceGlobs(content: string): string[] {
-  const lines = content.split("\n");
-  const globs: string[] = [];
-  let inPackages = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    if (trimmed === "packages:") {
-      inPackages = true;
-      continue;
-    }
-
-    // packages 섹션의 목록 항목
-    if (inPackages && trimmed.startsWith("- ")) {
-      const value = trimmed
-        .slice(2)
-        .trim()
-        .replace(/^["']|["']$/g, "");
-      globs.push(value);
-      continue;
-    }
-
-    // 다른 섹션이 시작되면 종료
-    if (inPackages && trimmed !== "" && !trimmed.startsWith("#")) {
-      break;
-    }
-  }
-
-  return globs;
-}
-
-/**
  * replaceDeps 복사/교체 항목
  */
 export interface ReplaceDepEntry {
@@ -97,26 +59,21 @@ export interface ReplaceDepEntry {
 /**
  * 프로젝트 루트 및 워크스페이스 패키지 경로를 수집한다.
  *
- * pnpm-workspace.yaml을 파싱하여 워크스페이스 패키지의 절대 경로를 수집한다.
- * 파일이 없거나 파싱 실패 시 루트 경로만 반환한다.
+ * package.json#workspaces를 기준으로 워크스페이스 패키지의 절대 경로를 수집한다.
+ * 설정이 없거나 파싱 실패 시 루트 경로만 반환한다.
  *
  * @param projectRoot - 프로젝트 루트 경로
  * @returns [루트, ...워크스페이스 패키지 경로] 배열
  */
-export async function collectSearchRoots(projectRoot: string): Promise<string[]> {
-  const searchRoots = [projectRoot];
+export function collectSearchRoots(projectRoot: string): string[] {
+  const root = pathx.posix(projectRoot);
+  const searchRoots: string[] = [root];
 
-  const workspaceYamlPath = pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml"));
   try {
-    const yamlContent = await fsx.read(workspaceYamlPath);
-    const workspaceGlobs = parseWorkspaceGlobs(yamlContent);
-
-    for (const pattern of workspaceGlobs) {
-      const dirs = await fsx.glob(pattern, { cwd: projectRoot });
-      searchRoots.push(...dirs);
-    }
+    const workspacePackages = collectWorkspacePackages(root);
+    searchRoots.push(...workspacePackages.map((item) => item.absPath));
   } catch {
-    // pnpm-workspace.yaml이 존재하지 않으면 루트만 처리
+    // workspace 설정이 없거나 파싱할 수 없으면 루트만 처리
   }
 
   return searchRoots;
@@ -125,7 +82,7 @@ export async function collectSearchRoots(projectRoot: string): Promise<string[]>
 /**
  * replaceDeps 설정에서 모든 교체 대상 항목을 해결한다.
  *
- * 1. pnpm-workspace.yaml 파싱 → 워크스페이스 패키지 경로
+ * 1. package.json#workspaces 파싱 → 워크스페이스 패키지 경로
  * 2. [루트, ...워크스페이스 패키지] node_modules에서 매칭 패키지 탐색
  * 3. 패턴 매칭 + 소스 경로 존재 확인 + symlink 해결
  *
@@ -144,7 +101,7 @@ export async function resolveAllReplaceDepEntries(
   const searchedDirs = new Set<string>();
 
   // 초기 탐색 대상: 프로젝트 루트 + workspace 패키지들의 node_modules
-  const searchRoots = await collectSearchRoots(projectRoot);
+  const searchRoots = collectSearchRoots(projectRoot);
   const pendingDirs: string[] = searchRoots.map((root) =>
     pathx.posix(path.join(root, "node_modules")),
   );
@@ -188,7 +145,7 @@ export async function resolveAllReplaceDepEntries(
         continue;
       }
 
-      // targetPath가 symlink이면 실제 .pnpm 저장소 경로로 해결
+      // targetPath가 symlink이면 실제 패키지 저장소 경로로 해결
       let actualTargetPath = targetPath;
       try {
         const stat = await fs.promises.lstat(targetPath);
@@ -199,7 +156,7 @@ export async function resolveAllReplaceDepEntries(
         // targetPath가 존재하지 않으면 그대로 사용
       }
 
-      // 동일 actualTargetPath가 이미 등록된 경우 건너뜀 (pnpm 중복 방지)
+      // 동일 actualTargetPath가 이미 등록된 경우 건너뜀
       if (seenTargetPaths.has(actualTargetPath)) continue;
       seenTargetPaths.add(actualTargetPath);
 

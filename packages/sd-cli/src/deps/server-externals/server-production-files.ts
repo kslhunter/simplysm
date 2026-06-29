@@ -29,30 +29,43 @@ export function collectAllExternals(
   };
 }
 
+interface BunLockFile {
+  packages?: Record<string, unknown>;
+}
+
+function parsePackageReferenceVersion(reference: string): string | undefined {
+  const normalized = reference.split("(")[0];
+  const match = /^(.+?)@(\d[^@]*)$/.exec(normalized);
+  return match?.[2];
+}
+
+function parsePackageKeyName(key: string): string {
+  const match = /^(.+?)@(\d.+)$/.exec(key);
+  return match?.[1] ?? key;
+}
+
 /**
- * pnpm-lock.yaml의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
- * 키 형태: "name@version" · "@scope/name@version" · "name@version(peer@ver)..."
+ * bun.lock의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
+ * 키 형태는 일반 패키지명 또는 alias이고, 실제 버전은 package entry의 resolution에서 확인한다.
  */
 export function parseLockfileVersions(cwd: string): Map<string, string> {
-  const lockfilePath = path.join(cwd, "pnpm-lock.yaml");
+  const lockfilePath = path.join(cwd, "bun.lock");
   if (!fsx.existsSync(lockfilePath)) {
-    throw new Error(`pnpm-lock.yaml not found in ${cwd}. Run "pnpm install" first.`);
+    throw new Error(`bun.lock not found in ${cwd}. Run "bun install" first.`);
   }
 
   const content = fsx.readSync(lockfilePath);
-  const parsed = YAML.parse(content) as { packages?: Record<string, unknown> };
+  const parsed = YAML.parse(content) as BunLockFile;
   const map = new Map<string, string>();
 
-  for (const key of Object.keys(parsed.packages ?? {})) {
-    // 첫 번째 @숫자 기준으로 name / version 분리 (scope 패키지의 선두 @ 보존)
-    const m = /^(.+?)@(\d.+)$/.exec(key);
-    if (m == null) continue;
-    const name = m[1];
-    // peerDep suffix "(peer@ver)..." 제거
-    const parenIdx = m[2].indexOf("(");
-    const version = parenIdx === -1 ? m[2] : m[2].substring(0, parenIdx);
-    if (!map.has(name)) {
-      map.set(name, version);
+  for (const [key, entry] of Object.entries(parsed.packages ?? {})) {
+    if (!Array.isArray(entry) || typeof entry[0] !== "string") continue;
+    const version = parsePackageReferenceVersion(entry[0]);
+    if (version == null) continue;
+
+    const keyName = parsePackageKeyName(key);
+    if (!map.has(keyName)) {
+      map.set(keyName, version);
     }
   }
 
@@ -60,7 +73,7 @@ export function parseLockfileVersions(cwd: string): Map<string, string> {
 }
 
 /**
- * pnpm-lock.yaml에서 주어진 모든 패키지의 잠긴 버전을 확인한다.
+ * bun.lock에서 주어진 모든 패키지의 잠긴 버전을 확인한다.
  * lockfile에서 패키지를 찾을 수 없으면 에러를 던진다.
  */
 export function resolveLockedVersions(cwd: string, pkgNames: string[]): Record<string, string> {
@@ -70,8 +83,8 @@ export function resolveLockedVersions(cwd: string, pkgNames: string[]): Record<s
     const version = versionMap.get(name);
     if (version == null) {
       throw new Error(
-        `External dependency "${name}" not found in pnpm-lock.yaml. ` +
-          `Run "pnpm install" and try again.`,
+        `External dependency "${name}" not found in bun.lock. ` +
+          `Run "bun install" and try again.`,
       );
     }
     result[name] = version;

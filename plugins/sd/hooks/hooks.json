@@ -37,10 +37,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-prompt.ts\""
-          },
-          {
-            "type": "command",
             "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-simplysm.ts\""
           },
           {

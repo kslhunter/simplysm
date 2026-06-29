@@ -1,162 +1,154 @@
 # @simplysm/service-client
 
-WebSocket 으로 서비스 서버에 붙어 서비스 메서드 RPC 호출·서버 푸시 이벤트 구독/발행·파일 업/다운로드·서버측 ORM 원격 실행을 수행하는 클라이언트. 브라우저·Node.js 양쪽에서 동작하며, Node 에서 글로벌 `WebSocket` 이 없으면 소켓 모듈 로드 시점에 `ws` 패키지로 polyfill 한다.
+WebSocket 기반 서비스 클라이언트. 서비스 RPC, 인증, 파일 업/다운로드, 진행률 이벤트, 서버 푸시 이벤트, 원격 ORM 실행의 클라이언트 진입점을 제공한다.
 
 ## 사용 트리거 인덱스
 
-- **createServiceClient / ServiceClient** — 서버 접속·서비스 호출·인증·연결 상태 추적의 주 진입점. (아래 인라인)
-- **ServiceConnectionOptions** — 접속 대상(host/port/ssl)·재연결 정책 지정. (아래 인라인)
-- **getService / ServiceProxy** — 서버 서비스를 타입 안전 프록시로 호출. (아래 인라인)
-- **이벤트 구독·발행 (getEvent / addListener / removeListener / emitEvent / ClientEventProxy / EventClient)** — 서버 푸시 이벤트 구독·발행. (아래 인라인)
-- **파일 업/다운로드 (uploadFile / downloadFileBuffer / FileClient)** — 인증 업로드, 서버 상대경로 다운로드. (아래 인라인)
-- **진행률 (ServiceProgress / ServiceProgressState)** — 청크 분할되는 대용량 요청/응답의 진행 추적. (아래 인라인)
-- **환경 호환 타입·헬퍼 (BlobInput / FileCollection / BrowserWorker / isBrowserWorkerSupported / isNodeWorkerSupported / isWorkerSupported)** — Node/browser 공용 코드의 DOM 타입 회피·Worker 분기. (아래 인라인)
-- **ORM 원격 실행 (createOrmClientConnector / OrmClientConnector / OrmConnectOptions / OrmClientDbContextExecutor)** — 서버 DbContext 를 클라이언트에서 트랜잭션 단위로 실행. 자세히: [orm.md](./orm.md)
-- **저수준 전송 계층 (SocketProvider / ServiceTransport / ClientProtocolWrapper 및 create\*)** — `ServiceClient` 가 내부에서 조립하는 소켓·하트비트·프로토콜·청크 모듈. 직접 쓰지 않음. 자세히: [transport.md](./transport.md)
+- **ServiceClient / createServiceClient** — 서비스 서버 연결, 인증, 상태·진행률 이벤트, 공통 통신 진입점이 필요할 때. 사용법: [client-service.md](../../manuals/client-service.md)
+- **ServiceConnectionOptions** — 접속 host/port/ssl 과 재연결 횟수를 정할 때.
+- **getService / ServiceProxy** — 서버 서비스 메서드를 타입 있는 Promise RPC 프록시로 호출할 때. 사용법: [client-service.md](../../manuals/client-service.md)
+- **이벤트 구독·발행** — `defineEvent` 기반 이벤트를 구독·발행하거나 재연결 후 재구독 동작을 확인할 때. 자세히: [events.md](./events.md). 사용법: [event.md](../../manuals/event.md)
+- **파일 업/다운로드** — 인증 토큰으로 `/upload` 에 파일을 보내거나 서버 상대경로를 바이트로 받을 때.
+- **ServiceProgress / ServiceProgressState** — `send` 단건 콜백 또는 `ServiceClient` 이벤트로 요청·응답·서버 진행 상태를 받을 때.
+- **브라우저/Node 호환 타입·Worker 헬퍼** — DOM 타입 없이 파일·Blob·Worker 타입을 쓰거나 Worker 지원 여부를 분기할 때.
+- **ORM 원격 실행** — 클라이언트에서 `DbContext` 콜백을 서버 ORM 서비스로 실행할 때. 자세히: [orm.md](./orm.md). 사용법: [client-orm.md](../../manuals/client-orm.md), [orm.md](../../manuals/orm.md)
+- **저수준 전송 계층** — 소켓, 하트비트, 요청 uuid 매칭, 프로토콜 Worker 오프로딩을 직접 확인할 때. 자세히: [transport.md](./transport.md)
 
-> 앱(Angular)에서는 화면이 `ServiceClient` 를 직접 만들지 않고 `AppServiceProvider`(root provider)의 `client` getter 를 경유해 서비스·이벤트·ORM 진입점을 모은다. 아래 예시는 client 직접 호출 형태지만, 실제 앱 코드는 manuals/client-service.md·client-orm.md·event.md 의 provider 패턴을 따른다.
-
-## 메인 클라이언트 (createServiceClient / ServiceClient)
-
-`createServiceClient(name, options): ServiceClient` — 클라이언트 인스턴스 생성. `new ServiceClient(name, options)` 와 동일.
-
-- `name: string` — 클라이언트 식별 이름. WebSocket 접속 쿼리의 `clientName`·파일 업로드 헤더 `x-sd-client-name` 으로 서버에 전달. 서버측 연결 구분·로깅용.
-- `options: ServiceConnectionOptions` — 접속 대상·재연결 정책 (아래 섹션).
-
-`ServiceClient` 는 `EventEmitter<ServiceClientEvents>` 를 상속하며 다음을 노출:
-
-- `name: string` (readonly) — 생성 시 받은 이름.
-- `options: ServiceConnectionOptions` (readonly) — 생성 시 받은 접속 옵션.
-- `connected: boolean` (getter) — 소켓이 OPEN 상태인지. 재연결 중·종료 시 false. `addListener` 는 false 면 throw 하므로 등록 가능 여부 판단에 사용.
-- `hostUrl: string` (getter) — `ssl` 이면 `https://`, 아니면 `http://` 로 시작하는 `프로토콜://host:port` HTTP 베이스 URL. 파일 업/다운로드가 이 URL 을 베이스로 사용.
-- `connect(): Promise<void>` — 서버에 WebSocket 연결. 초기 연결 실패 시 throw. 모든 통신(서비스 호출·이벤트 등록) 전에 1회 호출.
-- `close(): Promise<void>` — 연결 수동 종료(이후 자동 재연결 안 함) 후 프로토콜 워커 자원 해제(`protocolWrapper.dispose()`). 종료한 인스턴스는 재사용하지 않음.
-- `send(serviceName, methodName, params, progress?): Promise<unknown>` — 저수준 서비스 호출. `serviceName.methodName` 메시지를 보내고 응답 반환. 보통 `getService` 프록시로 간접 호출. progress 인자를 주지 않아도 client 의 `request/response/server-progress` 이벤트는 항상 발생.
-- `auth(token): Promise<void>` — 인증 토큰을 서버에 전송하고 내부 보관. 보관 토큰은 재연결 시 자동 재인증·파일 업로드 Bearer 인증에 재사용됨. 파일 업로드 전 선행 필수.
-- `getService / getEvent / addListener / removeListener / emitEvent / uploadFile / downloadFileBuffer` — 아래 각 섹션.
+## ServiceClient / createServiceClient
 
 ```ts
-const client = createServiceClient("my-app", { host: "localhost", port: 50080, ssl: false });
-await client.connect();
-await client.auth(jwtToken);
+function createServiceClient(name: string, options: ServiceConnectionOptions): ServiceClient;
+class ServiceClient extends EventEmitter<ServiceClientEvents>;
 ```
 
-**ServiceClientEvents** (EventEmitter 이벤트):
+- `name: string` — 클라이언트 이름. WebSocket 생성 시 `clientName` 쿼리, 파일 업로드 시 `x-sd-client-name` 헤더로 전달된다.
+- `options: ServiceConnectionOptions` — 접속 대상과 재연결 정책. 생성자에서 WebSocket URL과 HTTP `hostUrl` 계산에 사용된다.
+- `connected: boolean` — 내부 소켓의 OPEN 여부. `addListener` 는 false 일 때 `"서버에 연결되지 않았습니다."` 를 throw 한다.
+- `hostUrl: string` — `ssl` 이 true 면 `https://host:port`, 아니면 `http://host:port`. 파일 클라이언트의 기준 URL이다.
+- `connect(): Promise<void>` — 내부 소켓 연결을 시작한다.
+- `close(): Promise<void>` — 내부 소켓을 닫고 프로토콜 래퍼를 `dispose()` 한다.
+- `send(serviceName: string, methodName: string, params: unknown[], progress?: ServiceProgress): Promise<unknown>` — `${serviceName}.${methodName}` 메시지를 전송한다. 전역 진행률 이벤트를 emit 한 뒤 전달받은 `progress` 콜백도 호출한다.
+- `auth(token: string): Promise<void>` — `{ name: "auth", body: token }` 메시지를 보내고 성공하면 토큰을 보관한다. 보관 토큰은 재연결 시 재인증과 파일 업로드 Authorization 헤더에 사용된다.
+- `getService<TService>(serviceName: string): ServiceProxy<TService>` — 서버 서비스 프록시를 만든다. 자세한 타입 변환은 아래 `ServiceProxy` 참조.
+- `getEvent`, `addListener`, `removeListener`, `emitEvent` — 이벤트 API. 자세히: [events.md](./events.md)
+- `uploadFile`, `downloadFileBuffer` — 파일 API. 아래 `파일 업/다운로드` 참조.
 
-- `"request-progress": ServiceProgressState` — 요청(업로드) 청크 진행률. 요청 본문이 청크 2개 이상으로 분할될 때만 발생.
-- `"response-progress": ServiceProgressState` — 응답(다운로드) 청크 수신 진행률. 분할 응답이면 완료 시 100% 를 한 번 더 보고.
-- `"server-progress": ServiceProgressState` — 서버가 처리 중 보고하는 진행률(서버측 `name: "progress"` 메시지 수신 시).
-- `"state": "connected" | "closed" | "reconnecting"` — 연결 상태 전이. `"connected"` = 연결/재연결 성공(이 전이 시 보관 토큰으로 자동 재인증 + 등록 리스너 자동 복구), `"closed"` = 정상 종료 또는 재연결 한도 초과, `"reconnecting"` = 재연결 시도 중. 오프라인 배너 토글 등에 사용.
+`ServiceClient` 상태·진행률 이벤트:
 
-```ts
-client.on("state", (s) => { if (s === "reconnecting") showOfflineBanner(); });
-```
+- `"request-progress": ServiceProgressState` — `send` 의 요청 진행 상태를 emit 한다.
+- `"response-progress": ServiceProgressState` — `send` 의 응답 진행 상태를 emit 한다.
+- `"server-progress": ServiceProgressState` — 서버 `progress` 메시지의 진행 상태를 emit 한다.
+- `"state": "connected"|"closed"|"reconnecting"` — 내부 소켓 상태. `"connected"` 에서는 보관 토큰 재인증과 이벤트 재구독을 시도한다.
+  - `"connected"` — 연결 또는 재연결 성공.
+  - `"closed"` — 수동 종료 또는 재연결 포기.
+  - `"reconnecting"` — 재연결 시도 중.
 
 ## ServiceConnectionOptions
 
-`createServiceClient` 의 두 번째 인자.
+```ts
+interface ServiceConnectionOptions {
+  port: number;
+  host: string;
+  ssl?: boolean;
+  maxReconnectCount?: number;
+}
+```
 
-- `port: number` — 서버 포트. 필수.
-- `host: string` — 서버 호스트. 필수.
-- `ssl?: boolean` — TLS 사용 여부. true 면 `wss`/`https`, false·미지정이면 `ws`/`http`. TLS 서버에 붙을 때만 true.
-- `maxReconnectCount?: number` — 연결 끊김 시 최대 재연결 시도 횟수. 미지정 시 10. 0 이면 재연결을 비활성화하고 끊기면 즉시 포기. 테스트·단발성 연결이면 0.
+- `port: number` — 접속 포트. WebSocket URL과 HTTP `hostUrl` 에 들어간다.
+- `host: string` — 접속 호스트. WebSocket URL과 HTTP `hostUrl` 에 들어간다.
+- `ssl?: boolean` — 프로토콜 선택값. true 면 `wss`/`https`, false·미지정이면 `ws`/`http` 를 사용한다.
+- `maxReconnectCount?: number` — 소켓 생성에 전달되는 최대 재연결 횟수. `ServiceClient` 미지정값은 10, 0은 재연결 비활성화.
 
 ## getService / ServiceProxy
 
-서버 서비스의 각 메서드를 `Promise` 반환 함수로 노출하는 타입 안전 프록시.
-
-`getService<TService>(serviceName): ServiceProxy<TService>` — `serviceName` 으로 등록된 서버 서비스의 프록시 반환. 프록시 메서드 호출은 내부적으로 `client.send(serviceName, 메서드명, 인자배열)` 로 위임(`Proxy` 기반, 모든 속성 접근을 비동기 RPC 함수로 변환).
-
-- `TService` — 서버 서비스 메서드 인터페이스 타입. 컴파일 타임 시그니처 검증 전용(런타임 검증 아님). 앱에선 server 패키지가 export 한 `ServiceMethods<typeof XxxService>` 사용.
-- `serviceName: string` — 서버의 `defineService("XxxName", ...)` 이름과 일치해야 함.
-- `ServiceProxy<TService>` — `TService` 의 각 함수 멤버를 `(...args) => Promise<Awaited<R>>` 로 매핑하는 타입 변환기. 원본이 동기 반환이어도 Promise 로 래핑. 함수 아닌 속성은 `never` 로 제외.
-
 ```ts
-const svc = client.getService<TestServiceMethods>("TestService");
-const result = await svc.echo("hi"); // 서버 TestService.echo("hi") 호출 → Promise<string>
+getService<TService>(serviceName: string): ServiceProxy<TService>;
+type ServiceProxy<TService> = {
+  [K in keyof TService]: TService[K] extends (...args: infer P) => infer R
+    ? (...args: P) => Promise<Awaited<R>>
+    : never;
+};
 ```
 
-## 이벤트 구독·발행 (getEvent / addListener / removeListener / emitEvent)
+- `TService` — 서비스 메서드 타입. 함수 멤버만 RPC 함수로 매핑되고 함수가 아닌 멤버는 `never` 가 된다.
+- `serviceName: string` — 전송 메시지 이름의 서비스 부분. 프록시 메서드 접근 시 `${serviceName}.${methodName}` 으로 전송된다.
+- `K in keyof TService` — 원본 서비스의 각 멤버 이름. `Proxy.get` 에서 문자열 메서드명으로 변환된다.
+- `P` — 원본 메서드의 인자 튜플. RPC 전송 시 `params: unknown[]` 로 전달된다.
+- `R` — 원본 메서드 반환 타입. 프록시에서는 `Promise<Awaited<R>>` 로 감싼다.
 
-서버 푸시 이벤트는 `@simplysm/service-common` 의 `defineEvent` 산출물(`ServiceEventDef`. `$info` = 구독 필터 정보 타입, `$data` = 페이로드 타입) 단위로 다룬다. 등록한 리스너는 재연결 시 자동 재구독된다.
-
-`addListener<TEventDef>(eventDef, info, cb): Promise<string>` — 리스너 등록. 미연결(`connected === false`)이면 throw("서버에 연결되지 않았습니다."). 반환 key 로 나중에 제거.
-
-- `eventDef: TEventDef` — 이벤트 정의(`defineEvent` 결과). `$info`/`$data` 타입의 출처이자 라우팅 키(`eventName`).
-- `info: TEventDef["$info"]` — 이 구독을 식별·필터링할 정보. 발행측 selector 가 이 값을 보고 전달 여부 결정.
-- `cb: (data: $data) => PromiseLike<void>` — 이벤트 수신 콜백. 콜백 내 예외는 로깅만 되고 호출부로 전파되지 않음.
-
-`removeListener(key): Promise<void>` — 등록 key 로 리스너 제거(로컬 맵 삭제 + 서버 `evt:remove` 전송). 서버 전송 실패(연결 끊김 등)는 무시 — 서버가 끊김 시 리스너를 자동 정리하므로 안전.
-
-`emitEvent<TEventDef>(eventDef, infoSelector, data): Promise<void>` — 이벤트 발행. 서버에서 동일 이벤트 구독자 목록을 조회한 뒤 `infoSelector(info)` 가 true 인 대상에게만 data 전송. 매칭 대상이 0개면 전송 자체를 생략.
-
-- `infoSelector: (item: $info) => boolean` — 발행 대상 구독자를 info 기준으로 필터. true 반환 구독자에게만 전달. 전체 전송이면 `() => true`.
-- `data: TEventDef["$data"]` — 전송 페이로드.
-
-`getEvent<TEventDef>(eventDef): ClientEventProxy<TEventDef>` — 특정 eventDef 에 바인딩된 프록시 반환. eventDef 를 매번 넘기지 않고 짧게 쓰려 할 때(앱의 `AppServiceProvider.xxxEvent` getter 패턴).
-
-`ClientEventProxy<TEventDef>` 멤버(위 client 메서드의 eventDef 고정판):
-
-- `addListener(info, cb): Promise<string>` — 리스너 등록.
-- `removeListener(key): Promise<void>` — 리스너 제거.
-- `emit(infoSelector, data): Promise<void>` — 이벤트 발행.
+## 파일 업/다운로드
 
 ```ts
-const chatEvent = defineEvent<{ channel: string }, string>("Chat");
-const key = await client.addListener(chatEvent, { channel: "room1" }, async (msg) => render(msg));
-await client.emitEvent(chatEvent, (info) => info.channel === "room1", "hello");
-await client.removeListener(key);
+interface FileClient {
+  download(relPath: string): Promise<Bytes>;
+  upload(files: File[] | FileCollection | { name: string; data: BlobInput }[], authToken: string): Promise<ServiceUploadResult[]>;
+}
+function createFileClient(hostUrl: string, clientName: string): FileClient;
+ServiceClient.uploadFile(files: File[] | FileCollection | { name: string; data: BlobInput }[]): Promise<ServiceUploadResult[]>;
+ServiceClient.downloadFileBuffer(relPath: string): Promise<Bytes>;
 ```
 
-`EventClient` / `createEventClient(transport)` 는 `ServiceClient` 가 내부 조립에 쓰는 저수준 구현. 위 메서드(getEvent/addListener/removeListener/emit)에 더해 `resubscribeAll(): Promise<void>`(보관된 모든 리스너를 서버에 재등록, 재연결 복구용. 항목별 실패는 로깅 후 계속)를 가짐. 일반 사용에선 직접 만들지 않음.
+- `hostUrl: string` — `download` 의 기준 URL, `upload` 의 `${hostUrl}/upload` 기준값.
+- `clientName: string` — 업로드 요청의 `x-sd-client-name` 헤더 값.
+- `relPath: string` — `download` 가 `path.join(hostUrl, relPath)` 로 합치는 상대 경로. `fetch` 응답이 `ok` 가 아니면 `다운로드 실패: ...` 에러를 throw 한다.
+- `files: File[] | FileCollection | { name: string; data: BlobInput }[]` — 업로드 대상. 배열이 아니면 `Array.from(files)` 로 변환한다.
+- `name: string` — 커스텀 업로드 객체의 파일명. `FormData.append("files", blob, name)` 의 filename 으로 전달된다.
+- `data: BlobInput` — 커스텀 업로드 객체의 본문. `Blob` 이 아니면 `new Blob([data])` 로 감싼다.
+- `authToken: string` — 업로드 요청의 `Authorization: Bearer ${authToken}` 헤더 값.
+- `uploadFile` — 보관된 인증 토큰이 없으면 `auth()` 호출을 요구하는 에러를 throw 하고, 있으면 내부 `FileClient.upload` 를 호출한다.
 
-## 파일 업/다운로드 (uploadFile / downloadFileBuffer)
-
-`uploadFile(files): Promise<ServiceUploadResult[]>` — `POST <hostUrl>/upload` (multipart/form-data) 로 파일 업로드. 보관 토큰을 `Authorization: Bearer` 헤더로 전송하므로 사전 `auth()` 필수(보관 토큰 없으면 throw). 응답 비정상(`!res.ok`) 시 throw.
-
-- `files: File[] | FileCollection | { name: string; data: BlobInput }[]` — 업로드 대상. 브라우저 `File` 배열, `FileCollection`(FileList 호환), 또는 `{ name, data }` 커스텀 객체 배열. 커스텀 객체의 data 가 `Blob` 이 아니면 `new Blob([data])` 로 감싸 전송.
-
-`downloadFileBuffer(relPath): Promise<Bytes>` — `<hostUrl>/<relPath>` 를 GET 해 `Uint8Array` 반환. 응답 비정상(`!res.ok`) 시 throw.
-
-- `relPath: string` — 서버 기준 상대경로. 선행 `/` 유무 모두 허용(없으면 자동으로 `/` 보정).
+## ServiceProgress / ServiceProgressState
 
 ```ts
-await client.auth(token);
-const results = await client.uploadFile([{ name: "a.txt", data: "hello" }]);
-const bytes = await client.downloadFileBuffer("/files/a.txt");
+interface ServiceProgress {
+  request?: (s: ServiceProgressState) => void;
+  response?: (s: ServiceProgressState) => void;
+  server?: (s: ServiceProgressState) => void;
+}
+interface ServiceProgressState {
+  uuid: string;
+  totalSize: number;
+  completedSize: number;
+}
 ```
 
-`FileClient` / `createFileClient(hostUrl, clientName)` 는 `ServiceClient` 내부 구현. `download(relPath)` / `upload(files, authToken)` 두 메서드를 가지며 직접 생성은 보통 불필요.
+- `request?: (s) => void` — 요청 인코딩 결과 청크가 2개 이상일 때 `completedSize: 0` 상태로 호출된다.
+- `response?: (s) => void` — 프로토콜 decode 결과가 `progress` 일 때 호출되고, 분할 응답 완료 시 `completedSize === totalSize` 로 한 번 더 호출된다.
+- `server?: (s) => void` — 서버 메시지 이름이 `"progress"` 일 때 본문의 `totalSize`·`completedSize` 로 호출된다.
+- `uuid: string` — 요청 식별자. `send` 가 생성하고 진행 상태에 포함한다.
+- `totalSize: number` — 전체 크기.
+- `completedSize: number` — 완료 크기.
 
-## 진행률 (ServiceProgress / ServiceProgressState)
-
-대용량 요청/응답이 청크로 분할될 때 진행 상황을 보고하는 콜백·상태 타입.
-
-`ServiceProgress` — `send(..., progress)` 에 넘기는 콜백 집합(해당 호출 단건 추적용, 전역 이벤트와 별개). 각 콜백은 `(s: ServiceProgressState) => void`:
-
-- `request?` — 요청 청크 업로드 진행 시 호출. 요청 청크가 2개 이상일 때만 발생.
-- `response?` — 응답 청크 수신 진행 시 호출. 분할 응답이었으면 완료 시 100%(`completedSize === totalSize`)를 한 번 더 보고.
-- `server?` — 서버가 처리 중 보고한 진행률 수신 시 호출(서버측 `name: "progress"` 메시지).
-
-`ServiceProgressState` — 진행률 스냅샷.
-
-- `uuid: string` — 해당 요청/응답 식별자. 동시 요청 구분용.
-- `totalSize: number` — 전체 바이트 수.
-- `completedSize: number` — 완료 바이트 수. `completedSize === totalSize` 면 완료.
-
-전역 추적이면 콜백 대신 ServiceClient 의 `request/response/server-progress` 이벤트(`client.on("response-progress", ...)`)를 써도 됨 — `send` 는 progress 인자 유무와 무관하게 이 이벤트들을 항상 발생시킴.
+## 브라우저/Node 호환 타입·Worker 헬퍼
 
 ```ts
-client.on("response-progress", (s) => updateBar(s.completedSize / s.totalSize));
+type BlobInput = Blob | Uint8Array<ArrayBuffer> | ArrayBuffer | string;
+interface FileCollection {
+  readonly length: number;
+  item(index: number): File | null;
+  [index: number]: File;
+  [Symbol.iterator](): IterableIterator<File>;
+}
+interface BrowserWorker {
+  onmessage: ((event: MessageEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  postMessage(message: unknown, transfer?: unknown[]): void;
+  terminate(): void;
+}
+function isBrowserWorkerSupported(): boolean;
+function isNodeWorkerSupported(): boolean;
+function isWorkerSupported(): boolean;
 ```
 
-## 환경 호환 타입·헬퍼 (browser-compat)
-
-Node/browser 공용 코드에서 DOM 전용 타입을 피하고 Worker 지원 여부를 분기하기 위한 타입·함수. 프로토콜 인코딩/파싱 Worker 오프로딩 판단 시 내부에서 사용.
-
-- `BlobInput = Blob | Uint8Array<ArrayBuffer> | ArrayBuffer | string` — `Blob` 생성자가 받는 데이터 타입(DOM `BlobPart` 대체). `uploadFile` 커스텀 객체의 data 타입.
-- `FileCollection` (interface) — DOM `FileList` 대체. `length`, `item(index): File | null`, 인덱스 접근, `[Symbol.iterator]` 보유. 브라우저 `FileList` 와 구조적 호환.
-- `BrowserWorker` (interface) — DOM `Worker` 최소 인터페이스(`onmessage`/`onerror` 핸들러, `postMessage(message, transfer?)`, `terminate()`). DOM lib 없이 타입체크 통과용.
-- `isBrowserWorkerSupported(): boolean` — `globalThis` 에 `Worker` 존재 여부 반환. 브라우저 DOM Worker 가용 판단.
-- `isNodeWorkerSupported(): boolean` — `process.versions.node` 존재 여부 반환. Node `worker_threads` 가용 판단.
-- `isWorkerSupported(): boolean` — 위 둘 중 하나라도 true 면 true. 프로토콜 인코딩/파싱 오프로딩 가능 여부 판단(미지원 시 메인 스레드 폴백).
+- `BlobInput` — DOM `BlobPart` 대체 타입. 커스텀 파일 업로드의 `data` 타입으로 쓰인다.
+- `FileCollection.length: number` — 파일 개수.
+- `FileCollection.item(index): File | null` — 인덱스의 파일 또는 없음.
+- `FileCollection[index]: File` — 인덱스 접근 파일.
+- `FileCollection[Symbol.iterator]()` — `Array.from(files)` 변환에 필요한 반복자.
+- `BrowserWorker.onmessage` — Worker 성공/실패 응답 수신 핸들러 자리.
+- `BrowserWorker.onerror` — Worker 초기화·실행 오류 핸들러 자리.
+- `BrowserWorker.postMessage(message, transfer?)` — Worker 작업 요청 전송. `transfer` 는 전송 가능한 객체 배열 자리.
+- `BrowserWorker.terminate()` — Worker 종료 메서드 자리.
+- `isBrowserWorkerSupported()` — `"Worker" in globalThis` 결과.
+- `isNodeWorkerSupported()` — `globalThis.process?.versions?.node != null` 결과.
+- `isWorkerSupported()` — 브라우저 Worker 또는 Node worker_threads 지원 중 하나라도 가능하면 true.

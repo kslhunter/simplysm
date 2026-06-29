@@ -73,6 +73,28 @@ describe("discoverWorkspacePackages", () => {
     expect(result.size).toBe(0);
   });
 
+  it("does not include plugins in check targets", () => {
+    const tmpDir = path.join(process.cwd(), ".tmp", "test-workspace-plugins");
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    fs.mkdirSync(path.join(tmpDir, "packages", "app"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, "tests", "orm"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, "plugins", "sd"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*", "plugins/*"] }),
+    );
+    fs.writeFileSync(path.join(tmpDir, "packages", "app", "package.json"), "{}");
+    fs.writeFileSync(path.join(tmpDir, "tests", "orm", "package.json"), "{}");
+    fs.writeFileSync(path.join(tmpDir, "plugins", "sd", "package.json"), "{}");
+
+    try {
+      const result = discoverWorkspacePackages(tmpDir);
+      expect([...result.keys()].sort()).toEqual(["app", "orm"]);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
   describe("duplicate name detection", () => {
     const tmpDir = path.join(process.cwd(), ".tmp", "test-workspace-dup");
 
@@ -82,6 +104,10 @@ describe("discoverWorkspacePackages", () => {
 
     it("throws when same directory name exists in both packages/ and tests/", () => {
       fs.mkdirSync(path.join(tmpDir, "packages", "foo"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tmpDir, "package.json"),
+        JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*"] }),
+      );
       fs.writeFileSync(path.join(tmpDir, "packages", "foo", "package.json"), "{}");
       fs.mkdirSync(path.join(tmpDir, "tests", "foo"), { recursive: true });
       fs.writeFileSync(path.join(tmpDir, "tests", "foo", "package.json"), "{}");

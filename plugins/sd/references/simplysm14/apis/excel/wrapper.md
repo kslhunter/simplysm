@@ -1,80 +1,59 @@
 # @simplysm/excel — ExcelWrapper
 
-Zod 스키마로 엑셀 헤더 ↔ 필드 매핑, 셀 값 타입 변환, 행 단위 유효성 검사를 자동화해 "레코드 배열 ↔ 엑셀" 변환을 한 번에 처리하는 고수준 래퍼. 헤더 텍스트는 각 필드의 `.describe()` 로 지정하며, 미지정 필드는 키 이름을 헤더로 쓴다. 클라이언트 화면의 엑셀 다운로드(`write`)·업로드(`read`)에서 같은 wrapper 인스턴스를 공유하는 패턴에 쓰인다.
+Zod object schema 로 Excel 헤더명, 값 변환, 행 검증을 묶어 레코드 배열을 읽고 쓰는 고수준 래퍼. `.describe()` 가 있는 필드는 설명 문자열을 Excel 헤더로 쓰고, 설명이 없으면 필드 key 를 헤더로 쓴다.
 
-## 생성
+## ExcelWrapper
 
 ```typescript
-new ExcelWrapper<TSchema extends z.ZodObject>(_schema: TSchema)
+class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
+  constructor(schema: TSchema);
+  read(file: Bytes | Blob, wsNameOrIndex?: string | number, options?: { excludes?: (keyof z.infer<TSchema>)[] }): Promise<z.infer<TSchema>[]>;
+  write(wsName: string, records: Partial<z.infer<TSchema>>[], options?: { excludes?: (keyof z.infer<TSchema>)[] }): Promise<ExcelWorkbook>;
+}
 ```
 
-- `_schema` — Zod 객체 스키마. 각 필드가 한 컬럼이 되고, `.describe("헤더명")` 으로 엑셀 헤더를 지정한다.
+- `schema` — 레코드 구조를 정의하는 Zod object. 각 field schema 의 `description` 이 Excel 헤더명으로 사용된다.
+- `file` — 읽을 Excel 파일 데이터. `ExcelWorkbook(file)` 로 열고 `finally` 에서 닫는다.
+- `wsNameOrIndex` — 읽을 워크시트 이름 또는 0 기반 인덱스. 기본값은 `0`.
+- `options.excludes` — 읽기/쓰기에서 제외할 schema field key 배열. 제외된 field 는 헤더 매핑과 변환 대상에서 빠진다.
+- `wsName` — 새 워크북에 추가할 worksheet 이름.
+- `records` — 쓸 레코드 배열. 각 값은 내부에서 `ExcelValueType` 으로 셀에 전달된다.
 
 ## read
 
 ```typescript
-read(
-  file: Bytes | Blob,
-  wsNameOrIndex: string | number = 0,
-  options?: { excludes?: (keyof z.infer<TSchema>)[] },
-): Promise<z.infer<TSchema>[]>
+read(file, wsNameOrIndex = 0, options?): Promise<z.infer<TSchema>[]>
 ```
 
-엑셀 파일을 레코드 배열로 읽는다. 헤더는 스키마 displayName(`.describe()`)으로 매칭한 컬럼만 채택. 전부 빈 값인 행은 건너뛴다. 각 행을 스키마로 `safeParse` 하며 실패 시 시트명 + 상세 메시지로 throw. 데이터가 0건이면 throw. 내부에서 워크북을 열고 finally 로 `close` 까지 책임진다.
+- 헤더 매핑 — schema shape 의 key 별로 `fieldSchema.description ?? key` 를 display name 으로 만든다.
+- 헤더 필터 — worksheet `getDataTable` 의 `usableHeaderNameFn` 으로 기대 display name 만 읽는다.
+- 빈 데이터 — 필터된 rawData 길이가 0이면 `[시트명] Excel 파일에서 데이터를 찾을 수 없습니다...` 오류를 throw 한다.
+- 빈 행 — 매핑 대상 raw 값이 모두 `null`/`undefined`/빈 문자열이면 결과에서 건너뛴다.
+- 검증 실패 — 변환된 record 를 `schema.safeParse` 로 검증하고 실패하면 issue path/message 를 합쳐 throw 한다.
+- 리소스 처리 — 성공/실패와 관계없이 내부 workbook 을 `close()` 한다.
 
-- `file` — 엑셀 바이트 또는 Blob.
-- `wsNameOrIndex` — 읽을 시트 이름 또는 0 기반 인덱스(기본 0).
-- `options.excludes` — 읽기에서 제외할 필드 키 배열(파생 컬럼 등). 매핑·파싱에서 빠진다.
+값 변환:
 
-값 변환: 빈 셀/빈 문자열은 `ZodDefault` 면 기본값, `optional`/`nullable` 이면 `undefined`, 필수 boolean 이면 `false` 로 채운다. 그 외에는 스키마 inner 타입(String/Number/Boolean)에 맞춰 변환(`"1"`/`"true"` → `true` 등), `DateOnly`/`DateTime`/`Time` 인스턴스는 그대로 보존.
+- `ZodString` — raw 값이 string 이면 그대로, 아니면 `String(rawValue)` 로 변환한다.
+- `ZodNumber` — raw 값이 number 이면 그대로, 아니면 문자열로 바꾼 뒤 `num.parseFloat` 결과를 쓴다.
+- `ZodBoolean` — raw boolean 은 그대로, `"1"`/`"true"` 는 true, `"0"`/`"false"` 는 false, 나머지는 `Boolean(rawValue)` 로 변환한다.
+- `DateOnly`/`DateTime`/`Time` 인스턴스 — raw 값이 이 인스턴스들이면 그대로 반환한다.
+- `ZodOptional`/`ZodNullable` — 변환 타입 판정에서는 내부 schema 로 unwrap 하고, 빈 값 기본값은 `undefined` 다.
+- `ZodDefault` — 변환 타입 판정에서는 default 제거 schema 로 unwrap 하고, 빈 값은 `schema.parse(undefined)` 결과를 쓴다.
+- required boolean — 빈 값이면 false 를 기본값으로 쓴다.
+- 그 외 required 타입 — 빈 값이면 `undefined` 를 넣고 Zod 검증에 맡긴다.
 
 ## write
 
 ```typescript
-write(
-  wsName: string,
-  records: Partial<z.infer<TSchema>>[],
-  options?: { excludes?: (keyof z.infer<TSchema>)[] },
-): Promise<ExcelWorkbook>
+write(wsName, records, options?): Promise<ExcelWorkbook>
 ```
 
-레코드 배열을 엑셀 워크북으로 변환해 반환. 0 행에 헤더, 이후 행에 데이터를 쓰고, 표 전체에 테두리, 필수(non-optional/nullable/default)이면서 boolean 이 아닌 필드 헤더에 노란 배경(`00FFFF00`)을 칠한다. zoom 85%, 0 행 틀고정, 헤더~데이터 전체 범위 자동 필터를 설정한다. 변환 중 예외 발생 시 워크북을 `close` 하고 re-throw 한다(부분 산출물 방지).
-
-- `wsName` — 생성할 시트 이름.
-- `records` — 쓸 레코드 배열(`Partial` — 일부 필드 누락 허용).
-- `options.excludes` — 컬럼에서 제외할 필드 키 배열.
-
-반환된 워크북의 리소스 관리는 호출자 책임 — 사용 후 `close()` 해야 한다.
-
-## 사용 예
-
-다운로드/업로드에서 같은 wrapper 를 공유한다.
-
-```typescript
-private readonly _excelWrapper = new ExcelWrapper(
-  z.object({
-    id: z.number().optional().describe("ID"),
-    name: z.string().describe("이름"),
-    lastModifiedAt: z.instanceof(DateTime).optional().describe("수정일시"),
-  }),
-);
-
-// 다운로드
-const wb = await this._excelWrapper.write(this.viewTitle(), items);
-try {
-  downloadBlob(await wb.toBlob(), `${this.viewTitle()}_${new DateTime().toFormatString("yyMMdd")}.xlsx`);
-} finally {
-  await wb.close();
-}
-
-// 업로드 (파생 컬럼은 제외)
-const records = await this._excelWrapper.read(files[0], 0, {
-  excludes: ["lastModifiedAt"],
-});
-```
-
-## 주의사항
-
-- `write` 반환 워크북은 호출자가 `close()` 해야 한다(`read` 는 내부에서 자동 close).
-- 빈 데이터(0건) 읽기·스키마 검증 실패는 silent skip 없이 throw — 부분 처리하지 않는다.
-- 다운로드 파일명·`downloadBlob` 사용법은 client-crud 매뉴얼 및 [core-browser README](../core-browser/README.md) 참조.
+- 워크북 생성 — 새 `ExcelWorkbook()` 을 만들고 `wsName` 시트를 추가한다.
+- 헤더 작성 — excludes 를 반영한 schema field 순서대로 0행에 display name 을 쓴다.
+- 데이터 작성 — `records` 의 값을 1행부터 셀에 쓴다. 셀에서 지원하지 않는 값이면 `setValue` 오류가 전파된다.
+- 테두리 적용 — 헤더와 데이터 영역의 모든 셀에 `border: ["left", "right", "top", "bottom"]` 스타일을 적용한다.
+- 필수 헤더 강조 — optional/nullable/default 가 아니고 boolean 이 아닌 field 의 헤더 셀에 `background: "00FFFF00"` 을 적용한다.
+- 보기 설정 — `setZoom(85)`, `freezeAt({ r: 0 })`, 헤더+데이터 범위 `setAutoFilter(...)` 를 호출한다.
+- 성공 반환 — 열린 `ExcelWorkbook` 을 반환하므로 호출자가 사용 후 `close()` 해야 한다.
+- 실패 처리 — 작성 중 오류가 나면 workbook 을 `close()` 하고 같은 오류를 다시 throw 한다.

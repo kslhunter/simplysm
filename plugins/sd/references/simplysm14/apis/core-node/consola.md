@@ -1,53 +1,69 @@
-# @simplysm/core-node — consola 로깅 설정
+# @simplysm/core-node — consola 설정/리포터
 
-`consola` 글로벌 로거의 reporter 를 환경별로 구성하는 셋업과 reporter 구현 (`packages/core-node/src/features/consola/*`). 로그 출력 **자체**는 `@simplysm/core-common` 의 `createLogger(tag)` 로 하고(직접 `console.*`·`consola.withTag` 금지), 출력 채널·형식만 여기서 셋업한다. 콘솔용 `PrettyReporter`(색·아이콘·tag·날짜·에러 스택·box)와 일자별 rotate 되는 `createFileReporter` 를 조합한다.
+consola reporter 를 구성하거나, 콘솔용 pretty 출력과 파일 로그 출력을 직접 조합할 때 읽는 군. 사용법: [logging.md](../../manuals/logging.md)
 
-**Node 진입점(서버·CLI)에서 1회 `setupConsola()` 호출** 이 일반 사용. Browser·Capacitor 진입점에서는 호출 금지(Node 전용 API) — 그쪽은 consola 기본 reporter 가 브라우저 콘솔로 출력한다.
+## SetupConsolaOptions
+
+`interface SetupConsolaOptions { cli?: boolean }`
+
+- `cli?: boolean` — `true` 이면 `DEV` 환경값이 false 여도 prod 파일-only 분기를 건너뛴다.
 
 ## setupConsola
 
-- `setupConsola(opts?: SetupConsolaOptions): void` — 환경 변수(`DEV`, `SD_DEBUG`)에 따라 `consola.level` 과 `reporters` 를 설정. 모든 분기에서 level 은 `debug` 까지 포함.
-  - `opts.cli?: boolean` — CLI 모드 여부. `true` 면 prod 분기를 건너뛰고 항상 콘솔 출력 경로로 감.
-  - 분기:
-    - `cli` 아니고 `DEV` 아님(prod) → 파일 reporter 만(`createFileReporter()`). 콘솔 출력 없음, debug 까지 파일 기록.
-    - `SD_DEBUG` 참(dev+디버그) → `PrettyReporter` 만, debug 까지 콘솔 출력.
-    - 그 외(dev / cli) → 파일 reporter + `info` 까지만 콘솔 출력하는 PrettyReporter(`withMaxLevel(..., LogLevels.info)`). 파일에는 debug 전부, 콘솔에는 info 이하만.
-  - `DEV`/`SD_DEBUG` 는 `@simplysm/core-common` 의 `parseBoolEnv` 로 해석되는 boolean 환경값.
+`function setupConsola(opts?: SetupConsolaOptions): void`
 
-```ts
-import { setupConsola } from "@simplysm/core-node";
-setupConsola({ cli: true }); // 진입점에서 1회
-```
+- `opts?: SetupConsolaOptions` — consola 설정 분기 옵션.
+- prod 분기 — `!opts?.cli && !parseBoolEnv(env("DEV"))` 이면 `consola.level = LogLevels.debug`, `consola.options.reporters = [createFileReporter()]`.
+- debug 분기 — prod 분기가 아니고 `parseBoolEnv(env("SD_DEBUG"))` 이면 `consola.level = LogLevels.debug`, `consola.options.reporters = [new PrettyReporter()]`.
+- 기본 분기 — 그 외에는 `consola.level = LogLevels.debug`, `consola.options.reporters = [createFileReporter(), withMaxLevel(new PrettyReporter(), LogLevels.info)]`.
 
 ## withMaxLevel
 
-- `withMaxLevel(reporter: ConsolaReporter, maxLevel: number): ConsolaReporter` — reporter 를 감싸 `logObj.level > maxLevel` 인 로그를 버리는 필터 래퍼. "콘솔에는 정보성만, 파일에는 전부" 같은 분리에 사용.
-  - `reporter: ConsolaReporter` — 감쌀 원본 reporter.
-  - `maxLevel: number` — 통과시킬 최대 level. consola `LogLevels` 는 숫자가 작을수록 심각(error 0, warn 1, info 3 등)하므로, maxLevel 보다 **큰**(=덜 심각한) 로그가 잘린다.
+`function withMaxLevel(reporter: ConsolaReporter, maxLevel: number): ConsolaReporter`
+
+- `reporter: ConsolaReporter` — 감쌀 reporter.
+- `maxLevel: number` — 통과시킬 최대 level. `logObj.level > maxLevel` 이면 내부 reporter 호출 없이 반환한다.
+- 반환 `ConsolaReporter` — 필터를 통과한 로그만 원본 reporter 의 `log(logObj, ctx)` 로 전달하는 wrapper.
 
 ## PrettyReporter
 
-- `class PrettyReporter implements ConsolaReporter` — 색·아이콘·tag·날짜·에러 스택·box 를 직접 포맷하는 콘솔 reporter. level<2(error/warn)는 stderr, 그 외는 stdout 으로 출력. 색 지원은 `NO_COLOR`(끔)/`FORCE_COLOR`(켬)/TTY/win32 순으로 자동 감지.
-  - `log(logObj, ctx): void` — consola 가 호출하는 reporter 인터페이스. 한 줄(또는 멀티라인)로 포맷 후 스트림에 기록. error 의 `cause` 체인을 들여쓰기로 펼치고, 스택에서 cwd/`file://` 접두를 제거한다.
-  - `formatPlain(logObj, formatOptions?): string` — 색·날짜·뱃지 여백 **없이** 평문으로 포맷(trim). 아이콘·tag·객체 inspect·스택 표현은 콘솔과 동일하게 재사용. 파일 reporter 등이 콘솔과 같은 본문을 얻기 위한 진입점.
-    - `formatOptions?: Partial<FormatOpts>` — 콘솔과 동일한 `ctx.options.formatOptions`(예: 객체 펼침 `compact`)를 넘기면 출력이 콘솔과 일치.
+`class PrettyReporter implements ConsolaReporter`
+
+`log(logObj: LogObject, ctx: { options: ConsolaOptions }): void`
+
+- `logObj: LogObject` — consola 가 전달한 로그 객체. `args`, `type`, `tag`, `level`, `date`, `message` 가 포맷 입력으로 쓰인다.
+- `ctx.options: ConsolaOptions` — `formatOptions`, `stderr`, `stdout` 을 읽는다.
+- 출력 스트림 — `logObj.level < 2` 이면 `ctx.options.stderr ?? process.stderr`, 그 외에는 `ctx.options.stdout ?? process.stdout` 에 쓴다.
+- 색상 판정 — `NO_COLOR` 환경값이 있으면 끄고, `FORCE_COLOR` 환경값이 있으면 켜고, 그 외에는 `process.stdout.isTTY === true` 또는 win32 이면 켠다.
+- type 처리 — `box` 는 ` > ` prefix 블록으로 출력하고, `trace` 는 `Trace: <message>` Error stack 을 덧붙인다. 그 외 type 은 tag, icon, message, date 를 한 줄로 조합한다.
+- Error 처리 — args 안의 Error 는 message, stack, Error cause 체인을 들여쓰기해 문자열화한다.
+
+`formatPlain(logObj: LogObject, formatOptions?: Partial<FormatOpts>): string`
+
+- `logObj: LogObject` — 평문으로 포맷할 로그 객체.
+- `formatOptions?: Partial<FormatOpts>` — `_formatLogObj` 에 전달할 포맷 옵션 일부.
+- `formatOptions.compact?: boolean | number` — `formatWithOptions` 의 객체 출력 compact 값으로 전달된다.
+- `formatOptions.errorLevel?: number` — Error stack/cause 들여쓰기 레벨 계산에 쓰인다.
+- `formatOptions.colors?: boolean` — 호출자가 넘겨도 `false` 로 고정된다.
+- `formatOptions.date?: boolean` — 호출자가 넘겨도 `false` 로 고정된다.
+- 반환 `string` — 색, 날짜, badge 여백 없이 `_formatLogObj(...).trim()` 한 문자열.
+
+## FileReporterOptions
+
+`interface FileReporterOptions { maxSize?: number; maxDays?: number }`
+
+- `maxSize?: number` — 로그 파일 1개의 최대 크기. 생략 시 `20 * 1024 * 1024`.
+- `maxDays?: number` — 보관 일수. 생략 시 `14`.
 
 ## createFileReporter
 
-- `createFileReporter(options?: FileReporterOptions): ConsolaReporter` — `<cwd>/.logs/app.<YYYY-MM-DD>.log` 에 기록하는 reporter 생성. 본문은 `PrettyReporter.formatPlain` 으로 콘솔과 동일하게, 앞에 `타임스탬프 [TYPE]` 접두를 붙인다. 날짜 변경 또는 크기 초과 시 rotate, 일자가 바뀌는 첫 기록 시 오래된 파일을 정리.
-  - `options.maxSize?: number` — 파일 1개의 최대 바이트. 초과 시 `app.<date>.<seq>.log` 로 분할. 기본 20MB(`20 * 1024 * 1024`).
-  - `options.maxDays?: number` — 보관 일수. cutoff(오늘 − maxDays) 이전 날짜 파일을 삭제. 기본 14.
+`function createFileReporter(options?: FileReporterOptions): ConsolaReporter`
 
-```ts
-import { createFileReporter } from "@simplysm/core-node";
-import consola from "consola";
-consola.options.reporters = [createFileReporter({ maxSize: 5 * 1024 * 1024, maxDays: 7 })];
-```
-
-## FileReporterOptions / SetupConsolaOptions
-
-- `interface FileReporterOptions { maxSize?: number; maxDays?: number }` — `createFileReporter` 옵션 타입.
-  - `maxSize?: number` — 로그 파일 1개의 최대 바이트(기본 20MB). 초과 시 seq 파일로 분할.
-  - `maxDays?: number` — 로그 보관 일수(기본 14). 초과 날짜 파일 삭제.
-- `interface SetupConsolaOptions { cli?: boolean }` — `setupConsola` 옵션 타입.
-  - `cli?: boolean` — CLI 모드 여부. `true` 면 prod 라도 콘솔 출력 경로 사용.
+- `options?: FileReporterOptions` — 파일 크기와 보관일 옵션.
+- `options.maxSize?: number` — 현재 파일 크기와 새 라인 길이 합이 이 값 이상이면 rotate 한다.
+- `options.maxDays?: number` — cutoff 날짜 문자열보다 오래된 `app.<date>.log` 또는 `app.<date>.<seq>.log` 파일을 삭제할 때 쓴다.
+- 반환 `ConsolaReporter` — `<process.cwd()>/.logs` 아래 파일에 append 하는 reporter.
+- 라인 형식 — `<yyyy-MM-dd HH:mm:ss.fff> [<TYPE>] <PrettyReporter.formatPlain(...)>\n`.
+- 파일명 — 기본 `app.<yyyy-MM-dd>.log`; 해당 파일이 `maxSize` 이상이면 `app.<yyyy-MM-dd>.<seq>.log` 중 없거나 크기가 작은 첫 파일.
+- 디렉토리 생성 — 첫 rotate 시 `.logs` 디렉토리를 `fs.mkdirSync(outDir, { recursive: true })` 로 만든다.
+- 정리 시점 — 날짜 문자열이 마지막 정리 날짜와 다를 때만 `cleanOldFiles(outDir, maxDays)` 를 호출한다.

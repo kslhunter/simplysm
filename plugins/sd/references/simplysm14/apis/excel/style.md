@@ -1,6 +1,6 @@
 # @simplysm/excel — 셀 스타일
 
-셀(`cell.setStyle(opts)`)이나 워크북 default(`wb.setDefaultStyle(opts)`)에 배경·테두리·정렬·숫자형식·폰트를 줄 때 참조. 두 호출 모두 동일한 `ExcelStyleOptions` 를 받는다. 미지정 필드는 OOXML 자식 엘리먼트로 emit 하지 않아 엑셀 기본값으로 표시되며, `cell.setStyle` 은 기존 셀 스타일을 clone 후 지정 필드만 병합(부분 갱신)한다.
+`ExcelCell.setStyle(opts)` 와 `ExcelWorkbook.setDefaultStyle(opts)` 에서 함께 쓰는 스타일 타입 묶음. 셀 스타일은 기존 styleId 를 clone 해 지정 필드만 반영하고, 워크북 default 스타일은 0번 font/fill/border 자원 슬롯과 `cellXfs[0]` 를 직접 갱신한다.
 
 ## ExcelStyleOptions
 
@@ -16,13 +16,13 @@ interface ExcelStyleOptions {
 }
 ```
 
-- `background` — 배경색(ARGB 8자리 16진수, 예 `"00FF0000"` = 빨강). solid fill 로 채운다.
-- `border: ExcelBorderPosition[]` — 테두리를 그릴 변(`"left"|"right"|"top"|"bottom"`)의 배열. 4변 전부면 4개를 모두 넣는다.
-- `horizontalAlign` — 가로 정렬(`"center"|"left"|"right"`). 미지정 시 엑셀 기본.
-- `verticalAlign` — 세로 정렬(`"center"|"top"|"bottom"`). 미지정 시 엑셀 기본.
-- `numberFormat: ExcelNumberFormat` — 숫자형식 프리셋(`"number"|"string"|"DateOnly"|"DateTime"|"Time"`). 내장 numFmtId(0/49/14/22/18)로 매핑된다.
-- `numberFormatCode` — 임의 Excel formatCode 문자열(예 `"0.000000"`, `"#,##0.00"`, `"0.00%"`). `numberFormat` 과 동시 지정 시 이 필드가 우선 적용된다.
-- `font: ExcelFont` — 폰트 속성(아래). 미지정 폰트 속성은 워크북 default 폰트로 표시된다.
+- `background` — ARGB 8자리 배경색. 형식 검증(`/^[0-9A-F]{8}$/i`)을 통과하지 못하면 throw 하고, 저장 시 대문자로 변환된다.
+- `border` — 테두리를 줄 방향 배열. 지정 방향은 `thin` 스타일과 `00000000` 색상으로 생성되고, 기존 스타일 clone 에서는 배열에 없는 방향이 제거된다.
+- `horizontalAlign` — 가로 정렬. 값은 `"center" | "left" | "right"`.
+- `verticalAlign` — 세로 정렬. 값은 `"center" | "top" | "bottom"`.
+- `numberFormat` — 숫자 형식 프리셋. `ExcelUtils.convertNumFmtNameToId` 로 내장 numFmtId 를 지정한다.
+- `numberFormatCode` — Excel formatCode 문자열. 지정 시 사용자 정의 numFmt 를 등록하고 `numberFormat` 보다 우선한다.
+- `font` — 폰트 옵션 묶음. 색상은 ARGB 8자리 검증을 거쳐 대문자로 저장된다.
 
 ## ExcelFont
 
@@ -38,30 +38,43 @@ interface ExcelFont {
 }
 ```
 
-- `size` — 폰트 크기(pt).
-- `family` — 폰트명(예 `"맑은 고딕"`, `"Calibri"`).
-- `bold` — 굵게.
-- `italic` — 기울임.
-- `underline: ExcelFontUnderline` — 밑줄 종류(`"single"|"double"|"singleAccounting"|"doubleAccounting"`). `<u val="...">` 의 val 에 그대로 매핑.
-- `color` — 글자색(ARGB 8자리, 예 `"00FF0000"`).
-- `strike` — 취소선.
+- `size` — 폰트 크기 pt 값. OOXML `<sz val>` 로 저장된다.
+- `family` — 폰트명. OOXML `<name val>` 로 저장된다.
+- `bold` — true 일 때 굵게 요소를 emit 한다. false 또는 미지정은 요소를 emit 하지 않는다.
+- `italic` — true 일 때 기울임 요소를 emit 한다. false 또는 미지정은 요소를 emit 하지 않는다.
+- `underline` — 밑줄 형식. 값은 `<u val>` 에 그대로 저장된다.
+- `color` — ARGB 8자리 글자색. 형식 검증 후 `<color rgb>` 에 대문자로 저장된다.
+- `strike` — true 일 때 취소선 요소를 emit 한다. false 또는 미지정은 요소를 emit 하지 않는다.
 
-`ExcelFont` 은 셀 단위 override(`ExcelStyleOptions.font`)와 워크북 default(`wb.setDefaultStyle({ font })`) 양쪽이 공유한다. 미지정 속성은 `<font>` 자식 엘리먼트로 emit 되지 않으며 엑셀 자체 기본값으로 표시된다.
-
-## 사용 예
+## 스타일 enum 타입
 
 ```typescript
-await cell.setStyle({
-  background: "00FFFF00",
-  border: ["left", "right", "top", "bottom"],
-  horizontalAlign: "center",
-  numberFormatCode: "#,##0",
-  font: { family: "맑은 고딕", size: 10, bold: true },
-});
+type ExcelBorderPosition = "left" | "right" | "top" | "bottom";
+type ExcelHorizontalAlign = "center" | "left" | "right";
+type ExcelVerticalAlign = "center" | "top" | "bottom";
+type ExcelFontUnderline = "single" | "double" | "singleAccounting" | "doubleAccounting";
 ```
 
-## 주의사항
+- `"left"` — 왼쪽 테두리 위치. `border` 에 포함되면 left border 가 생성된다.
+- `"right"` — 오른쪽 테두리 위치. `border` 에 포함되면 right border 가 생성된다.
+- `"top"` — 위쪽 테두리 위치. `border` 에 포함되면 top border 가 생성된다.
+- `"bottom"` — 아래쪽 테두리 위치. `border` 에 포함되면 bottom border 가 생성된다.
+- `"center"` — 가로/세로 정렬 모두에서 가운데 정렬 literal.
+- `"left"` — 가로 정렬에서 왼쪽 정렬 literal.
+- `"right"` — 가로 정렬에서 오른쪽 정렬 literal.
+- `"top"` — 세로 정렬에서 위쪽 정렬 literal.
+- `"bottom"` — 세로 정렬에서 아래쪽 정렬 literal.
+- `"single"` — 밑줄 val literal. 읽을 때 `<u>` 에 val 이 없으면 이 값으로 파싱된다.
+- `"double"` — 이중 밑줄 val literal.
+- `"singleAccounting"` — singleAccounting 밑줄 val literal.
+- `"doubleAccounting"` — doubleAccounting 밑줄 val literal.
 
-- `cell.setStyle` 은 부분 갱신(clone + merge)이므로, 같은 셀에 두 번 호출하면 두 호출의 지정 필드가 누적된다.
-- `wb.setDefaultStyle` 은 0번 자원 슬롯 자체를 덮어쓰는 전역 설정이라 동작이 다르다 — `font`/`background`/`border` 미지정 슬롯은 빈 슬롯으로 reset 되고, `horizontalAlign`/`verticalAlign`/`numberFormat`/`numberFormatCode` 는 `cellXfs[0]` 에 박힌다(상세는 [workbook-worksheet.md](./workbook-worksheet.md)).
-- 색상은 모두 ARGB 8자리(앞 2자리 알파). 6자리 RGB 가 아님.
+## 적용 동작
+
+- `cell.setStyle(opts)` — 셀에 styleId 가 없으면 새 스타일을 등록한다. styleId 가 있으면 기존 xf 를 clone 하고 지정 필드만 반영한 새 스타일을 등록한다.
+- `wb.setDefaultStyle(opts)` — 0번 font/fill/border 자원 슬롯을 먼저 빈 슬롯으로 reset 한 뒤 지정 옵션을 반영한다. 숫자 형식과 정렬은 `cellXfs[0].xf[0]` 에 반영한다.
+- `numberFormatCode` — 동일 formatCode 가 이미 있으면 기존 numFmtId 를 재사용한다. 새 formatCode 는 현재 사용자 정의 numFmt 최대 ID 다음 ID로 등록된다.
+- `background` — 일반 셀 스타일에서는 fill `fgColor` 로 저장된다.
+- `font` — 동일 폰트 XML 이 이미 있으면 fontId 를 재사용한다.
+- `border` — 동일 border XML 이 이미 있으면 borderId 를 재사용한다.
+- `horizontalAlign` / `verticalAlign` — 지정 시 `applyAlignment="1"` 을 설정하고 alignment 속성에 값을 저장한다.

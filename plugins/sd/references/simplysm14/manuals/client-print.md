@@ -83,7 +83,7 @@ downloadBlob(
 );
 ```
 
-- 둘째 인자 `options` 로 `{ orientation, pageSize }` 조정 (기본 `orientation: "p"`(portrait), `pageSize: "a4"`).
+- 둘째 인자 `options` 로 `{ orientation, pageSize }` 조정. 공개 입력값은 `orientation: "portrait" | "landscape"` 이며, 미지정 시 portrait 로 동작함. 기본 `pageSize` 는 `"a4"`.
 - **PDF 페이지 분할은 인쇄와 다름** — `getPdfBufferAsync` 는 템플릿 안의 **`.page` 클래스**(언더스코어 없음) 엘리먼트를 각각 한 페이지로 캡처함. `.page` 가 하나도 없으면 **전체를 1페이지**로 만듦.
   - 다중 페이지 PDF 가 필요하면 페이지 div 에 `.page` 클래스를 줌 (인쇄용 `._page` + `page-break` 와는 별개의 클래스).
   - 또는 위 예시처럼 항목마다 `getPdfBufferAsync` 를 **단건 호출**해 1페이지 PDF 를 여러 개 만듦.

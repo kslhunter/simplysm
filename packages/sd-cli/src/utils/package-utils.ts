@@ -3,6 +3,7 @@ import fs from "fs";
 import { SdError } from "@simplysm/core-common";
 import { fsx, pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
+import { collectWorkspacePackages } from "./workspace-utils";
 import type {
   SdPackageConfig,
 } from "../sd-config.types";
@@ -19,26 +20,32 @@ export function findPackageRoot(startDir: string): string {
 }
 
 /**
- * packages/ 및 tests/ 디렉토리에서 모든 워크스페이스 패키지를 탐색한다.
+ * package.json#workspaces에서 check 대상 워크스페이스 패키지를 탐색한다.
  * 디렉토리명 → 상대 경로의 맵을 반환한다 (예: "orm" → "tests/orm").
+ * PM workspace에는 plugins/*도 포함될 수 있으나 check 기본 대상은 packages/*, tests/*만 유지한다.
  */
 export function discoverWorkspacePackages(cwd: string): Map<string, string> {
   logger.debug("워크스페이스 패키지 탐색 시작");
   const map = new Map<string, string>();
-  for (const dir of ["packages", "tests"]) {
-    const baseDir = pathx.posix(path.join(cwd, dir));
-    if (!fs.existsSync(baseDir)) continue;
-    for (const entry of fs.readdirSync(baseDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      if (!fs.existsSync(pathx.posix(path.join(baseDir, entry.name, "package.json")))) continue;
-      if (map.has(entry.name)) {
-        throw new SdError(
-          `Duplicate workspace package name: ${entry.name} (${map.get(entry.name)} and ${dir}/${entry.name})`,
-        );
-      }
-      map.set(entry.name, `${dir}/${entry.name}`);
+
+  const workspacePackages = (() => {
+    try {
+      return collectWorkspacePackages(cwd);
+    } catch {
+      return [];
     }
+  })();
+
+  for (const item of workspacePackages) {
+    if (!item.relPath.startsWith("packages/") && !item.relPath.startsWith("tests/")) continue;
+    if (map.has(item.dirName)) {
+      throw new SdError(
+        `Duplicate workspace package name: ${item.dirName} (${map.get(item.dirName)} and ${item.relPath})`,
+      );
+    }
+    map.set(item.dirName, item.relPath);
   }
+
   logger.debug(`워크스페이스 패키지 탐색 완료 (${map.size}개)`);
   return map;
 }

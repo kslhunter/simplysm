@@ -1,42 +1,59 @@
 # @simplysm/core-node — FsWatcher
 
-chokidar 기반 파일 감시 래퍼 (`packages/core-node/src/features/fs-watcher.ts`). watch 빌드처럼 "여러 변경을 모아 한 번에 처리"해야 할 때 사용. 짧은 시간 내 이벤트를 디바운스+병합해 콜백을 한 번만 호출하고, Windows 의 EPERM(감시 디렉토리 소실) 발생 시 watcher 를 자동 재시작한다. 모듈 로드 시 native FSWatcher prototype 의 orphan `error` emit(close 중 race 로 listener 없는 인스턴스)을 swallow 하는 가드를 1회 설치해 프로세스 강제 종료를 막는다.
+chokidar 감시를 감싸 대상 glob 재필터링, 이벤트 병합, 디바운스 콜백, Windows EPERM 재시작을 함께 처리할 때 읽는 군.
 
-## FsWatcher.watch (정적 진입점)
+## FsWatcherEvent
 
-- `static watch(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher>` — 감시 시작. ready 될 때까지 대기 후 인스턴스 반환. ready 전 에러 시 watcher 를 close 하고 throw.
-  - `paths: string[]` — 감시할 경로/glob 패턴 배열. 내부적으로 각 패턴에서 glob 메타문자(`* ? { [ ]`) 이전의 base 디렉토리를 추출해 chokidar 에 등록하고, 콜백 단계에서 원본 패턴으로 minimatch 재필터(패턴 자체 + `패턴/**` 양쪽을 `dot: true` 로 매칭).
-  - `options?: ChokidarOptions` — chokidar 옵션. `persistent` 기본 true. 단, `ignoreInitial` 은 chokidar 호출 시 내부적으로 항상 true 로 강제(초기 스캔 이벤트 무시).
-  - `options.ignoreInitial: false` 지정 시 → `onChange` 의 첫 콜백이 **빈 배열 `[]`** 로 1회 호출됨(실제 초기 파일 목록은 담기지 않음 — 이벤트 병합과의 충돌 방지). "초기 1회 전체 빌드 후 변경 감시" 패턴 트리거용.
+`type FsWatcherEvent = "add" | "addDir" | "change" | "unlink" | "unlinkDir"`
 
-```ts
-import { FsWatcher } from "@simplysm/core-node";
-const watcher = await FsWatcher.watch(["src/**/*.ts"]);
-```
+- `"add"` — chokidar `all` 이벤트명이 `add` 일 때 통과되는 이벤트 literal.
+- `"addDir"` — chokidar `all` 이벤트명이 `addDir` 일 때 통과되는 이벤트 literal.
+- `"change"` — chokidar `all` 이벤트명이 `change` 일 때 통과되는 이벤트 literal.
+- `"unlink"` — chokidar `all` 이벤트명이 `unlink` 일 때 통과되는 이벤트 literal.
+- `"unlinkDir"` — chokidar `all` 이벤트명이 `unlinkDir` 일 때 통과되는 이벤트 literal.
+
+## FsWatcherChangeInfo
+
+`interface FsWatcherChangeInfo { event: FsWatcherEvent; path: PosixPath }`
+
+- `event: FsWatcherEvent` — 병합 뒤 남은 이벤트 literal.
+- `path: PosixPath` — `posix(filePath)` 로 변환된 변경 경로.
+
+## FsWatcher.watch
+
+`static watch(paths: string[], options?: chokidar.ChokidarOptions): Promise<FsWatcher>`
+
+- `paths: string[]` — 감시할 경로 또는 glob 배열. 각 값은 glob 메타문자(`* ? { [ ]`) 전까지의 base 디렉토리 추출에 쓰이고, 이벤트 수신 뒤 원본 패턴 매칭에도 쓰인다.
+- `options?: chokidar.ChokidarOptions` — chokidar 옵션. `_options` 에 원본이 보관되며, 실제 chokidar 생성 시 `persistent: true` 와 `ignoreInitial: true` 가 적용된다.
+- 반환 `Promise<FsWatcher>` — ready 이벤트까지 기다린 인스턴스. ready 전 error 가 나면 `close()` 를 시도한 뒤 해당 error 를 throw.
 
 ## onChange
 
-- `onChange(opt, cb): this` — 디바운스된 변경 콜백 등록. 체이닝 가능(this 반환). 여러 번 호출해 핸들러를 다중 등록 가능.
-  - `opt.delay?: number` — 디바운스 지연(ms). 이 시간 내 들어온 이벤트를 모아 한 번 호출(`DebounceQueue` 사용). 생략 시 `DebounceQueue` 기본값.
-  - `cb: (changeInfos: FsWatcherChangeInfo[]) => void | Promise<void>` — 병합된 변경 목록 콜백. async 가능.
-  - 이벤트 병합(같은 파일 기준): `add+change→add`, `add+unlink→상쇄(콜백 제외)`, `addDir+unlinkDir→상쇄`, `unlink+add→add`, `unlink+change→change`, `unlinkDir+addDir→addDir`. 그 외 조합은 최신 이벤트로 덮어쓴다. → 생성 직후 삭제된 임시파일 등은 콜백에 나타나지 않음.
+`onChange(opt: { delay?: number }, cb: (changeInfos: FsWatcherChangeInfo[]) => void | Promise<void>): this`
 
-```ts
-watcher.onChange({ delay: 300 }, (changes) => {
-  for (const { path, event } of changes) console.log(`${event}: ${path}`);
-});
-```
+- `opt.delay?: number` — `DebounceQueue` 에 전달할 지연값. 같은 큐에 모인 변경을 한 번의 콜백으로 flush 한다.
+- `cb: (changeInfos: FsWatcherChangeInfo[]) => void | Promise<void>` — 병합된 변경 목록을 받는 콜백. 반환 Promise 는 내부 async 실행에서 await 된다.
+- 반환 `this` — 같은 watcher 에 추가 핸들러를 체이닝 등록할 수 있다.
+- 초기 콜백 — `FsWatcher.watch` 에 전달한 원본 `options.ignoreInitial` 이 `false` 이면, `onChange` 등록 시 `cb([])` 를 한 번 예약한다. 실제 초기 파일 목록은 담지 않는다.
+- 이벤트 필터 — chokidar `all` 이벤트 중 `FsWatcherEvent` literal 에 포함된 값만 처리한다.
+- 경로 필터 — `minimatch(posixFilePath, posix(p), { dot: true })` 또는 `minimatch(posixFilePath, posix(path.join(p, "**")), { dot: true })` 에 맞는 원본 path 만 통과한다.
+- 병합 규칙 — 같은 파일 기준 `add+change` 는 `add`, `add+unlink` 는 제거, `addDir+unlinkDir` 는 제거, `unlink+add` 는 `add`, `unlink+change` 는 `change`, `unlinkDir+addDir` 는 `addDir`; 그 외 조합은 현재 이벤트로 덮어쓴다.
 
 ## close
 
-- `close(): Promise<void>` — 디바운스 큐를 모두 dispose 한 뒤 chokidar watcher 를 종료. 감시 해제 시 반드시 호출.
+`close(): Promise<void>`
 
-## FsWatcherChangeInfo / FsWatcherEvent
+- 동작 — 등록된 `DebounceQueue` 를 모두 `dispose()` 하고 배열을 비운 뒤, 내부 chokidar watcher 의 `close()` 를 await 한다.
 
-- `interface FsWatcherChangeInfo { event: FsWatcherEvent; path: PosixPath }` — 변경 1건. `path` 는 슬래시 정규화된 `PosixPath`(pathx 의 브랜드 타입).
-- `type FsWatcherEvent = "add" | "addDir" | "change" | "unlink" | "unlinkDir"` — 변경 종류.
-  - `add` — 파일 생성. `addDir` — 디렉토리 생성. `change` — 파일 내용 변경. `unlink` — 파일 삭제. `unlinkDir` — 디렉토리 삭제.
+## 모듈 로드 부작용
 
-## EPERM 자동 복구 동작
+- native `node:fs` 의 `FSWatcher.prototype.emit` 에 guard flag `Symbol.for("@simplysm/core-node/fs-watcher/error-guard")` 가 없으면 한 번만 래핑한다.
+- 래핑 동작 — event 가 `"error"` 이고 해당 인스턴스의 error listener 수가 0이면 `false` 를 반환해 orphan error emit 을 삼킨다. 그 외에는 원래 emit 을 호출한다.
 
-EPERM 감지 시 최대 3회(1000ms 간격) watcher 재생성을 시도하며 등록된 모든 핸들러를 다시 부착한다. 성공 시 `success` 로그, 한도 초과 시 `error` 로그 후 중단. 로거 태그는 `sd-fs-watcher`(consola). 재시도는 자동 복구이므로 호출측에서 별도 처리 불필요.
+## EPERM 복구 동작
+
+- error listener — chokidar error 를 `sd-fs-watcher` logger 로 출력한다.
+- 복구 조건 — error 가 `Error` 이고 `code === "EPERM"` 이며 이미 복구 중이 아니면 `_handleEperm()` 을 실행한다.
+- 재시도 값 — 최대 3회, 각 시도 사이 1000ms 대기.
+- 재시작 동작 — 기존 watcher 를 close 하고 새 chokidar watcher 를 만들며, `_allHandlers` 에 저장된 모든 `all` 핸들러를 다시 붙인 뒤 ready 를 기다린다.
+- 실패 종료 — 3회를 초과하면 error 로그를 남기고 `_isRecovering` 을 false 로 되돌린다.

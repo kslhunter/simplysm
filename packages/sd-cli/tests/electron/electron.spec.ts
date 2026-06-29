@@ -145,7 +145,7 @@ describe("Electron", () => {
   //#region Rule: Electron 프로젝트를 초기화한다
 
   describe("인수 테스트: 초기화", () => {
-    it("package.json 생성 + pnpm install + electron-rebuild를 실행한다", async () => {
+    it("package.json 생성 + bun install + electron-rebuild를 실행한다", async () => {
       const { Electron } = await import("../../src/electron/electron.js");
 
       const electron = await Electron.create(PKG_PATH, {
@@ -159,13 +159,13 @@ describe("Electron", () => {
 
       const spawnCalls = mockCpxSpawn.mock.calls;
       const installCall = spawnCalls.find(
-        (c) => c[0] === "pnpm" && c[1].includes("install"),
+        (c) => c[0] === "bun" && c[1].includes("install"),
       );
       expect(installCall).toBeDefined();
       expect(installCall?.[2]).toEqual(expect.objectContaining({ shell: true }));
       expect(
         spawnCalls.find(
-          (c) => c[0] === "pnpm" && c[1].includes("electron-rebuild"),
+          (c) => c[0] === "bun" && c[1].includes("electron-rebuild"),
         ),
       ).toBeDefined();
     });
@@ -177,7 +177,7 @@ describe("Electron", () => {
       await electron.initialize();
 
       const rebuildCall = mockCpxSpawn.mock.calls.find(
-        (c) => c[0] === "pnpm" && c[1].includes("electron-rebuild"),
+        (c) => c[0] === "bun" && c[1].includes("electron-rebuild"),
       );
       expect(rebuildCall).toBeUndefined();
     });
@@ -455,8 +455,8 @@ describe("Electron", () => {
       let resolveElectron: () => void = () => {};
 
       mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
-        // pnpm exec electron . → Electron 프로세스
-        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
+        // bun run electron . → Electron 프로세스
+        if (cmd === "bun" && args[0] === "run" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -499,7 +499,7 @@ describe("Electron", () => {
       expect(callArgs.bundle).toBe(true);
       expect(callArgs.external).toContain("electron");
       const electronCall = mockCpxSpawn.mock.calls.find(
-        (c) => c[0] === "pnpm" && c[1].includes("electron"),
+        (c) => c[0] === "bun" && c[1].includes("electron"),
       );
       expect(electronCall?.[2]).toEqual(expect.objectContaining({ shell: true, reject: false }));
 
@@ -545,7 +545,7 @@ describe("Electron", () => {
     it("passes custom env and ELECTRON_DEV_URL via esbuild banner", async () => {
       let resolveElectron: () => void = () => {};
       mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
-        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
+        if (cmd === "bun" && args[0] === "run" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -578,7 +578,7 @@ describe("Electron", () => {
     it("calls initialize() before starting esbuild context", async () => {
       let resolveElectron: () => void = () => {};
       mockCpxSpawn.mockImplementation((cmd: string, args: string[]) => {
-        if (cmd === "pnpm" && args[0] === "exec" && args[1] === "electron" && args[2] === ".") {
+        if (cmd === "bun" && args[0] === "run" && args[1] === "electron" && args[2] === ".") {
           const p = new Promise<void>((resolve) => {
             resolveElectron = resolve;
           }) as any;
@@ -596,11 +596,11 @@ describe("Electron", () => {
       resolveElectron();
       await runPromise;
 
-      // initialize calls pnpm install
-      const pnpmInstallCall = mockCpxSpawn.mock.calls.find(
-        (c: any[]) => c[0] === "pnpm" && (c[1] as string[]).includes("install"),
+      // initialize calls bun install
+      const bunInstallCall = mockCpxSpawn.mock.calls.find(
+        (c: any[]) => c[0] === "bun" && (c[1] as string[]).includes("install"),
       );
-      expect(pnpmInstallCall).toBeDefined();
+      expect(bunInstallCall).toBeDefined();
     }, 10_000);
   });
 

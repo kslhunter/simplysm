@@ -1,6 +1,6 @@
 # @simplysm/core-common — errors
 
-원인 체인을 ES2024 `cause` 로 묶는 에러 클래스군과, catch 블록의 `unknown` 에러에서 메시지를 안전 추출하는 `err` 네임스페이스. `import { SdError, ArgumentError, NotImplementedError, TimeoutError, err } from "@simplysm/core-common"`.
+원인 체인을 보존하는 에러 클래스와 catch 값 처리 유틸 묶음. `throw` 할 도메인 오류를 만들거나 `unknown` 에러를 메시지·스택·Error 로 되살릴 때 함께 본다.
 
 ## SdError
 
@@ -12,22 +12,11 @@ class SdError extends Error {
 }
 ```
 
-트리 구조 조합형 에러. 모든 하위 에러 클래스의 베이스.
-
-- 첫 인자가 `Error` 면 그것을 `cause` 로 보관하고, 나머지 가변 인자(`...messages`)와 함께 메시지를 **역순으로** `" => "` 결합. 결과: `상위 메시지 => 하위 메시지 => 원본 에러 메시지`.
-- 첫 인자가 문자열이면 cause 없이 메시지만 역순 결합.
-- 첫 인자가 `Error`/문자열이 아니어도 null 이 아니면 `String()` 변환해 메시지로 사용.
-- V8 엔진(Node/Chrome)에서는 `Error.captureStackTrace` 로 생성자 프레임 제거. cause 의 stack 이 있으면 현재 stack 끝에 `---- cause stack ----` 구분선과 함께 이어붙임.
-- `name` 은 `"SdError"`.
-
-```ts
-try {
-  await fetch(url);
-} catch (e) {
-  throw new SdError(e as Error, "API 호출 실패", "사용자 로드 실패");
-  // message: "사용자 로드 실패 => API 호출 실패 => <원본 메시지>"
-}
-```
+- `cause: Error` — 첫 인자가 Error 이면 ES `cause` 로 저장한다. cause 의 stack 이 있으면 현재 stack 뒤에 `---- cause stack ----` 와 함께 붙인다.
+- `messages: string[]` — cause 메시지 또는 첫 문자열 인자와 함께 역순으로 `" => "` 결합해 최종 message 를 만든다.
+- `arg1?: unknown` — 구현은 Error·string 외 null 이 아닌 값도 `String(arg1)` 로 메시지화한다.
+- `name` — 생성 후 `"SdError"` 로 설정된다.
+- `captureStackTrace` — V8 환경에 있으면 생성자 프레임을 제거한다.
 
 ## ArgumentError
 
@@ -38,16 +27,10 @@ class ArgumentError extends SdError {
 }
 ```
 
-유효하지 않은 인자 전달 시 throw. 인자 객체를 `yaml` 라이브러리로 직렬화해 메시지에 첨부(트리 구조를 사람이 읽기 쉽게).
-
-- 첫 인자가 객체면 기본 메시지 `"잘못된 인자입니다."` + 빈 줄 + `YAML.stringify(argObj)`.
-- 첫 인자가 문자열이면 그 메시지 + 빈 줄 + 둘째 인자 객체의 YAML. argObj 가 null 이면 YAML 없이 메시지만.
-- `name` 은 `"ArgumentError"`. 패키지 내부의 인자 검증 실패(Uuid 형식·hex 길이·중복 key·`orderBy` 불가 타입 등)가 이 에러로 throw 됨.
-
-```ts
-throw new ArgumentError("잘못된 사용자", { userId: 123, name: null });
-// "잘못된 사용자\n\nuserId: 123\nname: null\n"
-```
+- `argObj: Record<string, unknown>` — 인자 상태를 YAML 문자열로 바꿔 메시지 뒤에 붙인다.
+- `message: string` — 지정하면 커스텀 메시지를 사용하고, 객체만 전달하면 기본 메시지 `"잘못된 인자입니다."` 를 사용한다.
+- `arg2?: Record<string, unknown>` — 문자열 메시지 뒤에 전달되는 인자 객체다. 없으면 YAML 없이 메시지만 사용한다.
+- `name` — `"ArgumentError"` 로 설정된다.
 
 ## NotImplementedError
 
@@ -57,11 +40,8 @@ class NotImplementedError extends SdError {
 }
 ```
 
-아직 구현되지 않은 분기·추상 스텁에서 throw. 메시지는 `"미구현"` 에 인자가 있으면 `": " + message` 를 덧붙임. `name` 은 `"NotImplementedError"`.
-
-```ts
-throw new NotImplementedError(`타입 ${type} 처리`); // "미구현: 타입 B 처리"
-```
+- `message?: string` — 있으면 `"미구현: " + message`, 없으면 `"미구현"` 메시지를 만든다.
+- `name` — `"NotImplementedError"` 로 설정된다.
 
 ## TimeoutError
 
@@ -71,25 +51,14 @@ class TimeoutError extends SdError {
 }
 ```
 
-대기 시간 초과 시 throw. 메시지는 `"대기 시간 초과"` 에 `count` 가 있으면 `(N회 시도)`, `message` 가 있으면 `: message` 를 덧붙임. `name` 은 `"TimeoutError"`. `wait.until` 이 최대 시도 횟수를 초과하면 `new TimeoutError(count)` 로 자동 throw 한다([async-runtime.md](./async-runtime.md) 참조).
+- `count?: number` — 있으면 메시지에 `(<count>회 시도)` 를 붙인다. `wait.until` 이 최대 시도 횟수에 도달했을 때 전달한다.
+- `message?: string` — 있으면 메시지 뒤에 `: <message>` 를 붙인다.
+- `name` — `"TimeoutError"` 로 설정된다.
 
-```ts
-try {
-  await wait.until(() => isReady, 100, 50);
-} catch (e) {
-  if (e instanceof TimeoutError) { /* ... */ }
-}
-```
-
-## err (에러 메시지 추출)
+## err
 
 `import { err } from "@simplysm/core-common"` 네임스페이스.
 
-- `message(error: unknown): string` — `Error` 인스턴스면 `.message`, 아니면 `String(error)`. catch 블록의 `unknown` 에러에서 메시지를 안전하게 뽑을 때.
-
-```ts
-import { err } from "@simplysm/core-common";
-try { /* ... */ } catch (e) {
-  logger.error(err.message(e));
-}
-```
+- `message(err: unknown): string` — Error 인스턴스면 `err.message`, 아니면 `String(err)` 를 반환한다. catch 값의 사용자 메시지만 필요할 때.
+- `stack(err: unknown): string` — Error 인스턴스면 `err.stack ?? err.message`, 아니면 `String(err)` 를 반환한다. 로그용 스택 문자열이 필요할 때.
+- `fromObject(obj: Record<string, unknown>): Error` — `obj["message"]` 로 Error 를 만들고 나머지 속성을 `Object.assign` 으로 복사한다. JSON/RPC 등으로 plain object 가 된 에러를 Error 인스턴스로 복원할 때.

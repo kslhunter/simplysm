@@ -99,7 +99,7 @@ export async function startServerWatchLoop(config: ServerWatchLoopConfig): Promi
 
       const hasRelevantChange = changes.some((c) => {
         if (metafileAbsPaths.has(c.path)) return true;
-        // pnpm symlink 경로와 esbuild resolved 경로 불일치 대응
+        // package manager symlink 경로와 esbuild resolved 경로 불일치 대응
         try {
           const realPath = pathx.posix(fs.realpathSync(c.path));
           return metafileAbsPaths.has(realPath);

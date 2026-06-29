@@ -83,7 +83,7 @@ provideAppInitializer(() => {
 다음 프레임워크 지점이 별도 호출 없이 `writeAsync` 를 부르므로, `writeFn` 만 배선하면 자동으로 외부에 적재됨:
 
 - `SdGlobalErrorHandlerPlugin` — 미처리 에러·미처리 Promise 거부를 `writeAsync("error", ...)`, `error` 가 없는 `ErrorEvent` 는 `writeAsync("warn", ...)`.
-- `SdToastProvider.try()` / `.danger()` — 잡은 에러를 토스트로 띄울 때 `writeAsync("error", ...)`.
+- `SdToastProvider.try()` — 잡은 `Error` 를 danger 토스트로 띄울 때 `writeAsync("error", ...)`. `.danger()` 직접 호출은 토스트만 표시하므로 외부 적재가 필요하면 `SdSystemLogProvider.writeAsync()` 를 별도 호출.
 
 ## 직접 시스템 로그를 남기려면
 

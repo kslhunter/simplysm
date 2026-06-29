@@ -8,7 +8,7 @@
 
 ## AppSharedDataProvider 를 정의하려면 (새 앱 1회성)
 
-`SdSharedDataProvider<TAppSharedData>` 를 상속하고, `useSharedSignal` 헬퍼를 함께 export. `initialize()` 안에서 항목을 `register`.
+`SdSharedDataProvider<TAppSharedData>` 를 상속하고, `useSharedSignal` 헬퍼를 함께 export. `initialize()` 안에서 항목을 `register`. 단, `initialize()` 는 프레임워크가 자동 호출하지 않으므로 앱의 준비 시점(부트스트랩 또는 로그인 완료)에서 별도로 호출해야 함.
 
 ```ts
 export function useSharedSignal<K extends keyof TAppSharedData>(
@@ -41,6 +41,7 @@ export class AppSharedDataProvider extends SdSharedDataProvider<TAppSharedData> 
           if (changeKeys) {
             qr = qr.where((item) => [expr.in(item.id, changeKeys as number[])]);
           }
+          qr = qr.orderBy((item) => item.code, "ASC");
           return qr.execute();
         });
       },
@@ -69,19 +70,24 @@ export interface ISharedCustomer extends SharedDataBase<number> {
 
 ## 부트스트랩에 연결하려면 (새 앱 1회성)
 
-CRUD 기반 컨테이너(`SdBaseContainer`)가 base 토큰 `SdSharedDataProvider` 를 optional inject(`inject(SdSharedDataProvider, { optional: true })`) 하므로, 부트스트랩 providers 에 앱 provider 를 그 토큰의 별칭으로 등록.
+두 가지를 분리해서 연결: ① CRUD 기반 컨테이너(`SdBaseContainer`)가 공유데이터 로딩을 기다리도록 base 토큰 별칭을 등록 ② `register` 가 실제 실행되도록 `initialize()` 를 앱 준비 시점에 호출.
 
 ```ts
-// 앱 부트스트랩 (main.ts)
+// 앱 부트스트랩 (main.ts) — auth 와 무관한 마스터를 앱 시작 때 등록하는 경우
 bootstrapApplication(AppRoot, {
   providers: [
     // ...
     { provide: SdSharedDataProvider, useExisting: AppSharedDataProvider },
+    provideAppInitializer(() => {
+      inject(AppSharedDataProvider).initialize();
+    }),
   ],
 });
 ```
 
-- 이 별칭이 없으면 `SdBaseContainer` 의 optional inject 가 `null` 이 되어(추상 provider 라 `providedIn` 없음) 공유데이터 로딩 대기(`wait()`)를 건너뜀. select 컨트롤 자체는 화면의 `useSharedSignal(...)` → `items` 입력으로 데이터를 받으므로 이 별칭과 무관함.
+- 별칭이 없으면 `SdBaseContainer` 의 optional inject 가 `null` 이 되어(추상 provider 라 `providedIn` 없음) 공유데이터 로딩 대기(`wait()`)를 건너뜀. select 컨트롤 자체는 화면의 `useSharedSignal(...)` → `items` 입력으로 데이터를 받으므로 이 별칭과 무관함.
+- `initialize()` 호출이 없으면 `useSharedSignal(...)` 의 `getHandle` 단계에서 "등록되지 않은 공유 데이터" 에러가 남.
+- 공유데이터가 로그인 사용자·권한에 따라 달라지면 부트스트랩이 아니라 인증 적용 후 호출. 예: `AppAuthProvider` 에서 `authInfo`/권한을 세팅한 뒤 `inject(AppSharedDataProvider).initialize()` 호출.
 
 ## 마스터 데이터 항목을 추가하려면
 
@@ -108,6 +114,7 @@ this.register("품목", {
       if (changeKeys) {
         qr = qr.where((item) => [expr.in(item.id, changeKeys as number[])]);
       }
+      qr = qr.orderBy((item) => item.code, "ASC");
       return qr.execute();
     });
   },
@@ -119,8 +126,8 @@ this.register("품목", {
   - `__valueKey` — 항목의 키.
   - `__searchText` — 검색용 텍스트.
   - `__isHidden` — 숨김 여부 (예: `isDisabled` 값으로 지정).
-- `getter(changeKeys)` 의 `changeKeys` 인자가 주어지면 해당 키들만 다시 조회 (incremental refresh). 위 `where` 분기가 그 처리.
-- `orderBy` 는 정렬 키를 반환하는 함수.
+- `getter(changeKeys)` 의 `changeKeys` 인자가 주어지면 **해당 키들만** 다시 조회 (incremental refresh). 위 `where` 분기가 그 처리.
+- `orderBy` 는 부분 갱신 병합 후 재정렬 키를 반환하는 함수. 초기 로드·전체 리로드 정렬은 getter 쿼리의 `orderBy` 로 직접 보장.
 
 ### 2. `TAppSharedData` 에 항목 추가
 
@@ -169,7 +176,7 @@ await this._appOrm.connectAsync(async (db) => {
 await this._appSharedData.emitAsync("역할", changedIds);
 ```
 
-- 둘째 인자 `changeKeys` — 변경된 항목의 키 배열. 주면 수신측이 그 키들만 다시 조회해 부분 갱신(incremental refresh), 생략(`undefined`) 하면 전체 리로드.
+- 둘째 인자 `changeKeys` — 변경된 항목의 키 배열. 주면 수신측이 그 키들만 다시 조회해 기존 항목에서 같은 키를 제거한 뒤 병합, 생략(`undefined`) 하면 전체 리로드. 전체 재조회가 필요하면 `emitAsync("이름")` 처럼 생략하고, `changeKeys` 를 주면서 getter 가 전체를 반환하지 않게 함.
 - 호출 위치는 변경 트랜잭션이 커밋된 뒤(= `connectAsync` 콜백 밖). 변경과 통지가 한 사용자 동작 안에서 이어짐.
 - `register` 안 한 이름을 넘기면 throw — 등록한 이름과 일치시킬 것.
 
@@ -252,6 +259,8 @@ constructor() {
 
 - 항목 추가 시 세 곳(`register` · `TAppSharedData` · 인터페이스)을 모두 갱신. 하나라도 빠지면 타입 불일치 또는 미등록 데이터가 됨.
 - select 결과에 매직 필드(`__valueKey` · `__searchText` · `__isHidden`)를 빠짐없이 포함.
-- `changeKeys` 분기를 생략하지 않음 — incremental refresh 가 동작하지 않으면 변경 시 전체 재조회가 됨.
+- `changeKeys` 분기를 둘 때는 그 키만 반환. 전체 리로드가 필요한 변경은 `emitAsync(name)` 으로 통지.
+- 초기 로드·전체 리로드 정렬이 필요하면 getter 쿼리에서 정렬. `register.orderBy` 에만 기대지 않음.
 - 마스터 CRUD 후 `emitAsync` 통지를 빠뜨리지 않음 — 통지가 없으면 다른 화면의 공유 시그널이 옛 데이터를 유지함.
+- 앱 시작·로그인 완료 등 실제 준비 시점에서 `initialize()` 호출 누락 금지 — provider 상속만으로 등록되지 않음.
 - 공유데이터는 서버 연결을 전제하므로 프리렌더(SSG) 대상 화면의 초기화 경로에서 사용 금지 — 제약은 [client-ssg.md](./client-ssg.md) 참조.

@@ -1,53 +1,84 @@
 # @simplysm/service-client — ORM 원격 실행
 
-서버측 ORM DbContext 를 클라이언트에서 원격 실행하는 묶음. 쿼리 자체는 서버 `Orm` 서비스가 DB 에 대해 수행하고, 클라이언트는 커넥션·트랜잭션·쿼리 정의(`QueryDef`)만 RPC 로 전송한다. 쿼리는 `connect`/`connectWithoutTransaction` 콜백 내부에서만 가능. ORM 작업을 트랜잭션 경계로 묶어 실행할 때 함께 읽힌다.
-
-> 앱(Angular)에서는 `OrmConnectOptions`(DbClass·connOpt·dbContextOpt)를 화면에 흩뿌리지 않고 `AppOrmProvider`(root provider) 한 곳에 고정한 뒤 `connectAsync` 만 호출한다. 쿼리 작성법은 apis/orm-common·manuals/orm.md 참조. 아래 예시는 connector 직접 호출 형태지만 실제 앱은 manuals/client-orm.md 의 provider 패턴을 따른다.
+`ServiceClient` 위에서 서버 `Orm` 서비스에 연결하고 `DbContext` 콜백을 실행하는 API 묶음. 사용법: [client-orm.md](../../manuals/client-orm.md), [orm.md](../../manuals/orm.md)
 
 ## createOrmClientConnector / OrmClientConnector
 
-`createOrmClientConnector(serviceClient): OrmClientConnector` — 주어진 `ServiceClient` 위에 ORM 커넥터를 만든다. 내부에서 `serviceClient.getService<OrmService>("Orm")` 프록시로 서버 ORM 서비스를 호출하므로, 사용 전 `ServiceClient.connect()` 로 소켓이 연결돼 있어야 함.
-
-`OrmClientConnector` 메서드:
-
-- `connect<T, R>(config, callback): Promise<R>` — 트랜잭션 안에서 callback 실행. DbContext 생성 → `db.connect(...)`(connect + beginTransaction + callback + commit/rollback) 수행. callback 정상 반환 시 커밋(반환값이 그대로 메서드 반환값), throw 시 롤백되어 콜백 내 다건 작업이 원자 처리됨. callback 에서 발생한 에러 중 외래키 제약 위반 메시지(MySQL `a parent row: a foreign key constraint` / MSSQL `conflicted with the REFERENCE` / PostgreSQL `violates foreign key constraint`)는 "경고! 연관된 작업으로 인해 작업이 거부되었습니다. 후속 작업을 확인해 주세요." 로 감싼 `SdError` 로 throw(원본은 cause 에 보존), 그 외 에러는 그대로 throw.
-- `connectWithoutTransaction<T, R>(config, callback): Promise<R>` — 트랜잭션 없이 callback 실행(`db.connectWithoutTransaction`). 트랜잭션 안에서 동작하지 않는 작업(예: DB initialize)·조회 전용 작업에 사용. callback 반환값이 그대로 반환됨. 외래키 메시지 래핑 없음.
-
-공통 인자:
-
-- `config: OrmConnectOptions<T>` — 아래 섹션. DbContext 클래스·서버 ORM 설정·DB명/스키마.
-- `callback: (db: T) => Promise<R> | R` — 생성·연결된 DbContext 를 받아 쿼리하는 콜백. 동기/비동기 반환 모두 허용.
-
 ```ts
-const connector = createOrmClientConnector(client);
-const rows = await connector.connect(
-  { DbClass: MainDbContext, connOpt: { configName: "MAIN" }, dbContextOpt: { database: "mydb" } },
-  async (db) => db.order().select((item) => ({ id: item.id })).execute(),
-); // 콜백 throw 시 자동 롤백
+function createOrmClientConnector(serviceClient: ServiceClient): OrmClientConnector;
+interface OrmClientConnector {
+  connect<T extends DbContext, R>(config: OrmConnectOptions<T>, callback: (db: T) => Promise<R> | R): Promise<R>;
+  connectWithoutTransaction<T extends DbContext, R>(config: OrmConnectOptions<T>, callback: (db: T) => Promise<R> | R): Promise<R>;
+}
 ```
+
+- `serviceClient: ServiceClient` — ORM RPC 의 기반 클라이언트. executor 생성 시 `serviceClient.getService<OrmService>("Orm")` 로 서버 ORM 서비스를 얻는다.
+- `config: OrmConnectOptions<T>` — DbContext 클래스, ORM 연결 옵션, DbContext 옵션 묶음. 아래 `OrmConnectOptions` 참조.
+- `callback: (db: T) => Promise<R> | R` — 생성된 DbContext 로 실행할 콜백. 반환값은 `connect`/`connectWithoutTransaction` 의 반환값이 된다.
+- `connect` — DbContext 를 만들고 `db.connect(async () => callback(db))` 로 실행한다.
+- `connect` 에러 변환 — callback 에서 난 Error 메시지에 MySQL `a parent row: a foreign key constraint`, MSSQL `conflicted with the REFERENCE`, PostgreSQL `violates foreign key constraint` 가 포함되면 원본 Error 를 `SdError` 로 감싸 지정 경고 메시지를 throw 한다.
+- `connectWithoutTransaction` — DbContext 를 만들고 `db.connectWithoutTransaction(async () => callback(db))` 로 실행한다. FK 메시지 `SdError` 변환 로직은 없다.
 
 ## OrmConnectOptions
 
-`connect`/`connectWithoutTransaction` 의 첫 인자. DbContext 1회 실행에 필요한 설정.
+```ts
+interface OrmConnectOptions<T extends DbContext> {
+  DbClass: new (executor: DbContextExecutor, opt: { database: string; schema?: string }) => T;
+  connOpt: DbConnOptions & { configName: string };
+  dbContextOpt?: {
+    database: string;
+    schema?: string;
+  };
+}
+```
 
-- `DbClass: new (executor, opt) => T` — 실행할 DbContext 클래스 생성자. `executor`(아래 `OrmClientDbContextExecutor`)와 `{ database, schema? }` 를 받아 인스턴스화됨. 앱별 DbContext(예: `MainDbContext`)를 그대로 전달.
-- `connOpt: DbConnOptions & { configName: string }` — 서버측 ORM 연결 설정. `configName` 은 서버에 등록된 ORM 설정 이름(서버가 이 이름으로 실제 DB 접속 정보를 찾음). 나머지 필드는 `@simplysm/service-common` 의 `DbConnOptions`.
-- `dbContextOpt?: { database: string; schema?: string }` — DbContext 에 적용할 DB명·스키마. 생략 시 서버 `getInfo()` 가 돌려준 `database`/`schema` 를 사용. database 가 옵션·서버 양쪽 모두 비어 있으면 throw("database는 필수입니다." — 결측을 임의 보정하지 않음).
-  - `database: string` — 대상 데이터베이스명.
-  - `schema?: string` — 대상 스키마명. 미지정 시 서버 `getInfo()` 의 schema 를 사용.
+- `DbClass` — 생성할 DbContext 클래스. 커넥터가 `new DbClass(executor, { database, schema })` 로 인스턴스화한다.
+- `executor: DbContextExecutor` — `DbClass` 생성자에 전달되는 원격 executor. 실제 구현은 `OrmClientDbContextExecutor` 다.
+- `opt.database: string` — `DbClass` 생성자에 전달되는 database 값. `dbContextOpt.database` 가 있으면 그 값, 없으면 서버 `getInfo()` 의 `database` 를 쓴다.
+- `opt.schema?: string` — `DbClass` 생성자에 전달되는 schema 값. `dbContextOpt.schema` 가 있으면 그 값, 없으면 서버 `getInfo()` 의 `schema` 를 쓴다.
+- `connOpt: DbConnOptions & { configName: string }` — `OrmClientDbContextExecutor` 생성자와 모든 서버 ORM 연결 호출에 전달되는 옵션.
+- `configName: string` — `connOpt` 에 추가로 요구되는 문자열 필드. 이 패키지는 값을 해석하지 않고 서버 ORM 서비스 호출에 그대로 넘긴다.
+- `dbContextOpt?: { database; schema? }` — DbContext 생성 옵션 override. 생략하면 서버 `getInfo()` 결과로 보완한다.
+- `dbContextOpt.database: string` — 대상 database override. override 와 `getInfo().database` 가 모두 없거나 빈 문자열이면 `"database는 필수입니다."` 를 throw 한다.
+- `dbContextOpt.schema?: string` — 대상 schema override. 생략하면 `getInfo().schema` 를 사용한다.
 
 ## OrmClientDbContextExecutor
 
-`DbContextExecutor`(`@simplysm/orm-common`) 구현체. 모든 메서드를 `client.getService<OrmService>("Orm")` RPC 로 위임. 커넥터가 내부에서 DbContext 에 주입하므로 직접 생성·호출은 보통 불필요.
+```ts
+class OrmClientDbContextExecutor implements DbContextExecutor {
+  constructor(client: ServiceClient, opt: DbConnOptions & { configName: string });
+  getInfo(): Promise<{ dialect: Dialect; database?: string; schema?: string }>;
+  connect(): Promise<void>;
+  beginTransaction(isolationLevel?: IsolationLevel): Promise<void>;
+  commitTransaction(): Promise<void>;
+  rollbackTransaction(): Promise<void>;
+  close(): Promise<void>;
+  executeDefs<T = Record<string, unknown>>(defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<T[][]>;
+  executeParametrized(query: string, params?: unknown[]): Promise<unknown[][]>;
+  bulkInsert(tableName: string, columnDefs: Record<string, ColumnMeta>, records: Record<string, unknown>[]): Promise<void>;
+}
+```
 
-`new OrmClientDbContextExecutor(client, opt)` — 생성. `opt = DbConnOptions & { configName: string }`. 생성 시 `Orm` 서비스 프록시 확보. 아래 `getInfo`/`connect` 이외의 실행 메서드는 connId 가 없으면(미연결) throw("데이터베이스에 연결되지 않았습니다.").
-
-- `getInfo(): Promise<{ dialect; database?; schema? }>` — 서버 ORM 설정 정보(방언·기본 DB명·스키마) 조회. 커넥터가 dbContextOpt 미지정 시 fallback 으로 사용.
-- `connect(): Promise<void>` — 서버에 커넥션 생성, 반환된 connId 를 내부 보관. 이후 트랜잭션·쿼리 호출의 핸들.
-- `beginTransaction(isolationLevel?): Promise<void>` — 트랜잭션 시작. `isolationLevel`(orm-common `IsolationLevel`) 미지정 시 서버 기본값.
-- `commitTransaction(): Promise<void>` — 트랜잭션 커밋.
-- `rollbackTransaction(): Promise<void>` — 트랜잭션 롤백.
-- `close(): Promise<void>` — 커넥션 종료 후 보관 connId 해제.
-- `executeDefs<T>(defs, options?): Promise<T[][]>` — 쿼리 정의 배열(`QueryDef[]`)을 서버에서 실행. `options` 는 정의별 결과 매핑 메타(`(ResultMeta | undefined)[]`, 항목별 nullable)로 행 역직렬화 방식 지정. 정의 1개당 결과 배열 1개를 가진 2차원 배열 반환.
-- `executeParametrized(query, params?): Promise<unknown[][]>` — 파라미터 바인딩 raw SQL 실행. `query` = SQL 문자열, `params` = 바인딩 값 배열.
-- `bulkInsert(tableName, columnDefs, records): Promise<void>` — 대량 삽입. `tableName` = 대상 테이블명, `columnDefs`(`Record<string, ColumnMeta>`)로 컬럼별 메타, `records`(`Record<string, unknown>[]`)로 삽입할 행 객체 배열을 전달.
+- `client: ServiceClient` — 생성 시 `getService<OrmService>("Orm")` 호출에 사용된다.
+- `opt: DbConnOptions & { configName: string }` — `getInfo`·`connect` 에 전달되는 ORM 연결 옵션.
+- `_connId?: number` — `connect()` 성공 후 저장되는 서버 커넥션 식별자. 연결이 필요한 메서드의 첫 인자로 전달된다.
+- `getInfo()` — `_connId` 없이 `_ormService.getInfo(opt)` 를 호출한다. 반환 필드는 `dialect`, 선택 `database`, 선택 `schema` 다.
+- `dialect: Dialect` — 서버 ORM 정보의 DB 방언 필드.
+- `database?: string` — 서버 ORM 정보의 database 필드. `OrmConnectOptions.dbContextOpt.database` 보완에 사용된다.
+- `schema?: string` — 서버 ORM 정보의 schema 필드. `OrmConnectOptions.dbContextOpt.schema` 보완에 사용된다.
+- `connect()` — `_ormService.connect(opt)` 결과 connId 를 `_connId` 에 저장한다.
+- `beginTransaction(isolationLevel?: IsolationLevel)` — `_connId` 가 없으면 `"데이터베이스에 연결되지 않았습니다."` 를 throw 하고, 있으면 서버 beginTransaction 에 전달한다.
+- `isolationLevel?: IsolationLevel` — 트랜잭션 격리 수준. 값은 서버 ORM 서비스에 그대로 전달된다.
+- `commitTransaction()` — `_connId` 가 필요하며 서버 commitTransaction 을 호출한다.
+- `rollbackTransaction()` — `_connId` 가 필요하며 서버 rollbackTransaction 을 호출한다.
+- `close()` — `_connId` 가 필요하며 서버 close 호출 후 `_connId` 를 `undefined` 로 되돌린다.
+- `executeDefs<T>(defs, options?)` — `_connId` 가 필요하며 서버 executeDefs 결과를 `T[][]` 로 반환한다.
+- `defs: QueryDef[]` — 서버에 전달할 쿼리 정의 배열.
+- `options?: (ResultMeta | undefined)[]` — 각 쿼리 결과 메타 배열. 항목은 `undefined` 일 수 있고 서버 호출에 그대로 전달된다.
+- `executeParametrized(query, params?)` — `_connId` 가 필요하며 서버 executeParametrized 결과를 반환한다.
+- `query: string` — 서버에 전달할 SQL 문자열.
+- `params?: unknown[]` — SQL 파라미터 배열. 생략 가능하며 서버 호출에 그대로 전달된다.
+- `bulkInsert(tableName, columnDefs, records)` — `_connId` 가 필요하며 서버 bulkInsert 를 호출한다.
+- `tableName: string` — 삽입 대상 테이블명.
+- `columnDefs: Record<string, ColumnMeta>` — 컬럼명별 메타 정보.
+- `records: Record<string, unknown>[]` — 삽입할 행 객체 배열.

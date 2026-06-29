@@ -1,6 +1,6 @@
 # 테스트 작성
 
-`@simplysm/*` v14 모노레포의 패키지 테스트(`packages/<pkg>/tests/`)와 통합 테스트(`tests/<name>/`) 작성 시 따름. Vitest project 구성·실행 명령은 루트 `CLAUDE.md` 의 "Vitest 프로젝트 구조" 섹션 참조 — 이 문서는 작성 규약만 다룸.
+`@simplysm/*` v14 모노레포의 패키지 테스트(`packages/<pkg>/tests/`)와 통합 테스트(`tests/<name>/`) 작성 시 따름. Vitest 실행 명령은 루트 `CLAUDE.md` 의 "명령"/"단일 테스트 실행" 섹션 참조 — 이 문서는 작성 규약만 다룸.
 
 ## 파일 규약
 
@@ -18,8 +18,9 @@
 
 `vitest.config.ts` 의 `include`/`exclude` 설정이 각 스펙 파일이 어느 project 에서 실행될지를 결정. 새 패키지 추가 시:
 
-- **Node 전용**: 기본 `node` project 가 자동 include — 추가 작업 없음.
-- **브라우저 환경 필요** (DOM·`window`·Worker 등 사용): `node` project 의 `exclude` 에 해당 패키지 경로를 추가. `browser` project 가 자동으로 include 함.
+- **Node 전용**: 기본 `node` project 가 자동 include 하지만 `browser` project 도 `packages/*/tests` 를 넓게 include 하므로, `browser` project 의 `exclude` 에 해당 패키지 경로를 추가.
+- **브라우저 환경 필요** (DOM·`window`·Worker 등 사용): `browser` project 가 자동 include 하고, Node 에서 실행되면 안 되면 `node` project 의 `exclude` 에 해당 패키지 경로를 추가.
+- **Node·browser 양쪽 공용**: 어느 쪽 `exclude` 에도 넣지 않음. 같은 스펙이 두 project 에서 모두 실행됨.
 - **Angular**: `packages/angular` 전용 project (TestBed + AOT 플러그인 + setupFile 구성) — 다른 패키지에서 이 구성을 따라하지 말 것.
 
 ## 통합 테스트 project 추가 절차
@@ -32,10 +33,10 @@
 4. `vitest.config.ts` 의 `projects[]` 에 entry 추가.
    - `name: "<name>"`, `include: ["tests/<name>/**/*.spec.ts"]` 지정.
    - 외부 자원(DB·서버 등) 기동이 필요한 경우 `globalSetup: "./tests/<name>/vitest.setup.ts"` 와 함께 setup 파일에서 `setup`/`teardown` 함수를 export.
-   - 외부 자원이 단일 인스턴스를 공유하는 경우 `fileParallelism: false` 지정 (스펙 파일 직렬 실행).
+   - 공유 외부 자원이 병렬 안전하지 않은 경우 `fileParallelism: false` 지정 (스펙 파일 직렬 실행). 단일 테스트 서버처럼 동시 요청을 처리할 수 있으면 `true` 유지 가능.
    - 브라우저 런타임이 필요한 경우 `browser: { provider: playwright(), enabled: true, headless: true, instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }] }` 지정.
 
-`pnpm-workspace.yaml` 이 이미 `tests/*` 를 포함하므로 `pnpm install` 만으로 워크스페이스에 인식됨.
+루트 `package.json#workspaces` 가 `tests/*` 를 포함하므로 `bun install` 만으로 워크스페이스에 인식됨.
 
 ### globalSetup 패턴
 

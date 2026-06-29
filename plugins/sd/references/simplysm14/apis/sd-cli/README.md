@@ -1,30 +1,27 @@
 # @simplysm/sd-cli
 
-simplysm 모노레포의 빌드/배포 오케스트레이터 CLI. 라이브러리 entry(`src/index.ts`)가 노출하는 건 CLI 실행 코드가 아니라 세 묶음 — ① `sd.config.ts` 작성용 설정 타입군(`export *`), ② 패키지 단위 TypeScript/Angular AOT 증분 컴파일러 `SdTsCompiler` 와 옵션·결과 타입, ③ Vitest 전용 Angular Vite 플러그인 `sdAngularPlugin`. CLI 서브커맨드 내부 구현은 entry 에서 노출되지 않아 문서 대상이 아니다.
+`src/index.ts` 가 노출하는 `sd.config.ts` 설정 타입, Angular 테스트용 Vite 플러그인, 패키지 단위 TypeScript/Angular 컴파일러 API.
 
 ## 사용 트리거 인덱스
 
-- **sd.config.ts 설정 타입** (`SdConfigFn`·`SdConfig`·`SdConfigParams`·`SdPackageConfig` 와 그 하위 타겟·배포·Capacitor·Electron·PWA 설정) — 프로젝트 루트 `sd.config.ts` 를 작성·수정하며 패키지별 빌드 타겟·배포·앱 패키징·의존성 교체를 지정할 때. 자세히: [sd-config-types.md](./sd-config-types.md)
-- **SdTsCompiler / ISdTsCompilerOptions / ISdTsCompilerResult** — sd-cli 외부에서 패키지 1개의 TS(또는 Angular AOT) 증분 컴파일을 직접 구동하거나 그 결과(emit·진단·lint·SCSS)를 다룰 때. 자세히: [SdTsCompiler.md](./SdTsCompiler.md)
-- **sdAngularPlugin / SdAngularPluginOptions** — Vitest 에서 Angular 패키지의 `.ts` 를 AOT 컴파일해 주입하는 Vite 플러그인을 설정할 때. 아래 인라인 섹션 참조.
+- **sd.config.ts 설정 타입군** — 프로젝트 루트 `sd.config.ts` 에서 패키지별 target·배포·클라이언트/서버 패키징·의존성 교체·postPublish 구조를 작성할 때. 자세히: [sd-config-types.md](./sd-config-types.md)
+- **SdTsCompiler 컴파일러 API** — 패키지 1개를 TypeScript 또는 Angular AOT 로 컴파일하고 진단·emit·lint·SCSS 결과를 직접 다룰 때. 자세히: [SdTsCompiler.md](./SdTsCompiler.md)
+- **sdAngularPlugin** — Vitest/Vite 에서 Angular 패키지의 `.ts` 파일을 AOT 컴파일해 transform 결과로 공급할 때. 사용법: [test.md](../../manuals/test.md)
 
 ## sdAngularPlugin
 
 ```typescript
-function sdAngularPlugin(options: SdAngularPluginOptions): Plugin; // vite Plugin 반환
-
 interface SdAngularPluginOptions {
   pkg: string;
 }
+
+function sdAngularPlugin(options: SdAngularPluginOptions): Plugin;
 ```
 
-Angular AOT 컴파일을 수행하는 **Vitest 전용** Vite 플러그인(`name: "sd-angular"`, `enforce: "pre"`). 내부에서 `SdTsCompiler` 로 대상 패키지의 `.ts`(tests 포함 — `includeTests: true`, `output: { js: true, dts: false }`)를 AOT 컴파일하고, Vite `transform` 훅에서 컴파일된 JS 를 반환한다. `enforce: "pre"` 라 다른 transform 보다 먼저 동작하며, 컴파일러가 emit 한 인라인 base64 소스맵을 분리해 Vite 호환 형태(`{ code, map }`)로 넘긴다. `compilerOptionsTransformer` 로 `noEmit:false`·`declaration:false`·`sourceMap:false`·`inlineSourceMap:true`·`rootDir = process.cwd()` 를 강제한다. `buildEnd` 마다 내부 컴파일러를 폐기(`undefined`)해 다음 watch 재빌드 시 재생성하고, `watchChange` 로 모은 변경 파일을 `buildStart` 의 증분 캐시 무효화에 쓴다.
-
-- **pkg**: string — 컴파일 대상 패키지 디렉토리명. `sd.config.ts` 의 `packages` 키(`@simplysm/` 접두사 제외한 짧은 이름, 예: `"angular"`)와 동일. 플러그인은 `process.cwd()/packages/<pkg>` 를 컴파일 루트로 잡으므로 테스트하려는 Angular 패키지명을 그대로 넣는다. `config()` 훅 전에 `buildStart` 가 불리면 에러.
-
-```typescript
-// vitest.config.ts
-import { sdAngularPlugin } from "@simplysm/sd-cli";
-
-plugins: [sdAngularPlugin({ pkg: "angular" })];
-```
+- `sdAngularPlugin(options): Plugin` — `name: "sd-angular"`, `enforce: "pre"` 인 Vite 플러그인을 만든다; `config()` 에서 대상 패키지 경로를 계산하고 `buildStart()` 에서 `SdTsCompiler` 로 Angular AOT 컴파일을 수행한다.
+- `options: SdAngularPluginOptions` — 플러그인 설정 객체.
+- `pkg: string` — `process.cwd()/packages/<pkg>` 로 해석되는 패키지 디렉토리명; `config()` 훅 전에 `buildStart()` 가 실행되면 에러가 발생한다.
+- `watchChange(id)` — 변경 파일 경로를 posix 문자열로 모아 다음 `buildStart()` 의 증분 컴파일 입력으로 사용한다.
+- `buildStart()` — 최초 실행 또는 `buildEnd()` 이후 `SdTsCompiler` 를 생성하고 `includeTests: true`, `output: { js: true, dts: false }` 로 컴파일한다.
+- `transform(_code, id)` — query 를 제거한 `.ts` 경로가 컴파일 결과 맵에 있으면 emit 된 JS 를 반환하고, base64 inline source map 이 있으면 `{ code, map }` 으로 분리한다.
+- `buildEnd()` — 내부 `SdTsCompiler` 참조를 비워 다음 빌드 사이클에서 새 컴파일러를 만들게 한다.

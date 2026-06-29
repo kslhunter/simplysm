@@ -1,42 +1,76 @@
 # @simplysm/excel — ExcelUtils
 
-셀 주소(A1 ↔ 좌표) 변환, 엑셀 날짜 시리얼 ↔ JS 타임스탬프 변환, 숫자형식 코드/ID/이름 상호 변환이 필요할 때 쓰는 static 유틸 클래스. 모든 메서드가 정적이므로 인스턴스 생성 없이 `ExcelUtils.xxx(...)` 로 호출. 일반 셀 API 가 내부적으로 쓰지만, 외부에서 주소 문자열 ↔ 좌표를 직접 다룰 때 유용하다.
+A1 주소와 0 기반 좌표, Excel 날짜 serial 과 JS timestamp, Excel 숫자 형식 코드/ID/이름을 변환하는 static 유틸 클래스. 인스턴스 없이 `ExcelUtils.method(...)` 로 호출한다.
 
 ## 주소 변환
 
-- `stringifyAddr(point: ExcelAddressPoint): string` — 좌표 `{r,c}`(0 기반)를 `"A1"` 형식으로. 예 `{r:0,c:0}` → `"A1"`.
-- `stringifyRowAddr(r: number): string` — 행 인덱스(0 기반)를 행 주소 문자열로. 예 `0` → `"1"`.
-- `stringifyColAddr(c: number): string` — 열 인덱스(0 기반)를 열 문자로. 예 `0` → `"A"`, `26` → `"AA"`. 범위 `0~16383` 밖이면 throw.
-- `parseRowAddr(addr: string): number` — 주소에서 행 인덱스(0 기반) 추출. 예 `"A3"` → `2`.
-- `parseColAddr(addr: string): number` — 주소에서 열 인덱스 추출. 예 `"B3"` → `1`.
-- `parseCellAddr(addr: string): ExcelAddressPoint` — 주소를 좌표로. 예 `"B3"` → `{r:2,c:1}`.
-- `parseRangeAddr(rangeAddr: string): ExcelAddressRangePoint` — 범위 주소를 좌표로. 예 `"A1:C3"` → `{s:{r:0,c:0}, e:{r:2,c:2}}`. `:` 없으면 단일 셀을 `s`/`e` 양쪽에 채움.
-- `stringifyRangeAddr(point: ExcelAddressRangePoint): string` — 범위 좌표를 주소로. `s`==`e` 면 단일 주소로 축약.
-
-## 날짜 시리얼 변환
-
-엑셀은 1899-12-30 을 날짜 0(1900-01-01 = 1)으로 계산한다. 로컬 타임존 보정을 포함한다.
-
-- `convertTimeTickToNumber(tick: number): number` — JS 타임스탬프(ms)를 엑셀 날짜 시리얼 숫자로.
-- `convertNumberToTimeTick(value: number): number` — 엑셀 날짜 시리얼 숫자를 JS 타임스탬프(ms)로.
-
-## 숫자형식 변환
-
-`ExcelNumberFormat`(`"number"|"string"|"DateOnly"|"DateTime"|"Time"`) 과 엑셀 numFmtId/formatCode 사이 변환.
-
-- `convertNumFmtCodeToName(numFmtCode: string): ExcelNumberFormat` — formatCode 문자열을 프리셋 이름으로. `"General"` → `"number"`, `yy`/`dd`/`mm`(시간 문맥 제외) 포함 → 날짜, `h`/`hh`/`ss` 포함 → 시간, 날짜+시간 동시 → `"DateTime"`. 순수 숫자 패턴은 `"number"`. 어느 것도 아니면 throw.
-- `convertNumFmtIdToName(numFmtId: number): ExcelNumberFormat` — 내장 형식 ID 를 이름으로. 0~13/37~40/48 → `"number"`, 14~17/27~31/34~36/50~58 → `"DateOnly"`, 22 → `"DateTime"`, 18~21/32~33/45~47 → `"Time"`, 49 → `"string"`. 그 외 throw.
-- `convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number` — 이름을 ID 로. `"number"`→0, `"DateOnly"`→14, `"DateTime"`→22, `"Time"`→18, `"string"`→49.
-
-## 사용 예
-
 ```typescript
-const { s, e } = ExcelUtils.parseRangeAddr("A1:C3"); // {s:{r:0,c:0}, e:{r:2,c:2}}
-const addr = ExcelUtils.stringifyAddr({ r: 0, c: 27 }); // "AB1"
+class ExcelUtils {
+  static stringifyAddr(point: ExcelAddressPoint): string;
+  static stringifyRowAddr(r: number): string;
+  static stringifyColAddr(c: number): string;
+  static parseRowAddr(addr: string): number;
+  static parseColAddr(addr: string): number;
+  static parseCellAddr(addr: string): ExcelAddressPoint;
+  static parseRangeAddr(rangeAddr: string): ExcelAddressRangePoint;
+  static stringifyRangeAddr(point: ExcelAddressRangePoint): string;
+}
 ```
 
-## 주의사항
+- `point.r` — 0 기반 행 인덱스. 문자열 행 주소로 바꿀 때 1을 더한다.
+- `point.c` — 0 기반 열 인덱스. 열 문자로 바꿀 때 `0 = A` 기준으로 계산한다.
+- `r` — 0 기반 행 인덱스. 반환 문자열은 `r + 1`.
+- `c` — 0 기반 열 인덱스. 허용 범위는 `0~16383` 이며 벗어나면 throw 한다.
+- `addr` — 셀 주소 문자열. 행 파싱은 끝 숫자, 열 파싱은 앞 알파벳을 사용한다.
+- `rangeAddr` — `:` 로 구분된 범위 주소. 끝 주소가 없으면 시작과 같은 좌표로 처리한다.
+- `point.s` — 범위 시작 좌표. `stringifyRangeAddr` 의 시작 주소가 된다.
+- `point.e` — 범위 끝 좌표. 시작 주소와 같으면 단일 주소 문자열을 반환한다.
 
-- 모든 좌표·인덱스는 0 기반, 주소 문자열은 1 기반(엑셀 표기).
-- 날짜 변환은 타임존 보정을 포함하므로 시리얼 ↔ tick 왕복이 로컬 기준으로 일관된다.
-- 알 수 없는 numFmtCode/numFmtId 는 silent fallback 없이 throw — 외부 생성 파일의 비정형 형식을 만나면 예외로 드러난다.
+메서드 동작:
+
+- `stringifyAddr(point)` — 열 문자와 행 숫자를 이어 셀 주소로 만든다.
+- `stringifyRowAddr(r)` — 0 기반 행 인덱스를 1 기반 행 주소 문자열로 만든다.
+- `stringifyColAddr(c)` — 0 기반 열 인덱스를 Excel 열 문자로 만든다.
+- `parseRowAddr(addr)` — 주소 끝의 숫자를 정수로 파싱해 0 기반 행 인덱스로 돌려준다. 정수 파싱 실패 시 throw 한다.
+- `parseColAddr(addr)` — 주소 앞의 알파벳을 0 기반 열 인덱스로 계산한다.
+- `parseCellAddr(addr)` — `parseRowAddr` 와 `parseColAddr` 결과를 `{ r, c }` 로 묶는다.
+- `parseRangeAddr(rangeAddr)` — 시작/끝 셀 주소를 `{ s, e }` 로 파싱한다.
+- `stringifyRangeAddr(point)` — 시작/끝 주소가 같으면 단일 주소, 다르면 `시작:끝` 문자열을 반환한다.
+
+## 날짜 serial 변환
+
+```typescript
+static convertTimeTickToNumber(tick: number): number;
+static convertNumberToTimeTick(value: number): number;
+```
+
+- `tick` — JavaScript timestamp(ms). 변환 전에 현재 timezone offset 을 빼고 Excel 날짜 숫자를 계산한다.
+- `value` — Excel 날짜 serial 숫자. timestamp 로 되돌릴 때 timezone offset 을 다시 더한다.
+
+메서드 동작:
+
+- `convertTimeTickToNumber(tick)` — timestamp 를 Excel 날짜 serial 숫자로 변환한다.
+- `convertNumberToTimeTick(value)` — Excel 날짜 serial 숫자를 timestamp(ms) 로 변환한다.
+
+## 숫자 형식 변환
+
+```typescript
+static convertNumFmtCodeToName(numFmtCode: string): ExcelNumberFormat;
+static convertNumFmtIdToName(numFmtId: number): ExcelNumberFormat;
+static convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number;
+```
+
+- `numFmtCode` — Excel formatCode 문자열. 날짜/시간/숫자 패턴으로 분류되지 않으면 throw 한다.
+- `numFmtId` — Excel 내장 숫자 형식 ID. 알려진 범위 밖이면 throw 한다.
+- `numFmtName` — `ExcelNumberFormat` literal. 내장 ID 로 변환된다.
+- `"number"` — 이름→ID 변환 시 `0`; ID→이름 변환에서는 `0~13`, `37~40`, `48` 이 이 값으로 분류된다.
+- `"DateOnly"` — 이름→ID 변환 시 `14`; ID→이름 변환에서는 `14~17`, `27~31`, `34~36`, `50~58` 이 이 값으로 분류된다.
+- `"DateTime"` — 이름→ID 변환 시 `22`; ID→이름 변환에서도 `22` 가 이 값으로 분류된다.
+- `"Time"` — 이름→ID 변환 시 `18`; ID→이름 변환에서는 `18~21`, `32~33`, `45~47` 이 이 값으로 분류된다.
+- `"string"` — 이름→ID 변환 시 `49`; ID→이름 변환에서도 `49` 가 이 값으로 분류된다.
+
+메서드 동작:
+
+- `convertNumFmtCodeToName(numFmtCode)` — `General` 은 `number`, 날짜 token 과 시간 token 이 모두 있으면 `DateTime`, 날짜만 있으면 `DateOnly`, 시간만 있으면 `Time`, 숫자 패턴이면 `number` 를 반환한다.
+- `convertNumFmtIdToName(numFmtId)` — 내장 ID 범위 표에 따라 `ExcelNumberFormat` 으로 분류한다.
+- `convertNumFmtNameToId(numFmtName)` — `ExcelNumberFormat` literal 을 대표 내장 numFmtId 로 변환한다.

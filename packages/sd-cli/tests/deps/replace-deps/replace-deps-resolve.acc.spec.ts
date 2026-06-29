@@ -16,8 +16,8 @@ describe("resolveAllReplaceDepEntries", () => {
     projectRoot = pathx.posix(path.join(tmpDir, "project"));
     await fs.promises.mkdir(projectRoot, { recursive: true });
     await fs.promises.writeFile(
-      pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml")),
-      "packages:\n",
+      pathx.posix(path.join(projectRoot, "package.json")),
+      JSON.stringify({ private: true, workspaces: [] }),
     );
   });
 
@@ -66,12 +66,16 @@ describe("resolveAllReplaceDepEntries", () => {
     const nodeModulesDir = pathx.posix(path.join(projectRoot, "node_modules"));
     await createNodeModulesPkg(nodeModulesDir, "@test/pkg");
 
-    // workspace 패키지 설정 (pnpm-workspace.yaml에 추가)
+    // workspace 패키지 설정 (package.json#workspaces에 추가)
     const workspacePkgDir = pathx.posix(path.join(projectRoot, "packages", "my-app"));
     await fs.promises.mkdir(workspacePkgDir, { recursive: true });
     await fs.promises.writeFile(
-      pathx.posix(path.join(projectRoot, "pnpm-workspace.yaml")),
-      "packages:\n  - packages/*\n",
+      pathx.posix(path.join(workspacePkgDir, "package.json")),
+      JSON.stringify({ name: "my-app" }),
+    );
+    await fs.promises.writeFile(
+      pathx.posix(path.join(projectRoot, "package.json")),
+      JSON.stringify({ private: true, workspaces: ["packages/*"] }),
     );
 
     // workspace 패키지의 node_modules에도 동일 패키지 생성

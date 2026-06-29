@@ -1,43 +1,58 @@
 # @simplysm/core-node — pathx
 
-`export * as pathx` 네임스페이스 (`packages/core-node/src/utils/path.ts`). 경로 문자열 가공·판정 유틸. OS 무관 비교를 위해 POSIX 슬래시(`/`)로 정규화하는 것이 핵심. `pathx.<fn>(...)` 형태로 호출.
+`export * as pathx` 네임스페이스. 경로 문자열을 POSIX 슬래시로 정규화하고, 하위 경로 판정·디렉토리 치환·target 필터링을 할 때 읽는 군.
 
-## PosixPath (브랜드 타입)
+## PosixPath
 
-- `type PosixPath = string & { [POSIX]: never }` — POSIX 슬래시 경로임을 나타내는 브랜드 타입. `POSIX` 가 모듈 내부 심볼이라 `posix()`/`posixResolve()` 로만 생성 가능(외부에서 캐스팅 없이는 못 만듦). 일반 `string` 을 `PosixPath` 자리에 직접 넣을 수 없어 정규화를 강제하는 타입 가드 역할.
+`type PosixPath = string & { [POSIX]: never }`
 
-## 정규화
+- `string` — 런타임 값은 문자열이다.
+- `[POSIX]: never` — 모듈 내부 `Symbol("PosixPath")` 로 표현되는 타입상 브랜드 필드. 외부 호출자는 `posix` 또는 `posixResolve` 반환으로 이 타입을 얻는다.
 
-- `posix(p: string): PosixPath` — 백슬래시 → 슬래시 치환만 수행. **결합·resolve 안 함**. 예: `posix("C:\\Users\\test")` → `"C:/Users/test"`. 이미 절대/상대인 경로 문자열을 POSIX 표기로만 바꿀 때.
-- `posixResolve(...args: string[]): PosixPath` — 인자들을 `path.resolve` 로 절대 경로 결합 후 슬래시로 변환. 예: `posixResolve("/base", "sub", "f.txt")` → `"/base/sub/f.txt"`, 상대 경로 단독이면 cwd 기준으로 절대화. 경로 결합+정규화를 동시에 할 때.
+## posix
 
-## 경로 가공
+`function posix(p: string): PosixPath`
 
-- `changeFileDirectory(filePath, fromDirectory, toDirectory): string` — `filePath` 의 디렉토리 prefix 를 `fromDirectory` → `toDirectory` 로 치환(상대 위치 유지). 예: `("/a/b/c.txt", "/a", "/x")` → `"/x/b/c.txt"`. `filePath === fromDirectory` 면 `toDirectory` 반환. **filePath 가 fromDirectory 내부가 아니면 `ArgumentError` throw**. src→dist 같은 출력 경로 산출에 사용.
-  - `filePath: string` — 원본 파일 경로.
-  - `fromDirectory: string` — 치환할 기준 디렉토리.
-  - `toDirectory: string` — 새 기준 디렉토리.
-- `basenameWithoutExt(filePath: string): string` — 마지막 확장자 1단계만 제거한 basename. 예: `"file.txt"` → `"file"`, `"a/file.spec.ts"` → `"file.spec"`(마지막 `.ts` 만 제거).
+- `p: string` — POSIX 표기로 바꿀 경로 문자열.
+- 반환 `PosixPath` — `p.replace(/\\/g, "/")` 결과. 경로 결합이나 절대 경로 resolve 는 수행하지 않는다.
 
-## 판정·필터링
+## posixResolve
 
-- `isChildPath(childPath, parentPath): boolean` — `childPath` 가 `parentPath` 의 하위인지. 양쪽을 `posixResolve` 로 정규화 후 비교. **동일 경로면 false**(자기 자신은 하위 아님). 경계 오탐 방지를 위해 parent 끝에 `/` 를 붙여 `startsWith` 로 비교.
-- `filterByTargets(files, targets, cwd): string[]` — 파일 목록을 타겟 경로 하위만 남김.
-  - `files: string[]` — 필터링할 파일. **cwd 하위의 절대 경로여야 함**(cwd 외부 경로는 `../` 상대경로로 변환되어 매칭 실패 가능).
-  - `targets: string[]` — 대상 경로(cwd 기준 상대, POSIX 권장). 각 파일의 cwd-상대경로가 target 과 같거나 `target + "/"` 로 시작하면 통과.
-  - `cwd: string` — 기준 작업 디렉토리(절대 경로).
-  - **`targets` 가 비면 `files` 를 그대로 반환**(필터 미적용). CLI 의 `-t <패키지>` 같은 부분 빌드 대상 한정에 사용.
+`function posixResolve(...args: string[]): PosixPath`
 
-## 사용 예
+- `args: string[]` — `path.resolve(...args)` 에 전달할 경로 조각들.
+- 반환 `PosixPath` — resolve 된 절대 경로에서 `\\` 를 `/` 로 바꾼 문자열.
 
-```ts
-import { pathx } from "@simplysm/core-node";
+## changeFileDirectory
 
-const out = pathx.changeFileDirectory(srcFile, "/proj/src", "/proj/dist");
-if (pathx.isChildPath(out, "/proj")) { /* ... */ }
-const targeted = pathx.filterByTargets(allFiles, ["src", "tests"], process.cwd());
-```
+`function changeFileDirectory(filePath: string, fromDirectory: string, toDirectory: string): string`
 
-## 주의사항
+- `filePath: string` — 디렉토리를 바꿀 파일 경로.
+- `fromDirectory: string` — 기존 기준 디렉토리.
+- `toDirectory: string` — 새 기준 디렉토리.
+- 반환 `string` — `filePath === fromDirectory` 이면 `toDirectory`; 그 외에는 `path.resolve(toDirectory, path.relative(fromDirectory, filePath))`.
+- 예외 — `filePath` 가 `fromDirectory` 의 하위가 아니면 `ArgumentError` 를 throw 하며, error data 에 `filePath` 와 `fromDirectory` 를 넣는다.
 
-- `changeFileDirectory` 는 `filePath` 가 `fromDirectory` 내부가 아니면(동일 경로 제외) `ArgumentError` 로 throw 하므로, 경계 밖 경로를 넘길 가능성이 있으면 `isChildPath` 로 먼저 확인할 것.
+## basenameWithoutExt
+
+`function basenameWithoutExt(filePath: string): string`
+
+- `filePath: string` — basename 을 구할 파일 경로.
+- 반환 `string` — `path.basename(filePath, path.extname(filePath))` 결과. 마지막 확장자 기준으로 제거된다.
+
+## isChildPath
+
+`function isChildPath(childPath: string, parentPath: string): boolean`
+
+- `childPath: string` — 하위 여부를 확인할 경로.
+- `parentPath: string` — 부모 후보 경로.
+- 반환 `boolean` — 양쪽을 `posixResolve` 로 정규화한 뒤, 같은 경로면 `false`, 아니면 parent 뒤에 `/` 를 붙인 prefix 로 시작하는지 반환한다.
+
+## filterByTargets
+
+`function filterByTargets(files: string[], targets: string[], cwd: string): string[]`
+
+- `files: string[]` — 필터링할 파일 경로 배열. 코드 주석 기준으로 cwd 하위의 절대 경로를 기대한다.
+- `targets: string[]` — cwd 기준 대상 경로 배열. 각 값은 `posix` 로 정규화된다.
+- `cwd: string` — `path.relative(cwd, file)` 계산 기준 경로.
+- 반환 `string[]` — `targets.length === 0` 이면 원본 `files`. 그 외에는 cwd 상대 POSIX 경로가 target 과 같거나 `target + "/"` 로 시작하는 파일만 남긴 배열.

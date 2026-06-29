@@ -1,107 +1,180 @@
-# @simplysm/angular — 디렉티브·signal 헬퍼
+# @simplysm/angular — 디렉티브·이펙트
 
-DOM 관찰(리사이즈/교차)·캡처 이벤트·커맨드 단축키·ripple·노출 애니메이션·invalid 표시·타입드 템플릿을 호스트 엘리먼트에 붙이는 디렉티브와, 그 디렉티브가 래핑하는 `setup*` 헬퍼 군. `setup*`/`inject*` 헬퍼는 컴포넌트 `constructor`(주입 컨텍스트)에서 호출(`inject(ElementRef)` 등 의존). 모든 디렉티브는 standalone, attribute selector.
+DOM 이벤트 옵션, 관찰 이벤트, 전역 command key, ripple/show/invalid effect, typed template을 host에 붙이는 군이다. 모두 standalone directive 또는 주입 컨텍스트에서 호출하는 setup 함수다.
 
-## DOM 관찰 디렉티브
-
-### `SdResizeDirective` — `[sdResize]`
-
-- `sdResize: output<SdResizeEvent>` — `ResizeObserver` 기반, `requestAnimationFrame` 디바운스. `SdResizeEvent` = `{ heightChanged: boolean; widthChanged: boolean; target: HTMLElement; contentRect: DOMRectReadOnly }`.
-
-```html
-<div (sdResize)="onResize($event)">...</div>
-```
-
-### `SdIntersectionDirective` — `[sdIntersection]`
-
-- `sdIntersection: output<SdIntersectionEvent>` — `IntersectionObserver` 기반, 콜백 배치의 마지막 엔트리 emit. `SdIntersectionEvent` = `{ entry: IntersectionObserverEntry }`.
-
-## 캡처/옵션 이벤트
-
-### `SdEvents` (디렉티브)
-
-native DOM 리스너 옵션(`capture`/`passive`/`once`)을 이벤트명 접미사로 노출하는 디렉티브. `SdOptionEventPlugin` 과 함께 동작. 출력은 접미사 그대로의 이름: `click.capture`/`click.once`/`click.capture.once`, `mousedown.capture`/`mouseup.capture`/`mouseover.capture`/`mouseout.capture`, `keydown.capture`/`keyup.capture`, `focus.capture`/`blur.capture`, `invalid.capture`, `scroll.capture`/`scroll.passive`/`scroll.capture.passive`, `wheel.passive`/`wheel.capture.passive`, `touchstart.passive`/`touchmove.passive`/`touchend.passive`(및 `.capture.passive` 변형), `dragover.capture`/`dragenter.capture`/`dragleave.capture`/`drop.capture`, `transitionend.once`, `animationend.once`. 각 출력의 페이로드 타입은 해당 native 이벤트(`MouseEvent`/`KeyboardEvent`/`FocusEvent`/`DragEvent`/`WheelEvent`/`TouchEvent`/`TransitionEvent`/`AnimationEvent`/`Event`).
-
-```html
-<div (keydown.capture)="onKeydownCapture($event)" (scroll.passive)="onScroll($event)">...</div>
-```
+## 이벤트 옵션·관찰
 
 ### `SdOptionEventPlugin`
 
-`EventManagerPlugin` 확장(`provideSdAngular` 가 `EVENT_MANAGER_PLUGINS` multi 로 등록). 이벤트명 접미사 `.capture`/`.passive`/`.once` 를 native 리스너 옵션으로 변환. 위 `SdEvents` 출력이 이 플러그인 위에서 동작.
+```ts
+class SdOptionEventPlugin extends EventManagerPlugin {
+  supports(eventName: string): boolean;
+  addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void;
+}
+```
 
-## 커맨드 단축키
+- `eventName` — `.capture`, `.passive`, `.once` 중 하나 이상이 붙은 DOM 이벤트 이름. plugin은 suffix를 제거한 실제 이벤트가 window/document/HTMLElement에 있을 때만 지원한다.
+- `element` — 실제 listener를 붙일 HTMLElement.
+- `handler` — 실제 이벤트가 발생하면 호출할 함수.
+- suffix 동작 — `.capture` 는 capture listener, `.passive` 는 passive listener, `.once` 는 once listener 옵션을 켠다.
 
-### `SdCommandDirective` — `[sdRefreshCommand],[sdSaveCommand],[sdInsertCommand]`
+### `SdEvents`
 
-전역 키 조합을 받아 출력으로 발화하는 디렉티브. 호스트가 최상위 열린 모달 안이거나 모달이 없을 때만 처리.
+```ts
+class SdEvents {
+  "click.capture": OutputEmitterRef<MouseEvent>;
+  "click.once": OutputEmitterRef<MouseEvent>;
+  "click.capture.once": OutputEmitterRef<MouseEvent>;
+  "mousedown.capture": OutputEmitterRef<MouseEvent>;
+  "mouseup.capture": OutputEmitterRef<MouseEvent>;
+  "mouseover.capture": OutputEmitterRef<MouseEvent>;
+  "mouseout.capture": OutputEmitterRef<MouseEvent>;
+  "keydown.capture": OutputEmitterRef<KeyboardEvent>;
+  "keyup.capture": OutputEmitterRef<KeyboardEvent>;
+  "focus.capture": OutputEmitterRef<FocusEvent>;
+  "blur.capture": OutputEmitterRef<FocusEvent>;
+  "invalid.capture": OutputEmitterRef<Event>;
+  "scroll.capture": OutputEmitterRef<Event>;
+  "scroll.passive": OutputEmitterRef<Event>;
+  "scroll.capture.passive": OutputEmitterRef<Event>;
+  "wheel.passive": OutputEmitterRef<WheelEvent>;
+  "wheel.capture.passive": OutputEmitterRef<WheelEvent>;
+  "touchstart.passive": OutputEmitterRef<TouchEvent>;
+  "touchstart.capture.passive": OutputEmitterRef<TouchEvent>;
+  "touchmove.passive": OutputEmitterRef<TouchEvent>;
+  "touchmove.capture.passive": OutputEmitterRef<TouchEvent>;
+  "touchend.passive": OutputEmitterRef<TouchEvent>;
+  "dragover.capture": OutputEmitterRef<DragEvent>;
+  "dragenter.capture": OutputEmitterRef<DragEvent>;
+  "dragleave.capture": OutputEmitterRef<DragEvent>;
+  "drop.capture": OutputEmitterRef<DragEvent>;
+  "transitionend.once": OutputEmitterRef<TransitionEvent>;
+  "animationend.once": OutputEmitterRef<AnimationEvent>;
+}
+```
 
-- `sdRefreshCommand: output<KeyboardEvent>` — `Ctrl+Alt+L`.
-- `sdSaveCommand: output<KeyboardEvent>` — `Ctrl+S`(Alt 없이). `sd-crud-list`/`sd-crud-detail` 이 hostDirective 로 사용해 저장에 배선.
-- `sdInsertCommand: output<KeyboardEvent>` — `Ctrl+Insert`.
+- `.capture` outputs — capture phase에서 필요한 mouse/key/focus/form/scroll/drag 이벤트를 Angular output으로 노출한다.
+- `.passive` outputs — scroll/wheel/touch 계열을 passive listener로 받는다.
+- `.once` outputs — click/transition/animation 종료 이벤트를 한 번만 받는다.
 
-## ripple
+### `SdResizeDirective` / `SdResizeEvent`
 
-### `setupRipple`
+```ts
+class SdResizeDirective { sdResize: OutputEmitterRef<SdResizeEvent> }
+interface SdResizeEvent {
+  heightChanged: boolean;
+  widthChanged: boolean;
+  target: HTMLElement;
+  contentRect: DOMRectReadOnly;
+}
+```
+
+- `sdResize` — host에 `ResizeObserver` 를 붙이고 animation frame에서 마지막 entry를 emit한다.
+- `heightChanged` — 직전 `contentRect.height` 와 달라졌는지 표시한다.
+- `widthChanged` — 직전 `contentRect.width` 와 달라졌는지 표시한다.
+- `target` — resize entry target을 HTMLElement로 전달한다.
+- `contentRect` — observer entry의 `contentRect` 원본이다.
+
+### `SdIntersectionDirective` / `SdIntersectionEvent`
+
+```ts
+class SdIntersectionDirective { sdIntersection: OutputEmitterRef<SdIntersectionEvent> }
+interface SdIntersectionEvent { entry: IntersectionObserverEntry }
+```
+
+- `sdIntersection` — host에 `IntersectionObserver` 를 붙이고 entries가 있으면 마지막 entry를 emit한다.
+- `entry` — observer callback에서 받은 마지막 `IntersectionObserverEntry`.
+
+## command key
+
+### `SdCommandDirective`
+
+```ts
+class SdCommandDirective {
+  sdRefreshCommand: OutputEmitterRef<KeyboardEvent>;
+  sdSaveCommand: OutputEmitterRef<KeyboardEvent>;
+  sdInsertCommand: OutputEmitterRef<KeyboardEvent>;
+}
+```
+
+- `sdRefreshCommand` — document keydown에서 `Ctrl+Alt+L` 이고 최상위 open modal 안의 element이거나 open modal이 없을 때 emit한다.
+- `sdSaveCommand` — document keydown에서 `Ctrl+S` 이고 `Alt`/`Shift` 가 없으며 처리 대상이면 emit한다.
+- `sdInsertCommand` — document keydown에서 `Ctrl+Insert` 이고 `Alt`/`Shift` 가 없으며 처리 대상이면 emit한다.
+- 공통 동작 — command가 처리되면 `preventDefault`/`stopPropagation` 을 호출한다.
+
+## ripple·show effect
+
+### `setupRipple` / `SdRipple`
 
 ```ts
 function setupRipple(enableFn?: () => boolean): void
+class SdRipple { enabled: InputSignal<boolean> }
 ```
 
-- 주입 컨텍스트에서 호출. 호스트를 `position:relative; overflow:hidden` 으로 만들고 `pointerdown` 시 확장 원형 ripple 생성. `enableFn` 이 false 반환 시 스킵. SSR no-op.
+- `enableFn` — pointerdown 시 ripple 생성 여부를 판단한다. 없거나 true면 진행, false면 생성하지 않는다.
+- `enabled` — `[sdRipple]` alias boolean input. true면 `setupRipple(() => enabled())` 이 pointer ripple을 만든다.
+- 동작 — host style을 `position: relative; overflow: hidden` 으로 두고 pointer 위치 기준 원형 indicator를 만들며 pointerup/cancel/leave 때 opacity 0으로 제거한다.
+- browser guard — browser가 아니면 아무 작업도 하지 않는다.
 
-### `SdRipple` — `[sdRipple]`
-
-- `enabled: input.required({ alias: "sdRipple", transform: booleanAttribute })` — 속성값을 boolean 으로. `setupRipple(() => enabled())` 배선.
-
-## 노출 애니메이션
-
-### `setupRevealOnShow`
+### `setupRevealOnShow` / `SdShowEffect`
 
 ```ts
 function setupRevealOnShow(optFn?: () => { type?: "l2r" | "t2b"; enabled?: boolean }): void
+class SdShowEffect {
+  enabled: InputSignal<boolean>;
+  sdShowEffectType: InputSignal<"l2r" | "t2b">;
+}
 ```
 
-- 초기 숨김(opacity 0 + 이동) 후 `IntersectionObserver` 로 화면 진입 시 슬라이드-인. `type` = `"l2r"`(좌→우) / `"t2b"`(위→아래, 기본). `enabled` 기본 true(false 면 즉시 표시).
+- `type` — `"t2b"` 는 초깃값 `translateY(-1em)`, `"l2r"` 는 `translateX(-1em)` 로 숨김 위치를 정한다. 기본은 `"t2b"`.
+- `enabled` — intersection 시 transition을 쓸지 정한다. false면 opacity만 1로 만들고 transition style을 비운다.
+- `sdShowEffectType` — directive input. 기본 `"t2b"`; `SdShowEffect` 가 `setupRevealOnShow` 에 전달한다.
 
-### `SdShowEffect` — `[sdShowEffect]`
+## invalid bridge
 
-- `enabled: input.required({ alias: "sdShowEffect", transform: booleanAttribute })`.
-- `sdShowEffectType: input<"l2r" | "t2b">("t2b")` — 노출 방향.
-
-## invalid 표시
-
-### `setupInvalid`
+### `setupInvalid` / `SdInvalid`
 
 ```ts
 function setupInvalid(getInvalidMessage: () => string): void
+class SdInvalid { invalidMessage: InputSignal<string> }
 ```
 
-- 호스트에 danger 인디케이터 점 + 숨김 input(native validity 운반)을 주입. `getInvalidMessage()` 가 빈 문자열이 아니면 invalid(점 표시·`setCustomValidity`). `sd-form` 의 `checkValidity()` 에 연동. 모든 검증 컨트롤(`sd-textfield` 등)의 내부 기반.
+- `getInvalidMessage` — hidden input의 `setCustomValidity` 에 넣을 메시지를 반환한다. 빈 문자열이면 valid.
+- `invalidMessage` — `[sdInvalid]` alias required string input. 이 값을 `getInvalidMessage` 로 전달한다.
+- 동작 — host에 indicator div와 hidden text input을 삽입하고, form submit capture에서 validity를 refresh한다.
+- focus 동작 — hidden input이 focus되면 host 또는 host의 첫 tabbable child/parent로 focus를 옮긴다.
 
-### `SdInvalid` — `[sdInvalid]`
+## typed template
 
-- `invalidMessage: input.required<string>({ alias: "sdInvalid" })` — 비어있지 않으면 호스트를 invalid 표시.
+### `SdTypedTemplate<T>`
 
-## 타입드 템플릿
-
-### `SdTypedTemplate<T>` — `ng-template[typed]`
-
-- `typed: input.required<T>()` — 템플릿 컨텍스트 타입을 정하는 값. 정적 `ngTemplateContextGuard` 로 컨텍스트를 `T` 로 좁힘.
-
-### `SdItemOfTemplate<TItem>` — `ng-template[itemOf]`
-
-- `itemOf: input.required<TItem[]>()` — 항목 배열; 원소 타입으로 per-item 컨텍스트를 정함. 공유데이터 select·calendar 등 항목 렌더 템플릿에 사용.
-- `SdItemOfTemplateContext<TItem>` = `{ $implicit: TItem; item: TItem; index: number; depth: number }`. 템플릿에서 `let-item="item"` 등으로 받음.
-
-```html
-<sd-shared-data-select [items]="sharedCustomers.items()" ...>
-  <ng-template [itemOf]="sharedCustomers.items()" let-item="item">{{ item.name }}</ng-template>
-</sd-shared-data-select>
+```ts
+class SdTypedTemplate<T> {
+  typed: InputSignal<T>;
+  static ngTemplateContextGuard<TypeToken>(_dir: SdTypedTemplate<TypeToken>, _ctx: unknown): _ctx is TypeToken;
+}
 ```
 
-## 전역 에러 핸들러
+- `typed` — `ng-template[typed]` 의 required type token input. runtime 동작 없이 template context 타입을 고정한다.
+- `ngTemplateContextGuard` — 항상 true를 반환해 Angular template type narrowing에만 사용한다.
 
-### `SdGlobalErrorHandlerPlugin`
+### `SdItemOfTemplate<TItem>` / `SdItemOfTemplateContext<TItem>`
 
-Angular `ErrorHandler` 구현(`provideSdAngular` 가 `ErrorHandler` 로 등록). `handleError(event)` — 브라우저에서 에러를 분류해 1회 전체화면 오버레이 표시 + `SdSystemLogProvider` 적재 + 앱 파괴(클릭 시 새로고침). SSR 에선 로깅만. 직접 호출할 일은 없고 등록만.
+```ts
+class SdItemOfTemplate<TItem> {
+  itemOf: InputSignal<TItem[]>;
+  static ngTemplateContextGuard<TContextItem>(...): _ctx is SdItemOfTemplateContext<TContextItem>;
+}
+interface SdItemOfTemplateContext<TItem> {
+  $implicit: TItem;
+  item: TItem;
+  index: number;
+  depth: number;
+}
+```
+
+- `itemOf` — `ng-template[itemOf]` required input. 배열 item 타입을 template context로 전달하기 위한 type token이다.
+- `$implicit` — template 기본 변수에 들어갈 항목.
+- `item` — 명명된 항목 변수.
+- `index` — 렌더링 순번.
+- `depth` — 트리/계층 렌더링 깊이.

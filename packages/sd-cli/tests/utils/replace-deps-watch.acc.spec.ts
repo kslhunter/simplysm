@@ -22,7 +22,7 @@ import type { WatchReplaceDepResult } from "../../src/deps/replace-deps/replace-
  *           pkg/          ← replaceDeps 타겟 (복사 대상)
  *             src/
  *               index.ts
- *       pnpm-workspace.yaml
+ *       package.json
  */
 describe("watchReplaceDeps onChanged 콜백", () => {
   let tmpDir: string;
@@ -47,10 +47,10 @@ describe("watchReplaceDeps onChanged 콜백", () => {
     await fs.promises.mkdir(targetDir, { recursive: true });
     await fs.promises.writeFile(path.join(targetDir, "index.ts"), "export const a = 1;");
 
-    // pnpm-workspace.yaml (빈 워크스페이스)
+    // package.json#workspaces (빈 워크스페이스)
     await fs.promises.writeFile(
-      path.join(tmpDir, "project", "pnpm-workspace.yaml"),
-      "packages:\n",
+      path.join(tmpDir, "project", "package.json"),
+      JSON.stringify({ private: true, workspaces: [] }),
     );
   });
 

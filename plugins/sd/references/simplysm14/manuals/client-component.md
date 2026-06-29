@@ -289,7 +289,7 @@ effect(() => {
 
 ## 에러·토스트
 
-비동기 작업은 `_sdToast.try(async () => { ... })` 로 감쌈. 콜백 내에서 throw 된 에러는 토스트로 표시되며 외부로 전파되지 않음.
+비동기 작업은 `_sdToast.try(async () => { ... })` 로 감쌈. 콜백 내에서 throw 된 `Error` 인스턴스는 토스트와 시스템 로그로 처리되고 외부로 전파되지 않음. 문자열 등 non-Error throw 는 그대로 전파되므로 업무 오류도 `throw new Error(...)` 로 발생시킴.
 
 ```ts
 private readonly _sdToast = inject(SdToastProvider);
@@ -357,9 +357,9 @@ if (!result) return;
 
 ## `mark` 헬퍼
 
-`@simplysm/angular` 의 `mark(signal)` 은 시그널 값은 그대로 두고 **변경 알림만** 발행. effect 가 의존하는 시그널을 강제 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 사용.
+`@simplysm/angular` 의 `mark(signal)` 은 배열이면 shallow array copy, 객체면 shallow object copy 를 새 참조로 `set` 하여 변경 알림을 발행. effect 가 의존하는 시그널을 강제 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 사용. `null`/`undefined` 는 복제할 대상이 없어 그대로 둠.
 
-**1. 외부 트리거로 effect 재발화** — 값은 동일하지만 effect 를 다시 발화시켜야 할 때.
+**1. 외부 트리거로 effect 재발화** — 값의 의미는 동일하지만 새 참조로 effect 를 다시 발화시켜야 할 때.
 
 ```ts
 doRefresh(): void {

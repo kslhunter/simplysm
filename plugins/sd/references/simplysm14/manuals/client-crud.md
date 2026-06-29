@@ -51,7 +51,7 @@
 | `#filterTpl`        | 검색 폼 필드. 있으면 상단에 조회 버튼과 함께 노출. 내부는 이미 `form-box-inline` 으로 감싸진 상태이므로, 슬롯 내용물을 별도 `form-box-inline` 으로 다시 묶지 말 것. |
 | `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                          |
 | `#commandTpl`       | 상단 명령 영역(viewType 이 `modal`·`control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼. |
-| `#bottomCommandTpl` | modal 하단 좌측 영역. modal + selectMode 인 경우 "선택 해제/확인" 버튼과 함께 표시. |
+| `#bottomCommandTpl` | 하단 좌측 추가 영역. 이 슬롯이 있으면 viewType 과 무관하게 하단 바가 렌더됨. modal + selectMode 인 경우 오른쪽에 "선택 해제/확인" 버튼도 함께 표시. |
 
 `<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
@@ -260,7 +260,7 @@ async onUploadExcelButtonClick(): Promise<void> {
 
 ### 특정 행의 선택·삭제를 막으려면
 
-`[getItemSelectableFn]` 로 행별 선택 가능 여부를 반환. 문자열을 반환하면 그 사유가 안내되고 해당 행은 선택(→삭제) 불가. 개별 선택·전체 선택 모든 경로에 적용됨.
+`[getItemSelectableFn]` 로 행별 선택 가능 여부를 반환. `true` 가 아니면 해당 행은 선택(→삭제) 불가. 문자열을 반환하면 multi 선택 체크박스에는 `title` 로 사유가 노출되고, single 선택 모드에서는 선택 앵커 자체가 렌더되지 않아 사유가 별도 표시되지 않을 수 있음. 개별 선택·전체 선택 모든 경로에 적용됨.
 
 ```ts
 // 로그인한 본인 계정은 선택(→삭제) 불가
@@ -346,13 +346,14 @@ this.summaryData.set(r.summary);
 | -------------------- | ----------------------------------------------------------------- |
 | `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.         |
 | `#commandTpl`        | 상단/명령 영역 추가 버튼.                                         |
-| `#bottomCommandTpl`  | modal 하단 좌측. modal 일 때 우측 "확인" 버튼이 항상 자동 추가됨. |
+| `#bottomCommandTpl`  | 하단 좌측 추가 영역. 이 슬롯이 있거나 `viewType='modal'` 이면 하단 바가 렌더되고 우측 "확인" 버튼이 자동 추가됨. |
 
 ### viewType 별 동작
 
 - **`'page'`** — 라우팅 진입 단위. 상단에 저장 버튼.
 - **`'control'`** — view 안에 임베드. 명령 영역에 저장 버튼.
 - **`'modal'`** — 모달. 하단 우측에 "확인" 버튼이 자동으로 추가.
+- `page`/`control` 에서도 `#bottomCommandTpl` 을 주면 하단 바와 "확인" 버튼이 렌더되므로, 하단 명령 영역이 필요한 경우에만 둠.
 
 ## 삭제·복구를 처리하려면 (목록·단건 공통)
 

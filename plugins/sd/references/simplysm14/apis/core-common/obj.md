@@ -1,88 +1,115 @@
 # @simplysm/core-common — obj
 
-`import { obj } from "@simplysm/core-common"`. 깊은 복사·비교·병합과 체인 경로 접근, 타입 안전 Object 헬퍼. 값 타입(`DateTime`/`DateOnly`/`Time`/`Uuid`/`Uint8Array`)·`Date`·`RegExp`·`Map`/`Set`·`Error` 를 인지해 올바르게 다룸. 상태 비교·patch·불변 업데이트가 필요할 때 사용.
+`import { obj } from "@simplysm/core-common"` 네임스페이스. 객체 깊은 복사·동등 비교·병합·체인 경로 접근·타입 안전 Object 헬퍼를 한 컨텍스트에서 다룰 때 본다.
 
 ## clone
 
-- `clone<T>(source: T): T` — 깊은 복사. 순환 참조 지원(`WeakMap` 추적). `Date`/`DateTime`/`DateOnly`/`Time`/`Uuid`/`RegExp`/`Uint8Array`/`Array`/`Map`/`Set`/`Error`(cause·커스텀 속성 포함) 를 타입별로 복제하고 프로토타입 체인 유지. 단 **함수·Symbol 은 복사 안 되고 참조 유지**, `WeakMap`/`WeakSet` 미지원(빈 객체로 복사됨), getter/setter 는 현재 값으로 평가되어 복사됨.
-
 ```ts
-const copy = obj.clone({ at: new DateTime(), tags: new Set([1, 2]) });
+clone<TObj>(source: TObj): TObj
 ```
+
+- `source` — 복사할 값이다. 원시값은 그대로 반환하고 객체는 타입별로 복사한다.
+- 지원 타입 — `Date`, `DateTime`, `DateOnly`, `Time`, `Uuid`, `RegExp`, `Error`, `Uint8Array`, `Array`, `Map`, `Set`, 일반 객체를 처리한다.
+- 순환 참조 — `WeakMap` 으로 이미 복사한 객체를 재사용한다.
+- Error 복사 — prototype 을 유지하고 `message`, `name`, `stack`, `cause`, 커스텀 enumerable 속성을 복사한다.
+- 일반 객체 복사 — prototype 을 유지하고 `Object.keys` 대상 속성을 재귀 복사한다.
+- 함수·Symbol — 객체가 아니므로 참조를 그대로 유지한다.
 
 ## equal
 
-- `equal(source, target, options?: EqualOptions): boolean` — 깊은 동등성 비교. `Date`/값 타입(tick 비교)/`Uuid`(문자열)/`RegExp`(source+flags)/`Array`/`Map`/`Set`/객체를 재귀 비교. 객체·Map 비교에서 null 값 key 는 무시됨.
+```ts
+equal(source: unknown, target: unknown, options?: EqualOptions): boolean
+```
+
+- `source` / `target` — 비교 대상이다. 타입이 다르거나 한쪽만 null 이면 false 다.
+- `Date` — `getTime()` 으로 비교한다.
+- `DateTime`·`DateOnly`·`Time` — 같은 값 타입끼리 `tick` 으로 비교한다.
+- `Uuid` — 문자열로 비교한다.
+- `RegExp` — `source` 와 `flags` 를 비교한다.
+- `Array` — 길이를 먼저 비교하고, `ignoreArrayIndex` 에 따라 index 순서 또는 순열을 비교한다.
+- `Map` — null/undefined 값 key 는 제외하고 key/value 를 비교한다. 문자열 key 는 직접 조회, 비문자열 key 는 깊은 비교로 찾는다.
+- `Set` — 크기를 먼저 비교하고, shallow 면 `has`, 아니면 깊은 비교로 매칭한다.
+- 일반 객체 — null/undefined 값 속성은 제외하고 `Object.keys` 를 비교한다.
 
 `EqualOptions`:
 
-- `topLevelIncludes?: string[]` — 지정 시 그 key 들만 비교(최상위 레벨에만 적용, Map key 에는 미적용).
-- `topLevelExcludes?: string[]` — 비교에서 제외할 key(최상위 레벨에만).
-- `ignoreArrayIndex?: boolean` — true 면 배열 순서 무시(같은 집합의 순열인지). O(n²).
-- `shallow?: boolean` — true 면 1단계 참조 비교(`===`).
+- `topLevelIncludes?: string[]` — 지정된 최상위 key 만 비교한다. 객체 속성 비교에만 적용된다.
+- `topLevelExcludes?: string[]` — 지정된 최상위 key 를 비교에서 뺀다. 객체 속성 비교에만 적용된다.
+- `ignoreArrayIndex?: boolean` — true 면 배열 순서를 무시하고 순열로 비교한다. 깊은 비교 시 O(n²) 이다.
+- `shallow?: boolean` — true 면 1단계 값은 `===` 로 비교한다. Map/Set 에서 참조 비교가 필요할 때.
+
+## merge
 
 ```ts
-obj.equal(a, b, { topLevelExcludes: ["updatedAt"] });
+merge<TSource, TMergeTarget>(source: TSource, target: TMergeTarget, opt?: MergeOptions): TSource & TMergeTarget
 ```
 
-## merge / merge3
-
-- `merge<S, T>(source, target, opt?: MergeOptions): S & T` — 깊은 병합(원본 불변, 새 객체 반환). 타입이 다르거나 값 타입/`Uint8Array` 면 target 으로 교체. `Map` 은 key 별 재귀 병합.
+- `source` — 기본 값이다. null/undefined 이면 target clone 을 반환한다.
+- `target` — 병합 값이다. undefined 이면 source clone 을 반환한다. null 이고 `useDelTargetNull` 이 true 면 undefined 를 반환해 상위 key 삭제 흐름을 만든다.
+- 타입이 다름 — source/target 생성자가 다르면 target clone 으로 교체한다.
+- 교체 타입 — `Date`, `DateTime`, `DateOnly`, `Time`, `Uuid`, `Uint8Array`, `arrayProcess === "replace"` 인 Array 는 target clone 으로 교체한다.
+- Map — source clone 을 만든 뒤 target key 를 재귀 병합하거나 추가한다.
+- 객체 — source clone 에 target 의 각 key 를 재귀 병합하고 결과가 null/undefined 인 key 는 삭제한다.
 
 `MergeOptions`:
 
-- `arrayProcess?: "replace" | "concat"` — 배열 처리. `"replace"`(기본): target 배열로 교체, `"concat"`: source+target 합쳐 `Set` 으로 중복 제거(객체는 참조 비교).
-- `useDelTargetNull?: boolean` — true 면 target 값이 null 인 key 를 결과에서 삭제. false/미지정이면 source 값 유지.
+- `arrayProcess?: "replace" | "concat"` — `"replace"` 는 target 배열로 교체한다. `"concat"` 은 source+target 을 Set 으로 합쳐 중복 제거한다.
+- `useDelTargetNull?: boolean` — true 면 target null 이 key 삭제로 이어진다. false/미지정이면 target null 에서 source clone 을 유지한다.
 
-- `merge3<S, O, T>(source, origin, target, optionsObj?): { conflict: boolean; result }` — 3-way 병합. origin 을 공통 조상으로 source/target 변경을 합침. 한쪽만 변경됐으면 변경값 사용, 둘 다 같으면 그 값, 셋 다 다르면 충돌(`conflict:true`, origin 값 유지). `optionsObj` 는 key 별 `Merge3KeyOptions`(`keys`/`excludes`/`ignoreArrayIndex` — 각 key 의 `equal` 비교 옵션).
+## merge3
 
 ```ts
-const { conflict, result } = obj.merge3(
-  { a: 1, b: 2 }, { a: 1, b: 1 }, { a: 2, b: 1 },
-); // conflict:false, result:{ a:2, b:2 }
+merge3<S extends Record<string, unknown>, O extends Record<string, unknown>, T extends Record<string, unknown>>(
+  source: S,
+  origin: O,
+  target: T,
+  optionsObj?: Record<string, Merge3KeyOptions>,
+): { conflict: boolean; result: O & S & T }
 ```
+
+- `source` — 변경 버전 1 이다.
+- `origin` — 공통 조상이다. 결과의 초기값은 origin clone 이다.
+- `target` — 변경 버전 2 이다.
+- 병합 규칙 — source 가 origin 과 같으면 target 값을 사용하고, target 이 origin 과 같으면 source 값을 사용하고, source 와 target 이 같으면 source 값을 사용한다. 셋 다 다르면 `conflict = true` 로 두고 origin 값을 유지한다.
+- `optionsObj?: Record<string, Merge3KeyOptions>` — key 별 비교 옵션 객체다. 구현은 이 객체를 `equal(source[key], result[key], optionsObj[key])` 에 직접 전달한다.
+- `Merge3KeyOptions.keys?: string[]` — 선언된 필드지만 `equal` 의 인식 필드명은 `topLevelIncludes` 이므로 현재 구현에서는 직접 효과가 없다.
+- `Merge3KeyOptions.excludes?: string[]` — 선언된 필드지만 `equal` 의 인식 필드명은 `topLevelExcludes` 이므로 현재 구현에서는 직접 효과가 없다.
+- `Merge3KeyOptions.ignoreArrayIndex?: boolean` — `equal` 과 필드명이 같아 배열 순서 무시 비교에 적용된다.
 
 ## omit / pick
 
-- `omit(item, omitKeys: K[]): Omit<T, K>` — 지정 key 제외한 새 객체.
-- `pick(item, pickKeys: K[]): Pick<T, K>` — 지정 key 만 담은 새 객체.
-- `omitByFilter(item, omitKeyFn: (key) => boolean): T` — 함수가 true 를 반환하는 key 제외. (`@internal`)
+- `omit<T, K extends keyof T>(item: T, omitKeys: K[]): Omit<T, K>` — `omitKeys` 에 포함되지 않은 key 만 새 객체에 복사한다.
+- `pick<T, K extends keyof T>(item: T, pickKeys: K[]): Pick<T, K>` — `pickKeys` 의 key 만 새 객체에 복사한다.
+- `omitByFilter<T>(item: T, omitKeyFn: (key: keyof T) => boolean): T` — `omitKeyFn(key)` 가 true 인 key 를 제외한다. 소스에는 `@internal` 로 표시되어 있다.
 
 ## 체인 경로 접근
 
-문자열 경로는 `.` 과 `[]` 로 분해되고 `?!'"` 문자는 제거되며 숫자 세그먼트는 인덱스로 변환됨.
+- `getChainValue(obj: unknown, chain: string, optional: true): unknown | undefined` — 체인 경로로 값을 읽는다. 중간 값이 null/undefined 이고 `optional` 이 true 면 undefined 로 진행한다.
+- `getChainValue(obj: unknown, chain: string): unknown` — `optional` 이 없으면 중간 값에 바로 인덱스 접근한다.
+- `chain: string` — `.`, `[`, `]` 로 분리하고 `?`, `!`, `'`, `"` 문자를 제거한다. 숫자로만 된 조각은 number index 로 바꾼다.
+- `getChainValueByDepth(obj, key, depth, optional?): value` — 같은 `key` 로 `depth` 만큼 내려간다. `depth < 1` 이면 `ArgumentError`.
+- `key: keyof TObject` — 반복 접근할 key 다.
+- `depth: number` — 하강 횟수이며 1 이상이어야 한다.
+- `optional?: true` — true 면 중간 null/undefined 에서 undefined 를 반환한다.
+- `setChainValue(obj: unknown, chain: string, value: unknown): void` — 중간 경로가 없으면 `{}` 를 만들어 마지막 segment 에 value 를 설정한다. 빈 chain 은 `ArgumentError`.
+- `deleteChainValue(obj: unknown, chain: string): void` — 마지막 segment 를 삭제한다. 중간 경로가 없거나 객체가 아니면 그대로 반환한다. 빈 chain 은 `ArgumentError`.
 
-- `getChainValue(obj, chain): unknown` / `getChainValue(obj, chain, true): unknown | undefined` — `"a.b[0].c"` 경로로 값 조회. 셋째 인자 `true` 면 중간 null/undefined 를 만나도 throw 없이 undefined 반환.
-- `getChainValueByDepth(obj, key, depth, optional?): ...` — 같은 key 로 `depth` 회 하강(예: `parent` 를 2단계). `depth < 1` 이면 `ArgumentError`. `optional:true` 면 중간 null 허용. (`@internal`)
-- `setChainValue(obj, chain, value): void` — 경로로 값 설정. 중간 경로 없으면 빈 객체로 생성. 빈 chain 이면 `ArgumentError`.
-- `deleteChainValue(obj, chain): void` — 경로로 값 삭제. 중간 경로가 없으면 조용히 반환. 빈 chain 이면 `ArgumentError`.
+## 정리·평탄화 유틸
 
-```ts
-obj.getChainValue(data, "user.address[0].city", true);
-obj.setChainValue(data, "user.name", "Alice");
-```
+- `clearUndefined<T extends object>(obj: T): T` — 원본 객체에서 값이 null 또는 undefined 인 key 를 삭제한다. 함수명은 undefined 지만 구현은 `== null` 을 사용한다.
+- `clear<T extends Record<string, unknown>>(obj: T): Record<string, never>` — 원본 객체의 모든 own enumerable key 를 삭제한다.
+- `nullToUndefined<T>(obj: T): T | undefined` — null/undefined 는 undefined 로 바꾸고, 배열/객체 내부도 재귀 변환한다. 원본 배열/객체를 변경하며 순환 참조는 `WeakSet` 으로 방지한다.
+- `unflatten(flatObj: Record<string, unknown>): Record<string, unknown>` — `"a.b"` 같은 dot key 를 중첩 객체로 펼친다.
 
-## 정리·변환
+## 타입 유틸
 
-- `clearUndefined(obj): T` `@mutates @internal` — null/undefined 값 key 삭제(원본 수정).
-- `clear(obj): Record<string, never>` `@mutates @internal` — 모든 key 삭제(원본 수정).
-- `nullToUndefined(obj): T | undefined` `@mutates @internal` — null 을 undefined 로 재귀 변환(원본 수정, 순환 참조 추적). 값 타입은 변환하지 않음. `json.parse` 가 내부적으로 사용.
-- `unflatten(flatObj): Record<string, unknown>` `@internal` — `{ "a.b.c": 1 }` 를 `{ a: { b: { c: 1 } } }` 로.
+- `UndefToOptional<TObject>` — undefined 를 포함하는 속성을 optional 속성으로 바꾼다.
+- `OptionalToUndef<TObject>` — optional 속성을 필수 속성 + `undefined` union 으로 바꾼다.
 
-## 타입 안전 Object 헬퍼
+## Object 헬퍼
 
-- `keys(obj): (keyof T)[]` — 타입 안전 `Object.keys`.
-- `entries(obj): Entries<T>` — 타입 안전 `Object.entries`(`[key, value]` 튜플 배열).
-- `fromEntries(entryPairs): { [K in T[0]]: T[1] }` — 타입 안전 `Object.fromEntries`.
-- `map(obj, fn): Record<...>` — 각 엔트리를 `fn(key, value) => [newKey | null, newValue]` 로 변환한 새 객체. `newKey` 가 null 이면 원래 key 유지(값만 변환).
-
-```ts
-obj.keys({ a: 1, b: 2 });                          // ("a" | "b")[]
-obj.map(colors, (k, rgb) => [null, `rgb(${rgb})`]); // 값만 변환
-```
-
-## 유틸 타입
-
-- `UndefToOptional<TObject>` — `undefined` 를 포함한 속성을 optional 로 변환. `{ a: string; b: string | undefined }` → `{ a: string; b?: string | undefined }`.
-- `OptionalToUndef<TObject>` — optional 속성을 필수 + `undefined` 유니온으로. `{ a: string; b?: string }` → `{ a: string; b: string | undefined }`.
-- `EqualOptions` / `MergeOptions` / `Merge3KeyOptions` — 위 함수들의 옵션 타입.
+- `keys<T extends object>(obj: T): (keyof T)[]` — `Object.keys` 결과를 `keyof T` 배열로 반환한다.
+- `entries<T extends object>(obj: T): Entries<T>` — `Object.entries` 결과를 key/value 튜플 union 배열로 반환한다.
+- `fromEntries<T extends [string, unknown]>(entryPairs: T[]): { [K in T[0]]: T[1] }` — 문자열 key 엔트리 배열을 객체로 만든다.
+- `map<TSource, TNewKey extends string, TNewValue>(obj, fn): Record<TNewKey | Extract<keyof TSource, string>, TNewValue>` — 각 key/value 를 `[newKey, newValue]` 로 변환해 새 객체를 만든다.
+- `fn: (key, value) => [TNewKey | null, TNewValue]` — `newKey` 가 null 이면 원래 key 를 유지하고, 문자열이면 그 key 로 저장한다.

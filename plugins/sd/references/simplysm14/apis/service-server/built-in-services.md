@@ -1,35 +1,86 @@
 # @simplysm/service-server — 내장 서비스
 
-서버 옵션 `services` 배열에 그대로 추가해 쓰는 미리 정의된 `ServiceDefinition` 두 개. 각각 두 이름(별칭)으로 노출되며, 클라이언트 타입 공유용 `*Methods` 타입도 함께 export 된다. 클라이언트는 짧은 이름 또는 레거시 이름 어느 쪽으로도 호출할 수 있다.
-
-```ts
-services: [OrmService, AutoUpdateService, ...앱서비스들]
-```
+서버 `services` 배열에 그대로 등록할 수 있는 기본 `ServiceDefinition`과 그 클라이언트 공유용 메서드 타입 묶음이다. ORM 호출 흐름과 쿼리 작성 기준: [orm.md](../../manuals/orm.md).
 
 ## OrmService / OrmServiceMethods
 
-`["Orm", "SdOrmService"]` 두 이름으로 노출. DB 접속을 원격 실행 RPC 로 제공하는 서비스로, 클라이언트의 ORM 커넥터가 호출한다.
+```ts
+const OrmService: ServiceDefinition<{
+  getInfo(opt: DbConnOptions & { configName: string }): Promise<{
+    dialect: Dialect;
+    database?: string;
+    schema?: string;
+  }>;
+  connect(opt: DbConnOptions & { configName: string }): Promise<number>;
+  close(connId: number): Promise<void>;
+  beginTransaction(connId: number, isolationLevel?: IsolationLevel): Promise<void>;
+  commitTransaction(connId: number): Promise<void>;
+  rollbackTransaction(connId: number): Promise<void>;
+  executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]>;
+  executeDefs(
+    connId: number,
+    defs: QueryDef[],
+    options?: (ResultMeta | undefined)[],
+  ): Promise<unknown[][]>;
+  bulkInsert(
+    connId: number,
+    tableName: string,
+    columnDefs: Record<string, ColumnMeta>,
+    records: Record<string, unknown>[],
+  ): Promise<void>;
+}>;
 
-- 전체가 `auth(...)` 래핑이라 **로그인 필요**.
-- **WebSocket 전송 전용** — 소켓 단위로 DB 커넥션을 풀링(`WeakMap<ServiceSocket, Map<connId, DbConn>>`)하므로, `ctx.socket` 이 없는 HTTP 호출 시 `"WebSocket 연결이 필요합니다..."` throw.
-- DB 접속 정보는 `ctx.getConfig<...>("orm")[configName]` 으로 `rootPath/.config.json` 의 `orm` 섹션에서 읽고, 호출 `opt.config` 로 덮어쓴다. 설정이 없으면 throw.
-- 소켓이 닫히면 그 소켓의 열린 모든 커넥션을 자동 정리한다.
+type OrmServiceMethods = ServiceMethods<typeof OrmService>;
+```
 
-메서드(`OrmServiceMethods`):
-
-- `getInfo(opt: DbConnOptions & { configName }): Promise<{ dialect; database?; schema? }>` — 접속 설정의 dialect·database·schema 조회. `dialect` 가 `"mssql-azure"` 면 `"mssql"` 로 정규화해 돌려준다.
-- `connect(opt: DbConnOptions & { configName }): Promise<number>` — 새 DB 연결을 풀에 추가하고 정수 `connId` 반환. 같은 소켓의 첫 연결 시 소켓 `close` 핸들러를 걸어 종료 시 정리하도록 등록한다.
-- `close(connId: number): Promise<void>` — 해당 연결 종료. 종료 중 에러는 무시(warn 로그)된다.
-- `beginTransaction(connId: number, isolationLevel?: IsolationLevel): Promise<void>` — 트랜잭션 시작. `isolationLevel` 미지정 시 드라이버 기본값.
-- `commitTransaction(connId: number): Promise<void>` / `rollbackTransaction(connId: number): Promise<void>` — `connId` 대상 트랜잭션 커밋·롤백.
-- `executeParametrized(connId: number, query: string, params?: unknown[]): Promise<unknown[][]>` — 파라미터 바인딩 SQL 실행.
-- `executeDefs(connId: number, defs: QueryDef[], options?: (ResultMeta | undefined)[]): Promise<unknown[][]>` — `QueryDef[]` 를 dialect 에 맞춰 빌드·실행. `options` 가 전부 `null`/`undefined` 면 전체를 한 번에 일괄 실행만 하고 빈 결과를 돌려주며, 각 `options[i]` 가 있으면 해당 결과셋을 파싱해 반환한다.
-- `bulkInsert(connId: number, tableName: string, columnDefs: Record<string, ColumnMeta>, records: Record<string, unknown>[]): Promise<void>` — 대량 삽입.
+- 서비스 이름 `"Orm"` / `"SdOrmService"` — 두 이름으로 같은 서비스가 노출된다. `"Orm"`이 대표 이름이다.
+- 서비스 수준 `auth(...)` — 모든 메서드가 로그인 필요 상태로 실행된다. 역할 배열은 빈 배열이다.
+- WebSocket 전용 — 내부 연결 저장소가 `ServiceSocket` 기준 `WeakMap`이므로 `ctx.socket`이 없으면 `"WebSocket 연결이 필요합니다. ORM 서비스는 HTTP로 사용할 수 없습니다."`를 throw한다.
+- `opt: DbConnOptions & { configName: string }` — DB 연결 옵션. 서비스 코드가 `configName`으로 `ctx.getConfig("orm")` 항목을 찾고 `opt.config`를 설정 위에 병합한다.
+- `configName: string` — `orm` 설정 섹션 안의 DB 설정 키. 없으면 `"ORM 설정을 찾을 수 없습니다: ..."`를 throw한다.
+- `getInfo(...).dialect: Dialect` — 설정의 dialect를 반환하되 `"mssql-azure"`는 `"mssql"`로 정규화한다.
+- `getInfo(...).database?: string` — 설정의 `database` 값을 그대로 반환한다.
+- `getInfo(...).schema?: string` — 설정 객체에 `schema` 키가 있을 때만 반환한다.
+- `connect(opt): Promise<number>` — 새 `DbConn`을 생성·연결하고 소켓별 map에 저장한 뒤 증가한 `connId`를 반환한다. 소켓 `close` 시 열린 DB 연결을 모두 닫도록 핸들러를 등록한다.
+- `connId: number` — 소켓별 DB 연결 식별자. 존재하지 않으면 `"데이터베이스에 연결되지 않았습니다. (유효하지 않은 연결 ID)"`를 throw한다.
+- `close(connId)` — 해당 DB 연결을 닫는다. 종료 중 오류는 warn 로그 후 무시된다.
+- `beginTransaction(connId, isolationLevel?)` — 해당 연결에서 트랜잭션을 시작한다.
+- `isolationLevel?: IsolationLevel` — ORM 연결의 `beginTransaction`에 그대로 전달되는 격리 수준.
+- `commitTransaction(connId)` — 해당 연결의 트랜잭션을 커밋한다.
+- `rollbackTransaction(connId)` — 해당 연결의 트랜잭션을 롤백한다.
+- `executeParametrized(connId, query, params?)` — 해당 연결에서 파라미터 바인딩 SQL을 실행한다.
+- `query: string` — `DbConn.executeParametrized`에 전달할 SQL 문자열.
+- `params?: unknown[]` — SQL 파라미터 배열. 미지정이면 그대로 `undefined`가 전달된다.
+- `executeDefs(connId, defs, options?)` — 각 `QueryDef`를 연결 dialect용 SQL로 빌드해 실행하고 결과 배열을 반환한다.
+- `defs: QueryDef[]` — 실행할 ORM query definition 배열. 각 요소가 결과 배열의 같은 index에 대응한다.
+- `options?: (ResultMeta | undefined)[]` — 결과 파싱 메타 배열. 모든 요소가 `null`/`undefined`이면 모든 SQL을 한 문자열로 묶어 실행하고 각 def 결과는 빈 배열이 된다. 특정 index에 값이 있으면 그 결과셋을 `parseQueryResult`로 파싱한다.
+- `bulkInsert(connId, tableName, columnDefs, records)` — 해당 연결의 bulk insert를 호출한다.
+- `tableName: string` — 삽입 대상 테이블명.
+- `columnDefs: Record<string, ColumnMeta>` — 컬럼별 메타 정보.
+- `records: Record<string, unknown>[]` — 삽입할 레코드 배열.
+- `OrmServiceMethods` — 클라이언트 프록시 타입으로 공유할 메서드 시그니처 추출 타입이다.
 
 ## AutoUpdateService / AutoUpdateServiceMethods
 
-`["AutoUpdate", "SdAutoUpdateService"]` 두 이름으로 노출. 인증 불필요. 배포된 앱 클라이언트가 최신 설치본을 조회하는 데 쓴다.
+```ts
+const AutoUpdateService: ServiceDefinition<{
+  getLastVersion(platform: string): Promise<
+    | { version: string; downloadPath: string }
+    | undefined
+  >;
+}>;
 
-- `getLastVersion(platform: string): Promise<{ version: string; downloadPath: string } | undefined>` — `rootPath/www/<clientName>/<platform>/updates` 디렉터리에서 후보 파일을 골라 semver 최대 버전을 찾는다. `platform === "android"` 면 `.apk`, 그 외면 `.exe` 확장자에 파일명이 `^[0-9.]*$` 인 것만 후보. 대상 버전이 있으면 `{ version, downloadPath }`(다운로드 경로는 `/<clientName>/<platform>/updates/<파일>` posix 경로), 없으면 `undefined`. `ctx.clientPath` 가 없으면 throw.
+type AutoUpdateServiceMethods = ServiceMethods<typeof AutoUpdateService>;
+```
 
-주의: `getLastVersion` 은 ver≠2 레거시 클라이언트의 `SdAutoUpdateService.getLastVersion` fallback 으로도 자동 연결된다(레거시 흐름은 [v1-legacy.md](./v1-legacy.md) 참조).
+- 서비스 이름 `"AutoUpdate"` / `"SdAutoUpdateService"` — 두 이름으로 같은 서비스가 노출된다. `"AutoUpdate"`가 대표 이름이다.
+- 인증 메타 없음 — 팩토리가 `auth(...)`로 감싸져 있지 않아 서비스 자체는 권한 요구 메타를 갖지 않는다.
+- `platform: string` — `ctx.clientPath/<platform>/updates` 디렉터리와 후보 파일 확장자 판정에 쓰인다.
+- `platform === "android"` — 후보 파일 확장자는 `.apk`다.
+- `platform !== "android"` — 후보 파일 확장자는 `.exe`다.
+- 후보 파일명 — 확장자를 뺀 이름이 `/^[0-9.]*$/`에 맞는 파일만 semver 후보가 된다.
+- 반환 `version: string` — `semver.maxSatisfying(versions, "*")`로 고른 최대 버전 문자열.
+- 반환 `downloadPath: string` — `/<clientName>/<platform>/updates/<fileName>` 형태의 posix 경로.
+- 반환 `undefined` — updates 디렉터리가 없거나 후보 버전이 없거나 선택 버전 파일을 찾지 못할 때 반환된다.
+- 오류 — `ctx.clientPath`가 없으면 `"클라이언트 경로를 찾을 수 없습니다."`를 throw한다.
+- `AutoUpdateServiceMethods` — 클라이언트 프록시 타입으로 공유할 메서드 시그니처 추출 타입이다.

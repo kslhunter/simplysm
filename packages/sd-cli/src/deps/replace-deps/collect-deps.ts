@@ -11,7 +11,7 @@ export interface DepsResult {
 }
 
 /**
- * 워크스페이스 디렉토리(packages/, tests/) 스캔 기반으로 packages/ 패키지의 name → 상대 디렉토리 맵을 구성한다.
+ * package.json#workspaces 기반으로 packages/ 패키지의 name → 상대 디렉토리 맵을 구성한다.
  * tests/ 패키지는 제외된다.
  * 예: "@simplysm/core-node" → "packages/core-node"
  */
@@ -36,7 +36,7 @@ export function collectDeps(
   const startTime = performance.now();
   logger.debug("의존성 수집 시작");
 
-  // 워크스페이스 디렉토리 스캔으로 packages/ 패키지 맵 구성 (tests/ 제외)
+  // 워크스페이스 설정으로 packages/ 패키지 맵 구성 (tests/ 제외)
   const workspacePkgMap = buildWorkspacePkgMap(cwd);
 
   const replaceDepsPatterns: Array<{ regex: RegExp }> = [];

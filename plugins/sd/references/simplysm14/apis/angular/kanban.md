@@ -1,46 +1,100 @@
-# @simplysm/angular — 칸반(kanban)
+# @simplysm/angular — 칸반
 
-드래그앤드롭으로 카드를 레인 간 이동하고 카드를 다중 선택하는 칸반 보드 군. `sd-kanban-board`(보드) > `sd-kanban-lane`(레인) > `sd-kanban`(카드) 3계층. `L`=레인 값 타입, `T`=카드 값 타입.
+`sd-kanban-board` > `sd-kanban-lane` > `sd-kanban` 3계층으로 카드 선택과 drag-drop 이동을 처리하는 군이다. `L`은 lane 값 타입, `T`는 card 값 타입이다.
 
 ## `SdKanbanBoard<L, T>` — `<sd-kanban-board>`
 
-- `selectedValues: model<T[]>([])` — 선택된 카드 값.
-- `drop: output<SdKanbanBoardDropInfo<L, T>>` — 드래그를 레인/카드에 드롭 시 emit.
-- `dragKanban: signal<SdKanbanDragRef<L, T> | undefined>` — 현재 드래그 중인 카드.
+```ts
+class SdKanbanBoard<L, T> {
+  dragKanban: WritableSignal<SdKanbanDragRef<L, T> | undefined>;
+  selectedValues: ModelSignal<T[]>;
+  drop: OutputEmitterRef<SdKanbanBoardDropInfo<L, T>>;
+  onDropTo(target: SdKanbanDropTarget<L, T>): void;
+  onDocumentDragEnd(): void;
+}
+interface SdKanbanBoardDropInfo<L, T> {
+  sourceKanbanValue?: T;
+  targetLaneValue?: L;
+  targetKanbanValue?: T;
+}
+interface SdKanbanDragRef<_L, T> {
+  value(): T | undefined;
+  heightOnDrag(): number;
+}
+interface SdKanbanDropTarget<L, T> {
+  targetLaneValue(): L | undefined;
+  targetKanbanValue?(): T | undefined;
+}
+```
 
-타입:
-- `SdKanbanBoardDropInfo<L, T>` — `{ sourceKanbanValue?: T; targetLaneValue?: L; targetKanbanValue?: T }`. drop 페이로드(이동 처리 시 데이터 갱신에 사용).
-- `SdKanbanDragRef<_L, T>` — `{ value(): T | undefined; heightOnDrag(): number }`.
-- `SdKanbanDropTarget<L, T>` — `{ targetLaneValue(): L | undefined; targetKanbanValue?(): T | undefined }`.
-
-## `SdKanbanLane<L, T>` — `<sd-kanban-lane>`
-
-`SdKanbanDropTarget` 구현.
-
-- `value: L` — 레인 값.
-- `busy: boolean` — true 면 `sd-busy-container` 바 오버레이.
-- `useCollapse: boolean` — true 면 접기 토글(eye/eye-off) 표시.
-- `collapse: model(false)` — 접힘 상태. true 면 레인 콘텐츠 숨김.
-- 콘텐츠: `#toolTpl`(도구) / `#titleTpl`(제목). 자식 `sd-kanban` 들.
-- `isAllSelected: computed` — 레인 내 선택 가능 카드 전부 선택 시 true(없으면 false). 선택 가능 카드 `>0` 이면 전체선택 체크박스 표시.
+- `dragKanban` — 현재 drag 중인 card ref. dragend/drop 후 undefined로 초기화한다.
+- `selectedValues` — Shift+click 선택된 card value 배열 model.
+- `drop` — drop 완료 시 source/target 정보를 emit한다.
+- `onDropTo.target` — lane 또는 card drop target. drag 중인 ref가 없으면 아무 작업도 하지 않는다.
+- `onDocumentDragEnd` — document dragend에서 drag state를 초기화한다.
+- `sourceKanbanValue` — drag source card value.
+- `targetLaneValue` — drop target lane value.
+- `targetKanbanValue` — card 앞/위치 target value. lane 빈 영역 drop이면 undefined 가능.
+- `SdKanbanDragRef.value` — drag source card value getter.
+- `heightOnDrag` — drop placeholder 높이에 쓸 drag source 높이 getter.
+- `SdKanbanDropTarget.targetLaneValue` — target lane value getter.
+- `targetKanbanValue` — target card value getter. lane target은 없을 수 있다.
 
 ## `SdKanban<L, T>` — `<sd-kanban>`
 
-`SdKanbanDragRef`·`SdKanbanDropTarget` 구현. 카드 1개.
-
-- `value: T` — 카드 값.
-- `selectable: boolean` — true 면 Shift+Click 으로 보드 `selectedValues` 에 토글.
-- `draggable: boolean` — true 면 드래그 가능(드래그 시작 시 보드 `dragKanban` 등록).
-- `contentClass: string` — 내부 `.card` 클래스.
-- `selected: computed` — `value` 가 보드 `selectedValues` 에 있으면 true.
-
-```html
-<sd-kanban-board [(selectedValues)]="selected" (drop)="onDrop($event)">
-  <sd-kanban-lane [value]="'todo'">
-    <ng-template #titleTpl>할 일</ng-template>
-    @for (item of todoItems(); track item.id) {
-      <sd-kanban [value]="item" [selectable]="true" [draggable]="true">{{ item.title }}</sd-kanban>
-    }
-  </sd-kanban-lane>
-</sd-kanban-board>
+```ts
+class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget<L, T> {
+  value: InputSignal<T | undefined>;
+  laneValue: Signal<L | undefined>;
+  selectable: InputSignal<boolean>;
+  draggable: InputSignal<boolean>;
+  selected: Signal<boolean>;
+  dragKanban: Signal<SdKanbanDragRef<L, T> | undefined>;
+  contentClass: InputSignal<string | undefined>;
+  dragOvered: WritableSignal<boolean>;
+  heightOnDrag: WritableSignal<number>;
+  cardHeight: WritableSignal<number>;
+}
 ```
+
+- `value` — card 식별 값. drop source/target payload와 selection value로 쓰인다.
+- `laneValue` — parent lane의 `value()` 를 읽는 computed.
+- `selectable` — true면 Shift+click으로 board `selectedValues` 에 value를 toggle할 수 있다.
+- `draggable` — true면 card div에 native draggable을 켜고 dragstart에서 board drag ref를 set한다.
+- `selected` — value가 있고 board `selectedValues` 에 포함되어 있으면 true.
+- `dragKanban` — board의 현재 drag ref computed.
+- `contentClass` — card div class.
+- `dragOvered` — 이 card 위치에 drag over 중인지 여부.
+- `heightOnDrag` — dragstart 때 host offsetHeight를 저장해 placeholder 높이로 쓴다.
+- `cardHeight` — card clientHeight + margin-bottom. drop hit area 높이에 쓴다.
+- drop 동작 — drag over/drop에서 default를 막고 board `onDropTo(this)` 를 호출한다.
+
+## `SdKanbanLane<L, T>` — `<sd-kanban-lane>`
+
+```ts
+class SdKanbanLane<L, T> implements SdKanbanDropTarget<L, T> {
+  busy: InputSignal<boolean>;
+  useCollapse: InputSignal<boolean>;
+  collapse: ModelSignal<boolean>;
+  value: InputSignal<L | undefined>;
+  kanbanControls: Signal<readonly SdKanban<L, T>[]>;
+  isAllSelected: Signal<boolean>;
+  dragKanban: Signal<SdKanbanDragRef<L, T> | undefined>;
+  dragOvered: WritableSignal<boolean>;
+  selectableKanbanLength: Signal<number>;
+}
+```
+
+- `busy` — lane body `SdBusyContainer.busy` 로 전달한다.
+- `useCollapse` — true면 eye/eye-off collapse toggle button을 표시한다.
+- `collapse` — lane content 표시 여부 model. true면 projected cards를 숨긴다.
+- `value` — lane 식별 값. drop target payload로 쓰인다.
+- `kanbanControls` — descendant `SdKanban` card controls.
+- `isAllSelected` — selectable card가 하나 이상 있고 모두 selected면 true.
+- `dragKanban` — board drag ref computed.
+- `dragOvered` — lane 빈 영역에 drag over 중인지 여부.
+- `selectableKanbanLength` — selectable card 개수. 0보다 크면 select-all checkbox를 표시한다.
+- `toolTpl` — lane 상단 tool 영역 template.
+- `titleTpl` — lane title 영역 template.
+- select-all 동작 — checkbox true면 selectable card value를 board `selectedValues` 에 추가, false면 lane의 selectable card value를 제거한다.
+- drop 동작 — lane 빈 영역 drop에서 board `onDropTo(this)` 를 호출한다.

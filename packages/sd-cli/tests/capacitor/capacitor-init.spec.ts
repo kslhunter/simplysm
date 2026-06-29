@@ -33,7 +33,7 @@ let PKG_PATH: string;
 
 beforeAll(() => {
   tmpRoot = mkdtempSync(path.join(tmpdir(), "cap-init-"));
-  writeFileSync(path.join(tmpRoot, "pnpm-workspace.yaml"), "");
+  writeFileSync(path.join(tmpRoot, "package.json"), JSON.stringify({ private: true, workspaces: ["pkg"] }));
   PKG_PATH = path.join(tmpRoot, "pkg");
   // capacitor.ts가 .capacitor/.capacitor.lock 파일을 작성하므로 디렉토리 미리 생성
   mkdirSync(path.join(PKG_PATH, ".capacitor"), { recursive: true });

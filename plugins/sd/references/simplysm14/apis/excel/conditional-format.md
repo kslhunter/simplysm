@@ -1,34 +1,20 @@
 # @simplysm/excel — 조건부 서식
 
-셀/범위에 값 비교·텍스트 매칭·수식 기반의 엑셀 native 조건부 서식(CF)을 추가할 때 참조. `ws.addConditionalFormat({ ref, rules })` 한 메서드로 적용하며, 규칙은 `ExcelConditionalRule` 유니온으로 표현한다. 정적 셀 스타일과의 합성은 엑셀 native CF 오버레이에 위임된다(라이브러리가 직접 색을 칠하지 않음).
+`ExcelWorksheet.addConditionalFormat` 과 `ExcelConditionalRule` 타입을 함께 읽는 묶음. 값 비교, 텍스트 매칭, raw 수식 조건을 worksheet conditionalFormatting 블록으로 누적하고, 표시 스타일은 styles 파트의 dxf 로 등록한다.
 
 ## addConditionalFormat
 
 ```typescript
-ws.addConditionalFormat(opts: { ref: string; rules: ExcelConditionalRule[] }): Promise<void>
+ws.addConditionalFormat(opts: {
+  ref: string;
+  rules: ExcelConditionalRule[];
+}): Promise<void>
 ```
 
-- `ref` — 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) 엑셀 주소. text/expression 규칙의 수식은 범위 좌상단(`ref` 의 `:` 앞 토큰)을 기준 셀로 삼는다.
-- `rules` — 적용할 규칙 배열. 배열 순서가 priority(앞이 우선)이며, 같은 시트에 여러 번 호출하면 priority 가 시트 전역 카운터로 이어붙는다(1,2,3,…). 빈 배열이면 no-op.
-
-같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적되고, 동일 `style` 의 규칙은 dxf 가 dedupe 되어 1개로 등록된다.
-
-## ExcelConditionalRule
-
-네 가지 변형의 유니온.
-
-```typescript
-type ExcelConditionalRule =
-  | { type: "cellIs"; op: "<" | ">" | "<=" | ">=" | "=" | "<>"; value: number | string; style: ExcelConditionalRuleStyle }
-  | { type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style: ExcelConditionalRuleStyle }
-  | { type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style: ExcelConditionalRuleStyle }
-  | { type: "expression"; formula: string; style: ExcelConditionalRuleStyle };
-```
-
-- `type: "cellIs"` 단일 비교 — `op` 가 `<`/`>`/`<=`/`>=`/`=`/`<>`. `value` 는 `number`(raw formula `<formula>4999</formula>`) 또는 `string`(따옴표 리터럴 `<formula>"OK"</formula>`). OOXML operator(`lessThan`/`greaterThan`/`lessThanOrEqual`/`greaterThanOrEqual`/`equal`/`notEqual`)로 매핑.
-- `type: "cellIs"` 구간 — `op` 가 `between`/`notBetween`. `value` 는 `[a, b]` 튜플(양 끝 inclusive), number 튜플은 `["1000","2000"]`, string 튜플은 `['"A"','"M"']` 두 formula 로 emit.
-- `type: "text"` 텍스트 매칭 — `op` 가 `contains`/`notContains`/`beginsWith`/`endsWith`. `value` 는 string. `contains` 는 `NOT(ISERROR(SEARCH(...)))`, `notContains` 는 `ISERROR(SEARCH(...))`, `beginsWith` 는 `LEFT(...)=v`, `endsWith` 는 `RIGHT(...)=v` 수식으로 emit(SEARCH 기반, 대소문자 무시 고정). 따옴표는 OOXML escape 규칙대로 두 배(`a"b` → `a""b`).
-- `type: "expression"` — 임의 수식. `formula` 문자열을 raw 그대로 1개 formula 로 emit(operator 미부여). `AND($F2<>"",$F2-TODAY()<=7)` 같은 복합 조건에 사용.
+- `opts.ref` — 조건부 서식을 적용할 단일 셀 또는 범위 A1 주소. worksheet `sqref` 로 저장된다.
+- `opts.rules` — 적용할 규칙 배열. 빈 배열이면 아무 작업도 하지 않는다.
+- `rules` 배열 순서 — 같은 호출 안에서 priority 부여 순서가 된다.
+- 호출 간 priority — 기존 시트의 최대 priority 다음 값부터 이어붙는다.
 
 ## ExcelConditionalRuleStyle
 
@@ -40,27 +26,45 @@ interface ExcelConditionalRuleStyle {
 }
 ```
 
-- `background` — 강조 배경색(ARGB 8자리, 예 `"00FFFF00"`).
-- `fontColor` — 강조 글자색(ARGB 8자리).
-- `fontWeight` — `"bold"` = 굵게, `"normal"` = base 가 bold 라도 강제 normal.
+- `background` — 조건부 서식 dxf fill 배경색. OOXML 에서는 solid pattern 의 `bgColor.rgb` 로 저장된다.
+- `fontColor` — 조건부 서식 dxf 글자색. `font.color.rgb` 로 저장된다.
+- `fontWeight` — 조건부 서식 dxf 굵기. `"bold"` 는 `b val="1"`, `"normal"` 은 `b val="0"` 으로 저장된다.
+- `"bold"` — 조건부 서식이 적용될 때 글자를 굵게 표시하도록 dxf 를 만든다.
+- `"normal"` — base 스타일이 bold 여도 조건부 서식 dxf 에서 normal 을 강제하도록 `0` 값을 쓴다.
 
-미지정 필드는 base 셀 스타일을 그대로 두고, 지정 필드만 OOXML dxf 로 emit 되어 native CF 오버레이로 합성된다.
-
-## 사용 예
+## ExcelConditionalRule
 
 ```typescript
-await ws.addConditionalFormat({
-  ref: "B2:B100",
-  rules: [
-    { type: "cellIs", op: "<", value: 1000, style: { background: "00FF0000" } },
-    { type: "cellIs", op: "between", value: [1000, 4999], style: { background: "00FFFF00" } },
-    { type: "text", op: "contains", value: "긴급", style: { fontColor: "00FF0000", fontWeight: "bold" } },
-  ],
-});
+type ExcelConditionalRule =
+  | { type: "cellIs"; op: "<" | ">" | "<=" | ">=" | "=" | "<>"; value: number | string; style: ExcelConditionalRuleStyle }
+  | { type: "cellIs"; op: "between" | "notBetween"; value: [number, number] | [string, string]; style: ExcelConditionalRuleStyle }
+  | { type: "text"; op: "contains" | "notContains" | "beginsWith" | "endsWith"; value: string; style: ExcelConditionalRuleStyle }
+  | { type: "expression"; formula: string; style: ExcelConditionalRuleStyle };
 ```
 
-## 주의사항
+- `type: "cellIs"` — 셀 값을 비교하는 조건부 서식. OOXML cfRule type 은 `"cellIs"`.
+- `op: "<"` — operator `"lessThan"` 으로 변환된다.
+- `op: ">"` — operator `"greaterThan"` 으로 변환된다.
+- `op: "<="` — operator `"lessThanOrEqual"` 으로 변환된다.
+- `op: ">="` — operator `"greaterThanOrEqual"` 으로 변환된다.
+- `op: "="` — operator `"equal"` 으로 변환된다.
+- `op: "<>"` — operator `"notEqual"` 으로 변환된다.
+- `op: "between"` — operator `"between"` 으로 저장하고 tuple 양쪽 값을 formula 2개로 저장한다.
+- `op: "notBetween"` — operator `"notBetween"` 으로 저장하고 tuple 양쪽 값을 formula 2개로 저장한다.
+- `value: number` — formula 에 따옴표 없이 숫자 문자열로 저장된다.
+- `value: string` — formula 에 큰따옴표로 감싼 문자열로 저장되고 내부 `"` 는 `""` 로 escape 된다.
+- `type: "text"` — 텍스트 매칭 조건부 서식. `opts.ref` 의 첫 주소를 formula 의 top-left 셀로 사용한다.
+- `op: "contains"` — cfRule type/operator `"containsText"`; formula 는 `NOT(ISERROR(SEARCH(value, topLeft)))` 형태다.
+- `op: "notContains"` — cfRule type `"notContainsText"`, operator `"notContains"`; formula 는 `ISERROR(SEARCH(value, topLeft))` 형태다.
+- `op: "beginsWith"` — cfRule type/operator `"beginsWith"`; formula 는 `LEFT(topLeft, LEN(value)) = value` 형태다.
+- `op: "endsWith"` — cfRule type/operator `"endsWith"`; formula 는 `RIGHT(topLeft, LEN(value)) = value` 형태다.
+- `type: "expression"` — raw formula 조건부 서식. cfRule type 은 `"expression"` 이고 operator/text 는 저장하지 않는다.
+- `formula` — expression 규칙에서 그대로 formula 배열 1개로 저장되는 Excel 수식 문자열.
+- `style` — dxf 로 등록할 조건부 서식 강조 스타일. 동일 dxf 구조가 이미 있으면 dxfId 를 재사용한다.
 
-- 규칙 배열 순서 = priority. 앞 규칙이 먼저 평가된다.
-- `value` 의 number/string 구분이 formula emit 방식을 바꾼다 — 비교 대상이 텍스트면 반드시 `string` 으로 줄 것.
-- toBytes → 재오픈 roundtrip 에서 type/operator/text/formula/dxf 가 보존된다.
+## 누적·저장 동작
+
+- `addConditionalFormat` 는 호출마다 worksheet `conditionalFormatting` 블록을 새로 push 한다.
+- 각 rule 은 `styleData.addDxf(rule.style)` 로 dxfId 를 받은 뒤 cfRule 에 연결된다.
+- 정적 셀 스타일과 조건부 서식의 합성은 Excel native 조건부 서식 오버레이에 맡긴다.
+- `toBytes()` 로 저장 후 다시 열어도 cfRule, formula, dxfId, dxf 스타일이 파트에 보존된다.

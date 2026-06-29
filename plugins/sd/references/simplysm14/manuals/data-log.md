@@ -73,7 +73,7 @@ export interface IInsertDataLogParam {
 }
 
 declare module "@simplysm/orm-common" {
-  interface Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any, any> | never> {
+  interface Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any> | never> {
     joinLastDataLog(
       opts?: IDataLogJoinOptions,
     ): Queryable<TData & { lastDataLog?: IDataLogJoinResult }, TFrom>;
@@ -85,7 +85,7 @@ declare module "@simplysm/orm-common" {
 }
 
 Queryable.prototype.insertDataLog = async function (this: Queryable<any, any>, log) {
-  const fromTable = this.meta.from as TableBuilder<any, any, any>;
+  const fromTable = this.meta.from as TableBuilder<any, any>;
   const qr = queryable(this.meta.db, SystemDataLog);
   await qr().insert([
     {
@@ -102,7 +102,7 @@ Queryable.prototype.insertDataLog = async function (this: Queryable<any, any>, l
 
 // tableName + 본 행 id 로 격리해 joinSingle 단건 부착. last/first 는 정렬만 다름.
 Queryable.prototype.joinLastDataLog = function (this: Queryable<any, any>, opts) {
-  const tableName = (this.meta.from as TableBuilder<any, any, any>).meta.name;
+  const tableName = (this.meta.from as TableBuilder<any, any>).meta.name;
   return this.joinSingle("lastDataLog", (qr, en) =>
     qr
       .from(SystemDataLog)

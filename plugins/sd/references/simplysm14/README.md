@@ -25,9 +25,9 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 
 `@simplysm/*` v14 기반 프로젝트의 `CLAUDE.md` 작성 시, 검증 명령 표기 규칙:
 
-- **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck 와 lint 를 일괄 수행, 자동 수정 포함.
-- **보조 명령**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제가 났을 때 각각 따로 확인하는 용도. 단독 사용 회피.
-- **`-t` 타겟 인자 표기**: `-t` 인자 값은 `sd.config.ts` 의 `packages` 키 (`@simplysm/` 접두사를 **제외** 한 짧은 이름. 예: `excel`, `core-node`, `sd-cli`) 임을 본문에 명시. 풀네임 사용을 막기 위해 예시도 짧은 이름으로 통일.
+- **기본 검증 (평소 사용)**: `bun run check --fix` — typecheck 와 lint 를 일괄 수행, 자동 수정 포함.
+- **보조 명령**: `bun run typecheck`, `bun run lint` — `bun run check` 에서 문제가 났을 때 각각 따로 확인하는 용도. 단독 사용 회피.
+- **`-t` 타겟 인자 표기**: `check`/`typecheck`/`lint` 의 `-t` 는 `package.json#workspaces` 중 `packages/*`, `tests/*` 의 디렉터리명(예: `core-common`, `orm`)을 사용. `build`/`watch`/`dev`/`publish`/`device` 의 `-t` 는 `sd.config.ts#packages` 키(`@simplysm/` 접두사 제외, 예: `excel`, `core-node`, `sd-cli`)를 사용. 풀네임 사용을 막기 위해 예시는 짧은 이름으로 통일.
 
 ## 개발 매뉴얼
 
@@ -59,20 +59,20 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 
 패키지의 심볼·API 를 쓰거나 해석할 때 해당 패키지 문서를 Read.
 
-- **angular** — Angular 업무앱 UI 프레임워크(부트스트랩·UI 컨트롤·레이아웃·CRUD/시트/공유데이터/칸반·오버레이·라우팅/권한/설정). 자세히: [apis/angular/README.md](./apis/angular/README.md)
-- **capacitor-plugin-auto-update** — Android APK 자동 업데이트(서버·외부저장소에서 APK 받아 설치, 저수준 ApkInstaller). 자세히: [apis/capacitor-plugin-auto-update/README.md](./apis/capacitor-plugin-auto-update/README.md)
-- **capacitor-plugin-file-system** — 앱/웹 파일·디렉토리 IO, 저장소 경로·파일 권한(Android 네이티브 ↔ 웹 IndexedDB 동일 API). 자세히: [apis/capacitor-plugin-file-system/README.md](./apis/capacitor-plugin-file-system/README.md)
-- **capacitor-plugin-intent** — Android 인텐트 연동(바코드 스캐너·PDA 등 산업용 디바이스), 웹은 무동작 스텁. 자세히: [apis/capacitor-plugin-intent/README.md](./apis/capacitor-plugin-intent/README.md)
-- **capacitor-plugin-usb-storage** — USB Mass Storage 장치 열거·권한·디렉토리/파일 읽기. 자세히: [apis/capacitor-plugin-usb-storage/README.md](./apis/capacitor-plugin-usb-storage/README.md)
-- **core-browser** — 브라우저 전용 유틸(DOM 확장·IndexedDB 영속화/가상 파일트리·Blob 다운로드·파일 선택). 자세히: [apis/core-browser/README.md](./apis/core-browser/README.md)
-- **core-common** — 브라우저·Node 공용 기반 유틸(날짜/시간 값 타입·에러·컬렉션 확장·obj·직렬화·비동기 큐/이벤트·문자열/숫자/경로). 자세히: [apis/core-common/README.md](./apis/core-common/README.md)
-- **core-node** — Node 전용 기반(fsx·pathx·cpx·FsWatcher·consola·Worker). 자세히: [apis/core-node/README.md](./apis/core-node/README.md)
-- **excel** — 엑셀(.xlsx) 워크북 읽기/쓰기·셀/스타일/조건부서식, Zod 스키마 ↔ 엑셀 변환(ExcelWrapper). 자세히: [apis/excel/README.md](./apis/excel/README.md)
+- **angular** — Angular 업무앱 UI 프레임워크(부트스트랩·UI 컨트롤·레이아웃·CRUD/시트/공유데이터/칸반·오버레이·라우팅/권한/설정 인프라). 자세히: [apis/angular/README.md](./apis/angular/README.md)
+- **capacitor-plugin-auto-update** — Android APK 설치 권한·설치 호출과 서버/외부 저장소 기반 APK 자동 업데이트 흐름을 다룰 때. 자세히: [apis/capacitor-plugin-auto-update/README.md](./apis/capacitor-plugin-auto-update/README.md)
+- **capacitor-plugin-file-system** — Capacitor 파일 시스템 플러그인으로 권한·디렉토리·저장소 경로·URI·파일 읽기/쓰기·존재 확인을 다룰 때. 자세히: [apis/capacitor-plugin-file-system/README.md](./apis/capacitor-plugin-file-system/README.md)
+- **capacitor-plugin-intent** — Android 인텐트 브로드캐스트 송수신, 실행 인텐트 조회, 새 인텐트 리스닝, 외부 Activity 결과 수신이 필요할 때. 자세히: [apis/capacitor-plugin-intent/README.md](./apis/capacitor-plugin-intent/README.md)
+- **capacitor-plugin-usb-storage** — USB Mass Storage 장치 열거·권한 확인/요청·디렉토리/파일 읽기를 할 때. 자세히: [apis/capacitor-plugin-usb-storage/README.md](./apis/capacitor-plugin-usb-storage/README.md)
+- **core-browser** — 브라우저 DOM 확장, IndexedDB 저장소/가상 파일트리, Blob 다운로드·URL 바이너리 수신·파일 선택을 다룰 때. 자세히: [apis/core-browser/README.md](./apis/core-browser/README.md)
+- **core-common** — 브라우저·Node 공용 기반 타입·에러·컬렉션 확장·객체 조작·직렬화·비동기 런타임·문자열/숫자/경로 유틸. 자세히: [apis/core-common/README.md](./apis/core-common/README.md)
+- **core-node** — Node 런타임에서 파일시스템, 경로, 자식 프로세스, 파일 감시, consola reporter, worker_threads 프록시를 다룰 때. 자세히: [apis/core-node/README.md](./apis/core-node/README.md)
+- **excel** — Excel 워크북을 xlsx/xlsb로 읽고 쓰며, 시트·셀 조작, 스타일·조건부 서식·이미지, Zod 기반 레코드 변환, 주소·날짜·숫자 형식 변환을 다룰 때. 자세히: [apis/excel/README.md](./apis/excel/README.md)
 - **lint** — 심플리즘 ESLint 자산(커스텀 규칙 9종 플러그인 + flat config 프리셋). 자세히: [apis/lint/README.md](./apis/lint/README.md)
-- **orm-common** — Dialect 독립 ORM 코어(스키마 빌더·DbContext·Queryable·expr·QueryBuilder). 자세히: [apis/orm-common/README.md](./apis/orm-common/README.md)
-- **orm-node** — Node 환경 DbContext 연결·실행(고수준 createOrm·저수준 createDbConn/DbConn). 자세히: [apis/orm-node/README.md](./apis/orm-node/README.md)
-- **sd-cli** — sd.config.ts 설정 타입·증분 컴파일러 SdTsCompiler·Vitest 전용 Angular 플러그인 sdAngularPlugin. 자세히: [apis/sd-cli/README.md](./apis/sd-cli/README.md)
-- **service-client** — WebSocket 서비스 클라이언트(RPC 호출·서버 푸시 이벤트 구독/발행·파일 업다운·원격 ORM 트랜잭션). 자세히: [apis/service-client/README.md](./apis/service-client/README.md)
-- **service-common** — 서버·클라이언트 공유 통신 계약(defineEvent·내장 RPC 시그니처·AppStructure·바이너리 프로토콜). 자세히: [apis/service-common/README.md](./apis/service-common/README.md)
-- **service-server** — Fastify 기반 RPC 서비스 서버(부팅·JWT 인증·이벤트 브로드캐스트·내장 서비스·defineService/auth). 자세히: [apis/service-server/README.md](./apis/service-server/README.md)
-- **storage** — Node 전용 FTP/FTPS/SFTP 스토리지 클라이언트(StorageFactory.connect 콜백 패턴). 자세히: [apis/storage/README.md](./apis/storage/README.md)
+- **orm-common** — ORM 공통 API: 스키마 정의, DbContext·트랜잭션·DDL, Queryable·expr 쿼리 AST, dialect SQL 렌더링과 결과 파싱을 다룰 때. 자세히: [apis/orm-common/README.md](./apis/orm-common/README.md)
+- **orm-node** — Node 환경에서 DbContext 실행자와 MySQL/MSSQL/PostgreSQL 연결·트랜잭션·bulk insert를 다룰 때. 자세히: [apis/orm-node/README.md](./apis/orm-node/README.md)
+- **sd-cli** — sd.config.ts 설정 타입, Angular Vitest AOT 플러그인, 패키지 단위 TypeScript/Angular 컴파일러 API를 다룰 때. 자세히: [apis/sd-cli/README.md](./apis/sd-cli/README.md)
+- **service-client** — WebSocket 서비스 클라이언트로 RPC 호출·인증·진행률·이벤트 구독/발행·파일 업다운·원격 ORM 실행을 다룰 때. 자세히: [apis/service-client/README.md](./apis/service-client/README.md)
+- **service-common** — 서버·클라이언트 공유 서비스 이벤트 정의, 내장 서비스 계약, 앱 구조 타입/유틸, WebSocket 바이너리 프로토콜을 확인할 때. 자세히: [apis/service-common/README.md](./apis/service-common/README.md)
+- **service-server** — Fastify 기반 서비스 서버에서 RPC 서비스, JWT 인증, 이벤트 발생, 정적 파일·업로드, 내장 ORM·자동업데이트, V1 레거시 연결을 구성할 때. 자세히: [apis/service-server/README.md](./apis/service-server/README.md)
+- **storage** — FTP/FTPS/SFTP 원격 스토리지 연결과 파일·디렉토리 작업을 StorageClient 공통 인터페이스로 다룰 때. 자세히: [apis/storage/README.md](./apis/storage/README.md)

@@ -19,7 +19,7 @@ let PKG_PATH: string;
 
 beforeAll(() => {
   tmpRoot = mkdtempSync(path.join(tmpdir(), "cap-npm-config-"));
-  writeFileSync(path.join(tmpRoot, "pnpm-workspace.yaml"), "");
+  writeFileSync(path.join(tmpRoot, "package.json"), JSON.stringify({ private: true, workspaces: ["pkg"] }));
   PKG_PATH = path.join(tmpRoot, "pkg");
   CAP_PATH = path.join(PKG_PATH, ".capacitor");
 });

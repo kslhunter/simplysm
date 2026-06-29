@@ -1,82 +1,210 @@
 # @simplysm/core-node — fsx
 
-`export * as fsx` 네임스페이스 (`packages/core-node/src/utils/fs.ts`). Node `fs` 를 감싼 파일시스템 IO 군. 대부분 동기(`...Sync`)/비동기 쌍을 제공하며, 존재 확인 계열을 제외한 모든 함수는 실패 시 `SdError(err, targetPath)` 로 원인+경로를 묶어 throw 한다. 항상 `fsx.<fn>(...)` 형태로 호출.
+`export * as fsx` 네임스페이스. Node `fs`, `glob`, JSON 직렬화, 재귀 복사/삭제, 부모 방향 파일 탐색을 함께 다룰 때 읽는 군.
 
-## 존재 확인
+## existsSync / exists
 
-- `existsSync(targetPath: string): boolean` — 파일/디렉토리 존재 여부(동기, `fs.existsSync`).
-- `exists(targetPath: string): Promise<boolean>` — 동일(비동기). `fs.promises.access` 가 던지면 catch 해 `false` 반환(throw 안 함).
-  - `targetPath: string` — 확인할 경로.
+`function existsSync(targetPath: string): boolean`
 
-## 디렉토리 생성
+- `targetPath: string` — 존재 여부를 확인할 파일 또는 디렉토리 경로.
+- 반환 `boolean` — `fs.existsSync(targetPath)` 결과.
 
-- `mkdirSync(targetPath: string): void` / `mkdir(targetPath: string): Promise<void>` — 재귀 생성(`recursive: true`). 중간 경로가 없어도 전부 만들고, 이미 존재해도 에러 없음. 실패 시 `SdError`.
-  - `targetPath: string` — 생성할 디렉토리 경로.
+`function exists(targetPath: string): Promise<boolean>`
 
-## 삭제
+- `targetPath: string` — 접근 가능 여부를 확인할 파일 또는 디렉토리 경로.
+- 반환 `Promise<boolean>` — `fs.promises.access` 가 성공하면 `true`, throw 하면 `false`.
 
-- `rmSync(targetPath: string): void` — 재귀+force 삭제(`recursive: true, force: true`). **재시도 없이 즉시 실패**. 파일 잠금 등 일시 오류가 예상되면 비동기 `rm` 을 쓸 것.
-- `rm(targetPath: string): Promise<void>` — 재귀+force 삭제. 일시 오류에 대해 **500ms 간격 최대 6회 재시도**(`retryDelay: 500, maxRetries: 6`). Windows 파일 잠금 회피용.
-  - `targetPath: string` — 삭제할 경로. 없는 경로도 force 라 에러 없이 처리.
+## mkdirSync / mkdir
 
-## 복사
+`function mkdirSync(targetPath: string): void`
 
-- `copySync(sourcePath, targetPath, filter?): void` / `copy(sourcePath, targetPath, filter?): Promise<void>` — 파일/디렉토리 복사. 비동기 `copy` 는 디렉토리 하위 항목을 `parallelAsync` 로 병렬 복사.
-  - `sourcePath: string` — 원본. **존재하지 않으면 아무 작업 없이 반환**(throw 안 함).
-  - `targetPath: string` — 대상. 원본이 디렉토리면 대상 디렉토리를 만들고 하위를 재귀 복사(내부 glob `*`, `dot: true` 라 숨김 파일 포함), 파일이면 상위 디렉토리 생성 후 복사.
-  - `filter?: (absolutePath: string) => boolean` — 복사 여부 결정. 각 하위 항목의 **절대 경로**가 전달되며 `true`=복사, `false`=제외. **최상위 sourcePath 자신은 필터 대상 아님**. 디렉토리에 `false` 면 그 디렉토리와 모든 내용을 통째로 건너뜀. 모든 하위 항목(직·간접)에 재귀 적용.
-  - 파일 복사 실패 시 500ms 대기(sync 는 busy-wait, async 는 `setTimeout`) 후 재시도, 최대 7회(`i=0..6`) 시도해도 실패하면 `SdError`.
+- `targetPath: string` — 생성할 디렉토리 경로.
+- 동작 — `fs.mkdirSync(targetPath, { recursive: true })` 로 생성하고 실패하면 `SdError(err, targetPath)` 를 throw.
 
-## 파일 읽기
+`function mkdir(targetPath: string): Promise<void>`
 
-- `readSync(targetPath: string): string` / `read(...): Promise<string>` — UTF-8 문자열로 읽음.
-- `readBytesSync(targetPath: string): Uint8Array` / `readBytes(...): Promise<Uint8Array>` — 바이너리(`Uint8Array`)로 읽음.
-- `readJsonSync<TData = unknown>(targetPath): TData` / `readJson<TData = unknown>(...): Promise<TData>` — 읽어 `@simplysm/core-common` 의 `json.parse` 로 역직렬화(Date 등 특수타입 복원). 파싱 실패 시 `SdError` 메시지에 경로와 내용 프리뷰(앞 500자, 초과 시 `...(truncated)`)를 첨부.
-  - 제네릭 `TData` — 파싱 결과 타입. 호출부에서 기대 타입을 지정해 반환 타입을 좁힘.
+- `targetPath: string` — 생성할 디렉토리 경로.
+- 동작 — `fs.promises.mkdir(targetPath, { recursive: true })` 로 생성하고 실패하면 `SdError(err, targetPath)` 를 throw.
 
-## 파일 쓰기
+## rmSync / rm
 
-- `writeSync(targetPath, data): void` / `write(targetPath, data): Promise<void>` — **상위 디렉토리 자동 생성** 후 기록(`flush: true` 로 디스크 플러시까지 보장).
-  - `data: string | Uint8Array` — 텍스트 또는 바이너리.
-- `writeJsonSync(targetPath, data, options?): void` / `writeJson(targetPath, data, options?): Promise<void>` — `json.stringify` 로 직렬화 후 write.
-  - `data: unknown` — 직렬화 대상.
-  - `options?.replacer?: (this, key: string | undefined, value: unknown) => unknown` — `json.stringify` 의 replacer. 특정 키 값을 변환·제외할 때.
-  - `options?.space?: string | number` — 들여쓰기 폭. 사람이 읽을 파일이면 `2` 같은 값 지정, 생략 시 압축.
+`function rmSync(targetPath: string): void`
 
-## 디렉토리 읽기
+- `targetPath: string` — 삭제할 파일 또는 디렉토리 경로.
+- 동작 — `fs.rmSync(targetPath, { recursive: true, force: true })` 로 삭제하고 실패하면 `SdError(err, targetPath)` 를 throw. 재시도 로직은 없다.
 
-- `readdirSync(targetPath: string): string[]` / `readdir(...): Promise<string[]>` — 디렉토리 직계 항목의 **이름**(전체 경로가 아님) 배열.
+`function rm(targetPath: string): Promise<void>`
 
-## 파일 정보
+- `targetPath: string` — 삭제할 파일 또는 디렉토리 경로.
+- Windows 디렉토리 동작 — 먼저 `lstat` 으로 디렉토리 여부를 확인하고, 디렉토리면 `cmd /c rd /s /q <targetPath>` 를 시도한다. 경로가 사라지면 즉시 반환한다.
+- 공통 fallback 동작 — `fs.promises.rm(targetPath, { recursive: true, force: true, retryDelay: 500, maxRetries: 6 })` 로 삭제하고 실패하면 `SdError(err, targetPath)` 를 throw.
 
-- `statSync(targetPath): fs.Stats` / `stat(...): Promise<fs.Stats>` — 정보 조회. **심볼릭 링크를 따라감**(링크 대상의 정보).
-- `lstatSync(targetPath): fs.Stats` / `lstat(...): Promise<fs.Stats>` — 정보 조회. **심볼릭 링크를 따라가지 않음**(링크 자체 정보). 링크/실파일을 구분해야 하면 lstat. 반환 `fs.Stats` 의 `isDirectory()`/`isFile()` 로 종류 판별.
+## copySync / copy
 
-## Glob
+`function copySync(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): void`
 
-- `globSync(pattern: string, options?: GlobOptions): string[]` / `glob(...): Promise<string[]>` — glob 검색. 입력 패턴의 `\` 를 `/` 로 치환해 매칭하고, 결과는 모두 `path.resolve` 로 **절대 경로**화해 반환.
-  - `pattern: string` — glob 패턴(예: `"src/**/*.ts"`).
-  - `options?: GlobOptions` — `glob` 패키지 옵션 그대로(`dot`, `cwd`, `ignore` 등). 숨김 파일 포함하려면 `{ dot: true }`. 생략 시 빈 객체.
+- `sourcePath: string` — 복사할 원본 파일 또는 디렉토리. 존재하지 않으면 아무 작업 없이 반환한다.
+- `targetPath: string` — 복사 대상 경로. 원본이 디렉토리면 대상 디렉토리를 만들고 하위 항목을 재귀 복사한다.
+- `filter?: (absolutePath: string) => boolean` — 각 하위 항목의 절대 경로를 받아 복사 여부를 반환한다. `false` 면 해당 항목을 건너뛰며, 디렉토리에 `false` 면 그 하위도 재귀 진입하지 않는다. 최상위 `sourcePath` 자체에는 적용되지 않는다.
+- 파일 복사 동작 — 대상 상위 디렉토리를 만들고 `fs.copyFileSync` 를 최대 7회 시도한다. 재시도 사이에는 500ms busy-wait 한다. 최종 실패하면 `SdError(lastErr, targetPath)` 를 throw.
 
-## 유틸리티
+`function copy(sourcePath: string, targetPath: string, filter?: (absolutePath: string) => boolean): Promise<void>`
 
-- `clearEmptyDirectory(dirPath: string): Promise<void>` — `dirPath` 하위를 재귀 순회하며 **빈 디렉토리만** 삭제. 하위가 모두 비어 상위까지 비게 되면 상위도 삭제. 파일이 하나라도 있으면 그 디렉토리는 보존. 존재하지 않으면 즉시 반환.
-- `findAllParentChildPathsSync(childGlob, fromPath, rootPath?): string[]` / `findAllParentChildPaths(...): Promise<string[]>` — `fromPath` 에서 루트 방향으로 부모 디렉토리를 거슬러 올라가며 각 디렉토리에서 `childGlob` 매칭 파일을 모아 평탄화 반환. 상위 디렉토리들의 설정 파일(각 단계 `package.json` 등) 수집용.
-  - `childGlob: string` — 각 디렉토리에서 검색할 glob.
-  - `fromPath: string` — 탐색 시작 경로.
-  - `rootPath?: string` — 탐색 중단 경로. 생략 시 파일시스템 루트까지. **주의: fromPath 는 rootPath 의 하위여야 함**, 아니면 경계가 매칭되지 않아 루트까지 올라간다.
+- `sourcePath: string` — 복사할 원본 파일 또는 디렉토리. 존재하지 않으면 아무 작업 없이 반환한다.
+- `targetPath: string` — 복사 대상 경로. 원본이 디렉토리면 대상 디렉토리를 만들고 하위 항목을 재귀 복사한다.
+- `filter?: (absolutePath: string) => boolean` — 각 하위 항목의 절대 경로를 받아 복사 여부를 반환한다. `false` 면 해당 항목을 건너뛰며, 디렉토리에 `false` 면 그 하위도 재귀 진입하지 않는다. 최상위 `sourcePath` 자체에는 적용되지 않는다.
+- 디렉토리 동작 — `glob(path.resolve(sourcePath, "*"), { dot: true })` 로 숨김 항목까지 모으고 `parallelAsync` 로 하위 복사를 실행한다.
+- 파일 복사 동작 — 대상 상위 디렉토리를 만들고 `fs.promises.copyFile` 을 최대 7회 시도한다. 재시도 사이에는 500ms 대기한다. 최종 실패하면 `SdError(lastErr, targetPath)` 를 throw.
 
-## 사용 예
+## readSync / read / readBytesSync / readBytes
 
-```ts
-import { fsx } from "@simplysm/core-node";
+`function readSync(targetPath: string): string`
 
-await fsx.writeJson("dist/meta.json", { builtAt: new Date() }, { space: 2 });
-await fsx.copy("src", "dist", (p) => !p.endsWith(".ts")); // .ts 제외 복사
-const pkgs = await fsx.findAllParentChildPaths("package.json", process.cwd());
-```
+- `targetPath: string` — UTF-8 문자열로 읽을 파일 경로.
+- 반환 `string` — `fs.readFileSync(targetPath, "utf-8")` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
 
-## 주의사항
+`function read(targetPath: string): Promise<string>`
 
-- 존재 확인(`exists`/`existsSync`)을 제외한 모든 함수는 실패 시 `SdError(원인, 경로)` 로 throw 한다 — silent skip 하지 않으므로 호출부에서 try/catch 또는 상위 전파를 설계할 것.
-- `copy`/`copySync` 는 원본 부재를 정상 흐름(no-op)으로 처리하므로, 원본 필수 여부는 호출부에서 별도 검증해야 한다.
+- `targetPath: string` — UTF-8 문자열로 읽을 파일 경로.
+- 반환 `Promise<string>` — `fs.promises.readFile(targetPath, "utf-8")` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function readBytesSync(targetPath: string): Uint8Array`
+
+- `targetPath: string` — 바이트 배열로 읽을 파일 경로.
+- 반환 `Uint8Array` — `fs.readFileSync` 결과를 감싼 새 `Uint8Array`. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function readBytes(targetPath: string): Promise<Uint8Array>`
+
+- `targetPath: string` — 바이트 배열로 읽을 파일 경로.
+- 반환 `Promise<Uint8Array>` — `fs.promises.readFile` 결과를 감싼 새 `Uint8Array`. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+## readJsonSync / readJson
+
+`function readJsonSync<TData = unknown>(targetPath: string): TData`
+
+- `TData` — 반환값에 부여할 JSON 데이터 타입.
+- `targetPath: string` — 읽을 JSON 파일 경로.
+- 반환 `TData` — `readSync` 결과를 `json.parse` 로 파싱한 값. 파싱 실패 시 경로와 내용 프리뷰를 넣은 `SdError` 를 throw.
+
+`function readJson<TData = unknown>(targetPath: string): Promise<TData>`
+
+- `TData` — 반환값에 부여할 JSON 데이터 타입.
+- `targetPath: string` — 읽을 JSON 파일 경로.
+- 반환 `Promise<TData>` — `read` 결과를 `json.parse<TData>` 로 파싱한 값. 파싱 실패 시 경로와 내용 프리뷰를 넣은 `SdError` 를 throw.
+
+## writeSync / write / writeJsonSync / writeJson
+
+`function writeSync(targetPath: string, data: string | Uint8Array): void`
+
+- `targetPath: string` — 쓸 파일 경로. 상위 디렉토리는 `mkdirSync(path.dirname(targetPath))` 로 먼저 생성된다.
+- `data: string | Uint8Array` — 파일에 쓸 문자열 또는 바이트 배열.
+- 동작 — `fs.writeFileSync(targetPath, data, { flush: true })` 로 기록하고 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function write(targetPath: string, data: string | Uint8Array): Promise<void>`
+
+- `targetPath: string` — 쓸 파일 경로. 상위 디렉토리는 `mkdir(path.dirname(targetPath))` 로 먼저 생성된다.
+- `data: string | Uint8Array` — 파일에 쓸 문자열 또는 바이트 배열.
+- 동작 — `fs.promises.writeFile(targetPath, data, { flush: true })` 로 기록하고 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function writeJsonSync(targetPath: string, data: unknown, options?: { replacer?: (this: unknown, key: string | undefined, value: unknown) => unknown; space?: string | number }): void`
+
+- `targetPath: string` — 쓸 JSON 파일 경로.
+- `data: unknown` — `json.stringify` 로 직렬화할 값.
+- `options.replacer?: (this: unknown, key: string | undefined, value: unknown) => unknown` — 직렬화 중 각 값 변환에 쓰는 함수.
+- `options.space?: string | number` — 직렬화 결과의 들여쓰기 값.
+- 동작 — `json.stringify(data, options)` 결과를 `writeSync` 로 쓴다.
+
+`function writeJson(targetPath: string, data: unknown, options?: { replacer?: (this: unknown, key: string | undefined, value: unknown) => unknown; space?: string | number }): Promise<void>`
+
+- `targetPath: string` — 쓸 JSON 파일 경로.
+- `data: unknown` — `json.stringify` 로 직렬화할 값.
+- `options.replacer?: (this: unknown, key: string | undefined, value: unknown) => unknown` — 직렬화 중 각 값 변환에 쓰는 함수.
+- `options.space?: string | number` — 직렬화 결과의 들여쓰기 값.
+- 동작 — `json.stringify(data, options)` 결과를 `write` 로 쓴다.
+
+## readdirSync / readdir
+
+`function readdirSync(targetPath: string): string[]`
+
+- `targetPath: string` — 읽을 디렉토리 경로.
+- 반환 `string[]` — `fs.readdirSync` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function readdir(targetPath: string): Promise<string[]>`
+
+- `targetPath: string` — 읽을 디렉토리 경로.
+- 반환 `Promise<string[]>` — `fs.promises.readdir` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+## statSync / stat / lstatSync / lstat
+
+`function statSync(targetPath: string): fs.Stats`
+
+- `targetPath: string` — 조회할 파일 또는 디렉토리 경로.
+- 반환 `fs.Stats` — 심볼릭 링크를 따라간 `fs.statSync` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function stat(targetPath: string): Promise<fs.Stats>`
+
+- `targetPath: string` — 조회할 파일 또는 디렉토리 경로.
+- 반환 `Promise<fs.Stats>` — 심볼릭 링크를 따라간 `fs.promises.stat` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function lstatSync(targetPath: string): fs.Stats`
+
+- `targetPath: string` — 조회할 파일 또는 디렉토리 경로.
+- 반환 `fs.Stats` — 심볼릭 링크를 따라가지 않는 `fs.lstatSync` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+`function lstat(targetPath: string): Promise<fs.Stats>`
+
+- `targetPath: string` — 조회할 파일 또는 디렉토리 경로.
+- 반환 `Promise<fs.Stats>` — 심볼릭 링크를 따라가지 않는 `fs.promises.lstat` 결과. 실패하면 `SdError(err, targetPath)` 를 throw.
+
+## globSync / glob
+
+`function globSync(pattern: string, options?: GlobOptions): string[]`
+
+- `pattern: string` — 검색할 glob 패턴. 내부에서 `\\` 를 `/` 로 바꾼다.
+- `options?: GlobOptions` — `globSync` 에 전달할 옵션. 생략하면 빈 객체를 전달한다.
+- 반환 `string[]` — 매칭 결과를 `path.resolve(item.toString())` 로 절대 경로화한 배열.
+
+`function glob(pattern: string, options?: GlobOptions): Promise<string[]>`
+
+- `pattern: string` — 검색할 glob 패턴. 내부에서 `\\` 를 `/` 로 바꾼다.
+- `options?: GlobOptions` — `glob` 에 전달할 옵션. 생략하면 빈 객체를 전달한다.
+- 반환 `Promise<string[]>` — 매칭 결과를 `path.resolve(item.toString())` 로 절대 경로화한 배열.
+
+## clearEmptyDirectory
+
+`function clearEmptyDirectory(dirPath: string): Promise<void>`
+
+- `dirPath: string` — 비어 있는 하위 디렉토리를 정리할 시작 디렉토리.
+- 동작 — 경로가 없으면 반환한다. 하위 항목을 순회해 디렉토리는 재귀 처리하고, 파일이 있는 디렉토리는 보존한다. 처리 뒤 현재 디렉토리의 항목이 0개이면 `rm(dirPath)` 로 삭제한다.
+
+## findUpSync / findUp
+
+`function findUpSync(fileGlob: string, fromPath: string, stopAt?: string): string | undefined`
+
+- `fileGlob: string` — 각 현재 디렉토리에서 찾을 glob 패턴.
+- `fromPath: string` — 검색을 시작할 경로. 이 값을 첫 `current` 로 사용한다.
+- `stopAt?: string` — `current === stopAt` 이 되면 다음 부모로 올라가지 않고 중단한다. 생략하면 파일시스템 루트까지 올라간다.
+- 반환 `string | undefined` — 첫 디렉토리에서 매칭이 있으면 그 배열의 첫 번째 절대 경로, 루트 또는 `stopAt` 까지 없으면 `undefined`.
+
+`function findUp(fileGlob: string, fromPath: string, stopAt?: string): Promise<string | undefined>`
+
+- `fileGlob: string` — 각 현재 디렉토리에서 찾을 glob 패턴.
+- `fromPath: string` — 검색을 시작할 경로. 이 값을 첫 `current` 로 사용한다.
+- `stopAt?: string` — `current === stopAt` 이 되면 다음 부모로 올라가지 않고 중단한다. 생략하면 파일시스템 루트까지 올라간다.
+- 반환 `Promise<string | undefined>` — 첫 디렉토리에서 매칭이 있으면 그 배열의 첫 번째 절대 경로, 루트 또는 `stopAt` 까지 없으면 `undefined`.
+
+## findUpAllSync / findUpAll
+
+`function findUpAllSync(fileGlob: string, fromPath: string, stopAt?: string): string[]`
+
+- `fileGlob: string` — 각 현재 디렉토리에서 찾을 glob 패턴.
+- `fromPath: string` — 검색을 시작할 경로. 이 값을 첫 `current` 로 사용한다.
+- `stopAt?: string` — `current === stopAt` 이 되면 다음 부모로 올라가지 않고 중단한다. 생략하면 파일시스템 루트까지 올라간다.
+- 반환 `string[]` — 시작 경로부터 부모 방향으로 각 디렉토리의 매칭 절대 경로를 모두 누적한 배열.
+
+`function findUpAll(fileGlob: string, fromPath: string, stopAt?: string): Promise<string[]>`
+
+- `fileGlob: string` — 각 현재 디렉토리에서 찾을 glob 패턴.
+- `fromPath: string` — 검색을 시작할 경로. 이 값을 첫 `current` 로 사용한다.
+- `stopAt?: string` — `current === stopAt` 이 되면 다음 부모로 올라가지 않고 중단한다. 생략하면 파일시스템 루트까지 올라간다.
+- 반환 `Promise<string[]>` — 시작 경로부터 부모 방향으로 수집한 디렉토리 목록에 대해 `glob` 을 병렬 실행한 뒤 평탄화한 배열.

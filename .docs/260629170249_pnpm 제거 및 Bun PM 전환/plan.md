@@ -5,7 +5,7 @@
 | 항목 | 내용 |
 | ---- | ---- |
 | Plan ID | PLAN-260629170249 |
-| 상태 | Ready |
+| 상태 | Implemented |
 | 생성 시각 | 2026-06-29 17:02:49 |
 | 제목 | pnpm 제거 및 Bun PM 전환 |
 | 대상 범위 | simplysm 모노레포 루트 패키지 매니저 설정, `packages/sd-cli`의 pnpm 전용 로직, 관련 테스트·문서 |
@@ -100,7 +100,7 @@
 | DEC-006 | Accepted | Publish 실행 도구 | A. `pnpm publish` 유지 / B. `bun publish`로 전환 / C. `npm publish`로 전환 | B | pnpm 완전 제거 요구와 Bun publish 공식 지원 | `--no-git-checks`, `publishConfig.bin` 차이는 검증·수정 필요 | Bun publish가 필수 npm publish 기능을 지원하지 못할 때 |
 | DEC-007 | Proposed | Linker | A. Bun 기본값 사용 / B. `bunfig.toml`에 `linker = "isolated"` 명시 / C. `hoisted` 명시 | B | Bun Isolated installs 문서: pnpm migration/workspaces 기본 isolated, pnpm과 개념상 유사 | 환경별 기본값 차이를 줄임. node_modules 직접 탐색 코드는 검증 필요 | 특정 도구가 isolated 구조에서 실패할 때 `hoisted` 재검토 |
 | DEC-008 | Proposed | `publishConfig.bin` | A. 유지 / B. pack/dry-run으로 확인 후 필요 시 top-level `bin`으로 이동 | B를 검증 후 적용 | 현재 `packages/sd-cli/package.json`은 `publishConfig.bin`만 가지며, Bun publish 공식 문서는 `publishConfig.bin` 승격을 명시하지 않는다 | 공개 배포 manifest 변경이므로 확인 전 확정 구현 금지. dry-run에서 `bin` 누락이 확인되면 top-level `bin` 보정 | Bun publish/pack이 `publishConfig.bin`을 top-level `bin`으로 보장함을 공식 확인할 때 |
-| DEC-009 | Proposed | `pnpm up -r` 대응 | A. `bun update --recursive` 후보 검증 / B. init 흐름에서 update 단계 제거 / C. 별도 수동 안내 | 구현 전 fixture 검증으로 선택 | Bun update 문서만으로는 비대화형 `bun update --recursive`와 `pnpm up -r`의 완전 대응을 확정하기 부족하다 | init 직후 dependency update 동작을 유지할지부터 검증한다. 근거 없이 명령 치환하지 않는다 | fixture에서 A가 기존 의도와 다르게 동작할 때 B 또는 C 재검토 |
+| DEC-009 | Accepted | `pnpm up -r` 대응 | A. `bun update --recursive` 후보 검증 / B. init 흐름에서 update 단계 제거 / C. 별도 수동 안내 | A | Bun 1.3.14 help와 현재 워크스페이스 dry-run fixture에서 recursive update가 전 워크스페이스 대상으로 성공함을 확인했다 | init 직후 dependency update 동작을 유지한다 | Bun update recursive 동작이 바뀌거나 fixture가 실패할 때 |
 | DEC-010 | Accepted | PM workspace와 sd-cli check 대상 구분 | A. 모든 Bun workspace를 check 대상으로 확장 / B. PM workspace 전체 수집과 check 대상 필터를 분리 | B | 현재 `CLAUDE.md`는 check/typecheck/lint 대상을 `packages/*` 또는 `tests/*`로 설명하고, root workspace에는 `plugins/*`도 포함된다 | Bun PM workspace에는 `plugins/*`를 포함하되, sd-cli check 기본 대상은 기존 계약대로 packages/tests에 한정한다 | plugins까지 check 대상으로 포함하라는 별도 요구가 생길 때 |
 
 ## 5. 영향도 분석
@@ -134,7 +134,7 @@
 | OPEN-001 | `trustedDependencies` 최종 목록을 어떻게 확정할지 | A. 기존 `allowBuilds` + Bun default trusted 중 필요한 항목 명시 / B. `bun pm untrusted` 결과만 반영 / C. trust 미설정 | A 후 `bun pm untrusted`로 보정 | Non-blocking | TASK-001, TASK-004 |
 | OPEN-002 | `postinstall`의 `npx -y skills ...`를 Bun PM 순수성 범위에 포함할지 | A. pnpm 제거와 무관하므로 유지 / B. `bunx` 호환 확인 후 변경 | B를 별도 검증 후 가능하면 반영, 실패 시 pnpm 제거와 분리 | Non-blocking | TASK-001, TASK-008 |
 | OPEN-003 | `bun publish`가 실제 npm 2FA/auth/registry 흐름에서 현재 배포 정책을 모두 충족하는지 | A. `bun publish` 사용 / B. npm registry 배포만 `npm publish` 유지 | A를 목표로 dry-run/auth 검증 | Non-blocking | TASK-005 |
-| OPEN-004 | `pnpm up -r`를 Bun에서 어떻게 대체할지 | A. `bun update --recursive` 후보 검증 / B. update 단계 제거 / C. 수동 안내 | 명령 치환을 확정하지 말고 fixture로 기존 의도부터 확인 | Non-blocking | TASK-005, TASK-006 |
+| OPEN-004 | [해결] `pnpm up -r`를 Bun에서 어떻게 대체할지 | A. `bun update --recursive` 후보 검증 / B. update 단계 제거 / C. 수동 안내 | A 선택: 현재 워크스페이스 dry-run fixture 통과 | Non-blocking | TASK-005, TASK-006 |
 | OPEN-005 | `publishConfig.bin`이 Bun publish 산출물에서 CLI bin으로 반영되는지 | A. 유지 / B. top-level `bin` 보정 | pack/dry-run에서 누락 확인 시 B | Non-blocking | TASK-005 |
 | OPEN-006 | `bun.lock` parser가 의존해도 되는 schema 범위는 무엇인지 | A. 생성 fixture 기반 내부 parser / B. Bun CLI 출력 기반 resolver | A를 우선 검증, schema 불안정 시 B 검토 | Non-blocking | TASK-003 |
 
@@ -153,7 +153,7 @@
 
 ### TASK-001: 루트 Bun PM 설정 전환
 
-- 상태: Todo
+- 상태: Done
 - 목적: 모노레포의 package manager 기준을 pnpm에서 Bun으로 바꾼다.
 - 연결 근거: SCOPE-001 / FIND-002 / FIND-003 / FIND-004 / FIND-006 / DEC-003 / DEC-007
 - 산출물:
@@ -191,7 +191,7 @@
 
 ### TASK-002: Bun workspace resolver 공통화
 
-- 상태: Todo
+- 상태: Done
 - 목적: `pnpm-workspace.yaml` 파싱 로직을 제거하고 `package.json#workspaces` 기반으로 workspace root를 수집한다.
 - 연결 근거: SCOPE-002 / FIND-005 / FIND-010 / FIND-012 / DEC-002
 - 산출물:
@@ -223,7 +223,7 @@
 
 ### TASK-003: `bun.lock` locked version resolver 구현
 
-- 상태: Todo
+- 상태: Done
 - 목적: 서버 build 산출물의 external dependency 버전을 `bun.lock`에서 확인한다.
 - 연결 근거: SCOPE-003 / FIND-009 / FIND-006 / RISK-001
 - 산출물:
@@ -255,7 +255,7 @@
 
 ### TASK-004: `reinstall` Bun install/trust 흐름 재설계
 
-- 상태: Todo
+- 상태: Done
 - 목적: pnpm approve-builds/allowBuilds 기반 재설치를 Bun PM 기준으로 바꾼다.
 - 연결 근거: SCOPE-004 / FIND-007 / FIND-011 / DEC-004 / RISK-002
 - 산출물:
@@ -285,7 +285,7 @@
 
 ### TASK-005: `sd-cli` install/update/exec/publish 호출 Bun PM 전환
 
-- 상태: Todo
+- 상태: Done
 - 목적: `sd-cli` 내부의 `pnpm install`, `pnpm up -r`, `pnpm exec`, `pnpm publish` 호출을 제거한다.
 - 연결 근거: SCOPE-005 / FIND-008 / FIND-012 / FIND-013 / DEC-006 / DEC-008 / RISK-004 / RISK-005
 - 산출물:
@@ -300,7 +300,7 @@
 - 현재 상태: 여러 파일에서 `shellSpawn("pnpm", ...)` 또는 `cpx.spawn("pnpm", ...)` 사용.
 - 작업 내용:
   1. `bun install` 명령 인자와 로그를 반영한다.
-  1-1. `pnpm up -r`은 바로 치환하지 않는다. `bun update --recursive`는 후보로만 두고, fixture로 기존 init 의도와 manifest/lock 변경 범위를 확인한 뒤 대체·제거·수동 안내 중 하나를 선택한다.
+  1-1. `pnpm up -r`은 fixture 검증 후 `bun update --recursive`로 대체한다. 현재 워크스페이스 dry-run에서 전 워크스페이스 대상 실행이 성공함을 확인했다.
   2. CLI binary 실행은 `bun run <bin>`/`bunx`/직접 `node_modules/.bin` 중 실제 테스트로 확인된 하나의 방식으로 고정한다.
   3. `.capacitor`/`.electron/src`에서 상위 workspace 탐색을 차단하던 빈 `pnpm-workspace.yaml` 생성 코드를 제거하고 Bun에서 필요한 격리 방식을 검증·적용한다.
   4. `publishNpm()`은 `bun publish --access public`과 prerelease tag/dry-run을 사용한다.
@@ -324,7 +324,7 @@
 
 ### TASK-006: init 템플릿 Bun PM 전환
 
-- 상태: Todo
+- 상태: Done
 - 목적: `sd-cli init`으로 생성되는 새 워크스페이스가 처음부터 Bun PM 기준을 사용하게 한다.
 - 연결 근거: SCOPE-006 / FIND-014
 - 산출물:
@@ -354,7 +354,7 @@
 
 ### TASK-007: 테스트 갱신·보강
 
-- 상태: Todo
+- 상태: Done
 - 목적: pnpm 기준 테스트를 Bun PM 기준으로 바꾸고 주요 위험을 검증한다.
 - 연결 근거: SCOPE-007 / FIND-015 / RISK-001~RISK-005
 - 산출물:
@@ -384,7 +384,7 @@
 
 ### TASK-008: 문서·references·작업 지침 갱신
 
-- 상태: Todo
+- 상태: Done
 - 목적: 사용자/에이전트가 더 이상 pnpm 명령을 안내받지 않게 한다.
 - 연결 근거: SCOPE-008 / FIND-016
 - 산출물:
@@ -520,3 +520,5 @@
 - 2026-06-29 17:02:49: 독립 검증 피드백 반영 — `pnpm up -r`, 초기 `bun ci` 순서, `publishConfig.bin`, `bun.lock` schema, TASK-005 게이트 참조 보정.
 - 2026-06-29 17:02:49: 재검증 피드백 반영 — `bun update --recursive` 확정 표현 제거, `discoverWorkspacePackages()` 하드코딩 수집 포함, Bun 버전 가정 근거 수준 보정.
 - 2026-06-29 17:02:49: 2차 재검증 피드백 반영 — `allowBuilds`/`minimumReleaseAge` 삭제 전 반영 순서, PM workspace와 check 대상 분리, `device.ts` 안내 문자열, 미확인 후보 표현 보정.
+- 2026-06-29 18:20:00: 구현 완료 — Bun workspace/lock/install/trust/publish/native/init/test/docs 전환 반영.
+- 2026-06-29 18:29:00: 독립 대조 피드백 반영 — recursive update 결정 근거 기록, publish manifest pack 검사 테스트 추가.
