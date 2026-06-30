@@ -11,13 +11,10 @@
  * 찍지 않음(섞이면 컨텍스트가 오염됨). 필요한 로그는 stderr 로.
  */
 
+import { WIKI_REMINDER } from "../shared/wiki-reminder.ts";
+
 try {
-  const context =
-    "[위키] 종료 전, 다음에 비슷한 상황에서 다시 열어 시간을 아낄 " +
-    "비자명·반복 지식을 새로 확인했다면 wiki.md 규칙대로 위키에 반영한다. " +
-    "작업 기록·이번 변경 요약·1회성 결정·단순 문서 요약·과거 기록물은 제외하고, " +
-    "애매하면 쓰지 않는다.";
-  process.stdout.write(context);
+  process.stdout.write(WIKI_REMINDER);
 } catch {
   // UserPromptSubmit context 주입 실패는 프롬프트 제출을 막지 않습니다.
 }

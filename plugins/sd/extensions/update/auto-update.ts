@@ -36,10 +36,15 @@ async function runAutoUpdate(pi: ExtensionAPI, ctx: ExtensionContext) {
     if (before.length === 0) return;
 
     for (const snapshot of before) {
-      await pi.exec("pi", ["update", snapshot.pkg.source], {
+      const result = await pi.exec("pi", ["update", snapshot.pkg.source], {
         cwd: ctx.cwd,
         timeout: UPDATE_TIMEOUT_MS,
       });
+      if (result.code !== 0) {
+        throw new Error(
+          result.stderr.trim() || `pi update ${snapshot.pkg.source} 실행에 실패했습니다.`,
+        );
+      }
     }
 
     const after = await collectSnapshots(pi, ctx);

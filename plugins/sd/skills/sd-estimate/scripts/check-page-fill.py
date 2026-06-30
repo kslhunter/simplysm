@@ -56,21 +56,20 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="checkfill-") as tmp:
         pdf_path = Path(tmp) / "estimate.pdf"
         html_to_pdf(html_path, pdf_path)
-        doc = fitz.open(pdf_path)
-        n = doc.page_count
-        warnings: list[tuple[int, int, str]] = []
-        for i, page in enumerate(doc):
-            if i == n - 1:
-                continue  # 마지막 페이지는 비는 게 정상 — 제외
-            H = page.rect.height
-            cb = _content_bottom(page)
-            # 콘텐츠 영역(상·하 여백 제외) 대비 하단 빈 공간 비율
-            content_area = H - (RUN_TOP_MM + RUN_BOT_MM) * MM
-            empty_pt = (H - RUN_BOT_MM * MM) - cb
-            empty = max(0.0, empty_pt / content_area)
-            if empty >= threshold:
-                warnings.append((i + 1, round(empty * 100), _first_text_label(doc[i + 1])))
-        doc.close()
+        with fitz.open(pdf_path) as doc:
+            n = doc.page_count
+            warnings: list[tuple[int, int, str]] = []
+            for i, page in enumerate(doc):
+                if i == n - 1:
+                    continue  # 마지막 페이지는 비는 게 정상 — 제외
+                H = page.rect.height
+                cb = _content_bottom(page)
+                # 콘텐츠 영역(상·하 여백 제외) 대비 하단 빈 공간 비율
+                content_area = H - (RUN_TOP_MM + RUN_BOT_MM) * MM
+                empty_pt = (H - RUN_BOT_MM * MM) - cb
+                empty = max(0.0, empty_pt / content_area)
+                if empty >= threshold:
+                    warnings.append((i + 1, round(empty * 100), _first_text_label(doc[i + 1])))
 
     print(f"총 {n}쪽 | 임계 {round(threshold * 100)}%")
     if not warnings:

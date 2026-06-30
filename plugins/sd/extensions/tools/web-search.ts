@@ -91,11 +91,25 @@ export function registerWebSearch(pi: ExtensionAPI) {
         };
       },
 
-      renderResult(result, { expanded, isPartial }, theme) {
+      renderResult(result, { expanded, isPartial }, theme, context) {
         const details = result.details;
         if (isPartial) {
-          const query = details?.query ? ` ${theme.fg("accent", JSON.stringify(details.query))}` : "";
+          const query = details?.query
+            ? ` ${theme.fg("accent", JSON.stringify(details.query))}`
+            : "";
           return new Text(`${theme.fg("warning", "⏳")} Exa MCP 검색 중${query}`, 0, 0);
+        }
+
+        if (context.isError) {
+          const errorText = getTextContent(result.content) || "알 수 없는 web_search 오류";
+          if (!expanded) {
+            return new Text(
+              `${theme.fg("error", "✗")} web_search 실패 ${theme.fg("error", errorText)}`,
+              0,
+              0,
+            );
+          }
+          return new Text(theme.fg("error", errorText), 0, 0);
         }
 
         if (!details) {
@@ -118,12 +132,16 @@ export function registerWebSearch(pi: ExtensionAPI) {
   );
 }
 
-async function callExaMcpSearch(query: string, numResults: number, signal?: AbortSignal): Promise<string> {
+async function callExaMcpSearch(
+  query: string,
+  numResults: number,
+  signal?: AbortSignal,
+): Promise<string> {
   const response = await fetch(EXA_MCP_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json, text/event-stream",
+      "Accept": "application/json, text/event-stream",
     },
     body: JSON.stringify({
       jsonrpc: "2.0",
@@ -194,7 +212,10 @@ function extractMcpText(body: string): string {
   }
 
   const textParts = parsed.result?.content
-    ?.filter((item) => item.type === "text" && typeof item.text === "string" && item.text.trim().length > 0)
+    ?.filter(
+      (item) =>
+        item.type === "text" && typeof item.text === "string" && item.text.trim().length > 0,
+    )
     .map((item) => item.text!.trim());
 
   if (parsed.result?.isError) {
@@ -250,15 +271,21 @@ function normalizeNumResults(value: unknown): number {
 
 function isValidNumResults(value: unknown): value is number {
   return (
-    typeof value === "number" &&
-    Number.isInteger(value) &&
-    value >= 1 &&
-    value <= MAX_NUM_RESULTS
+    typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= MAX_NUM_RESULTS
   );
 }
 
 function byteLength(value: string): number {
   return Buffer.byteLength(value, "utf8");
+}
+
+function getTextContent(content: Array<{ type: string; text?: string }>): string | undefined {
+  const text = content
+    .filter((item) => item.type === "text" && typeof item.text === "string")
+    .map((item) => item.text)
+    .join("\n")
+    .trim();
+  return text || undefined;
 }
 
 function throwTooLarge(bytes: number, query: string, numResults: number): never {

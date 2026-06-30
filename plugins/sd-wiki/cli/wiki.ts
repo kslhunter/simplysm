@@ -20,6 +20,7 @@ import {
   getToken,
   writePage,
 } from "../shared/wiki-service.ts";
+import { decodeUtf8Strict, getErrorMessage, isFileReadError } from "../shared/wiki-util.ts";
 
 interface BaseArgs {
   readonly command: string;
@@ -57,18 +58,6 @@ function printJson(data: unknown): void {
   process.stdout.write("\n");
 }
 
-function decodeUtf8Strict(data: Buffer | Uint8Array | ArrayBuffer): string {
-  return new TextDecoder("utf-8", { fatal: true }).decode(data);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isFileReadError(error: unknown): boolean {
-  return isRecord(error) && typeof error["code"] === "string";
-}
-
 async function readBodyFile(filePath: string): Promise<string> {
   let bytes: Buffer;
   try {
@@ -80,11 +69,6 @@ async function readBodyFile(filePath: string): Promise<string> {
     throw error;
   }
   return decodeUtf8Strict(bytes);
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  return String(error);
 }
 
 async function readStdin(): Promise<string> {
@@ -184,7 +168,7 @@ function parseArgv(argv: string[]): CliArgs {
     let body: string | undefined;
     let bodyFile: string | undefined;
     let baseVersion: number | undefined;
-    let parent: string | undefined;
+    let parentTopic: string | undefined;
 
     while (index < argv.length) {
       const optionLabel = argv[index];
@@ -200,7 +184,7 @@ function parseArgv(argv: string[]): CliArgs {
         baseVersion = parseIntegerOption(optionLabel, argv[index + 1]);
         index += 2;
       } else if (optionLabel === "--parent") {
-        [parent, index] = takeValue(argv, index, optionLabel);
+        [parentTopic, index] = takeValue(argv, index, optionLabel);
       } else {
         throw new CliParseError(`알 수 없는 인자: ${optionLabel}`);
       }
@@ -209,7 +193,7 @@ function parseArgv(argv: string[]): CliArgs {
     if (title === undefined) throw new CliParseError("write 명령에는 --title 이 필요합니다.");
     if (summary === undefined) throw new CliParseError("write 명령에는 --summary 가 필요합니다.");
 
-    return { command, noBrowser, topic, title, summary, body, bodyFile, baseVersion, parent };
+    return { command, noBrowser, topic, title, summary, body, bodyFile, baseVersion, parent: parentTopic };
   }
 
   if (command === "move") {
@@ -217,12 +201,12 @@ function parseArgv(argv: string[]): CliArgs {
     if (topic === undefined) throw new CliParseError("move 명령에는 topic 이 필요합니다.");
     index += 1;
 
-    let parent: string | undefined;
+    let parentTopic: string | undefined;
     let root = false;
     while (index < argv.length) {
       const optionLabel = argv[index];
       if (optionLabel === "--parent") {
-        [parent, index] = takeValue(argv, index, optionLabel);
+        [parentTopic, index] = takeValue(argv, index, optionLabel);
       } else if (optionLabel === "--root") {
         root = true;
         index += 1;
@@ -231,10 +215,10 @@ function parseArgv(argv: string[]): CliArgs {
       }
     }
 
-    if ((parent !== undefined && root) || (parent === undefined && !root)) {
+    if ((parentTopic !== undefined && root) || (parentTopic === undefined && !root)) {
       throw new CliParseError("move 명령에는 --parent 또는 --root 중 하나가 필요합니다.");
     }
-    return { command, noBrowser, topic, parent, root };
+    return { command, noBrowser, topic, parent: parentTopic, root };
   }
 
   throw new CliParseError(`알 수 없는 명령: ${command}`);
@@ -256,7 +240,7 @@ function asMoveArgs(args: CliArgs): MoveArgs {
   return args as MoveArgs;
 }
 
-async function runCommand(args: CliArgs, token: string): Promise<unknown> {
+async function runCommand(args: CliArgs, token: string, writeBody: string | undefined): Promise<unknown> {
   if (args.command === "read") return await callService("read", [asTopicArgs(args).topic], token);
   if (args.command === "search") return await callService("search", [asSearchArgs(args).keyword], token);
   if (args.command === "toc") return await callService("toc", [], token);
@@ -268,7 +252,7 @@ async function runCommand(args: CliArgs, token: string): Promise<unknown> {
       topic: writeArgs.topic,
       title: writeArgs.title,
       summary: writeArgs.summary,
-      body: await readBodyArg(writeArgs),
+      body: writeBody,
     };
     if (writeArgs.baseVersion !== undefined) inputData["baseVersion"] = writeArgs.baseVersion;
     if (writeArgs.parent !== undefined) inputData["parentTopic"] = writeArgs.parent;
@@ -306,15 +290,20 @@ async function main(argv: string[]): Promise<number> {
 
   try {
     let token = await getToken(allowBrowser);
-    if (token === null) return 1;
+    if (token === null) {
+      console.error("위키 인증 토큰이 없습니다 (--no-browser: 브라우저 로그인을 생략했습니다).");
+      return 1;
+    }
+    // 본문은 재시도 전에 1회만 읽는다 — 재시도 때 이미 EOF 인 stdin 을 재독하면 무한 행이 되므로.
+    const writeBody = args.command === "write" ? await readBodyArg(asWriteArgs(args)) : undefined;
     let result: unknown;
     try {
-      result = await runCommand(args, token);
+      result = await runCommand(args, token, writeBody);
     } catch (error) {
       if (!(error instanceof WikiAuthExpired)) throw error;
       if (!allowBrowser) throw error;
       token = await browserLogin();
-      result = await runCommand(args, token);
+      result = await runCommand(args, token, writeBody);
     }
     printJson(result);
     return 0;

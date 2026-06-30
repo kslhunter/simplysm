@@ -154,7 +154,9 @@ async function withFileLock<T>(fileKey: string, fn: () => Promise<T>): Promise<T
     try {
       const handle = await open(lockPath, "wx");
       try {
-        await handle.writeFile(JSON.stringify({ pid: process.pid, fileKey, createdAt: Date.now() }));
+        await handle.writeFile(
+          JSON.stringify({ pid: process.pid, fileKey, createdAt: Date.now() }),
+        );
         return await fn();
       } finally {
         await handle.close().catch(() => undefined);

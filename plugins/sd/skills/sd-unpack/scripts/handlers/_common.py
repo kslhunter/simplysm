@@ -161,12 +161,9 @@ def is_tnef(path: Path) -> bool:
     """TNEF (winmail.dat) 형식인지 검사. filename 또는 magic bytes."""
     if path.name.lower() in ("winmail.dat", "win.dat"):
         return True
-    try:
-        with open(long_str(path), "rb") as f:
-            magic = f.read(4)
-        return magic == b"\x78\x9f\x3e\x22"
-    except Exception:
-        return False
+    with open(long_str(path), "rb") as f:
+        magic = f.read(4)
+    return magic == b"\x78\x9f\x3e\x22"
 
 
 def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
@@ -201,8 +198,10 @@ def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
         if not att_name:
             att_name = "tnef_attachment.bin"
         data = att.data
-        if not data:
-            continue
+        if data is None:
+            raise RuntimeError(
+                f"TNEF 첨부 '{att_name}' 추출 실패 (data 없음) — {path.name}"
+            )
         if not isinstance(att_name, str):
             att_name = "tnef_attachment.bin"
         dst = unique_path(attachments_dir, att_name)

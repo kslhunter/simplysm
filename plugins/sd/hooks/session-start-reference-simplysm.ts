@@ -1,5 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { asRecord, readStdinJson } from "../shared/hook-io.ts";
 import { buildSimplysmReferenceContext } from "../shared/reference-simplysm.ts";
 
 async function main(): Promise<void> {
@@ -31,24 +32,6 @@ function resolveProjectDir(data: unknown): string {
 
   const cwd = asRecord(data)?.["cwd"];
   return typeof cwd === "string" && cwd ? cwd : process.cwd();
-}
-
-async function readStdinJson(): Promise<unknown> {
-  if (process.stdin.isTTY) return undefined;
-
-  const chunks: Buffer[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  }
-
-  const text = Buffer.concat(chunks).toString("utf8").trim();
-  return text ? (JSON.parse(text) as unknown) : undefined;
-}
-
-function asRecord(value: unknown): Record<string, unknown> | undefined {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
 }
 
 await main();

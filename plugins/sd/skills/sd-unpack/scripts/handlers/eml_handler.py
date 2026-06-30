@@ -42,8 +42,8 @@ def run(input_path: Path, out_dir: Path) -> None:
 
     # 모든 헤더 보존 (envelope·X-* 등 원본 그대로). 동일 키 다수 등장 → list 누적.
     headers: dict = {}
-    for key, raw in msg.items():
-        decoded = _decode_header(raw)
+    for key, raw_value in msg.items():
+        decoded = _decode_header(raw_value)
         if key in headers:
             existing = headers[key]
             if isinstance(existing, list):
@@ -85,7 +85,11 @@ def run(input_path: Path, out_dir: Path) -> None:
         is_attachment = bool(filename) or "attachment" in disp or bool(cid)
 
         if is_attachment:
-            payload = part.get_payload(decode=True) or b""
+            payload = part.get_payload(decode=True)
+            if payload is None:
+                raise RuntimeError(
+                    f"EML 첨부 '{filename or cid or 'unnamed'}' 추출 실패 (payload 디코딩 불가)"
+                )
             digest = hashlib.md5(payload).hexdigest()
             if digest in seen_hashes:
                 # 같은 콘텐츠가 multipart 다른 위치에 중복 등장한 경우 (Outlook inline+attachment 등) 한 번만 저장.

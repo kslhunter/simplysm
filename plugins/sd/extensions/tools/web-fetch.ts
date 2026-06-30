@@ -180,7 +180,9 @@ async function fetchWithRedirects(startUrl: URL, signal?: AbortSignal): Promise<
     response.resume();
 
     if (redirects >= MAX_REDIRECTS) {
-      throw new Error(`web_fetch redirect가 너무 많습니다 (${MAX_REDIRECTS}회 초과): ${startUrl.toString()}`);
+      throw new Error(
+        `web_fetch redirect가 너무 많습니다 (${MAX_REDIRECTS}회 초과): ${startUrl.toString()}`,
+      );
     }
 
     current = new URL(location, current);
@@ -204,7 +206,9 @@ async function requestPublicHttpUrl(url: URL, signal: AbortSignal): Promise<Inco
 
   const attempts = resolvedAddresses.map(formatLookupAddress).join(", ") || "none";
   const messages = errors.map((error) => error.message).join("; ") || "unknown";
-  throw new Error(`web_fetch 연결에 실패했습니다: ${url.toString()} (시도 주소: ${attempts}, 오류: ${messages})`);
+  throw new Error(
+    `web_fetch 연결에 실패했습니다: ${url.toString()} (시도 주소: ${attempts}, 오류: ${messages})`,
+  );
 }
 
 async function requestResolvedPublicHttpUrl(
@@ -221,17 +225,18 @@ async function requestResolvedPublicHttpUrl(
     method: "GET",
     headers: {
       "User-Agent": "simplysm-pi-web-fetch/0.1",
-      Accept: "text/html,text/plain,application/json,application/xml,text/markdown,*/*;q=0.8",
-      Host: url.host,
+      "Accept": "text/html,text/plain,application/json,application/xml,text/markdown,*/*;q=0.8",
+      "Host": url.host,
     },
     signal,
     ...(tlsServername ? { servername: tlsServername } : {}),
   };
 
   return new Promise((resolve, reject) => {
-    const req = url.protocol === "https:"
-      ? httpsRequest(requestOptions, resolve)
-      : httpRequest(requestOptions, resolve);
+    const req =
+      url.protocol === "https:"
+        ? httpsRequest(requestOptions, resolve)
+        : httpRequest(requestOptions, resolve);
 
     req.on("error", reject);
     req.end();
@@ -326,7 +331,10 @@ function isBlockedIp(address: string): boolean {
 
 function isBlockedIpv4(address: string): boolean {
   const parts = address.split(".").map((part) => Number(part));
-  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
     return true;
   }
 
@@ -385,12 +393,11 @@ function parseIpv6Groups(address: string): number[] | undefined {
 
 function parseIpv6GroupList(value: string): number[] | undefined {
   if (!value) return [];
-  return value.split(":").map((part) => {
+  const groups = value.split(":").map((part) => {
     if (!/^[0-9a-f]{1,4}$/i.test(part)) return Number.NaN;
     return Number.parseInt(part, 16);
-  }).every((part) => Number.isInteger(part) && part >= 0 && part <= 0xffff)
-    ? value.split(":").map((part) => Number.parseInt(part, 16))
-    : undefined;
+  });
+  return groups.every((g) => Number.isInteger(g) && g >= 0 && g <= 0xffff) ? groups : undefined;
 }
 
 function requestSignal(signal?: AbortSignal): AbortSignal {
@@ -398,7 +405,11 @@ function requestSignal(signal?: AbortSignal): AbortSignal {
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
-function waitForSignal<T>(operation: Promise<T>, signal: AbortSignal, timeoutMessage: string): Promise<T> {
+function waitForSignal<T>(
+  operation: Promise<T>,
+  signal: AbortSignal,
+  timeoutMessage: string,
+): Promise<T> {
   if (signal.aborted) return Promise.reject(signalReasonToError(signal.reason, timeoutMessage));
 
   return new Promise((resolve, reject) => {
@@ -432,7 +443,10 @@ function isTextualContentType(contentType: string): boolean {
   );
 }
 
-async function readResponseTextLimited(response: IncomingMessage, maxBytes: number): Promise<string> {
+async function readResponseTextLimited(
+  response: IncomingMessage,
+  maxBytes: number,
+): Promise<string> {
   const chunks: Buffer[] = [];
   let totalBytes = 0;
 
@@ -452,14 +466,20 @@ async function readResponseTextLimited(response: IncomingMessage, maxBytes: numb
   return Buffer.concat(chunks).toString("utf8");
 }
 
-function getResponseHeader(response: IncomingMessage, name: string): string | undefined {
-  const value = response.headers[name.toLowerCase()];
+function getResponseHeader(response: IncomingMessage, headerName: string): string | undefined {
+  const value = response.headers[headerName.toLowerCase()];
   if (Array.isArray(value)) return value.join(", ");
   return value;
 }
 
 function extractHtmlContent(html: string): { text: string; title?: string } {
-  const title = decodeHtmlEntities(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() ?? "") || undefined;
+  const title =
+    decodeHtmlEntities(
+      html
+        .match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+        ?.replace(/\s+/g, " ")
+        .trim() ?? "",
+    ) || undefined;
 
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   const body = bodyMatch?.[1] ?? html;
@@ -473,7 +493,10 @@ function extractHtmlContent(html: string): { text: string; title?: string } {
 
   const withLineBreaks = withoutNoise
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|div|article|section|main|header|footer|nav|aside|h[1-6]|li|ul|ol|table|thead|tbody|tfoot|tr|blockquote|pre)>/gi, "\n")
+    .replace(
+      /<\/(p|div|article|section|main|header|footer|nav|aside|h[1-6]|li|ul|ol|table|thead|tbody|tfoot|tr|blockquote|pre)>/gi,
+      "\n",
+    )
     .replace(/<li\b[^>]*>/gi, "\n- ")
     .replace(/<[^>]+>/g, " ");
 

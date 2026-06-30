@@ -103,14 +103,14 @@ export function registerSkill(pi: ExtensionAPI) {
     SKILL_MESSAGE_CUSTOM_TYPE,
     (message, { expanded }, theme) => {
       const invocation = message.details?.invocation;
-      const name = invocation?.name ?? "unknown";
+      const skillName = invocation?.name ?? "unknown";
       const suffix = invocation?.arguments?.trim()
         ? ` ${theme.fg("dim", JSON.stringify(invocation.arguments.trim()))}`
         : "";
       const box = new Box(1, 1, (text: string) => theme.bg("toolSuccessBg", text));
       box.addChild(
         new Text(
-          `${theme.fg("toolTitle", theme.bold("skill"))} ${theme.fg("accent", name)}${suffix}`,
+          `${theme.fg("toolTitle", theme.bold("skill"))} ${theme.fg("accent", skillName)}${suffix}`,
           0,
           0,
         ),
@@ -151,12 +151,12 @@ export function registerSkill(pi: ExtensionAPI) {
       executionMode: "sequential",
 
       renderCall(args, theme) {
-        const name = typeof args.name === "string" ? args.name : "";
+        const skillName = typeof args.name === "string" ? args.name : "";
         const suffix = args.arguments?.trim()
           ? ` ${theme.fg("dim", JSON.stringify(args.arguments.trim()))}`
           : "";
         return new Text(
-          `${theme.fg("toolTitle", theme.bold("skill"))} ${theme.fg("accent", name)}${suffix}`,
+          `${theme.fg("toolTitle", theme.bold("skill"))} ${theme.fg("accent", skillName)}${suffix}`,
           0,
           0,
         );
@@ -172,7 +172,7 @@ export function registerSkill(pi: ExtensionAPI) {
         };
       },
 
-      renderResult(result, { expanded }, theme) {
+      renderResult(result, { expanded }) {
         const details = result.details;
         if (!details) return new Text(getFirstTextContent(result.content), 0, 0);
 
@@ -216,10 +216,10 @@ export function registerSkill(pi: ExtensionAPI) {
 
 async function loadSkillInvocation(
   pi: ExtensionAPI,
-  name: string,
+  skillName: string,
   rawArguments?: string,
 ): Promise<LoadedSkillInvocation> {
-  const normalizedName = name.trim();
+  const normalizedName = skillName.trim();
   if (!normalizedName) throw new Error("skill 이름이 비어 있습니다.");
 
   const skill = findSkill(pi, normalizedName);
@@ -282,10 +282,12 @@ function getMessageTextContent(
   return text || "(skill 출력 없음)";
 }
 
-function findSkill(pi: ExtensionAPI, name: string): ResolvedSkill | undefined {
+function findSkill(pi: ExtensionAPI, skillName: string): ResolvedSkill | undefined {
   const command = pi
     .getCommands()
-    .find((item) => item.source === "skill" && item.name === `${SKILL_COMMAND_NAME_PREFIX}${name}`);
+    .find(
+      (item) => item.source === "skill" && item.name === `${SKILL_COMMAND_NAME_PREFIX}${skillName}`,
+    );
   if (!command) return undefined;
   return toResolvedSkill(command);
 }
@@ -302,14 +304,14 @@ function parseSkillCommand(text: string): SkillCommand | undefined {
   if (!text.startsWith(SKILL_COMMAND_PREFIX)) return undefined;
 
   const separatorIndex = text.search(/\s/);
-  const name =
+  const skillName =
     separatorIndex === -1
       ? text.slice(SKILL_COMMAND_PREFIX.length)
       : text.slice(SKILL_COMMAND_PREFIX.length, separatorIndex);
-  if (!name) return undefined;
+  if (!skillName) return undefined;
 
   const rawArguments = separatorIndex === -1 ? "" : text.slice(separatorIndex + 1).trim();
-  return { name, arguments: rawArguments || undefined };
+  return { name: skillName, arguments: rawArguments || undefined };
 }
 
 function reconstructSkillState(ctx: ExtensionContext): SkillInvocationState {

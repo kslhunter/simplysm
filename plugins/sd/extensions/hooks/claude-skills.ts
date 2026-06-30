@@ -56,5 +56,7 @@ function pathExists(filePath: string): boolean {
 }
 
 function isMissingPathError(error: unknown): boolean {
-  return error instanceof Error && "code" in error && ["ENOENT", "ENOTDIR"].includes(String(error.code));
+  return (
+    error instanceof Error && "code" in error && ["ENOENT", "ENOTDIR"].includes(String(error.code))
+  );
 }

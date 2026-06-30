@@ -1,3 +1,27 @@
+import { callService, getToken, WikiAuthError, WikiAuthExpired } from "./wiki-service.ts";
+import { isRecord } from "./wiki-util.ts";
+
+export async function fetchRootMap(deferLogin: () => void): Promise<unknown | undefined> {
+  let token: string | null;
+  try {
+    token = await getToken(false);
+  } catch (error) {
+    if (error instanceof WikiAuthExpired) deferLogin();
+    if (error instanceof WikiAuthError) return undefined; // WikiAuthExpired 도 WikiAuthError 하위라 여기서 종료.
+    throw error;
+  }
+  if (token === null) {
+    deferLogin();
+    return undefined;
+  }
+  try {
+    return await callService("rootMap", [], token);
+  } catch (error) {
+    if (error instanceof WikiAuthExpired) deferLogin();
+    return undefined;
+  }
+}
+
 export function formatRootmapItems(rootmap: unknown): string {
   if (!Array.isArray(rootmap)) {
     throw new Error("위키 ROOT MAP 응답은 배열이어야 합니다.");
@@ -36,13 +60,4 @@ export function formatRootmapItems(rootmap: unknown): string {
   }
 
   return lines.join("\n");
-}
-
-export function formatRootmap(rootmap: unknown): string {
-  const body = formatRootmapItems(rootmap);
-  return `# 지식 위키 ROOT MAP (최상위)\n\n${body ? `${body}\n` : ""}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

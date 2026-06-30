@@ -15,9 +15,9 @@
 
 import { randomBytes } from "node:crypto";
 import { createServer, type Server } from "node:http";
-import { homedir } from "node:os";
-import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
+import { decodeUtf8Strict, defaultDataDir, getErrorMessage, isFileReadError, isRecord } from "./wiki-util.ts";
 
 // ── ① 결합상수 ────────────────────────────────────────────────────────
 // opus 위키 서버 접속 주소 — 회사 단일 내부 서버라 상수 고정. dev·로컬 테스트는 env 로 덮음.
@@ -33,29 +33,14 @@ export const LOGIN_TIMEOUT_SEC = 300;
 async function dataDir(): Promise<string> {
   // 토큰 고정경로: 에이전트의 일반 Bash 셸엔 CLAUDE_PLUGIN_* env 가 주입되지 않으므로,
   // hook 과 CLI 가 같은 토큰을 보려면 env 비의존 고정경로여야 함.
-  const dirPath = `${homedir()}/.claude/sd`;
-  await mkdir(dirPath, { recursive: true });
+  const dirPath = defaultDataDir();
+  await mkdir(dirPath, { recursive: true, mode: 0o700 });
+  await chmod(dirPath, 0o700); // 토큰 보관 디렉터리 — 기존에 느슨하게 생성됐어도 소유자 전용으로 닫음(Windows 는 무시).
   return dirPath;
 }
 
 async function tokenPath(): Promise<string> {
   return `${await dataDir()}/wiki-token.json`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isFileReadError(error: unknown): boolean {
-  return isRecord(error) && typeof error["code"] === "string";
-}
-
-function decodeUtf8Strict(data: Buffer | Uint8Array | ArrayBuffer): string {
-  return new TextDecoder("utf-8", { fatal: true }).decode(data);
-}
-
-function jsonDumps(data: unknown): string {
-  return JSON.stringify(data);
 }
 
 // ── ② 예외 ────────────────────────────────────────────────────────────
@@ -98,7 +83,12 @@ export async function loadToken(): Promise<string | null> {
     if (isFileReadError(error)) return null;
     throw error;
   }
-  const text = decodeUtf8Strict(bytes);
+  let text: string;
+  try {
+    text = decodeUtf8Strict(bytes);
+  } catch {
+    return null;
+  }
 
   let data: unknown;
   try {
@@ -114,7 +104,7 @@ export async function loadToken(): Promise<string | null> {
 export async function saveToken(token: string): Promise<void> {
   const targetPath = await tokenPath();
   const tempPath = `${targetPath}.tmp`;
-  await writeFile(tempPath, `${jsonDumps({ token })}`, "utf8");
+  await writeFile(tempPath, JSON.stringify({ token }), { encoding: "utf8", mode: 0o600 });
   await rename(tempPath, targetPath);
 }
 
@@ -165,11 +155,6 @@ export async function refreshToken(token: string): Promise<string> {
   return newToken;
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  return String(error);
-}
-
 function openBrowser(loginUrl: string): void {
   try {
     let childProcess;
@@ -183,6 +168,9 @@ function openBrowser(loginUrl: string): void {
     } else {
       childProcess = spawn("xdg-open", [loginUrl], { detached: true, stdio: "ignore" });
     }
+    childProcess.on("error", () => {
+      // 브라우저 자동 실행 실패(바이너리 부재 등)는 무시 — fallback URL 이 이미 출력됨.
+    });
     childProcess.unref();
   } catch {
     // 브라우저 자동 실행 실패는 무시한다.
@@ -207,7 +195,6 @@ export async function browserLogin(timeoutSec: number = LOGIN_TIMEOUT_SEC): Prom
   const state = randomBytes(12).toString("base64url");
 
   let receivedToken: string | undefined;
-  let receivedState: string | undefined;
   let resolveCallback: (() => void) | undefined;
 
   const callbackPromise = new Promise<void>((resolve) => {
@@ -218,15 +205,15 @@ export async function browserLogin(timeoutSec: number = LOGIN_TIMEOUT_SEC): Prom
     const requestUrl = new URL(request.url ?? "/", "http://127.0.0.1");
     const token = requestUrl.searchParams.get("token");
     const callbackState = requestUrl.searchParams.get("state");
-    if (token === null || callbackState === null) {
-      // 콜백이 아닌 부수 요청(favicon 등) — 무시하고 계속 대기
+    // 콜백이 아닌 부수 요청(favicon 등)이나 state 불일치(떠도는 로컬 요청·위조)는 무시하고 계속 대기.
+    // CSRF 방지: state 가 발급값과 일치할 때만 토큰을 받아들인다(검증 전 조기 resolve 금지).
+    if (token === null || callbackState !== state) {
       response.writeHead(404);
       response.end();
       return;
     }
 
     receivedToken = token;
-    receivedState = callbackState;
     const body = Buffer.from(
       "<!doctype html><meta charset=utf-8><title>인증 완료</title>" +
         "<body style='font-family:sans-serif;text-align:center;padding-top:60px'>" +
@@ -267,11 +254,6 @@ export async function browserLogin(timeoutSec: number = LOGIN_TIMEOUT_SEC): Prom
 
   if (receivedToken === undefined) {
     throw new WikiAuthError("로그인 대기 시간이 초과되었습니다.");
-  }
-
-  // CSRF 방지: 콜백 state 가 우리가 발급한 값과 일치해야 한다.
-  if (receivedState !== state) {
-    throw new WikiAuthError("콜백 state 가 일치하지 않습니다. (요청 위조 가능성)");
   }
 
   await saveToken(receivedToken);
@@ -327,11 +309,11 @@ export async function callService(method: string, params: unknown[], token: stri
   try {
     response = await fetch(`${API_BASE}/api/WikiService/${method}`, {
       method: "POST",
-      body: jsonDumps(params),
+      body: JSON.stringify(params),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        "X-sd-client-name": CLIENT_NAME,
+        "x-sd-client-name": CLIENT_NAME,
       },
       signal: AbortSignal.timeout(20_000),
     });
@@ -352,7 +334,7 @@ export async function callService(method: string, params: unknown[], token: stri
   if (body === "") return null;
   try {
     return JSON.parse(body) as unknown;
-  } catch (error) {
+  } catch {
     throw new WikiApiError(`${method} 실패: 응답 JSON 을 해석할 수 없습니다.`);
   }
 }

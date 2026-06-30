@@ -1,9 +1,8 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import * as wikiCore from "../../shared/wiki-service.ts";
 import { triggerWikiBackgroundLogin } from "../../shared/wiki-login.ts";
-import { formatRootmapItems } from "../../shared/wiki-rootmap.ts";
+import { fetchRootMap, formatRootmapItems } from "../../shared/wiki-rootmap.ts";
 
 const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const EXTENSION_ENTRY_URL = new URL("../index.ts", import.meta.url).href;
@@ -59,30 +58,8 @@ async function fetchRootmapContext(): Promise<string | undefined> {
     });
   }
 
-  let token: string | null;
-  try {
-    token = await wikiCore.getToken(false);
-  } catch (error) {
-    if (error instanceof wikiCore.WikiAuthExpired) {
-      deferLogin();
-      return undefined;
-    }
-    if (error instanceof wikiCore.WikiAuthError) return undefined;
-    throw error;
-  }
-
-  if (token === null) {
-    deferLogin();
-    return undefined;
-  }
-
-  let rootmap: unknown;
-  try {
-    rootmap = await wikiCore.callService("rootMap", [], token);
-  } catch (error) {
-    if (error instanceof wikiCore.WikiAuthExpired) deferLogin();
-    return undefined;
-  }
+  const rootmap = await fetchRootMap(deferLogin);
+  if (rootmap === undefined) return undefined;
 
   const rootmapItems = formatRootmapItems(rootmap);
   return `## 원격 공용 위키 ROOT MAP (최상위)\n\n${rootmapItems || "ROOT MAP 항목 없음"}`;

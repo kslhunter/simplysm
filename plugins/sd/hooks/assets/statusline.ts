@@ -136,11 +136,15 @@ async function trySpawnFetch(version: string): Promise<void> {
   let spawned = false;
   try {
     await lockHandle.close();
-    const childProcess = spawn(process.execPath, [fileURLToPath(import.meta.url), "--fetch", version], {
-      detached: true,
-      env: { ...process.env, [ownedLockEnvName]: "1" },
-      stdio: "ignore",
-    });
+    const childProcess = spawn(
+      process.execPath,
+      [fileURLToPath(import.meta.url), "--fetch", version],
+      {
+        detached: true,
+        env: { ...process.env, [ownedLockEnvName]: "1" },
+        stdio: "ignore",
+      },
+    );
     childProcess.unref();
     spawned = true;
   } catch {
@@ -189,12 +193,12 @@ async function doFetchLocked(version: string): Promise<void> {
     const usageData = await fetchUsage(token, version);
     const extraUsage = asRecord(usageData["extra_usage"]) ?? {};
     const newCache: JsonRecord = {
-      "last_fetch_ts": currentEpochSeconds(),
-      "extra_usage": {
-        "is_enabled": asBoolean(extraUsage["is_enabled"]) ?? false,
-        "used_credits": extraUsage["used_credits"],
+      last_fetch_ts: currentEpochSeconds(),
+      extra_usage: {
+        is_enabled: asBoolean(extraUsage["is_enabled"]) ?? false,
+        used_credits: extraUsage["used_credits"],
       },
-      "error": null,
+      error: null,
     };
 
     await writeCacheAtomic(newCache);
@@ -228,7 +232,10 @@ async function fetchUsage(token: string, version: string): Promise<JsonRecord> {
   }
 }
 
-async function writeCache(oldCache: JsonRecord | undefined, errorMessage: string | null): Promise<void> {
+async function writeCache(
+  oldCache: JsonRecord | undefined,
+  errorMessage: string | null,
+): Promise<void> {
   const data: JsonRecord = oldCache ? { ...oldCache } : {};
   data["last_fetch_ts"] = currentEpochSeconds();
   data["error"] = errorMessage;
@@ -275,7 +282,8 @@ async function main(): Promise<void> {
 
   const contextWindow = asRecord(stdinData["context_window"]) ?? {};
   const usedPercentage = contextWindow["used_percentage"];
-  const contextText = usedPercentage !== undefined && usedPercentage !== null ? `${usedPercentage}%` : "?";
+  const contextText =
+    usedPercentage !== undefined && usedPercentage !== null ? `${usedPercentage}%` : "?";
 
   const rateLimits = asRecord(stdinData["rate_limits"]) ?? {};
   const fiveHourText = formatRateLimit(asRecord(rateLimits["five_hour"]));
@@ -351,7 +359,9 @@ function getHomeDir(): string {
 }
 
 function asRecord(value: unknown): JsonRecord | undefined {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? (value as JsonRecord) : undefined;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : undefined;
 }
 
 function asString(value: unknown): string | undefined {

@@ -4,16 +4,12 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { buildWikiReferenceContext } from "../../shared/reference-wiki.ts";
 
 const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const WIKI_COMMAND_ROOT = PLUGIN_ROOT.replaceAll("\\", "/");
 
 export function registerWikiReferencesHook(pi: ExtensionAPI): void {
   let referenceContextPromise: Promise<string | undefined> | undefined;
 
   pi.on("before_agent_start", async (event) => {
-    referenceContextPromise ??= buildWikiReferenceContext({
-      pluginRoot: PLUGIN_ROOT,
-      wikiCommandRoot: WIKI_COMMAND_ROOT,
-    }).catch(() => undefined);
+    referenceContextPromise ??= buildWikiReferenceContext({ pluginRoot: PLUGIN_ROOT }).catch(() => undefined);
 
     const referenceContext = await referenceContextPromise;
     if (!referenceContext || event.systemPrompt.includes(referenceContext)) return undefined;

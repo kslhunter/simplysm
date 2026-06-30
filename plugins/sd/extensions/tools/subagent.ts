@@ -23,7 +23,7 @@ const SUBAGENT_APPEND_SYSTEM_PROMPT = [
   "너는 부모 Pi 세션에서 도구로 호출된 격리 서브에이전트다.",
   "결과는 부모 에이전트가 이어서 판단할 근거로 명확히 반환하라.",
 ].join("\n");
-const SubagentChildParams = Type.Object({
+const SubagentParams = Type.Object({
   task: Type.String({ description: "격리된 자식 pi 프로세스에서 실행할 작업 프롬프트" }),
   title: Type.Optional(Type.String({ description: "상태 줄에 표시할 서브에이전트 작업 제목" })),
   allowSubagent: Type.Optional(
@@ -38,9 +38,8 @@ const SubagentChildParams = Type.Object({
     }),
   ),
 });
-const SubagentParams = SubagentChildParams;
 const ParallelSubagentParams = Type.Object({
-  agents: Type.Array(SubagentChildParams, {
+  agents: Type.Array(SubagentParams, {
     description: "병렬로 실행할 서브에이전트 목록",
     minItems: 1,
   }),
@@ -113,8 +112,10 @@ interface RunSubagentOptions {
   onProgress?: (result: SubagentRunResult) => void;
 }
 
-interface RunParallelSubagentsOptions
-  extends Pick<RunSubagentOptions, "model" | "thinkingLevel" | "fastMode"> {
+interface RunParallelSubagentsOptions extends Pick<
+  RunSubagentOptions,
+  "model" | "thinkingLevel" | "fastMode"
+> {
   onProgress?: (result: ParallelSubagentRunResult) => void;
 }
 
@@ -243,7 +244,10 @@ export function registerSubagent(pi: ExtensionAPI) {
   );
 }
 
-function buildToolResult(result: SubagentRunResult, output: string): AgentToolResult<SubagentRunResult> {
+function buildToolResult(
+  result: SubagentRunResult,
+  output: string,
+): AgentToolResult<SubagentRunResult> {
   if (result.aborted || result.stopReason === "aborted") {
     throw new Error(`서브에이전트가 중단되었습니다.\n\n${output}`);
   }
@@ -301,17 +305,17 @@ function appendCurrentSessionArgs(args: string[], options: RunSubagentOptions) {
 function buildSubagentEnv(fastMode: boolean): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
 
-  for (const [name, value] of Object.entries(process.env)) {
-    if (value === undefined || !shouldPassSubagentEnv(name)) continue;
-    env[name] = value;
+  for (const [envName, value] of Object.entries(process.env)) {
+    if (value === undefined || !shouldPassSubagentEnv(envName)) continue;
+    env[envName] = value;
   }
 
   env[CODEX_FAST_MODE_ENV] = fastMode ? "1" : "0";
   return env;
 }
 
-function shouldPassSubagentEnv(name: string): boolean {
-  const normalized = name.toUpperCase();
+function shouldPassSubagentEnv(envName: string): boolean {
+  const normalized = envName.toUpperCase();
   return SUBAGENT_ENV_PASSTHROUGH.has(normalized) || normalized.startsWith("LC_");
 }
 
@@ -424,11 +428,11 @@ async function runSubagent(
     }
 
     const processLine = (line: string) => {
-      const event = parseJsonObject(line);
-      if (!event) return;
+      const agentEvent = parseJsonObject(line);
+      if (!agentEvent) return;
 
-      processSubagentEvent(event, state);
-      emitProgress(isMilestoneEvent(event));
+      processSubagentEvent(agentEvent, state);
+      emitProgress(isMilestoneEvent(agentEvent));
     };
 
     proc.stdout.on("data", (data: Buffer) => {
@@ -556,34 +560,34 @@ function terminateProcessTree(proc: ChildProcess, signal: NodeJS.Signals) {
   }
 }
 
-function isMilestoneEvent(event: Record<string, unknown>): boolean {
+function isMilestoneEvent(agentEvent: Record<string, unknown>): boolean {
   return (
-    event.type === "tool_execution_start" ||
-    event.type === "tool_execution_end" ||
-    event.type === "message_end" ||
-    event.type === "agent_end"
+    agentEvent.type === "tool_execution_start" ||
+    agentEvent.type === "tool_execution_end" ||
+    agentEvent.type === "message_end" ||
+    agentEvent.type === "agent_end"
   );
 }
 
-function processSubagentEvent(event: Record<string, unknown>, state: RunState) {
-  switch (event.type) {
+function processSubagentEvent(agentEvent: Record<string, unknown>, state: RunState) {
+  switch (agentEvent.type) {
     case "message_start":
-      handleMessageStart(event.message, state);
+      handleMessageStart(agentEvent.message, state);
       return;
     case "message_update":
-      handleMessageUpdate(event, state);
+      handleMessageUpdate(agentEvent, state);
       return;
     case "message_end":
-      handleMessageEnd(event.message, state);
+      handleMessageEnd(agentEvent.message, state);
       return;
     case "agent_end":
-      handleAgentEnd(event.messages, state);
+      handleAgentEnd(agentEvent.messages, state);
       return;
     case "tool_execution_start":
-      handleToolExecutionStart(event, state);
+      handleToolExecutionStart(agentEvent, state);
       return;
     case "tool_execution_end":
-      handleToolExecutionEnd(event, state);
+      handleToolExecutionEnd(agentEvent, state);
       return;
   }
 }
@@ -597,8 +601,8 @@ function handleMessageStart(message: unknown, state: RunState) {
   state.currentTextItem = item;
 }
 
-function handleMessageUpdate(event: Record<string, unknown>, state: RunState) {
-  const delta = extractTextDelta(event.assistantMessageEvent);
+function handleMessageUpdate(agentEvent: Record<string, unknown>, state: RunState) {
+  const delta = extractTextDelta(agentEvent.assistantMessageEvent);
   if (delta !== undefined) {
     const item = ensureCurrentTextItem(state);
     item.text += delta;
@@ -606,7 +610,7 @@ function handleMessageUpdate(event: Record<string, unknown>, state: RunState) {
     return;
   }
 
-  const assistantResult = extractAssistantResult(event.message);
+  const assistantResult = extractAssistantResult(agentEvent.message);
   if (assistantResult?.text === undefined) return;
 
   const item = ensureCurrentTextItem(state);
@@ -637,12 +641,12 @@ function handleAgentEnd(messages: unknown, state: RunState) {
   if (assistantResult?.errorMessage) state.errorMessage = assistantResult.errorMessage;
 }
 
-function handleToolExecutionStart(event: Record<string, unknown>, state: RunState) {
-  const toolCallId = typeof event.toolCallId === "string" ? event.toolCallId : "";
+function handleToolExecutionStart(agentEvent: Record<string, unknown>, state: RunState) {
+  const toolCallId = typeof agentEvent.toolCallId === "string" ? agentEvent.toolCallId : "";
   const item: ToolDisplayItem = {
     type: "tool",
-    name: typeof event.toolName === "string" ? event.toolName : "tool",
-    args: asRecord(event.args) ?? {},
+    name: typeof agentEvent.toolName === "string" ? agentEvent.toolName : "tool",
+    args: asRecord(agentEvent.args) ?? {},
     status: "running",
   };
 
@@ -650,9 +654,9 @@ function handleToolExecutionStart(event: Record<string, unknown>, state: RunStat
   if (toolCallId) state.toolItemsById.set(toolCallId, item);
 }
 
-function handleToolExecutionEnd(event: Record<string, unknown>, state: RunState) {
-  const toolCallId = typeof event.toolCallId === "string" ? event.toolCallId : "";
-  const toolName = typeof event.toolName === "string" ? event.toolName : "tool";
+function handleToolExecutionEnd(agentEvent: Record<string, unknown>, state: RunState) {
+  const toolCallId = typeof agentEvent.toolCallId === "string" ? agentEvent.toolCallId : "";
+  const toolName = typeof agentEvent.toolName === "string" ? agentEvent.toolName : "tool";
   let item = toolCallId ? state.toolItemsById.get(toolCallId) : undefined;
 
   if (!item) {
@@ -661,7 +665,7 @@ function handleToolExecutionEnd(event: Record<string, unknown>, state: RunState)
     if (toolCallId) state.toolItemsById.set(toolCallId, item);
   }
 
-  item.status = event.isError ? "error" : "done";
+  item.status = agentEvent.isError ? "error" : "done";
 }
 
 function ensureCurrentTextItem(state: RunState): TextDisplayItem {
@@ -717,7 +721,11 @@ function renderParallelExpandedResult(
   for (const child of details.children) {
     container.addChild(new Spacer(1));
     container.addChild(
-      new Text(theme.fg("muted", `─── ${child.index}. ${formatParallelChildTitle(child)} ───`), 0, 0),
+      new Text(
+        theme.fg("muted", `─── ${child.index}. ${formatParallelChildTitle(child)} ───`),
+        0,
+        0,
+      ),
     );
 
     if (child.result) {
@@ -741,7 +749,9 @@ function renderParallelCollapsedResult(
   theme: Theme,
 ): Text {
   let text = formatParallelStatusLine(details, isPartial, theme);
-  const childLines = details.children.map((child) => renderParallelChildLine(child, theme)).join("\n");
+  const childLines = details.children
+    .map((child) => renderParallelChildLine(child, theme))
+    .join("\n");
 
   if (childLines) text += `\n${childLines}`;
   else text += `\n${theme.fg("muted", "(실행할 서브에이전트 없음)")}`;
@@ -765,10 +775,10 @@ function getSubagentViewState(
     : failed
       ? theme.fg("error", "✗")
       : theme.fg("success", "✓");
-  const status = formatSubagentStatus(details, running, failed);
+  const statusLabel = formatSubagentStatus(details, running, failed);
   const title = details.title?.trim() ? ` ${theme.fg("accent", details.title.trim())}` : "";
 
-  return { running, icon, status, title, meta: formatSubagentMeta(details) };
+  return { running, icon, status: statusLabel, title, meta: formatTokensMeta(details.usage) };
 }
 
 function isFailedRun(details: SubagentRunResult): boolean {
@@ -879,9 +889,9 @@ function extractAssistantResult(message: unknown): AssistantResult | undefined {
 }
 
 function extractTextDelta(assistantMessageEvent: unknown): string | undefined {
-  const event = asRecord(assistantMessageEvent);
-  if (!event || event.type !== "text_delta") return undefined;
-  return typeof event.delta === "string" ? event.delta : undefined;
+  const agentEvent = asRecord(assistantMessageEvent);
+  if (!agentEvent || agentEvent.type !== "text_delta") return undefined;
+  return typeof agentEvent.delta === "string" ? agentEvent.delta : undefined;
 }
 
 function addUsageFromMessage(message: unknown, usage: SubagentUsageStats) {
@@ -930,7 +940,9 @@ function cloneSubagentResult(result: SubagentRunResult): SubagentRunResult {
   };
 }
 
-function cloneParallelChildren(children: ParallelSubagentChildResult[]): ParallelSubagentChildResult[] {
+function cloneParallelChildren(
+  children: ParallelSubagentChildResult[],
+): ParallelSubagentChildResult[] {
   return children.map((child) => ({
     ...child,
     result: child.result ? cloneSubagentResult(child.result) : undefined,
@@ -948,15 +960,18 @@ function sumParallelUsage(children: ParallelSubagentChildResult[]): SubagentUsag
 }
 
 function hasParallelAbort(children: ParallelSubagentChildResult[]): boolean {
-  return children.some(
-    (child) => child.result?.aborted || child.result?.stopReason === "aborted",
+  return children.some((child) => child.result?.aborted || child.result?.stopReason === "aborted");
+}
+
+function isFailedChild(child: ParallelSubagentChildResult): boolean {
+  return (
+    child.status === "error" ||
+    (child.status !== "running" && Boolean(child.result && isFailedRun(child.result)))
   );
 }
 
 function hasParallelFailure(children: ParallelSubagentChildResult[]): boolean {
-  return children.some(
-    (child) => child.status === "error" || (child.status !== "running" && Boolean(child.result && isFailedRun(child.result))),
-  );
+  return children.some(isFailedChild);
 }
 
 function formatToolContent(result: SubagentRunResult): string {
@@ -983,14 +998,14 @@ function formatStatusLine(view: SubagentViewState, theme: Theme): string {
   return `${view.icon} ${view.status}${view.title}${meta}`;
 }
 
-function formatSubagentMeta(details: SubagentRunResult): string {
-  const totalTokens = details.usage.input + details.usage.output;
+function formatTokensMeta(usage: SubagentUsageStats): string {
+  const totalTokens = usage.input + usage.output;
   return totalTokens > 0 ? formatTokens(totalTokens) : "";
 }
 
 function formatProgressContent(details: SubagentRunResult): string {
   const title = details.title?.trim() ? ` ${details.title.trim()}` : "";
-  const meta = formatSubagentMeta(details);
+  const meta = formatTokensMeta(details.usage);
   const preview = renderRecentDisplayPreview(details.displayItems, PREVIEW_LINE_COUNT, PLAIN_THEME);
   return `서브에이전트 실행 중${title}${meta ? ` (${meta})` : ""}${preview ? `\n${preview}` : ""}`;
 }
@@ -1040,9 +1055,9 @@ function formatParallelStatusLine(
     : failedCount > 0
       ? theme.fg("error", "✗")
       : theme.fg("success", "✓");
-  const status = formatPlainParallelStatusLine(details, running, failedCount);
-  const meta = formatParallelMeta(details);
-  return `${icon} ${status}${meta ? theme.fg("muted", ` (${meta})`) : ""}`;
+  const statusLabel = formatPlainParallelStatusLine(details, running, failedCount);
+  const meta = formatTokensMeta(details.usage);
+  return `${icon} ${statusLabel}${meta ? theme.fg("muted", ` (${meta})`) : ""}`;
 }
 
 function formatPlainParallelStatusLine(
@@ -1058,20 +1073,13 @@ function formatPlainParallelStatusLine(
 }
 
 function countParallelFailures(children: ParallelSubagentChildResult[]): number {
-  return children.filter(
-    (child) => child.status === "error" || (child.status !== "running" && Boolean(child.result && isFailedRun(child.result))),
-  ).length;
-}
-
-function formatParallelMeta(details: ParallelSubagentRunResult): string {
-  const totalTokens = details.usage.input + details.usage.output;
-  return totalTokens > 0 ? formatTokens(totalTokens) : "";
+  return children.filter(isFailedChild).length;
 }
 
 function renderParallelChildLine(child: ParallelSubagentChildResult, theme: ThemeLike): string {
-  const status = formatParallelChildStatus(child);
-  const meta = child.result ? formatSubagentMeta(child.result) : "";
-  let line = `${formatStatusIcon(child.status, theme)} ${theme.fg("accent", formatParallelChildTitle(child))} ${theme.fg("muted", status)}${meta ? theme.fg("muted", ` (${meta})`) : ""}`;
+  const statusLabel = formatParallelChildStatus(child);
+  const meta = child.result ? formatTokensMeta(child.result.usage) : "";
+  let line = `${formatStatusIcon(child.status, theme)} ${theme.fg("accent", formatParallelChildTitle(child))} ${theme.fg("muted", statusLabel)}${meta ? theme.fg("muted", ` (${meta})`) : ""}`;
   const preview = child.result
     ? renderRecentDisplayPreview(child.result.displayItems, 1, theme)
     : "";
@@ -1084,9 +1092,9 @@ function renderParallelChildLine(child: ParallelSubagentChildResult, theme: Them
   return line;
 }
 
-function formatStatusIcon(status: ToolStatus, theme: ThemeLike): string {
-  if (status === "running") return theme.fg("warning", "⏳");
-  if (status === "error") return theme.fg("error", "✗");
+function formatStatusIcon(toolStatus: ToolStatus, theme: ThemeLike): string {
+  if (toolStatus === "running") return theme.fg("warning", "⏳");
+  if (toolStatus === "error") return theme.fg("error", "✗");
   return theme.fg("success", "✓");
 }
 
@@ -1102,9 +1110,7 @@ function formatParallelChildStatus(child: ParallelSubagentChildResult): string {
 }
 
 function hasParallelExpandableContent(details: ParallelSubagentRunResult): boolean {
-  return details.children.some(
-    (child) => child.result || Boolean(child.errorMessage?.trim()),
-  );
+  return details.children.some((child) => child.result || Boolean(child.errorMessage?.trim()));
 }
 
 function renderDisplayItems(
@@ -1142,7 +1148,9 @@ function renderRecentDisplayPreview(
   return collectPreviewLines(items)
     .slice(-limit)
     .map((line) =>
-      line.type === "text" ? theme.fg("toolOutput", line.text) : renderToolItem(line.item, PLAIN_THEME),
+      line.type === "text"
+        ? theme.fg("toolOutput", line.text)
+        : renderToolItem(line.item, PLAIN_THEME),
     )
     .join("\n");
 }
@@ -1228,27 +1236,27 @@ function formatToolCall(item: ToolDisplayItem, theme: ThemeLike): string {
 }
 
 function formatPathToolCall(
-  name: string,
+  toolName: string,
   item: ToolDisplayItem,
   theme: ThemeLike,
   suffix = "",
   fallbackPath = "...",
 ): string {
   return (
-    theme.fg("muted", `${name} `) +
+    theme.fg("muted", `${toolName} `) +
     theme.fg("accent", getToolPath(item.args, fallbackPath)) +
     suffix
   );
 }
 
 function formatSearchToolCall(
-  name: string,
+  toolName: string,
   pattern: string,
   item: ToolDisplayItem,
   theme: ThemeLike,
 ): string {
   return (
-    theme.fg("muted", `${name} `) +
+    theme.fg("muted", `${toolName} `) +
     theme.fg("accent", pattern) +
     theme.fg("dim", ` in ${getToolPath(item.args, ".")}`)
   );

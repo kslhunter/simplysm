@@ -153,11 +153,8 @@ def _docx_extract_nodes(input_path: Path) -> tuple[list[dict], dict[str, int]]:
     img_rels: dict[str, str] = {}
     for rid, rel in doc.part.rels.items():
         if rel.reltype == IMG_RELTYPE:
-            try:
-                basename = Path(rel.target_ref).name
-                img_rels[rid] = f"images/{basename}"
-            except Exception:
-                continue
+            basename = Path(rel.target_ref).name
+            img_rels[rid] = f"images/{basename}"
 
     nodes: list[dict] = []
     counts = {
@@ -536,7 +533,6 @@ def _pptx_extract_slide_nodes(
     nodes: list[dict] = []
     chart_refs: list[str] = []
 
-    title_shape = None
     try:
         title_shape = slide.shapes.title
     except (AttributeError, ValueError):
@@ -552,10 +548,7 @@ def _pptx_extract_slide_nodes(
 
         # 표
         if getattr(shape, "has_table", False):
-            try:
-                table = shape.table
-            except Exception:
-                table = None
+            table = shape.table
             if table is not None:
                 table_idx = shape_idx + 1
                 for r_idx, row in enumerate(table.rows, start=1):
@@ -573,18 +566,14 @@ def _pptx_extract_slide_nodes(
 
         # 차트
         if getattr(shape, "has_chart", False):
-            try:
-                data = _extract_pptx_chart_data(shape.chart)
-            except Exception:
-                data = None
+            data = _extract_pptx_chart_data(shape.chart)
             chart_filename = f"slide{slide_num:02d}_chart{shape_idx + 1:02d}.data.json"
-            if data is not None:
-                _common.mkdir(charts_dir)
-                _common.write_text(
-                    charts_dir / chart_filename,
-                    json.dumps(data, ensure_ascii=False, indent=2),
-                )
-                chart_refs.append(chart_filename)
+            _common.mkdir(charts_dir)
+            _common.write_text(
+                charts_dir / chart_filename,
+                json.dumps(data, ensure_ascii=False, indent=2),
+            )
+            chart_refs.append(chart_filename)
             nodes.append({
                 **common,
                 "type": "chart",
@@ -626,7 +615,7 @@ def _pptx_extract_slide_nodes(
         subtype = ""
         try:
             subtype = str(shape.shape_type)
-        except Exception:
+        except (AttributeError, TypeError):
             pass
         nodes.append({
             **common,
@@ -809,11 +798,11 @@ def _run_xlsx(
 
             # COM Excel 호출: 데이터 영역 → ChartObject + Range.CopyPicture → 시트별 PNG.
             # 시트별 (last_row, last_col) 도 같이 반환되어 .jsonl 이 같은 데이터 영역으로 통일됨.
-            # PNG export 실패한 시트는 sheet_png_skipped 에 사유 (silent skip 금지).
+            # PNG export 실패는 worker 에서 raise (부분 산출물 방지).
             with _common.com_lock():
                 # openpyxl_input 사용: 정제본(NaN 제거) 이 있으면 COM Excel 도 정제본을 열어야 함
                 # (Excel 역시 `<v>NaN</v>` 가 있는 xlsx 의 Open 에 실패).
-                sheet_ranges, sheet_png_skipped = _excel_export_sheet_pngs(openpyxl_input, sheets_dir, sheet_names)
+                sheet_ranges = _excel_export_sheet_pngs(openpyxl_input, sheets_dir, sheet_names)
 
             for idx, safe_name, raw_name in sheet_names:
                 ws_v = wb_values[raw_name]
@@ -849,7 +838,7 @@ def _run_xlsx(
                         if hasattr(v, "__iter__"):
                             try:
                                 chart = next(iter(v), None)
-                            except Exception:
+                            except (TypeError, StopIteration):
                                 chart = None
                         else:
                             chart = v
@@ -859,10 +848,7 @@ def _run_xlsx(
                     # 단일 chart 속성 fallback
                     chart = getattr(cs, "chart", None)
                 if chart is not None:
-                    try:
-                        data = _extract_openpyxl_chart_data(chart)
-                    except Exception:
-                        data = None
+                    data = _extract_openpyxl_chart_data(chart)
                     if data is not None:
                         _common.mkdir(charts_dir)
                         chart_filename = f"sheet{idx}_chart.data.json"
@@ -911,9 +897,8 @@ def _run_xlsx(
             if png_path.exists():
                 parts = [f"`sheets/{idx}_{safe_name}.png`", "`.jsonl`"]
             else:
-                # PNG 미생성 — worker 가 사유 전달 (16-bit cap / COM 실패 등)
-                reason = sheet_png_skipped.get(raw_name, "사유 미상")
-                parts = [f"`sheets/{idx}_{safe_name}.jsonl`", f"(PNG 미생성 — {reason})"]
+                # 빈 시트(데이터 영역 없음) — PNG 없음. export 실패는 worker 에서 raise.
+                parts = [f"`sheets/{idx}_{safe_name}.jsonl`", "(PNG 미생성 — 빈 시트)"]
             chart_refs = sheet_charts.get(idx, [])
             if chart_refs:
                 parts.append("(차트: " + ", ".join(f"`charts/{c}`" for c in chart_refs) + ")")
@@ -1016,13 +1001,13 @@ def _excel_export_sheet_pngs(
     input_path: Path,
     sheets_dir: Path,
     sheet_names: list[tuple[str, str, str]],
-) -> tuple[dict[str, tuple[int, int]], dict[str, str]]:
-    """시트별 PNG 생성 + (last_row, last_col) 매핑 + skipped 사유 반환.
+) -> dict[str, tuple[int, int]]:
+    """시트별 PNG 생성 + (last_row, last_col) 매핑 반환.
 
     호출자에서 sheetProtection strip 사본 만들고 worker 에 그 사본 path 만 넘김.
-    Excel COM 자체 작업은 worker subprocess.
+    Excel COM 자체 작업은 worker subprocess. PNG export 실패는 worker 에서 raise.
 
-    반환: (sheet_ranges, skipped) — skipped 는 PNG export 실패한 시트의 사유 dict (raw_name → reason).
+    반환: sheet_ranges — 빈 시트(데이터 없음)는 미기록.
     """
     with _common.temp_workdir() as tmp:
         unprotected = tmp / "_unprotected.xlsx"
@@ -1032,12 +1017,10 @@ def _excel_export_sheet_pngs(
             timeout=600, capture_stdout=True,
         )
     if not result.strip():
-        return {}, {}
+        return {}
     parsed = json.loads(result)
     ranges_raw = parsed.get("sheet_ranges", {})
-    sheet_ranges = {k: tuple(v) for k, v in ranges_raw.items()}
-    skipped = parsed.get("skipped", {})
-    return sheet_ranges, skipped
+    return {k: tuple(v) for k, v in ranges_raw.items()}
 
 
 def _xlsx_strip_protection(src: Path, dst: Path) -> None:
@@ -1046,7 +1029,6 @@ def _xlsx_strip_protection(src: Path, dst: Path) -> None:
     Excel COM 의 ChartObjects.Add 가 보호 시트에서 차단되는 이슈 회피용.
     비번 hash 우회 불필요 — xlsx 의 보호는 xml 노드가 본체. 다른 part 는 그대로 → 차트/매크로/이미지 보존.
     """
-    import re
     # attribute value 에 '/' 들어갈 수 있음 (hashValue base64) → '/' 제외하면 안 됨.
     # '>' 만 제외하고 lazy 로 첫 '/>' 까지.
     sheet_re = re.compile(rb'<sheetProtection\b[^>]*?/>')
@@ -1085,26 +1067,6 @@ def _convert_legacy(input_path: Path, target_path: Path) -> None:
 # ====================================================================
 # 공용
 # ====================================================================
-
-def _render_pdf_pages(pdf_path: Path, pages_dir: Path) -> list[str]:
-    """PDF → 페이지별 PNG + MD."""
-    _common.ensure_pip("fitz", "PyMuPDF")
-    import fitz
-
-    summaries: list[str] = []
-    doc = fitz.open(_common.long_str(pdf_path))
-    try:
-        for i, page in enumerate(doc, start=1):
-            idx = f"{i:03d}"
-            text = page.get_text("text") or ""
-            _common.write_text(pages_dir / f"{idx}.md", text)
-            pix = page.get_pixmap(dpi=300)
-            pix.save(_common.long_str(pages_dir / f"{idx}.png"))
-            summaries.append(f"`pages/{idx}.png` (시각) — `.md` ({len(text)}자)")
-    finally:
-        doc.close()
-    return summaries
-
 
 def _source_meta(
     input_path: Path,
@@ -1162,7 +1124,7 @@ def _extract_xlsx_images_with_position(
 
     파일명 패턴: `<sheet_safe_name>_<cell_addr>.<ext>` (예: `BOA_E5.png`).
     같은 셀에 여러 이미지면 unique_path 가 _1, _2 suffix.
-    이미지 데이터/anchor 추출 실패 시 그 이미지만 skip (전체 fail 안 함).
+    이미지/anchor 추출 실패 시 throw(전체 실패). raw 데이터가 비면 그 이미지만 skip.
     """
     _common.ensure_pip("openpyxl")
     from openpyxl import load_workbook
@@ -1346,17 +1308,13 @@ def _workbook_meta(wb, input_path: Path) -> dict[str, Any]:
     meta: dict[str, Any] = {}
     defined_names: dict[str, list[str]] = {}
     # openpyxl 3.x: wb.defined_names 는 DefinedNameDict (dict-like)
-    try:
-        for def_name, dn in wb.defined_names.items():
-            try:
-                dests = [f"'{sheet}'!{addr}" for sheet, addr in dn.destinations]
-            except Exception:
-                # destinations 파싱 불가 시 raw value 보존 (예: 워크북-수식 형태)
-                dests = [str(getattr(dn, "value", ""))]
-            defined_names[def_name] = dests
-    except Exception:
-        # defined_names 자체 접근 실패 → 워크북에 없는 것으로 처리
-        pass
+    for def_name, dn in wb.defined_names.items():
+        try:
+            dests = [f"'{sheet}'!{addr}" for sheet, addr in dn.destinations]
+        except Exception:
+            # destinations 파싱 불가 시 raw value 보존 (예: 워크북-수식 형태)
+            dests = [str(getattr(dn, "value", ""))]
+        defined_names[def_name] = dests
     if defined_names:
         meta["defined_names"] = defined_names
 
@@ -1401,43 +1359,34 @@ def _extract_pivots(input_path: Path) -> list[dict]:
 
             # 1. workbook.xml.rels 에서 Id → Target 매핑
             rid_to_target: dict[str, str] = {}
-            try:
-                rels_root = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
-                for rel in rels_root.findall(f"{_PKG_REL_NS}Relationship"):
-                    rid_to_target[rel.get("Id", "")] = rel.get("Target", "")
-            except Exception:
-                pass
+            rels_root = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+            for rel in rels_root.findall(f"{_PKG_REL_NS}Relationship"):
+                rid_to_target[rel.get("Id", "")] = rel.get("Target", "")
 
             # 2. workbook.xml 의 pivotCaches 에서 cacheId → cache 파일 경로 매핑
             cache_id_to_file: dict[str, str] = {}
-            try:
-                wb_root = ET.fromstring(zf.read("xl/workbook.xml"))
-                pcs = wb_root.find(f"{_XLSX_NS}pivotCaches")
-                if pcs is not None:
-                    for pc in pcs:
-                        cid = pc.get("cacheId")
-                        rid = pc.get(f"{_XLSX_REL_NS}id")
-                        if not cid or not rid:
-                            continue
-                        target = rid_to_target.get(rid, "")
-                        if not target:
-                            continue
-                        # target 의 상대 경로 → ZIP 안 절대 경로
-                        if target.startswith("/"):
-                            cache_path = target.lstrip("/")
-                        else:
-                            cache_path = "xl/" + target
-                        cache_id_to_file[cid] = cache_path
-            except Exception:
-                pass
+            wb_root = ET.fromstring(zf.read("xl/workbook.xml"))
+            pcs = wb_root.find(f"{_XLSX_NS}pivotCaches")
+            if pcs is not None:
+                for pc in pcs:
+                    cid = pc.get("cacheId")
+                    rid = pc.get(f"{_XLSX_REL_NS}id")
+                    if not cid or not rid:
+                        continue
+                    target = rid_to_target.get(rid, "")
+                    if not target:
+                        continue
+                    # target 의 상대 경로 → ZIP 안 절대 경로
+                    if target.startswith("/"):
+                        cache_path = target.lstrip("/")
+                    else:
+                        cache_path = "xl/" + target
+                    cache_id_to_file[cid] = cache_path
 
             # 3. cache 파일 파싱: cacheId → {source, field_names}
             cache_info: dict[str, dict] = {}
             for cid, cf in cache_id_to_file.items():
-                try:
-                    root = ET.fromstring(zf.read(cf))
-                except Exception:
-                    continue
+                root = ET.fromstring(zf.read(cf))
                 info: dict = {}
                 cs = root.find(f"{_XLSX_NS}cacheSource")
                 if cs is not None:
@@ -1461,10 +1410,7 @@ def _extract_pivots(input_path: Path) -> list[dict]:
 
             # pivot table 파일 파싱
             for pf in pivot_files:
-                try:
-                    root = ET.fromstring(zf.read(pf))
-                except Exception:
-                    continue
+                root = ET.fromstring(zf.read(pf))
                 pivot: dict = {"name": root.get("name", "")}
                 cache_id = root.get("cacheId", "")
                 field_names: list[str] = []

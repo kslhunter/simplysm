@@ -1,7 +1,7 @@
 /** SessionStart hook (플러그인 sd-wiki) — 원격 ROOT MAP 주입.
  *
  * 원격 위키에서 ROOT MAP(최상위 라우팅 목록)을 받아 주입. 미인증·만료면 백그라운드
- * 로그인을 wiki_login 에 위임한 뒤 무주입 fail-open. 인증·네트워크·서비스 코어(wiki-service)에
+ * 로그인을 wiki-login 에 위임한 뒤 무주입 fail-open. 인증·네트워크·서비스 코어(wiki-service)에
  * 의존하는 동적 주입 — 의존이 전혀 다른 정적 reference 주입(session-start-reference-wiki.ts)과 별개
  * 파일·별개 SessionStart command 로 분리돼 있다.
  *
@@ -9,38 +9,15 @@
  * 찍지 않음(stderr 만).
  */
 
-import * as wikiCore from "../shared/wiki-service.ts";
-import { formatRootmap } from "../shared/wiki-rootmap.ts";
-import { isSessionSkipped, markSessionSkipped, triggerBackgroundLogin } from "./wiki_login.ts";
+import { fetchRootMap, formatRootmapItems } from "../shared/wiki-rootmap.ts";
+import { isSessionSkipped, markSessionSkipped, triggerBackgroundLogin } from "./wiki-login.ts";
+import { readStdinJsonRecord } from "../shared/wiki-util.ts";
 
 const PLUGIN_ROOT = process.env["CLAUDE_PLUGIN_ROOT"];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-async function readStdinText(): Promise<string> {
-  if (process.stdin.isTTY) return "";
-  return await new Promise((resolve, reject) => {
-    let data = "";
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("data", (chunk) => {
-      data += String(chunk);
-    });
-    process.stdin.on("end", () => resolve(data));
-    process.stdin.on("error", reject);
-  });
-}
-
 async function readSessionId(): Promise<string | null> {
-  let stdinData: unknown = {};
-  try {
-    const text = await readStdinText();
-    stdinData = text ? (JSON.parse(text) as unknown) : {};
-  } catch {
-    stdinData = {};
-  }
-  const sessionId = isRecord(stdinData) ? stdinData["session_id"] : undefined;
+  const data = await readStdinJsonRecord();
+  const sessionId = data?.["session_id"];
   return typeof sessionId === "string" && sessionId ? sessionId : null;
 }
 
@@ -56,40 +33,12 @@ async function injectRootmap(): Promise<void> {
     triggerBackgroundLogin();
   }
 
-  let token: string | null;
-  try {
-    token = await wikiCore.getToken(false);
-  } catch (error) {
-    if (error instanceof wikiCore.WikiAuthExpired) {
-      deferLogin();
-      return;
-    }
-    if (error instanceof wikiCore.WikiAuthError) {
-      // 네트워크·서버 오류 — 만료가 아니므로 로그인 트리거 없이 fail-open.
-      return;
-    }
-    throw error;
-  }
+  const rootmap = await fetchRootMap(deferLogin);
+  if (rootmap === undefined) return;
 
-  if (token === null) {
-    deferLogin();
-    return;
-  }
-
-  let rootmap: unknown;
-  try {
-    rootmap = await wikiCore.callService("rootMap", [], token);
-  } catch (error) {
-    if (error instanceof wikiCore.WikiAuthExpired) {
-      deferLogin();
-      return;
-    }
-    return;
-  }
-
-  // 응답 손상이면 formatRootmap 이 throw → main 의 try 가 무주입 fail-open.
-  const text = formatRootmap(rootmap);
-  process.stdout.write(`## 개인 지식 위키 ROOT MAP (원격·최상위)\n\n${text}`);
+  // 응답 손상이면 formatRootmapItems 가 throw → main 의 try 가 무주입 fail-open.
+  const items = formatRootmapItems(rootmap);
+  process.stdout.write(`## 원격 공용 위키 ROOT MAP (최상위)\n\n${items || "ROOT MAP 항목 없음"}`);
 }
 
 async function main(): Promise<number> {

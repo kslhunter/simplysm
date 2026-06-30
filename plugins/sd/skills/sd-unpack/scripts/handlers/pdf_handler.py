@@ -145,20 +145,13 @@ def _pdf_page_to_jsonl(
             block_idx += 1
 
     # 표 셀 노드 (find_tables, 블록과 중복 가능 — 양쪽 다 보존)
-    tables: list = []
-    try:
-        finder = page.find_tables()
-        tables = list(finder.tables) if hasattr(finder, "tables") else list(finder)
-    except Exception:
-        tables = []
+    finder = page.find_tables()
+    tables = list(finder.tables) if hasattr(finder, "tables") else list(finder)
     counts["tables"] = len(tables)
 
     for t_idx, tab in enumerate(tables, start=1):
-        try:
-            rows = tab.extract()
-            t_bbox = [round(c, 2) for c in tab.bbox]
-        except Exception:
-            continue
+        rows = tab.extract()
+        t_bbox = [round(c, 2) for c in tab.bbox]
         for r_idx, row in enumerate(rows, start=1):
             for c_idx, cell_text in enumerate(row, start=1):
                 if cell_text is None:
@@ -175,60 +168,48 @@ def _pdf_page_to_jsonl(
                 counts["table_cells"] += 1
 
     # form fields (양식 입력란)
-    try:
-        widgets = page.widgets() or []
-        for widget in widgets:
-            try:
-                rect = list(widget.rect)
-            except Exception:
-                rect = [0, 0, 0, 0]
-            value = widget.field_value
-            if value is None:
-                value = ""
-            field_type = widget.field_type_string or str(widget.field_type)
-            name = widget.field_name or ""
-            node_lines.append({
-                "page": page_num,
-                "type": "form_field",
-                "name": name,
-                "field_type": field_type,
-                "value": str(value),
-                "bbox": rect,
-            })
-            counts["form_fields"] += 1
-    except Exception:
-        pass
+    widgets = page.widgets() or []
+    for widget in widgets:
+        rect = list(widget.rect)
+        value = widget.field_value
+        if value is None:
+            value = ""
+        field_type = widget.field_type_string or str(widget.field_type)
+        name = widget.field_name or ""
+        node_lines.append({
+            "page": page_num,
+            "type": "form_field",
+            "name": name,
+            "field_type": field_type,
+            "value": str(value),
+            "bbox": rect,
+        })
+        counts["form_fields"] += 1
 
     # annotations (주석·highlight·sticky note 등)
-    try:
-        annots = page.annots() or []
-        for annot in annots:
-            try:
-                rect = list(annot.rect)
-            except Exception:
-                rect = [0, 0, 0, 0]
-            atype = annot.type
-            subtype = atype[1] if isinstance(atype, (tuple, list)) and len(atype) > 1 else str(atype)
-            info = annot.info or {}
-            node = {
-                "page": page_num,
-                "type": "annotation",
-                "subtype": subtype,
-                "bbox": rect,
-            }
-            content = info.get("content")
-            if content:
-                node["content"] = content
-            author = info.get("title")  # info["title"] = author
-            if author:
-                node["author"] = author
-            subject = info.get("subject")
-            if subject:
-                node["subject"] = subject
-            node_lines.append(node)
-            counts["annotations"] += 1
-    except Exception:
-        pass
+    annots = page.annots() or []
+    for annot in annots:
+        rect = list(annot.rect)
+        atype = annot.type
+        subtype = atype[1] if isinstance(atype, (tuple, list)) and len(atype) > 1 else str(atype)
+        info = annot.info or {}
+        node = {
+            "page": page_num,
+            "type": "annotation",
+            "subtype": subtype,
+            "bbox": rect,
+        }
+        content = info.get("content")
+        if content:
+            node["content"] = content
+        author = info.get("title")  # info["title"] = author
+        if author:
+            node["author"] = author
+        subject = info.get("subject")
+        if subject:
+            node["subject"] = subject
+        node_lines.append(node)
+        counts["annotations"] += 1
 
     meta = {
         "_meta": {

@@ -125,8 +125,8 @@ def cmd_ppt_png(args) -> None:
 def cmd_excel_sheets(args) -> None:
     """input 은 이미 sheetProtection strip 된 사본 (호출자가 처리).
 
-    stdout JSON 형식: {"sheet_ranges": {raw_name: [last_row, last_col]},
-                       "skipped": {raw_name: "PNG skip 사유"}}
+    stdout JSON 형식: {"sheet_ranges": {raw_name: [last_row, last_col]}}
+    (PNG export 실패는 raise — 부분 산출물을 완료로 오인 방지.)
     """
     import pythoncom
     import win32com.client
@@ -136,7 +136,6 @@ def cmd_excel_sheets(args) -> None:
     sheet_names = json.loads(args.sheet_names)  # [[idx, safe_name, raw_name], ...]
 
     sheet_ranges: dict[str, tuple[int, int]] = {}
-    skipped: dict[str, str] = {}  # raw_name -> PNG skip 사유 (silent skip 금지)
     tmp_dir = Path(tempfile.mkdtemp(prefix="sd-unpack-worker-"))
 
     pythoncom.CoInitialize()
@@ -154,7 +153,7 @@ def cmd_excel_sheets(args) -> None:
                 excel.Calculation = -4135  # xlCalculationManual
                 wb.RemovePersonalInformation = False
                 for idx, safe_name, raw_name in sheet_names:
-                    _export_one_sheet(wb, tmp_dir, sheets_dir, idx, safe_name, raw_name, sheet_ranges, skipped)
+                    _export_one_sheet(wb, tmp_dir, sheets_dir, idx, safe_name, raw_name, sheet_ranges)
             finally:
                 wb.Close(SaveChanges=False)
         finally:
@@ -163,15 +162,15 @@ def cmd_excel_sheets(args) -> None:
         pythoncom.CoUninitialize()
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    sys.stdout.write(json.dumps({"sheet_ranges": sheet_ranges, "skipped": skipped}))
+    sys.stdout.write(json.dumps({"sheet_ranges": sheet_ranges}))
 
 
 def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
                       idx: str, safe_name: str, raw_name: str,
-                      sheet_ranges: dict, skipped: dict) -> None:
+                      sheet_ranges: dict) -> None:
     """한 시트 데이터 영역 → PNG. sheet_ranges 에 (last_row, last_col) 기록.
 
-    PNG export 실패 시 skipped[raw_name] 에 사유 기록 후 return (silent 금지, 호출자가 README 명시).
+    PNG export 실패는 raise (부분 산출물을 완료로 오인 방지). 빈 시트만 정상 skip.
     """
     ws = wb.Worksheets(raw_name)
     # xlSheetVisible=-1, xlSheetHidden=0, xlSheetVeryHidden=2
@@ -214,11 +213,11 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
         est_w_px = chart_w * 96 / 72
         est_h_px = chart_h * 96 / 72
         if est_w_px > 60000 or est_h_px > 60000:
-            skipped[raw_name] = (
-                f"16-bit cap 초과 (chart_w_pt={chart_w:.0f}, chart_h_pt={chart_h:.0f}, "
+            raise RuntimeError(
+                f"PNG export 16-bit cap 초과 (raw_name={raw_name!r}, "
+                f"chart_w_pt={chart_w:.0f}, chart_h_pt={chart_h:.0f}, "
                 f"est_w_px={est_w_px:.0f}, est_h_px={est_h_px:.0f})"
             )
-            return
         try:
             data_range.CopyPicture(Appearance=1, Format=-4147)
             chart_obj = ws.ChartObjects().Add(0, 0, chart_w, chart_h)
@@ -227,23 +226,19 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
                 chart_obj.Chart.Paste()
                 tmp_png = tmp / f"sheet_{idx}.png"
                 chart_obj.Chart.Export(short_str(tmp_png), "PNG")
-                if tmp_png.exists():
-                    # long-path-safe copy
-                    shutil.copy2(long_str(tmp_png), long_str(sheets_dir / f"{idx}_{safe_name}.png"))
-                else:
-                    skipped[raw_name] = "Chart.Export 산출 PNG 미생성"
+                if not tmp_png.exists():
+                    raise RuntimeError("Chart.Export 산출 PNG 미생성")
+                # long-path-safe copy
+                shutil.copy2(long_str(tmp_png), long_str(sheets_dir / f"{idx}_{safe_name}.png"))
             finally:
                 chart_obj.Delete()
         except Exception as e:
-            # PNG export 실패 — 시트 jsonl 은 호출자에서 별도 생성됨. sheet_ranges 이미 기록됨.
-            # 분석 정확도: 데이터(jsonl) 보존 우선, PNG 만 skip + 사유 명시.
-            reason_parts = [
-                f"Excel COM PNG export 실패",
-                f"chart_w_pt={chart_w:.0f}, chart_h_pt={chart_h:.0f}",
-                f"last_row={last_row}, last_col={last_col}",
-                f"error={str(e)[:200]}",
-            ]
-            skipped[raw_name] = " | ".join(reason_parts)
+            # PNG export 실패 → throw (부분 산출물을 완료로 오인 방지).
+            raise RuntimeError(
+                f"Excel COM PNG export 실패 (raw_name={raw_name!r}, "
+                f"chart_w_pt={chart_w:.0f}, chart_h_pt={chart_h:.0f}, "
+                f"last_row={last_row}, last_col={last_col}): {str(e)[:200]}"
+            ) from e
     finally:
         if original_visible != -1:
             ws.Visible = original_visible

@@ -1,20 +1,20 @@
-import { registerAppendSystem } from "./append-system";
-import { registerExit } from "./exit";
+import { registerAppendSystem } from "./append-system.ts";
+import { registerExit } from "./exit.ts";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { registerAltEnterNewline } from "./tui/alt-enter-newline";
-import { registerClipboardImagePaste } from "./tui/clipboard-image-paste";
-import { registerPasteTrim } from "./tui/paste-trim";
-import { registerSelection } from "./tui/selection";
-import { registerWorkingElapsed } from "./tui/working-elapsed";
-import { registerCodexFastMode } from "./codex/fast-mode";
-import { registerCodexReasoningSummary } from "./codex/reasoning-summary";
-import { registerCodexStatusline } from "./codex/statusline";
-import { registerAutoUpdate } from "./update/auto-update";
+import { registerAltEnterNewline } from "./tui/alt-enter-newline.ts";
+import { registerClipboardImagePaste } from "./tui/clipboard-image-paste.ts";
+import { registerPasteTrim } from "./tui/paste-trim.ts";
+import { registerSelection } from "./tui/selection.ts";
+import { registerWorkingElapsed } from "./tui/working-elapsed.ts";
+import { registerCodexFastMode } from "./codex/fast-mode.ts";
+import { registerCodexReasoningSummary } from "./codex/reasoning-summary.ts";
+import { registerCodexStatusline } from "./codex/statusline.ts";
+import { registerAutoUpdate } from "./update/auto-update.ts";
 import { registerHooks } from "./hooks/register.ts";
-import { registerSubagent } from "./tools/subagent";
-import { registerSkill } from "./tools/skill";
-import { registerWebFetch } from "./tools/web-fetch";
-import { registerWebSearch } from "./tools/web-search";
+import { registerSubagent } from "./tools/subagent.ts";
+import { registerSkill } from "./tools/skill.ts";
+import { registerWebFetch } from "./tools/web-fetch.ts";
+import { registerWebSearch } from "./tools/web-search.ts";
 
 export default function (pi: ExtensionAPI) {
   registerAppendSystem(pi);

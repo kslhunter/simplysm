@@ -1,5 +1,14 @@
 import { existsSync } from "node:fs";
-import { copyFile, mkdir, readFile, rename, stat, unlink, utimes, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  rename,
+  stat,
+  unlink,
+  utimes,
+  writeFile,
+} from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,7 +46,10 @@ async function copyStatuslineIfNeeded(sourcePath: string, targetPath: string): P
   await utimes(targetPath, sourceStat.atime, sourceStat.mtime);
 }
 
-async function injectStatuslineSetting(statuslinePath: string, previousStatuslinePath: string): Promise<void> {
+async function injectStatuslineSetting(
+  statuslinePath: string,
+  previousStatuslinePath: string,
+): Promise<void> {
   const settingsPath = join(getHomeDir(), ".claude", "settings.json");
   let settings: Record<string, unknown> = {};
 
@@ -92,6 +104,4 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-if ((import.meta as { main?: boolean }).main) {
-  await main();
-}
+await main();
