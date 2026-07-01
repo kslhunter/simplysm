@@ -160,10 +160,10 @@ export class Capacitor {
   //#region Private - 명령어 실행
 
   /**
-   * Capacitor CLI 명령어를 Bun PM 실행 흐름으로 실행
+   * Capacitor CLI 명령어를 pnpm exec로 실행
    */
   private async _execCap(args: string[]): Promise<string> {
-    return this._exec("bun", ["run", "cap", ...args], this._capPath);
+    return this._exec("pnpm", ["exec", "cap", ...args], this._capPath);
   }
 
   /**

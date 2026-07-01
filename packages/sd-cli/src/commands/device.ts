@@ -72,7 +72,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
         portStr = fsx.readSync(portFile).trim();
       } catch {
         throw new SdError(
-          "dev 서버가 실행 중이 아닙니다. 먼저 bun run dev를 실행해주세요.",
+          "dev 서버가 실행 중이 아닙니다. 먼저 pnpm dev를 실행해주세요.",
         );
       }
       const port = Number(portStr);
@@ -93,7 +93,7 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
       const alive = await checkDevServer(serverUrl);
       if (!alive) {
         throw new SdError(
-          "dev 서버가 응답하지 않습니다. bun run dev를 다시 실행해주세요.",
+          "dev 서버가 응답하지 않습니다. pnpm dev를 다시 실행해주세요.",
         );
       }
     }

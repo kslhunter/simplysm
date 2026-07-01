@@ -16,46 +16,6 @@ export interface PackageJson {
 }
 
 /**
- * bun.lock의 workspaces 섹션에 스냅샷된 각 워크스페이스 패키지 version을 새 버전으로 맞춘다.
- *
- * bun publish/pack은 `workspace:*` 의존성을 치환할 때 대상 패키지의 package.json이 아니라
- * bun.lock의 `workspaces.<dir>.version`을 읽는다 (bun 1.2.8+, oven-sh/bun#20477). 또한 version만
- * bump하면 `bun install`이 lock의 워크스페이스 version을 갱신하지 않으므로 (oven-sh/bun#18906),
- * package.json만 올리면 lock이 뒤처져 이전 버전으로 치환된다. 이를 막기 위해 lock을 직접 맞춘다.
- *
- * `"version"` 키는 workspaces 섹션에만 나타나므로(packages 섹션의 의존성은 `"name@ver"` 배열 형태),
- * workspaces 객체 범위 안의 `"version"` 값만 새 버전으로 치환한다. 값이 아닌 위치 기준이라
- * lock이 몇 버전 뒤처져 있든 정확히 맞춰진다.
- */
-function syncBunLockWorkspaceVersions(content: string, newVersion: string): string {
-  const wsKeyIdx = content.indexOf('"workspaces":');
-  if (wsKeyIdx === -1) return content;
-
-  const braceStart = content.indexOf("{", wsKeyIdx);
-  if (braceStart === -1) return content;
-
-  // balanced brace로 workspaces 객체의 끝을 찾는다 (값 문자열에 중괄호가 없어 안전).
-  let depth = 0;
-  let braceEnd = -1;
-  for (let i = braceStart; i < content.length; i++) {
-    const ch = content[i];
-    if (ch === "{") depth++;
-    else if (ch === "}") {
-      depth--;
-      if (depth === 0) {
-        braceEnd = i;
-        break;
-      }
-    }
-  }
-  if (braceEnd === -1) return content;
-
-  const section = content.slice(braceStart, braceEnd + 1);
-  const newSection = section.replace(/("version"\s*:\s*)"[^"]*"/g, `$1"${newVersion}"`);
-  return content.slice(0, braceStart) + newSection + content.slice(braceEnd + 1);
-}
-
-/**
  * 프로젝트 및 패키지 버전 업그레이드
  * @param dryRun true이면 파일을 수정하지 않고 새 버전만 계산
  */
@@ -97,17 +57,6 @@ export async function upgradeVersion(
     }),
   );
   changedFiles.push(...pkgChangedFiles);
-
-  // bun.lock의 워크스페이스 version 동기화 (bun publish가 lock을 읽어 workspace:* 를 치환하므로)
-  const bunLockPath = path.resolve(cwd, "bun.lock");
-  if (await fsx.exists(bunLockPath)) {
-    const lockContent = await fsx.read(bunLockPath);
-    const newLockContent = syncBunLockWorkspaceVersions(lockContent, newVersion);
-    if (newLockContent !== lockContent) {
-      await fsx.write(bunLockPath, newLockContent);
-      changedFiles.push(bunLockPath);
-    }
-  }
 
   // 템플릿 파일의 @simplysm 패키지 버전 동기화
   const templateFiles = await fsx.glob(path.resolve(cwd, "packages/sd-cli/templates/**/*.hbs"));

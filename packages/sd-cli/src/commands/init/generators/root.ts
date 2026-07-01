@@ -13,6 +13,7 @@ const FIXED: (string | [string, string])[] = [
   ["gitignore", ".gitignore"],
   ".prettierrc.yaml",
   "eslint.config.ts",
+  "pnpm-workspace.yaml",
 ];
 
 const HBS = [

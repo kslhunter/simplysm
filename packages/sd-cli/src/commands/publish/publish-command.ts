@@ -76,7 +76,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   const projPkgPath = path.resolve(cwd, "package.json");
   const projPkg = await fsx.readJson<PackageJson>(projPkgPath);
 
-  // package.json#workspaces에서 워크스페이스 패키지 경로 수집
+  // pnpm-workspace.yaml에서 워크스페이스 패키지 경로 수집
   const allPkgPaths = collectWorkspacePackages(cwd).map((item) => item.absPath);
 
   // publish 설정이 있는 패키지 필터링

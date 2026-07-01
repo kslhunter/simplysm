@@ -51,9 +51,9 @@ export async function setupIcon(
     // capacitor-assets로 모든 해상도 아이콘/스플래시 생성
     const isDebug = consola.level >= LogLevels.debug;
     await cpx.spawn(
-      "bun",
+      "pnpm",
       [
-        "run",
+        "exec",
         "capacitor-assets",
         "generate",
         "--iconBackgroundColor",

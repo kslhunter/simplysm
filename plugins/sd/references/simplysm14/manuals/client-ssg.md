@@ -5,7 +5,7 @@
 동작 개요:
 
 ```
-빌드(bun run build):
+빌드(pnpm build):
   browser 번들 (기존 SPA 와 동일)
   + src/main.server.ts 진입의 node 번들 → 라우트별 <경로>/index.html 생성
   + SPA 셸을 index.csr.html 로 별도 보존
@@ -57,7 +57,11 @@ import { AppRoot } from "./app.root";
 import { appProviders } from "./app.providers"; // main.ts 와 공유하는 providers
 
 const bootstrap = (context: BootstrapContext) =>
-  bootstrapApplication(AppRoot, { providers: [...appProviders, provideServerRendering()] }, context);
+  bootstrapApplication(
+    AppRoot,
+    { providers: [...appProviders, provideServerRendering()] },
+    context,
+  );
 
 export default bootstrap;
 ```

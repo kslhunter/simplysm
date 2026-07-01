@@ -46,10 +46,10 @@ describe("parsePackageJsonWorkspaces", () => {
 describe("collectWorkspacePackages", () => {
   it("collects package directories and ignores negative patterns", () => {
     const root = createTmpRoot();
-    writeJson(path.join(root, "package.json"), {
-      private: true,
-      workspaces: ["packages/*", "tests/*", "!packages/skip"],
-    });
+    fs.writeFileSync(
+      path.join(root, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/*\n  - tests/*\n  - '!packages/skip'\n",
+    );
     writeJson(path.join(root, "packages", "core", "package.json"), {
       name: "@scope/core",
     });
@@ -73,12 +73,9 @@ describe("collectWorkspacePackages", () => {
 });
 
 describe("findWorkspaceRoot", () => {
-  it("finds nearest package.json with workspaces", () => {
+  it("finds nearest pnpm-workspace.yaml", () => {
     const root = createTmpRoot();
-    writeJson(path.join(root, "package.json"), {
-      private: true,
-      workspaces: ["packages/*"],
-    });
+    fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
     const nested = path.join(root, "packages", "app", "src");
     fs.mkdirSync(nested, { recursive: true });
 

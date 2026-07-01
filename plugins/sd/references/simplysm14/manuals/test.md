@@ -36,7 +36,7 @@
    - 공유 외부 자원이 병렬 안전하지 않은 경우 `fileParallelism: false` 지정 (스펙 파일 직렬 실행). 단일 테스트 서버처럼 동시 요청을 처리할 수 있으면 `true` 유지 가능.
    - 브라우저 런타임이 필요한 경우 `browser: { provider: playwright(), enabled: true, headless: true, instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }] }` 지정.
 
-루트 `package.json#workspaces` 가 `tests/*` 를 포함하므로 `bun install` 만으로 워크스페이스에 인식됨.
+루트 `pnpm-workspace.yaml` 가 `tests/*` 를 포함하므로 `pnpm install` 만으로 워크스페이스에 인식됨.
 
 ### globalSetup 패턴
 
@@ -47,7 +47,9 @@
 - 타입 보강: 파일 상단에 다음 선언 추가.
   ```ts
   declare module "vitest" {
-    export interface ProvidedContext { key: T }
+    export interface ProvidedContext {
+      key: T;
+    }
   }
   ```
   스펙에서는 `inject("key")` 로 값 수신.

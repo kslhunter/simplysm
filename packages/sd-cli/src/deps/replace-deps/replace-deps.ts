@@ -160,7 +160,7 @@ export interface WatchReplaceDepResult {
 /**
  * replaceDeps 설정에 따라 node_modules의 패키지를 소스 디렉토리로 교체한다.
  *
- * 1. package.json#workspaces 파싱 → 워크스페이스 패키지 경로
+ * 1. pnpm-workspace.yaml 파싱 → 워크스페이스 패키지 경로
  * 2. [루트, ...워크스페이스 패키지] node_modules에서 매칭 패키지 탐색
  * 3. 소스 package.json의 files 필드 + npm 기본 파일만 대상 경로에 복사 (package.json 제외)
  *
@@ -207,7 +207,7 @@ export async function setupReplaceDeps(
 /**
  * replaceDeps 설정에 따라 소스 디렉토리를 감시하고 변경사항을 대상 경로에 복사한다.
  *
- * 1. package.json#workspaces 파싱 → 워크스페이스 패키지 경로
+ * 1. pnpm-workspace.yaml 파싱 → 워크스페이스 패키지 경로
  * 2. [루트, ...워크스페이스 패키지] node_modules에서 매칭 패키지 탐색
  * 3. FsWatcher로 files 항목 경로만 감시 (300ms 딜레이)
  * 4. 변경사항을 대상 경로에 복사

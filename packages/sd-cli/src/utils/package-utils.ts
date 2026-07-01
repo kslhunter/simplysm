@@ -20,7 +20,7 @@ export function findPackageRoot(startDir: string): string {
 }
 
 /**
- * package.json#workspaces의 모든 워크스페이스 패키지를 탐색한다.
+ * pnpm-workspace.yaml의 모든 워크스페이스 패키지를 탐색한다.
  * 디렉토리명 → 상대 경로의 맵을 반환한다 (예: "orm" → "tests/orm", "sd" → "plugins/sd").
  * packages/·tests/·plugins/ 등 종류를 가리지 않고 포함하며, 배포/검사 대상 구분은 소비자가 relPath로 판단한다.
  */

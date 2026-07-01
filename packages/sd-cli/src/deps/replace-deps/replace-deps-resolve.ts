@@ -59,7 +59,7 @@ export interface ReplaceDepEntry {
 /**
  * 프로젝트 루트 및 워크스페이스 패키지 경로를 수집한다.
  *
- * package.json#workspaces를 기준으로 워크스페이스 패키지의 절대 경로를 수집한다.
+ * pnpm-workspace.yaml를 기준으로 워크스페이스 패키지의 절대 경로를 수집한다.
  * 설정이 없거나 파싱 실패 시 루트 경로만 반환한다.
  *
  * @param projectRoot - 프로젝트 루트 경로
@@ -82,7 +82,7 @@ export function collectSearchRoots(projectRoot: string): string[] {
 /**
  * replaceDeps 설정에서 모든 교체 대상 항목을 해결한다.
  *
- * 1. package.json#workspaces 파싱 → 워크스페이스 패키지 경로
+ * 1. pnpm-workspace.yaml 파싱 → 워크스페이스 패키지 경로
  * 2. [루트, ...워크스페이스 패키지] node_modules에서 매칭 패키지 탐색
  * 3. 패턴 매칭 + 소스 경로 존재 확인 + symlink 해결
  *

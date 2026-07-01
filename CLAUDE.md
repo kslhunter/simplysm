@@ -4,42 +4,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 개요
 
-`simplysm` 은 `@simplysm/*` 라이브러리와 에이전트 확장을 함께 관리하는 Bun package manager 모노레포이다.
+`simplysm` 은 `@simplysm/*` 라이브러리와 에이전트 확장을 함께 관리하는 pnpm package manager 모노레포이다.
 
-- 워크스페이스: `packages/*`(npm 라이브러리 17개), `tests/*`(통합 테스트 패키지), `plugins/*`(LLM/Pi 확장 패키지). 루트 `package.json#workspaces` 참조.
+- 워크스페이스: `packages/*`(npm 라이브러리 17개), `tests/*`(통합 테스트 패키지), `plugins/*`(LLM/Pi 확장 패키지). 루트 `pnpm-workspace.yaml` 참조.
 - `packages/sd-cli` 가 워크스페이스 전체의 빌드·감시·개발서버·배포·검사를 담당한다.
 - 루트 스크립트는 `tsx packages/sd-cli/src/sd-cli.ts` 를 직접 실행한다. 개발 중에는 빌드 산출물 없이 TypeScript 소스를 직접 사용한다.
 - 모든 npm 배포 패키지 버전은 루트 버전과 함께 맞춰 배포한다.
 
 ## 명령
 
-루트 `package.json` 스크립트로 실행한다. `bun run sd-cli <command>` 는 `tsx packages/sd-cli/src/sd-cli.ts <command>` 의 단축이다.
+루트 `package.json` 스크립트로 실행한다. `pnpm sd-cli <command>` 는 `tsx packages/sd-cli/src/sd-cli.ts <command>` 의 단축이다.
 
 | 명령                   | 동작                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------ |
-| `bun run build`        | 프로덕션 빌드 (`sd-cli build`)                                                             |
-| `bun run watch`        | 감시 모드 빌드 (`sd-cli watch`)                                                            |
-| `bun run dev`          | 서버 패키지 개발 모드 실행 (`sd-cli dev`)                                                  |
-| `bun run check --fix`  | typecheck + lint 일괄 실행 (`sd-cli check --fix`) — 우선 사용                              |
-| `bun run typecheck`    | 타입 검사만 (`sd-cli check --type typecheck`) — 오류 분석용                                |
-| `bun run lint --fix`   | 린트만 (`sd-cli check --type lint --fix`) — 오류 분석·자동수정용                           |
-| `bun run test`         | vitest 전체 실행                                                                           |
-| `bun run pub`          | 배포 (`sd-cli publish`)                                                                    |
+| `pnpm build`        | 프로덕션 빌드 (`sd-cli build`)                                                             |
+| `pnpm watch`        | 감시 모드 빌드 (`sd-cli watch`)                                                            |
+| `pnpm dev`          | 서버 패키지 개발 모드 실행 (`sd-cli dev`)                                                  |
+| `pnpm check --fix`  | typecheck + lint 일괄 실행 (`sd-cli check --fix`) — 우선 사용                              |
+| `pnpm typecheck`    | 타입 검사만 (`sd-cli check --type typecheck`) — 오류 분석용                                |
+| `pnpm lint --fix`   | 린트만 (`sd-cli check --type lint --fix`) — 오류 분석·자동수정용                           |
+| `pnpm test`         | vitest 전체 실행                                                                           |
+| `pnpm pub`          | 배포 (`sd-cli publish`)                                                                    |
 
-- `build`·`watch`·`dev`·`publish` 의 `--target/-t` 값은 `sd.config.ts` 의 `packages` 키이다. `@simplysm/` 접두사를 붙이지 않는다. 예: `bun run build -t core-common -t storage`.
-- `check`·`typecheck`·`lint` 의 `--target/-t` 값은 `packages/*` 또는 `tests/*` 아래 워크스페이스 디렉터리명이다. 예: `bun run check --fix -t core-common -t orm`.
+- `build`·`watch`·`dev`·`publish` 의 `--target/-t` 값은 `sd.config.ts` 의 `packages` 키이다. `@simplysm/` 접두사를 붙이지 않는다. 예: `pnpm build -t core-common -t storage`.
+- `check`·`typecheck`·`lint` 의 `--target/-t` 값은 `packages/*` 또는 `tests/*` 아래 워크스페이스 디렉터리명이다. 예: `pnpm check --fix -t core-common -t orm`.
 - `build`·`watch`·`dev`·`device`·`publish`·`replace-deps` 는 `--opt/-o` 값을 `sd.config.ts` 에 전달한다.
-- `test` 는 sd-cli 가 아니라 vitest 직접 호출이다: `bun run vitest run --configLoader native --reporter=dot --silent=passed-only`. 추가 인자는 vitest 로 전달된다.
+- `test` 는 sd-cli 가 아니라 vitest 직접 호출이다: `tsx node_modules/vitest/vitest.mjs run --configLoader native --reporter=dot --silent=passed-only`. 추가 인자는 vitest 로 전달된다.
 - sd-cli 명령: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `init`, `init client`.
 
 ### 단일 테스트 실행
 
 테스트는 vitest **projects** 로 분할된다(`vitest.config.ts`). 단일 실행 시 필요하면 프로젝트를 지정한다.
 
-- 프로젝트별: `bun run test --project node`.
+- 프로젝트별: `pnpm test --project node`.
 - 프로젝트 이름: `node`, `browser`, `angular`, `sd-cli-server`, `sd-cli-client`, `ssg`, `orm`, `service-server-acme`, `service`.
-- 파일 지정: `bun run test packages/core-common/tests/utils/obj.spec.ts` 또는 `bun run test tests/ssg/src/ssg.spec.ts`.
-- 이름 패턴: `bun run test -t "테스트명 일부"`.
+- 파일 지정: `pnpm test packages/core-common/tests/utils/obj.spec.ts` 또는 `pnpm test tests/ssg/src/ssg.spec.ts`.
+- 이름 패턴: `pnpm test -t "테스트명 일부"`.
 - `orm`·`service`·`service-server-acme` 프로젝트는 Docker(DB / pebble+challtestsrv 등)가 필요하다.
 
 ## 아키텍처

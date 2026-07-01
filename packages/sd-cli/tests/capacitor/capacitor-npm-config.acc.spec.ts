@@ -29,7 +29,7 @@ let PKG_PATH: string;
 
 beforeAll(() => {
   tmpRoot = mkdtempSync(path.join(tmpdir(), "cap-npm-config-acc-"));
-  writeFileSync(path.join(tmpRoot, "package.json"), JSON.stringify({ private: true, workspaces: ["pkg"] }));
+  writeFileSync(path.join(tmpRoot, "pnpm-workspace.yaml"), "packages:\n  - pkg\n");
   PKG_PATH = path.join(tmpRoot, "pkg");
   CAP_PATH = path.join(PKG_PATH, ".capacitor");
 });
@@ -74,7 +74,7 @@ describe("initCapNpmProject", () => {
     setupDefaultMocks();
   });
 
-  it("의존성 미변경 + node_modules 존재 시 false를 반환하고 bun install을 실행하지 않는다", async () => {
+  it("의존성 미변경 + node_modules 존재 시 false를 반환하고 pnpm install을 실행하지 않는다", async () => {
     const { initCapNpmProject } = await import(
       "../../src/capacitor/capacitor-npm-config.js"
     );
@@ -88,7 +88,7 @@ describe("initCapNpmProject", () => {
     expect(changed).toBe(false);
   });
 
-  it("node_modules가 없으면 true를 반환하고 bun install을 실행한다", async () => {
+  it("node_modules가 없으면 true를 반환하고 pnpm install을 실행한다", async () => {
     mockFsxExists.mockImplementation(((p: string) => {
       const n = p.replace(/\\/g, "/");
       if (n.includes(".capacitor.lock")) return false;

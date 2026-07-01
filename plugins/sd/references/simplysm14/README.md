@@ -25,9 +25,9 @@ ORM 호출, 파일 변환, 비즈니스 로직 등은 위 두 경우에 해당�
 
 `@simplysm/*` v14 기반 프로젝트의 `CLAUDE.md` 작성 시, 검증 명령 표기 규칙:
 
-- **기본 검증 (평소 사용)**: `bun run check --fix` — typecheck 와 lint 를 일괄 수행, 자동 수정 포함.
-- **보조 명령**: `bun run typecheck`, `bun run lint` — `bun run check` 에서 문제가 났을 때 각각 따로 확인하는 용도. 단독 사용 회피.
-- **`-t` 타겟 인자 표기**: `check`/`typecheck`/`lint` 의 `-t` 는 `package.json#workspaces` 중 `packages/*`, `tests/*` 의 디렉터리명(예: `core-common`, `orm`)을 사용. `build`/`watch`/`dev`/`publish`/`device` 의 `-t` 는 `sd.config.ts#packages` 키(`@simplysm/` 접두사 제외, 예: `excel`, `core-node`, `sd-cli`)를 사용. 풀네임 사용을 막기 위해 예시는 짧은 이름으로 통일.
+- **기본 검증 (평소 사용)**: `pnpm check --fix` — typecheck 와 lint 를 일괄 수행, 자동 수정 포함.
+- **보조 명령**: `pnpm typecheck`, `pnpm lint` — `pnpm check` 에서 문제가 났을 때 각각 따로 확인하는 용도. 단독 사용 회피.
+- **`-t` 타겟 인자 표기**: `check`/`typecheck`/`lint` 의 `-t` 는 `pnpm-workspace.yaml` 중 `packages/*`, `tests/*` 의 디렉터리명(예: `core-common`, `orm`)을 사용. `build`/`watch`/`dev`/`publish`/`device` 의 `-t` 는 `sd.config.ts#packages` 키(`@simplysm/` 접두사 제외, 예: `excel`, `core-node`, `sd-cli`)를 사용. 풀네임 사용을 막기 위해 예시는 짧은 이름으로 통일.
 
 ## 개발 매뉴얼
 

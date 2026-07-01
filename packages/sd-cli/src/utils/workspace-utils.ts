@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { globSync } from "glob";
+import YAML from "yaml";
 import { pathx } from "@simplysm/core-node";
 
 export interface WorkspacePackageDir {
@@ -10,16 +11,12 @@ export interface WorkspacePackageDir {
   absPath: string;
 }
 
-interface WorkspaceRootPackageJson {
-  workspaces?: unknown;
-}
-
 interface WorkspacePackageJson {
   name?: unknown;
 }
 
 /**
- * root package.json의 workspaces 값을 Bun workspace 패턴 배열로 정규화한다.
+ * 워크스페이스 정의 값(배열 또는 { packages: [...] })을 패턴 배열로 정규화한다.
  */
 export function parsePackageJsonWorkspaces(workspaces: unknown): string[] {
   const rawPatterns = Array.isArray(workspaces)
@@ -35,11 +32,11 @@ export function parsePackageJsonWorkspaces(workspaces: unknown): string[] {
 }
 
 export function readWorkspacePatterns(workspaceRoot: string): string[] {
-  const packageJsonPath = path.join(workspaceRoot, "package.json");
-  if (!fs.existsSync(packageJsonPath)) return [];
+  const workspaceYamlPath = path.join(workspaceRoot, "pnpm-workspace.yaml");
+  if (!fs.existsSync(workspaceYamlPath)) return [];
 
-  const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8")) as WorkspaceRootPackageJson;
-  return parsePackageJsonWorkspaces(pkgJson.workspaces);
+  const parsed = YAML.parse(fs.readFileSync(workspaceYamlPath, "utf-8")) as unknown;
+  return parsePackageJsonWorkspaces(parsed);
 }
 
 export function findWorkspaceRoot(startDir: string): string | undefined {
@@ -76,7 +73,7 @@ function splitWorkspacePatterns(patterns: string[]): { include: string[]; exclud
 }
 
 /**
- * Bun workspace root의 package.json#workspaces 기준으로 실제 패키지 디렉터리를 수집한다.
+ * 워크스페이스 root의 pnpm-workspace.yaml(packages) 기준으로 실제 패키지 디렉터리를 수집한다.
  */
 export function collectWorkspacePackages(workspaceRoot: string): WorkspacePackageDir[] {
   const root = pathx.posix(path.resolve(workspaceRoot));

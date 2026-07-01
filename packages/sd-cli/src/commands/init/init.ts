@@ -45,8 +45,8 @@ export async function runInit(opts: InitOptions): Promise<void> {
   logger.info("의존성 설치 및 도구 준비 중...");
   await shellSpawn("mise", ["trust"], { cwd: opts.cwd, stdio: "inherit" });
   await shellSpawn("mise", ["install"], { cwd: opts.cwd, stdio: "inherit" });
-  await shellSpawn("bun", ["install"], { cwd: opts.cwd, stdio: "inherit" });
-  await shellSpawn("bun", ["update", "--recursive"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], { cwd: opts.cwd, stdio: "inherit" });
+  await shellSpawn("pnpm", ["up", "-r"], { cwd: opts.cwd, stdio: "inherit" });
   logger.info("의존성 설치 및 도구 준비 완료.");
 
   const steps: string[] = [];

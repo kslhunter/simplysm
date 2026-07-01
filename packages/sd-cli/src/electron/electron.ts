@@ -68,14 +68,20 @@ export class Electron {
     await this._setupNpmConf();
     Electron._logger.debug("package.json 설정 완료");
 
-    Electron._logger.debug("bun install 시작");
-    await this._exec("bun", ["install"], this._srcPath);
-    Electron._logger.debug("bun install 완료");
+    // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
+    const workspaceYamlPath = pathx.posixResolve(this._srcPath, "pnpm-workspace.yaml");
+    if (!(await fsx.exists(workspaceYamlPath))) {
+      await fsx.write(workspaceYamlPath, "");
+    }
+
+    Electron._logger.debug("pnpm install 시작");
+    await this._exec("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], this._srcPath);
+    Electron._logger.debug("pnpm install 완료");
 
     const reinstallDeps = this._config.reinstallDependencies ?? [];
     if (reinstallDeps.length > 0) {
       Electron._logger.debug(`electron-rebuild 시작 (${reinstallDeps.join(", ")})`);
-      await this._exec("bun", ["run", "electron-rebuild"], this._srcPath);
+      await this._exec("pnpm", ["exec", "electron-rebuild"], this._srcPath);
       Electron._logger.debug("electron-rebuild 완료");
     }
     Electron._logger.success("initialize 완료");
@@ -96,7 +102,7 @@ export class Electron {
 
     const spawnElectron = () => {
       Electron._logger.debug("Electron 프로세스 시작");
-      currentElectron = shellSpawn("bun", ["run", "electron", "."], {
+      currentElectron = shellSpawn("pnpm", ["exec", "electron", "."], {
         cwd: this._srcPath,
         stdio: "inherit",
         reject: false,
@@ -379,8 +385,8 @@ export class Electron {
 
     Electron._logger.debug(`electron-builder 설정: ${configFilePath}`);
     await this._exec(
-      "bun",
-      ["run", "electron-builder", "--win", "--config", configFilePath],
+      "pnpm",
+      ["exec", "electron-builder", "--win", "--config", configFilePath],
       this._srcPath,
     );
   }

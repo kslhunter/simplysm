@@ -116,7 +116,7 @@ export async function setupCapNpmConfig(
 }
 
 /**
- * Capacitor 프로젝트 NPM 초기화 (bun install, cap init, www placeholder).
+ * Capacitor 프로젝트 NPM 초기화 (pnpm install, cap init, www placeholder).
  * 의존성 변경 시 true를 반환한다.
  */
 export async function initCapNpmProject(
@@ -137,20 +137,26 @@ export async function initCapNpmProject(
     return false;
   }
 
-  // bun install
+  // pnpm-workspace.yaml 생성 (상위 workspace 탐색 차단)
+  const workspaceYamlPath = pathx.posixResolve(capPath, "pnpm-workspace.yaml");
+  if (!(await fsx.exists(workspaceYamlPath))) {
+    await fsx.write(workspaceYamlPath, "");
+  }
+
+  // pnpm install (빌드 스크립트 자동 승인)
   const isDebug = consola.level >= LogLevels.debug;
-  logger.debug("bun install 시작");
-  await shellSpawn("bun", ["install"], {
+  logger.debug("pnpm install 시작");
+  await shellSpawn("pnpm", ["install", "--config.dangerously-allow-all-builds=true"], {
     cwd: capPath,
     ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
   });
-  logger.debug("bun install 완료");
+  logger.debug("pnpm install 완료");
 
   // 멱등성: capacitor.config.ts가 없을 때만 cap init 실행
   const configPath = pathx.posixResolve(capPath, "capacitor.config.ts");
   if (!(await fsx.exists(configPath))) {
     logger.debug("cap init 시작");
-    await shellSpawn("bun", ["run", "cap", "init", config.appId, config.appId], {
+    await shellSpawn("pnpm", ["exec", "cap", "init", config.appId, config.appId], {
       cwd: capPath,
       ...(isDebug ? { stdio: ["ignore", "inherit", "inherit"] } : {}),
     });
