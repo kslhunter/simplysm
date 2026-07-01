@@ -1,7 +1,6 @@
 ---
 name: sd-research
 description: 리서치 범위를 설정하고 병렬 조사·검증을 거쳐 최종 결과를 보고하는 스킬. Use when 사용자가 sd-research 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
-disable-model-invocation: true
 ---
 
 # sd-research

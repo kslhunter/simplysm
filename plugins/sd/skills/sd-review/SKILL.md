@@ -1,7 +1,6 @@
 ---
 name: sd-review
 description: 산출물(코드·문서 등)을 리뷰 및 수정하는 스킬. Use when 사용자가 sd-review 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
-disable-model-invocation: true
 ---
 
 # sd-review

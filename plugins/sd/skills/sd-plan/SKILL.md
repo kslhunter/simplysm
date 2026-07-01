@@ -1,7 +1,6 @@
 ---
 name: sd-plan
-description: 개발 착수 전 사용자 발언·자료·코드·공식문서를 근거로 브레인스토밍·조사·수렴·작업분해를 수행해 `.docs/{yyMMddHHmmss}_{제목}/plan.md` 개발계획서를 작성한다. Use when 개발 전 계획, 브레인스토밍, 작업분해, 구현계획, plan.md 작성을 요청할 때.
-disable-model-invocation: true
+description: 개발 착수 전 사용자 발언·자료·코드·공식문서를 근거로 브레인스토밍·조사·수렴·작업분해를 수행해 `.docs/{yyMMddHHmmss}_{제목}/plan.md` 개발계획서를 작성한다. Use when 사용자가 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
 ---
 
 # sd-plan

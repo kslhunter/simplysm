@@ -1,77 +1,58 @@
 # @simplysm/core-node — cpx
 
-`export * as cpx` 네임스페이스 (`utils/cp.ts`). 자식 프로세스 실행, stdout/stderr 캡처, OS 콘솔 인코딩 감지·디코딩을 함께 다룰 때 읽는 군.
+자식 프로세스 실행 및 시스템 콘솔 인코딩 감지. `spawn/spawnSync`는 stdout/stderr를 자동 수집해 문자열로 디코딩하고, 종료 코드가 0이 아니면 오류를 throw한다(설정으로 비활성화 가능).
 
-## SpawnResult
+## 타입·인터페이스
 
-`interface SpawnResult { stdout: string; stderr: string; exitCode: number }`
+### SpawnResult
 
-- `stdout: string` — stdout 이 pipe 일 때 캡처·디코딩된 문자열. pipe 가 아니면 빈 문자열.
-- `stderr: string` — stderr 가 pipe 일 때 캡처·디코딩된 문자열. pipe 가 아니면 빈 문자열.
-- `exitCode: number` — 종료 코드. 비동기 `spawn` 에서는 `code ?? (signal != null ? 1 : 0)`, 동기 `spawnSync` 에서는 `status ?? 0`.
+- `stdout: string` — 명령 표준 출력. stdio가 pipe가 아니면 빈 문자열.
+- `stderr: string` — 명령 표준 오류. stdio가 pipe가 아니면 빈 문자열.
+- `exitCode: number` — 프로세스 종료 코드. 비동기 `spawn`에서는 `code ?? (signal != null ? 1 : 0)`, 동기 `spawnSync`에서는 `status ?? 0`.
 
-## spawn
+### SpawnProcess
 
-`function spawn(cmd: string, args: string[], options?: SpawnOptions & { reject?: boolean }): SpawnProcess`
+PromiseLike 구현. await 가능하면서 동시에 프로세스 실행 중 제어(pid, process, kill) 접근 가능.
 
-- `cmd: string` — 실행할 명령.
-- `args: string[]` — 명령 인자 배열.
-- `options?: SpawnOptions & { reject?: boolean }` — Node `SpawnOptions` 에 `reject` 를 더한 값. 내부 기본 `stdio` 는 `"pipe"`, `env` 는 `{ ...process.env, ...options.env }` 로 병합된다.
-- `options.reject?: boolean` — exitCode 가 0 이 아닐 때 처리. `false` 이면 `SpawnResult` 로 resolve, 그 외(미지정 포함)에는 실패 메시지 Error 로 reject.
-- `options.shell?: boolean | string` — null/undefined 도 false 도 아니고 `args` 가 비어있지 않으면 `[cmd, ...args].join(" ")` 로 cmd 에 미리 합치고 args 를 비운다 (DEP0190 경고 회피).
-- 반환 `SpawnProcess` — await 가능한 프로세스 래퍼. 프로세스 `error` 이벤트는 reject, `close` 이벤트에서 결과가 확정된다.
+- `pid: number | undefined` — 자식 프로세스 ID. 시작 전이면 undefined.
+- `process: ChildProcess` — 원본 Node `child_process.ChildProcess`. stdout/stderr 스트림 직접 접근 필요 시 사용.
+- `then/catch(...)` — Promise 호환 메서드. `await cpx.spawn(...)`을 지원.
+- `kill(signal?: NodeJS.Signals | number): boolean` — 프로세스에 신호 송신. 성공 여부 반환.
 
-## spawnSync
+## 함수
 
-`function spawnSync(cmd: string, args: string[], options?: SpawnSyncOptions & { reject?: boolean }): SpawnResult`
+### 콘솔 인코딩 감지
 
-- `cmd: string` — 실행할 명령.
-- `args: string[]` — 명령 인자 배열.
-- `options?: SpawnSyncOptions & { reject?: boolean }` — Node `SpawnSyncOptions` 에 `reject` 를 더한 값. 기본 `stdio` 는 `"pipe"`, `env` 는 `process.env` 와 병합된다. `shell` 병합 처리는 `spawn` 과 동일하다.
-- `options.reject?: boolean` — exitCode 가 0 이 아닐 때 처리. `false` 이면 `SpawnResult` 반환, 그 외에는 실패 메시지 Error 로 throw.
-- 반환 `SpawnResult` — stdout/stderr 는 `decodeBytes` 로 디코딩.
+- `getSystemEncoding(): string` — 시스템 기본 콘솔 인코딩 감지. 결과 캐싱됨. Windows는 `chcp` 명령으로 code page 조회 후 변환, Unix는 `LANG`/`LC_ALL` 환경 변수에서 인코딩명 추출. 감지 실패 시 기본값 "utf-8".
+- `codePageToEncoding(codePage: number): string` — Windows code page → 인코딩명. 65001=utf-8, 949=euc-kr, 932=shift-jis, 936=gbk, 950=big5, 1252=windows-1252, 1251=windows-1251, 1250=windows-1250, 874=windows-874. 미지정 code page는 utf-8 반환.
+- `resetEncodingCache(): void` — 캐싱된 시스템 인코딩 초기화. 테스트나 동적 환경 변경 시 재감지 필요한 경우 호출.
 
-실패 메시지는 `Command failed (exit <exitCode>): <cmd> <args...>` 뒤에 stderr trim(없으면 stdout trim) 의 마지막 4000자를 붙인 형태다.
+### 바이트 디코딩
 
-## SpawnProcess
+- `decodeBytes(raw: Uint8Array, systemEncoding?: string): string` — 바이트를 문자열로 디코딩. 기본 인코딩은 `getSystemEncoding()`. UTF-8 시도 후 fatal 실패하면 지정된 인코딩으로 재시도.
+- `resolveStdioPipe(stdio: SpawnOptions["stdio"]): { stdout: boolean; stderr: boolean }` — stdio 옵션에서 stdout/stderr가 pipe로 설정되었는지 판정.
 
-`class SpawnProcess implements PromiseLike<SpawnResult>`
+### 프로세스 실행
 
-- `pid: number | undefined` — 내부 `ChildProcess.pid`.
-- `process: ChildProcess` — 내부 `ChildProcess` 인스턴스.
-- `then(onfulfilled?, onrejected?)` — 내부 Promise 의 then. `await cpx.spawn(...)` 를 가능하게 한다.
-- `catch(onrejected?)` — 내부 Promise 의 catch. spawn 실패나 reject 처리된 종료를 받을 때 쓴다.
-- `kill(signal?: NodeJS.Signals | number): boolean` — 내부 프로세스에 signal 을 보내고 `ChildProcess.kill` 결과를 반환한다.
+- `spawn(cmd: string, args: string[], options?: SpawnOptions & { reject?: boolean }): SpawnProcess` — 명령을 자식 프로세스로 실행 (비동기).
+  - `cmd` — 실행할 명령.
+  - `args` — 명령 인자 배열.
+  - `options.reject?: boolean` — true(기본값)이면 종료 코드 ≠ 0일 때 오류 throw. false면 결과 반환.
+  - `options.shell?: boolean | string` — 활성화되고 args가 비어있지 않으면, cmd와 args를 공백으로 합친 뒤 args를 비워 DEP0190 경고 회피.
+  - `options.env?: NodeJS.ProcessEnv` — 자식 프로세스 환경 변수. `process.env`에 병합됨.
+  - 기본 `stdio: "pipe"`, stdout/stderr 자동 수집.
+  - 반환: `SpawnProcess` (promise처럼 await 가능, 동시에 프로세스 제어 가능).
 
-## codePageToEncoding
+- `spawnSync(cmd: string, args: string[], options?: SpawnSyncOptions & { reject?: boolean }): SpawnResult` — 명령을 동기 실행.
+  - 인자·옵션은 `spawn`과 동일. shell 병합 처리도 동일.
+  - `options.reject?: boolean` — true(기본값)이면 오류 throw, false면 결과 반환.
+  - 반환: `SpawnResult` (진행 중이 아니므로 PromiseLike 아님).
 
-`function codePageToEncoding(codePage: number): string`
+### 오류 메시지 형식
 
-- `codePage: number` — Windows 코드페이지 숫자.
-- 반환 `string` — 65001=`utf-8`, 949=`euc-kr`, 932=`shift-jis`, 936=`gbk`, 950=`big5`, 1252=`windows-1252`, 1251=`windows-1251`, 1250=`windows-1250`, 874=`windows-874`; 매핑 없으면 `utf-8`.
+명령 실패 시(exitCode ≠ 0, `reject !== false`) throw 오류 메시지:
 
-## getSystemEncoding / resetEncodingCache
-
-`function getSystemEncoding(): string`
-
-- 반환 `string` — 캐시 값이 있으면 즉시 반환. Windows 는 `chcp` 출력의 숫자를 `codePageToEncoding` 으로 변환, 그 외는 `env("LANG") ?? env("LC_ALL")` 의 `.` 뒤(그리고 `@` 앞) 문자열을 소문자로 읽고 `utf8` 은 `utf-8` 로 보정. 감지 실패 시 `utf-8`. 결과는 내부 캐시에 저장된다.
-
-`function resetEncodingCache(): void`
-
-- 내부 캐시를 `undefined` 로 되돌린다. 다음 `getSystemEncoding` 에서 다시 감지한다.
-
-## resolveStdioPipe
-
-`function resolveStdioPipe(stdio: SpawnOptions["stdio"]): { stdout: boolean; stderr: boolean }`
-
-- `stdio: SpawnOptions["stdio"]` — Node stdio 옵션.
-- 반환 `stdout` — 배열이면 index 1 이 `"pipe"` 인지, 단일값이면 `"pipe"` 또는 null/undefined 인지.
-- 반환 `stderr` — 배열이면 index 2 가 `"pipe"` 인지, 단일값이면 `"pipe"` 또는 null/undefined 인지.
-
-## decodeBytes
-
-`function decodeBytes(raw: Uint8Array, systemEncoding?: string): string`
-
-- `raw: Uint8Array` — 디코딩할 바이트 배열.
-- `systemEncoding?: string` — 사용할 인코딩. 생략하면 `getSystemEncoding()` 결과를 쓴다.
-- 반환 `string` — 인코딩이 `utf-8` 이면 바로 UTF-8 디코딩. 그 외에는 먼저 UTF-8 fatal 디코딩을 시도하고, 실패하면 `systemEncoding` 으로 디코딩한다.
+```
+Command failed (exit <코드>): <cmd> <args>
+<stderr 또는 stdout 마지막 4000자>
+```

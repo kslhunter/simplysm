@@ -1,7 +1,6 @@
 ---
 name: sd-debug
 description: 버그·실패·예외의 원인을 다관점으로 발굴하고 가설별 검증·해결책·적대검증을 거쳐 검증된 해결책을 제안하는 멀티에이전트 디버깅. Use when 사용자가 sd-debug 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
-disable-model-invocation: true
 ---
 
 # sd-debug

@@ -1,22 +1,25 @@
 # @simplysm/angular
 
-Angular 클라이언트 앱의 부트스트랩, UI 컨트롤, 화면 골격, 오버레이, 시트/공유데이터, 라우팅·권한·설정 인프라를 제공한다. 컴포넌트는 standalone · `ChangeDetectionStrategy.OnPush` · `ViewEncapsulation.None` 이고, 값은 signal `input()`/`model()`/`output()` 로 노출된다.
+Angular 22 기반 클라이언트 UI 라이브러리. 앱 초기화, UI 컨트롤(입력/선택/버튼), 레이아웃(사이드바/탑바), 데이터 표시(시트/칸반), 모달/토스트, CRUD 기본 컴포넌트, 라우팅·설정·권한 인프라 등을 제공. 모든 컴포넌트는 standalone · `ChangeDetectionStrategy.OnPush` · `ViewEncapsulation.None` 이며, signal 기반 `input()`/`model()`/`output()` 으로 상태 노출.
 
 ## 사용 트리거 인덱스
 
-- **provideSdAngular** — 앱 부트스트랩에서 `@simplysm/angular` 전역 provider 묶음을 한 번 등록할 때. (아래 인라인)
-- **코어 유틸·타입 헬퍼** — signal 변경 통지, 값 포맷 pipe, Renderer2 스타일 적용, 모델 변경 가드, modal/print 입력 타입 추출을 다룰 때. (아래 인라인)
-- **설정·로그·서비스 인프라** — clientName, localStorage/system config, system log, service-client 연결, 전역 에러 처리를 배선할 때. (아래 인라인) 사용법: [client-service.md](../../manuals/client-service.md), [client-system-log.md](../../manuals/client-system-log.md), [client-system-config.md](../../manuals/client-system-config.md)
-- **디렉티브·이펙트** — DOM 이벤트 옵션(`.capture`/`.passive`/`.once`), 리사이즈/교차 관찰, CTRL 단축키, ripple/show/invalid 효과, typed template을 host에 붙일 때. 자세히: [directives.md](./directives.md)
-- **폼·입력 컨트롤** — 버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination을 조립할 때. 자세히: [controls.md](./controls.md) (lint/template 규칙: [client-rules.md](../../manuals/client-rules.md), `sd-tab`: [client-tab.md](../../manuals/client-tab.md))
-- **오버레이·인쇄·파일** — modal, toast, busy overlay, file dialog, browser print/PDF 출력을 호출할 때. 자세히: [overlay.md](./overlay.md) (인쇄/PDF: [client-print.md](../../manuals/client-print.md))
-- **라우팅·앱구조·권한** — sdRouterLink, 현재 page code/title/type, canDeactivate, menu/permission tree를 다룰 때. 자세히: [routing-appstructure.md](./routing-appstructure.md) (앱 메뉴·권한 정의: [client-app-structure.md](../../manuals/client-app-structure.md))
-- **레이아웃** — sidebar/topbar shell과 메뉴·사용자 메뉴를 구성할 때. 자세히: [layout.md](./layout.md)
-- **시트** — `sd-sheet` 기반 목록/편집 표, 컬럼, 셀 템플릿, 컬럼 설정 저장을 다룰 때. 자세히: [sheet.md](./sheet.md) (설정 저장: [client-system-config.md](../../manuals/client-system-config.md), 목록 골격: [client-crud.md](../../manuals/client-crud.md))
-- **공유 마스터 데이터·선택 매니저** — shared-data provider, shared-data 선택 UI, selection/sorting/expanding manager를 쓸 때. 자세히: [shared-data.md](./shared-data.md) (공유데이터: [client-shared-data.md](../../manuals/client-shared-data.md), 실시간 이벤트: [event.md](../../manuals/event.md))
-- **칸반** — lane/card drag-drop 보드와 카드 다중 선택을 만들 때. 자세히: [kanban.md](./kanban.md)
-- **CRUD 골격·권한표·상태 프리셋** — `sd-crud-list`/`sd-crud-detail`, base container, permission table, state preset을 쓸 때. 자세히: [crud.md](./crud.md) (CRUD: [client-crud.md](../../manuals/client-crud.md), 권한: [client-app-structure.md](../../manuals/client-app-structure.md), 설정: [client-system-config.md](../../manuals/client-system-config.md))
-- **테마·주소·에디터·시각화** — theme selector/provider, 주소검색 modal, TipTap/Markdown editor, label/note/progress/calendar/barcode/ECharts를 붙일 때. 자세히: [features.md](./features.md)
+- **provideSdAngular** — 앱 시작 시 전역 provider 및 initializer 등록. 사용법: [client-component.md](../../manuals/client-component.md)
+- **앱 설정·로그·서비스 인프라** — clientName, localStorage, system config/log, service-client, 에러 처리 배선. 사용법: [client-service.md](../../manuals/client-service.md), [client-system-config.md](../../manuals/client-system-config.md), [client-system-log.md](../../manuals/client-system-log.md)
+- **코어 유틸·타입 헬퍼** — signal 통지(mark), 값 포맷(FormatPipe), 스타일 적용(setSafeStyle), 모델 변경 가드(setupModelHook), 타입 추출(DirectiveInputSignals, WithOptional 등).
+- **라우팅·메뉴·권한** — sdRouterLink, 페이지 코드/제목/타입 signal, 화면 이동 가드, 메뉴 구조 유틸. 사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
+- **이벤트·효과·디렉티브** — 이벤트 capture, 리사이즈/교차 감지, 단축키, ripple/reveal/invalid 효과, 타입 안전 템플릿. 자세히: 각 항목별 문서
+- **UI 컨트롤** — 버튼, 텍스트/날짜/숫자 입력, 체크박스/스위치, 드롭다운, 폼, 탭, 목록, 페이지네이션. 사용법: [client-component.md](../../manuals/client-component.md), [client-tab.md](../../manuals/client-tab.md)
+- **컨테이너 레이아웃** — 사이드바·탑바 + 메뉴·사용자 정보.
+- **데이터 표시 - Sheet** — 테이블, 정렬, 컬럼 설정, 셀 편집. 자세히: [sheet.md](./sheet.md)
+- **데이터 표시 - Kanban** — 칸반 보드, 드래그·드롭 카드. 자세히: [kanban.md](./kanban.md)
+- **모달** — 프로그래밍 방식 생성·제어, 기본 모달 2종(prompt/confirm). 자세히: [modal.md](./modal.md)
+- **토스트** — 알림 표시, 성공/경고/에러 등급. 자세히: [toast.md](./toast.md)
+- **공유 데이터** — 마스터 데이터 관리, 선택 UI. 사용법: [client-shared-data.md](../../manuals/client-shared-data.md). 자세히: [shared-data.md](./shared-data.md)
+- **CRUD 기본** — 목록·상세 화면 기본 구조, 행 선택/삭제/복구/엑셀. 사용법: [client-crud.md](../../manuals/client-crud.md). 자세히: [crud.md](./crud.md)
+- **인쇄·바쁨** — 화면 인쇄/PDF, 로딩 오버레이. 사용법: [client-print.md](../../manuals/client-print.md)
+- **선택·정렬·확장 관리** — 행 선택 매니저, 정렬, 트리 확장.
+- **테마·주소·에디터·시각화** — 테마 선택(라이트/다크/색상), 주소 검색, 리치 에디터, 시각 컴포넌트(라벨/진행도/달력/바코드/차트).
 
 ## 앱 부트스트랩
 

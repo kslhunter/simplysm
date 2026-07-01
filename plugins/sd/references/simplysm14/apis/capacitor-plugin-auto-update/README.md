@@ -1,84 +1,157 @@
 # @simplysm/capacitor-plugin-auto-update
 
-Android APK 설치 권한 확인·요청, `content://` URI 기반 APK 설치 호출, 그리고 서버/외부 저장소에서 최신 APK 를 찾아 설치까지 진행하는 자동 업데이트 흐름을 제공하는 Capacitor 플러그인 패키지. 웹에서는 모든 동작이 알림 또는 정상 반환으로 대체된다.
+Android 앱의 APK 자동 업데이트(버전 확인 → 다운로드 → 설치)와 그 하부의 APK 설치·권한 제어를 제공하는 Capacitor 플러그인. 웹 환경에서는 설치·권한을 no-op 또는 알림으로 처리.
 
 ## 사용 트리거 인덱스
 
-- **AutoUpdate** — 앱 시작 시 최신 APK 확인 → 권한 확인/요청 → 다운로드(서버) 또는 파일 선택(외부 저장소) → 설치까지 한 흐름으로 묶을 때. 서버 흐름은 `ServiceClient` 를 받는다(연결·서비스 배선은 [client-service.md](../../manuals/client-service.md)).
-- **ApkInstaller** — 자동 업데이트 흐름 없이 설치 권한·설치 인텐트·앱 버전 정보를 직접 호출할 때.
-- **ApkInstallerPlugin / VersionInfo** — Capacitor 저수준 플러그인 계약 또는 버전 정보 타입을 구현·참조할 때.
+- **AutoUpdate** — Android 앱 시작 시 최신 버전을 확인하고, 신버전이면 APK를 받아 설치하는 흐름을 구동할 때. 서버 기반과 외부저장소 기반 두 경로 제공.
+- **ApkInstaller** — APK 설치 인텐트 실행, `REQUEST_INSTALL_PACKAGES` 권한 확인/요청, 현재 앱 버전 조회 같은 저수준 작업을 직접 다룰 때.
+- **VersionInfo / ApkInstallerPlugin** — 버전 정보 타입 또는 Capacitor 플러그인 계약을 구현·참조할 때.
 
 ## AutoUpdate
 
-`abstract class AutoUpdate` — 최신 APK 탐색·권한·다운로드·설치를 묶은 정적 오케스트레이터. 두 진입 메서드 모두 내부에서 예외를 잡아 `opt.log` 로 오류 HTML 을 전달한 뒤 끝나지 않는 Promise(`_freezeApp`)로 대기한다. 따라서 설치까지 도달하거나 오류가 나면 반환 Promise 가 resolve 되지 않고, 업데이트가 불필요해 조기 `return` 하는 경우에만 정상 resolve 된다.
+`abstract class AutoUpdate` — 인스턴스화 없이 static 메서드만 사용. 두 진입점 모두 성공/실패와 무관하게 신버전 설치 흐름에 진입하면 무한 대기(`_freezeApp`)로 앱을 정지시켜 사용자의 수동 재시작을 유도한다. 비 Android 환경에서는 "Android만 지원됩니다." 예외 발생. 모든 단계의 메시지와 오류를 `log` 콜백으로 HTML 형식 문자열로 전달한다.
 
-### `static run(opt): Promise<void>` — 서버 기반 자동 업데이트
+### `static run(opt: { log: (messageHtml: string) => void; serviceClient: ServiceClient }): Promise<void>`
 
-서버의 `AutoUpdate` 서비스에서 최신 버전을 조회해 다운로드·설치한다.
+서버에서 최신 버전을 받아 업데이트하는 경로.
 
-- `opt.log: (messageHtml: string) => void` — 진행/오류 상태를 HTML 문자열로 받는 콜백. 단계마다 호출됨: `"최신 버전 확인 중..."`, `"권한 확인 중..."`, 다운로드 진행률(`"...최신 버전 파일 다운로드 중...(NN.NN%)"`), 설치 안내, 오류 메시지. 권한·설치 안내 메시지에는 `location.reload()` 재시도 `<button>`, 재설치 안내에는 다운로드 `<a>` HTML 이 포함될 수 있다.
-- `opt.serviceClient: ServiceClient` — 서버 호출용 클라이언트. `getService<AutoUpdateService>("AutoUpdate").getLastVersion("android")` 로 최신 버전 정보를, `serviceClient.hostUrl + downloadPath` 로 다운로드 URL 을 만든다.
+**옵션 파라미터:**
 
-동작 순서:
+- `log: (messageHtml: string) => void` — 진행/오류 상태를 HTML 문자열로 받는 콜백. "최신 버전 확인 중...", "권한 확인 중...", 다운로드 진행률(`(NN.NN%)`), 권한 안내 버튼, 설치 안내 버튼, 오류 메시지를 전달. UI에 즉시 렌더링하는 용도.
+- `serviceClient: ServiceClient` — 서버 통신 클라이언트. 내부에서 `getService<AutoUpdateService>("AutoUpdate").getLastVersion("android")` 호출.
 
-1. `getLastVersion("android")` 결과가 없으면 info 로깅 후 반환(업데이트 없음).
-2. 권한 확인(`_checkPermission`)에 다운로드 URL 을 재설치 안내 링크 후보로 넘긴다.
-3. 현재 버전(`ApkInstaller.getVersionInfo().versionName`) 또는 서버 버전이 `semver.valid` 를 통과하지 못하면 info 로깅 후 반환.
-4. `semver.gt(서버버전, 현재버전)` 가 `true` 가 아니면 반환(이미 최신이거나 서버 버전이 더 낮음).
-5. `fetchUrlBytes` 로 다운로드(진행률 콜백 → `log`), `FileSystem.getStoragePath("appCache")` 아래 `latest.apk` 로 저장, `FileSystem.getUri` 결과를 `ApkInstaller.install` 에 전달.
+**동작 흐름:**
 
-### `static runByExternalStorage(opt): Promise<void>` — 외부 저장소 기반 자동 업데이트
+1. 서버에서 최신 버전 조회. 결과가 없으면 콘솔 로그 후 반환(업데이트 안 함)
+2. 권한 확인(다운로드 URL을 재설치 안내 링크로 제공)
+3. 현재 앱 버전 조회
+4. semver 형식 유효성 검증(현재·서버 모두). 유효하지 않으면 콘솔 로그 후 반환
+5. 버전 비교: `semver.gt(서버버전, 현재버전)` 가 false 이면 반환(이미 최신)
+6. 다운로드: `serviceClient.hostUrl + downloadPath` 에서 APK 다운로드. 진행률을 `log`로 전달(예: "최신 버전 파일 다운로드 중...(50.00%)")
+7. 저장: `FileSystem.getStoragePath("appCache")` 아래 `latest.apk` 파일로 저장
+8. 설치: `ApkInstaller.install()` 로 설치 인텐트 실행
+9. 대기: `_freezeApp()` 로 무한 대기
 
-외부 저장소의 지정 폴더에서 `<semver>.apk` 중 최신본을 골라 설치한다. 서버 호출이 없어 권한 확인 시 다운로드 링크를 제공하지 않는다.
+**오류 처리:**
 
-- `opt.log: (messageHtml: string) => void` — `run` 과 동일한 진행/오류 HTML 콜백. `"권한 확인 중..."`, `"최신 버전 확인 중..."`, 설치 안내, 오류 시 호출된다.
-- `opt.dirPath: string` — `FileSystem.getStoragePath("external")` 하위에서 APK 파일을 찾을 디렉토리 상대 경로. 파일 목록 조회와 설치 대상 경로(`<external>/<dirPath>/<최신>.apk`) 구성에 모두 쓰인다.
+- 모든 예외(권한 오류, 다운로드 오류 등)는 catch 되어 `log` 콜백으로 오류 메시지 HTML 전달 후 `_freezeApp()` 실행
+- 권한 확인 호출 자체가 실패한 경우: 오류 메시지에 다운로드 버튼 포함
 
-동작 순서:
+### `static runByExternalStorage(opt: { log: (messageHtml: string) => void; dirPath: string }): Promise<void>`
 
-1. 권한 확인(다운로드 링크 없음).
-2. `external` 저장소 + `dirPath` 폴더를 `readdir`. 디렉토리가 아니고 확장자가 `.apk` 이며 확장자 제거 파일명이 `/^[0-9.]*$/` 인 파일만 버전 후보로 삼는다.
-3. 후보가 없으면 반환. `semver.maxSatisfying(후보, "*")` 가 없으면 info 로깅 후 반환.
-4. 현재 버전/최신 후보가 `semver.valid` 를 통과하지 못하면 info 로깅 후 반환. `semver.gt(최신, 현재)` 일 때만 설치한다.
+외부저장소 디렉토리의 APK 파일들 중 최신 버전을 골라 설치하는 경로(서버 없이).
 
-### 권한 확인 동작 (내부 `_checkPermission`, 두 메서드 공통)
+**옵션 파라미터:**
 
-- `navigator.userAgent` 에 `"android"` 가 없으면 `Error("Android만 지원됩니다.")` 를 던진다.
-- `ApkInstaller.checkPermissions()` 의 `manifest` 가 false 이면 코드 1 재설치 오류를 던지도록 작성돼 있으나, 이 throw 가 같은 함수의 `catch` 에 잡혀 다시 코드 2 로 던져진다(권한 확인 호출 자체가 예외여도 코드 2). 즉 소비자에게는 항상 코드 2 재설치 오류가 도달한다.
-- `granted` 가 false 이면 권한 활성화 안내를 `log` 로 보내고 `ApkInstaller.requestPermissions()` 호출 후, 1초 간격 최대 300회(≈5분) `checkPermissions().granted` 를 폴링한다.
+- `log: (messageHtml: string) => void` — 진행/오류 상태 콜백 (위와 동일)
+- `dirPath: string` — `FileSystem.getStoragePath("external")` 기준 상대 디렉토리 경로. 파일명(확장자 제외)이 숫자와 점만 포함하는 `.apk` 파일을 버전으로 인식.
+
+**동작 흐름:**
+
+1. 권한 확인(다운로드 버튼 없음)
+2. 외부저장소 + `dirPath` 폴더를 `FileSystem.readdir()` 로 스캔
+3. 필터링: 파일이며(디렉토리 아님), `.apk` 확장자, 파일명이 `/^[0-9.]*$/` 정규식 매칭
+4. 버전 선택: `semver.maxSatisfying(후보버전들, "*")` 로 최신 선택
+   - 후보가 없거나 유효한 semver가 없으면 콘솔 로그 후 반환(업데이트 안 함)
+5. 현재 앱 버전 조회
+6. semver 유효성 검증(현재·최신 모두). 유효하지 않으면 콘솔 로그 후 반환
+7. 버전 비교: `semver.gt(최신, 현재)` 가 false 이면 반환(이미 최신)
+8. 설치: `<dirPath>/<version>.apk` 경로의 APK를 `ApkInstaller.install()` 로 설치 인텐트 실행
+9. 대기: `_freezeApp()` 로 무한 대기
+
+**오류 처리:**
+
+- 모든 예외는 catch 되어 `log` 콜백으로 오류 메시지 HTML 전달 후 `_freezeApp()` 실행
+
+### 권한 확인 내부 동작 (두 메서드 공통)
+
+1. `navigator.userAgent` 에 `"android"` 미포함 → "Android만 지원됩니다." 예외
+2. `ApkInstaller.checkPermissions()` 호출
+   - 호출 실패(플러그인 오류): 콘솔 error 로그 후 재설치 오류(코드 2) 발생
+   - 호출 성공, `manifest` false: 재설치 오류(코드 1) 발생. `run()` 메서드의 경우 다운로드 버튼을 오류 메시지에 포함
+3. `granted` false 이면: "설치 권한을 활성화해야 합니다" 안내 HTML 을 `log` 로 전달(재시도 버튼 포함). `ApkInstaller.requestPermissions()` 호출(설정 화면 이동). 그 후 1초 간격 최대 300회(≈5분) `checkPermissions().granted` 를 폴링하여 권한 허용 대기
 
 ## ApkInstaller
 
-`abstract class ApkInstaller` — `registerPlugin<ApkInstallerPlugin>("ApkInstaller", { web })` 로 등록된 플러그인에 위임하는 정적 래퍼. Android 는 설치 인텐트와 `REQUEST_INSTALL_PACKAGES` 권한을 다루고, 웹은 알림/정상 반환으로 대체된다.
+`abstract class ApkInstaller` — static 메서드만 사용. Capacitor 플러그인(`ApkInstallerPlugin`)을 등록하고 래핑한다. Android에서는 네이티브 권한·설치 인텐트 실행. 웹에서는 알림 또는 no-op.
 
-- `static checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>` — 설치 권한 상태 확인.
-  - `granted: boolean` — `REQUEST_INSTALL_PACKAGES` 권한 승인 여부. `true` 면 설치 진행 가능, `false` 면 `requestPermissions` 가 필요할 때 분기한다.
-  - `manifest: boolean` — AndroidManifest 에 권한이 선언돼 있는지. `false` 면 APK 재설치가 필요(자동 업데이트 흐름이 재설치 오류로 처리). 웹은 `{ granted: true, manifest: true }` 고정.
-- `static requestPermissions(): Promise<void>` — 권한 요청(설정 화면으로 이동). 웹은 동작 없음.
-- `static install(apkUri: string): Promise<void>` — APK 설치 인텐트 실행.
-  - `apkUri: string` — 설치할 APK 의 `content://` FileProvider URI. 플러그인에 `{ uri: apkUri }` 로 전달된다. 웹은 미지원 알림 후 정상 반환.
-- `static getVersionInfo(): Promise<VersionInfo>` — 현재 앱 버전 정보 조회. 웹은 `versionName = env("__VER__") ?? "0.0.0"`, `versionCode = "0"` 을 반환한다.
+### `static checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>`
+
+`REQUEST_INSTALL_PACKAGES` 권한의 현재 상태 조회.
+
+**반환값:**
+
+- `granted: boolean` — 사용자가 현재 권한을 허용했는지. `true`이면 APK 설치 가능. 웹 환경은 항상 `true`
+- `manifest: boolean` — AndroidManifest.xml에 `REQUEST_INSTALL_PACKAGES` 권한이 선언돼 있는지. `false`이면 설치 불가능하며 앱 재설치 필요. 웹 환경은 항상 `true`
+
+### `static requestPermissions(): Promise<void>`
+
+`REQUEST_INSTALL_PACKAGES` 권한을 사용자에게 요청. Android에서는 시스템 설정 화면으로 이동.
+
+**동작:**
+
+- Android: 시스템 설정 화면(앱 권한 설정)으로 이동. 호출은 즉시 반환하지만, 사용자가 권한을 부여할 때까지 설정 화면에 머물러 있음. 권한 부여 후 자동으로 호출 앱으로 복귀하지 않으므로, 호출 후 `checkPermissions()` 로 폴링 필요
+- 웹: no-op
+
+### `static install(apkUri: string): Promise<void>`
+
+APK 설치 인텐트를 실행.
+
+**파라미터:**
+
+- `apkUri: string` — 설치할 APK의 content:// URI (FileProvider URI). 예: `await FileSystem.getUri(apkFilePath)` 결과. 반드시 content:// 스킴이어야 하며 file:// 경로는 불가
+
+**동작:**
+
+- Android: Android 시스템의 패키지 설치 인텐트 실행. 사용자가 설치 확인을 누르면 설치 진행. 설치 후 자동 복귀 없음
+- 웹: alert로 미지원 안내 후 정상 반환
+
+### `static getVersionInfo(): Promise<VersionInfo>`
+
+현재 설치된 앱의 버전 정보 조회.
+
+**반환값 (VersionInfo):**
+
+- `versionName: string` — 표시용 버전 문자열. AndroidManifest.xml의 `android:versionName`. 예: "1.0.0". AutoUpdate 에서 `semver.valid()` / `semver.gt()` 비교에 사용
+- `versionCode: string` — 빌드 번호(정수값을 문자열로). AndroidManifest.xml의 `android:versionCode`. 예: "1". 내부용이므로 대소문자 민감하지 않음
+
+**동작:**
+
+- Android: PackageManager 를 통해 현재 설치된 앱 정보 조회
+- 웹: `{ versionName: process.env.SD_VERSION ?? "0.0.0", versionCode: "0" }` 반환
 
 ## VersionInfo
 
-현재 앱 버전 정보 타입.
+버전 정보를 담는 인터페이스.
 
-```ts
+```typescript
 interface VersionInfo {
-  versionName: string;
-  versionCode: string;
+  versionName: string; // 표시용 버전 문자열 (예: "1.0.0")
+  versionCode: string; // 빌드 번호 (문자열, 예: "1")
 }
 ```
 
-- `versionName: string` — semver 형식 버전명. `AutoUpdate` 가 `semver.valid`/`semver.gt` 비교에 사용한다.
-- `versionCode: string` — 빌드 버전 코드(문자열).
+- `versionName: string` — semver 형식의 버전명. `AutoUpdate` 에서 버전 비교에 사용
+- `versionCode: string` — 정수 빌드 번호(문자열 형식)
 
 ## ApkInstallerPlugin
 
-Capacitor 저수준 플러그인 계약 인터페이스. 공개 래퍼 `ApkInstaller` 가 내부에서 이 형태로 호출하며, 웹 구현체도 이 계약을 구현한다.
+Capacitor 저수준 플러그인 계약 인터페이스. `ApkInstaller` 가 내부적으로 이 형태로 호출하며, 웹 구현체도 이 계약을 구현한다. 보통 `ApkInstaller` 래퍼를 사용하므로 직접 호출할 일은 드물다.
 
-- `install(options: { uri: string }): Promise<void>` — `uri` 의 APK 를 설치한다.
-  - `options.uri: string` — 설치할 APK 의 `content://` URI. `ApkInstaller.install(apkUri)` 의 인자가 전달된다.
-- `checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>` — 권한 승인 여부(`granted`)와 manifest 선언 여부(`manifest`)를 반환한다.
-- `requestPermissions(): Promise<void>` — 권한 요청을 수행한다.
-- `getVersionInfo(): Promise<VersionInfo>` — 현재 앱 `VersionInfo` 를 반환한다.
+```typescript
+interface ApkInstallerPlugin {
+  install(options: { uri: string }): Promise<void>;
+  checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>;
+  requestPermissions(): Promise<void>;
+  getVersionInfo(): Promise<VersionInfo>;
+}
+```
+
+- `install(options: { uri: string }): Promise<void>` — APK 설치 인텐트 실행
+  - `uri: string` — 설치할 APK의 content:// URI
+- `checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>` — 권한 상태 반환
+  - `granted: boolean` — 권한 허용 여부
+  - `manifest: boolean` — Manifest 선언 여부
+- `requestPermissions(): Promise<void>` — 권한 요청(설정 화면 이동)
+- `getVersionInfo(): Promise<VersionInfo>` — 현재 앱 버전 정보 반환

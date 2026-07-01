@@ -1,7 +1,6 @@
 ---
 name: sd-manual
-description: 활성 references 경로의 `manuals/` 에 주제 단위 목적 기반 개발 매뉴얼(how-to)을 작성·갱신. Use when 라이브러리·프레임워크 사용법을 "~하려면 ~한다" 식 매뉴얼로 새로 쓰거나 코드 변경을 반영해 갱신할 때.
-disable-model-invocation: true
+description: 활성 references 경로의 `manuals/` 에 주제 단위 목적 기반 개발 매뉴얼(how-to)을 작성·갱신. Use when 사용자가 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
 ---
 
 # sd-manual

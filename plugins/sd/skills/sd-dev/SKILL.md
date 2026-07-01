@@ -1,7 +1,6 @@
 ---
 name: sd-dev
 description: 코드 변경 요청을 사용자와 대화로 합의 후 합의 범위만큼 테스트 포함 완결 구현(화면 산출 시 시연 포함)으로 산출. Use when 사용자가 sd-dev 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
-disable-model-invocation: true
 ---
 
 # sd-dev

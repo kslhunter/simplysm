@@ -1,16 +1,16 @@
-# @simplysm/excel — ExcelCell / ExcelRow / ExcelCol
+# @simplysm/excel — ExcelCell
 
-`ExcelWorksheet.cell`/`row`/`col` 로 얻는 셀·행·열 핸들 묶음. 핸들 생성은 동기지만 실제 값·스타일·워크시트 XML 접근은 `async` 메서드에서 lazy-load 된다(셀 타입에 필요한 파트만 선택 로드).
+개별 셀의 값·수식·병합·스타일을 읽고 쓰는 클래스.
 
-## ExcelCell
+`ExcelCell` 의 모든 메서드는 `async`. 셀 값·스타일·수식은 필요할 때만 XML 파트(SharedStrings/Styles)를 로드하므로 읽을 셀을 사전에 알 수 없는 설계에서 동기 설계가 불가능.
 
 ```typescript
 class ExcelCell {
   readonly addr: ExcelAddressPoint;
-  setFormula(val: string | undefined): Promise<void>;
-  getFormula(): Promise<string | undefined>;
-  setValue(val: ExcelValueType): Promise<void>;
   getValue(): Promise<ExcelValueType>;
+  setValue(val: ExcelValueType): Promise<void>;
+  getFormula(): Promise<string | undefined>;
+  setFormula(val: string | undefined): Promise<void>;
   merge(r: number, c: number): Promise<void>;
   getStyleId(): Promise<string | undefined>;
   setStyleId(styleId: string | undefined): Promise<void>;
@@ -18,58 +18,34 @@ class ExcelCell {
 }
 ```
 
-- `addr` — 셀의 0 기반 `{ r, c }` 좌표.
-- `setFormula` 의 `val: string` — worksheet formula(`f`)로 저장하고 기존 값(`v`)을 비우며 셀 타입을 `"str"` 로 둔다.
-- `setFormula`/`setValue` 의 `val: undefined` — 셀을 삭제한다.
-- `setValue` 의 `val: string` — shared string 으로 등록(있으면 ID 재사용)하고 셀 타입 `"s"` 로 저장한다.
-- `setValue` 의 `val: number` — 셀 타입을 비우고(`null`) 숫자 문자열을 셀 값으로 저장한다.
-- `setValue` 의 `val: boolean` — 셀 타입 `"b"` 와 `"1"`/`"0"` 값으로 저장한다.
-- `setValue` 의 `val: DateOnly | DateTime | Time` — Excel serial 숫자를 저장하고 각 타입의 숫자 형식 style(numFmtId 14/22/18)을 함께 적용한다.
-- `merge` 의 `r` / `c` — 병합 끝 행/열 인덱스. 현재 셀 주소가 병합 시작 좌표다.
-- `setStyleId` 의 `styleId` — worksheet 셀 속성 `s` 값. `undefined` 면 styleId 속성을 제거한다.
-- `setStyle` 의 `opts` — 셀 스타일 옵션(자세히는 [style.md](./style.md)). 기존 styleId 가 있으면 기존 스타일을 clone 한 뒤 지정 옵션만 반영한 새 styleId 를 적용한다.
+**프로퍼티**
 
-메서드 동작:
+- `addr: ExcelAddressPoint` — 셀 주소(0 기반 행/열 인덱스). 읽기 전용. `{ r: number, c: number }` 형태.
 
-- `setFormula(val)` — 수식을 쓰면 기존 셀 값을 비우고 formula 만 지정한다. `undefined` 는 셀 삭제.
-- `getFormula()` — worksheet 셀의 formula 문자열을 반환한다. 없으면 `undefined`.
-- `setValue(val)` — 타입별로 셀 타입·값·스타일을 갱신한다. 지원하지 않는 객체/배열 등은 throw 한다.
-- `getValue()` — 셀 타입(`t`)과, 타입이 없으면 셀 styleId 의 숫자 형식으로 값을 복원한다. shared string ID 파싱 실패, 에러 셀(`"e"`), 날짜 숫자 파싱 실패, 알 수 없는 숫자 형식은 throw 한다.
-- `merge(r,c)` — 현재 셀부터 끝 좌표까지 병합을 추가한다.
-- `getStyleId()` / `setStyleId(styleId)` — 현재 셀의 styleId 를 읽거나 직접 지정/제거한다.
-- `setStyle(opts)` — `ExcelStyleOptions` 를 내부 스타일로 변환하고 styles 파트를 생성·갱신한다(기존 styleId 는 clone 후 일부만 덮어씀).
+**메서드**
 
-## ExcelRow
-
-```typescript
-class ExcelRow {
-  cell(c: number): ExcelCell;
-  getCells(): Promise<ExcelCell[]>;
-}
-```
-
-- `cell` 의 `c` — 0 기반 열 인덱스. 행의 특정 열 셀 핸들을 얻는다.
-
-메서드 동작:
-
-- `cell(c)` — 같은 worksheet 의 `(row.r, c)` 셀 핸들을 반환한다.
-- `getCells()` — worksheet 데이터 범위의 시작 열~끝 열 셀 핸들을 배열 인덱스 `c` 위치에 채워 반환한다.
-
-## ExcelCol
-
-```typescript
-class ExcelCol {
-  cell(r: number): ExcelCell;
-  getCells(): Promise<ExcelCell[]>;
-  setWidth(size: number): Promise<void>;
-}
-```
-
-- `cell` 의 `r` — 0 기반 행 인덱스. 열의 특정 행 셀 핸들을 얻는다.
-- `setWidth` 의 `size` — 열 너비. 현재 열의 1 기반 인덱스에 너비 문자열로 저장된다.
-
-메서드 동작:
-
-- `cell(r)` — 같은 worksheet 의 `(r, col.c)` 셀 핸들을 반환한다.
-- `getCells()` — worksheet 데이터 범위의 시작 행~끝 행 셀 핸들을 배열 인덱스 `r` 위치에 채워 반환한다.
-- `setWidth(size)` — 현재 열(0 기반 `c` → 1 기반 colIndex)에 너비를 설정한다.
+- `getValue(): Promise<ExcelValueType>` — 셀 값 반환. 셀이 빈 경우 `undefined`. 셀 타입과 숫자 형식에 따라 다음처럼 복원:
+  - `t="s"` (shared string): SharedStrings.xml 로드 후 ID로 문자열 조회.
+  - `t="b"` (boolean): 값 `"1"` → true, `"0"` → false.
+  - `t="str"` (수식 결과 문자열): 저장된 문자열 그대로 반환.
+  - `t="n"` (숫자): `parseFloat()` 로 반환.
+  - `t="inlineStr"` (inline 문자열): 저장된 텍스트 그대로 반환.
+  - `t="e"` (에러): throw.
+  - 타입 없고 숫자 형식 있음: numFmtId/numFmtCode 기반 DateOnly/DateTime/Time 판별 후 복원.
+  - 타입·형식 없음: `parseFloat()` 로 반환.
+- `setValue(val: ExcelValueType): Promise<void>` — 셀 값 설정.
+  - `undefined`: 셀 삭제.
+  - `string`: SharedStrings.xml 에 추가/조회 후 `t="s"` 로 저장.
+  - `boolean`: `t="b"` 로 `"1"` 또는 `"0"` 저장.
+  - `number`: 숫자 문자열로 저장(타입 명시 안 함).
+  - `DateOnly` / `DateTime` / `Time`: Excel serial 숫자로 저장 + 해당 숫자 형식(numFmtId 14/22/18) 자동 적용.
+- `getFormula(): Promise<string | undefined>` — 셀 수식 반환. 수식 없으면 `undefined`.
+- `setFormula(val: string | undefined): Promise<void>` — 셀 수식 설정.
+  - `undefined`: 수식 제거(셀 삭제 아님, 값 제거만).
+  - `string`: 수식을 `t="str"` (수식 결과 문자열) 로 저장. Excel이 평가하는 값은 저장되지 않음 (lazy 평가).
+- `merge(r: number, c: number): Promise<void>` — 현재 셀(좌상단)에서 지정된 끝 좌표(우하단)까지 셀 병합. 0 기반 행/열 인덱스. 기존 병합이 있으면 덮어쓰기.
+- `getStyleId(): Promise<string | undefined>` — 셀 스타일 ID 반환. 스타일 없으면 `undefined`.
+- `setStyleId(styleId: string | undefined): Promise<void>` — 셀 스타일 ID 설정.
+  - `undefined`: 셀 스타일 제거.
+  - `string`: `xl/styles.xml` 의 cellXfs 에 등록된 xf ID. 직접 ID 를 지정해 기존 스타일 재사용.
+- `setStyle(opts: ExcelStyleOptions): Promise<void>` — 셀 스타일 설정. 옵션은 [style.md](./style.md) 참조. 기존 셀 styleId 있으면 그 기반으로 입력 옵션 merge, 없으면 새 스타일 생성.

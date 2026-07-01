@@ -1,6 +1,6 @@
 # @simplysm/excel — OOXML XML-shape 타입
 
-`types.ts` 가 노출하는 XML 직렬화 구조 타입 묶음. 일반 workbook API 사용보다, 패키지 내부 XML 모델·테스트·디버그에서 `ExcelXml.data` 트리의 shape 를 해석할 때 함께 본다. 모든 필드는 OOXML 속성/엘리먼트를 `xml2js` 스타일(`$`=속성, `_`=텍스트, 배열 래핑)로 표현한다.
+ZIP 내 OOXML/BIFF XML 파트의 파싱 결과 구조 타입. 일반 workbook API 사용보다 패키지 내부 XML 모델·디버그에서 `ExcelXml.data` 트리 shape 를 해석할 때 사용. 모든 필드는 OOXML 속성/엘리먼트를 `xml2js` 스타일(`$` = 속성, `_` = 텍스트, 배열 래핑)로 표현.
 
 ## 패키지 메타데이터 XML
 

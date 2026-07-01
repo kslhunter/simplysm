@@ -1,6 +1,6 @@
 # @simplysm/excel — ExcelUtils
 
-A1 주소 ↔ 0 기반 좌표, Excel 날짜 serial ↔ JS timestamp, Excel 숫자 형식 코드/ID/이름을 변환하는 static 유틸 클래스. 인스턴스 없이 `ExcelUtils.method(...)` 로 호출한다.
+A1 주소 ↔ 0 기반 좌표, Excel 날짜 serial ↔ JS timestamp, Excel 숫자 형식 코드/ID/이름을 상호 변환하는 static 유틸 함수 모음. 인스턴스 없이 `ExcelUtils.메서드(...)` 로 호출.
 
 ## 주소 변환
 

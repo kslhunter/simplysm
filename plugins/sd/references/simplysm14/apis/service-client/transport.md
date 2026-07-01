@@ -1,6 +1,6 @@
 # @simplysm/service-client — 저수준 전송 계층
 
-`ServiceClient` 가 내부에서 조립하는 WebSocket 소켓, 요청/응답 매칭, 프로토콜 Worker 오프로딩 API 묶음. 직접 조립하거나 연결·하트비트·청크·Worker 동작을 확인할 때 읽는다.
+`ServiceClient` 내부의 WebSocket 연결, 요청/응답 매칭, 프로토콜 인코딩 Worker 오프로딩 API. 소켓 연결, 하트비트, 청크 분할, Worker 오프로딩을 직접 제어하거나 확인할 때 참조.
 
 ## SocketProvider / createSocketProvider
 

@@ -1,6 +1,6 @@
 # @simplysm/excel — 조건부 서식
 
-`ExcelWorksheet.addConditionalFormat` 과 `ExcelConditionalRule`/`ExcelConditionalRuleStyle` 타입을 함께 읽는 묶음. 값 비교·텍스트 매칭·raw 수식 조건을 worksheet `conditionalFormatting` 블록으로 누적하고, 강조 스타일은 styles 파트의 dxf 로 등록한다.
+`ExcelWorksheet.addConditionalFormat()` 로 셀 범위에 값 비교·텍스트 매칭·수식 기반 조건부 서식을 추가. 규칙별 강조 스타일은 styles 파트의 dxf 로 등록하고 worksheet `conditionalFormatting` 블록에 누적.
 
 ## addConditionalFormat
 

@@ -39,14 +39,14 @@ afterEach(() => {
 });
 
 describe("npm package manifest", () => {
-  it("keeps CLI binary and replaces workspace dependency ranges in Bun pack output", async () => {
+  it("keeps CLI binary and replaces workspace dependency ranges in pnpm pack output", async () => {
     const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
     const destination = fs.mkdtempSync(path.join(os.tmpdir(), "sd-cli-pack-"));
     tmpDirs.push(destination);
 
     await cpx.spawn(
-      "bun",
-      ["pm", "pack", "--destination", destination, "--ignore-scripts", "--quiet"],
+      "pnpm",
+      ["pack", "--pack-destination", destination],
       { cwd: pkgRoot },
     );
 

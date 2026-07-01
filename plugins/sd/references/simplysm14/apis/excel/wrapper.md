@@ -1,8 +1,8 @@
 # @simplysm/excel — ExcelWrapper
 
-Zod object schema 로 Excel 헤더명·값 변환·행 검증을 묶어 레코드 배열을 읽고 쓰는 고수준 래퍼. 필드 schema 의 `.describe()` 설명을 Excel 헤더로 쓰고(없으면 필드 key), 읽을 때 Zod 로 타입 변환·유효성 검사를 수행한다.
+Zod object schema 로 Excel 파일을 타입 안전하게 읽고 쓰는 고수준 래퍼. 각 필드의 `.describe()` 설명을 Excel 헤더명으로 사용(미설정 시 필드 key). 읽을 때 Zod 로 타입 변환·유효성 검사, 쓸 때 필드별 스타일(테두리·필수 필드 강조) 자동 적용.
 
-화면 CRUD 의 엑셀 다운로드/업로드 사용 흐름은 [../../manuals/client-crud.md](../../manuals/client-crud.md) 참조.
+화면 목록 데이터 엑셀 다운로드/업로드는 [../../manuals/client-crud.md](../../manuals/client-crud.md) 참조.
 
 ## ExcelWrapper
 

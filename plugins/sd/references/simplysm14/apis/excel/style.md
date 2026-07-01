@@ -1,6 +1,6 @@
 # @simplysm/excel — 셀 스타일
 
-`ExcelCell.setStyle(opts)` 와 `ExcelWorkbook.setDefaultStyle(opts)` 가 함께 받는 스타일 타입 묶음. 셀 스타일은 기존 styleId 가 있으면 clone 후 지정 필드만 반영하고, 워크북 default 스타일은 0번 font/fill/border 자원 슬롯과 `cellXfs[0]` 를 직접 갱신한다.
+`ExcelCell.setStyle(opts)` 와 `ExcelWorkbook.setDefaultStyle(opts)` 가 함께 받는 스타일 옵션. 셀 스타일은 기존 styleId 가 있으면 clone 후 지정 필드만 반영. 워크북 default 스타일은 0번 font/fill/border 자원 슬롯과 `cellXfs[0]` 를 직접 갱신.
 
 ## ExcelStyleOptions
 
@@ -16,13 +16,13 @@ interface ExcelStyleOptions {
 }
 ```
 
-- `background` — 배경색(ARGB 8자리, 예: `"00FF0000"`). `/^[0-9A-F]{8}$/i` 형식 검증을 통과하지 못하면 throw 한다. 일반 셀에서는 fill `fgColor` 로 저장된다.
-- `border` — 테두리를 줄 방향 배열(`ExcelBorderPosition[]`). 지정 방향에 테두리가 생성되고, 기존 스타일 clone 시 배열에 없는 방향은 제거된다.
-- `horizontalAlign` — 가로 정렬(`"center" | "left" | "right"`). 지정 시 xf alignment 에 반영된다.
-- `verticalAlign` — 세로 정렬(`"center" | "top" | "bottom"`). 지정 시 xf alignment 에 반영된다.
-- `numberFormat` — 숫자 형식 프리셋(`ExcelNumberFormat`). `ExcelUtils.convertNumFmtNameToId` 로 내장 numFmtId 를 지정한다.
-- `numberFormatCode` — 커스텀 Excel formatCode 문자열(예: `"0.000000"`, `"#,##0.00"`, `"0.00%"`). 지정 시 사용자 정의 numFmt 로 등록되며 `numberFormat` 보다 우선한다.
-- `font` — 폰트 옵션 묶음(`ExcelFont`).
+- `background: string` — 배경색. ARGB 8자리 16진수(예: `"00FF0000"` = 빨강). 셀 fill `fgColor` 로 저장. 형식 검증 실패하면 throw.
+- `border: ExcelBorderPosition[]` — 테두리를 줄 방향 배열. 지정 방향에만 테두리 생성. 기존 스타일 clone 시 배열에 없는 방향은 제거.
+- `horizontalAlign: ExcelHorizontalAlign` — 가로 정렬(`"center"` / `"left"` / `"right"`). 셀 xf alignment 에 반영.
+- `verticalAlign: ExcelVerticalAlign` — 세로 정렬(`"center"` / `"top"` / `"bottom"`). 셀 xf alignment 에 반영.
+- `numberFormat: ExcelNumberFormat` — 숫자 형식 프리셋(`"number"` / `"string"` / `"DateOnly"` / `"DateTime"` / `"Time"`). 내장 numFmtId 로 지정.
+- `numberFormatCode: string` — 커스텀 Excel formatCode 문자열(예: `"0.000000"` / `"#,##0.00"` / `"0.00%"`). `numberFormat` 보다 우선 적용. 사용자 정의 numFmt 로 등록.
+- `font: ExcelFont` — 폰트 옵션 묶음. 미지정 속성은 OOXML `<font>` 엘리먼트 생성 안 함.
 
 ## ExcelFont
 

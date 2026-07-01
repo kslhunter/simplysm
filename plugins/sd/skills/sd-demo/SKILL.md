@@ -1,7 +1,6 @@
 ---
 name: sd-demo
-description: 화면 명세(spec.md 또는 대화로 받은 화면 요구) 1개를 클라이언트 패키지의 화면 컴포넌트 자리에 인터랙티브 데모 골격으로 만들기. Use when "데모 만들기", "화면 데모", "spec 의 화면을 시각화" 를 요청할 때.
-disable-model-invocation: true
+description: 화면 명세(spec.md 또는 대화로 받은 화면 요구) 1개를 클라이언트 패키지의 화면 컴포넌트 자리에 인터랙티브 데모 골격으로 만들기. Use when 사용자가 스킬을 직접 지정해 호출할 때만 사용 (자동 트리거 금지).
 ---
 
 # sd-demo
