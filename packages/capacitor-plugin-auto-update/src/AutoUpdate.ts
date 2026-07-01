@@ -54,20 +54,21 @@ export abstract class AutoUpdate {
       throw new Error("Android만 지원됩니다.");
     }
 
-    let granted: boolean;
+    let result: { granted: boolean; manifest: boolean };
     try {
-      const result = await ApkInstaller.checkPermissions();
-      if (!result.manifest) {
-        this._throwAboutReinstall(1, targetHref);
-      }
-      granted = result.granted;
+      result = await ApkInstaller.checkPermissions();
     } catch (err) {
-      logger.error("checkPermissions manifest 확인 실패:", err);
+      logger.error("checkPermissions 호출 실패:", err);
       this._throwAboutReinstall(2, targetHref);
       return; // 도달 불가 — _throwAboutReinstall은 항상 throw함
     }
 
-    if (!granted) {
+    // manifest 미선언: APK 재설치 필요 (code 1). try 밖이므로 catch가 code 2로 덮어쓰지 않음
+    if (!result.manifest) {
+      this._throwAboutReinstall(1, targetHref);
+    }
+
+    if (!result.granted) {
       log(html`
         설치 권한을 활성화해야 합니다.
         <style>
@@ -79,10 +80,7 @@ export abstract class AutoUpdate {
       await ApkInstaller.requestPermissions();
       // 최대 5분(300초) 대기 - 사용자가 설정에서 권한을 부여할 시간
       await wait.until(
-        async () => {
-          const result = await ApkInstaller.checkPermissions();
-          return result.granted;
-        },
+        async () => (await ApkInstaller.checkPermissions()).granted,
         1000,
         300,
       );

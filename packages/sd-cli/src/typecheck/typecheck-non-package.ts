@@ -3,6 +3,7 @@ import ts from "typescript";
 import { pathx } from "@simplysm/core-node";
 import { createLogger } from "@simplysm/core-common";
 import { parseTsconfig } from "../utils/tsconfig";
+import { collectWorkspacePackages } from "../utils/workspace-utils";
 import { serializeDiagnostic, type SerializedDiagnostic } from "./typecheck-serialization";
 
 const logger = createLogger("sd:cli:typecheck-non-pkg");
@@ -27,9 +28,19 @@ export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult
   const parsedConfig = parseTsconfig(cwd);
   const packagesDir = path.join(cwd, "packages");
 
+  // packages/(배포 대상)가 아닌 워크스페이스(tests/·plugins/·향후 추가분)는 각자 엔진 타입체크가
+  // 자기 tsconfig로 담당하므로 루트 sweep에서 제외한다. 루트 tsconfig로 검사하면 그 워크스페이스
+  // 고유 옵션(allowImportingTsExtensions 등)이 무시돼 거짓 에러가 난다. 디렉터리명에 의존하지 않는다.
+  const nonDeployWorkspaceDirs = collectWorkspacePackages(cwd)
+    .filter((ws) => !ws.relPath.startsWith("packages/"))
+    .map((ws) => pathx.posixResolve(ws.absPath) + "/");
+
   const isNonPackageFile = (fileName: string): boolean => {
     const normalized = pathx.posixResolve(fileName);
     const normalizedPkgDir = pathx.posixResolve(packagesDir);
+
+    // packages/ 가 아닌 워크스페이스 파일 → 엔진이 자기 tsconfig로 담당, sweep 제외
+    if (nonDeployWorkspaceDirs.some((dir) => normalized.startsWith(dir))) return false;
 
     // packages/ 디렉토리 외부 파일
     if (!normalized.startsWith(normalizedPkgDir + "/")) return true;

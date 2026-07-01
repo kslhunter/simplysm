@@ -6,29 +6,30 @@
 
 화면 파일명은 `<domain>.<역할>.ts` 형식. 역할 접미사로 책임을 표시.
 
-| 파일명 형식                  | 역할                                                               |
-| ---------------------------- | ------------------------------------------------------------------ |
+| 파일명 형식                  | 역할                                                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `<domain>.view.ts`           | 여러 영역을 합성·분할한 화면. list/detail 자식 합성형(트리거 중계) 또는 분할·리포트형(영역 직접 포함·직접 페치). |
-| `<domain>.list.ts`           | 목록. `sd-crud-list` 사용.                                         |
-| `<domain>.detail.ts`         | 단건 보기/편집. `sd-crud-detail` 사용.                             |
-| `<domain>.modal.ts`          | 모달 전용 화면.                                                    |
-| `<domain>.print-template.ts` | 프린트 템플릿. `SdPrintProvider.printAsync` 호출 대상.             |
-| `<domain>.types.ts`          | 도메인 화면들이 공유하는 타입 정의.                                |
-| `<domain>.ts`                | 컨트롤(접미사 없음). 여러 화면에서 재사용되는 단위.                |
+| `<domain>.list.ts`           | 목록. `sd-crud-list` 사용.                                                                                       |
+| `<domain>.detail.ts`         | 단건 보기/편집. `sd-crud-detail` 사용.                                                                           |
+| `<domain>.modal.ts`          | 모달 전용 화면.                                                                                                  |
+| `<domain>.print-template.ts` | 프린트 템플릿. `SdPrintProvider.printAsync` 호출 대상.                                                           |
+| `<domain>.types.ts`          | 도메인 화면들이 공유하는 타입 정의.                                                                              |
+| `<domain>.ts`                | 컨트롤(접미사 없음). 여러 화면에서 재사용되는 단위.                                                              |
 
 - 모든 파일명은 dash-case.
 - 라이브러리(`@simplysm/angular`) 의 파일은 `sd-` prefix 적용 (`sd-button.ts`, `sd-crud-list.ts`).
 
 **화면 정의 → 파일 구성**: 화면 정의(와이어프레임·동작) 의 화면 유형을 다음 역할 파일로 매핑.
 
-| 화면 유형 패턴                                           | 파일 역할                                                                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 마스터(체크박스·`[E N]`·5버튼바) / 시트 단일             | `<domain>.list.ts`                                                                              |
-| 단건 입력 폼                                             | `<domain>.detail.ts`                                                                            |
-| 좌 목록 + 우 단건                                        | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
-| 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 마스터-라인     | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
-| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)               | `<domain>.modal.ts`                                                                              |
-| 프린트 양식                                              | `<domain>.print-template.ts`                                                                    |
+| 화면 유형 패턴                                     | 파일 역할                                                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 마스터(체크박스·`[E N]`·5버튼바) / 시트 단일       | `<domain>.list.ts`                                                                              |
+| 단건 입력 폼                                       | `<domain>.detail.ts`                                                                            |
+| 좌 목록 + 우 단건 (항목-상세)                      | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
+| 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 헤더-상세 | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
+| 좌 그룹 목록 + 우 항목(라인) 목록 (그룹-항목)      | `<domain>.view.ts` + `.list.ts` + `.list.ts` — 우 항목 영역은 `.list.ts` (라인 목록)            |
+| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)         | `<domain>.modal.ts`                                                                             |
+| 프린트 양식                                        | `<domain>.print-template.ts`                                                                    |
 
 - `<domain>` 은 화면명을 dash-case 영문으로 음역한 슬러그. 같은 역할 파일이 2개 이상이면 아래 "변형 파일" 규칙 적용.
 - 동작 정의의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님. 화면.X 가 단건 편집이면 `.detail.ts` 를 모달로 띄우고(= "단건 입력 폼" 행), 모달 전용 비-CRUD UI 일 때만 `.modal.ts`. 판별 기준은 아래 "detail 과 modal 구분" 참조.
@@ -140,24 +141,18 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 - view 는 `sd-base-container` 를 루트로 두고, 내부 콘텐츠는 `#contentTpl` 슬롯에 배치.
 - 미선택 빈 상태는 위 예시의 구조(아이콘 + 안내 문구 `div`)를 그대로 사용하되, 안내 문구는 무엇을 선택하는지 드러내는 맥락 문구로 작성(예: `역할을 선택하세요.`). `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
 
-### list + list 합성 (마스터-라인)
+### list + list 합성 (그룹-항목)
 
-좌 list 가 마스터(헤더), 우 list 가 디테일(라인) 역할로 합성:
+좌 list 가 그룹, 우 list 가 항목(라인) 역할로 합성:
 
 ```html
 <sd-base-container [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" ...>
   <ng-template #contentTpl>
     <div class="flex-row fill">
-      <app-master-list #headerSheet selectMode="single" class="flex-min" />
+      <app-group-list #headerSheet selectMode="single" class="flex-min" />
 
       @let _selectedId = headerSheet.selectedKeys().first(); @if (_selectedId == null) {
-      <div
-        class="flex-fill tx-theme-gray-default p-xxl"
-        style="font-size: 48px; line-height: 1.5em"
-      >
-        <ng-icon [svg]="tablerArrowLeft" />
-        선택하세요.
-      </div>
+      <!-- 미선택 빈 상태 — 위 "list + detail 합성"의 빈 상태 규약(아이콘 + 맥락 안내 문구) 동일 -->
       } @else {
       <app-line-list
         class="flex-fill"
@@ -195,13 +190,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
       </sd-shared-data-select-list>
 
       @let _selectedRole = selectedRole(); @if (_selectedRole == null) {
-      <div
-        class="flex-fill tx-theme-gray-default p-xxl"
-        style="font-size: 48px; line-height: 1.5em"
-      >
-        <ng-icon [svg]="tablerArrowLeft" />
-        선택하세요.
-      </div>
+      <!-- 미선택 빈 상태 — 위 "list + detail 합성"의 빈 상태 규약(아이콘 + 맥락 안내 문구) 동일 -->
       } @else {
       <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
       }
@@ -275,6 +264,7 @@ perms = injectPermsSignal(
 canEdit = computed(() => this.perms().includes("edit") && this.data().state === "작성");
 ```
 
+- **단, capability 입력(`sd-crud-list` 의 `canCreate`/`canEdit`/`canDelete`·`sd-crud-detail` 의 `readonly`)은 예외** — 순수 권한이라도 화면 게이트 computed(`canEdit()`) 하나로 묶어 세 입력·핸들러에서 공용. 같은 권한식을 여러 입력·핸들러에 반복하지 않기 위함(DRY). 추가 조건이 있으면 위 예시처럼 그 조건까지 같은 computed 에 결합하고, 단순 권한이면 `canEdit = computed(() => this.perms().includes("edit"))`.
 - list/detail 의 effect 진입에서도 인라인으로 가드:
 
 ```ts
@@ -614,7 +604,7 @@ async onSubmit(): Promise<void> {
 - 페이지 이탈 가드는 `setupCanDeactivate` + `obj.equal` 비교로 처리.
 - 저장 완료 후 `_refresh()` 로 다시 로드 → `submitted.emit(true)`.
 - 삭제·취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list) 가 새로고침할 수 있게 함.
-- 위 `submitted` 는 임베드(컨트롤) 사용 시의 통지. 모달로 띄우는 detail 은 대신 `close.emit(payload)` 로 결과를 반환(호출 측이 `showAsync` 반환으로 refresh). 둘은 독립이라 양쪽으로 쓰이면 함께 둠.
+- 모달로 띄우는 detail 은 위 `submitted.emit` 대신 `close.emit(payload)` ([detail 데이터 흐름](#detail-데이터-흐름) 의 두 output 독립 규약 참조).
 
 ## 시트 컬럼·셀 표준
 
@@ -754,7 +744,7 @@ label 과 입력 그룹을 묶는 전용 클래스 3종:
 | 텍스트 / 숫자 / 날짜 | `<sd-textfield [type]="..." />`                              |
 | 날짜 범위            | `<sd-date-range-picker [(from)] [(to)] />`                   |
 | 정적 선택지          | `<sd-select>` + `<sd-select-item>`                           |
-| 공유 데이터 선택지   | `<sd-shared-data-select [items]>` + `<ng-template [itemOf]>` |
+| 공유데이터 선택지    | `<sd-shared-data-select [items]>` + `<ng-template [itemOf]>` |
 | 체크박스 / 라디오    | `<sd-checkbox [radio]>`                                      |
 | 라벨/배지            | `<sd-label [theme]>`                                         |
 | 버튼/액션            | `<sd-button>`, `<sd-anchor>`                                 |
@@ -797,7 +787,7 @@ await this._appOrm.connectAsync(async (db) => {
 
 - 쿼리 작성법은 [orm.md](./orm.md), Provider 정의 컨벤션은 [client-orm.md](./client-orm.md) 참조.
 
-## 공유 데이터 (`useSharedSignal`)
+## 공유데이터 (`useSharedSignal`)
 
 마스터 데이터(고객사·품목 등) 는 `AppSharedDataProvider` 에 등록되어 있고, 화면에서는 `useSharedSignal(name)` 으로 접근.
 

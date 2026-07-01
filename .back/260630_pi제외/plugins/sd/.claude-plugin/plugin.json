@@ -1,0 +1,9 @@
+{
+  "name": "sd",
+  "version": "14.1.9",
+  "description": "심플리즘 Claude Code 셋업",
+  "author": {
+    "name": "심플리즘"
+  },
+  "license": "Apache-2.0"
+}

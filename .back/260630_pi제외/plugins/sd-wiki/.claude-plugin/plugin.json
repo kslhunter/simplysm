@@ -1,0 +1,9 @@
+{
+  "name": "sd-wiki",
+  "version": "14.1.9",
+  "description": "심플리즘 팀 공용 지식 위키",
+  "author": {
+    "name": "심플리즘"
+  },
+  "license": "Apache-2.0"
+}

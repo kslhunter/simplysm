@@ -56,6 +56,8 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/service-server-acme/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/tests/ssg/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.back/260630_docs/.docs" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/sd-wiki/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/sd/.cache" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.14 (simplysm)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

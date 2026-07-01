@@ -176,7 +176,7 @@ await this._appOrm.connectAsync(async (db) => {
 await this._appSharedData.emitAsync("역할", changedIds);
 ```
 
-- 둘째 인자 `changeKeys` — 변경된 항목의 키 배열. 주면 수신측이 그 키들만 다시 조회해 기존 항목에서 같은 키를 제거한 뒤 병합, 생략(`undefined`) 하면 전체 리로드. 전체 재조회가 필요하면 `emitAsync("이름")` 처럼 생략하고, `changeKeys` 를 주면서 getter 가 전체를 반환하지 않게 함.
+- 둘째 인자 `changeKeys` — 변경된 항목의 키 배열. 주면 수신측이 그 키들만 다시 조회해 기존 항목에서 같은 키를 제거한 뒤 병합, 생략(`undefined`) 하면 전체 리로드. 전체 재조회가 필요하면 둘째 인자를 생략해 `emitAsync("이름")` 로 통지함. 반대로 `changeKeys` 를 줄 때는 getter 가 전체가 아니라 그 키들만 반환하도록 함.
 - 호출 위치는 변경 트랜잭션이 커밋된 뒤(= `connectAsync` 콜백 밖). 변경과 통지가 한 사용자 동작 안에서 이어짐.
 - `register` 안 한 이름을 넘기면 throw — 등록한 이름과 일치시킬 것.
 
@@ -184,10 +184,10 @@ await this._appSharedData.emitAsync("역할", changedIds);
 
 공유데이터 선택 컨트롤(`sd-shared-data-select` · `sd-shared-data-select-list`)은 그 자리에서 해당 마스터를 관리·선택하는 모달을 여는 입력을 가짐. 마스터 목록 화면(`sd-crud-list` 기반)을 모달로 재사용해, 선택 컨트롤 옆에서 등록·수정·선택을 끝낼 수 있음.
 
-| 입력         | 컨트롤              | 동작                                                                                               |
-| ------------ | ------------------- | -------------------------------------------------------------------------------------------------- |
-| `[modal]`    | select · select-list | 선택형 모달. 모달에 `selectMode: "single"` 과 현재 선택 키가 주입되어 열리고, 닫힘 결과의 첫 키로 선택을 갱신. |
-| `[editModal]` | select              | 관리 전용 모달(선택을 바꾸지 않음). 닫혀도 현재 선택은 그대로 유지.                                |
+| 입력          | 컨트롤               | 동작                                                                                                           |
+| ------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `[modal]`     | select · select-list | 선택형 모달. 모달에 `selectMode: "single"` 과 현재 선택 키가 주입되어 열리고, 닫힘 결과의 첫 키로 선택을 갱신. |
+| `[editModal]` | select               | 관리 전용 모달(선택을 바꾸지 않음). 닫혀도 현재 선택은 그대로 유지.                                            |
 
 ```html
 <sd-shared-data-select-list
@@ -223,14 +223,13 @@ await this._appSharedData.emitAsync("역할", changedIds);
     <ng-template [itemOf]="sharedRoles.items()" let-item="item">{{ item.name }}</ng-template>
   </sd-shared-data-select-list>
 
-  @let _selectedRole = selectedRole();
-  @if (_selectedRole == null) {
-    <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px; line-height: 1.5em">
-      <ng-icon [svg]="tablerArrowLeft" />
-      역할을 선택하세요.
-    </div>
+  @let _selectedRole = selectedRole(); @if (_selectedRole == null) {
+  <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px; line-height: 1.5em">
+    <ng-icon [svg]="tablerArrowLeft" />
+    역할을 선택하세요.
+  </div>
   } @else {
-    <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
+  <app-role-permission-detail class="flex-fill" [roleId]="_selectedRole.id" />
   }
 </div>
 ```

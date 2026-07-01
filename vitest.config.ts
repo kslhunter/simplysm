@@ -1,11 +1,38 @@
 import { defineConfig } from "vitest/config";
+import { type LogErrorOptions, type Plugin } from "vite";
 import { playwright } from "@vitest/browser-playwright";
 import { sdAngularPlugin } from "@simplysm/sd-cli";
 
 process.env["DEV"] = "true";
 process.env["VER"] = "1.0.0-test";
 
+// 소스맵 경고 억제:
+// - "Failed to load source map": typescript 등 제3자 패키지가 sourceMappingURL 주석만 남기고 .map 을 배포 안 함.
+// - "points to missing source files": 변환 체인 sourcesContent 부재 등으로 원본을 못 찾는 vite/vitest 노이즈.
+// 둘 다 기능·테스트 결과 무영향이며 우리 코드로 원천 수정 불가. 이 두 패턴만 버리고 나머지 경고는 그대로 통과시킨다.
+// vitest 가 자체 로거를 주입해 root customLogger 를 덮으므로, configResolved 시점의 실제 config.logger 를 직접 감싼다.
+const sourcemapNoise = /points to missing source files|Failed to load source map/;
+function suppressSourcemapWarnings(): Plugin {
+  return {
+    name: "suppress-sourcemap-warnings",
+    configResolved(config): void {
+      const logger = config.logger;
+      const origWarn = logger.warn.bind(logger);
+      const origWarnOnce = logger.warnOnce.bind(logger);
+      logger.warn = (msg: string, opts?: LogErrorOptions): void => {
+        if (sourcemapNoise.test(msg)) return;
+        origWarn(msg, opts);
+      };
+      logger.warnOnce = (msg: string, opts?: LogErrorOptions): void => {
+        if (sourcemapNoise.test(msg)) return;
+        origWarnOnce(msg, opts);
+      };
+    },
+  };
+}
+
 export default defineConfig({
+  plugins: [suppressSourcemapWarnings()],
   resolve: { tsconfigPaths: true },
   define: {
     "import.meta.env.DEV": JSON.stringify("true"),

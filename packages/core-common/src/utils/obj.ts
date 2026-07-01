@@ -565,11 +565,21 @@ export function merge3<
   const result = clone(origin) as Record<string, unknown>;
   const allKeys = new Set([...Object.keys(source), ...Object.keys(target), ...Object.keys(origin)]);
   for (const key of allKeys) {
-    if (equal(source[key], result[key], optionsObj?.[key])) {
+    const keyOpt = optionsObj?.[key];
+    // Merge3KeyOptions(keys/excludes)를 EqualOptions(topLevelIncludes/topLevelExcludes)로 매핑
+    const equalOpt: EqualOptions | undefined =
+      keyOpt == null
+        ? undefined
+        : {
+            topLevelIncludes: keyOpt.keys,
+            topLevelExcludes: keyOpt.excludes,
+            ignoreArrayIndex: keyOpt.ignoreArrayIndex,
+          };
+    if (equal(source[key], result[key], equalOpt)) {
       result[key] = clone(target[key]);
-    } else if (equal(target[key], result[key], optionsObj?.[key])) {
+    } else if (equal(target[key], result[key], equalOpt)) {
       result[key] = clone(source[key]);
-    } else if (equal(source[key], target[key], optionsObj?.[key])) {
+    } else if (equal(source[key], target[key], equalOpt)) {
       result[key] = clone(source[key]);
     } else {
       conflict = true;

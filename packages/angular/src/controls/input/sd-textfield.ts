@@ -10,6 +10,7 @@ import {
   input,
   model,
   PLATFORM_ID,
+  signal,
   viewChild,
   ViewEncapsulation,
 } from "@angular/core";
@@ -58,7 +59,8 @@ import {
         [attr.autocomplete]="autocomplete()"
         [attr.step]="controlStep()"
         (input)="onInput($event)"
-        (paste)="onInputPaste($event)"
+        (compositionstart)="onCompositionStart()"
+        (compositionend)="onCompositionEnd($event)"
         (blur)="onBlur($event)"
       />
     }
@@ -330,6 +332,12 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
 
   private readonly _inputElRef = viewChild<ElementRef<HTMLInputElement>>("inputEl");
 
+  // 실제 input 의 브라우저 native 제약 위반(이메일 형식·날짜 미완성 등) 메시지. onInput/onBlur 에서 갱신.
+  private readonly _nativeInvalidMessage = signal("");
+
+  // IME 조합(한글 등) 중 여부. 조합 중에는 미완성 자모가 model 로 흐르지 않도록 갱신을 보류.
+  private _composing = false;
+
   private readonly _handler = computed(() => textfieldTypeHandlers[this.type()]);
 
   controlType = computed(() => this._handler().controlType);
@@ -360,8 +368,23 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
         const inputEl = this._inputElRef()?.nativeElement;
         if (inputEl == null) return;
 
-        // 편집(포커스) 중에는 DOM 을 되쓰면 사용자 입력(세그먼트·캐럿·IME 조합)이 깨지므로 생략
-        if (document.activeElement === inputEl) return;
+        // 편집(포커스) 중이라도 변경 origin 을 구분한다.
+        // 사용자 입력이 만든 DOM(정규화 차이·진행 중 입력 포함)은 보호하고,
+        // 모델만 외부에서 바뀐 경우(프로그래밍적 리셋·prefill·표시옵션 변경)는 되써서 반영한다.
+        if (document.activeElement === inputEl) {
+          const domParsed = this._handler().parse(inputEl.value, { format: this.format() });
+          // DOM raw 가 현재 모델의 유효한 표현이면(사용자 입력 유래) 되쓰지 않아 캐럿·IME 보호
+          const domReflectsModel =
+            domParsed != null
+            && this._handler().toControlValue(domParsed, {
+              useNumberComma: this.useNumberComma(),
+              format: this.format(),
+            }) === controlValue;
+          // 계속 입력하면 유효해질 진행 중 입력(number "12.")도 보호
+          const incomplete =
+            this._handler().isIncomplete?.(inputEl.value, { format: this.format() }) === true;
+          if (domReflectsModel || incomplete) return;
+        }
 
         if (inputEl.value !== controlValue) {
           inputEl.value = controlValue;
@@ -370,6 +393,9 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     }
 
     setupInvalid(() => {
+      // 비활성·읽기전용 필드는 사용자가 편집할 수 없으므로 검증에서 제외 (네이티브 disabled 동작과 동일)
+      if (this.disabled() || this.readonly()) return "";
+
       const value = this.value();
       const handlerErrors = this._handler().validate(value, {
         required: this.required(),
@@ -390,22 +416,46 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
         }
       }
 
+      // 브라우저 native 제약 위반(이메일 형식·날짜 미완성 등)을 우리 검증(빨간점)에 합류
+      const nativeMessage = this._nativeInvalidMessage();
+      if (nativeMessage !== "") {
+        errorMessages.push(nativeMessage);
+      }
+
       return errorMessages.join("\r\n");
     });
   }
 
+  onCompositionStart(): void {
+    this._composing = true;
+  }
+
+  onCompositionEnd(event: CompositionEvent): void {
+    this._composing = false;
+    this._applyInput(event.target as HTMLInputElement);
+  }
+
   onInput(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
+    // 조합 중 input 은 무시하고, 완성 시 onCompositionEnd 에서 한 번만 반영
+    if (this._composing) return;
+    this._applyInput(event.target as HTMLInputElement);
+  }
+
+  private _applyInput(inputEl: HTMLInputElement): void {
     if (inputEl.value === "") {
       this.value.set(undefined);
-      return;
+    } else {
+      const parsed = this._handler().parse(inputEl.value, { format: this.format() });
+      if (parsed == null) {
+        // 계속 입력하면 유효해질 진행 중 입력(number "12.", "-")은 되쓰지 않아 입력을 이어가게 함
+        if (this._handler().isIncomplete?.(inputEl.value, { format: this.format() }) !== true) {
+          inputEl.value = this.controlValue();
+        }
+      } else {
+        this.value.set(parsed as SdTextfieldTypes[K]);
+      }
     }
-    const parsed = this._handler().parse(inputEl.value, { format: this.format() });
-    if (parsed == null) {
-      inputEl.value = this.controlValue();
-      return;
-    }
-    this.value.set(parsed as SdTextfieldTypes[K]);
+    this._syncNativeValidity(inputEl);
   }
 
   onBlur(event: FocusEvent): void {
@@ -413,25 +463,11 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     // date 미완성 입력은 input.value 가 "" 라 비교 없이 무조건 되써야 남은 세그먼트가 정리됨
     const inputEl = event.target as HTMLInputElement;
     inputEl.value = this.controlValue();
+    this._syncNativeValidity(inputEl);
   }
 
-  onInputPaste(event: ClipboardEvent): void {
-    // preventDefault 로 기본 붙여넣기를 막으므로, 포커스 중 동기화를 건너뛰는 effect 대신
-    // 핸들러에서 직접 input.value 를 모델 기준값으로 되써야 화면에 반영됨 (onBlur 와 동일 패턴)
-    event.preventDefault();
-    const inputEl = event.target as HTMLInputElement;
-    const text = event.clipboardData?.getData("text/plain").trim();
-    if (text == null || text === "") {
-      this.value.set(undefined);
-      inputEl.value = "";
-      return;
-    }
-    const parsed = this._handler().parse(text, { format: this.format() });
-    if (parsed == null) {
-      inputEl.value = this.controlValue();
-      return;
-    }
-    this.value.set(parsed as SdTextfieldTypes[K] | undefined);
-    inputEl.value = this.controlValue();
+  private _syncNativeValidity(inputEl: HTMLInputElement): void {
+    // 실제 input 의 브라우저 native 제약 위반을 signal 로 반영 → setupInvalid 콜백이 검증에 합류
+    this._nativeInvalidMessage.set(inputEl.validity.valid ? "" : inputEl.validationMessage);
   }
 }

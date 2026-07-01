@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # sd-review
 
-리뷰 직접 오케스트레이션으로 수행하는 스킬이다.
+리뷰를 직접 오케스트레이션으로 수행하는 스킬이다.
 
 ## 절차
 

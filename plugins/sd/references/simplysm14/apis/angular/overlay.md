@@ -1,288 +1,222 @@
 # @simplysm/angular — 오버레이·인쇄·파일
 
-Modal, toast, busy overlay, file dialog, print/PDF를 동적으로 body에 붙이거나 provider로 호출하는 군이다. 인쇄/PDF 사용법: [client-print.md](../../manuals/client-print.md)
+modal, toast, busy overlay, file dialog, browser print/PDF를 동적으로 `document.body` 에 붙이거나 provider로 호출하는 군이다. 인쇄/PDF 사용법: [client-print.md](../../manuals/client-print.md)
 
-## modal
+modal/toast/print 의 `inputs` 타입은 `DirectiveInputSignals<T>`(컴포넌트 `input()` property만 골라 값 타입으로 매핑) + `WithOptional`(`_optional*Inputs` 로 표시한 key를 optional)로 만들어진다. 컨텐츠 컴포넌트는 자기 `input()` 으로 데이터를 받고, 자기 `close` output 으로 결과를 emit해 스스로 닫는다.
 
-### `SdModal` — `<sd-modal>`
+## 모달
+
+### `SdModal` (`sd-modal`)
 
 ```ts
 class SdModal {
-  open: ModelSignal<boolean>;
+  open: ModelSignal<boolean>;                 // default false
   key: InputSignal<string | undefined>;
-  title: InputSignal<string>;
-  hideHeader: InputSignal<boolean>;
-  hideCloseButton: InputSignal<boolean>;
+  title: InputSignal<string>;                 // default ""
+  hideHeader, hideCloseButton: InputSignal<boolean>;       // default false
   headerStyle: InputSignal<string | undefined>;
-  useCloseByBackdrop: InputSignal<boolean>;
-  useCloseByEscapeKey: InputSignal<boolean>;
-  float: InputSignal<boolean>;
-  fill: InputSignal<boolean>;
-  resizable: InputSignal<boolean>;
-  movable: InputSignal<boolean>;
+  useCloseByBackdrop, useCloseByEscapeKey: InputSignal<boolean>;  // default true
+  float, fill, resizable, movable: InputSignal<boolean>;   // default false
   position: InputSignal<"bottom-right" | "top-right" | undefined>;
-  minHeightPx: InputSignal<number | undefined>;
-  minWidthPx: InputSignal<number | undefined>;
-  heightPx: InputSignal<number | undefined>;
-  widthPx: InputSignal<number | undefined>;
+  minHeightPx, minWidthPx, heightPx, widthPx: InputSignal<number | undefined>;
   actionTplRef: InputSignal<TemplateRef<any> | undefined>;
   closeRequest: OutputEmitterRef<void>;
 }
 ```
 
-- `open` — host `data-sd-open` 과 enter/leave transition 상태.
-- `key` — `SdSystemConfigProvider` key suffix. 있으면 `sd-modal.${key}` 로 width/height/left/top을 저장·복원한다. 사용법: [client-system-config.md](../../manuals/client-system-config.md)
-- `title` — header title text. 기본 빈 문자열.
-- `hideHeader` — true면 header 전체를 렌더하지 않는다.
-- `hideCloseButton` — true면 header close button을 숨긴다.
-- `headerStyle` — header div `[style]` 문자열.
-- `useCloseByBackdrop` — true면 backdrop click에서 closeRequest를 발생시킨다.
-- `useCloseByEscapeKey` — true면 dialog Escape key에서 closeRequest를 발생시킨다.
-- `float` — true면 backdrop을 숨기고 dialog pointer events만 켠 floating modal style.
-- `fill` — true면 dialog가 full width/height를 차지한다.
-- `resizable` — true면 8방향 resize handle을 렌더하고 resize 종료 시 config를 저장한다.
-- `movable` — true면 header drag로 dialog 위치를 옮길 수 있다.
-- `position` — `"bottom-right"` 는 우하단, `"top-right"` 는 우상단 배치 style을 적용한다.
-- `minHeightPx`/`minWidthPx` — drag resize 최소 높이/너비.
-- `heightPx`/`widthPx` — dialog style height/width px를 effect로 적용한다.
-- `actionTplRef` — header title 옆에 렌더할 action template.
-- `closeRequest` — close button/backdrop/Escape에서 emit한다. activated modal의 `canDeactivateFn()` 이 false면 emit하지 않는다.
+모달 dialog 컨테이너 컴포넌트. 보통 직접 쓰지 않고 `SdModalProvider.showAsync` 가 내부 생성한다. `SdModal` 은 결과를 직접 resolve하지 않고 `closeRequest` 만 emit하며, 타입 결과는 컨텐츠 컴포넌트의 `close` output에서 나온다.
 
-### `SdModalContentDef`, `SdModalInfo`, `SdModalOptions`
+- `open` — 열림 상태(양방향).
+- `key` — 지정 시 `SdSystemConfigProvider` 로 `sd-modal.<key>` 에 크기/위치를 저장·복원.
+- `useCloseByBackdrop`/`useCloseByEscapeKey` — backdrop 클릭/Escape로 닫을지(기본 true).
+- `float` — 떠 있는 모달(backdrop 없음). `fill` — 전체 화면. `resizable` — 8방향 resize handle. `movable` — header 드래그 이동.
+- `position` — `"bottom-right"`/`"top-right"` 코너 고정.
+- `minHeightPx`/`minWidthPx`/`heightPx`/`widthPx` — 최소/초기 크기(px).
+- 닫기 가드 — `SdActivatedModalProvider.canDeactivateFn()` 이 false면 backdrop/Escape/닫기 버튼이 막힌다.
+
+### `SdModalProvider`
 
 ```ts
+@Injectable({ providedIn: "root" })
+class SdModalProvider {
+  modalCount: Signal<number>;
+  showAsync<T extends SdModalContentDef<any>>(
+    modal: SdModalInfo<T>,
+    options?: SdModalOptions,
+  ): Promise<Parameters<T["close"]["emit"]>[0] | undefined>;
+}
 interface SdModalContentDef<O> {
   initialized: Signal<boolean>;
   close: OutputEmitterRef<O | undefined>;
   actionTplRef?: TemplateRef<any>;
   readonly _optionalModalInputs?: string;
 }
-interface SdModalInfo<T extends SdModalContentDef<any>, X extends keyof any = ""> {
+interface SdModalInfo<T extends SdModalContentDef<any>, X = ""> {
   title: string;
   type: Type<T>;
-  inputs: WithOptional<Omit<DirectiveInputSignals<T>, "initialized" | "close" | "actionTplRef" | "_optionalModalInputs" | X>, ...>;
-}
-interface SdModalOptions {
-  key?: string;
-  hideHeader?: boolean;
-  hideCloseButton?: boolean;
-  headerStyle?: string;
-  useCloseByBackdrop?: boolean;
-  useCloseByEscapeKey?: boolean;
-  float?: boolean;
-  fill?: boolean;
-  resizable?: boolean;
-  movable?: boolean;
-  position?: "bottom-right" | "top-right";
-  minHeightPx?: number;
-  minWidthPx?: number;
-  heightPx?: number;
-  widthPx?: number;
-  noFirstControlFocusing?: boolean;
+  inputs: WithOptional<Omit<DirectiveInputSignals<T>, SdModalExcludeKeys | X>, ...>;
 }
 ```
 
-- `SdModalContentDef.initialized` — modal content 초기화 완료 signal. provider 타입 계약에 포함된다.
-- `SdModalContentDef.close` — content가 결과를 emit해 modal을 닫는 output.
-- `SdModalContentDef.actionTplRef` — 있으면 provider가 content property setter를 modal `actionTplRef` input에 bridge한다.
-- `_optionalModalInputs` — `SdModalInfo.inputs` 에서 해당 input key를 optional로 만들기 위한 string literal marker.
-- `SdModalInfo.title` — wrapper modal title input으로 전달할 문자열.
-- `SdModalInfo.type` — 동적으로 생성할 content component type.
-- `SdModalInfo.inputs` — content component input 값. `initialized`/`close`/`actionTplRef`/marker 및 `X` 제외.
-- `key` — wrapper `SdModal.key` 로 전달되어 크기/위치 설정 저장에 쓰인다.
-- `hideHeader`/`hideCloseButton`/`headerStyle`/`useCloseByBackdrop`/`useCloseByEscapeKey`/`float`/`fill`/`resizable`/`movable`/`position`/`minHeightPx`/`minWidthPx`/`heightPx`/`widthPx` — 같은 이름의 `SdModal` input으로 전달된다.
-- `noFirstControlFocusing` — true면 첫 tabbable content 대신 dialog 자체에 focus한다.
+- `showAsync` — `modal.type` 컴포넌트를 동적 생성해 모달로 띄우고, 컨텐츠의 `close` output 값(`O | undefined`)으로 resolve한다. `closeRequest`(backdrop/Escape/X)는 `undefined` resolve. `modal.inputs` 의 각 값은 `setInput` 으로 바인딩.
+- 컨텐츠 contract(`SdModalContentDef`) — `initialized: Signal<boolean>`(렌더 준비), `close = output<O | undefined>()`(결과 emit). 닫으려면 `this.close.emit(result)` 호출.
+- `modalCount` — 열린 모달 수 signal.
 
-### `SdModalProvider`
+#### `SdModalOptions`
 
-```ts
-class SdModalProvider {
-  modalCount: WritableSignal<number>;
-  showAsync<T extends SdModalContentDef<any>>(modal: SdModalInfo<T>, options?: SdModalOptions): Promise<Parameters<T["close"]["emit"]>[0] | undefined>;
-}
-```
+모달 외형/동작 옵션(모두 optional). `noFirstControlFocusing` 외 전부 `SdModal` 동명 input에 매핑된다.
 
-- `modalCount` — 열린 modal 수. 생성 시작 시 +1, destroy 완료 시 -1.
-- `modal` — title/type/inputs로 content component를 만들고 `SdModal` 에 project한다.
-- `options` — null이 아닌 property만 wrapper modal input으로 set한다. `noFirstControlFocusing` 은 focus 정책에만 쓰고 input으로 set하지 않는다.
-- close 동작 — content `close` output은 결과로 resolve, wrapper `closeRequest` 는 `undefined` 로 resolve한다.
-- focus 동작 — 닫힐 때 이전 active element가 연결되어 있으면 focus를 복귀한다.
+- `key` — 크기/위치 저장 key.
+- `hideHeader` — 헤더 바 숨김. `hideCloseButton` — X 버튼 숨김. `headerStyle` — 헤더 inline style.
+- `useCloseByBackdrop`/`useCloseByEscapeKey` — backdrop/Escape 닫기(SdModal 기본 true).
+- `float` — backdrop 없는 floating. `fill` — 전체 화면. `resizable` — resize handle. `movable` — 헤더 드래그 이동.
+- `position` — `"bottom-right"`/`"top-right"`.
+- `minHeightPx`/`minWidthPx`/`heightPx`/`widthPx` — 최소/초기 크기.
+- `noFirstControlFocusing` — true면 첫 tabbable 대신 dialog 자체에 포커스(SdModal에 미바인딩).
 
 ### `SdActivatedModalProvider<T>`
 
 ```ts
-class SdActivatedModalProvider<T extends SdModalContentDef<any> = SdModalContentDef<any>> {
-  modalComponent: WritableSignal<SdModal | undefined>;
-  contentComponent: WritableSignal<T | undefined>;
-  canDeactivateFn: () => boolean;
+@Injectable()
+class SdActivatedModalProvider<T extends SdModalContentDef<any>> {
+  modalComponent: Signal<SdModal | undefined>;
+  contentComponent: Signal<T | undefined>;
+  canDeactivateFn: () => boolean; // default () => true
 }
 ```
 
-- `modalComponent` — 현재 wrapper `SdModal` instance signal.
-- `contentComponent` — 현재 modal content instance signal.
-- `canDeactivateFn` — close request 허용 여부. 기본은 항상 true.
+모달별 child injector로 제공된다. 컨텐츠 컴포넌트가 inject해 host `SdModal` 접근, `canDeactivateFn` 을 false 반환으로 덮어써 닫기 차단. 컨텐츠 자신의 input은 일반 `input()` 으로 읽고, 닫기는 자기 `close` output emit으로 한다.
 
-### `SdPromptModal` / `SdConfirmModal`
+### `SdPromptModal` / `SdConfirmModal` (`sd-prompt-modal` / `sd-confirm-modal`)
 
 ```ts
 class SdPromptModal implements SdModalContentDef<string> {
-  initialized: WritableSignal<boolean>;
-  close: OutputEmitterRef<string | undefined>;
   message: InputSignal<string>;
+  close: OutputEmitterRef<string | undefined>;
 }
 class SdConfirmModal implements SdModalContentDef<boolean> {
-  initialized: WritableSignal<boolean>;
-  close: OutputEmitterRef<boolean | undefined>;
   message: InputSignal<string>;
+  close: OutputEmitterRef<boolean | undefined>;
 }
 ```
 
-- `SdPromptModal.message` — innerHTML로 표시할 안내문. 확인 시 입력 문자열, 취소 시 `undefined` 를 emit한다.
-- `SdPromptModal.initialized` — 기본 true signal.
-- `SdConfirmModal.message` — innerHTML로 표시할 확인문. 확인 시 true, 취소 시 `undefined` 를 emit한다.
-- `SdConfirmModal.initialized` — 기본 true signal.
+- `SdPromptModal` — `message`(innerHTML) 표시 + 필수 textfield. 확인 시 입력 문자열, 취소 시 `undefined` resolve.
+- `SdConfirmModal` — `message` 표시. 확인 시 `true`, 취소 시 `undefined` resolve.
 
-## toast
-
-### `SdToastSeverity`, `SdToastTheme`, `SdToastContentDef`, `SdToastInput`
-
-```ts
-type SdToastSeverity = "info" | "success" | "warning" | "danger";
-type SdToastTheme = "primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray";
-interface SdToastContentDef<O> { close: OutputEmitterRef<O | undefined> }
-interface SdToastInput<T extends SdToastContentDef<any>> { type: Type<T>; inputs: Omit<DirectiveInputSignals<T>, "close"> }
-```
-
-- `SdToastSeverity` — provider shortcut method와 alert/system log 구분에 쓰는 severity.
-- `SdToastTheme` — `SdToast.theme` input의 색 테마.
-- `SdToastContentDef.close` — custom toast content가 결과를 내고 닫을 output.
-- `SdToastInput.type` — custom toast content component type.
-- `SdToastInput.inputs` — custom toast content input 값. `close` 는 제외된다.
-
-### `SdToast` / `SdToastContainer`
-
-```ts
-class SdToast {
-  open: ModelSignal<boolean>;
-  useProgress: InputSignal<boolean>;
-  theme: InputSignal<SdToastTheme>;
-  progress: ModelSignal<number>;
-  message: ModelSignal<string | undefined>;
-}
-class SdToastContainer { overlap: InputSignal<boolean> }
-```
-
-- `open` — enter/leave transition과 `data-sd-open`.
-- `useProgress` — true면 progress bar를 렌더한다.
-- `theme` — toast background와 progress 색. `info`/`success` 는 ARIA `status/polite`, `warning`/`danger` 는 `alert/assertive`.
-- `progress` — progress bar width percent. provider progress mode에서 반환되는 signal.
-- `message` — 문자열이 있으면 text로 렌더하고, 없으면 projected content를 렌더한다.
-- `overlap` — true면 container가 기존 toast들을 겹침 위치에 표시하고 provider가 새 toast 전에 기존 toast를 제거한다.
+## 토스트
 
 ### `SdToastProvider`
 
-사용법: [client-system-log.md](../../manuals/client-system-log.md)
-
 ```ts
+@Injectable({ providedIn: "root" })
 class SdToastProvider {
-  alertThemes: WritableSignal<SdToastSeverity[]>;
+  alertThemes: WritableSignal<SdToastSeverity[]>;     // 이 severity는 window.alert로 대체
   overlap: WritableSignal<boolean>;
   beforeShowFn?: (theme: SdToastSeverity) => void;
   info(message: string, useProgress?: true): WritableSignal<number>;
-  info(message: string, useProgress?: false): void;
-  success(message: string, useProgress?: true): WritableSignal<number>;
-  success(message: string, useProgress?: false): void;
-  warning(message: string, useProgress?: true): WritableSignal<number>;
-  warning(message: string, useProgress?: false): void;
-  danger(message: string, useProgress?: true): WritableSignal<number>;
-  danger(message: string, useProgress?: false): void;
-  notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<Parameters<T["close"]["emit"]>[0] | undefined>;
+  info(message: string, useProgress?: false): void;   // success/warning/danger 동일 시그니처
+  notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<... | undefined>;
   try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined>;
   try<R>(fn: () => R, messageFn?: (err: Error) => string): R | undefined;
 }
+type SdToastSeverity = "info" | "success" | "warning" | "danger";
+type SdToastTheme = "primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray";
+interface SdToastContentDef<O> { close: OutputEmitterRef<O | undefined>; }
+interface SdToastInput<T extends SdToastContentDef<any>> { type: Type<T>; inputs: Omit<DirectiveInputSignals<T>, "close">; }
 ```
 
-- `alertThemes` — 포함된 severity는 toast 대신 `window.alert(message)` 를 호출한다.
-- `overlap` — true면 새 toast/show/notify 전에 기존 toast를 모두 제거한다.
-- `beforeShowFn` — alert가 아닌 toast 표시 직전에 theme을 인자로 호출한다.
-- `info`/`success`/`warning`/`danger` `message` — 표시할 문자열.
-- `useProgress` — true면 progress signal을 반환하고 100 이상이 된 뒤 1초 후 dismiss한다. false면 3초 auto dismiss.
-- `notify.input` — custom content toast를 만들 type/inputs. content `close` emit 또는 5초 auto dismiss로 resolve한다.
-- `try.fn` — 실행할 동기/비동기 함수. Error만 catch한다.
-- `try.messageFn` — Error를 toast 메시지로 바꿀 함수. 없으면 `err.message`.
-- `try` 오류 처리 — danger toast를 띄우고 `SdSystemLogProvider.writeAsync("error", stack/message)` 후 `undefined` 를 반환한다. non-Error는 rethrow한다.
+- `info`/`success`/`warning`/`danger` — 해당 severity 토스트. `useProgress` 가 truthy면 progress용 `WritableSignal<number>`(퍼센트) 반환 — 100 도달 후 1초 뒤 자동 dismiss. 아니면 3초 뒤 자동 dismiss(hover 시 일시정지).
+- `notify` — 커스텀 컴포넌트를 토스트로 띄우고 `close` 결과로 resolve. 5초 뒤 자동 `undefined`.
+- `try` — `fn()` 실행 결과 반환. `Error` throw 시 `danger(messageFn?.(err) ?? err.message)` 표시 + `SdSystemLogProvider.writeAsync("error", ...)` 기록 후 `undefined` 반환(비-Error는 rethrow).
+- `alertThemes` — 목록에 든 severity는 토스트 대신 native `window.alert`.
+- `overlap` — true면 새 토스트마다 기존 토스트 제거(하나만 표시).
+- `SdToastSeverity` — `"info"`/`"success"`/`"warning"`/`"danger"`. `SdToastTheme` — severity 4종 + `"primary"`/`"secondary"`/`"gray"`/`"blue-gray"`.
+
+### `SdToast` (`sd-toast`) / `SdToastContainer` (`sd-toast-container`)
+
+```ts
+class SdToast {
+  open: ModelSignal<boolean>; // default false
+  useProgress: InputSignal<boolean>; // default false
+  theme: InputSignal<SdToastTheme>; // default "info"
+  progress: ModelSignal<number>; // default 0
+  message: ModelSignal<string | undefined>;
+}
+class SdToastContainer {
+  overlap: InputSignal<boolean>;
+} // default false
+```
+
+`SdToastProvider` 가 내부 생성한다. `SdToast` 는 `message` 텍스트 또는 투영 콘텐츠를 렌더하고 `useProgress` 면 progress bar 표시. severity별 `role`/`aria-live`(info/success→status/polite, warning/danger→alert/assertive).
 
 ## busy
 
-### `SdBusyType`, `SdBusyProvider`, `SdBusyContainer`
+### `SdBusyProvider`
 
 ```ts
-type SdBusyType = "spinner" | "bar" | "cube";
+@Injectable({ providedIn: "root" })
 class SdBusyProvider {
-  type: WritableSignal<SdBusyType>;
+  type: WritableSignal<SdBusyType>; // default "bar"
   globalBusyCount: WritableSignal<number>;
   get containerRef(): ComponentRef<SdBusyContainer>;
 }
+type SdBusyType = "spinner" | "bar" | "cube";
+```
+
+- `globalBusyCount` — `> 0` 일 때 전역 전체 화면 busy overlay 표시. `provideSdAngular` 가 Router navigation 동안 자동 증감.
+- `type` — 전역 기본 busy 표시 종류.
+- `SdBusyType` — `"spinner"`(회전 링), `"bar"`(상단 4px 막대), `"cube"`(큐브 애니메이션).
+
+### `SdBusyContainer` (`sd-busy-container`)
+
+```ts
 class SdBusyContainer {
-  busy: InputSignal<boolean>;
+  busy: InputSignal<boolean>; // default false
   message: InputSignal<string | undefined>;
   type: InputSignal<SdBusyType | undefined>;
   progressPercent: InputSignal<number | undefined>;
 }
 ```
 
-- `SdBusyType` — `"spinner"` 는 원형 회전, `"bar"` 는 상단 bar, `"cube"` 는 네 조각 큐브 indicator.
-- `SdBusyProvider.type` — global busy container 기본 indicator 타입. 초기값 `"bar"`.
-- `globalBusyCount` — 0보다 크면 lazy container를 만들고 global busy를 true로 set한다.
-- `containerRef` — body에 fixed full-screen `SdBusyContainer` 를 attach한 component ref.
-- `busy` — true면 overlay screen 표시와 keydown capture 차단을 켠다.
-- `message` — overlay 내부 message pre를 표시한다.
-- `type` — container별 indicator 타입. 없으면 `SdBusyProvider.type()` 을 쓴다.
-- `progressPercent` — 있으면 상단 progress bar를 scaleX(percent/100)로 표시한다.
+- `busy` — true면 콘텐츠 위에 busy overlay + 키 입력 차단(`keydown.capture` 삼킴).
+- `type` — 미지정 시 `SdBusyProvider.type()` 사용. `"spinner"`/`"bar"`/`"cube"` 별 렌더.
+- `progressPercent` — non-null이면 `currType` 과 별개로 determinate progress bar(`scaleX(percent/100)`).
+- `message` — spinner 모드 중앙 메시지.
 
-## print/PDF
+## print
 
-### `SdPrint`, `SdPrintInput`, `SdPrintProvider`
-
-사용법: [client-print.md](../../manuals/client-print.md)
+### `SdPrintProvider`
 
 ```ts
-interface SdPrint {
-  initialized: Signal<boolean>;
-  readonly _optionalPrintInputs?: string;
-}
-interface SdPrintInput<T, X extends keyof any = ""> {
-  type: Type<T>;
-  inputs: WithOptional<Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>, ...>;
-}
+@Injectable({ providedIn: "root" })
 class SdPrintProvider {
   printAsync<T extends SdPrint>(template: SdPrintInput<T>, options?: { size?: string; margin?: string }): Promise<void>;
   getPdfBufferAsync<T extends SdPrint>(template: SdPrintInput<T>, options?: { orientation?: "portrait" | "landscape"; pageSize?: string }): Promise<Uint8Array>;
 }
+interface SdPrint { initialized: Signal<boolean>; readonly _optionalPrintInputs?: string; }
+interface SdPrintInput<T, X = ""> { type: Type<T>; inputs: WithOptional<Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>, ...>; }
 ```
 
-- `SdPrint.initialized` — print/PDF capture가 기다리는 render 완료 signal.
-- `_optionalPrintInputs` — `SdPrintInput.inputs` 에서 해당 input key를 optional로 만들기 위한 marker.
-- `SdPrintInput.type` — 임시 생성할 print template component type.
-- `SdPrintInput.inputs` — template input 값.
-- `printAsync.options.size` — `@page size` 값. 기본 `"A4 auto"`.
-- `printAsync.options.margin` — `@page margin` 값. 기본 `"0"`.
-- `printAsync` 동작 — component를 body에 붙이고 `initialized`/image load를 기다린 뒤 `window.print()` 를 호출한다.
-- `getPdfBufferAsync.options.orientation` — jsPDF orientation. 기본값은 코드상 `"p"`; 타입은 `"portrait" | "landscape"` 로 선언되어 있다.
-- `getPdfBufferAsync.options.pageSize` — jsPDF page size. 기본 `"a4"`.
-- `getPdfBufferAsync` 동작 — `.page` elements가 있으면 각각 한 PDF page로, 없으면 component root를 한 page로 캡처해 `Uint8Array` 를 반환한다.
+`print()` 메서드는 없다 — `printAsync`/`getPdfBufferAsync` 만 있다. 인쇄 대상 컴포넌트는 `initialized: Signal<boolean>` 을 노출해야 하며 provider가 준비를 기다린다.
+
+- `printAsync` — `template.type` 컴포넌트를 생성·렌더하고(`inputs` 는 `inputBinding`), `@page { size; margin }` + print 전용 스타일을 주입한 뒤 이미지 로드 완료를 기다려 `window.print()`. `size` 기본 `"A4 auto"`, `margin` 기본 `"0"`.
+- `getPdfBufferAsync` — 같은 렌더 후 `.page` 요소들을 `html-to-image` 로 canvas 래스터화해 `jsPDF` 페이지로 추가하고 `Uint8Array` 반환. `orientation` 기본 `"portrait"`, `pageSize` 기본 `"a4"`.
+- 두 메서드 모두 실행 동안 `SdBusyProvider.globalBusyCount` 증가.
 
 ## file dialog
 
 ### `SdFileDialogProvider`
 
 ```ts
+@Injectable({ providedIn: "root" })
 class SdFileDialogProvider {
   showAsync(multiple?: false, accept?: string): Promise<File | undefined>;
   showAsync(multiple: true, accept?: string): Promise<File[] | undefined>;
 }
 ```
 
-- `multiple` — true면 input multiple을 켜고 `File[] | undefined` 를 반환, false/미지정이면 첫 `File | undefined` 를 반환한다.
-- `accept` — file input accept attribute. 지정된 경우만 설정한다.
-- cancel 처리 — native `cancel` event 또는 focus fallback으로 `undefined` 를 resolve한다.
+`<input type="file">` 을 잠시 body에 붙여 파일 선택 dialog를 띄운다.
+
+- `multiple` — `true` 면 `File[]`, 생략/`false` 면 단일 `File` 반환.
+- `accept` — input `accept` 속성(MIME/확장자 필터). null이면 미설정.
+- 취소 시(또는 변경 없이 focus 복귀 시) `undefined` resolve.

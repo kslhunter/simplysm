@@ -6,6 +6,7 @@ import {
   SdTextfieldEmailTest,
   SdTextfieldDisabledTest,
   SdTextfieldReadonlyTest,
+  SdTextfieldRequiredTest,
   SdTextfieldInlineTest,
   SdTextfieldPlaceholderTest,
   SdTextfieldTitleTest,
@@ -142,6 +143,19 @@ describe("textfieldTypeHandlers unit tests", () => {
       const errors = textfieldTypeHandlers.number.validate("abc", {});
       expect(errors).toContain("숫자를 입력하세요");
     });
+
+    it("isIncomplete — 진행 중 입력('-','12.','.','-.')은 true", () => {
+      expect(textfieldTypeHandlers.number.isIncomplete!("-", {})).toBe(true);
+      expect(textfieldTypeHandlers.number.isIncomplete!("12.", {})).toBe(true);
+      expect(textfieldTypeHandlers.number.isIncomplete!(".", {})).toBe(true);
+      expect(textfieldTypeHandlers.number.isIncomplete!("-.", {})).toBe(true);
+    });
+
+    it("isIncomplete — 완전 무효 입력('abc','1.2.3','--3')은 false", () => {
+      expect(textfieldTypeHandlers.number.isIncomplete!("abc", {})).toBe(false);
+      expect(textfieldTypeHandlers.number.isIncomplete!("1.2.3", {})).toBe(false);
+      expect(textfieldTypeHandlers.number.isIncomplete!("--3", {})).toBe(false);
+    });
   });
 
   describe("format type handler", () => {
@@ -185,6 +199,30 @@ describe("textfieldTypeHandlers unit tests", () => {
     it("parse — 포맷에 일반 문자 포함 시 regex shorthand로 해석되지 않는다", () => {
       // "d"가 \\d(숫자 전체)로 해석되면 숫자까지 제거되어 빈 문자열이 됨
       expect(textfieldTypeHandlers.format.parse("12d34", { format: "XXdXX" })).toBe("1234");
+    });
+
+    it("parse — 리터럴이 데이터와 겹치는 마스크에서도 손상 없이 추출한다 (A3)", () => {
+      // "2025-XXXX" 리터럴 {2,0,5,-} 가 데이터와 겹쳐도 위치기반이라 안전 (기존 전역제거는 "" 로 전멸)
+      expect(textfieldTypeHandlers.format.parse("2025-2050", { format: "2025-XXXX" })).toBe("2050");
+    });
+
+    it("parse — 마스크대로 입력한 다중 포맷을 위치기반으로 추출한다", () => {
+      expect(
+        textfieldTypeHandlers.format.parse("01-0123-4567", { format: "XXX-XXXX|XX-XXXX-XXXX" }),
+      ).toBe("0101234567");
+    });
+
+    it("parse — 구분자를 생략한 입력은 전역제거 폴백으로 받는다", () => {
+      expect(textfieldTypeHandlers.format.parse("01012345678", { format: "XXX-XXXX-XXXX" })).toBe(
+        "01012345678",
+      );
+    });
+
+    it("parse/toControlValue 왕복 — 리터럴 숫자 겹침에서도 값 보존 (A3)", () => {
+      const format = "2025-XXXX";
+      const display = textfieldTypeHandlers.format.toControlValue("2050", { format });
+      expect(display).toBe("2025-2050");
+      expect(textfieldTypeHandlers.format.parse(display, { format })).toBe("2050");
     });
   });
 
@@ -316,78 +354,6 @@ describe("Feature 2.4 Slice 1: sd-textfield string types", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }));
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.value()).toBeUndefined();
-  });
-
-  it("붙여넣기 시 앞뒤 공백이 제거된다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
-      .createComponent(SdTextfieldTextTest);
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "  hello  ");
-    input.dispatchEvent(pasteEvent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.value()).toBe("hello");
-  });
-
-  it("붙여넣기 시 브라우저 기본 paste가 차단된다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
-      .createComponent(SdTextfieldTextTest);
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      cancelable: true,
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "hello");
-    input.dispatchEvent(pasteEvent);
-
-    expect(pasteEvent.defaultPrevented).toBe(true);
-    expect(fixture.componentInstance.value()).toBe("hello");
-  });
-
-  it("파싱 실패 텍스트 붙여넣기 시 기존 값이 유지되고 기본 paste가 차단된다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
-      .createComponent(SdTextfieldNumberTest);
-    fixture.componentInstance.value.set(456);
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      cancelable: true,
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "abc");
-    input.dispatchEvent(pasteEvent);
-    fixture.detectChanges();
-
-    expect(pasteEvent.defaultPrevented).toBe(true);
-    expect(fixture.componentInstance.value()).toBe(456);
-    expect(input.value).toBe("456");
-  });
-
-  it("빈 텍스트 붙여넣기 시 모델이 undefined가 되고 기본 paste가 차단된다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
-      .createComponent(SdTextfieldTextTest);
-    fixture.componentInstance.value.set("existing");
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      cancelable: true,
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "   ");
-    input.dispatchEvent(pasteEvent);
-    fixture.detectChanges();
-
-    expect(pasteEvent.defaultPrevented).toBe(true);
     expect(fixture.componentInstance.value()).toBeUndefined();
   });
 
@@ -538,6 +504,63 @@ describe("Feature 2.4 Slice 2: sd-textfield number + format types", () => {
 
     const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
     expect(input.value).toBe("010-1234");
+  });
+});
+
+// endregion
+
+// region A2: number 소수점·음수 진행 입력 (롤백 방지)
+
+describe("A2: sd-textfield number 진행 입력", () => {
+  it("소수점 진행('12.') 입력이 롤백되지 않고 완성 시 값이 저장된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
+      .createComponent(SdTextfieldNumberTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+
+    input.value = "12.";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(input.value).toBe("12."); // 진행 상태 유지, 롤백되지 않음
+
+    input.value = "12.5";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe(12.5);
+  });
+
+  it("음수 시작('-') 입력이 롤백되지 않고 완성 시 값이 저장된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
+      .createComponent(SdTextfieldNumberTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+
+    input.value = "-";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(input.value).toBe("-"); // 롤백되지 않음
+
+    input.value = "-5";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe(-5);
+  });
+
+  it("완전 무효('1.2.3') 입력은 기존값으로 롤백된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
+      .createComponent(SdTextfieldNumberTest);
+    fixture.componentInstance.value.set(7);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
+
+    input.value = "1.2.3";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(input.value).toBe("7"); // controlValue 로 롤백
+    expect(fixture.componentInstance.value()).toBe(7);
   });
 });
 
@@ -887,6 +910,44 @@ describe("Feature 2.4 Slice 3: sd-textfield date/datetime/time types", () => {
     expect(input.value).toBe("14:30:45");
   });
 
+  it("time 타입에 'HH:mm'(초 없음) 입력 시 value가 Time으로 반영된다 (A1 회귀)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTimeTest] })
+      .createComponent(SdTextfieldTimeTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.value = "10:31";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    const value = fixture.componentInstance.value();
+    expect(value).toBeInstanceOf(Time);
+    expect(value!.hour).toBe(10);
+    expect(value!.minute).toBe(31);
+    expect(value!.second).toBe(0);
+  });
+
+  it("time-sec 타입에 'HH:mm:ss' 입력 시 value가 Time으로 반영된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTimeSecTest] })
+      .createComponent(SdTextfieldTimeSecTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.value = "10:31:45";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    const value = fixture.componentInstance.value();
+    expect(value).toBeInstanceOf(Time);
+    expect(value!.hour).toBe(10);
+    expect(value!.minute).toBe(31);
+    expect(value!.second).toBe(45);
+  });
+
   it("datetime readonly에서 display div에 표시용 텍스트가 나타난다", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldDatetimeReadonlyTest] })
       .createComponent(SdTextfieldDatetimeReadonlyTest);
@@ -905,7 +966,7 @@ describe("Feature 2.4 Slice 3: sd-textfield date/datetime/time types", () => {
 
 // endregion
 
-// region FIX-2 Slice 1: number 중간 입력 및 paste 복원
+// region FIX-2 Slice 1: number 중간 입력
 
 describe("FIX-2 Slice 1: number handler 중간 입력 수정 (LOGIC-008)", () => {
   it("parse('0.0')은 0을 반환한다 (중간 입력이 소실되지 않음)", () => {
@@ -957,43 +1018,6 @@ describe("FIX-2 Slice 1: textfield number 입력 통합 (LOGIC-008)", () => {
   });
 });
 
-describe("FIX-2 Slice 1: textfield paste 실패 복원 (LOGIC-010)", () => {
-  it('숫자 타입에 "abc" paste 시 value가 유지되고 input이 복원된다', () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
-      .createComponent(SdTextfieldNumberTest);
-    fixture.componentInstance.value.set(42);
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "abc");
-    input.dispatchEvent(pasteEvent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.value()).toBe(42);
-    expect(input.value).toBe("42");
-  });
-
-  it("빈 문자열 paste 시 value가 undefined로 설정된다", () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
-      .createComponent(SdTextfieldNumberTest);
-    fixture.componentInstance.value.set(42);
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector("input:not(.sd-invalid-input)") as HTMLInputElement;
-    const pasteEvent = new ClipboardEvent("paste", {
-      clipboardData: new DataTransfer(),
-    });
-    pasteEvent.clipboardData!.setData("text/plain", "   ");
-    input.dispatchEvent(pasteEvent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.value()).toBeUndefined();
-  });
-});
-
 // endregion
 
 // region Feature 1.3: sd-textfield 표시 로직 복원
@@ -1023,6 +1047,191 @@ describe("Feature 1.3 Slice 1: sd-textfield 표시 로직 및 호스트 바인�
     expect(pre!.textContent).toContain("readonly value");
   });
 
+});
+
+// endregion
+
+// region B1: 포커스 중 model→DOM 동기화 (origin 구분)
+
+describe("B1: 포커스 중 프로그래밍적 model 변경 반영", () => {
+  it("포커스 유지 상태의 프로그래밍적 리셋이 DOM 에 반영된다 (이슈 #36)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.componentInstance.value.set("hello");
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+
+    fixture.componentInstance.value.set(undefined);
+    fixture.detectChanges();
+
+    expect(input.value).toBe(""); // 포커스 중이어도 반영됨
+    fixture.destroy();
+  });
+
+  it("포커스 중 외부 value 변경이 DOM 에 반영된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.componentInstance.value.set("old");
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.focus();
+
+    fixture.componentInstance.value.set("new");
+    fixture.detectChanges();
+
+    expect(input.value).toBe("new");
+    fixture.destroy();
+  });
+
+  it("포커스 중 사용자 입력 유래 값은 DOM 을 덮어쓰지 않는다 (캐럿 보호)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldNumberTest] })
+      .createComponent(SdTextfieldNumberTest);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.focus();
+    input.value = "1000";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    // 모델은 1000, DOM 은 "1000" 유지 (정규화 "1,000" 으로 덮지 않음)
+    expect(fixture.componentInstance.value()).toBe(1000);
+    expect(input.value).toBe("1000");
+    fixture.destroy();
+  });
+});
+
+// endregion
+
+// region A5: 비활성/읽기전용 필드 검증 제외
+
+describe("A5: 비활성/읽기전용 필드 검증 제외", () => {
+  it("일반 + required 빈값 필드는 검증에 걸린다 (대조)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
+      .createComponent(SdTextfieldRequiredTest);
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(false); // required + 빈값 → 검증 걸림
+  });
+
+  it("disabled + required 빈값 필드는 검증에서 제외되어 저장을 막지 않는다 (A5)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
+      .createComponent(SdTextfieldRequiredTest);
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(true); // 비활성이라 검증 제외
+  });
+
+  it("readonly + required 빈값 필드는 검증에서 제외되어 저장을 막지 않는다 (A5)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
+      .createComponent(SdTextfieldRequiredTest);
+    fixture.componentInstance.readonly.set(true);
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(true); // 읽기전용이라 검증 제외
+  });
+});
+
+// endregion
+
+// region A6: 브라우저 native 검증을 우리 검증(빨간점)에 반영
+
+describe("A6: native 검증 반영", () => {
+  it("이메일 형식 오류가 우리 검증에 반영되어 빨간점이 뜬다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldEmailTest] })
+      .createComponent(SdTextfieldEmailTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.value = "abc";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(false); // native 이메일 형식 위반이 우리 검증에 합류
+  });
+
+  it("정상 이메일은 검증을 통과한다 (대조)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldEmailTest] })
+      .createComponent(SdTextfieldEmailTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.value = "user@example.com";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(true);
+  });
+});
+
+// endregion
+
+// region D6: IME 조합 입력 (완성 시 1회 반영)
+
+describe("D6: IME 조합 입력", () => {
+  it("한글 조합 중에는 미완성 값이 흐르지 않고 완성 시 한 번만 반영된다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+
+    input.dispatchEvent(new CompositionEvent("compositionstart"));
+
+    input.value = "ㅎ";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBeUndefined(); // 조합 중 미반영
+
+    input.value = "한";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBeUndefined(); // 여전히 조합 중
+
+    input.dispatchEvent(new CompositionEvent("compositionend", { data: "한" }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe("한"); // 완성 시 1회 반영
+  });
+
+  it("조합 없는 일반 입력은 즉시 반영된다 (대조)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+    input.value = "abc";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.value()).toBe("abc");
+  });
 });
 
 // endregion

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<!--
+  sd-estimate 고객용 견적서 템플릿 (A4 인쇄 / PDF 출력)
+  - 이 파일을 복제해 「…」 플레이스홀더를 실제 값으로 채운다.
+  - 디자인 토큰(:root)·컴포넌트 클래스는 그대로 재사용. 새 컴포넌트를 임의로 만들지 않는다.
+  - 액센트 1색(--accent)만 브랜드/도메인에 맞게 조정 가능. navy 베이스는 고정.
+  - 단일 자기완결 파일 — 외부 폰트·CDN·스크립트 의존 없음(오프라인/PDF 인쇄 안정).
+  - 섹션 주석 [공통·필수] / [선택] 표시를 따른다. [선택] 섹션은 불필요하면 통째로 삭제.
+  - 내부 산정 용어(PERT·O/M/P·델파이·KOSA·노임단가 등)·도구명은 절대 넣지 않는다.
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「건명」 견적서</title>
+<style>
+  :root{
+    --navy:#13294b;     /* 주조 */
+    --navy-2:#1f3f6e;
+    --blue:#2f6fb0;     /* 강조 */
+    --accent:#c79a3a;   /* 포인트(상단 라인·섹션 좌측 바·골드). 브랜드에 맞게 1색만 조정 가능 */
+    --line:#d7e0ea;
+    --line-2:#e8eef5;
+    --soft:#f5f8fc;
+    --ink:#1b2330;
+    --muted:#74808d;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+
+  body{
+    /* 시스템 폰트 스택만 사용(CDN 금지). Pretendard 설치 시 우선, 아니면 OS 기본 한글 폰트로 폴백 */
+    font-family:'Pretendard','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+    color:var(--ink);
+    background:#e7ebf1;
+    font-size:13px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:"tnum" 1;
+  }
+
+  /* ===== A4 시트 ===== */
+  .sheet{
+    width:210mm;
+    min-height:297mm;
+    margin:20px auto;
+    padding:16mm 15mm 14mm;
+    background:#fff;
+    box-shadow:0 4px 24px rgba(19,41,75,.16);
+    position:relative;
+  }
+  .sheet::before{
+    content:""; position:absolute; left:0; top:0; right:0; height:6px;
+    background:linear-gradient(90deg,var(--navy) 0%,var(--navy) 62%,var(--accent) 62%,var(--accent) 100%);
+  }
+
+  /* ===== 머리글 ===== */
+  .masthead{display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:14px; border-bottom:2px solid var(--navy);}
+  .masthead .title h1{margin:0; color:var(--navy); font-size:34px; font-weight:800; letter-spacing:14px; line-height:1;}
+  .masthead .title .sub{margin-top:10px; color:var(--muted); font-size:12.5px; letter-spacing:.2px;}
+  .masthead .meta{text-align:right; font-size:12px; color:var(--muted); line-height:1.9;}
+  .masthead .meta .brand{font-size:18px; font-weight:800; color:var(--navy); letter-spacing:3px;}
+  .masthead .meta .brand small{display:block; font-size:9.5px; font-weight:600; letter-spacing:2px; color:var(--blue); margin-top:2px;}
+  .masthead .meta b{color:var(--ink); font-weight:600;}
+
+  /* ===== 당사자 ===== */
+  .parties{display:flex; gap:14px; margin:18px 0 0;}
+  .party{flex:1; border:1px solid var(--line); border-radius:8px; padding:13px 16px;}
+  .party.supplier{background:var(--soft);}
+  .party h3{margin:0 0 9px; font-size:10.5px; font-weight:700; letter-spacing:2px; color:var(--blue); display:flex; align-items:center; gap:6px;}
+  .party h3::before{content:""; width:14px; height:2px; background:var(--blue); display:inline-block;}
+  .party .row{display:flex; margin:4px 0; font-size:12.5px;}
+  .party .row .k{width:52px; flex:none; color:var(--muted);}
+  .party .row .v{color:var(--ink);}
+
+  /* ===== 합계 배너 ===== */
+  .total-banner{
+    margin:16px 0 6px;
+    background:linear-gradient(105deg,var(--navy) 0%,var(--navy-2) 100%);
+    color:#fff; border-radius:8px; padding:16px 24px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .total-banner .lab{font-size:12px; letter-spacing:1px; opacity:.82;}
+  .total-banner .lab b{display:block; font-size:14px; font-weight:600; letter-spacing:2px; opacity:1; margin-bottom:2px;}
+  .total-banner .amt{font-size:30px; font-weight:800; letter-spacing:.5px;}
+  .total-banner .amt .won{font-size:18px; font-weight:600; opacity:.8; margin-right:4px;}
+
+  /* ===== 섹션 제목 ===== */
+  h2{
+    color:var(--navy); font-size:14.5px; font-weight:700; margin:24px 0 9px;
+    padding-left:11px; border-left:4px solid var(--accent);
+    page-break-after:avoid;
+  }
+  section{page-break-inside:avoid;}
+
+  /* ===== 표 공통 ===== */
+  table{border-collapse:collapse; width:100%; font-size:12.5px;}
+  thead{display:table-header-group;}
+  tr{page-break-inside:avoid;}
+  th,td{border:1px solid var(--line); padding:8px 11px; vertical-align:middle;}
+  thead th{background:var(--navy); color:#fff; font-weight:600; text-align:center; letter-spacing:.3px; border-color:var(--navy);}
+  td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  td.c{text-align:center;}
+  .items tbody tr:nth-child(even){background:var(--soft);}
+  .items tbody td:first-child{font-weight:500;}
+  .items tbody td small{font-weight:400; color:var(--muted); font-size:11px; margin-left:2px;}
+
+  /* 합계 영역 */
+  .items tfoot td{background:var(--line-2); font-weight:700; border-color:var(--line);}
+  .items tfoot tr.sub td{background:#eef3f9;}
+  .items tfoot tr.cut td{color:#a23a2e; background:#fff; font-weight:600;}
+  .items tfoot tr.grand td{background:var(--navy); color:#fff; font-size:14px; border-color:var(--navy);}
+  .items tfoot tr.grand td.num{font-size:16px;}
+
+  /* 거래조건 */
+  .cond{border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .cond table{border:0;}
+  .cond th,.cond td{border:0; border-bottom:1px solid var(--line-2);}
+  .cond tr:last-child th,.cond tr:last-child td{border-bottom:0;}
+  .cond th{background:var(--soft); color:var(--navy); width:130px; text-align:left; font-weight:600; letter-spacing:.3px;}
+  .cond td{background:#fff;}
+
+  /* 제외 표 */
+  .excl thead th{text-align:left;}
+  .excl thead th:first-child{width:230px;}
+  .excl tbody td{background:#fff;}
+
+  .note{
+    background:#fbf4e6; border:1px solid #ecd9ab; border-left:4px solid var(--accent);
+    border-radius:6px; padding:10px 14px; margin:0 0 9px; font-size:12px; color:#6a521f;
+  }
+
+  ul.assume{margin:6px 0 0; padding-left:0; list-style:none;}
+  ul.assume li{position:relative; padding-left:18px; margin:6px 0; font-size:12.5px; color:#33404f;}
+  ul.assume li::before{content:""; position:absolute; left:2px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--blue);}
+
+  /* ===== 서명/직인 ===== */
+  .sign{
+    margin-top:26px; padding-top:18px; border-top:1px dashed var(--line);
+    display:flex; justify-content:space-between; align-items:flex-end;
+    page-break-inside:avoid;
+  }
+  .sign .stmt{font-size:13px; color:var(--ink);}
+  .sign .stmt .date{margin-top:14px; color:var(--muted); font-size:12.5px;}
+  .sign .org{text-align:right; display:flex; align-items:center; gap:14px;}
+  .sign .org .name{font-size:17px; font-weight:800; color:var(--navy); letter-spacing:2px;}
+  .sign .org .seal{
+    width:62px; height:62px; border:1.5px dashed #c2b08a; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:#bfae86; font-size:11px; letter-spacing:1px;
+  }
+
+  .foot{
+    margin-top:18px; padding-top:12px; border-top:1px solid var(--line-2);
+    text-align:center; font-size:11px; color:var(--muted); letter-spacing:.3px;
+  }
+
+  /* ===== 페이지별 상하 여백 (running spacer) =====
+     @page margin:0 을 유지(브라우저 머리글·바닥글 차단)하면서 모든 페이지에 상하 여백을 주기 위해,
+     전체 콘텐츠를 표로 감싸고 표의 thead/tfoot 을 매 페이지 반복되는 여백 띠로 사용한다. */
+  .psheet{ width:100%; border-collapse:collapse; }
+  .psheet > thead > tr > td.psheet-cell,
+  .psheet > tbody > tr > td.psheet-cell,
+  .psheet > tfoot > tr > td.psheet-cell{ padding:0; border:0; }
+  .psheet > tbody > tr{ page-break-inside:auto; }
+  .run-top, .run-bot{ height:0; }
+
+  /* ===== 인쇄 (A4 / PDF) — @page margin:0 은 수정하지 말 것(머리글·바닥글 차단) ===== */
+  /* @page 여백을 0 으로 둬야 브라우저 기본 머리글·바닥글(날짜·제목·URL·페이지번호)이 찍히지 않는다.
+     A4 여백은 페이지가 아니라 .sheet 패딩으로 준다(화면과 동일한 16mm 15mm 14mm). */
+  @page{ size:A4; margin:0; }
+  @media print{
+    html,body{background:#fff;}
+    body{font-size:10.5pt;}
+    .sheet{ width:auto; min-height:0; margin:0; padding:0 15mm; box-shadow:none; }  /* 상하 여백은 running spacer 가 담당 */
+    .sheet::before{display:none;}
+    .run-top{ height:16mm; }   /* 매 페이지 상단 여백 */
+    .run-bot{ height:14mm; }   /* 매 페이지 하단 여백 */
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }  /* 네이비 헤더·배너 음영을 PDF 에 출력 */
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+<table class="psheet">
+<thead><tr><td class="psheet-cell"><div class="run-top"></div></td></tr></thead>
+<tbody><tr><td class="psheet-cell">
+
+  <!-- [공통·필수] 머리글 -->
+  <header class="masthead">
+    <div class="title">
+      <h1>견 적 서</h1>
+      <div class="sub">「건명 / 한 줄 범위 설명」</div>
+    </div>
+    <div class="meta">
+      <div class="brand">SIMPLYSM<small>SOFTWARE ENGINEERING</small></div>
+      <div>견적번호 &nbsp;<b>「Q-YYYYMMDD-NN」</b></div>
+      <div>발행일 &nbsp;<b>「YYYY. MM. DD.」</b></div>
+    </div>
+  </header>
+
+  <!-- [공통·필수] 당사자 (수신=고객사, 공급=심플리즘 고정) -->
+  <div class="parties">
+    <div class="party receiver">
+      <h3>RECEIVER · 수신</h3>
+      <div class="row"><span class="k">회사</span><span class="v">「고객사명」</span></div>
+      <div class="row"><span class="k">건명</span><span class="v">「건명」</span></div>
+    </div>
+    <div class="party supplier">
+      <h3>SUPPLIER · 공급</h3>
+      <div class="row"><span class="k">회사</span><span class="v">심플리즘(주)</span></div>
+      <div class="row"><span class="k">주소</span><span class="v">「제안사 주소」</span></div>
+      <div class="row"><span class="k">문의</span><span class="v">「제안사 담당자명 · 연락처」</span></div>
+    </div>
+  </div>
+
+  <!-- [공통·필수] 합계 배너 (VAT 별도/포함 라벨은 7-1 확인값에 맞춤) -->
+  <div class="total-banner">
+    <span class="lab"><b>합계 금액</b>부가세(VAT) 포함</span>
+    <span class="amt"><span class="won">₩</span>「합계 금액」</span>
+  </div>
+
+  <!-- [공통·필수] 견적 내역 -->
+  <section>
+    <h2>견적 내역</h2>
+    <table class="items">
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th style="width:74px">공수<br>(M/D)</th>
+          <th style="width:92px">단가(원)</th>
+          <th style="width:116px">금액(원)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 작업 수만큼 행 복제. 부가설명은 <small>(…)</small> 로. 공수=PERT 반올림값(과정 용어 노출 금지) -->
+        <tr><td>「작업명」 <small>(부가설명)</small></td><td class="c">「O.O」</td><td class="num">「단가」</td><td class="num">「금액」</td></tr>
+        <tr><td>「작업명」</td><td class="c">「O.O」</td><td class="num">「단가」</td><td class="num">「금액」</td></tr>
+        <tr><td>「작업명」</td><td class="c">「O.O」</td><td class="num">「단가」</td><td class="num">「금액」</td></tr>
+      </tbody>
+      <tfoot>
+        <!-- 공급가액 = Σ금액. VAT '별도'면 부가세 행 유지, '포함'이면 단가에 녹였음을 전제로 행 구성 조정 -->
+        <tr><td class="c">공급가액</td><td class="c">「ΣM/D」</td><td></td><td class="num">「공급가액」</td></tr>
+        <tr class="sub"><td colspan="3" class="c">부가세 (VAT 10%)</td><td class="num">「VAT」</td></tr>
+        <tr class="sub"><td colspan="3" class="c">소계 (VAT 포함)</td><td class="num">「소계」</td></tr>
+        <!-- [선택] 절삭: 끝자리 맞춤(예: 10만원 단위) 시에만. 없으면 이 행 삭제 -->
+        <tr class="cut"><td colspan="3" class="c">절삭 (10만원 단위)</td><td class="num">「- 절삭액」</td></tr>
+        <tr class="grand"><td colspan="3" class="c">합계 금액</td><td class="num">「합계 금액」</td></tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- [공통·필수] 거래 조건 (값은 7-1 확인 후 확정) -->
+  <section>
+    <h2>거래 조건</h2>
+    <div class="cond">
+      <table>
+        <tr><th>납&nbsp;&nbsp;기</th><td>「계약 체결 후 N개월」</td></tr>
+        <tr><th>결제 조건</th><td>「착수금 NN% / 잔금 NN%」</td></tr>
+        <tr><th>견적 유효기간</th><td>「발행일로부터 N일」</td></tr>
+        <tr><th>금액 기준</th><td>「부가세(VAT) 포함 / 별도」</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- [선택] 견적 전제 조건 (일반어만. 산정 기법·단가 방법론·내부 용어 금지) -->
+  <section>
+    <h2>견적 전제 조건</h2>
+    <ul class="assume">
+      <li>「본 견적은 현재까지 정리된 요구 범위 기준이며, 상세 요건 확정 후 조정될 수 있습니다.」</li>
+      <li>「미확정 항목(…)의 확정이 필요합니다.」</li>
+      <li>「…를 전제로 합니다.」</li>
+    </ul>
+  </section>
+
+  <!-- [선택] 과업 세부 내역 부록 (화면·항목 수십~백 단위의 큰 요구일 때만. 견적 내역 각 항목의 산출물 목록. 작을 땐 섹션 삭제) -->
+  <section>
+    <h2>[부록] 과업 세부 내역 — 항목별 산출물</h2>
+    <div class="note">「견적 내역」 각 항목에 포함되는 세부 산출물(화면·기능)입니다. 공수·금액은 견적 내역의 항목별 합계를 따릅니다.</div>
+    <table class="excl">
+      <thead><tr><th>견적 항목</th><th>세부 산출물 (화면 · 기능)</th></tr></thead>
+      <tbody>
+        <!-- 견적 내역의 항목 수만큼 행 복제. 내부 용어(tier·복잡도·M/D 내재 등) 금지 — 산출물 명칭만 나열 -->
+        <tr><td>「견적 항목」</td><td>「세부 산출물(화면·기능) 나열」</td></tr>
+        <tr><td>「견적 항목」</td><td>「세부 산출물(화면·기능) 나열」</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- [공통·필수] 서명 / 직인 -->
+  <div class="sign">
+    <div class="stmt">
+      위와 같이 견적합니다.
+      <div class="date">「YYYY년 M월 D일」</div>
+    </div>
+    <div class="org">
+      <div class="name">심플리즘(주)</div>
+      <div class="seal">(인)</div>
+    </div>
+  </div>
+
+  <!-- [공통·필수] 푸터 -->
+  <div class="foot">
+    심플리즘(주) &nbsp;|&nbsp; 「건명」 견적서 &nbsp;|&nbsp; 「YYYY. MM. DD.」
+  </div>
+
+</td></tr></tbody>
+<tfoot><tr><td class="psheet-cell"><div class="run-bot"></div></td></tr></tfoot>
+</table>
+</div>
+</body>
+</html>

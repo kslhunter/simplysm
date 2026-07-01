@@ -74,6 +74,11 @@ export interface TextfieldTypeHandler {
   toControlValue(value: unknown, opts: TextfieldFormatOpts): string;
   toDisplayText(value: unknown, opts: TextfieldDisplayOpts): string | undefined;
   validate(value: unknown, opts: TextfieldValidateOpts): string[];
+  /**
+   * parse 는 실패했으나 계속 입력하면 유효해질 수 있는 "완성 전 진행" 입력인지 여부.
+   * true 면 onInput 이 DOM 을 되쓰지 않아 사용자가 입력을 이어갈 수 있다 (예: number "-", "12.").
+   */
+  isIncomplete?(raw: string, opts: TextfieldParseOpts): boolean;
 }
 
 // endregion
@@ -153,6 +158,15 @@ function createNumberHandler(): TextfieldTypeHandler {
       const result = Number.parseFloat(inputValue);
       return Number.isNaN(result) ? undefined : result;
     },
+    isIncomplete(raw) {
+      const inputValue = raw.replace(/[^0-9-.]/g, "");
+      // 부호·소수점 형식은 갖췄으나 아직 완성되지 않은 진행 상태 ("-", "12.", ".", "-.")
+      // Number("12.")===12 이므로 endsWith(".") 를 별도 판정 (parse 의 실패 조건과 정합)
+      return (
+        /^-?\d*\.?\d*$/.test(inputValue)
+        && (Number.isNaN(Number(inputValue)) || inputValue.endsWith("."))
+      );
+    },
     toControlValue(value, opts) {
       const numValue = value as number;
       return opts.useNumberComma !== false
@@ -207,13 +221,25 @@ function createFormatHandler(): TextfieldTypeHandler {
       const format = opts.format;
       if (format == null || format === "") return raw;
 
-      const nonFormatChars = format.match(/[^X]/g)?.filter(
-        (v, i, a) => a.indexOf(v) === i,
-      );
+      // 위치기반: raw 길이가 마스크(대안 중 하나)의 길이와 같으면 X 자리 문자만 추출.
+      // 리터럴이 데이터 문자와 겹쳐도(예: "2025-XXXX") 안전 (toControlValue 와 대칭).
+      const formatItems = format.split("|");
+      for (const formatItem of formatItems) {
+        if (raw.length === formatItem.length) {
+          let result = "";
+          for (let i = 0; i < formatItem.length; i++) {
+            if (formatItem[i] === "X") result += raw[i];
+          }
+          return result;
+        }
+      }
+
+      // 폴백: 길이 불일치(구분자 생략 등)면 리터럴 문자를 전역 제거.
+      const nonFormatChars = format.match(/[^X|]/g)?.filter((v, i, a) => a.indexOf(v) === i);
       if (nonFormatChars != null && nonFormatChars.length > 0) {
-        const escaped = nonFormatChars.map((ch) =>
-          ch === "]" || ch === "\\" || ch === "^" || ch === "-" ? "\\" + ch : ch,
-        ).join("");
+        const escaped = nonFormatChars
+          .map((ch) => (ch === "]" || ch === "\\" || ch === "^" || ch === "-" ? "\\" + ch : ch))
+          .join("");
         return raw.replace(new RegExp(`[${escaped}]`, "g"), "");
       }
       return raw;

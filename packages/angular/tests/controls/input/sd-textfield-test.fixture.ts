@@ -65,6 +65,24 @@ export class SdTextfieldReadonlyTest {
 }
 
 @Component({
+  selector: "sd-textfield-required-test",
+  template: `<sd-textfield
+    [type]="'text'"
+    [(value)]="value"
+    [required]="true"
+    [disabled]="disabled()"
+    [readonly]="readonly()"
+  />`,
+  standalone: true,
+  imports: [SdTextfield],
+})
+export class SdTextfieldRequiredTest {
+  value = signal<string | undefined>(undefined);
+  disabled = signal(false);
+  readonly = signal(false);
+}
+
+@Component({
   selector: "sd-textfield-inline-test",
   template: `<sd-textfield [type]="'text'" [inline]="true" />`,
   standalone: true,

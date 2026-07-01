@@ -552,6 +552,45 @@ describe("object utils", () => {
       expect(conflict).toBe(true);
       expect(result.value).toBe("original"); // Conflict → origin preserved
     });
+
+    it("optionsObj.keys로 지정한 하위 key만 비교", () => {
+      // keys=["x"] → b 비교 시 x만 본다. y는 무시
+      const origin = { b: { x: 1, y: 1 } };
+      const source = { b: { x: 1, y: 999 } }; // x 동일, y만 다름
+      const target = { b: { x: 2, y: 1 } }; // x 변경
+      const { conflict, result } = objU.merge3(source, origin, target, {
+        b: { keys: ["x"] },
+      });
+
+      // equal(source.b, origin.b, keys:["x"]) → x만 비교 → 동일 → target.b 채택
+      expect(conflict).toBe(false);
+      expect(result.b).toEqual({ x: 2, y: 1 });
+    });
+
+    it("optionsObj.excludes로 지정한 하위 key는 비교에서 제외", () => {
+      // excludes=["y"] → b 비교 시 y를 제외. x만 본다
+      const origin = { b: { x: 1, y: 1 } };
+      const source = { b: { x: 1, y: 999 } }; // y만 다름 → excludes로 제외되면 origin과 동일 취급
+      const target = { b: { x: 2, y: 1 } }; // x 변경
+      const { conflict, result } = objU.merge3(source, origin, target, {
+        b: { excludes: ["y"] },
+      });
+
+      // equal(source.b, origin.b, excludes:["y"]) → y 무시, x만 비교 → 동일 → target.b 채택
+      expect(conflict).toBe(false);
+      expect(result.b).toEqual({ x: 2, y: 1 });
+    });
+
+    it("optionsObj 없으면 하위 key 전체 비교 (excludes 미적용 대조군)", () => {
+      // 위 excludes 케이스와 동일 데이터지만 옵션 없음 → y 차이로 충돌
+      const origin = { b: { x: 1, y: 1 } };
+      const source = { b: { x: 1, y: 999 } };
+      const target = { b: { x: 2, y: 1 } };
+      const { conflict, result } = objU.merge3(source, origin, target);
+
+      expect(conflict).toBe(true);
+      expect(result.b).toEqual({ x: 1, y: 1 }); // 충돌 → origin 유지
+    });
   });
 
   //#endregion

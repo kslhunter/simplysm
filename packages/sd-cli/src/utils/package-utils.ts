@@ -20,9 +20,9 @@ export function findPackageRoot(startDir: string): string {
 }
 
 /**
- * package.json#workspaces에서 check 대상 워크스페이스 패키지를 탐색한다.
- * 디렉토리명 → 상대 경로의 맵을 반환한다 (예: "orm" → "tests/orm").
- * PM workspace에는 plugins/*도 포함될 수 있으나 check 기본 대상은 packages/*, tests/*만 유지한다.
+ * package.json#workspaces의 모든 워크스페이스 패키지를 탐색한다.
+ * 디렉토리명 → 상대 경로의 맵을 반환한다 (예: "orm" → "tests/orm", "sd" → "plugins/sd").
+ * packages/·tests/·plugins/ 등 종류를 가리지 않고 포함하며, 배포/검사 대상 구분은 소비자가 relPath로 판단한다.
  */
 export function discoverWorkspacePackages(cwd: string): Map<string, string> {
   logger.debug("워크스페이스 패키지 탐색 시작");
@@ -37,7 +37,6 @@ export function discoverWorkspacePackages(cwd: string): Map<string, string> {
   })();
 
   for (const item of workspacePackages) {
-    if (!item.relPath.startsWith("packages/") && !item.relPath.startsWith("tests/")) continue;
     if (map.has(item.dirName)) {
       throw new SdError(
         `Duplicate workspace package name: ${item.dirName} (${map.get(item.dirName)} and ${item.relPath})`,
@@ -64,27 +63,28 @@ export function buildPathMapFromConfig(
 }
 
 /**
- * workspace에서 발견된 tests/ 패키지를 sd.config.ts 패키지에 병합한다.
- * tests 패키지는 기본적으로 `{ target: "node" }`가 할당된다.
- * 모든 패키지의 pathMap(name → 상대 경로)도 함께 구성한다.
- * tests 패키지명이 sd.config.ts 패키지명과 충돌하면 SdError를 던진다.
+ * workspace에서 발견된 비배포 워크스페이스(packages/ 가 아닌 tests/·plugins/ 등)를 sd.config.ts
+ * 패키지에 병합한다. 이들은 빌드 대상이 아니지만 각자 자기 tsconfig로 타입체크하기 위해
+ * `{ target: "node" }`가 할당된다. 모든 패키지의 pathMap(name → 상대 경로)도 함께 구성한다.
+ * 디렉터리명이 sd.config.ts 패키지명과 충돌하면 SdError를 던진다.
+ * 특정 디렉터리명이 아니라 "packages/ 인가"로만 갈라 새 워크스페이스 종류도 자동 포함된다.
  */
 export function mergeTestsPackagesIntoConfig(
   configPackages: Record<string, SdPackageConfig | undefined>,
   workspacePackages: Map<string, string>,
 ): { merged: Record<string, SdPackageConfig | undefined>; pathMap: Map<string, string> } {
-  logger.debug("tests 패키지 병합 시작");
+  logger.debug("비배포 워크스페이스 병합 시작");
   const pathMap = new Map<string, string>();
   const merged: Record<string, SdPackageConfig | undefined> = { ...configPackages };
 
-  // config 패키지의 기본 경로 설정
+  // config 패키지(배포 대상)의 기본 경로 설정
   for (const name of Object.keys(configPackages)) {
     pathMap.set(name, `packages/${name}`);
   }
 
-  // tests 패키지 추가
+  // packages/(배포 대상)가 아닌 워크스페이스 추가
   for (const [name, relPath] of workspacePackages) {
-    if (!relPath.startsWith("tests/")) continue;
+    if (relPath.startsWith("packages/")) continue;
 
     if (name in configPackages) {
       throw new SdError(
@@ -96,7 +96,7 @@ export function mergeTestsPackagesIntoConfig(
     pathMap.set(name, relPath);
   }
 
-  logger.debug(`tests 패키지 병합 완료 (총 ${Object.keys(merged).length}개)`);
+  logger.debug(`비배포 워크스페이스 병합 완료 (총 ${Object.keys(merged).length}개)`);
   return { merged, pathMap };
 }
 

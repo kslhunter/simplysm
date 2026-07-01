@@ -18,10 +18,8 @@
     "tests"
   ],
   "sideEffects": false,
-  "publishConfig": {
-    "bin": {
-      "sd-cli": "./dist/sd-cli.js"
-    }
+  "bin": {
+    "sd-cli": "./dist/sd-cli.js"
   },
   "dependencies": {
     "@angular/build": "^22.0.4",

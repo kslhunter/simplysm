@@ -1,8 +1,8 @@
 # @simplysm/core-browser
 
-브라우저 전용 유틸리티: DOM 프로토타입 확장, IndexedDB 저장소/가상 파일트리, Blob 다운로드·URL 바이너리 수신·파일 선택 함수를 제공한다.
+브라우저 전용 유틸리티: DOM `Element`/`HTMLElement` 프로토타입 확장, IndexedDB 오브젝트 스토어 래퍼·경로 키 가상 파일트리, Blob 다운로드·URL 바이너리 수신·파일 선택 함수를 제공한다.
 
-이 패키지의 entry는 `element-ext`와 `html-element-ext`를 사이드 이펙트로 import한다. 브라우저에서만 `Element`/`HTMLElement` 전역 존재 여부를 확인한 뒤 프로토타입 메서드를 등록한다.
+entry(`src/index.ts`)는 `extensions/element-ext`와 `extensions/html-element-ext`를 사이드 이펙트로 import한다. 두 확장은 브라우저에서 `Element`/`HTMLElement` 전역이 존재할 때만(`typeof ... !== "undefined"`) 프로토타입 메서드를 등록하므로, SSR(node) 환경에서는 등록을 건너뛴다.
 
 ## 사용 트리거 인덱스
 

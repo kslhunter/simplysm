@@ -61,11 +61,13 @@ describe("validateTargets", () => {
 });
 
 describe("discoverWorkspacePackages", () => {
-  it("discovers packages and tests workspace directories", () => {
+  it("discovers packages, tests, and plugins workspace directories", () => {
     const result = discoverWorkspacePackages(process.cwd());
     expect(result.get("core-common")).toBe("packages/core-common");
     expect(result.get("orm")).toBe("tests/orm");
     expect(result.get("service")).toBe("tests/service");
+    expect(result.get("sd")).toBe("plugins/sd");
+    expect(result.get("sd-wiki")).toBe("plugins/sd-wiki");
   });
 
   it("returns empty map when directory does not exist", () => {
@@ -73,7 +75,7 @@ describe("discoverWorkspacePackages", () => {
     expect(result.size).toBe(0);
   });
 
-  it("does not include plugins in check targets", () => {
+  it("includes all workspace kinds (packages/·tests/·plugins/)", () => {
     const tmpDir = path.join(process.cwd(), ".tmp", "test-workspace-plugins");
     fs.rmSync(tmpDir, { recursive: true, force: true });
     fs.mkdirSync(path.join(tmpDir, "packages", "app"), { recursive: true });
@@ -89,7 +91,8 @@ describe("discoverWorkspacePackages", () => {
 
     try {
       const result = discoverWorkspacePackages(tmpDir);
-      expect([...result.keys()].sort()).toEqual(["app", "orm"]);
+      expect([...result.keys()].sort()).toEqual(["app", "orm", "sd"]);
+      expect(result.get("sd")).toBe("plugins/sd");
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -120,8 +123,8 @@ describe("discoverWorkspacePackages", () => {
 });
 
 describe("mergeTestsPackagesIntoConfig", () => {
-  // Acceptance: targets 없이 watch 실행 시 tests 패키지가 포함된다
-  it("merges tests packages into config packages with target node", () => {
+  // Acceptance: targets 없이 watch 실행 시 비배포 워크스페이스(tests/·plugins/)가 포함된다
+  it("merges non-deploy workspaces (tests/·plugins/) into config with target node", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
       "core-common": { target: "neutral" },
       "core-node": { target: "node" },
@@ -131,13 +134,15 @@ describe("mergeTestsPackagesIntoConfig", () => {
       ["core-node", "packages/core-node"],
       ["orm", "tests/orm"],
       ["service", "tests/service"],
+      ["sd", "plugins/sd"],
     ]);
 
     const { merged, pathMap } = mergeTestsPackagesIntoConfig(configPackages, workspacePackages);
 
-    // tests packages are included
+    // non-deploy workspaces (tests/·plugins/) are included as node
     expect(merged["orm"]).toEqual({ target: "node" });
     expect(merged["service"]).toEqual({ target: "node" });
+    expect(merged["sd"]).toEqual({ target: "node" });
     // config packages are preserved
     expect(merged["core-common"]).toEqual({ target: "neutral" });
     expect(merged["core-node"]).toEqual({ target: "node" });
@@ -145,6 +150,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
     expect(pathMap.get("core-common")).toBe("packages/core-common");
     expect(pathMap.get("orm")).toBe("tests/orm");
     expect(pathMap.get("service")).toBe("tests/service");
+    expect(pathMap.get("sd")).toBe("plugins/sd");
   });
 
   // Acceptance: tests 패키지를 target으로 지정하여 watch 실행 (validateTargets에서 통합 맵 사용)

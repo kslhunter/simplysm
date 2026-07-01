@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "lib": ["ESNext"],
-    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["node", "bun"],
     "skipLibCheck": true,
     "noEmit": true
   }

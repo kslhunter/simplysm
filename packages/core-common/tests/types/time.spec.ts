@@ -111,6 +111,23 @@ describe("Time", () => {
       expect(time.millisecond).toBe(123);
     });
 
+    it("HH:mm 형식 파싱 (초 생략 시 0)", () => {
+      const time = Time.parse("10:30");
+
+      expect(time.hour).toBe(10);
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(0);
+      expect(time.millisecond).toBe(0);
+    });
+
+    it("PM HH:mm 형식 파싱 (초 생략, AM/PM 유지)", () => {
+      const time = Time.parse("PM 3:30");
+
+      expect(time.hour).toBe(15); // 12 + 3
+      expect(time.minute).toBe(30);
+      expect(time.second).toBe(0);
+    });
+
     it("AM HH:mm:ss 형식 파싱", () => {
       const time = Time.parse("AM 9:30:45");
 

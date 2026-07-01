@@ -100,6 +100,8 @@ export class FsWatcher {
   private readonly _allHandlers: Array<(event: string, path: string) => void> = [];
   private readonly _creationStack: string;
 
+  private readonly _watchBases: string[];
+  private readonly _baseRemap: ReadonlyArray<{ long: string; orig: string }>;
   private _watcher: chokidar.FSWatcher;
   private _retryCount = 0;
   private _isRecovering = false;
@@ -108,12 +110,47 @@ export class FsWatcher {
     this._creationStack = new Error().stack ?? "";
     this._paths = [...paths];
     this._options = { ...options };
+
+    // Windows 8.3 단축경로(예: C:\Users\KSLHUN~1\...)를 그대로 watch하면 libuv Windows
+    // fs-event가 notification의 롱네임과 감시경로 단축네임 불일치로 assertion(fs-event.c)에
+    // 걸려 프로세스가 abort된다. 감시 base는 롱패스로 확장하되, 콜백에 돌려주는 경로는 호출자가
+    // 넘긴 원래 형태로 되돌려 소비처의 경로 매칭이 깨지지 않게 한다. (win32 한정)
+    const remap: Array<{ long: string; orig: string }> = [];
+    const bases = new Set<string>();
+    for (const p of this._paths) {
+      const orig = extractGlobBase(p);
+      const long = FsWatcher._expandBase(orig);
+      bases.add(long);
+      if (long !== orig) remap.push({ long, orig });
+    }
+    this._watchBases = [...bases];
+    this._baseRemap = remap;
+
     this._watcher = this._createChokidar();
   }
 
+  /** watch base를 Windows 롱패스로 확장(win32 한정, 존재하지 않으면 원본 유지). */
+  private static _expandBase(base: string): string {
+    if (process.platform !== "win32") return base;
+    try {
+      return nodeFs.realpathSync.native(base);
+    } catch {
+      return base;
+    }
+  }
+
+  /** chokidar가 보고한 (롱패스) 경로를 호출자가 넘긴 원래 base 형태로 되돌린다. */
+  private _toOriginalPath(reportedPath: string): string {
+    for (const { long, orig } of this._baseRemap) {
+      if (reportedPath === long || reportedPath.startsWith(long + path.sep)) {
+        return orig + reportedPath.slice(long.length);
+      }
+    }
+    return reportedPath;
+  }
+
   private _createChokidar(): chokidar.FSWatcher {
-    const watchPaths = [...new Set(this._paths.map(extractGlobBase))];
-    const w = chokidar.watch(watchPaths, {
+    const w = chokidar.watch(this._watchBases, {
       persistent: true,
       ...this._options,
       ignoreInitial: true,
@@ -201,9 +238,10 @@ export class FsWatcher {
       });
     }
 
-    const handler = (event: string, filePath: string) => {
+    const handler = (event: string, rawFilePath: string) => {
       if (!FS_WATCHER_EVENTS.includes(event as FsWatcherEvent)) return;
 
+      const filePath = this._toOriginalPath(rawFilePath);
       const posixFilePath = posix(filePath);
       if (!this._paths.some((p) => (
         minimatch(posixFilePath, posix(p), { dot: true }) ||

@@ -151,7 +151,7 @@ export class MainDbContext extends DbContext {
 
 ```ts
 // 단건 등록/수정/삭제: itemId 로 대상 레코드 지정
-const [role] = await db.role().insert([{ name: "관리자", isActive: true }], ["id"]);
+const [role] = await db.role().insert([{ name: "관리자", isDeleted: false }], ["id"]);
 await db.role().insertDataLog({ action: "등록", itemId: role.id });
 
 // 전체 초기화(엑셀 업로드 등 모델 단위 변경): itemId 생략 → NULL 로 적재
@@ -176,14 +176,14 @@ await db.role().insertDataLog({
 const rows = await db
   .role()
   .where((p) => [expr.eq(p.id, role.id)])
-  .joinLastDataLog()   // 최신 변경 1건 → 행.lastDataLog
-  .joinFirstDataLog()  // 최초 변경 1건 → 행.firstDataLog
+  .joinLastDataLog() // 최신 변경 1건 → 행.lastDataLog
+  .joinFirstDataLog() // 최초 변경 1건 → 행.firstDataLog
   .execute();
 
-rows[0].lastDataLog?.action;       // "삭제"
-rows[0].lastDataLog?.dateTime;     // DateTime
+rows[0].lastDataLog?.action; // "삭제"
+rows[0].lastDataLog?.dateTime; // DateTime
 rows[0].lastDataLog?.employeeName; // "홍길동" (employee 조인 결과)
-rows[0].firstDataLog?.action;      // "등록"
+rows[0].firstDataLog?.action; // "등록"
 ```
 
 `tableName` + 행 `id` 로 격리되므로 다른 모델의 같은 `itemId` 이력은 섞이지 않음. "최종 수정자/일시", "최초 등록자/일시" 컬럼은 별도 컬럼을 두지 말고 이 조인 결과로 표시.

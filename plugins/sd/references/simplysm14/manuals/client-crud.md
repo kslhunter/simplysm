@@ -42,16 +42,17 @@
 </sd-crud-list>
 ```
 
+- **`canEdit()`** — 등록·편집·삭제 권한을 한 번에 게이트하는 화면 computed. 순수 권한이면 `computed(() => this.perms().includes("edit"))`, 추가 조건이 있으면 그 조건까지 결합 ([client-component.md "권한 (perms)"](./client-component.md) 의 capability 입력 예외). `canCreate`/`canEdit`/`canDelete` 입력과 핸들러 가드가 공용.
 - **`[currDeletedItems]`** — 삭제(soft delete)된 행을 시트에서 취소선으로 구분하고 "선택 복구" 버튼을 띄우는 입력. `deletedItems = computed(() => this.items().filter((i) => i.isDeleted))` 를 넘김. 삭제항목 포함 검색을 지원하는 목록에는 필수 — 빠뜨리면 삭제 행이 일반 행과 구분되지 않고 복구 버튼이 나오지 않음.
 
 ### 슬롯 규약
 
-| 슬롯                | 용도                                                                       |
-| ------------------- | -------------------------------------------------------------------------- |
+| 슬롯                | 용도                                                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `#filterTpl`        | 검색 폼 필드. 있으면 상단에 조회 버튼과 함께 노출. 내부는 이미 `form-box-inline` 으로 감싸진 상태이므로, 슬롯 내용물을 별도 `form-box-inline` 으로 다시 묶지 말 것. |
-| `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                          |
-| `#commandTpl`       | 상단 명령 영역(viewType 이 `modal`·`control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼. |
-| `#bottomCommandTpl` | 하단 좌측 추가 영역. 이 슬롯이 있으면 viewType 과 무관하게 하단 바가 렌더됨. modal + selectMode 인 경우 오른쪽에 "선택 해제/확인" 버튼도 함께 표시. |
+| `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                                                                                                                   |
+| `#commandTpl`       | 상단 명령 영역(viewType 이 `modal`·`control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼.                                                                       |
+| `#bottomCommandTpl` | 하단 좌측 추가 영역. 이 슬롯이 있으면 viewType 과 무관하게 하단 바가 렌더됨. modal + selectMode 인 경우 오른쪽에 "선택 해제/확인" 버튼도 함께 표시.                 |
 
 `<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
@@ -90,12 +91,12 @@
 <sd-sheet-column [key]="'id'" [header]="'#'">
   <ng-template [cell]="items()" let-item="item">
     @if (canEdit()) {
-      <sd-anchor class="flex-row gap-sm p-xs-sm" (click)="onEdit(item, $event)">
-        <div><ng-icon [svg]="tablerEdit" /></div>
-        <div class="flex-fill tx-right">{{ item.id }}</div>
-      </sd-anchor>
+    <sd-anchor class="flex-row gap-sm p-xs-sm" (click)="onEdit(item, $event)">
+      <div><ng-icon [svg]="tablerEdit" /></div>
+      <div class="flex-fill tx-right">{{ item.id }}</div>
+    </sd-anchor>
     } @else {
-      <div class="p-xs-sm tx-right">{{ item.id }}</div>
+    <div class="p-xs-sm tx-right">{{ item.id }}</div>
     }
   </ng-template>
 </sd-sheet-column>
@@ -130,6 +131,7 @@ private readonly _excelWrapper = new ExcelWrapper(
   z.object({
     id: z.number().optional().describe("ID"),
     name: z.string().describe("이름"),
+    roleName: z.string().optional().describe("역할"),
     isDeleted: z.boolean().describe("삭제"),
     lastModifiedAt: z.custom<DateTime>().optional().describe("수정일시"),
     lastModifiedBy: z.string().optional().describe("수정자"),
@@ -168,10 +170,10 @@ async onDownloadExcelButtonClick(): Promise<void> {
 ```html
 <ng-template #toolTpl>
   @if (perms().includes("edit")) {
-    <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
-      <ng-icon [svg]="tablerUpload" />
-      엑셀 업로드
-    </sd-button>
+  <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onUploadExcelButtonClick()">
+    <ng-icon [svg]="tablerUpload" />
+    엑셀 업로드
+  </sd-button>
   }
   <!-- 위 '엑셀 다운로드' 버튼과 같은 #toolTpl 안에 둠 -->
 </ng-template>
@@ -265,9 +267,7 @@ async onUploadExcelButtonClick(): Promise<void> {
 ```ts
 // 로그인한 본인 계정은 선택(→삭제) 불가
 getItemSelectableFn = (item: IItem): boolean | string =>
-  item.id === this._appAuth.authInfo()?.employeeId
-    ? "본인 계정은 삭제할 수 없습니다."
-    : true;
+  item.id === this._appAuth.authInfo()?.employeeId ? "본인 계정은 삭제할 수 없습니다." : true;
 ```
 
 - `true` = 선택 가능, `string` = 선택 불가 + 사유. 선택 자체가 막히므로 핸들러에 같은 가드를 또 두지 않아도 됨.
@@ -342,10 +342,10 @@ this.summaryData.set(r.summary);
 
 ### 슬롯 규약
 
-| 슬롯                 | 용도                                                              |
-| -------------------- | ----------------------------------------------------------------- |
-| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.         |
-| `#commandTpl`        | 상단/명령 영역 추가 버튼.                                         |
+| 슬롯                 | 용도                                                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.                                                        |
+| `#commandTpl`        | 상단/명령 영역 추가 버튼.                                                                                        |
 | `#bottomCommandTpl`  | 하단 좌측 추가 영역. 이 슬롯이 있거나 `viewType='modal'` 이면 하단 바가 렌더되고 우측 "확인" 버튼이 자동 추가됨. |
 
 ### viewType 별 동작
@@ -357,11 +357,11 @@ this.summaryData.set(r.summary);
 
 ## 삭제·복구를 처리하려면 (목록·단건 공통)
 
-삭제는 soft delete, 복구는 그 반대. 두 처리 모두 변경 이력 적재([data-log.md](./data-log.md))와 공유 데이터 통지([client-shared-data.md](./client-shared-data.md))를 같은 트랜잭션·동작 안에서 함께 수행.
+삭제는 soft delete, 복구는 그 반대. 두 처리 모두 변경 이력 적재([data-log.md](./data-log.md))와 공유데이터 통지([client-shared-data.md](./client-shared-data.md))를 같은 트랜잭션·동작 안에서 함께 수행.
 
 ### 삭제 (onDelete)
 
-`confirm` → soft delete(`isDeleted=true`) → 이력 적재 → 공유 데이터 통지 → 목록(list)은 `_refresh()` / 단건(detail)은 `submitted.emit(true)`.
+`confirm` → soft delete(`isDeleted=true`) → 이력 적재 → 공유데이터 통지 → 목록(list)은 `_refresh()` / 단건(detail)은 `submitted.emit(true)`.
 
 **벌크 삭제 (list)**:
 
@@ -432,7 +432,10 @@ const isNameDuplicated = await db
   .exists();
 if (isNameDuplicated) throw new Error("같은 이름의 활성 역할이 있어 복구할 수 없습니다.");
 
-await db.role().where((c) => [expr.eq(c.id, roleId)]).update(() => ({ isDeleted: false }));
+await db
+  .role()
+  .where((c) => [expr.eq(c.id, roleId)])
+  .update(() => ({ isDeleted: false }));
 await db.role().insertDataLog({ action: "복구", itemId: roleId, employeeId });
 // → emitAsync → refresh (단건 복구는 닫지 않고 refresh)
 ```
@@ -440,7 +443,10 @@ await db.role().insertDataLog({ action: "복구", itemId: roleId, employeeId });
 **벌크 복구 (list) — 후검증**: update 전엔 대상이 모두 삭제 상태라 대상끼리 충돌을 쿼리로 못 봄 → update **후** 한 쿼리로 활성 중복을 검사하고, 충돌 시 throw 해 트랜잭션 전체를 롤백.
 
 ```ts
-await db.role().where((c) => [expr.in(c.id, ids)]).update(() => ({ isDeleted: false }));
+await db
+  .role()
+  .where((c) => [expr.in(c.id, ids)])
+  .update(() => ({ isDeleted: false }));
 
 // 복구 후 활성 유니크 재검증 — 대상끼리·기존 활성과의 충돌을 복구한 이름으로 한정해 한 번에
 const conflicts = await db

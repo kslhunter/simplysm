@@ -31,7 +31,7 @@ perms = injectPermsSignal(
 );
 ```
 
-`restricted` 및 편집 권한 입력(목록 `sd-crud-list` 는 `canCreate`/`canEdit`/`canDelete`, 단건 `sd-crud-detail` 는 `readonly`) 인라인 전달 방식은 [client-component.md "권한 (perms)"](./client-component.md) 의 규약을 그대로 따름.
+`restricted` 및 편집 권한 입력(목록 `sd-crud-list` 는 `canCreate`/`canEdit`/`canDelete`, 단건 `sd-crud-detail` 는 `readonly`) 전달 방식은 [client-component.md "권한 (perms)"](./client-component.md) 의 규약을 그대로 따름.
 
 ## 액션 핸들러 (시뮬레이션 금지)
 
@@ -60,7 +60,7 @@ if (!result) return;
 
 영역 한정 호출(`→ [화면.Y] 의 <영역> — 선택 전용` 등) 은 모달의 입력 시그널(`selectMode` 등) 로 전달. spec 마커 매핑: "선택 전용"·multiselect 는 `selectMode`(`single`/`multi`) 로, "편집 가능 여부" 는 편집 권한 입력(목록 `sd-crud-list` 는 `canCreate`/`canEdit`/`canDelete`, 단건 `sd-crud-detail` 는 `readonly`)으로 따로 전달. "선택 전용" 은 선택 목적을 뜻할 뿐 편집을 막지 않으므로, 편집까지 차단하려면 그 입력들(목록은 셋 다 false, 단건은 `readonly=true`)을 함께 줄 것.
 
-단건 편집을 모달로 띄우는 경우 피호출 화면은 `.detail.ts`(`<sd-crud-detail>` 루트, `viewType='modal'` 자동 주입)이며 모달 표시용 별도 `.modal.ts` 를 만들지 않음. 모달 전용 비-CRUD 화면(`.modal.ts`)은 `sd-crud-detail` 대신 `sd-busy-container` 등으로 자체 구성.
+단건 편집 모달의 파일 역할(`.detail.ts` vs `.modal.ts`)은 [client-component.md "detail 과 modal 구분"](./client-component.md) 을 따름.
 
 **동반 모달**: 동작 섹션에 `→ [화면.Y] 을 모달로 띄움` 으로 등장하는 모든 모달은 같은 호출에서 함께 생성. 이미 존재하면 재사용.
 
@@ -71,10 +71,12 @@ if (!result) return;
 ```html
 <ng-template #toolTpl>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelUploadClick()">
-    <ng-icon [svg]="tablerUpload" /> 엑셀 업로드
+    <ng-icon [svg]="tablerUpload" />
+    엑셀 업로드
   </sd-button>
   <sd-button [size]="'sm'" [theme]="'link-success'" (click)="onExcelDownloadClick()">
-    <ng-icon [svg]="tablerDownload" /> 엑셀 다운로드
+    <ng-icon [svg]="tablerDownload" />
+    엑셀 다운로드
   </sd-button>
 </ng-template>
 ```
@@ -90,9 +92,9 @@ state = signal<"draft" | "confirmed">("draft");
 
 ```html
 @if (state() === "draft") {
-  <!-- 확정 전 와이어프레임 반영 -->
+<!-- 확정 전 와이어프레임 반영 -->
 } @else {
-  <!-- 확정 후 와이어프레임 반영 -->
+<!-- 확정 후 와이어프레임 반영 -->
 }
 ```
 

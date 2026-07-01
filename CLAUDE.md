@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `check`·`typecheck`·`lint` 의 `--target/-t` 값은 `packages/*` 또는 `tests/*` 아래 워크스페이스 디렉터리명이다. 예: `bun run check --fix -t core-common -t orm`.
 - `build`·`watch`·`dev`·`device`·`publish`·`replace-deps` 는 `--opt/-o` 값을 `sd.config.ts` 에 전달한다.
 - `test` 는 sd-cli 가 아니라 vitest 직접 호출이다: `bun run vitest run --configLoader native --reporter=dot --silent=passed-only`. 추가 인자는 vitest 로 전달된다.
-- sd-cli 명령: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `reinstall`, `init`, `init client`.
+- sd-cli 명령: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `init`, `init client`.
 
 ### 단일 테스트 실행
 
@@ -87,7 +87,7 @@ sd-cli 는 각 패키지의 `target` 으로 esbuild platform·번들 방식을 �
 
 워크스페이스 빌드 파이프라인의 핵심이다.
 
-- `commands/` — CLI 명령 진입점: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `reinstall`, `init`.
+- `commands/` — CLI 명령 진입점: `build`, `watch`, `dev`, `device`, `check`, `publish`, `replace-deps`, `init`.
 - `orchestrators/` — `Build`/`Watch`/`Dev`/`Typecheck` 오케스트레이터와 서버 런타임 관리.
 - `engines/`·`workers/` — 패키지별 빌드·타입체크 실행 엔진과 워커.
 - `runtime/` — 결과 수집, 재빌드 관리, 시그널 처리 등 실행 공통 런타임.
@@ -127,7 +127,6 @@ sd-cli 는 각 패키지의 `target` 으로 esbuild platform·번들 방식을 �
 ## 환경·제약
 
 - `@simplysm/*` v14 개발 매뉴얼과 API 인덱스는 `plugins/sd/references/simplysm14/README.md` 에서 시작한다. 패키지 심볼·API 를 사용하거나 해석할 때 해당 README 의 트리거 표에 따라 관련 문서를 읽는다.
-- 비정형 요구사항 원본(회의록·메일·문서 등)을 분석할 때는 `sd-context-requirement-source` 배경 가이드 스킬을 적용한다.
 - TS 설정은 엄격하다: `verbatimModuleSyntax`, `noPropertyAccessFromIndexSignature`, `useUnknownInCatchVariables`, `noImplicitOverride`, `noImplicitReturns` 등. import 는 `type` 한정자를 구분하고, 인덱스 시그니처는 `obj["key"]` 로 접근하며, catch 변수는 `unknown` 전제로 처리한다.
 - 의존성 조사는 `node_modules` 가 아니라 lock 파일과 package manifest 를 우선 사용한다.
 

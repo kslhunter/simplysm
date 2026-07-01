@@ -1,15 +1,23 @@
 # @simplysm/angular — 폼·입력 컨트롤
 
-버튼, 입력, 선택, 폼, collapse/tab/list/gap/pagination을 화면 폼·필터·셀 안에서 함께 쓰는 군이다. `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
+버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination 컨트롤 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. 값 컨트롤은 대부분 `value`/`from`/`to` 를 `model()` 로 노출하고 `required` 시 내부 `setupInvalid` 로 native validation에 참여한다. 공통 lint/template 규칙: [client-rules.md](../../manuals/client-rules.md), `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
 
-## 버튼·앵커
+공통 패턴(여러 컨트롤 공유):
 
-### `SdButton` — `<sd-button>`
+- `theme` literal(8색) — `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"`. 컨트롤 배경/링크 색을 해당 테마로 칠한다. `SdCheckbox` 만 `"white"` 추가.
+- `size` — `"sm" | "lg"`(미지정=기본). padding/높이 단계. `SdButton` 만 `"xs"` 추가.
+- `inline`(boolean) — `inline-block` + 자동 너비(기본은 full-width block).
+- `inset`(boolean) — 테두리/라운드 제거(평면/오버레이 스타일).
+- `disabled`/`readonly`(boolean) — 입력 차단. readonly/disabled/inset는 값 미리보기(`_contents`)를 렌더한다.
+
+## 버튼
+
+### `SdButton` (`sd-button`)
 
 ```ts
 class SdButton {
-  type: InputSignal<"button" | "submit">;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"|"link"|"link-primary"|"link-secondary"|"link-info"|"link-success"|"link-warning"|"link-danger"|"link-gray"|"link-blue-gray"|"link-rev" | undefined>;
+  type: InputSignal<"button" | "submit">; // default "button"
+  theme: InputSignal<ButtonTheme | undefined>;
   inline: InputSignal<boolean>;
   inset: InputSignal<boolean>;
   size: InputSignal<"xs" | "sm" | "lg" | undefined>;
@@ -19,28 +27,30 @@ class SdButton {
 }
 ```
 
-- `type` — 내부 `<button type>` 값. 기본 `"button"`; form submit이면 `"submit"`.
-- `theme` — 색/링크 스타일. 일반 테마는 배경색 버튼, `"link*"` 는 투명 배경 링크형 버튼, `"link-rev"` 는 역색 텍스트 링크형이다.
-- `inline` — true면 내부 button이 inline-block + width auto가 된다.
-- `inset` — true면 border/radius를 제거하고 primary 색 텍스트형으로 표시한다.
-- `size` — `"xs"`, `"sm"`, `"lg"` 는 padding 크기를 바꾼다. 미지정은 기본 padding.
-- `disabled` — 내부 button disabled와 host disabled 스타일을 켠다. ripple도 비활성화된다.
-- `buttonStyle` — 내부 button의 `[style]` 문자열.
-- `buttonClass` — 내부 button의 `[class]` 문자열.
+native `<button>` 을 감싸고 `<ng-content>` 를 투영한다. ripple은 `!disabled()` 일 때 켜진다.
 
-### `SdAnchor` — `<sd-anchor>`
+- `type` — `"button"`(기본) 일반 버튼, `"submit"` 폼 제출 버튼. native `type` 속성에 그대로.
+- `theme` — 19개 literal. 단색: `primary`/`secondary`/`info`/`success`/`warning`/`danger`/`gray`/`blue-gray`(테마 배경+반전 텍스트, hover 시 진해짐). 링크형: `link`(primary 텍스트), `link-primary`/`link-secondary`/`link-info`/`link-success`/`link-warning`/`link-danger`/`link-gray`/`link-blue-gray`(배경·테두리 투명, 색 텍스트만), `link-rev`(어두운 배경용 반전 텍스트). 미지정 시 기본(컨트롤 배경+primary 테두리).
+- `inline` — true면 `inline-block; width:auto`, false(기본)면 full-width block.
+- `inset` — true면 테두리 없음·라운드 0·primary 텍스트(플랫 링크형).
+- `size` — `xs`(가장 작은 padding)/`sm`/`lg`. 미지정=기본 padding.
+- `buttonStyle`/`buttonClass` — 내부 `<button>` 에 적용할 inline style/class.
+
+### `SdAnchor` (`sd-anchor`)
 
 ```ts
 class SdAnchor {
-  disabled: InputSignal<boolean>;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray">;
+  disabled: InputSignal<boolean>; // default false
+  theme: InputSignal<AnchorTheme>; // default "primary"
 }
 ```
 
-- `disabled` — true면 opacity를 낮추고 pointer event를 막으며 tabindex를 제거한다.
-- `theme` — 텍스트 색상 테마. hover 때 같은 테마의 darker 색과 underline을 적용한다. 기본 `"primary"`.
+`cursor:pointer` 인 inline 링크. `<ng-content>` 투영.
 
-### `SdAdditionalButton` — `<sd-additional-button>`
+- `disabled` — true면 `opacity:0.3; pointer-events:none`, tabindex 제거.
+- `theme` — 8색(기본 `"primary"`). 링크 텍스트 색. hover 시 밑줄+진한 색(coarse pointer에선 밑줄 없음).
+
+### `SdAdditionalButton` (`sd-additional-button`)
 
 ```ts
 class SdAdditionalButton {
@@ -49,477 +59,370 @@ class SdAdditionalButton {
 }
 ```
 
-- `size` — content와 우측 button/anchor padding을 `"sm"` 또는 `"lg"` 크기로 바꾼다.
-- `inset` — true면 wrapper border/radius를 제거한다.
-- content projection — 기본 content는 `._content`, projected `sd-anchor`/`sd-button` 은 `._button` 영역에 들어간다.
+좌측에 자유 콘텐츠, 우측에 투영된 `sd-anchor`/`sd-button`(좌측 구분선)을 배치하는 테두리 컨테이너. 콘텐츠는 기본 `<ng-content>`, 버튼은 `<ng-content select="sd-anchor">`/`<ng-content select="sd-button">`.
 
-### `SdModalSelectButton<K, M>` — `<sd-modal-select-button>`
+- `size` — `"sm"`/`"lg"` 콘텐츠·버튼 padding 단계.
+- `inset` — true면 라운드 0·테두리 없음.
+
+### `SdModalSelectButton` (`sd-modal-select-button`)
 
 ```ts
+class SdModalSelectButton<K, M extends keyof SelectModeValue<K> = keyof SelectModeValue<K>> {
+  modal: InputSignal<SdSelectModalInfo<SdSelectModal<K>>>; // required
+  value: ModelSignal<SelectModeValue<K>[M]>; // single→K, multi→K[]
+  selectMode: InputSignal<M>; // default "single"
+  modalOptions: InputSignal<SdModalOptions | undefined>;
+  disabled: InputSignal<boolean>;
+  required: InputSignal<boolean>;
+  inset: InputSignal<boolean>;
+  size: InputSignal<"sm" | "lg" | undefined>;
+  searchIcon: InputSignal<string>; // default tablerSearch
+}
 interface SdSelectModal<TKey> extends SdModalContentDef<SelectModalOutputResult<TKey>> {
   selectMode: InputSignal<"single" | "multi" | undefined>;
   selectedKeys: InputSignal<TKey[]>;
 }
-type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<T, "selectMode" | "selectedKeys">;
-class SdModalSelectButton<K, M extends keyof SelectModeValue<K> = keyof SelectModeValue<K>> {
-  modal: InputSignal<SdSelectModalInfo<SdSelectModal<K>>>;
-  value: ModelSignal<SelectModeValue<K>[M] | undefined>;
-  disabled: InputSignal<boolean>;
-  required: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
-  size: InputSignal<"sm" | "lg" | undefined>;
-  selectMode: InputSignal<M>;
-  modalOptions: InputSignal<SdModalOptions | undefined>;
-  searchIcon: InputSignal<string>;
-}
+type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
+  T,
+  "selectMode" | "selectedKeys"
+>;
 ```
 
-- `SdSelectModal.selectMode` — modal content가 받을 선택 모드 input. 버튼이 자신의 `selectMode` 를 주입한다.
-- `SdSelectModal.selectedKeys` — modal content가 받을 현재 선택 key 배열 input.
-- `modal` — 열 modal type/title/inputs. `selectMode`/`selectedKeys` 는 버튼이 덮어 주입한다.
-- `value` — 단일 모드면 key 또는 `undefined`, 다중 모드면 key 배열.
-- `disabled` — true면 eraser/search button을 숨긴다.
-- `required` — true이고 값이 없거나 빈 배열이면 hidden validity에 “선택된 항목이 없습니다.”를 설정한다.
-- `inset` — border/radius를 제거한다.
-- `size` — `"sm"`/`"lg"` padding을 적용한다.
-- `selectMode` — `"single"` 은 결과 첫 key를 value로, `"multi"` 는 result `selectedKeys` 배열을 value로 쓴다. 기본 `"single"`.
-- `modalOptions` — provider 호출 option input으로 선언되어 있으나 현재 `onSearchClick` 에서는 `showAsync` 두 번째 인자로 전달하지 않는다.
-- `searchIcon` — 검색 버튼에 표시할 icon 문자열. 기본 `tablerSearch`.
+선택값을 보여주고 검색 버튼으로 선택 모달을 띄워 key를 고르는 컨트롤. 모달 호출: [overlay.md](./overlay.md).
+
+- `modal` — 띄울 모달 정의(`selectMode`/`selectedKeys` 는 버튼이 주입하므로 제외된 `SdSelectModalInfo`). **required**.
+- `value` — 선택 key. `selectMode==="multi"` → key 배열, `"single"` → 단일 key.
+- `selectMode` — `"single"`(기본)/`"multi"`. 모달에 전달되고 결과 해석 방식을 정한다.
+- `disabled` — true면 검색·지우개 버튼 숨김.
+- `required` — true면 지우개 버튼 숨김 + 빈 값일 때 `"선택된 항목이 없습니다."` invalid.
+- `searchIcon` — 검색 버튼 아이콘(기본 `tablerSearch`).
+- 동작 — `onSearchClick` 은 `SdModalProvider.showAsync` 로 모달을 열고 결과의 `selectedKeys` 를 multi면 배열, single이면 `[0]` 로 `value` 에 반영. `onEraseClick` 은 multi면 `[]`, single이면 `undefined`.
 
 ## 텍스트·숫자·날짜 입력
 
-### `SdTextfieldTypes` / `sdTextfieldTypes`
-
-```ts
-type SdTextfieldTypes = {
-  number: number; text: string; password: string; color: string; email: string; format: string;
-  date: DateOnly; month: DateOnly; year: DateOnly; datetime: DateTime; "datetime-sec": DateTime;
-  time: Time; "time-sec": Time;
-};
-const sdTextfieldTypes: (keyof SdTextfieldTypes)[];
-```
-
-- `"number"` — model은 number, control은 text, 입력 문자열에서 숫자/`.`/`-` 외 문자를 제거해 parse한다.
-- `"text"`/`"password"`/`"email"`/`"color"` — model은 string, control type은 같은 문자열이다.
-- `"format"` — model은 string, `format` 의 `X` 마스크로 표시하고 parse 때 format 리터럴 문자를 제거한다.
-- `"date"`/`"month"`/`"year"` — model은 `DateOnly`; control type은 각각 date/month/text, 표시 format은 `yyyy-MM-dd`/`yyyy-MM`/`yyyy`.
-- `"datetime"`/`"datetime-sec"` — model은 `DateTime`; control type은 `datetime-local`, 초 포함 타입은 step 기본값이 1이다.
-- `"time"`/`"time-sec"` — model은 `Time`; 초 포함 타입은 step 기본값이 1이다.
-- `sdTextfieldTypes` — 위 key들을 문자열 배열로 노출한다.
-
-### `SdTextfield<K>` — `<sd-textfield>`
+### `SdTextfield<K>` (`sd-textfield`)
 
 ```ts
 class SdTextfield<K extends keyof SdTextfieldTypes> {
-  value: ModelSignal<SdTextfieldTypes[K] | undefined>;
-  type: InputSignal<K>;
-  placeholder: InputSignal<string | undefined>;
-  title: InputSignal<string | undefined>;
-  inputStyle: InputSignal<string | undefined>;
-  inputClass: InputSignal<string | undefined>;
-  disabled: InputSignal<boolean>;
-  readonly: InputSignal<boolean>;
-  required: InputSignal<boolean>;
-  min: InputSignal<SdTextfieldTypes[K] | undefined>;
-  max: InputSignal<SdTextfieldTypes[K] | undefined>;
-  minlength: InputSignal<number | undefined>;
-  maxlength: InputSignal<number | undefined>;
-  pattern: InputSignal<string | undefined>;
-  validatorFn: InputSignal<((value: SdTextfieldTypes[K] | undefined) => string | undefined) | undefined>;
-  format: InputSignal<string | undefined>;
-  step: InputSignal<number | undefined>;
-  autocomplete: InputSignal<string | undefined>;
-  useNumberComma: InputSignal<boolean>;
-  minDigits: InputSignal<number | undefined>;
-  inline: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
-  size: InputSignal<"sm" | "lg" | undefined>;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray" | undefined>;
+  type: InputSignal<K>;                          // required, 입력 종류
+  value: ModelSignal<SdTextfieldTypes[K]>;       // type별 값 타입
+  placeholder, title, inputStyle, inputClass: InputSignal<string | undefined>;
+  disabled, readonly, required, inline, inset: InputSignal<boolean>;
+  min, max: InputSignal<SdTextfieldTypes[K] | undefined>;
+  minlength, maxlength, step, minDigits: InputSignal<number | undefined>;
+  pattern, format, autocomplete: InputSignal<string | undefined>;
+  validatorFn: InputSignal<(value: SdTextfieldTypes[K] | undefined) => string | undefined>;
+  useNumberComma: InputSignal<boolean>;          // default true
+  size: InputSignal<"sm" | "lg" | undefined>; theme: InputSignal<Theme8 | undefined>;
 }
 ```
 
-- `value` — type별 model 값. input이 빈 문자열이면 `undefined` 로 설정한다.
-- `type` — handler key. parsing, display text, validation, native input type을 결정한다.
-- `placeholder` — input placeholder와 readonly/disabled 표시 placeholder.
-- `title` — title attribute. 없으면 placeholder를 title로 쓴다.
-- `inputStyle` — input과 readonly display div에 전달할 style 문자열.
-- `inputClass` — input과 readonly display div에 전달할 class 문자열.
-- `disabled` — true면 input을 렌더하지 않고 display div를 비활성 스타일로 보인다.
-- `readonly` — true면 input을 렌더하지 않고 display div만 보인다.
-- `required` — 값이 없으면 “값을 입력하세요.” validity 메시지를 만든다.
-- `min`/`max` — number/DateOnly/DateTime/Time 타입에서 tick/값 하한·상한을 검증한다.
-- `minlength`/`maxlength` — color를 제외한 string handler에서 문자열 길이를 검증한다.
-- `pattern` — string handler에서 `new RegExp(pattern)` 으로 검증한다. 잘못된 pattern이면 `SdError` 를 throw한다.
-- `validatorFn` — handler 검증 뒤 추가 메시지를 반환할 수 있는 함수.
-- `format` — `"format"` 타입의 `X` 마스크와 parse 리터럴 제거 기준.
-- `step` — native step. 없으면 handler 기본값(`"any"` 또는 초 단위 1)을 쓴다.
-- `autocomplete` — input autocomplete attribute.
-- `useNumberComma` — number 표시 시 comma formatting 사용 여부. false면 `toString(10)`.
-- `minDigits` — number display text의 최소 자릿수 formatting.
-- `inline` — host를 inline-block으로 만든다.
-- `inset` — border/radius 제거, display div와 input을 겹쳐 셀 내장형으로 만든다.
-- `size` — `"sm"`/`"lg"` padding을 적용한다.
-- `theme` — input background를 해당 테마의 lightest 색으로 바꾼다.
+`type` 으로 native input type·파싱·검증·표시 포맷이 한 번에 결정되는 타입 안전 입력 컨트롤. `value` 타입은 `SdTextfieldTypes[type]` 로 추론된다.
 
-### `SdTextarea` — `<sd-textarea>`
+- `type` — **required**. `SdTextfieldTypes` key 중 하나(아래).
+- `value` — `type` 별 타입(number→`number`, date→`DateOnly` 등). 빈 입력은 `undefined`. 파싱 실패 시 직전 표시값 복원.
+- `min`/`max` — `value` 와 같은 타입 경계. 검증 + native attr.
+- `minlength`/`maxlength`/`pattern` — 문자열 타입 길이/정규식 검증.
+- `validatorFn` — 추가 검증 함수. 반환 문자열이 invalid 메시지.
+- `format` — `format` type의 마스크, datetime 표시 포맷.
+- `useNumberComma` — number type 천 단위 콤마(기본 true). false면 콤마 없이 표시.
+- `minDigits` — number 표시 최소 자릿수.
+- `theme` — 8색 배경 tint.
+
+#### `SdTextfieldTypes` / `sdTextfieldTypes`
+
+`type` → 값 타입 매핑(13종). `sdTextfieldTypes` 는 같은 순서의 key 배열.
+
+- `number` → `number`. native control은 `"text"`(콤마 허용), 입력에서 `[0-9-.]` 외 제거 후 parseFloat.
+- `text`/`password`/`color`/`email` → `string`. `password` 표시는 `****`. `color` 는 길이·pattern 검증 생략.
+- `format` → `string`. `format` 마스크의 `X` 위치에만 값 문자를 채움(`XXX-XXXX` 등). `|` 로 길이별 후보.
+- `date`/`month`/`year` → `DateOnly`. native control `date`/`month`/`text`. 표시 `yyyy-MM-dd`/`yyyy-MM`/`yyyy`.
+- `datetime`/`datetime-sec` → `DateTime`. native `datetime-local`. `-sec` 는 초 포함.
+- `time`/`time-sec` → `Time`. native `time`. `-sec` 는 초 포함.
+
+### `SdTextarea` (`sd-textarea`)
 
 ```ts
 class SdTextarea {
-  value: ModelSignal<string | undefined>;
-  placeholder: InputSignal<string | undefined>;
-  title: InputSignal<string | undefined>;
-  minRows: InputSignal<number>;
-  disabled: InputSignal<boolean>;
-  readonly: InputSignal<boolean>;
-  required: InputSignal<boolean>;
-  inline: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
-  size: InputSignal<"sm" | "lg" | undefined>;
-  validatorFn: InputSignal<((value: string | undefined) => string | undefined) | undefined>;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray" | undefined>;
-  inputStyle: InputSignal<string | undefined>;
-  inputClass: InputSignal<string | undefined>;
+  value: ModelSignal<string>;
+  minRows: InputSignal<number>;                  // default 1
+  placeholder, title, inputStyle, inputClass: InputSignal<string | undefined>;
+  disabled, readonly, required, inline, inset: InputSignal<boolean>;
+  validatorFn: InputSignal<(value: string | undefined) => string | undefined>;
+  size: InputSignal<"sm" | "lg" | undefined>; theme: InputSignal<Theme8 | undefined>;
 }
 ```
 
-- `value` — textarea 문자열. 입력값이 빈 문자열이면 `undefined`.
-- `placeholder` — textarea placeholder와 display placeholder.
-- `title` — title attribute. 없으면 placeholder를 쓴다.
-- `minRows` — textarea rows의 최소값. 실제 rows는 `max(minRows, value.split("\n").length)`.
-- `disabled` — input 대신 display div를 비활성 스타일로 보인다.
-- `readonly` — input 대신 display div만 보인다.
-- `required` — 값이 없으면 “값을 입력하세요.” validity 메시지를 만든다.
-- `inline` — host를 inline-block으로 만든다.
-- `inset` — border/radius 제거, display div와 textarea를 겹친다.
-- `size` — `"sm"`/`"lg"` padding을 적용한다.
-- `validatorFn` — 추가 validity 메시지를 반환할 수 있는 함수.
-- `theme` — 배경을 해당 테마의 lightest 색으로 바꾼다.
-- `inputStyle`/`inputClass` — textarea와 display div에 전달한다.
+자동 행 확장 textarea(resize 불가). `currRows = max(minRows, 줄 수)`.
 
-### `SdNumpad` — `<sd-numpad>`
+- `value` — 문자열. 빈 값은 `undefined`.
+- `minRows` — 최소 행 수(기본 1).
+- `required` — 빈 값이면 `"값을 입력하세요."` invalid.
+
+### `SdNumpad` (`sd-numpad`)
 
 ```ts
 class SdNumpad {
   value: ModelSignal<number | undefined>;
   placeholder: InputSignal<string | undefined>;
-  required: InputSignal<boolean>;
-  inputDisabled: InputSignal<boolean>;
-  useEnterButton: InputSignal<boolean>;
-  useMinusButton: InputSignal<boolean>;
+  required, inputDisabled, useEnterButton, useMinusButton: InputSignal<boolean>;
   enterButtonClick: OutputEmitterRef<void>;
 }
 ```
 
-- `value` — keypad text를 `num.parseFloat` 한 number model.
-- `placeholder` — 상단 textfield placeholder.
-- `required` — 상단 textfield required와 Enter button disabled 조건에 쓰인다.
-- `inputDisabled` — 상단 textfield disabled 상태.
-- `useEnterButton` — true면 `ENT` button을 렌더하고 클릭 시 output emit.
-- `useMinusButton` — true면 `-` button을 렌더하고 부호를 토글한다.
-- `enterButtonClick` — `ENT` 클릭 시 emit한다.
+숫자 키패드 UI. 상단 `sd-textfield`(text) + 숫자/`C`/`BS`/`.` 버튼.
 
-### `SdRange<K>` — `<sd-range>`
+- `value` — 숫자 값. 키패드/필드 양방향 동기화.
+- `required` — true면 값 없을 때 `ENT` 비활성.
+- `inputDisabled` — 상단 텍스트필드 비활성(키패드는 사용 가능).
+- `useEnterButton` — true면 `ENT` 버튼 표시.
+- `useMinusButton` — true면 부호 토글 `-` 버튼 표시.
+- `enterButtonClick` — `ENT` 누를 때 emit.
+- 버튼 동작 — `C` 비움, `BS` 마지막 글자 삭제, `Minus` 선행 `-` 토글, 그 외 키는 append.
+
+### `SdRange<K>` (`sd-range`)
 
 ```ts
 class SdRange<K extends keyof SdTextfieldTypes> {
-  type: InputSignal<K>;
-  from: ModelSignal<SdTextfieldTypes[K] | undefined>;
-  to: ModelSignal<SdTextfieldTypes[K] | undefined>;
+  type: InputSignal<K>;                 // required
+  from: ModelSignal<SdTextfieldTypes[K]>;
+  to: ModelSignal<SdTextfieldTypes[K]>;
+  required, disabled: InputSignal<boolean>;
   inputStyle: InputSignal<string | undefined>;
-  required: InputSignal<boolean>;
-  disabled: InputSignal<boolean>;
 }
 ```
 
-- `type` — 두 textfield에 공통으로 넘길 type.
-- `from` — 시작 값 model.
-- `to` — 종료 값 model. 두 번째 textfield의 `min` 은 `from()` 이다.
-- `inputStyle` — 두 textfield에 전달할 style.
-- `required` — 두 textfield required.
-- `disabled` — 두 textfield disabled.
+같은 `type` 의 textfield 두 개를 `~` 로 잇는 범위 입력. `to` 의 `min` 은 `from()` 으로 묶여 상한이 하한보다 앞서지 않는다.
 
-### `SdDateRangePicker` — `<sd-date-range-picker>`
+### `SdDateRangePicker` (`sd-date-range-picker`)
 
 ```ts
 class SdDateRangePicker {
-  periodType: ModelSignal<"일" | "월" | "범위">;
+  periodType: ModelSignal<"일" | "월" | "범위">; // default "범위"
   from: ModelSignal<DateOnly | undefined>;
   to: ModelSignal<DateOnly | undefined>;
   required: InputSignal<boolean>;
 }
 ```
 
-- `periodType` — `"일"` 은 `to = from`, `"월"` 은 from을 월초로 맞추고 to를 월말로 맞춘다, `"범위"` 는 date range를 직접 입력한다. 기본 `"범위"`.
-- `from` — 시작일 또는 선택 월/일 값.
-- `to` — 종료일. 범위 모드에서 from이 to보다 뒤면 to를 from으로 보정한다.
-- `required` — 내부 date/month/range 입력의 required.
+기간 종류 select + 날짜 입력. `periodType` 별로 UI/동기화가 달라진다.
+
+- `periodType` — `"일"`(단일일, `to=from`), `"월"`(월 단위, `from`=그 달 1일·`to`=말일로 스냅), `"범위"`(기본, from/to range). 변경 시 그에 맞게 `from`/`to` 동기화.
 
 ## checkbox·switch
 
-### `SdCheckbox` — `<sd-checkbox>`
+### `SdCheckbox` (`sd-checkbox`)
 
 ```ts
 class SdCheckbox {
-  value: ModelSignal<boolean>;
-  canChangeFn: InputSignal<(item: boolean) => boolean | Promise<boolean>>;
-  icon: InputSignal<string>;
+  value: ModelSignal<boolean>;                   // default false
+  canChangeFn: InputSignal<(item: boolean) => boolean | Promise<boolean>>; // default () => true
+  icon: InputSignal<string>;                     // default tablerCheck
   radio: InputSignal<boolean>;
-  disabled: InputSignal<boolean>;
+  disabled, inline, inset: InputSignal<boolean>;
   size: InputSignal<"sm" | "lg" | undefined>;
-  inline: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"|"white" | undefined>;
+  theme: InputSignal<Theme8 | "white" | undefined>;
   contentStyle: InputSignal<string | undefined>;
 }
 ```
 
-- `value` — checked 상태 model.
-- `canChangeFn` — 값 변경 전 가드. false/Promise false면 변경하지 않는다.
-- `icon` — checkbox indicator icon. 기본 `tablerCheck`; radio 모드에서는 내부 점 div를 쓴다.
-- `radio` — true면 클릭/space가 항상 true로 set하고 원형 indicator를 쓴다.
-- `disabled` — true면 opacity를 낮추고 pointer event를 막는다.
-- `size` — `"sm"`/`"lg"` 높이·padding을 적용한다.
-- `inline` — inline-block + border 제거 스타일.
-- `inset` — border 제거와 중앙 정렬 스타일.
-- `theme` — indicator 색. `"white"` 는 흰 배경 indicator 테마.
-- `contentStyle` — content 영역 style 문자열.
+- `value` — 체크 상태. 클릭/Space로 토글.
+- `canChangeFn` — `setupModelHook` 게이트. `false` 면 변경 차단, `true`/resolve면 반영.
+- `radio` — true면 라디오 모드(둥근 dot, 클릭 시 항상 `true` 로만 설정, 해제 불가). false(기본)면 checkbox 토글.
+- `icon` — checkbox 모드 체크 아이콘(기본 `tablerCheck`). radio 모드에선 dot 사용.
+- `theme` — 8색 + `"white"`(흰 배경+lightest 테두리, 체크 시 primary).
 
-### `SdSwitch` — `<sd-switch>`
+### `SdSwitch` (`sd-switch`)
 
 ```ts
 class SdSwitch {
-  value: ModelSignal<boolean>;
+  value: ModelSignal<boolean>;                   // default false
   canChangeFn: InputSignal<(item: boolean) => boolean | Promise<boolean>>;
-  disabled: InputSignal<boolean>;
-  inline: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
+  disabled, inline, inset: InputSignal<boolean>;
   size: InputSignal<"sm" | "lg" | undefined>;
-  theme: InputSignal<"primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray" | undefined>;
+  theme: InputSignal<Theme8 | undefined>;        // "white" 없음
 }
 ```
 
-- `value` — on/off 상태 model.
-- `canChangeFn` — 값 변경 전 가드.
-- `disabled` — true면 handle opacity를 낮춘다.
-- `inline` — inline-block + border 제거 스타일.
-- `inset` — border 제거 스타일.
-- `size` — `"sm"`/`"lg"` padding을 적용한다.
-- `theme` — on 상태 배경 테마. 미지정 on 배경은 success.
+토글 스위치. `value` 클릭/Space 토글. on 상태(`data-sd-on`) 트랙 배경=`--theme-{theme}-default`, 테마 미지정 시 success 색.
 
-### `SdCheckboxGroup<T>` / `SdCheckboxGroupItem<T>`
+### `SdCheckboxGroup<T>` / `SdCheckboxGroupItem<T>` (`sd-checkbox-group` / `sd-checkbox-group-item`)
 
 ```ts
 class SdCheckboxGroup<T> {
-  value: ModelSignal<T[]>;
+  value: ModelSignal<T[]>; // default []
   disabled: InputSignal<boolean>;
 }
 class SdCheckboxGroupItem<T> {
-  value: InputSignal<T>;
+  value: InputSignal<T>; // required
   inline: InputSignal<boolean>;
 }
 ```
 
-- `SdCheckboxGroup.value` — 선택된 item value 배열.
-- `SdCheckboxGroup.disabled` — 모든 child item checkbox의 disabled 계산에 쓰인다.
-- `SdCheckboxGroupItem.value` — 이 항목이 group 배열에 넣고 뺄 값.
-- `SdCheckboxGroupItem.inline` — 내부 `SdCheckbox` inline input으로 전달한다.
+- 그룹 `value` — 체크된 item value 배열. item이 체크되면 자기 `value` 를 push, 해제되면 strict `!==` 로 filter.
+- item `value` — **required**. `disabled` 는 그룹에서 상속.
 
 ## select·dropdown
 
-### `SelectModeValue<T>`
-
-```ts
-type SelectModeValue<T> = { multi: T[]; single: T };
-```
-
-- `single` — 단일 선택 model 값 타입.
-- `multi` — 다중 선택 model 배열 타입.
-
-### `SdSelect<M, T>` — `<sd-select>`
+### `SdSelect<M, T>` (`sd-select`)
 
 ```ts
 class SdSelect<M extends "single" | "multi", T> {
-  selectMode: InputSignal<M>;
-  value: ModelSignal<SelectModeValue<any>[M] | undefined>;
-  placeholder: InputSignal<string | undefined>;
-  disabled: InputSignal<boolean>;
-  inline: InputSignal<boolean>;
-  inset: InputSignal<boolean>;
+  selectMode: InputSignal<M>;                     // default "single"
+  value: ModelSignal<SelectModeValue<any>[M]>;    // single→T, multi→T[]
+  dropdownOpen: ModelSignal<boolean>;             // default false
+  placeholder, contentClass, contentStyle: InputSignal<string | undefined>;
+  disabled, inline, inset, required, hideSelectAll: InputSignal<boolean>;
   size: InputSignal<"sm" | "lg" | undefined>;
-  required: InputSignal<boolean>;
-  hideSelectAll: InputSignal<boolean>;
   multiSelectionDisplayDirection: InputSignal<"vertical" | undefined>;
   items: InputSignal<T[] | undefined>;
-  trackByFn: InputSignal<(item: T, index: number) => unknown>;
-  getChildrenFn: InputSignal<((item: T) => T[] | undefined) | undefined>;
-  contentClass: InputSignal<string | undefined>;
-  contentStyle: InputSignal<string | undefined>;
-  dropdownOpen: ModelSignal<boolean>;
+  trackByFn: InputSignal<(item: T, index: number) => unknown>;   // default identity
+  getChildrenFn: InputSignal<(item: T) => T[] | undefined>;
 }
+type SelectModeValue<T> = { multi: T[]; single: T };
 ```
 
-- `selectMode` — `"single"` 은 선택 시 값 set 후 dropdown close, `"multi"` 는 배열에 토글하고 전체선택 bar를 표시할 수 있다. 기본 `"single"`.
-- `value` — 현재 선택 값. multi면 배열이어야 선택 표시가 된다.
-- `placeholder` — 선택 표시가 없을 때 보여줄 텍스트.
-- `disabled` — dropdown disabled와 control icon 숨김.
-- `inline` — host width auto.
-- `inset` — border/radius 제거와 focus outline 스타일.
-- `size` — `"sm"`/`"lg"` padding.
-- `required` — 값이 없거나 빈 배열이면 “선택된 항목이 없습니다.” validity 메시지를 만든다.
-- `hideSelectAll` — multi mode에서 전체선택/전체해제 bar를 숨긴다.
-- `multiSelectionDisplayDirection` — `"vertical"` 이면 선택 항목 표시 separator를 div padding으로 만든다. 미지정이면 comma separator.
-- `items` — `ng-template[itemOf]` 렌더링에 쓸 데이터 배열.
-- `trackByFn` — `items` 렌더 track key. 기본 item 자체.
-- `getChildrenFn` — tree item flatten 시 자식 배열을 반환한다.
-- `contentClass`/`contentStyle` — select control content div에 전달한다.
-- `dropdownOpen` — dropdown open 상태 model.
+드롭다운 선택 컨트롤. `SdSelectItem` 을 투영하거나 `items` + `SdItemOfTemplate` 로 렌더.
 
-### `SdSelectItem<T>` — `<sd-select-item>`
+- `selectMode` — `"single"`(기본): `value`=단일 T, 선택 시 set 후 닫힘. `"multi"`: `value`=T[], 선택 토글(닫지 않음), 전체선택/해제 바 + 항목별 체크박스.
+- `value` — 선택값. multi면 배열, single이면 단일.
+- `hideSelectAll` — multi 모드 전체선택 바 숨김.
+- `multiSelectionDisplayDirection` — `"vertical"` 면 선택 표시를 줄바꿈, 미지정 시 `", "` 로 연결.
+- `items`/`getChildrenFn`/`trackByFn` — 데이터 기반 렌더(트리는 `getChildrenFn` 으로 평탄화+depth).
+- `required` — 빈 선택이면 `"선택된 항목이 없습니다."` invalid.
+- 메서드 — `selectItem`(set/toggle 후 single은 닫기), `toggleItem`, `onSelectAll`/`onDeselectAll`, `open/closeDropdown`. 열린 동안 ArrowUp/Down으로 항목 이동.
+
+### `SdSelectItem<T>` (`sd-select-item`)
 
 ```ts
 class SdSelectItem<T> {
   value: InputSignal<T | undefined>;
-  disabled: InputSignal<boolean>;
-  hidden: InputSignal<boolean>;
+  disabled, hidden: InputSignal<boolean>;
 }
 ```
 
-- `value` — parent `SdSelect` 에 set/toggle할 item value.
-- `disabled` — true면 클릭/키보드 선택을 막고 disabled style을 적용한다.
-- `hidden` — true면 item을 display none 처리한다.
-- 선택 키 — click은 parent `selectItem`, Space는 close 없이 toggle, Enter는 single이면 select+close, multi면 toggle한다.
+- `value` — 항목 값. multi면 `isSelected` 시 체크박스 표시.
+- `disabled` — 선택 차단·전체선택 제외.
+- `hidden` — `display:none`·전체선택 제외.
+- 키보드 — Space는 항상 toggle(닫지 않음), Enter는 single이면 select(닫기)·multi면 toggle.
 
-### `SdSelectButton` — `<sd-select-button>`
+### `SdSelectButton` (`sd-select-button`)
 
-```ts
-class SdSelectButton {}
-```
+`sd-select` 내부에 투영하는 액션 버튼(입력 없음, ripple). select disabled면 숨김.
 
-- projection — `SdSelect` 내부에 보조 button처럼 투영된다.
-- 동작 — ripple을 항상 켜고 content를 그대로 표시한다.
-
-### `SdDropdown` / `SdDropdownPopup`
+### `SdDropdown` (`sd-dropdown`) / `SdDropdownPopup` (`sd-dropdown-popup`)
 
 ```ts
 class SdDropdown {
-  open: ModelSignal<boolean>;
+  open: ModelSignal<boolean>; // default false
   disabled: InputSignal<boolean>;
-  popupElRef: Signal<ElementRef<HTMLElement>>;
 }
-class SdDropdownPopup {}
+class SdDropdownPopup {} // 입력 없음, <ng-content> 투영
 ```
 
-- `open` — popup을 body로 옮겨 표시할지 결정한다.
-- `disabled` — true면 tabindex 제거와 open 차단.
-- `popupElRef` — content child `SdDropdownPopup` 의 element ref. required content child다.
-- desktop position — host rect 기준으로 viewport 하단/상단, 좌/우 중 공간이 큰 방향에 배치한다.
-- mobile position — max-width 520px media query면 backdrop을 만들고 popup을 화면 하단 sheet처럼 표시한다.
-- key 동작 — host ArrowDown/Space로 open, ArrowUp/Escape로 close, open 상태 ArrowDown은 popup 첫 tabbable로 focus 이동한다.
-- `SdDropdownPopup` resize — 내부 scrollHeight가 300px를 넘으면 height를 300px로 cap하고, 아니면 height style을 제거한다.
+- `open` — 팝업 열림 상태(양방향). 열리면 popup 요소를 `document.body` 로 옮겨 host 근처 위치(뷰포트에 따라 위/왼쪽 flip), 모바일(`max-width:520px`)은 backdrop + 슬라이드업.
+- `disabled` — true면 비포커스·열기 차단.
+- 키보드 — host에서 ArrowDown(열기/팝업 첫 요소 포커스), ArrowUp(닫기), Space(토글), Escape(닫기). popup은 내용 높이 300px 초과 시 스크롤.
 
-## form·collapse·tab·list·gap·pagination
+## form
 
-### `SdForm` — `<sd-form>`
+### `SdForm` (`sd-form`)
 
 ```ts
 class SdForm {
-  formElRef: Signal<ElementRef<HTMLFormElement>>;
-  get formEl(): HTMLFormElement;
-  formSubmit: OutputEmitterRef<SubmitEvent>;
-  formInvalid: OutputEmitterRef<void>;
+  formSubmit: OutputEmitterRef<SubmitEvent>; // 검증 통과 시
+  formInvalid: OutputEmitterRef<void>; // 검증 실패 시
   requestSubmit(): void;
+  get formEl(): HTMLFormElement;
 }
 ```
 
-- `formElRef`/`formEl` — 내부 `<form novalidate>` element.
-- `formSubmit` — submit event에서 `checkValidity()` 가 true면 emit한다.
-- `formInvalid` — invalid면 `reportValidity()` 후 emit한다.
-- `requestSubmit` — 내부 form의 native `requestSubmit()` 호출.
+`novalidate` native `<form>` 래퍼. submit 시 `formEl.checkValidity()` 통과면 `formSubmit` emit, 실패면 `reportValidity()`(native 메시지 표시+첫 invalid 포커스) 후 `formInvalid` emit.
 
-### `SdCollapse` / `SdCollapseIcon`
+- `requestSubmit()` — 프로그램적으로 submit 트리거.
+- 검증 통합 — 자식 컨트롤이 `setupInvalid` 로 등록한 hidden `.sd-invalid-input` 의 customValidity를 native form이 집계한다.
+
+## collapse·tab·list·gap·pagination
+
+### `SdCollapse` (`sd-collapse`) / `SdCollapseIcon` (`sd-collapse-icon`)
 
 ```ts
-class SdCollapse { open: InputSignal<boolean> }
-class SdCollapseIcon {
-  icon: InputSignal<string>;
+class SdCollapse {
   open: InputSignal<boolean>;
-  openRotate: InputSignal<number>;
+} // default false
+class SdCollapseIcon {
+  icon: InputSignal<string>; // default tablerChevronDown
+  open: InputSignal<boolean>; // default false
+  openRotate: InputSignal<number>; // default 90
 }
 ```
 
-- `SdCollapse.open` — true면 content margin-top을 빈 값으로, false면 `-contentHeight` 로 접는다.
-- `SdCollapse` resize — content height가 바뀌면 닫힘 margin 계산값을 갱신한다.
-- `SdCollapseIcon.icon` — 표시할 icon 문자열. 기본 `tablerChevronDown`.
-- `SdCollapseIcon.open` — true면 rotate transform을 적용한다.
-- `SdCollapseIcon.openRotate` — open일 때 회전 각도. 기본 90.
+- `SdCollapse.open` — true면 콘텐츠 표시, false면 측정 높이만큼 음수 margin-top으로 접음(애니메이션, 첫 렌더는 무애니).
+- `SdCollapseIcon.open` — true면 아이콘을 `openRotate` 도(기본 90) 회전. 펼침/접힘 표시용.
 
-### `SdTab<T>` / `SdTabItem<T>` — `<sd-tab>` / `<sd-tab-item>`
-
-사용법: [client-tab.md](../../manuals/client-tab.md)
+### `SdTab<T>` (`sd-tab`) / `SdTabItem<T>` (`sd-tab-item`)
 
 ```ts
-class SdTab<T> { value: ModelSignal<T | undefined> }
-class SdTabItem<T> { value: InputSignal<T> }
+class SdTab<T> {
+  value: ModelSignal<T>;
+} // 현재 활성 탭 값
+class SdTabItem<T> {
+  value: InputSignal<T>;
+} // required
 ```
 
-- `SdTab.value` — 현재 선택 tab 값 model.
-- `SdTabItem.value` — 클릭 시 parent tab value에 set할 값.
-- 선택 표시 — item은 parent value와 자신의 value가 strict equal이면 selected style을 적용한다.
+- `SdTab.value` — 활성 탭 값. `SdTabItem` 은 `value()===parent.value()` 일 때 활성(strict `===`). item 클릭 시 `parent.value.set(value())`.
 
-### `SdList` / `SdListItem`
+### `SdList` (`sd-list`) / `SdListItem` (`sd-list-item`)
 
 ```ts
-class SdList { inset: InputSignal<boolean> }
+class SdList { inset: InputSignal<boolean>; }              // default false
 class SdListItem {
-  layout: InputSignal<"accordion" | "flat">;
-  open: ModelSignal<boolean>;
-  selected: InputSignal<boolean>;
+  layout: InputSignal<"accordion" | "flat">;  // default "accordion"
+  open: ModelSignal<boolean>;                  // default false
+  selected, readonly: InputSignal<boolean>;
   selectedIcon: InputSignal<string | undefined>;
-  readonly: InputSignal<boolean>;
-  contentStyle: InputSignal<string | undefined>;
-  contentClass: InputSignal<string | undefined>;
+  contentStyle, contentClass: InputSignal<string | undefined>;
 }
 ```
 
-- `SdList.inset` — true면 list border/background/padding을 제거한다.
-- `layout` — `"accordion"` 은 child list를 collapsible로 표시, `"flat"` 은 child를 항상 열고 parent content를 section label처럼 표시한다.
-- `open` — accordion child collapse 상태 model.
-- `selected` — selected background/font style을 적용한다.
-- `selectedIcon` — child가 없을 때 앞쪽 icon을 표시하고 selected 여부로 색을 바꾼다.
-- `readonly` — true면 content click이 open 토글을 하지 않는다.
-- `contentStyle`/`contentClass` — content div에 전달한다.
-- `toolTpl` content child — 있으면 item 우측 tool 영역에 렌더한다.
+- `SdList.inset` — true면 배경·테두리 제거(중첩 list는 항상 카드 제거).
+- `layout` — `"accordion"`(기본): children 있으면 클릭 토글·collapse 아이콘·ripple·들여쓰기. `"flat"`: 헤더형(작은 글씨·dimmed·`cursor:default`), children 항상 펼침.
+- `open` — accordion 펼침 상태. children 있을 때 클릭 토글.
+- `selected` — 선택 강조(bold+highlight).
+- `selectedIcon` — children 없을 때 선택 색 아이콘 표시.
+- `readonly` — 클릭 토글·ripple 비활성.
 
-### `SdGap` — `<sd-gap>`
+### `SdGap` (`sd-gap`)
 
 ```ts
 class SdGap {
-  height: InputSignal<"xxs"|"xs"|"sm"|"default"|"lg"|"xl"|"xxl" | undefined>;
+  height: InputSignal<GapSize | undefined>;
   heightPx: InputSignal<number | undefined>;
-  width: InputSignal<"xxs"|"xs"|"sm"|"default"|"lg"|"xl"|"xxl" | undefined>;
+  width: InputSignal<GapSize | undefined>;
   widthPx: InputSignal<number | undefined>;
   widthEm: InputSignal<number | undefined>;
 }
+// GapSize = "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl"
 ```
 
-- `height` — CSS gap token height를 host data attribute로 적용한다.
-- `heightPx` — pixel height style.
-- `width` — CSS gap token width를 host data attribute로 적용한다.
-- `widthPx` — pixel width style.
-- `widthEm` — em width style.
-- display — width 계열 값이 있으면 inline-block, height 계열만 있으면 block, width/height 값 중 0이 있으면 none.
+빈 간격 요소. named 토큰(`--gap-*`) 또는 px/em으로 크기.
 
-### `SdPagination` — `<sd-pagination>`
+- `height`/`width` — `--gap-{key}` CSS 변수 크기(7단계).
+- `heightPx`/`widthPx`/`widthEm` — 정확한 px/em 크기.
+- display — width 입력이 있으면 `inline-block`(가로 간격), height 입력만 있으면 `block`(세로 간격), px/em이 `0` 이면 `none`(숨김).
+
+### `SdPagination` (`sd-pagination`)
 
 ```ts
 class SdPagination {
-  currentPage: ModelSignal<number>;
-  totalPageCount: InputSignal<number>;
-  visiblePageCount: InputSignal<number>;
+  currentPage: ModelSignal<number>; // default 0, 0-based
+  totalPageCount: InputSignal<number>; // default 0
+  visiblePageCount: InputSignal<number>; // default 10
 }
 ```
 
-- `currentPage` — 0-base 현재 page model.
-- `totalPageCount` — 전체 page 수. 0이면 표시 page와 prev/next가 비활성이다.
-- `visiblePageCount` — 한 그룹에 보여줄 page 번호 수. 기본 10.
-- 이동 동작 — first/last는 0/`totalPageCount - 1`, prev/next group은 group index 기준으로 `visiblePageCount` 단위 이동한다.
+- `currentPage` — **0-based** 현재 페이지(표시는 +1). 페이지 변경은 output이 아니라 이 model 양방향 바인딩으로 전달.
+- `totalPageCount` — 총 페이지 수. `0` 이면 페이지 미표시·prev/next 비활성.
+- `visiblePageCount` — 한 그룹에 보일 페이지 번호 수(기본 10).
+- 메서드 — `goToPage`/`goToNextGroup`/`goToPrevGroup`/`goToFirst`/`goToLast` 가 `currentPage.set` 호출.

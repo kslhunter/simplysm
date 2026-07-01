@@ -283,7 +283,7 @@ describe("library-build.worker startWatch()", () => {
 
     await onChangeCallback([{ event: "change", path: "/pkg/src/index.ts" }]);
 
-    expect(mockSend).toHaveBeenCalledWith("error", { message: "tsc crash" });
+    expect(mockSend).toHaveBeenCalledWith("error", expect.objectContaining({ message: "tsc crash" }));
   });
 
   // Acceptance: Watches workspace dependency source directories

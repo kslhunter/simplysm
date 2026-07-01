@@ -11,15 +11,15 @@ export interface DepsResult {
 }
 
 /**
- * package.json#workspaces 기반으로 packages/ 패키지의 name → 상대 디렉토리 맵을 구성한다.
- * tests/ 패키지는 제외된다.
+ * package.json#workspaces 기반으로 packages/(배포 대상) 패키지의 name → 상대 디렉토리 맵을 구성한다.
+ * packages/ 가 아닌 워크스페이스(tests/·plugins/ 등)는 제외된다.
  * 예: "@simplysm/core-node" → "packages/core-node"
  */
 function buildWorkspacePkgMap(cwd: string): Map<string, string> {
   const map = new Map<string, string>();
   const wsPkgs = discoverWorkspacePackages(cwd);
   for (const [, relDir] of wsPkgs) {
-    if (relDir.startsWith("tests/")) continue;
+    if (!relDir.startsWith("packages/")) continue;
     const pkgJsonPath = pathx.posix(path.join(cwd, relDir, "package.json"));
     if (!fsx.existsSync(pkgJsonPath)) continue;
     const pkgJson = fsx.readJsonSync<{ name: string }>(pkgJsonPath);

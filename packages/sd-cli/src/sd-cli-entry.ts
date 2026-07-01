@@ -12,7 +12,6 @@ import { runInit } from "./commands/init/init";
 import { runInitClient } from "./commands/init/init-client";
 import { runPublish } from "./commands/publish/publish-command";
 import { runReplaceDeps } from "./commands/replace-deps";
-import { runReinstall } from "./commands/reinstall";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -284,14 +283,6 @@ export function createCliParser(argv: string[]): Argv {
         await runReplaceDeps({
           options: args.opt,
         });
-      },
-    )
-    .command(
-      "reinstall",
-      "Clean reinstall: delete node_modules/lock/dist/.cache then reinstall with build approval",
-      (cmd) => cmd.version(false).hide("help"),
-      async () => {
-        await runReinstall();
       },
     )
     .command(

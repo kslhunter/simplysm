@@ -31,7 +31,8 @@
     "postinstall": "npx -y skills add angular/skills --skill angular-developer -a claude-code -y && playwright-cli install --skills && playwright install chromium"
   },
   "devDependencies": {
-    "@playwright/cli": "^0.1.14",
+    "@playwright/cli": "^0.1.15",
+    "@simplysm/sd-cli": "workspace:*",
     "@types/node": "^24.13.2",
     "@vitest/browser-playwright": "^4.1.9",
     "@vitest/coverage-v8": "^4.1.9",
@@ -41,7 +42,7 @@
     "prettier": "^3.9.4",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
-    "vite": "^8.1.1",
+    "vite": "^8.1.2",
     "vitest": "^4.1.9"
   }
 }

@@ -5,11 +5,16 @@ import path from "path";
 import { collectDeps } from "../../../src/deps/replace-deps/collect-deps";
 import { pathx } from "@simplysm/core-node";
 
-describe("collectDeps — tests/ 패키지 제외", () => {
+describe("collectDeps — packages/ 외 워크스페이스 제외", () => {
   let tmpDir: string;
 
   beforeEach(() => {
     tmpDir = pathx.posix(fs.mkdtempSync(path.join(os.tmpdir(), "sd-cli-test-")));
+    // 워크스페이스 루트 선언 (discoverWorkspacePackages는 package.json#workspaces 기반)
+    fs.writeFileSync(
+      pathx.posix(path.join(tmpDir, "package.json")),
+      JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*", "plugins/*"] }),
+    );
   });
 
   afterEach(() => {
@@ -58,5 +63,15 @@ describe("collectDeps — tests/ 패키지 제외", () => {
 
     expect(result.workspaceDeps).toContain("core-common");
     expect(result.workspaceDeps).not.toContain("orm");
+  });
+
+  // Scenario: plugins/ 패키지도 packages/ 가 아니므로 workspaceDeps에서 제외된다
+  it("dependency에 plugins/ 패키지가 있어도 workspaceDeps에서 무시한다", () => {
+    createPkg("packages/my-lib", "@test/my-lib", { "@test/sd": "workspace:*" });
+    createPkg("plugins/sd", "@test/sd");
+
+    const result = collectDeps(pathx.posix(path.join(tmpDir, "packages/my-lib")), tmpDir);
+
+    expect(result.workspaceDeps).not.toContain("sd");
   });
 });

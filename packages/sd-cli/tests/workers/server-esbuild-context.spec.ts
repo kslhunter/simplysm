@@ -121,9 +121,10 @@ describe("rebuild", () => {
       warnings: undefined,
     });
     expect(getMetafile()).toBe(mockMetafile);
-    expect(writeChangedOutputFiles).toHaveBeenCalledWith([
-      { path: "/dist/main.js", text: "export {}" },
-    ]);
+    expect(writeChangedOutputFiles).toHaveBeenCalledWith(
+      [{ path: "/dist/main.js", text: "export {}" }],
+      { rewriteJsExtensions: false },
+    );
   });
 
   it("returns error result on esbuild errors", async () => {

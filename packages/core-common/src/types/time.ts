@@ -57,7 +57,10 @@ export class Time {
    * @throws ArgumentError 지원하지 않는 형식인 경우
    */
   static parse(str: string): Time {
-    const match1 = /(AM|PM) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/i.exec(str);
+    // 초는 선택적 (예: 'PM 3:30' — toFormatString('tt hh:mm') 과 왕복 대칭)
+    const match1 = /(AM|PM) ([0-9]{1,2}):([0-9]{1,2})(?::([0-9]{1,2})(?:\.([0-9]{1,3}))?)?$/i.exec(
+      str,
+    );
     if (match1 != null) {
       const rawHour = Number(match1[2]);
       const isPM = match1[1].toUpperCase() === "PM";
@@ -65,18 +68,19 @@ export class Time {
       return new Time(
         hour,
         Number(match1[3]),
-        Number(match1[4]),
-        Number(match1[6] ? match1[6].padEnd(3, "0") : "0"),
+        match1[4] ? Number(match1[4]) : 0,
+        Number(match1[5] ? match1[5].padEnd(3, "0") : "0"),
       );
     }
 
-    const match2 = /([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/.exec(str);
+    // 초는 선택적 (예: '10:30' — toFormatString('HH:mm') 과 왕복 대칭)
+    const match2 = /([0-9]{1,2}):([0-9]{1,2})(?::([0-9]{1,2})(?:\.([0-9]{1,3}))?)?$/.exec(str);
     if (match2 != null) {
       return new Time(
         Number(match2[1]),
         Number(match2[2]),
-        Number(match2[3]),
-        Number(match2[5] ? match2[5].padEnd(3, "0") : "0"),
+        match2[3] ? Number(match2[3]) : 0,
+        Number(match2[4] ? match2[4].padEnd(3, "0") : "0"),
       );
     }
 
@@ -96,7 +100,7 @@ export class Time {
     }
 
     throw new ArgumentError(
-      `시간 형식 파싱 실패. 지원 형식: 'HH:mm:ss', 'HH:mm:ss.fff', 'AM/PM HH:mm:ss', ISO 8601`,
+      `시간 형식 파싱 실패. 지원 형식: 'HH:mm[:ss[.fff]]', 'AM/PM HH:mm[:ss[.fff]]', ISO 8601`,
       { input: str },
     );
   }

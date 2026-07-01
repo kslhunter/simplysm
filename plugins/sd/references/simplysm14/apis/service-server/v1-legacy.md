@@ -38,15 +38,14 @@ interface V1AutoUpdateMethods {
 ```
 
 - `getLastVersion(platform)` — `SdAutoUpdateService.getLastVersion` 명령 fallback에서 호출되는 함수.
-- `platform: string` — V1 요청 `params[0]`에서 꺼내 전달되는 플랫폼 값.
-- 반환 `Promise<unknown> | unknown` — 결과가 `success` 응답 body로 전송된다.
+  - `platform: string` — V1 요청 `params[0]`에서 꺼내 전달되는 플랫폼 값.
+  - 반환 `Promise<unknown> | unknown` — 결과가 `success` 응답 body로 전송된다.
 
 ## V1RequestHandlerResult / V1RequestHandlerContext / V1RequestHandler
 
 ```ts
 type V1RequestHandlerResult =
-  | { handled: true; state?: V1Response["state"]; body: unknown }
-  | { handled: false };
+  { handled: true; state?: V1Response["state"]; body: unknown } | { handled: false };
 
 interface V1RequestHandlerContext {
   request: V1Request;
@@ -63,7 +62,7 @@ type V1RequestHandler =
 - `body: unknown` — `handled: true` 응답 body.
 - `handled: false` — 이 핸들러가 처리하지 않았음을 뜻한다. 다음 핸들러 또는 fallback으로 넘어간다.
 - `request: V1Request` — 현재 레거시 요청 원문.
-- `serviceContext: ServiceContext` — 핸들러가 사용할 서비스 컨텍스트. 핸들러가 있는데 컨텍스트가 없으면 실행 중 오류가 난다.
+- `serviceContext: ServiceContext` — 핸들러가 쓸 서비스 컨텍스트. 핸들러가 있는데 컨텍스트가 없으면 실행 중 오류가 난다.
 - `V1RequestHandler` — 동기 또는 비동기 핸들러 함수. 배열 순서대로 호출된다.
 
 ## V1ConnectionOptions
@@ -80,14 +79,11 @@ interface V1ConnectionOptions {
 ```
 
 - `serviceContext?: ServiceContext` — 모든 요청에서 공유할 고정 컨텍스트.
-- `serviceContextFactory?: (request: V1Request) => ServiceContext` — 요청마다 컨텍스트를 만들 함수. 지정되면 `serviceContext`보다 우선한다.
-- `request: V1Request` — 컨텍스트 생성 기준이 되는 현재 요청.
+- `serviceContextFactory?: (request) => ServiceContext` — 요청마다 컨텍스트를 만들 함수. 지정되면 `serviceContext`보다 우선한다. 요청별 `clientName`을 컨텍스트에 반영할 때 쓴다.
 - `handlers?: V1RequestHandler[]` — 커스텀 요청 핸들러 목록. 첫 `handled: true`에서 순회가 멈춘다.
 - `autoUpdateMethods?: V1AutoUpdateMethods` — 자동업데이트 fallback에 쓸 고정 구현.
-- `autoUpdateMethodsFactory?: (ctx: V1RequestHandlerContext) => V1AutoUpdateMethods` — 자동업데이트 fallback 구현을 요청 컨텍스트로 만들 함수. 지정되면 `autoUpdateMethods` 대신 호출된다.
-- `ctx: V1RequestHandlerContext` — fallback 구현 생성에 전달되는 요청과 서비스 컨텍스트.
-- `clientNameSetter?: (clientName: string | undefined) => void` — 각 메시지의 `clientName`을 외부 상태에 반영할 콜백.
-- `clientName: string | undefined` — 현재 V1 요청의 클라이언트 이름.
+- `autoUpdateMethodsFactory?: (ctx) => V1AutoUpdateMethods` — fallback 구현을 요청 컨텍스트로 만들 함수. 지정되면 `autoUpdateMethods` 대신 호출된다.
+- `clientNameSetter?: (clientName) => void` — 각 메시지의 `clientName`을 외부 상태에 반영할 콜백.
 
 ## handleV1Connection
 
@@ -105,8 +101,7 @@ function handleV1Connection(socket: WebSocket, options: V1ConnectionOptions): vo
 - `clientNameSetter?: (clientName) => void` — 첫 overload에서 요청별 `clientName` 통지에 쓰인다.
 - `options: V1ConnectionOptions` — 핸들러·컨텍스트·fallback factory를 포함하는 상세 설정.
 - overload 분기 — 두 번째 인자에 `getLastVersion` 키가 있으면 `V1AutoUpdateMethods`, 아니면 `V1ConnectionOptions`로 처리한다.
-- 메시지 처리 순서 — JSON parse → `clientNameSetter` 호출 → serviceContext 선택 → custom handlers 실행 → `SdAutoUpdateService.getLastVersion` fallback → 미처리 오류 응답.
-- serviceContext 선택 — `serviceContextFactory?.(request)` 결과가 있으면 쓰고, 없으면 `serviceContext`를 쓴다.
+- 메시지 처리 순서 — JSON parse → `clientNameSetter` 호출 → serviceContext 선택(`serviceContextFactory?.(request)` 우선, 없으면 `serviceContext`) → custom handlers 실행 → `SdAutoUpdateService.getLastVersion` fallback → 미처리 오류 응답.
 - custom handlers — `handlers ?? []`를 앞에서부터 호출한다. `handled: true`면 `state ?? "success"`와 `body`로 응답하고 종료한다.
 - 자동업데이트 fallback — `command === "SdAutoUpdateService.getLastVersion"`일 때만 실행한다. `autoUpdateMethodsFactory`가 있으면 컨텍스트로 만들고, 없으면 `autoUpdateMethods`를 쓴다.
 - 미처리 응답 — `state: "error"`, body `{ message: "앱 업그레이드가 필요합니다.", code: "UPGRADE_REQUIRED" }`를 보낸다.
