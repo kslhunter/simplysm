@@ -22,7 +22,7 @@
     },
     "packages/angular": {
       "name": "@simplysm/angular",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@angular/common": "^22.0.4",
         "@angular/core": "^22.0.4",
@@ -61,7 +61,7 @@
     },
     "packages/capacitor-plugin-auto-update": {
       "name": "@simplysm/capacitor-plugin-auto-update",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/capacitor-plugin-file-system": "workspace:*",
         "@simplysm/core-browser": "workspace:*",
@@ -80,7 +80,7 @@
     },
     "packages/capacitor-plugin-file-system": {
       "name": "@simplysm/capacitor-plugin-file-system",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-browser": "workspace:*",
         "@simplysm/core-common": "workspace:*",
@@ -94,7 +94,7 @@
     },
     "packages/capacitor-plugin-intent": {
       "name": "@simplysm/capacitor-plugin-intent",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
       },
@@ -107,7 +107,7 @@
     },
     "packages/capacitor-plugin-usb-storage": {
       "name": "@simplysm/capacitor-plugin-usb-storage",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-browser": "workspace:*",
         "@simplysm/core-common": "workspace:*",
@@ -121,7 +121,7 @@
     },
     "packages/core-browser": {
       "name": "@simplysm/core-browser",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "sanitize-filename": "^1.6.4",
@@ -130,7 +130,7 @@
     },
     "packages/core-common": {
       "name": "@simplysm/core-common",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@zip.js/zip.js": "^2.8.26",
         "consola": "^3.4.2",
@@ -143,7 +143,7 @@
     },
     "packages/core-node": {
       "name": "@simplysm/core-node",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "chokidar": "^5.0.0",
@@ -158,7 +158,7 @@
     },
     "packages/excel": {
       "name": "@simplysm/excel",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "mime": "^4.1.0",
@@ -170,7 +170,7 @@
     },
     "packages/lint": {
       "name": "@simplysm/lint",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@angular-eslint/utils": "^22.0.0",
         "@angular/compiler": "^22.0.4",
@@ -191,7 +191,7 @@
     },
     "packages/orm-common": {
       "name": "@simplysm/orm-common",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
       },
@@ -201,7 +201,7 @@
     },
     "packages/orm-node": {
       "name": "@simplysm/orm-node",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "@simplysm/orm-common": "workspace:*",
@@ -230,7 +230,7 @@
     },
     "packages/sd-cli": {
       "name": "@simplysm/sd-cli",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "bin": {
         "sd-cli": "./dist/sd-cli.js",
       },
@@ -276,7 +276,7 @@
     },
     "packages/service-client": {
       "name": "@simplysm/service-client",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "@simplysm/orm-common": "workspace:*",
@@ -295,7 +295,7 @@
     },
     "packages/service-common": {
       "name": "@simplysm/service-common",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "@simplysm/orm-common": "workspace:*",
@@ -306,7 +306,7 @@
     },
     "packages/service-server": {
       "name": "@simplysm/service-server",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@fastify/cors": "^11.2.0",
         "@fastify/helmet": "^13.0.2",
@@ -334,7 +334,7 @@
     },
     "packages/storage": {
       "name": "@simplysm/storage",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@simplysm/core-common": "workspace:*",
         "basic-ftp": "^6.0.1",
@@ -347,7 +347,7 @@
     },
     "plugins/sd": {
       "name": "@simplysm/sd",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@types/bun": "^1.3.14",
         "@types/node": "^24.13.2",
@@ -361,7 +361,7 @@
     },
     "plugins/sd-wiki": {
       "name": "@simplysm/sd-wiki",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@types/bun": "^1.3.14",
         "@types/node": "^24.13.2",
@@ -372,7 +372,7 @@
     },
     "tests/orm": {
       "name": "@simplysm-test/orm",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@simplysm/orm-common": "workspace:*",
         "@simplysm/orm-node": "workspace:*",
@@ -387,7 +387,7 @@
     },
     "tests/sd-cli-client": {
       "name": "@simplysm-test/sd-cli-client",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@types/node": "^24.13.2",
         "esbuild": "^0.28.1",
@@ -395,7 +395,7 @@
     },
     "tests/sd-cli-server": {
       "name": "@simplysm-test/sd-cli-server",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@types/node": "^24.13.2",
         "esbuild": "^0.28.1",
@@ -403,7 +403,7 @@
     },
     "tests/service": {
       "name": "@simplysm-test/service",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@simplysm/core-common": "workspace:*",
         "@simplysm/service-client": "workspace:*",
@@ -416,7 +416,7 @@
     },
     "tests/service-server-acme": {
       "name": "@simplysm-test/service-server-acme",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "devDependencies": {
         "@simplysm/service-server": "workspace:*",
         "execa": "^9.6.1",
@@ -424,7 +424,7 @@
     },
     "tests/ssg": {
       "name": "@simplysm-test/ssg",
-      "version": "14.1.9",
+      "version": "14.1.11",
       "dependencies": {
         "@angular/common": "^22.0.4",
         "@angular/compiler": "^22.0.4",
