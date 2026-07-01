@@ -1,13 +1,13 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildWikiReferenceContext } from "../shared/reference-wiki.ts";
+import { buildRulesReferenceContext } from "../shared/reference-rules.ts";
 import { readStdinJsonRecord } from "../shared/wiki-util.ts";
 
 async function main(): Promise<void> {
   try {
     const data = await readStdinJsonRecord();
     const pluginRoot = resolvePluginRoot(data);
-    const context = await buildWikiReferenceContext({ pluginRoot });
+    const context = await buildRulesReferenceContext({ pluginRoot });
     if (context) process.stdout.write(context);
   } catch {
     // SessionStart context 주입 실패는 세션 시작을 막지 않습니다.

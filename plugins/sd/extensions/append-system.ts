@@ -1,18 +1,17 @@
-import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { stripFrontmatter } from "../shared/strip-frontmatter.ts";
+import { buildRulesReferenceContext } from "../shared/reference-rules.ts";
 
-const appendSystemPath = join(dirname(fileURLToPath(import.meta.url)), "../output-styles/sd.md");
+const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 export function registerAppendSystem(pi: ExtensionAPI) {
-  pi.on("before_agent_start", (event) => {
-    const appendSystemPrompt = stripFrontmatter(readFileSync(appendSystemPath, "utf8")).trim();
-    if (!appendSystemPrompt || event.systemPrompt.includes(appendSystemPrompt)) return;
+  pi.on("before_agent_start", async (event) => {
+    const rulesContext = await buildRulesReferenceContext({ pluginRoot: PLUGIN_ROOT });
+    if (!rulesContext || event.systemPrompt.includes(rulesContext)) return;
 
     return {
-      systemPrompt: `${event.systemPrompt}\n\n${appendSystemPrompt}`,
+      systemPrompt: `${event.systemPrompt}\n\n${rulesContext}`,
     };
   });
 }

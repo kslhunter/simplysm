@@ -2,7 +2,7 @@
  *
  * 원격 위키에서 ROOT MAP(최상위 라우팅 목록)을 받아 주입. 미인증·만료면 백그라운드
  * 로그인을 wiki-login 에 위임한 뒤 무주입 fail-open. 인증·네트워크·서비스 코어(wiki-service)에
- * 의존하는 동적 주입 — 의존이 전혀 다른 정적 reference 주입(session-start-reference-wiki.ts)과 별개
+ * 의존하는 동적 주입 — 의존이 전혀 다른 정적 rules 주입(session-start-reference-rules.ts)과 별개
  * 파일·별개 SessionStart command 로 분리돼 있다.
  *
  * 출력은 plain stdout 으로 그대로 컨텍스트에 주입되므로 진단·에러는 stdout 에 절대

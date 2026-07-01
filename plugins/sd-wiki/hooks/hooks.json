@@ -2,7 +2,6 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "^(startup|resume|clear|compact)$",
         "hooks": [
           {
             "type": "command",
@@ -10,7 +9,7 @@
           },
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-wiki.ts\""
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\""
           }
         ]
       }
