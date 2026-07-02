@@ -1,6 +1,6 @@
 # config-loader 개발 분석서 (예시)
 
-> sd-spec 스킬이 산출하는 `spec.md` 의 풀 example.
+> sd-spec §별 본문의 형식 모범. 실제 산출물은 spec bundle 로, 여기의 각 § 는 하위 page 로 분리된다(§1·§8·§9 는 루트 `spec.md`, §2~§7 은 각 page) — 이 파일은 그 page 본문의 형식 모범으로만 참조한다.
 > 가상의 작은 라이브러리 — 환경별 설정을 파일 + 환경변수에서 병합해 로드. kind=api·infra 중심. 다른 kind(doc-section·workflow-step)도 같은 슬롯 세트를 따름.
 
 ## 1. 개요
@@ -29,6 +29,7 @@
 관련 섹션: [단위.loadConfig], [단위.defineSchema], [타입.ConfigSchema]
 
 흐름:
+
 1. 앱이 스키마를 `defineSchema` 로 선언.
 2. 부팅 진입점에서 `loadConfig(schema, options)` 1회 호출.
 3. 병합·검증된 설정 객체 수령. 검증 실패 시 `ConfigError` throw 로 부팅 중단.
@@ -51,14 +52,16 @@ const config = loadConfig(schema, { env: "production" });
 
 ## 4. 산출 단위
 
-| §   | 이름 | kind |
-| --- | ---- | ---- |
-| 4.1 | loadConfig | api |
-| 4.2 | defineSchema | api |
-| 4.3 | ConfigError | api |
-| 4.4 | 우선순위 병합 규칙 | infra |
+| §   | 이름               | kind  | 구현   |
+| --- | ------------------ | ----- | ------ |
+| 4.1 | loadConfig         | api   | [구현] |
+| 4.2 | defineSchema       | api   | [구현] |
+| 4.3 | ConfigError        | api   | [구현] |
+| 4.4 | 우선순위 병합 규칙 | infra |        |
 
 #### 4.1 loadConfig (kind: api)
+
+관련 섹션: [단위.defineSchema], [단위.ConfigError], [단위.우선순위 병합 규칙], [외부 의존.파일시스템]
 
 - 목적: 스키마 + 옵션을 받아 병합·검증된 설정 객체를 동기로 반환.
 - 인터페이스·계약: `loadConfig(schema: Schema, options?: [타입.LoadOptions]): InferredConfig`. 반환은 스키마에서 추론된 타입 — 선택 키는 `T | undefined`. 검증 실패 시 [단위.ConfigError] throw.
@@ -88,6 +91,8 @@ const config = loadConfig(schema, { env: "production" });
 
 #### 4.4 우선순위 병합 규칙 (kind: infra)
 
+관련 섹션: [단위.loadConfig], [공통 정의.병합 우선순위]
+
 - 목적: 여러 소스의 병합 우선순위를 한 곳에 고정.
 - 인터페이스·계약: 외부 노출 없음 — [단위.loadConfig] 내부 규칙. 적용 범위 = 모든 로드.
 - 동작·내용: 우선순위(높음→낮음): 환경변수 > 환경별 파일(`config.<env>.json`) > 기본 파일(`config.json`). 상위 소스의 키가 하위를 덮음. (근거: [공통 정의.병합 우선순위])
@@ -113,8 +118,8 @@ const config = loadConfig(schema, { env: "production" });
 
 필드:
 
-| 필드 | 타입 | 필수 | 비고 |
-| ---- | ---- | ---- | ---- |
+| 필드  | 타입                        | 필수 | 비고                                                                     |
+| ----- | --------------------------- | ---- | ------------------------------------------------------------------------ |
 | shape | `Record<string, TypeToken>` | 필수 | 키별 타입 토큰. `TypeToken` = `"number"｜"string"｜"boolean"`(+`?` 선택) |
 
 제약: shape 키는 유일. 선택 키(`?`)는 추론 타입에서 `T｜undefined`.
@@ -123,16 +128,18 @@ const config = loadConfig(schema, { env: "production" });
 
 필드:
 
-| 필드 | 타입 | 필수 | 비고 |
-| ---- | ---- | ---- | ---- |
-| env | `string` | 선택 | 환경 이름. 미지정 시 `process.env.NODE_ENV`, 그것도 없으면 환경별 파일 소스 생략 |
-| dir | `string` | 선택 | 설정 파일 디렉터리. 미지정 시 cwd |
+| 필드 | 타입     | 필수 | 비고                                                                             |
+| ---- | -------- | ---- | -------------------------------------------------------------------------------- |
+| env  | `string` | 선택 | 환경 이름. 미지정 시 `process.env.NODE_ENV`, 그것도 없으면 환경별 파일 소스 생략 |
+| dir  | `string` | 선택 | 설정 파일 디렉터리. 미지정 시 cwd                                                |
 
 ## 7. 외부 의존·인터페이스
 
 ### 7.1 [외부 의존.파일시스템]
 
 설계 자연 도출 — [단위.loadConfig] 가 설정 파일을 동기 읽기.
+
+관련 섹션: [단위.loadConfig]
 
 - 대상: 로컬 파일시스템 (Node `fs`).
 - 방향·성격: 읽기 (동기).
@@ -141,13 +148,20 @@ const config = loadConfig(schema, { env: "production" });
   - 파일 부재 → 해당 소스 생략(에러 아님).
   - 권한·IO 오류 → `ConfigError(reason: "io")` throw, 부팅 중단.
 
-## 8. 본문 외 확정 사항
+## 8. 결정 맥락
 
-- 2026-06-26: 비동기 설정 소스 — 안 함
-  - 근거: §3.2 동기 로드 요구 (부팅 단순화)
-  - 영향: 원격 설정 서버 연동은 범위 외
+### 비동기 설정 소스 — 안 함
 
-- 2026-06-26 [제외]: 설정 핫 리로드
-  - 근거: 현재 범위 아님
-  - 후속 처리: 별도 spec
-  - 자료 위치: 기획 메모 (가상)
+- 현재 결정: 동기 API 만. 비동기 소스(원격 설정 서버 등) 미지원.
+- 근거: §3.2 동기 로드 요구 (부팅 단순화 — 소비자 요청).
+- 검토 경계: 로컬 파일·환경변수만 검토. 원격·네트워크 소스는 논의 안 함 — 후속 LLM 이 "비동기가 낫지 않나" 재론하기 전에, 아무도 검토 안 한 영역임을 인지할 것.
+
+### [제외] 설정 핫 리로드
+
+- 후속 처리: 별도 spec.
+- 근거: 현재 범위 아님.
+- 자료 위치: 기획 메모 (가상).
+
+## 9. 작업 메모
+
+(작업 완료 — 비어 있음. 진행 중에만 전역 진행 방법·미래 예약을 채우고 소진 시 제거.)
