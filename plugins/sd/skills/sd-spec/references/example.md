@@ -1,6 +1,6 @@
 # config-loader 개발 분석서 (예시)
 
-> sd-spec §별 본문의 형식 모범. 실제 산출물은 spec bundle 로, 여기의 각 § 는 하위 page 로 분리된다(§1·§8·§9 는 루트 `spec.md`, §2~§7 은 각 page) — 이 파일은 그 page 본문의 형식 모범으로만 참조한다.
+> sd-spec §별 본문의 형식 모범. 실제 산출물은 spec bundle 로, 여기의 각 § 는 하위 page 로 분리된다(§1·§8·§9 는 루트 `spec.md`, §2-§7 은 각 page) — 이 파일은 그 page 본문의 형식 모범으로만 참조한다.
 > 가상의 작은 라이브러리 — 환경별 설정을 파일 + 환경변수에서 병합해 로드. kind=api·infra 중심. 다른 kind(doc-section·workflow-step)도 같은 슬롯 세트를 따름.
 
 ## 1. 개요
