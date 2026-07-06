@@ -368,6 +368,10 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
         const inputEl = this._inputElRef()?.nativeElement;
         if (inputEl == null) return;
 
+        // IME 조합 중에는 DOM 을 되쓰지 않는다. 되쓰면 진행 중 조합이 깨진다.
+        // 조합이 끝나면 onCompositionEnd → value.set 이 controlValue 를 바꿔 effect 가 다시 돌아 최종값을 반영한다.
+        if (this._composing) return;
+
         // 편집(포커스) 중이라도 변경 origin 을 구분한다.
         // 사용자 입력이 만든 DOM(정규화 차이·진행 중 입력 포함)은 보호하고,
         // 모델만 외부에서 바뀐 경우(프로그래밍적 리셋·prefill·표시옵션 변경)는 되써서 반영한다.
@@ -437,7 +441,8 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
 
   onInput(event: Event): void {
     // 조합 중 input 은 무시하고, 완성 시 onCompositionEnd 에서 한 번만 반영
-    if (this._composing) return;
+    // isComposing 은 compositionstart 가 늦거나 누락된 IME 에서도 브라우저가 조합 구간 input 에 직접 실어주는 신호
+    if ((event as InputEvent).isComposing || this._composing) return;
     this._applyInput(event.target as HTMLInputElement);
   }
 
@@ -461,6 +466,8 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   onBlur(event: FocusEvent): void {
     // 편집 종료 시 모델 기준값으로 동기화 (number 콤마 포맷 반영, date 미완성 입력 정리)
     // date 미완성 입력은 input.value 가 "" 라 비교 없이 무조건 되써야 남은 세그먼트가 정리됨
+    // compositionend 가 스킵된 채 blur 되면 _composing 이 true 로 고착되므로 여기서 리셋한다.
+    this._composing = false;
     const inputEl = event.target as HTMLInputElement;
     inputEl.value = this.controlValue();
     this._syncNativeValidity(inputEl);

@@ -30,7 +30,7 @@
     "@simplysm/service-common": "workspace:*",
     "acme-client": "^5.4.0",
     "bufferutil": "^4.1.0",
-    "fastify": "^5.9.0",
+    "fastify": "^5.10.0",
     "jose": "^6.2.3",
     "semver": "^7.8.5",
     "utf-8-validate": "^6.0.6",

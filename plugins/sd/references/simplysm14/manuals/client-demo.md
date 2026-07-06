@@ -1,6 +1,6 @@
 # 클라이언트 데모 작성 매뉴얼
 
-`@simplysm/angular` v14 로 spec.md 의 화면 정의 섹션(4번 섹션) 을 **데모** 로 옮길 때의 추가 지침. 컴포넌트 일반 규약(파일명·시그널·DI(의존성 주입)·핸들러·시트·폼·버튼·모달 호출·합성 패턴 등) 은 [client-component.md](./client-component.md) 를 따름. 본 문서는 spec 섹션과 산출물의 매핑 및 데모 한정 패턴만 다룸.
+`@simplysm/angular` v14 로 SI spec(루트 spec-si.md bundle)의 화면 정의 섹션(4번 섹션) 을 **데모** 로 옮길 때의 추가 지침. 컴포넌트 일반 규약(파일명·시그널·DI(의존성 주입)·핸들러·시트·폼·버튼·모달 호출·합성 패턴 등) 은 [client-component.md](./client-component.md) 를 따름. 본 문서는 spec 섹션과 산출물의 매핑 및 데모 한정 패턴만 다룸.
 
 ## 화면 정의 섹션(4번 섹션) 의 화면 유형별 파일 역할
 

@@ -1218,6 +1218,46 @@ describe("D6: IME 조합 입력", () => {
     expect(fixture.componentInstance.value()).toBe("한"); // 완성 시 1회 반영
   });
 
+  it("compositionstart 가 없어도 isComposing input 은 미완성 자모를 흘리지 않는다", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+
+    // compositionstart 없이(모바일·비표준 IME) 브라우저가 isComposing=true 만 실어 보낸 조합 중 input
+    input.value = "ㅎ";
+    input.dispatchEvent(new InputEvent("input", { isComposing: true, bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBeUndefined(); // 조합 중이므로 미반영
+  });
+
+  it("compositionend 없이 blur 되어도 이후 입력이 정상 반영된다 (stuck-true 방지)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
+      .createComponent(SdTextfieldTextTest);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
+
+    // 조합 시작 후 compositionend 없이 blur (조합 취소·포커스 이탈)
+    input.dispatchEvent(new CompositionEvent("compositionstart"));
+    input.value = "ㅎ";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    input.dispatchEvent(new FocusEvent("blur"));
+    fixture.detectChanges();
+
+    // blur 가 _composing 을 리셋했으므로 이후 일반 입력이 먹통 없이 반영
+    input.value = "abc";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe("abc");
+  });
+
   it("조합 없는 일반 입력은 즉시 반영된다 (대조)", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldTextTest] })
       .createComponent(SdTextfieldTextTest);

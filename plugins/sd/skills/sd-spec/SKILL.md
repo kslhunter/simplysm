@@ -18,7 +18,7 @@ description: 라이브러리·API·문서·LLM Skill 등 범용 개발 산출물
 - **폴더**: `.specs/{title}/`.
   - `title`: 사용자와 합의한 산출물명/제목. 한국어·영문·숫자·공백·`_`·`-` 허용. 파일시스템 금지 문자(`\\ / : * ? " < > |`)는 제거하거나 의미가 보존되는 문자로 치환.
   - 같은 `title` 폴더가 이미 있으면 기존 spec bundle 재진입인지, 별도 bundle 생성을 위해 title/suffix(예: `2`, `2차`)를 바꿀지 사용자에게 확인한다.
-  - 루트 파일명은 후속 도구 호환을 위해 `spec.md` 로 유지한다. `index.md` 는 사용하지 않는다.
+  - 루트 파일명은 `spec.md` 다 (SI sd-spec-si 산출 `spec-si.md` 와 구분). `index.md` 는 사용하지 않는다.
 
 ## 산출 단위와 kind
 

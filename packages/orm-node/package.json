@@ -28,7 +28,7 @@
     "mysql2": "^3.22.5",
     "pg": "^8.22.0",
     "pg-copy-streams": "^7.0.0",
-    "tedious": "^19.2.1"
+    "tedious": "^19.2.2"
   },
   "peerDependencies": {
     "mysql2": "^3",
