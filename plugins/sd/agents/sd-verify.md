@@ -1,7 +1,6 @@
 ---
 name: sd-verify
 description: sd-* 스킬의 검증·적대검증 단계 전용 read-only 서브에이전트. 산출물(코드·spec·plan)을 고정 기준과 독립 대조하거나 발견을 반증한다. 호출자가 준 검증 프롬프트를 그대로 수행하고 보고만 한다. 파일 수정 안 함.
-effort: xhigh
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

@@ -4,20 +4,23 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { isRegularFile, pathHash, resolveFileKey } from "./write-hash.ts";
 
+export type FormatterName = "oxfmt" | "prettier";
+
 export interface ResolveWorkspaceRootOptions {
   cwd: string;
   projectDir?: string | undefined;
 }
 
-export interface CollectPrettierFilesOptions {
+export interface CollectFormatterFilesOptions {
   cwd?: string | undefined;
 }
 
-export interface RunPrettierOptions {
+export interface RunFormatterOptions {
   signal?: AbortSignal | undefined;
 }
 
-export interface PrettierRunResult {
+export interface FormatterRunResult {
+  formatter?: FormatterName | undefined;
   files: string[];
   success: boolean;
   code: number;
@@ -27,7 +30,7 @@ export interface PrettierRunResult {
   skippedReason?: string | undefined;
 }
 
-export interface PrettierMarker {
+export interface FormatterMarker {
   workspaceRoot: string;
   filePath: string;
   createdAt: number;
@@ -35,7 +38,7 @@ export interface PrettierMarker {
 }
 
 const PLUGINS_SD_PATH_PARTS = ["plugins", "sd"] as const;
-const PRETTIER_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
+const FORMATTER_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
 const FAILURE_OUTPUT_LIMIT = 4_000;
 
 export async function resolveWorkspaceRoot(
@@ -61,14 +64,14 @@ export function resolvePluginsSdRoot(workspaceRoot: string): string {
   return join(resolve(workspaceRoot), ...PLUGINS_SD_PATH_PARTS);
 }
 
-export function getPrettierMarkerDir(sessionId: string): string {
-  return join(tmpdir(), "simplysm-sd-prettier", pathHash(sessionId));
+export function getFormatterMarkerDir(sessionId: string): string {
+  return join(tmpdir(), "simplysm-sd-formatter", pathHash(sessionId));
 }
 
-export async function collectPluginsSdPrettierFiles(
+export async function collectPluginsSdFormatterFiles(
   workspaceRoot: string,
   inputFilePaths: readonly string[],
-  options: CollectPrettierFilesOptions = {},
+  options: CollectFormatterFilesOptions = {},
 ): Promise<string[]> {
   const pluginsSdRoot = await resolveFileKey(resolvePluginsSdRoot(workspaceRoot));
   const baseDir = resolve(options.cwd ?? workspaceRoot);
@@ -95,14 +98,15 @@ export async function collectPluginsSdPrettierFiles(
   return result;
 }
 
-export async function runPrettier(
+export async function runFormatter(
   workspaceRoot: string,
   files: readonly string[],
-  options: RunPrettierOptions = {},
-): Promise<PrettierRunResult> {
+  options: RunFormatterOptions = {},
+): Promise<FormatterRunResult> {
   const targetFiles = [...new Set(files)].sort();
   if (targetFiles.length === 0) {
     return {
+      formatter: undefined,
       files: [],
       success: true,
       code: 0,
@@ -113,31 +117,34 @@ export async function runPrettier(
     };
   }
 
-  if (!(await hasProjectPrettierDependency(workspaceRoot))) {
+  const formatter = await detectProjectFormatter(workspaceRoot);
+  if (!formatter) {
     return {
+      formatter: undefined,
       files: targetFiles,
       success: true,
       code: 0,
       stdout: "",
       stderr: "",
       skipped: true,
-      skippedReason: "prettier-not-declared",
+      skippedReason: "formatter-not-declared",
     };
   }
 
-  return await new Promise<PrettierRunResult>((resolveResult) => {
+  return await new Promise<FormatterRunResult>((resolveResult) => {
     execFile(
       "bun",
-      ["x", "prettier", "--write", "--ignore-unknown", ...targetFiles],
+      getFormatterArgs(formatter, targetFiles),
       {
         cwd: resolve(workspaceRoot),
         encoding: "utf8",
-        maxBuffer: PRETTIER_MAX_BUFFER_BYTES,
+        maxBuffer: FORMATTER_MAX_BUFFER_BYTES,
         signal: options.signal,
       },
       (error, stdout, stderr) => {
         const code = getExitCode(error);
         resolveResult({
+          formatter,
           files: targetFiles,
           success: code === 0,
           code,
@@ -150,12 +157,12 @@ export async function runPrettier(
   });
 }
 
-export function formatPrettierFailureMessage(
-  result: PrettierRunResult,
-  title = "plugins/sd 자동 Prettier 실패",
+export function formatFailureMessage(
+  result: FormatterRunResult,
+  title = "plugins/sd 자동 포맷 실패",
 ): string {
   const sections = [
-    title,
+    result.formatter ? `${title} (${result.formatter})` : title,
     `종료 코드: ${result.code}`,
     `대상 파일:\n${result.files.map((filePath) => `- ${filePath}`).join("\n") || "- 없음"}`,
   ];
@@ -171,21 +178,39 @@ export function formatPrettierFailureMessage(
   return sections.join("\n\n");
 }
 
-async function hasPluginsSdManifest(workspaceRoot: string): Promise<boolean> {
-  return await isRegularFile(join(workspaceRoot, ...PLUGINS_SD_PATH_PARTS, "package.json"));
+function getFormatterArgs(formatter: FormatterName, targetFiles: readonly string[]): string[] {
+  if (formatter === "oxfmt") {
+    return ["x", "oxfmt", "--no-error-on-unmatched-pattern", ...targetFiles];
+  }
+  return ["x", "prettier", "--write", "--ignore-unknown", ...targetFiles];
 }
 
-async function hasProjectPrettierDependency(workspaceRoot: string): Promise<boolean> {
+async function detectProjectFormatter(workspaceRoot: string): Promise<FormatterName | undefined> {
   const packageJsonPath = join(resolve(workspaceRoot), "package.json");
-  if (!(await isRegularFile(packageJsonPath))) return false;
+  if (!(await isRegularFile(packageJsonPath))) return undefined;
 
   const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as unknown;
   const packageRecord = asRecord(packageJson);
-  if (!packageRecord) return false;
+  if (!packageRecord) return undefined;
 
-  return ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].some(
-    (fieldName) => typeof asRecord(packageRecord[fieldName])?.["prettier"] === "string",
-  );
+  const dependencyFields = [
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "optionalDependencies",
+  ];
+  const hasDependency = (packageName: string): boolean =>
+    dependencyFields.some(
+      (fieldName) => typeof asRecord(packageRecord[fieldName])?.[packageName] === "string",
+    );
+
+  if (hasDependency("oxfmt")) return "oxfmt";
+  if (hasDependency("prettier")) return "prettier";
+  return undefined;
+}
+
+async function hasPluginsSdManifest(workspaceRoot: string): Promise<boolean> {
+  return await isRegularFile(join(workspaceRoot, ...PLUGINS_SD_PATH_PARTS, "package.json"));
 }
 
 function isPathUnder(parentPath: string, childPath: string): boolean {

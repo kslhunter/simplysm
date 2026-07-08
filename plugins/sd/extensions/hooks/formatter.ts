@@ -1,14 +1,14 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
-  collectPluginsSdPrettierFiles,
-  formatPrettierFailureMessage,
+  collectPluginsSdFormatterFiles,
+  formatFailureMessage,
   resolveWorkspaceRoot,
-  runPrettier,
-} from "../../shared/prettier.ts";
+  runFormatter,
+} from "../../shared/formatter.ts";
 
 const pendingFilesByWorkspaceRoot = new Map<string, Set<string>>();
 
-export function registerPrettierHook(pi: ExtensionAPI) {
+export function registerFormatterHook(pi: ExtensionAPI) {
   pi.on("tool_result", async (event, ctx) => {
     if (event.toolName !== "write" && event.toolName !== "edit") return undefined;
     if (event.isError) return undefined;
@@ -20,7 +20,7 @@ export function registerPrettierHook(pi: ExtensionAPI) {
       const workspaceRoot = await resolveWorkspaceRoot({ cwd: ctx.cwd });
       if (!workspaceRoot) return undefined;
 
-      const targetFiles = await collectPluginsSdPrettierFiles(workspaceRoot, [inputPath], {
+      const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [inputPath], {
         cwd: ctx.cwd,
       });
       if (targetFiles.length === 0) return undefined;
@@ -30,7 +30,7 @@ export function registerPrettierHook(pi: ExtensionAPI) {
         pendingFiles.add(filePath);
       }
     } catch (error) {
-      reportPrettierHookError(pi, ctx, "plugins/sd 자동 Prettier 대상 수집 실패", error);
+      reportFormatterHookError(pi, ctx, "plugins/sd 자동 포맷 대상 수집 실패", error);
     }
 
     return undefined;
@@ -41,7 +41,7 @@ export function registerPrettierHook(pi: ExtensionAPI) {
 
     for (const [workspaceRoot, pendingFiles] of pendingFilesByWorkspaceRoot) {
       try {
-        const targetFiles = await collectPluginsSdPrettierFiles(workspaceRoot, [...pendingFiles], {
+        const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [...pendingFiles], {
           cwd: workspaceRoot,
         });
 
@@ -50,20 +50,20 @@ export function registerPrettierHook(pi: ExtensionAPI) {
           continue;
         }
 
-        const result = await runPrettier(workspaceRoot, targetFiles, { signal: ctx.signal });
+        const result = await runFormatter(workspaceRoot, targetFiles, { signal: ctx.signal });
         if (result.success) {
           pendingFilesByWorkspaceRoot.delete(workspaceRoot);
           continue;
         }
 
         pendingFilesByWorkspaceRoot.set(workspaceRoot, new Set(result.files));
-        const message = formatPrettierFailureMessage(result);
-        if (ctx.hasUI) ctx.ui.notify("plugins/sd 자동 Prettier 실패", "error");
+        const message = formatFailureMessage(result);
+        if (ctx.hasUI) ctx.ui.notify("plugins/sd 자동 포맷 실패", "error");
         pi.sendUserMessage(`${message}\n\n위 실패 원인을 수정한 뒤 다시 완료하세요.`, {
           deliverAs: "followUp",
         });
       } catch (error) {
-        reportPrettierHookError(pi, ctx, "plugins/sd 자동 Prettier 실행 실패", error);
+        reportFormatterHookError(pi, ctx, "plugins/sd 자동 포맷 실행 실패", error);
       }
     }
 
@@ -85,7 +85,7 @@ function getInputPath(input: unknown): string | undefined {
   return typeof inputPath === "string" ? inputPath : undefined;
 }
 
-function reportPrettierHookError(
+function reportFormatterHookError(
   pi: ExtensionAPI,
   ctx: {
     hasUI: boolean;

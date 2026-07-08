@@ -9,11 +9,11 @@ import {
   readStdinJson,
 } from "../shared/hook-io.ts";
 import {
-  collectPluginsSdPrettierFiles,
-  getPrettierMarkerDir,
-  type PrettierMarker,
+  collectPluginsSdFormatterFiles,
+  type FormatterMarker,
+  getFormatterMarkerDir,
   resolveWorkspaceRoot,
-} from "../shared/prettier.ts";
+} from "../shared/formatter.ts";
 import { pathHash } from "../shared/write-hash.ts";
 
 async function main(): Promise<void> {
@@ -31,33 +31,33 @@ async function main(): Promise<void> {
     });
     if (!workspaceRoot) return;
 
-    const targetFiles = await collectPluginsSdPrettierFiles(workspaceRoot, [inputFilePath], {
+    const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [inputFilePath], {
       cwd: getCwd(data),
     });
     if (targetFiles.length === 0) return;
 
-    const markerDir = getPrettierMarkerDir(getSessionId(data));
+    const markerDir = getFormatterMarkerDir(getSessionId(data));
     await mkdir(markerDir, { recursive: true });
 
     for (const filePath of targetFiles) {
-      const marker: PrettierMarker = {
+      const marker: FormatterMarker = {
         workspaceRoot,
         filePath,
         createdAt: Date.now(),
         toolName,
       };
-      await writeFile(getPrettierMarkerPath(markerDir, filePath, data), JSON.stringify(marker), {
+      await writeFile(getFormatterMarkerPath(markerDir, filePath, data), JSON.stringify(marker), {
         encoding: "utf8",
         flag: "wx",
       });
     }
   } catch (error) {
-    console.error(`plugins/sd prettier collect failed: ${formatErrorMessage(error)}`);
+    console.error(`plugins/sd formatter collect failed: ${formatErrorMessage(error)}`);
     process.exit(1);
   }
 }
 
-function getPrettierMarkerPath(markerDir: string, filePath: string, data: unknown): string {
+function getFormatterMarkerPath(markerDir: string, filePath: string, data: unknown): string {
   const markerId = getToolUseId(data) || "unknown";
   return join(markerDir, `${pathHash(filePath)}-${pathHash(markerId)}-${randomUUID()}.json`);
 }

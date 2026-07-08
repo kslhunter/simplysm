@@ -193,7 +193,7 @@ spec 본문 수정이 필요한 경우(인라인 `[OPEN]` 해소·섹션 `[OPEN]
 #### 서브에이전트 호출
 
 - 독립 서브에이전트 1개로 펼침.
-- `subagent_type`: `sd:sd-verify` (검증 전용 read-only·xhigh).
+- `subagent_type`: `sd:sd-verify` (검증 전용).
 - 추론·도메인 어휘를 풀어 보고해야 하므로 충분한 능력의 서브에이전트를 씀(검색 전용 에이전트 회피).
 - `description`: `sd-impl spec 대조`.
 - `prompt`: 아래 입력 패키지 (그대로 복사 후 `<…>` 부분만 채움).

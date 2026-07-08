@@ -8,17 +8,17 @@ import {
   readStdinJson,
 } from "../shared/hook-io.ts";
 import {
-  collectPluginsSdPrettierFiles,
-  formatPrettierFailureMessage,
-  getPrettierMarkerDir,
-  type PrettierMarker,
+  collectPluginsSdFormatterFiles,
+  formatFailureMessage,
+  type FormatterMarker,
+  getFormatterMarkerDir,
   resolveWorkspaceRoot,
-  runPrettier,
-} from "../shared/prettier.ts";
+  runFormatter,
+} from "../shared/formatter.ts";
 
-interface PrettierMarkerRecord {
+interface FormatterMarkerRecord {
   markerPath: string;
-  marker: PrettierMarker;
+  marker: FormatterMarker;
 }
 
 async function main(): Promise<void> {
@@ -27,12 +27,12 @@ async function main(): Promise<void> {
   try {
     data = await readStdinJson();
   } catch (error) {
-    console.error(`plugins/sd prettier flush failed: ${formatErrorMessage(error)}`);
+    console.error(`plugins/sd formatter flush failed: ${formatErrorMessage(error)}`);
     process.exit(1);
   }
 
   try {
-    const markerRecords = await readMarkers(getPrettierMarkerDir(getSessionId(data)));
+    const markerRecords = await readMarkers(getFormatterMarkerDir(getSessionId(data)));
     if (markerRecords.length === 0) return;
 
     const workspaceRoot = await resolveWorkspaceRoot({
@@ -40,16 +40,16 @@ async function main(): Promise<void> {
       projectDir: process.env["CLAUDE_PROJECT_DIR"],
     });
     if (!workspaceRoot) {
-      writeStopFailure(data, "plugins/sd 자동 Prettier 실패: 프로젝트 루트를 찾지 못했습니다.");
+      writeStopFailure(data, "plugins/sd 자동 포맷 실패: 프로젝트 루트를 찾지 못했습니다.");
       return;
     }
 
-    const activeMarkerRecords: PrettierMarkerRecord[] = [];
-    const staleMarkerRecords: PrettierMarkerRecord[] = [];
+    const activeMarkerRecords: FormatterMarkerRecord[] = [];
+    const staleMarkerRecords: FormatterMarkerRecord[] = [];
     const targetFileSet = new Set<string>();
 
     for (const markerRecord of markerRecords) {
-      const markerTargetFiles = await collectPluginsSdPrettierFiles(
+      const markerTargetFiles = await collectPluginsSdFormatterFiles(
         workspaceRoot,
         [markerRecord.marker.filePath],
         { cwd: workspaceRoot },
@@ -73,19 +73,19 @@ async function main(): Promise<void> {
     const targetFiles = [...targetFileSet];
     if (targetFiles.length === 0) return;
 
-    const result = await runPrettier(workspaceRoot, targetFiles);
+    const result = await runFormatter(workspaceRoot, targetFiles);
     if (result.success) {
       await cleanupMarkers(activeMarkerRecords);
       return;
     }
 
-    writeStopFailure(data, formatPrettierFailureMessage(result));
+    writeStopFailure(data, formatFailureMessage(result));
   } catch (error) {
-    writeStopFailure(data, `plugins/sd 자동 Prettier 실패: ${formatErrorMessage(error)}`);
+    writeStopFailure(data, `plugins/sd 자동 포맷 실패: ${formatErrorMessage(error)}`);
   }
 }
 
-async function readMarkers(markerDir: string): Promise<PrettierMarkerRecord[]> {
+async function readMarkers(markerDir: string): Promise<FormatterMarkerRecord[]> {
   let entryNames: string[];
   try {
     entryNames = await readdir(markerDir);
@@ -94,7 +94,7 @@ async function readMarkers(markerDir: string): Promise<PrettierMarkerRecord[]> {
     throw error;
   }
 
-  const markerRecords: PrettierMarkerRecord[] = [];
+  const markerRecords: FormatterMarkerRecord[] = [];
   for (const entryName of entryNames) {
     if (!entryName.endsWith(".json")) continue;
 
@@ -105,7 +105,7 @@ async function readMarkers(markerDir: string): Promise<PrettierMarkerRecord[]> {
   return markerRecords;
 }
 
-function parseMarker(payload: unknown, markerPath: string): PrettierMarker {
+function parseMarker(payload: unknown, markerPath: string): FormatterMarker {
   const record = asRecord(payload);
   const workspaceRoot = record?.["workspaceRoot"];
   const filePath = record?.["filePath"];
@@ -118,13 +118,13 @@ function parseMarker(payload: unknown, markerPath: string): PrettierMarker {
     typeof createdAt !== "number" ||
     typeof toolName !== "string"
   ) {
-    throw new Error(`잘못된 plugins/sd Prettier 대기 파일입니다: ${markerPath}`);
+    throw new Error(`잘못된 plugins/sd 포맷 대기 파일입니다: ${markerPath}`);
   }
 
   return { workspaceRoot, filePath, createdAt, toolName };
 }
 
-async function cleanupMarkers(markerRecords: readonly PrettierMarkerRecord[]): Promise<void> {
+async function cleanupMarkers(markerRecords: readonly FormatterMarkerRecord[]): Promise<void> {
   await Promise.all(
     markerRecords.map(async (record) => {
       try {

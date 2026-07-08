@@ -129,7 +129,7 @@ sd-impl 은 외부 영속 산출물(spec)을 비교 기준으로 삼지만, sd-d
 #### 서브에이전트 호출
 
 - 독립 서브에이전트 1개로 펼침.
-- `subagent_type`: `sd:sd-verify` (검증 전용 read-only·xhigh).
+- `subagent_type`: `sd:sd-verify` (검증 전용).
 - 추론·기능 어휘를 풀어 보고해야 하므로 충분한 능력의 서브에이전트를 씀.
 - `description`: `sd-dev 합의 대조`.
 - `prompt`: 아래 입력 패키지 (그대로 복사 후 `<…>` 부분만 채움).

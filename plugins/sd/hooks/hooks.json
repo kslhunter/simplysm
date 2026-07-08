@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/prettier-collect.ts\"",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/formatter-collect.ts\"",
             "timeout": 30
           }
         ]
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/prettier-flush.ts\"",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/formatter-flush.ts\"",
             "timeout": 120
           }
         ]
