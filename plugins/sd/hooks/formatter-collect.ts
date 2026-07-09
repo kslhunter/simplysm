@@ -9,7 +9,7 @@ import {
   readStdinJson,
 } from "../shared/hook-io.ts";
 import {
-  collectPluginsSdFormatterFiles,
+  collectFormatterFiles,
   type FormatterMarker,
   getFormatterMarkerDir,
   resolveWorkspaceRoot,
@@ -25,13 +25,12 @@ async function main(): Promise<void> {
     const inputFilePath = getInputFilePath(data);
     if (!inputFilePath) return;
 
-    const workspaceRoot = await resolveWorkspaceRoot({
+    const workspaceRoot = resolveWorkspaceRoot({
       cwd: getCwd(data),
       projectDir: process.env["CLAUDE_PROJECT_DIR"],
     });
-    if (!workspaceRoot) return;
 
-    const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [inputFilePath], {
+    const targetFiles = await collectFormatterFiles(workspaceRoot, [inputFilePath], {
       cwd: getCwd(data),
     });
     if (targetFiles.length === 0) return;

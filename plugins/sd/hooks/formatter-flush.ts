@@ -8,7 +8,7 @@ import {
   readStdinJson,
 } from "../shared/hook-io.ts";
 import {
-  collectPluginsSdFormatterFiles,
+  collectFormatterFiles,
   formatFailureMessage,
   type FormatterMarker,
   getFormatterMarkerDir,
@@ -35,21 +35,17 @@ async function main(): Promise<void> {
     const markerRecords = await readMarkers(getFormatterMarkerDir(getSessionId(data)));
     if (markerRecords.length === 0) return;
 
-    const workspaceRoot = await resolveWorkspaceRoot({
+    const workspaceRoot = resolveWorkspaceRoot({
       cwd: getCwd(data),
       projectDir: process.env["CLAUDE_PROJECT_DIR"],
     });
-    if (!workspaceRoot) {
-      writeStopFailure(data, "plugins/sd 자동 포맷 실패: 프로젝트 루트를 찾지 못했습니다.");
-      return;
-    }
 
     const activeMarkerRecords: FormatterMarkerRecord[] = [];
     const staleMarkerRecords: FormatterMarkerRecord[] = [];
     const targetFileSet = new Set<string>();
 
     for (const markerRecord of markerRecords) {
-      const markerTargetFiles = await collectPluginsSdFormatterFiles(
+      const markerTargetFiles = await collectFormatterFiles(
         workspaceRoot,
         [markerRecord.marker.filePath],
         { cwd: workspaceRoot },
@@ -81,7 +77,7 @@ async function main(): Promise<void> {
 
     writeStopFailure(data, formatFailureMessage(result));
   } catch (error) {
-    writeStopFailure(data, `plugins/sd 자동 포맷 실패: ${formatErrorMessage(error)}`);
+    writeStopFailure(data, `자동 포맷 실패: ${formatErrorMessage(error)}`);
   }
 }
 
@@ -118,7 +114,7 @@ function parseMarker(payload: unknown, markerPath: string): FormatterMarker {
     typeof createdAt !== "number" ||
     typeof toolName !== "string"
   ) {
-    throw new Error(`잘못된 plugins/sd 포맷 대기 파일입니다: ${markerPath}`);
+    throw new Error(`잘못된 포맷 대기 파일입니다: ${markerPath}`);
   }
 
   return { workspaceRoot, filePath, createdAt, toolName };

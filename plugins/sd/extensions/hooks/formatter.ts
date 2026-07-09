@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
-  collectPluginsSdFormatterFiles,
+  collectFormatterFiles,
   formatFailureMessage,
   resolveWorkspaceRoot,
   runFormatter,
@@ -17,10 +17,9 @@ export function registerFormatterHook(pi: ExtensionAPI) {
     if (!inputPath) return undefined;
 
     try {
-      const workspaceRoot = await resolveWorkspaceRoot({ cwd: ctx.cwd });
-      if (!workspaceRoot) return undefined;
+      const workspaceRoot = resolveWorkspaceRoot({ cwd: ctx.cwd });
 
-      const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [inputPath], {
+      const targetFiles = await collectFormatterFiles(workspaceRoot, [inputPath], {
         cwd: ctx.cwd,
       });
       if (targetFiles.length === 0) return undefined;
@@ -30,7 +29,7 @@ export function registerFormatterHook(pi: ExtensionAPI) {
         pendingFiles.add(filePath);
       }
     } catch (error) {
-      reportFormatterHookError(pi, ctx, "plugins/sd 자동 포맷 대상 수집 실패", error);
+      reportFormatterHookError(pi, ctx, "자동 포맷 대상 수집 실패", error);
     }
 
     return undefined;
@@ -41,7 +40,7 @@ export function registerFormatterHook(pi: ExtensionAPI) {
 
     for (const [workspaceRoot, pendingFiles] of pendingFilesByWorkspaceRoot) {
       try {
-        const targetFiles = await collectPluginsSdFormatterFiles(workspaceRoot, [...pendingFiles], {
+        const targetFiles = await collectFormatterFiles(workspaceRoot, [...pendingFiles], {
           cwd: workspaceRoot,
         });
 
@@ -58,12 +57,12 @@ export function registerFormatterHook(pi: ExtensionAPI) {
 
         pendingFilesByWorkspaceRoot.set(workspaceRoot, new Set(result.files));
         const message = formatFailureMessage(result);
-        if (ctx.hasUI) ctx.ui.notify("plugins/sd 자동 포맷 실패", "error");
+        if (ctx.hasUI) ctx.ui.notify("자동 포맷 실패", "error");
         pi.sendUserMessage(`${message}\n\n위 실패 원인을 수정한 뒤 다시 완료하세요.`, {
           deliverAs: "followUp",
         });
       } catch (error) {
-        reportFormatterHookError(pi, ctx, "plugins/sd 자동 포맷 실행 실패", error);
+        reportFormatterHookError(pi, ctx, "자동 포맷 실행 실패", error);
       }
     }
 

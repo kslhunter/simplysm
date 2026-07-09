@@ -1,7 +1,7 @@
 import { execFile, type ExecFileException } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { isRegularFile, pathHash, resolveFileKey } from "./write-hash.ts";
 
 export type FormatterName = "oxfmt" | "prettier";
@@ -37,43 +37,23 @@ export interface FormatterMarker {
   toolName: string;
 }
 
-const PLUGINS_SD_PATH_PARTS = ["plugins", "sd"] as const;
 const FORMATTER_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
 const FAILURE_OUTPUT_LIMIT = 4_000;
 
-export async function resolveWorkspaceRoot(
-  options: ResolveWorkspaceRootOptions,
-): Promise<string | undefined> {
-  if (options.projectDir) {
-    const projectRoot = resolve(options.projectDir);
-    return (await hasPluginsSdManifest(projectRoot)) ? projectRoot : undefined;
-  }
-
-  let currentDir = resolve(options.cwd);
-
-  while (true) {
-    if (await hasPluginsSdManifest(currentDir)) return currentDir;
-
-    const parentDir = dirname(currentDir);
-    if (parentDir === currentDir) return undefined;
-    currentDir = parentDir;
-  }
-}
-
-export function resolvePluginsSdRoot(workspaceRoot: string): string {
-  return join(resolve(workspaceRoot), ...PLUGINS_SD_PATH_PARTS);
+export function resolveWorkspaceRoot(options: ResolveWorkspaceRootOptions): string {
+  return resolve(options.projectDir || options.cwd);
 }
 
 export function getFormatterMarkerDir(sessionId: string): string {
   return join(tmpdir(), "simplysm-sd-formatter", pathHash(sessionId));
 }
 
-export async function collectPluginsSdFormatterFiles(
+export async function collectFormatterFiles(
   workspaceRoot: string,
   inputFilePaths: readonly string[],
   options: CollectFormatterFilesOptions = {},
 ): Promise<string[]> {
-  const pluginsSdRoot = await resolveFileKey(resolvePluginsSdRoot(workspaceRoot));
+  const workspaceRootKey = await resolveFileKey(resolve(workspaceRoot));
   const baseDir = resolve(options.cwd ?? workspaceRoot);
   const result: string[] = [];
   const seenFileKeys = new Set<string>();
@@ -88,7 +68,7 @@ export async function collectPluginsSdFormatterFiles(
     if (!(await isRegularFile(absolutePath))) continue;
 
     const fileKey = await resolveFileKey(absolutePath);
-    if (!isPathUnder(pluginsSdRoot, fileKey)) continue;
+    if (!isPathUnder(workspaceRootKey, fileKey)) continue;
     if (seenFileKeys.has(fileKey)) continue;
 
     seenFileKeys.add(fileKey);
@@ -159,7 +139,7 @@ export async function runFormatter(
 
 export function formatFailureMessage(
   result: FormatterRunResult,
-  title = "plugins/sd 자동 포맷 실패",
+  title = "자동 포맷 실패",
 ): string {
   const sections = [
     result.formatter ? `${title} (${result.formatter})` : title,
@@ -207,10 +187,6 @@ async function detectProjectFormatter(workspaceRoot: string): Promise<FormatterN
   if (hasDependency("oxfmt")) return "oxfmt";
   if (hasDependency("prettier")) return "prettier";
   return undefined;
-}
-
-async function hasPluginsSdManifest(workspaceRoot: string): Promise<boolean> {
-  return await isRegularFile(join(workspaceRoot, ...PLUGINS_SD_PATH_PARTS, "package.json"));
 }
 
 function isPathUnder(parentPath: string, childPath: string): boolean {

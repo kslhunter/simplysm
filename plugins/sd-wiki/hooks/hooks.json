@@ -10,6 +10,10 @@
           {
             "type": "command",
             "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\""
+          },
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-local-wiki.ts\""
           }
         ]
       }
