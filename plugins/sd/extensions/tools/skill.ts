@@ -9,7 +9,6 @@ import {
 import { Box, Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 
-const SKILL_COMMAND_PREFIX = "/skill:";
 const SKILL_COMMAND_NAME_PREFIX = "skill:";
 const SKILL_STATE_CUSTOM_TYPE = "simplysm-pi.skill-state";
 const SKILL_MESSAGE_CUSTOM_TYPE = "simplysm-pi.skill";
@@ -46,11 +45,6 @@ interface LoadedSkillInvocation {
   content: string;
 }
 
-interface SkillCommand {
-  name: string;
-  arguments?: string;
-}
-
 interface SkillInvocationDetails {
   invocation: InvokedSkill;
   state: SkillInvocationState;
@@ -61,37 +55,40 @@ export function registerSkill(pi: ExtensionAPI) {
   let skillState = createEmptySkillState();
 
   const reconstructState = (ctx: ExtensionContext) => {
-    skillState = reconstructSkillState(ctx);
+    skillState = reconstructSkillState(pi, ctx);
   };
 
   const recordInvocation = (
     skill: ResolvedSkill,
     skillArguments?: string,
   ): SkillInvocationDetails => {
-    const invocation: InvokedSkill = {
-      sequence: skillState.nextSequence,
-      name: skill.name,
-      filePath: skill.filePath,
-      baseDir: skill.baseDir,
-      arguments: skillArguments,
+    skillState = appendInvocation(skillState, skill, skillArguments);
+    const invocation = skillState.current;
+    if (!invocation) throw new Error("skill 호출 상태를 기록하지 못했습니다.");
+
+    return {
+      invocation: { ...invocation },
+      state: cloneState(skillState),
     };
-
-    skillState = cloneState({
-      version: 1,
-      invoked: [...skillState.invoked, invocation],
-      current: invocation,
-      nextSequence: invocation.sequence + 1,
-    });
-
-    return { invocation: { ...invocation }, state: cloneState(skillState) };
   };
 
   pi.on("session_start", async (_event, ctx) => reconstructState(ctx));
   pi.on("session_tree", async (_event, ctx) => reconstructState(ctx));
   pi.on("session_compact", async (_event, ctx) => reconstructState(ctx));
 
+  pi.on("message_end", async (event) => {
+    const loaded = resolveNativeSkillInvocation(pi, event.message);
+    if (!loaded) return;
+
+    recordInvocation(loaded.skill, loaded.arguments);
+  });
+
   pi.on("before_agent_start", async (event) => {
-    const reminder = formatSkillReminder(skillState);
+    const nativeInvocation = resolveNativeSkillText(pi, event.prompt);
+    const reminderState = nativeInvocation
+      ? appendInvocation(skillState, nativeInvocation.skill, nativeInvocation.arguments)
+      : skillState;
+    const reminder = formatSkillReminder(reminderState);
     if (!reminder) return;
 
     return {
@@ -139,12 +136,14 @@ export function registerSkill(pi: ExtensionAPI) {
     defineTool<typeof SkillParams, SkillInvocationDetails>({
       name: "skill",
       label: "Skill",
-      description: "Pi skill을 명시적으로 호출하여 해당 SKILL.md 지침을 현재 작업에 로드합니다.",
-      promptSnippet: "Pi skill을 명시적으로 호출하여 SKILL.md 지침을 로드합니다.",
+      description:
+        "사용자가 자연어로 Pi skill 적용을 명시했을 때 해당 SKILL.md 지침을 현재 작업에 로드합니다.",
+      promptSnippet: "자연어로 명시된 Pi skill을 호출하여 SKILL.md 지침을 로드합니다.",
       promptGuidelines: [
-        "skill 도구는 해당 SKILL.md 지침을 현재 작업에 로드하여 후속 응답에 영향을 주는 호출입니다.",
-        "사용자가 특정 skill 적용, 로드, 호출, 사용을 명시적으로 요청하면 반드시 skill 도구를 먼저 호출하세요.",
-        "사용자가 skill 내용을 보기, 확인, 검토, 읽기만 요청한 경우에는 skill 도구를 사용하지 말고 read로 해당 SKILL.md를 확인하세요.",
+        "skill 도구는 사용자가 자연어로 특정 skill 적용·로드·호출·사용을 명시했고 현재 사용자 메시지에 <skill> 블록이 없을 때 해당 SKILL.md 지침을 로드합니다.",
+        "현재 사용자 메시지에 <skill> 블록이 있으면 Pi가 이미 해당 skill을 호출한 것이므로 skill 도구로 다시 호출하지 마세요.",
+        "현재 사용자 요청 이후 같은 이름의 성공한 skill 도구 결과가 있으면 해당 요청의 호출은 완료된 것이므로 다시 호출하지 마세요.",
+        "사용자가 skill 내용을 보기·확인·검토·읽기만 요청한 경우에는 skill 도구를 사용하지 말고 read로 해당 SKILL.md를 확인하세요.",
         "SKILL.md 파일 자체를 검토하거나 수정해야 할 때도 read를 사용하세요. read는 skill 호출 상태를 바꾸지 않습니다.",
       ],
       parameters: SkillParams,
@@ -182,36 +181,6 @@ export function registerSkill(pi: ExtensionAPI) {
       },
     }),
   );
-
-  pi.on("input", async (event) => {
-    if (event.source === "extension") return { action: "continue" };
-    if (!event.text.startsWith(SKILL_COMMAND_PREFIX)) return { action: "continue" };
-
-    const parsed = parseSkillCommand(event.text);
-    if (!parsed) return { action: "continue" };
-
-    const skill = findSkill(pi, parsed.name);
-    if (!skill) return { action: "continue" };
-
-    const loaded = await loadResolvedSkillInvocation(skill, parsed.arguments);
-    const stateData = recordInvocation(loaded.skill, loaded.arguments);
-    const content = event.images?.length
-      ? [{ type: "text" as const, text: loaded.content }, ...event.images]
-      : loaded.content;
-    const details: SkillInvocationDetails = { ...stateData, sourceText: event.text };
-
-    pi.sendMessage<SkillInvocationDetails>(
-      {
-        customType: SKILL_MESSAGE_CUSTOM_TYPE,
-        content,
-        display: true,
-        details,
-      },
-      event.streamingBehavior ? { deliverAs: event.streamingBehavior } : { triggerTurn: true },
-    );
-
-    return { action: "handled" };
-  });
 }
 
 async function loadSkillInvocation(
@@ -239,7 +208,7 @@ async function loadResolvedSkillInvocation(
   return {
     skill,
     arguments: skillArguments,
-    content: skillArguments ? `${skillBlock}\n\nUser: ${skillArguments}` : skillBlock,
+    content: skillArguments ? `${skillBlock}\n\n${skillArguments}` : skillBlock,
   };
 }
 
@@ -300,24 +269,70 @@ function toResolvedSkill(command: SlashCommandInfo): ResolvedSkill {
   };
 }
 
-function parseSkillCommand(text: string): SkillCommand | undefined {
-  if (!text.startsWith(SKILL_COMMAND_PREFIX)) return undefined;
-
-  const separatorIndex = text.search(/\s/);
-  const skillName =
-    separatorIndex === -1
-      ? text.slice(SKILL_COMMAND_PREFIX.length)
-      : text.slice(SKILL_COMMAND_PREFIX.length, separatorIndex);
-  if (!skillName) return undefined;
-
-  const rawArguments = separatorIndex === -1 ? "" : text.slice(separatorIndex + 1).trim();
-  return { name: skillName, arguments: rawArguments || undefined };
+function resolveNativeSkillEntry(
+  pi: ExtensionAPI,
+  entry: unknown,
+): LoadedSkillInvocation | undefined {
+  const record = asRecord(entry);
+  if (!record || record.type !== "message") return undefined;
+  return resolveNativeSkillInvocation(pi, record.message);
 }
 
-function reconstructSkillState(ctx: ExtensionContext): SkillInvocationState {
+function resolveNativeSkillInvocation(
+  pi: ExtensionAPI,
+  message: unknown,
+): LoadedSkillInvocation | undefined {
+  const record = asRecord(message);
+  if (!record || record.role !== "user") return undefined;
+
+  const text = getUnknownMessageText(record.content);
+  return text ? resolveNativeSkillText(pi, text) : undefined;
+}
+
+function resolveNativeSkillText(pi: ExtensionAPI, text: string): LoadedSkillInvocation | undefined {
+  const match = text.match(
+    /^<skill name="([^"]+)" location="([^"]+)">\r?\n[\s\S]*?\r?\n<\/skill>(?:\r?\n\r?\n([\s\S]+))?$/,
+  );
+  if (!match) return undefined;
+
+  const skillName = match[1];
+  const filePath = match[2];
+  if (!skillName || !filePath) return undefined;
+
+  const registeredSkill = findSkill(pi, skillName);
+  const skill =
+    registeredSkill?.filePath === filePath
+      ? registeredSkill
+      : { name: skillName, filePath, baseDir: dirname(filePath) };
+
+  return {
+    skill,
+    arguments: normalizeSkillArguments(match[3]),
+    content: text,
+  };
+}
+
+function getUnknownMessageText(content: unknown): string | undefined {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return undefined;
+
+  const text = content
+    .map((item) => asRecord(item))
+    .filter((item) => item?.type === "text" && typeof item.text === "string")
+    .map((item) => item!.text as string)
+    .join("");
+  return text || undefined;
+}
+
+function reconstructSkillState(pi: ExtensionAPI, ctx: ExtensionContext): SkillInvocationState {
   let restored = createEmptySkillState();
 
   for (const entry of ctx.sessionManager.getBranch() as unknown[]) {
+    const nativeInvocation = resolveNativeSkillEntry(pi, entry);
+    if (nativeInvocation) {
+      restored = appendInvocation(restored, nativeInvocation.skill, nativeInvocation.arguments);
+    }
+
     const entryState = extractSkillState(entry);
     if (entryState) restored = entryState;
   }
@@ -404,13 +419,35 @@ function formatSkillReminder(state: SkillInvocationState): string | undefined {
     "## Pi skill reminder",
     `- 호출된 skill 순서: ${invokedList}`,
     `- current focus: ${state.current.name} (${state.current.filePath})`,
-    "- 후속 응답에서도 current focus skill 지침을 우선 유지하세요.",
+    "- 현재 사용자 메시지에 <skill> 블록이 있으면 그 skill이 새 current focus이며 위 기록보다 우선합니다.",
+    "- 그 밖의 후속 응답에서는 current focus skill 지침을 우선 유지하세요.",
     "- read SKILL.md는 파일 읽기일 뿐이며, skill 호출 상태를 바꾸지 않습니다.",
   ].join("\n");
 }
 
 function createEmptySkillState(): SkillInvocationState {
   return { version: 1, invoked: [], nextSequence: 1 };
+}
+
+function appendInvocation(
+  state: SkillInvocationState,
+  skill: ResolvedSkill,
+  skillArguments?: string,
+): SkillInvocationState {
+  const invocation: InvokedSkill = {
+    sequence: state.nextSequence,
+    name: skill.name,
+    filePath: skill.filePath,
+    baseDir: skill.baseDir,
+    arguments: skillArguments,
+  };
+
+  return cloneState({
+    version: 1,
+    invoked: [...state.invoked, invocation],
+    current: invocation,
+    nextSequence: invocation.sequence + 1,
+  });
 }
 
 function cloneState(state: SkillInvocationState): SkillInvocationState {
