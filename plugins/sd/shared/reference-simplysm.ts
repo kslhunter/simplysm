@@ -12,10 +12,14 @@ export async function buildSimplysmReferenceContext(options: {
   const refRoot = join(pluginRoot, "references");
   const major = await readSimplysmMajor(options.projectDir);
 
+  const pathWarning =
+    "- 위 경로는 sd 플러그인 설치 위치다. 참조(Read) 전용 — 현재 작업 프로젝트가 아니며, 이 경로 기준으로 파일을 생성·수정하지 않는다.";
+
   if (!major) {
     return [
       `## 활성 simplysm references (\`${toPosixPath(refRoot)}\`)`,
       "",
+      pathWarning,
       "- (`@simplysm/sd-cli` 의존 미선언 — 버전별 `simplysm<major>` references 비활성)",
     ].join("\n");
   }
@@ -26,12 +30,15 @@ export async function buildSimplysmReferenceContext(options: {
     return [
       `## 활성 simplysm references (\`${toPosixPath(base)}\`)`,
       "",
+      pathWarning,
       `- (\`simplysm${major}\` references 디렉터리 없음)`,
     ].join("\n");
   }
 
   return [
     `## 활성 simplysm references (\`${toPosixPath(base)}\`)`,
+    "",
+    pathWarning,
     "",
     `아래는 \`${toPosixPath(readmePath)}\` 전문. 본문의 \`./\` 상대링크는 \`${toPosixPath(base)}\` 기준으로 Read.`,
     "",

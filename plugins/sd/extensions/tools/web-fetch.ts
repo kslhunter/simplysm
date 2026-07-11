@@ -1,8 +1,11 @@
 import type { LookupAddress } from "node:dns";
 import { lookup } from "node:dns/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { request as httpRequest, type IncomingMessage } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
@@ -11,6 +14,7 @@ const REQUEST_TIMEOUT_MS = 60_000;
 const MAX_REDIRECTS = 5;
 const MAX_RAW_BYTES = 2 * 1024 * 1024;
 const MAX_OUTPUT_BYTES = 512 * 1024;
+const MAX_DOWNLOAD_BYTES = 20 * 1024 * 1024;
 
 const WebFetchParams = Type.Object({
   url: Type.String({ description: "가져올 http/https URL" }),
@@ -25,6 +29,7 @@ interface WebFetchDetails {
   outputBytes: number;
   redirects: number;
   title?: string;
+  savedPath?: string;
 }
 
 interface FetchResponse {
@@ -39,12 +44,13 @@ export function registerWebFetch(pi: ExtensionAPI) {
       name: "web_fetch",
       label: "웹 가져오기",
       description:
-        "http/https URL을 가져와 텍스트로 반환합니다. HTML은 script/style을 제거한 읽기용 텍스트로 변환합니다. 너무 큰 응답은 잘라 반환하지 않고 실패합니다.",
+        "http/https URL을 가져와 텍스트로 반환합니다. HTML은 script/style을 제거한 읽기용 텍스트로 변환합니다. " +
+        "너무 큰 응답은 잘라 반환하지 않고, 원본을 임시 파일로 저장해 파일 경로를 반환합니다.",
       promptSnippet: "URL의 본문 텍스트를 가져옵니다. HTML은 읽기용 텍스트로 단순 변환합니다.",
       promptGuidelines: [
         "특정 URL의 본문 내용 확인이 필요할 때 web_fetch를 사용하세요.",
         "web_fetch는 http/https URL만 지원하며 localhost, 사설망, link-local, 메타데이터 주소는 안전상 차단합니다.",
-        "web_fetch가 너무 큰 응답으로 실패하면 URL 범위를 좁히거나 사용자의 확인을 받아 다른 절차를 사용하세요. 잘린 부분 결과를 근거로 판단하지 마세요.",
+        "web_fetch 결과가 '파일로 저장' 안내이면 반환된 임시 파일 경로를 Read 도구의 offset/limit으로 나눠 읽어 작업을 계속하세요. 크다는 이유로 조사를 포기하지 마세요.",
       ],
       parameters: WebFetchParams,
 
@@ -89,8 +95,22 @@ export function registerWebFetch(pi: ExtensionAPI) {
           );
         }
 
-        const rawText = await readResponseTextLimited(response, MAX_RAW_BYTES);
-        const rawBytes = byteLength(rawText);
+        const rawBuffer = await readResponseBufferLimited(response, MAX_DOWNLOAD_BYTES, finalUrl);
+        const rawBytes = rawBuffer.byteLength;
+
+        if (rawBytes > MAX_RAW_BYTES) {
+          return await savedFileResult({
+            requestedUrl,
+            finalUrl,
+            status,
+            contentType,
+            rawBuffer,
+            redirects,
+            reason: `원본 응답이 인라인 한도(${formatBytes(MAX_RAW_BYTES)})를 초과했습니다 (${formatBytes(rawBytes)}).`,
+          });
+        }
+
+        const rawText = rawBuffer.toString("utf8");
         const extracted = contentType.toLowerCase().includes("html")
           ? extractHtmlContent(rawText)
           : { text: rawText.trim(), title: undefined };
@@ -103,7 +123,18 @@ export function registerWebFetch(pi: ExtensionAPI) {
           text: extracted.text,
         });
         const outputBytes = byteLength(output);
-        if (outputBytes > MAX_OUTPUT_BYTES) throwOutputTooLarge(outputBytes, finalUrl);
+        if (outputBytes > MAX_OUTPUT_BYTES) {
+          return await savedFileResult({
+            requestedUrl,
+            finalUrl,
+            status,
+            contentType,
+            rawBuffer,
+            redirects,
+            title: extracted.title,
+            reason: `추출 텍스트가 출력 한도(${formatBytes(MAX_OUTPUT_BYTES)})를 초과했습니다 (${formatBytes(outputBytes)}).`,
+          });
+        }
 
         return {
           content: [{ type: "text" as const, text: output }],
@@ -146,8 +177,9 @@ export function registerWebFetch(pi: ExtensionAPI) {
 
         if (!expanded) {
           const title = details.title ? ` ${theme.fg("accent", details.title)}` : "";
+          const saved = details.savedPath ? ` → ${theme.fg("accent", details.savedPath)}` : "";
           return new Text(
-            `${theme.fg("success", "✓")} web_fetch 완료${title}${theme.fg("dim", ` (${details.status}, ${formatBytes(details.outputBytes)})`)}`,
+            `${theme.fg("success", "✓")} web_fetch 완료${title}${theme.fg("dim", ` (${details.status}, ${formatBytes(details.outputBytes)})`)}${saved}`,
             0,
             0,
           );
@@ -443,10 +475,11 @@ function isTextualContentType(contentType: string): boolean {
   );
 }
 
-async function readResponseTextLimited(
+async function readResponseBufferLimited(
   response: IncomingMessage,
   maxBytes: number,
-): Promise<string> {
+  finalUrl: string,
+): Promise<Buffer> {
   const chunks: Buffer[] = [];
   let totalBytes = 0;
 
@@ -456,14 +489,75 @@ async function readResponseTextLimited(
     if (totalBytes > maxBytes) {
       response.destroy();
       throw new Error(
-        `web_fetch 응답이 너무 큽니다 (${formatBytes(totalBytes)} > ${formatBytes(maxBytes)}). ` +
-          "부분 응답은 반환하지 않았습니다. 더 작은 문서나 구체적인 URL을 사용하세요.",
+        `web_fetch 응답이 다운로드 한도를 초과했습니다 (${formatBytes(totalBytes)} > ${formatBytes(maxBytes)}). ` +
+          `부분 응답은 반환하지 않았습니다. 더 작은 문서나 구체적인 URL을 사용하세요: ${finalUrl}`,
       );
     }
     chunks.push(buffer);
   }
 
-  return Buffer.concat(chunks).toString("utf8");
+  return Buffer.concat(chunks);
+}
+
+async function savedFileResult(input: {
+  requestedUrl: string;
+  finalUrl: string;
+  status: number;
+  contentType: string;
+  rawBuffer: Buffer;
+  redirects: number;
+  title?: string;
+  reason: string;
+}) {
+  const savedPath = await saveRawToTempFile(input.rawBuffer, input.contentType);
+  const lines = [
+    `URL: ${input.finalUrl}`,
+    `Status: ${input.status}`,
+    `Content-Type: ${input.contentType || "unknown"}`,
+  ];
+  if (input.title) lines.push(`Title: ${input.title}`);
+  lines.push(
+    "",
+    input.reason,
+    `본문을 인라인으로 반환하지 않고 원본 전체를 파일로 저장했습니다: ${savedPath} (${formatBytes(input.rawBuffer.byteLength)})`,
+    "Read 도구의 offset/limit으로 이 파일을 나눠 읽어 작업을 계속하세요.",
+  );
+
+  return {
+    content: [{ type: "text" as const, text: lines.join("\n") }],
+    details: {
+      url: input.requestedUrl,
+      finalUrl: input.finalUrl,
+      status: input.status,
+      contentType: input.contentType,
+      rawBytes: input.rawBuffer.byteLength,
+      outputBytes: input.rawBuffer.byteLength,
+      redirects: input.redirects,
+      title: input.title,
+      savedPath,
+    },
+  };
+}
+
+async function saveRawToTempFile(rawBuffer: Buffer, contentType: string): Promise<string> {
+  const dirPath = join(tmpdir(), "pi-web-fetch");
+  await mkdir(dirPath, { recursive: true });
+
+  const filePath = join(
+    dirPath,
+    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${fileExtensionForContentType(contentType)}`,
+  );
+  await writeFile(filePath, rawBuffer);
+  return filePath;
+}
+
+function fileExtensionForContentType(contentType: string): string {
+  const normalized = contentType.toLowerCase();
+  if (normalized.includes("html")) return ".html";
+  if (normalized.includes("json")) return ".json";
+  if (normalized.includes("xml")) return ".xml";
+  if (normalized.includes("markdown")) return ".md";
+  return ".txt";
 }
 
 function getResponseHeader(response: IncomingMessage, headerName: string): string | undefined {
@@ -571,13 +665,6 @@ function getTextContent(content: Array<{ type: string; text?: string }>): string
     .join("\n")
     .trim();
   return text || undefined;
-}
-
-function throwOutputTooLarge(bytes: number, finalUrl: string): never {
-  throw new Error(
-    `web_fetch 추출 결과가 너무 큽니다 (${formatBytes(bytes)} > ${formatBytes(MAX_OUTPUT_BYTES)}). ` +
-      `부분 결과를 잘라 반환하지 않았습니다. 더 구체적인 URL을 사용하세요: ${finalUrl}`,
-  );
 }
 
 function formatBytes(bytes: number): string {
