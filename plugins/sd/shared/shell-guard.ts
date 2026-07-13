@@ -51,6 +51,22 @@ const BLOCKED_PATTERNS: ReadonlyArray<{ pattern: RegExp; label: string }> = [
     label:
       "playwright-cli {state-save|video-start} <path> (omit path to auto-save under .playwright-cli/)",
   },
+  {
+    pattern: new RegExp(
+      `${COMMAND_POSITION_PATTERN}(npm|pnpm|yarn|bun)(?:\\.cmd)?\\s+[^;&|\\n]*(?:-g\\b|--global\\b)`,
+      "i",
+    ),
+    label:
+      "global install forbidden (npm/pnpm/yarn/bun -g/--global). Install locally or ask the user.",
+  },
+  {
+    pattern: new RegExp(`${COMMAND_POSITION_PATTERN}yarn(?:\\.cmd)?\\s+global\\b`, "i"),
+    label: "global install forbidden (yarn global). Install locally or ask the user.",
+  },
+  {
+    pattern: new RegExp(`${COMMAND_POSITION_PATTERN}mise(?:\\.exe)?\\s+(?:use|install|i)\\b`, "i"),
+    label: "global tool install forbidden (mise use/install). Install locally or ask the user.",
+  },
 ];
 
 export function checkShellCommand(commandText: string): ShellGuardViolation | undefined {

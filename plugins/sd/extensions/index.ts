@@ -1,9 +1,11 @@
 import { registerAppendSystem } from "./append-system.ts";
+import { registerClear } from "./clear.ts";
 import { registerExit } from "./exit.ts";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAltEnterNewline } from "./tui/alt-enter-newline.ts";
 import { registerClipboardImagePaste } from "./tui/clipboard-image-paste.ts";
 import { registerPasteTrim } from "./tui/paste-trim.ts";
+import { registerRewind } from "./tui/rewind.ts";
 import { registerSelection } from "./tui/selection.ts";
 import { registerWorkingElapsed } from "./tui/working-elapsed.ts";
 import { registerCodexFastMode } from "./codex/fast-mode.ts";
@@ -20,6 +22,7 @@ export default function (pi: ExtensionAPI) {
   registerAppendSystem(pi);
 
   registerExit(pi);
+  registerClear(pi);
 
   // tui
   registerSelection(pi); // 항상 맨위 (Editor 갈아 끼움)
@@ -27,6 +30,7 @@ export default function (pi: ExtensionAPI) {
   registerPasteTrim(pi);
   registerClipboardImagePaste(pi);
   registerWorkingElapsed(pi);
+  registerRewind(pi);
 
   // codex
   registerCodexFastMode(pi);
