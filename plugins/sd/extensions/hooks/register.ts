@@ -11,6 +11,6 @@ export function registerHooks(pi: ExtensionAPI) {
   registerWriteHashHook(pi);
   registerFormatterHook(pi);
   registerReferencesHook(pi);
-  registerClaudeSkillsHook(pi);
   registerReminderHook(pi);
+  registerClaudeSkillsHook(pi);
 }
