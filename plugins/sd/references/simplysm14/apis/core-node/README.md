@@ -1,6 +1,6 @@
 # @simplysm/core-node
 
-Node 런타임에서 파일시스템·경로·자식 프로세스·파일 감시·consola reporter·worker_threads 프록시를 다룰 때 쓰는 기반 API. 거의 모든 파일시스템/프로세스 함수는 동기/비동기 짝으로 제공되고, fs 계열 오류는 경로를 담은 `SdError`로 다시 throw한다.
+Node 런타임에서 파일시스템·경로·자식 프로세스·파일 감시·consola reporter·worker_threads 프록시를 다룰 때 쓰는 기반 API. 거의 모든 파일시스템/프로세스 함수는 동기/비동기 짝으로 제공되고, fs 계열 오류는 경로를 담은 `SdError`로 다시 throw함.
 
 ## 사용 트리거 인덱스
 
@@ -13,11 +13,11 @@ Node 런타임에서 파일시스템·경로·자식 프로세스·파일 감시
 
 ## pathx
 
-POSIX 스타일 경로 정규화와 경로 관계 판정. 모든 함수는 경로를 `path.resolve()`로 정규화한 뒤 백슬래시를 슬래시로 변환해 처리한다.
+POSIX 스타일 경로 정규화와 경로 관계 판정. 모든 함수는 경로를 `path.resolve()`로 정규화한 뒤 백슬래시를 슬래시로 변환해 처리함.
 
 ### 타입: PosixPath
 
-- `PosixPath` — 문자열 브랜드 타입. POSIX 슬래시만 포함하는 절대 경로를 나타낸다. `posix()` 또는 `posixResolve()`를 통해서만 생성 가능.
+- `PosixPath` — 문자열 브랜드 타입. POSIX 슬래시만 포함하는 절대 경로를 나타냄. `posix()` 또는 `posixResolve()`를 통해서만 생성 가능.
 
 ### 함수
 

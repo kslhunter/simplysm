@@ -1,13 +1,13 @@
 # @simplysm/orm-common — expr 표현식 빌더
 
-`expr` 는 dialect 독립 SQL 표현식을 JSON AST(`Expr`)로 만드는 빌더 객체. 결과는 `ExprUnit`(값/스칼라) 또는 `WhereExprUnit`(조건)으로 래핑되며, QueryBuilder 가 각 DBMS SQL 로 변환한다. `Queryable` 콜백 안에서 사용한다. 사용법: [orm.md](../../manuals/orm.md).
+`expr` 는 dialect 독립 SQL 표현식을 JSON AST(`Expr`)로 만드는 빌더 객체. 결과는 `ExprUnit`(값/스칼라) 또는 `WhereExprUnit`(조건)으로 래핑되며, QueryBuilder 가 각 DBMS SQL 로 변환함. `Queryable` 콜백 안에서 사용함. 사용법: [orm.md](../../manuals/orm.md).
 
-대부분 인자는 `ExprInput<T>`(= `ExprUnit<T> | T` 리터럴) 또는 `ExprUnit<T>` 를 받는다. 반환 값의 nullability(`T | undefined`)는 입력 컬럼의 nullable 여부를 끝까지 전파한다.
+대부분 인자는 `ExprInput<T>`(= `ExprUnit<T> | T` 리터럴) 또는 `ExprUnit<T>` 를 받음. 반환 값의 nullability(`T | undefined`)는 입력 컬럼의 nullable 여부를 끝까지 전파함.
 
 ## ExprUnit / WhereExprUnit / ExprInput (`expr/expr-unit.ts`)
 
 - `class ExprUnit<TPrimitive extends ColumnPrimitive>` — 타입 안전 표현식 래퍼. `$infer`(추론용 phantom), `dataType: ColumnPrimitiveStr`, `expr: Expr` 보유. getter `n` 은 타입을 `NonNullable<TPrimitive>` 로 좁힌 동일 expr(개발자가 NULL 아님을 단언).
-- `class WhereExprUnit` — WHERE 조건 래퍼. `expr: WhereExpr` 보유. `where`/`having`/논리 연산 인자로 쓰인다.
+- `class WhereExprUnit` — WHERE 조건 래퍼. `expr: WhereExpr` 보유. `where`/`having`/논리 연산 인자로 쓰임.
 - `type ExprInput<TPrimitive>` — `ExprUnit<TPrimitive> | TPrimitive`. 리터럴 값 또는 표현식 둘 다 허용하는 입력 타입.
 - `SwitchExprBuilder<T>` — `switch()` 가 반환. `case(condition: WhereExprUnit, then: ExprInput<T>)` 누적 후 `default(value): ExprUnit<T>` 로 종료.
 
@@ -49,7 +49,7 @@
 - `substring(source, start, length?)` — 1-기반 부분 문자열, `length` 생략 시 끝까지.
 - `indexOf(source, search)` — 위치. **0-기반, 미발견 시 -1**, source 가 NULL 이면 `undefined`.
 
-문자열 변환 함수(`left`/`right`/`trim`/`padStart`/`replace`/`upper`/`lower`/`substring`)는 입력 `T extends string | undefined` 의 nullability 를 결과에 그대로 전파한다.
+문자열 변환 함수(`left`/`right`/`trim`/`padStart`/`replace`/`upper`/`lower`/`substring`)는 입력 `T extends string | undefined` 의 nullability 를 결과에 그대로 전파함.
 
 ## SELECT — 숫자
 
@@ -60,7 +60,7 @@
 
 - `year`/`month`/`day(source)` — `DateTime | DateOnly` 에서 연/월/일(`number`, NULL 전파).
 - `hour`/`minute`/`second(source)` — `DateTime | Time` 에서 시/분/초.
-- `isoWeek(source: DateOnly)` — ISO 주 번호(1~53).
+- `isoWeek(source: DateOnly)` — ISO 주 번호(1-53).
 - `isoWeekStartDate(source: DateOnly)` — 해당 주 월요일(`ExprUnit<DateOnly>`).
 - `isoYearMonth(source: DateOnly)` — "YYYYMM" 문자열.
 - `dateDiff(unit, from, to)` — 날짜 차이(`to - from`). `unit`=`DateUnit`("year"|"month"|"day"|"hour"|"minute"|"second").
@@ -87,13 +87,13 @@
 
 - `greatest(...args)` / `least(...args)` — 여러 값 중 최대/최소. 인자 중 최소 1개가 `ExprUnit` 이어야 dataType 추론(아니면 throw).
 - `rowNum()` — 모든 행에 1부터 순번(`number`).
-- `random()` — 0~1 난수. 무작위 정렬용.
+- `random()` — 0-1 난수. 무작위 정렬용.
 - `cast(source, targetType: DataType)` — 타입 변환. 결과 타입은 `targetType` 에서 추론, source 가 NULL 이면 `undefined`.
 - `subquery(dataType, queryable)` — 스칼라 서브쿼리(1행 1컬럼). `ExprUnit<T | undefined>`.
 
 ## SELECT — 윈도우 함수
 
-모두 `spec: { partitionBy?, orderBy? }`(WinSpecInput; `orderBy`=`[expr, "ASC"|"DESC"?][]`)를 받는다.
+모두 `spec: { partitionBy?, orderBy? }`(WinSpecInput; `orderBy`=`[expr, "ASC"|"DESC"?][]`)를 받음.
 
 - `rowNumber(spec)` — ROW_NUMBER(파티션 내 1부터).
 - `rank(spec)` — RANK(동순위 후 건너뜀: 1,1,3).

@@ -10,7 +10,7 @@ Android 앱의 APK 자동 업데이트(버전 확인 → 다운로드 → 설치
 
 ## AutoUpdate
 
-`abstract class AutoUpdate` — 인스턴스화 없이 static 메서드만 사용. 두 진입점 모두 성공/실패와 무관하게 신버전 설치 흐름에 진입하면 무한 대기(`_freezeApp`)로 앱을 정지시켜 사용자의 수동 재시작을 유도한다. 비 Android 환경에서는 "Android만 지원됩니다." 예외 발생. 모든 단계의 메시지와 오류를 `log` 콜백으로 HTML 형식 문자열로 전달한다.
+`abstract class AutoUpdate` — 인스턴스화 없이 static 메서드만 사용. 두 진입점 모두 성공/실패와 무관하게 신버전 설치 흐름에 진입하면 무한 대기(`_freezeApp`)로 앱을 정지시켜 사용자의 수동 재시작을 유도함. 비 Android 환경에서는 "Android만 지원됩니다." 예외 발생. 모든 단계의 메시지와 오류를 `log` 콜백으로 HTML 형식 문자열로 전달함.
 
 ### `static run(opt: { log: (messageHtml: string) => void; serviceClient: ServiceClient }): Promise<void>`
 
@@ -74,7 +74,7 @@ Android 앱의 APK 자동 업데이트(버전 확인 → 다운로드 → 설치
 
 ## ApkInstaller
 
-`abstract class ApkInstaller` — static 메서드만 사용. Capacitor 플러그인(`ApkInstallerPlugin`)을 등록하고 래핑한다. Android에서는 네이티브 권한·설치 인텐트 실행. 웹에서는 알림 또는 no-op.
+`abstract class ApkInstaller` — static 메서드만 사용. Capacitor 플러그인(`ApkInstallerPlugin`)을 등록하고 래핑함. Android에서는 네이티브 권한·설치 인텐트 실행. 웹에서는 알림 또는 no-op.
 
 ### `static checkPermissions(): Promise<{ granted: boolean; manifest: boolean }>`
 
@@ -137,7 +137,7 @@ interface VersionInfo {
 
 ## ApkInstallerPlugin
 
-Capacitor 저수준 플러그인 계약 인터페이스. `ApkInstaller` 가 내부적으로 이 형태로 호출하며, 웹 구현체도 이 계약을 구현한다. 보통 `ApkInstaller` 래퍼를 사용하므로 직접 호출할 일은 드물다.
+Capacitor 저수준 플러그인 계약 인터페이스. `ApkInstaller` 가 내부적으로 이 형태로 호출하며, 웹 구현체도 이 계약을 구현함. 보통 `ApkInstaller` 래퍼를 사용하므로 직접 호출할 일은 드묾.
 
 ```typescript
 interface ApkInstallerPlugin {

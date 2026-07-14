@@ -4,7 +4,7 @@
 
 ## 계약 타입
 
-- `interface ISdWorkerType { methods: Record<string, { params: any[]; returnType: any }>; events: Record<string, any> }` — 워커 한 종류의 계약. `methods` 는 호출 가능한 함수 시그니처 맵(`params` 인자 튜플, `returnType` 반환), `events` 는 이벤트명→페이로드 타입 맵. `SdWorker<T>` / `createSdWorker<T>` 의 제네릭에 이 타입을 넘겨 양측 시그니처를 묶는다.
+- `interface ISdWorkerType { methods: Record<string, { params: any[]; returnType: any }>; events: Record<string, any> }` — 워커 한 종류의 계약. `methods` 는 호출 가능한 함수 시그니처 맵(`params` 인자 튜플, `returnType` 반환), `events` 는 이벤트명→페이로드 타입 맵. `SdWorker<T>` / `createSdWorker<T>` 의 제네릭에 이 타입을 넘겨 양측 시그니처를 묶음.
 - `interface ISdWorkerRequest<T, K extends keyof T["methods"]> { id: string; method: K; params: T["methods"][K]["params"] }` — 부모가 보내는 호출 요청. `id` 는 `Uuid.new()` 로 응답 매칭에 사용.
 - `type TSdWorkerResponse<T, K>` — 워커가 보내는 응답 유니온:
   - `{ request; type: "return"; body? }` — 메서드 정상 반환(body=returnType).
@@ -36,4 +36,4 @@
 2. 워커 스크립트: `const w = createSdWorker<MyWorkerType>({ add: (a, b) => a + b }); w.send("progress", 50);`
 3. 메인: `const worker = new SdWorker<MyWorkerType>(import.meta.url); worker.on("progress", p => ...); const r = await worker.run("add", [1, 2]); await worker.killAsync();`
 
-주의: 개발(.ts) 모드 분기는 빌드 산출물의 `lib/worker-dev-proxy.js` 존재에 의존한다(이 패키지가 빌드/배포되는 형태에 한함).
+주의: 개발(.ts) 모드 분기는 빌드 산출물의 `lib/worker-dev-proxy.js` 존재에 의존함(이 패키지가 빌드/배포되는 형태에 한함).

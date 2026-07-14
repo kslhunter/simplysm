@@ -1,6 +1,6 @@
 # @simplysm/cordova-plugin-file-system
 
-Cordova(Android 전용) 네이티브 파일 시스템 접근 플러그인. `CordovaFileSystem` 정적 클래스로 권한 요청, 저장소 경로 조회, 파일/디렉토리 읽기·쓰기·삭제·생성·존재확인을 수행한다. (deprecated — Capacitor로 전환됨)
+Cordova(Android 전용) 네이티브 파일 시스템 접근 플러그인. `CordovaFileSystem` 정적 클래스로 권한 요청, 저장소 경로 조회, 파일/디렉토리 읽기·쓰기·삭제·생성·존재확인을 수행함. (deprecated — Capacitor로 전환됨)
 
 ## 사용 트리거 인덱스
 
@@ -14,7 +14,7 @@ Cordova(Android 전용) 네이티브 파일 시스템 접근 플러그인. `Cord
 
 ## CordovaFileSystem
 
-모든 멤버는 `static async`. 내부적으로 `cordova.exec(...)`로 네이티브(`"CordovaFileSystem"` service) 액션을 호출한다. `@types/cordova` 전역 `cordova` 의존. Android 플랫폼만 지원.
+모든 멤버는 `static async`. 내부적으로 `cordova.exec(...)`로 네이티브(`"CordovaFileSystem"` service) 액션을 호출함. `@types/cordova` 전역 `cordova` 의존. Android 플랫폼만 지원.
 
 ### 권한
 

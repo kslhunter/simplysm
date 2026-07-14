@@ -1,8 +1,8 @@
 # @simplysm/orm-common — Queryable / Executable / 검색
 
-`Queryable<TData, TFrom>` 는 table/view 에 대한 SELECT·INSERT·UPDATE·DELETE·UPSERT 를 immutable 체이닝으로 구성하는 빌더. 각 메서드는 새 `Queryable` 을 반환한다. `TData`=결과 행 타입, `TFrom`=소스 `TableBuilder`(CUD 가능 여부 결정, view·custom select 후엔 `never`). 사용법: [orm.md](../../manuals/orm.md), [orm-union.md](../../manuals/orm-union.md).
+`Queryable<TData, TFrom>` 는 table/view 에 대한 SELECT·INSERT·UPDATE·DELETE·UPSERT 를 immutable 체이닝으로 구성하는 빌더. 각 메서드는 새 `Queryable` 을 반환함. `TData`=결과 행 타입, `TFrom`=소스 `TableBuilder`(CUD 가능 여부 결정, view·custom select 후엔 `never`). 사용법: [orm.md](../../manuals/orm.md), [orm-union.md](../../manuals/orm-union.md).
 
-콜백은 `QueryableRecord<TData>`(컬럼이 `ExprUnit` 으로 래핑된 프록시)를 받아 `expr.*` 로 조건/표현식을 만든다([expr.md](./expr.md)).
+콜백은 `QueryableRecord<TData>`(컬럼이 `ExprUnit` 으로 래핑된 프록시)를 받아 `expr.*` 로 조건/표현식을 만듦([expr.md](./expr.md)).
 
 ## SELECT 옵션·제한·정렬
 
@@ -37,7 +37,7 @@
 
 - `wrap()` — 현재 Queryable 을 서브쿼리로 감싼 새 Queryable(`never`). `distinct()`/`groupBy()` 이후 `count()` 할 때 필요.
 - `static Queryable.union(...queries)` — 2개 이상 Queryable 을 UNION(중복 제거). 첫 쿼리의 컬럼 구조 사용. 2개 미만이면 `ArgumentError`.
-- `recursive(fn)` — WITH RECURSIVE CTE 생성(계층 데이터). `fn(qr: RecursiveQueryable<TData>)` 가 재귀부를 반환. `RecursiveQueryable` 메서드 `from(table)`/`select(columns)`/`union(...queries)` 는 결과에 `self?: TData[]`(자기 참조) 를 부착한다.
+- `recursive(fn)` — WITH RECURSIVE CTE 생성(계층 데이터). `fn(qr: RecursiveQueryable<TData>)` 가 재귀부를 반환. `RecursiveQueryable` 메서드 `from(table)`/`select(columns)`/`union(...queries)` 는 결과에 `self?: TData[]`(자기 참조) 를 부착함.
 
 ## SELECT 실행
 
@@ -84,7 +84,7 @@
 
 - `QueryableRecord<TData>` — `TData` 의 각 필드를 매핑: `ColumnPrimitive`→`ExprUnit<T>`, `DataRecord[]`→`QueryableRecord<U>[]`, 중첩 `DataRecord`→`QueryableRecord`. 콜백이 받는 컬럼 프록시 타입.
 - `QueryableWriteRecord<TData>` — 각 `ColumnPrimitive` 필드를 `ExprInput<T>`(값 또는 `ExprUnit`)로. update/upsert/insert 콜백 반환 타입.
-- `UnwrapQueryableRecord<R>` — `select()` 결과를 역변환: `ExprUnit<T>`→`T`, 중첩/배열 재귀 언랩, `undefined` 보존, symbol key 제거. `select` 후 `TData` 가 된다.
+- `UnwrapQueryableRecord<R>` — `select()` 결과를 역변환: `ExprUnit<T>`→`T`, 중첩/배열 재귀 언랩, `undefined` 보존, symbol key 제거. `select` 후 `TData` 가 됨.
 - `PathProxy<TObject>` — `include()` 경로 지정용 프록시. `ColumnPrimitive` 가 아닌(관계) 필드만 접근 가능, 배열은 요소 타입으로 언랩, `[PATH_SYMBOL]` 에 경로 수집.
 
 ## 팩토리·헬퍼

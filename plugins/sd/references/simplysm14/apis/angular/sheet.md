@@ -36,7 +36,7 @@ class SdSheet<TItem> {
 }
 ```
 
-`<sd-sheet-column>` 을 투영(또는 `columnControlsInput`)해 컬럼을 정의하는 데이터 그리드. 선택/정렬/펼침/페이징/셀 편집·키보드 내비게이션·컬럼 고정·리사이즈를 내장한다.
+`<sd-sheet-column>` 을 투영(또는 `columnControlsInput`)해 컬럼을 정의하는 데이터 그리드. 선택/정렬/펼침/페이징/셀 편집·키보드 내비게이션·컬럼 고정·리사이즈를 내장함.
 
 - `key` — 설정 영속화 key(지정 시 컬럼 설정 톱니 버튼 표시, `SdSheetConfig` 를 system config로 로드/저장). 설정 모달을 열려면 필수(미지정 시 throw).
 - `items` — 행 데이터.
@@ -105,7 +105,7 @@ class SdSheetColumnCellTemplate<T> {
 }
 ```
 
-셀 본문 템플릿. `[cell]="items()"` 로 item 타입을 추론해 `let-item`/`let-index`/`let-depth`/`let-edit` 를 타입화한다.
+셀 본문 템플릿. `[cell]="items()"` 로 item 타입을 추론해 `let-item`/`let-index`/`let-depth`/`let-edit` 를 타입화함.
 
 ## `SdSheetConfigModal` (`sd-sheet-config-modal`)
 

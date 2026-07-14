@@ -1,6 +1,6 @@
 # @simplysm/core-node — FsWatcher
 
-chokidar 기반 파일시스템 감시. 감시 대상 glob 재필터링, 짧은 시간의 다중 변경 병합, 디바운스 콜백, Windows EPERM 자동 복구를 함께 처리한다.
+chokidar 기반 파일시스템 감시. 감시 대상 glob 재필터링, 짧은 시간의 다중 변경 병합, 디바운스 콜백, Windows EPERM 자동 복구를 함께 처리함.
 
 ## 타입
 

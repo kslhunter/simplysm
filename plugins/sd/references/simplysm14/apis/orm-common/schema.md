@@ -1,14 +1,14 @@
 # @simplysm/orm-common — 스키마 빌더
 
-Fluent immutable 빌더로 table/view/procedure 스키마를 정의한다. 각 체이닝 메서드는 새 builder 인스턴스를 반환하며, `$infer*` phantom 필드가 컬럼·관계로부터 소비자 타입을 추론한다. 사용법: [orm.md](../../manuals/orm.md).
+Fluent immutable 빌더로 table/view/procedure 스키마를 정의함. 각 체이닝 메서드는 새 builder 인스턴스를 반환하며, `$infer*` phantom 필드가 컬럼·관계로부터 소비자 타입을 추론함. 사용법: [orm.md](../../manuals/orm.md).
 
 ## Table — `Table(name)` / `TableBuilder<TName, TColumns, TRelations = {}>`
 
-`Table(name)` 은 빈 `TableBuilder` 를 만든다. `.columns().primaryKey().indexes().relations()` 로 정의를 누적한다.
+`Table(name)` 은 빈 `TableBuilder` 를 만듦. `.columns().primaryKey().indexes().relations()` 로 정의를 누적함.
 
 ### $infer 추론 타입 (소비자 타입)
 
-- `$inferSelect` — `InferColumns<TColumns> & InferDeepRelations<TRelations>`. SELECT 결과 행 타입. 관계는 lazy 하게 다단계 해소되며 모두 optional(`include` 안 하면 `undefined`), 순환은 같은 테이블 재방문 시 컬럼만 반환해 끊는다.
+- `$inferSelect` — `InferColumns<TColumns> & InferDeepRelations<TRelations>`. SELECT 결과 행 타입. 관계는 lazy 하게 다단계 해소되며 모두 optional(`include` 안 하면 `undefined`), 순환은 같은 테이블 재방문 시 컬럼만 반환해 끊음.
 - `$inferColumns` — `InferColumns<TColumns>`. 관계 제외, 컬럼만의 값 타입.
 - `$inferInsert` — `InferInsertColumns<TColumns>`. INSERT 입력. `autoIncrement`/`nullable`/`default` 컬럼은 optional, 나머지는 필수.
 - `$inferUpdate` — `InferUpdateColumns<TColumns>`. UPDATE 입력. 모든 필드 optional.
@@ -21,7 +21,7 @@ Fluent immutable 빌더로 table/view/procedure 스키마를 정의한다. 각 �
 - `columns(fn)` — `fn(c)` 가 `createColumnFactory()` 의 `c` 로 컬럼 레코드를 반환. `TColumns` 를 갱신.
 - `primaryKey(...columns)` — PK 컬럼명 가변인자. 컬럼 key 로 제약, 복합 PK 지원.
 - `indexes(fn)` — `fn(i)` 가 `createIndexFactory()` 의 `i` 로 `IndexBuilder[]` 반환.
-- `relations(fn)` — `fn(r)` 가 `TableRelationFactory`(FK+RelationKey 모두 가능)로 관계 레코드 반환. 제네릭 `T` 는 **무제약**이라 `() => typeof X` 타겟이 const 형성 중 eager 평가되지 않아 TS6 순환을 피한다.
+- `relations(fn)` — `fn(r)` 가 `TableRelationFactory`(FK+RelationKey 모두 가능)로 관계 레코드 반환. 제네릭 `T` 는 **무제약**이라 `() => typeof X` 타겟이 const 형성 중 eager 평가되지 않아 TS6 순환을 피함.
 
 ### meta (런타임 구조)
 
@@ -29,10 +29,10 @@ Fluent immutable 빌더로 table/view/procedure 스키마를 정의한다. 각 �
 
 ## View — `View(name)` / `ViewBuilder<TDbContext, TName, TData, TRelations = {}>`
 
-`View(name)` 은 빈 `ViewBuilder` 를 만든다. `$inferSelect` = `TData & InferDeepRelations<TRelations>`.
+`View(name)` 은 빈 `ViewBuilder` 를 만듦. `$inferSelect` = `TData & InferDeepRelations<TRelations>`.
 
 - `description(desc)` / `database(db)` / `schema(schema)` — table 과 동일.
-- `query(viewFn)` — `(db) => Queryable<TViewData, any>` 를 받아 view 데이터 소스 SELECT 를 정의. 반환 builder 의 `TData` 가 `TViewData` 로 확정된다.
+- `query(viewFn)` — `(db) => Queryable<TViewData, any>` 를 받아 view 데이터 소스 SELECT 를 정의함. 반환 builder 의 `TData` 가 `TViewData` 로 확정됨.
 - `relations(fn)` — `fn(r)` 가 `ViewRelationFactory`(RelationKey 계열만 가능)로 관계 반환. table 과 달리 DB FK 를 만들지 않는 논리 관계만 허용.
 
 ## Procedure — `Procedure(name)` / `ProcedureBuilder<TParams, TReturns>`
@@ -46,7 +46,7 @@ Fluent immutable 빌더로 table/view/procedure 스키마를 정의한다. 각 �
 
 ## Column — `createColumnFactory()` / `ColumnBuilder<TValue, TMeta>`
 
-`createColumnFactory()` 가 반환하는 객체의 메서드로 컬럼 타입을 만든다. 각 메서드는 `ColumnBuilder` 를 반환하며 값 타입(TS) 과 SQL `dataType` 을 함께 고정한다.
+`createColumnFactory()` 가 반환하는 객체의 메서드로 컬럼 타입을 만듦. 각 메서드는 `ColumnBuilder` 를 반환하며 값 타입(TS) 과 SQL `dataType` 을 함께 고정함.
 
 | 메서드                       | 값 타입    | SQL / DBMS 매핑                                     |
 | ---------------------------- | ---------- | --------------------------------------------------- |
@@ -96,7 +96,7 @@ meta: `{ columns: TKeys, name?, unique?, orderBy?: ("ASC"|"DESC")[], description
 
 ## Relation — `createRelationFactory<TColumnKey>()` + 관계 빌더 클래스
 
-table 은 `TableRelationFactory`(= `RelationFkFactory & RelationRkFactory`), view 는 `ViewRelationFactory`(= `RelationRkFactory`) 를 콜백 인자로 받는다. 관계 description/single 은 메서드 체이닝이 아니라 factory 의 `opts` 인자로 전달한다(순환 참조 TS7022 회피).
+table 은 `TableRelationFactory`(= `RelationFkFactory & RelationRkFactory`), view 는 `ViewRelationFactory`(= `RelationRkFactory`) 를 콜백 인자로 받음. 관계 description/single 은 메서드 체이닝이 아니라 factory 의 `opts` 인자로 전달함(순환 참조 TS7022 회피).
 
 ### factory 메서드
 
@@ -121,4 +121,4 @@ table 은 `TableRelationFactory`(= `RelationFkFactory & RelationRkFactory`), vie
 
 ## _Migration (`models/system-migration.ts`)
 
-`_Migration` — `Table("_migration")` 으로 정의된 시스템 마이그레이션 테이블 빌더. 컬럼 `code: varchar(255)`, PK `code`. 적용된 마이그레이션 이름을 적재하며 `DbContext._migration`/`initialize` 가 사용한다.
+`_Migration` — `Table("_migration")` 으로 정의된 시스템 마이그레이션 테이블 빌더. 컬럼 `code: varchar(255)`, PK `code`. 적용된 마이그레이션 이름을 적재하며 `DbContext._migration`/`initialize` 가 사용함.

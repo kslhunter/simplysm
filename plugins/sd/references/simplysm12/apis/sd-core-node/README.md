@@ -1,6 +1,6 @@
 # @simplysm/sd-core-node
 
-Node.js 전용 코어 유틸: 파일시스템(동기/비동기) 래퍼, 경로 정규화, 해시, 파일 감시, 로깅, 자식 프로세스 실행, 워커 스레드 통신. 모든 export 는 `static` 메서드 클래스이거나 워커용 함수/타입. import 시 `@simplysm/sd-core-common` 이 부수효과로 로드된다(배열·Map prototype 확장 등 의존).
+Node.js 전용 코어 유틸: 파일시스템(동기/비동기) 래퍼, 경로 정규화, 해시, 파일 감시, 로깅, 자식 프로세스 실행, 워커 스레드 통신. 모든 export 는 `static` 메서드 클래스이거나 워커용 함수/타입. import 시 `@simplysm/sd-core-common` 이 부수효과로 로드됨(배열·Map prototype 확장 등 의존).
 
 ## 사용 트리거 인덱스
 
@@ -14,7 +14,7 @@ Node.js 전용 코어 유틸: 파일시스템(동기/비동기) 래퍼, 경로 �
 
 ## FsUtils
 
-정적 클래스. `targetPath`/`sourcePath` 는 모두 일반 string 경로. 대부분 메서드가 try/catch 후 `new SdError(err, path)` 로 재throw 한다.
+정적 클래스. `targetPath`/`sourcePath` 는 모두 일반 string 경로. 대부분 메서드가 try/catch 후 `new SdError(err, path)` 로 재throw 함.
 
 - `getParentPaths(currentPath: string): string[]` — `currentPath` 의 모든 상위 디렉토리를 루트까지 배열로. 자기 자신 미포함.
 - `getMd5Async(filePath: string): Promise<string>` — 파일 스트림의 md5 hex. 큰 파일용(스트리밍).
@@ -39,7 +39,7 @@ Node.js 전용 코어 유틸: 파일시스템(동기/비동기) 래퍼, 경로 �
 
 ## PathUtils
 
-정적 클래스. `TNormPath` 는 브랜드된 string 타입(`norm` 의 반환). 일반 string 을 TNormPath 자리에 넣으려면 `PathUtils.norm` 을 거쳐야 한다.
+정적 클래스. `TNormPath` 는 브랜드된 string 타입(`norm` 의 반환). 일반 string 을 TNormPath 자리에 넣으려면 `PathUtils.norm` 을 거쳐야 함.
 
 - `posix(...args: string[]): string` — `path.join` 후 `\` → `/` 치환. URL/glob 등 posix 슬래시가 필요한 곳에.
 - `changeFileDirectory(filePath, fromDirectory, toDirectory): string` — `filePath` 가 `fromDirectory` 하위라는 전제로 `toDirectory` 기준 경로로 재배치. `filePath === fromDirectory` 면 `toDirectory` 반환. 하위가 아니면 Error throw(빌드 산출물 경로 변환 등).

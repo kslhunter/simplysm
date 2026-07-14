@@ -1,6 +1,6 @@
 # @simplysm/core-node — Worker / createWorker
 
-worker_threads를 타입 안전한 메서드 프록시, 이벤트, stdout 전달 프로토콜로 감싼다. 워커 스레드 측은 `createWorker`, 메인 스레드 측은 `Worker.create`를 사용.
+worker_threads를 타입 안전한 메서드 프록시, 이벤트, stdout 전달 프로토콜로 감쌈. 워커 스레드 측은 `createWorker`, 메인 스레드 측은 `Worker.create`를 사용함.
 
 ## 타입
 

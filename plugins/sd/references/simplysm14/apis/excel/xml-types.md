@@ -32,7 +32,7 @@ interface ExcelRelationshipData {
 ```
 
 - `Relationships` — `.rels` 파일 루트. `$.xmlns` relationship namespace, `Relationship` 관계 항목 배열(없으면 관계 없는 rels).
-- `Id` — 관계 ID. workbook/worksheet/drawing 에서 `r:id` 로 참조된다.
+- `Id` — 관계 ID. workbook/worksheet/drawing 에서 `r:id` 로 참조됨.
 - `Target` — 관계 대상 part 경로.
 - `Type` — 관계 타입 URI.
 

@@ -38,7 +38,7 @@ const SdSharedDataChangeEvent = defineEvent<
 >("SdSharedDataChange");
 ```
 
-데이터 세트를 등록하고 이벤트 기반으로 캐시를 무효화하는 abstract provider. 앱은 subclass에서 `initialize()` 로 `register` 한다.
+데이터 세트를 등록하고 이벤트 기반으로 캐시를 무효화하는 abstract provider. 앱은 subclass에서 `initialize()` 로 `register` 함.
 
 - `SharedDataBase` — 모든 항목이 만족해야 하는 베이스. `__valueKey`(고유 key), `__searchText`(검색 매칭용 텍스트), `__isHidden`(논리 숨김), `__parentKey?`(트리 부모 key). `id`/`name` 필드 없음.
 - `register(name, info)` — 데이터 세트 등록. 재등록 시 기존 listener 제거 + generation 증가로 in-flight 결과 무시.
@@ -50,7 +50,7 @@ const SdSharedDataChangeEvent = defineEvent<
 
 ## 선택 매니저 (composable)
 
-signal 기반 순수 헬퍼 함수들. 주입 컨텍스트에서 호출하며 `sd-sheet` 등이 내부에서 사용한다.
+signal 기반 순수 헬퍼 함수들. 주입 컨텍스트에서 호출하며 `sd-sheet` 등이 내부에서 사용함.
 
 ### `useExpandingManager<T>`
 
@@ -135,7 +135,7 @@ interface SortingDef {
 
 ## 공유 데이터 선택 UI
 
-세 컨트롤 모두 `items: TItem[]`(보통 `getHandle(...).items()`)를 직접 받고, `SharedDataBase` 형태(`__valueKey`/`__searchText`/`__isHidden`/`__parentKey`)로 동작한다.
+세 컨트롤 모두 `items: TItem[]`(보통 `getHandle(...).items()`)를 직접 받고, `SharedDataBase` 형태(`__valueKey`/`__searchText`/`__isHidden`/`__parentKey`)로 동작함.
 
 ### `SdSharedDataSelect<TItem, TMode, TModal>` (`sd-shared-data-select`)
 

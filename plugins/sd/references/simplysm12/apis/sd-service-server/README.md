@@ -56,7 +56,7 @@ interface ISdServiceServerOptions {
 
 ## 서비스 작성 (SdServiceBase)
 
-`abstract class SdServiceBase<TAuthInfo = any>` — 모든 서비스 클래스가 상속. 메서드 호출 시 `SdServiceExecutor`가 인스턴스를 생성하고 컨텍스트(`server`/`socket`/`http`/`v1`)를 주입한다. public 메서드가 곧 호출 가능한 API.
+`abstract class SdServiceBase<TAuthInfo = any>` — 모든 서비스 클래스가 상속. 메서드 호출 시 `SdServiceExecutor`가 인스턴스를 생성하고 컨텍스트(`server`/`socket`/`http`/`v1`)를 주입함. public 메서드가 곧 호출 가능한 API.
 
 - `server: SdServiceServer<TAuthInfo>` — 주입된 서버 인스턴스(이벤트 emit·옵션 접근용).
 - `socket?: SdServiceSocket` — V2 WebSocket 호출일 때의 소켓(HTTP/V1 호출이면 undefined).
@@ -82,6 +82,7 @@ interface ISdServiceServerOptions {
 ### IAuthTokenPayload
 
 `interface IAuthTokenPayload<TAuthInfo = any> extends JWTPayload` — JWT 페이로드 형태.
+
 - `perms: string[]` — 사용자 권한 코드 목록(`Authorize` 검사 대상).
 - `data: TAuthInfo` — 임의의 로그인 사용자 정보(`SdServiceBase.authInfo`로 노출).
 - `JWTPayload`(jose) 표준 클레임(`exp`,`iat` 등)도 포함.
@@ -89,6 +90,7 @@ interface ISdServiceServerOptions {
 ### SdServiceJwtManager
 
 `class SdServiceJwtManager<TAuthInfo = any>` — `constructor(server)`. `options.auth.jwtSecret` 미설정 시 모든 메서드가 throw. 보통 서버의 `generateAuthTokenAsync`/`verifyAuthTokenAsync`로 간접 사용.
+
 - `signAsync(payload): Promise<string>` — HS256·`iat` 자동·만료 **12시간** 고정으로 서명.
 - `verifyAsync(token): Promise<IAuthTokenPayload>` — 서명·만료 검증. 만료 시 "토큰이 만료되었습니다.", 그 외 무효 시 "유효하지 않은 토큰입니다." throw.
 - `decodeAsync(token): Promise<IAuthTokenPayload>` — 검증 없이 페이로드만 디코드(secret 존재 여부만 확인).
@@ -98,34 +100,43 @@ interface ISdServiceServerOptions {
 `services` 옵션에 클래스를 그대로 넣으면 클라이언트가 `서비스명.메서드` 로 호출 가능. 인터페이스 계약·옵션 타입은 `@simplysm/sd-service-common` 참조.
 
 ### SdOrmService (`@Authorize()` — 로그인 필수)
+
 DB 연결/쿼리. 연결은 호출 소켓(V2 또는 V1)별로 `connId`(1부터 증가)로 관리되고, 소켓 close 시 일괄 종료. HTTP 호출은 소켓이 없어 throw("소켓 연결 필요"). 설정은 `getConfigAsync("orm")[configName]`.
+
 - `getInfo(opt & {configName})` — dialect·database·schema 조회. `connect`/`close(connId)` — 연결 생성(번호 반환)/종료.
 - `beginTransaction(connId, isolationLevel?)`/`commitTransaction`/`rollbackTransaction` — 트랜잭션.
 - `executeParametrized(connId, query, params?)` / `executeDefs(connId, defs, options?)` — 쿼리 실행. `bulkInsert`/`bulkUpsert(connId, tableName, columnDefs, records)` — 대량 처리.
 
 ### SdCryptoService
+
 `getConfigAsync("crypto")`의 `key` 사용.
+
 - `encrypt(data: string | Buffer): Promise<string>` — HMAC-SHA256 hex(단방향).
 - `encryptAes(data: Buffer): Promise<string>` — AES-256-CBC, `iv(hex):cipher(hex)` 형식 반환.
 - `decryptAes(encText: string): Promise<Buffer>` — 위 형식을 복호화.
 
 ### SdSmtpClientService
+
 nodemailer 기반(TLS `rejectUnauthorized:false`).
+
 - `send(options): Promise<string>` — 접속정보를 옵션에 직접 담아 발송, messageId 반환.
 - `sendByConfig(configName, options): Promise<string>` — `getConfigAsync("smtp")[configName]` 접속정보로 발송. `from`은 `"senderName" <senderEmail|user>` 조합.
 
 ### SdAutoUpdateService
+
 - `getLastVersion(platform: string): { version; downloadPath } | undefined` — `<clientPath>/<platform>/updates` 폴더에서 semver 최대 버전 탐색. `platform === "android"`면 `.apk`, 그 외는 `.exe` 중 `[0-9.]` 버전명만 후보. updates 폴더 없으면 undefined, clientPath 없으면 throw.
 
 ## 설정 관리 (SdConfigManager)
 
 `class SdConfigManager` (static 전용) — `.config.json` 로딩을 캐시 + 파일 감시.
+
 - `static getConfigAsync<T>(filePath: string): Promise<T | undefined>` — 캐시 적중 시 즉시 반환(접근 시 만료시간 갱신). 미스면 파일 읽어 캐시하고 `SdFsWatcher`로 감시 등록(변경 시 자동 갱신, 삭제 시 캐시·감시 해제). 파일 없으면 undefined.
 - 캐시: `LazyGcMap`, GC 10분 주기·만료 1시간(만료 시 watcher close). 같은 설정을 여러 서비스가 반복 읽어도 디스크 I/O 1회로 수렴.
 
 ## 프로토콜 래퍼 (protocol)
 
 `class SdServiceProtocolWrapper` — V2 소켓이 메시지 직렬화를 위해 사용. 크기에 따라 메인 스레드(`SdServiceProtocol`)와 워커 스레드를 자동 분기.
+
 - `encodeAsync(uuid: string, message: TSdServiceMessage): Promise<{ chunks: Buffer[]; totalSize: number }>` — body가 Buffer이거나 Buffer를 포함한 배열이면 워커로, 아니면 메인 스레드로 인코딩.
 - `decodeAsync(buffer: Buffer): Promise<ISdServiceMessageDecodeResult<TSdServiceMessage>>` — buffer가 30KB(`_SIZE_THRESHOLD`) 초과면 워커, 이하면 메인 스레드로 디코딩.
 - `dispose(): void` — 메인 스레드 프로토콜 인스턴스 정리(워커는 static 싱글톤이라 유지).
@@ -136,6 +147,7 @@ nodemailer 기반(TLS `rejectUnauthorized:false`).
 ## 실행 디스패처 (SdServiceExecutor)
 
 `class SdServiceExecutor` — `constructor(server)`. 전송 계층(HTTP/WS/V1 핸들러)이 공통으로 호출하는 메서드 실행기. 직접 쓸 일은 드묾.
+
 - `runMethodAsync(def): Promise<any>` — `def`: `serviceName`·`methodName`·`params: any[]` + 컨텍스트 중 하나(`socket?` / `v1?` / `http?`). 동작: 서비스 클래스 조회(없으면 throw) → clientName Path Traversal 검증 → (`options.auth` 있을 때) 메서드/클래스 권한 메타데이터 검사 → 서비스 인스턴스 생성·컨텍스트 주입 → 메서드 호출. 권한 검사 규칙은 위 [Authorize](#authorize-데코레이터) 절과 동일.
 
 ## V2 전송 계층 (transport)

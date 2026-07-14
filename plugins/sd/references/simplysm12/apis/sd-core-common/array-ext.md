@@ -29,7 +29,7 @@
 - `toSetMap<K,V>(keySelector, valueSelector?): Map<K, Set<V>>` — 같은 키의 값들을 Set 으로 누적.
 - `toMapValues<K,V>(keySelector, valueSelector: (items: T[]) => V): Map<K, V>` — 키별로 모은 배열 전체를 valueSelector 로 집계(그룹 합계 등).
 - `toObject(keySelector: (item,index) => string)` / `toObject<V>(keySelector, valueSelector): Record<string, V>` — 객체로 변환. 키 중복 시 Error.
-- `toTree<K extends keyof T, P extends keyof T>(keyProp, parentKey): ITreeArray<T>[]` — `parentKey` 값이 null 인 것을 루트로, `parentKey === keyProp` 매칭으로 `children` 트리 구성. 각 노드는 `ObjectUtils.clone` 된다. `ITreeArray<T> = T & { children: ITreeArray<T>[] }`.
+- `toTree<K extends keyof T, P extends keyof T>(keyProp, parentKey): ITreeArray<T>[]` — `parentKey` 값이 null 인 것을 루트로, `parentKey === keyProp` 매칭으로 `children` 트리 구성. 각 노드는 `ObjectUtils.clone` 됨. `ITreeArray<T> = T & { children: ITreeArray<T>[] }`.
 
 ## 정렬 / 중복제거
 

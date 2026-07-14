@@ -10,11 +10,12 @@ Android 앱의 APK 자동 업데이트(버전 확인 → 다운로드 → 설치
 
 ## AutoUpdate
 
-`abstract class AutoUpdate` — 인스턴스화 없이 static 메서드만 사용. 두 진입점 모두 성공/실패와 무관하게 신버전 설치 흐름에 진입하면 무한 대기로 앱을 정지(`_freezeApp`)시켜 재시작/재설치를 유도한다. `navigator.userAgent`에 `android`가 없으면 "안드로이드만 지원합니다." 예외.
+`abstract class AutoUpdate` — 인스턴스화 없이 static 메서드만 사용. 두 진입점 모두 성공/실패와 무관하게 신버전 설치 흐름에 진입하면 무한 대기로 앱을 정지(`_freezeApp`)시켜 재시작/재설치를 유도함. `navigator.userAgent`에 `android`가 없으면 "안드로이드만 지원합니다." 예외.
 
 ### `static runAsync(opt: { log: (messageHtml: string) => void; serviceClient: SdServiceClient }): Promise<void>`
 
 서버에서 최신 버전을 받아 업데이트하는 경로.
+
 - `log: (messageHtml: string) => void` — 진행 상태 HTML 문자열을 받는 콜백. "최신버전 확인 중...", "권한 확인 중...", 다운로드 진행률(`(NN.NN%)`), 권한/설치 안내 버튼 HTML, 오류 메시지 등을 전달. UI에 그대로 렌더링하는 용도.
 - `serviceClient: SdServiceClient` — 서버 통신 클라이언트. `getService<ISdAutoUpdateService>("SdAutoUpdateService")`로 `getLastVersion("android")` 호출해 `{ version, downloadPath }`를 얻고, `serviceClient.hostUrl + downloadPath`로 APK를 다운로드.
 - 동작: 최신 버전 정보 없으면 콘솔 로그 후 그냥 반환(업데이트 안 함). `process.env["SD_VERSION"]`이 서버 버전과 같으면 반환(이미 최신). 다르면 `NetUtils.downloadBufferAsync`로 내려받아 `FileSystem.getStoragePathAsync("appCache")` 아래 `latest.apk`로 저장 후 설치 인텐트 실행.
@@ -23,6 +24,7 @@ Android 앱의 APK 자동 업데이트(버전 확인 → 다운로드 → 설치
 ### `static runByExternalStorageAsync(opt: { log: (messageHtml: string) => void; dirPath: string }): Promise<void>`
 
 외부저장소 디렉토리의 APK 파일들 중 최신 버전을 골라 설치하는 경로(서버 없이).
+
 - `log: (messageHtml: string) => void` — 위와 동일한 진행 상태 콜백.
 - `dirPath: string` — 외부저장소(`FileSystem.getStoragePathAsync("external")`) 기준 상대 디렉토리 경로. 이 디렉토리를 `readdir`하여 `.apk` 확장자이며 파일명(확장자 제외)이 `/^[0-9.]*$/`(숫자·점만)인 파일을 버전으로 인식.
 - 동작: 후보가 없으면 반환. `semver.maxSatisfying(versions, "*")`로 최신 버전 선택. `process.env["SD_VERSION"]`과 같으면 반환(이미 최신). 다르면 `<dirPath>/<version>.apk`를 설치 인텐트로 실행. `runAsync`와 달리 권한 확인을 먼저 수행하고, 다운로드 버튼용 `targetHref`는 전달하지 않음.

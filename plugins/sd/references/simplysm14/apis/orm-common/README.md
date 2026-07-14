@@ -1,8 +1,8 @@
 # @simplysm/orm-common
 
-Dialect 독립 ORM 공통 라이브러리. SQL 문자열 대신 JSON AST(`QueryDef`/`Expr`)를 만들고, dialect 별 QueryBuilder 가 MySQL·MSSQL·PostgreSQL SQL 로 렌더링한다. 스키마 빌더(`Table`/`View`/`Procedure`), `DbContext` 연결·트랜잭션·DDL, `Queryable` 체이닝 CUD, `expr` 표현식 빌더, 결과 파싱 유틸리티를 제공한다.
+Dialect 독립 ORM 공통 라이브러리. SQL 문자열 대신 JSON AST(`QueryDef`/`Expr`)를 만들고, dialect 별 QueryBuilder 가 MySQL·MSSQL·PostgreSQL SQL 로 렌더링함. 스키마 빌더(`Table`/`View`/`Procedure`), `DbContext` 연결·트랜잭션·DDL, `Queryable` 체이닝 CUD, `expr` 표현식 빌더, 결과 파싱 유틸리티를 제공함.
 
-`browser`/`node`/`neutral` 어디서나 쓰이는 neutral target 패키지이며, 실제 DB 연결·실행은 소비자가 주입하는 `DbContextExecutor`(서버 `orm-node`, 클라이언트 service) 가 담당한다.
+`browser`/`node`/`neutral` 어디서나 쓰이는 neutral target 패키지이며, 실제 DB 연결·실행은 소비자가 주입하는 `DbContextExecutor`(서버 `orm-node`, 클라이언트 service) 가 담당함.
 
 ## 사용 트리거 인덱스
 

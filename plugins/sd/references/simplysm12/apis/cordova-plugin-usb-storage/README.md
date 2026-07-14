@@ -8,7 +8,7 @@ Android Cordova 환경에서 USB 저장장치를 vendorId/productId로 지정해
 
 ## CordovaUsbStorage
 
-`abstract` 클래스, 모든 메서드는 `static async`이며 `cordova.exec`를 Promise로 감싼다. 실패 시 `Error("CORDOVA: ERROR: " + err)`로 reject. 장치 지정은 `filter: { vendorId: number; productId: number }` 객체로 한다 (USB 장치를 식별하는 제조사/제품 ID 쌍). 일반 흐름: `getDevices`로 ID 확인 → `hasPermission`/`requestPermission` → `readdir`/`read`.
+`abstract` 클래스, 모든 메서드는 `static async`이며 `cordova.exec`를 Promise로 감쌈. 실패 시 `Error("CORDOVA: ERROR: " + err)`로 reject. 장치 지정은 `filter: { vendorId: number; productId: number }` 객체로 함 (USB 장치를 식별하는 제조사/제품 ID 쌍). 일반 흐름: `getDevices`로 ID 확인 → `hasPermission`/`requestPermission` → `readdir`/`read`.
 
 - `static getDevices(): Promise<{ deviceName: string; manufacturerName: string; productName: string; vendorId: number; productId: number }[]>`
   현재 연결된 USB 장치 목록을 반환. 대상 장치의 vendorId/productId를 알아내는 진입점. 각 항목 필드:

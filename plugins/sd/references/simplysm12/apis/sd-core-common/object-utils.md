@@ -1,6 +1,6 @@
 # @simplysm/sd-core-common — ObjectUtils
 
-`ObjectUtils` 정적 메서드 모음 — 객체 깊은복제, 동등비교, 병합, 체인 경로(`a.b[0].c`) 접근, 유효성 검증. DateTime/DateOnly/Time/Uuid/Buffer/Map/Set 을 인지해 특수 처리한다.
+`ObjectUtils` 정적 메서드 모음 — 객체 깊은복제, 동등비교, 병합, 체인 경로(`a.b[0].c`) 접근, 유효성 검증. DateTime/DateOnly/Time/Uuid/Buffer/Map/Set 을 인지해 특수 처리함.
 
 ## 복제 / 병합
 
@@ -47,6 +47,7 @@
 `TValidateDef<T>` = `Type<WrappedType<T>>` | `Type<...>[]` | `IValidateDef<T>`. 즉 생성자 1개/배열/상세객체 모두 허용.
 
 `IValidateDef<T>`:
+
 - `type?: Type<WrappedType<T>> | Type<...>[]` — 허용 생성자(값의 `.constructor` 와 일치 검사). primitive 는 String/Number/Boolean.
 - `notnull?: boolean` — true 면 undefined 불가(값 undefined 이고 notnull 아니면 검증 통과·skip).
 - `includes?: T[]` — 화이트리스트(이 값들 중 하나여야 함).
@@ -54,6 +55,7 @@
 - `validator?: (value: UnwrappedType<NonNullable<T>>) => boolean | string` — 커스텀 검증. true=통과, string=실패 메시지, false=실패.
 
 메서드:
+
 - `validate<T>(value, def): IValidateResult<T> | undefined` — 단일 값 검증. 통과 시 undefined, 실패 시 `{ value, invalidateDef, message? }`(`invalidateDef` 는 위반한 규칙만). NaN 은 type 위반 처리.
 - `validateObject<T>(obj, def: { [K in keyof T]?: TValidateDef<T[K]> }): { [K]?: IValidateResult }` — 객체 속성별 검증(체인 키 가능, `getChainValue` 사용). 위반 속성만 결과에 담김.
 - `validateObjectWithThrow<T>(displayName, obj, def: TValidateObjectDefWithName<T>): void` — 위반 시 Error throw. `def` 각 항목은 `IValidateDefWithName`(= `IValidateDef` + `displayName: string`). `displayValue` true 면 메시지에 값 포함.

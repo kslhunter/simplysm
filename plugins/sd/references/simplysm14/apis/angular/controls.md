@@ -1,14 +1,14 @@
 # @simplysm/angular — 폼·입력 컨트롤
 
-버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination 컨트롤 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. 값 컨트롤은 대부분 `value`/`from`/`to` 를 `model()` 로 노출하고 `required` 시 내부 `setupInvalid` 로 native validation에 참여한다. 공통 lint/template 규칙: [client-rules.md](../../manuals/client-rules.md), `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
+버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination 컨트롤 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. 값 컨트롤은 대부분 `value`/`from`/`to` 를 `model()` 로 노출하고 `required` 시 내부 `setupInvalid` 로 native validation에 참여함. 공통 lint/template 규칙: [client-rules.md](../../manuals/client-rules.md), `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
 
 공통 패턴(여러 컨트롤 공유):
 
-- `theme` literal(8색) — `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"`. 컨트롤 배경/링크 색을 해당 테마로 칠한다. `SdCheckbox` 만 `"white"` 추가.
+- `theme` literal(8색) — `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"`. 컨트롤 배경/링크 색을 해당 테마로 칠함. `SdCheckbox` 만 `"white"` 추가.
 - `size` — `"sm" | "lg"`(미지정=기본). padding/높이 단계. `SdButton` 만 `"xs"` 추가.
 - `inline`(boolean) — `inline-block` + 자동 너비(기본은 full-width block).
 - `inset`(boolean) — 테두리/라운드 제거(평면/오버레이 스타일).
-- `disabled`/`readonly`(boolean) — 입력 차단. readonly/disabled/inset는 값 미리보기(`_contents`)를 렌더한다.
+- `disabled`/`readonly`(boolean) — 입력 차단. readonly/disabled/inset는 값 미리보기(`_contents`)를 렌더함.
 
 ## 버튼
 
@@ -27,7 +27,7 @@ class SdButton {
 }
 ```
 
-native `<button>` 을 감싸고 `<ng-content>` 를 투영한다. ripple은 `!disabled()` 일 때 켜진다.
+native `<button>` 을 감싸고 `<ng-content>` 를 투영함. ripple은 `!disabled()` 일 때 켜짐.
 
 - `type` — `"button"`(기본) 일반 버튼, `"submit"` 폼 제출 버튼. native `type` 속성에 그대로.
 - `theme` — 19개 literal. 단색: `primary`/`secondary`/`info`/`success`/`warning`/`danger`/`gray`/`blue-gray`(테마 배경+반전 텍스트, hover 시 진해짐). 링크형: `link`(primary 텍스트), `link-primary`/`link-secondary`/`link-info`/`link-success`/`link-warning`/`link-danger`/`link-gray`/`link-blue-gray`(배경·테두리 투명, 색 텍스트만), `link-rev`(어두운 배경용 반전 텍스트). 미지정 시 기본(컨트롤 배경+primary 테두리).
@@ -92,7 +92,7 @@ type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
 
 - `modal` — 띄울 모달 정의(`selectMode`/`selectedKeys` 는 버튼이 주입하므로 제외된 `SdSelectModalInfo`). **required**.
 - `value` — 선택 key. `selectMode==="multi"` → key 배열, `"single"` → 단일 key.
-- `selectMode` — `"single"`(기본)/`"multi"`. 모달에 전달되고 결과 해석 방식을 정한다.
+- `selectMode` — `"single"`(기본)/`"multi"`. 모달에 전달되고 결과 해석 방식을 정함.
 - `disabled` — true면 검색·지우개 버튼 숨김.
 - `required` — true면 지우개 버튼 숨김 + 빈 값일 때 `"선택된 항목이 없습니다."` invalid.
 - `searchIcon` — 검색 버튼 아이콘(기본 `tablerSearch`).
@@ -117,7 +117,7 @@ class SdTextfield<K extends keyof SdTextfieldTypes> {
 }
 ```
 
-`type` 으로 native input type·파싱·검증·표시 포맷이 한 번에 결정되는 타입 안전 입력 컨트롤. `value` 타입은 `SdTextfieldTypes[type]` 로 추론된다.
+`type` 으로 native input type·파싱·검증·표시 포맷이 한 번에 결정되는 타입 안전 입력 컨트롤. `value` 타입은 `SdTextfieldTypes[type]` 로 추론됨.
 
 - `type` — **required**. `SdTextfieldTypes` key 중 하나(아래).
 - `value` — `type` 별 타입(number→`number`, date→`DateOnly` 등). 빈 입력은 `undefined`. 파싱 실패 시 직전 표시값 복원.
@@ -192,7 +192,7 @@ class SdRange<K extends keyof SdTextfieldTypes> {
 }
 ```
 
-같은 `type` 의 textfield 두 개를 `~` 로 잇는 범위 입력. `to` 의 `min` 은 `from()` 으로 묶여 상한이 하한보다 앞서지 않는다.
+같은 `type` 의 textfield 두 개를 `~` 로 잇는 범위 입력. `to` 의 `min` 은 `from()` 으로 묶여 상한이 하한보다 앞서지 않음.
 
 ### `SdDateRangePicker` (`sd-date-range-picker`)
 
@@ -205,7 +205,7 @@ class SdDateRangePicker {
 }
 ```
 
-기간 종류 select + 날짜 입력. `periodType` 별로 UI/동기화가 달라진다.
+기간 종류 select + 날짜 입력. `periodType` 별로 UI/동기화가 달라짐.
 
 - `periodType` — `"일"`(단일일, `to=from`), `"월"`(월 단위, `from`=그 달 1일·`to`=말일로 스냅), `"범위"`(기본, from/to range). 변경 시 그에 맞게 `from`/`to` 동기화.
 
@@ -340,7 +340,7 @@ class SdForm {
 `novalidate` native `<form>` 래퍼. submit 시 `formEl.checkValidity()` 통과면 `formSubmit` emit, 실패면 `reportValidity()`(native 메시지 표시+첫 invalid 포커스) 후 `formInvalid` emit.
 
 - `requestSubmit()` — 프로그램적으로 submit 트리거.
-- 검증 통합 — 자식 컨트롤이 `setupInvalid` 로 등록한 hidden `.sd-invalid-input` 의 customValidity를 native form이 집계한다.
+- 검증 통합 — 자식 컨트롤이 `setupInvalid` 로 등록한 hidden `.sd-invalid-input` 의 customValidity를 native form이 집계함.
 
 ## collapse·tab·list·gap·pagination
 

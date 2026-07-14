@@ -1,6 +1,6 @@
 # @simplysm/sd-orm-common
 
-dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로 테이블/컬럼/관계를 정의하고, `Queryable` 체이닝 + `QueryHelper` 함수로 타입세이프 쿼리를 조립해 `DbContext` 를 통해 실행한다. 실제 DB 접속/실행은 별도 어댑터 패키지가 `IDbContextExecutor`/`IDbConn` 을 구현해 주입한다.
+dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로 테이블/컬럼/관계를 정의하고, `Queryable` 체이닝 + `QueryHelper` 함수로 타입세이프 쿼리를 조립해 `DbContext` 를 통해 실행함. 실제 DB 접속/실행은 별도 어댑터 패키지가 `IDbContextExecutor`/`IDbConn` 을 구현해 주입함.
 
 ## 사용 트리거 인덱스
 
@@ -20,7 +20,9 @@ dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로
 ## 데이터 타입 / 옵션 타입 (인라인)
 
 ### TSdOrmDataType
+
 `@Column({ dataType })` 에 주는 명시적 DB 타입. union 멤버:
+
 - `{ type: "TEXT" }` — 대용량 텍스트. dialect별 LONGTEXT(mysql)/NTEXT.
 - `{ type: "DECIMAL"; precision: number; digits?: number }` — 고정소수. `precision`=전체 자릿수, `digits`=소수 자릿수(없거나 0이면 정수부만 `DECIMAL(p)`).
 - `{ type: "STRING"; length?: number | "MAX" }` — 가변 문자열. `length` 미지정 시 255, `"MAX"` 는 mysql에서 LONGTEXT, 그 외 NVARCHAR(MAX).
@@ -29,24 +31,31 @@ dialect 비종속(mysql/mssql/mssql-azure/sqlite) ORM 코어. 데코레이터로
 - `dataType` 미지정 시 컬럼의 TS 타입(`design:type`)을 보고 자동 매핑(String→NVARCHAR(255), Number→BIGINT/INTEGER, Boolean→BIT/BOOLEAN, DateTime→DATETIME2/DATETIME, DateOnly→DATE, Time→TIME, Uuid→UNIQUEIDENTIFIER/CHAR(38), Buffer→VARBINARY(MAX)).
 
 ### TQueryValue / TStrippedQueryValue
+
 - `TQueryValue` — 쿼리에 들어갈 수 있는 평면 값 타입(`TFlatType`: string/number/boolean/DateOnly/DateTime/Time/Uuid/Buffer 등 + 래퍼). 컬럼 값의 기본 단위.
 - `TStrippedQueryValue` — `TQueryValue` 의 래퍼(Number/String/Boolean 등)를 벗긴 원시 타입.
 
 ### TDbContextOption (`db.opt`)
+
 `DbContext` 생성 시 주는 동작 옵션. union:
+
 - `{ dialect: "mysql" | "mssql" | "mssql-azure"; database?: string; schema?: string }` — 일반 dialect. `database`/`schema` 는 테이블 정의에 DB/스키마가 없을 때의 기본값.
 - `{ dialect: "sqlite" }` — sqlite. database/schema 개념 없음(테이블명만 사용).
 - `dialect` 분기는 SQL 생성·식별자 래핑(\` vs `[]`)·MAX/IDENTITY 처리 전반에 영향.
 
 ### TDbConnConf (어댑터 접속 설정)
+
 - `{ dialect: "mysql"|"mssql"|"mssql-azure"; host; port?; username; password; database?; schema?; defaultIsolationLevel? }` — 네트워크 DB 접속 정보. `defaultIsolationLevel` 미지정 트랜잭션의 기본 격리수준.
 - `{ dialect: "sqlite"; filePath: string }` — sqlite 파일 경로.
 
 ### ISOLATION_LEVEL
+
 트랜잭션 격리수준 리터럴. `"READ_UNCOMMITTED"`(더티리드 허용) | `"READ_COMMITTED"` | `"REPEATABLE_READ"` | `"SERIALIZABLE"`(최강). `connectAsync`/`transAsync`/`beginTransactionAsync` 인자.
 
 ### QueryUnit&lt;T&gt;
+
 SQL 표현식 한 조각의 래퍼. `QueryHelper`/`CaseQueryHelper` 가 반환하며 `Queryable` entity의 각 컬럼도 이 타입.
+
 - `type: Type<T | WrappedType<T>> | undefined` — 결과 파싱용 런타임 타입.
 - `query` — 내부 SQL 토큰(문자열/배열/중첩 QueryUnit/Queryable).
 - `notNull(): QueryUnit<NonNullable<T>>` — 타입만 non-null 로 좁힘(런타임 동작 없음).
@@ -55,6 +64,7 @@ SQL 표현식 한 조각의 래퍼. `QueryHelper`/`CaseQueryHelper` 가 반환�
 ## StoredProcedure&lt;D, T&gt;
 
 저장 프로시저 실행 래퍼. 보통 `DbContext` 필드로 `new StoredProcedure(this, ProcType)` 형태 보유.
+
 - `constructor(db: D, tableType: Type<T>)` — `tableType` 은 `@Table({ procedure })` 로 정의한 프로시저 인자 스키마 클래스.
 - `execAsync(obj: TInsertObject<T>): Promise<void>` — `obj` 의 각 필드를 쿼리값으로 변환해 `executeProcedure` 정의로 실행. database/schema 는 테이블 정의 → `db.opt` 순으로 결정(sqlite는 생략).
 

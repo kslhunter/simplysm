@@ -29,9 +29,9 @@ Angular 22 기반 클라이언트 UI 라이브러리. 앱 초기화, UI 컨트�
 function provideSdAngular(opt: { clientName: string }): EnvironmentProviders;
 ```
 
-- `opt.clientName: string` — `SdAngularConfigProvider.clientName` 에 저장되는 클라이언트 이름. `SdLocalStorageProvider` 키 prefix(`${clientName}.${key}`)와 service-client 생성에 쓰인다.
-- 등록 항목 — `IMAGE_CONFIG`(이미지 size/lazy 경고 비활성), `NgIcons` 기본(`strokeWidth:1.5`, `size:"1.33em"`), theme localStorage 복원·저장(`sd-theme-dark`/`-blueprint`/`-font-size`), browser `error`/`unhandledrejection` → `ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(EVENT_MANAGER_PLUGINS), `SdGlobalErrorHandlerPlugin`(ErrorHandler), `provideZonelessChangeDetection`, service-worker 자동 업데이트 polling(5분~60분 지수 backoff, 확인 시 reload), Router navigation 동안 `SdBusyProvider.globalBusyCount` 증감.
-- browser guard — theme 저장·전역 window listener·service-worker·busy는 `isPlatformBrowser` 조건에서만 동작한다.
+- `opt.clientName: string` — `SdAngularConfigProvider.clientName` 에 저장되는 클라이언트 이름. `SdLocalStorageProvider` 키 prefix(`${clientName}.${key}`)와 service-client 생성에 쓰임.
+- 등록 항목 — `IMAGE_CONFIG`(이미지 size/lazy 경고 비활성), `NgIcons` 기본(`strokeWidth:1.5`, `size:"1.33em"`), theme localStorage 복원·저장(`sd-theme-dark`/`-blueprint`/`-font-size`), browser `error`/`unhandledrejection` → `ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(EVENT_MANAGER_PLUGINS), `SdGlobalErrorHandlerPlugin`(ErrorHandler), `provideZonelessChangeDetection`, service-worker 자동 업데이트 polling(5분-60분 지수 backoff, 확인 시 reload), Router navigation 동안 `SdBusyProvider.globalBusyCount` 증감.
+- browser guard — theme 저장·전역 window listener·service-worker·busy는 `isPlatformBrowser` 조건에서만 동작함.
 
 ## 코어 유틸·타입 헬퍼
 
@@ -45,7 +45,7 @@ function setupBgTheme(options?: {
 }): void;
 ```
 
-- `theme` — body `--background-color` 를 `var(--theme-{theme}-{lightness})` 로 바꿀 테마. 없으면 빈 값으로 되돌린다.
+- `theme` — body `--background-color` 를 `var(--theme-{theme}-{lightness})` 로 바꿀 테마. 없으면 빈 값으로 되돌림.
 - `lightness` — 색 단계. `"lightest"`(기본)/`"lighter"`.
 - 동작 — browser에서만 `effect` 로 적용, cleanup 시 빈 값 복원.
 
@@ -59,7 +59,7 @@ function setSafeStyle(
 ): void;
 ```
 
-- `style` 객체의 own key를 순회해 `renderer.setStyle(el, key, value)` 로 적용한다.
+- `style` 객체의 own key를 순회해 `renderer.setStyle(el, key, value)` 로 적용함.
 
 ### `setupModelHook`
 
@@ -105,7 +105,7 @@ type WithOptional<T, K extends keyof T> = ...
 - `SelectModalOutputResult.selectedKeys` — 선택 모달 close payload의 선택 key 배열.
 - `UndefToOptional<T>` — 값 타입에 `undefined` 가 포함된 property를 optional로 바꾸고 값 타입에서 `undefined` 제외.
 - `DirectiveInputSignals<T>` — `T` 의 `InputSignal<V>` property만 골라 `{ property: V }` 로 만들고 `UndefToOptional` 적용. modal/toast/print 의 `inputs` 타입 기반.
-- `WithOptional<T, K>` — `T` 에서 `K` key만 optional로 바꾼다(`Omit<T,K> & Partial<Pick<T,K>>`).
+- `WithOptional<T, K>` — `T` 에서 `K` key만 optional로 바꿈(`Omit<T,K> & Partial<Pick<T,K>>`).
 
 ## 설정·로그·서비스 인프라
 
@@ -186,7 +186,7 @@ class SdSystemLogProvider {
 }
 ```
 
-- `severity` — `"error"`/`"warn"`/`"log"`. 같은 이름의 내부 logger 메서드를 호출한다.
+- `severity` — `"error"`/`"warn"`/`"log"`. 같은 이름의 내부 logger 메서드를 호출함.
 - `writeFn` — 콘솔 기록 뒤 추가로 호출할 외부 log sink. throw/reject하면 내부 logger.error로만 남기고 rethrow 안 함.
 - 자동 호출처 — `SdGlobalErrorHandlerPlugin`, `SdToastProvider.try()`.
 
@@ -220,6 +220,6 @@ class SdGlobalErrorHandlerPlugin implements ErrorHandler {
 ```
 
 - `event` — `PromiseRejectionEvent`/`ErrorEvent`/`Error`/기타. browser 아니면 logger에만 남긴다.
-- browser 동작 — 첫 에러만 system log에 기록하고 Angular app을 destroy한 뒤 full-screen overlay를 body에 붙인다(항상 `false` 반환).
+- browser 동작 — 첫 에러만 system log에 기록하고 Angular app을 destroy한 뒤 full-screen overlay를 body에 붙임(항상 `false` 반환).
 - `ErrorEvent.error == null` — overlay 대신 `writeAsync("warn", message)` 만 호출.
 - overlay click — production이면 `location.hash = "/"` 후 reload, dev면 그냥 reload.

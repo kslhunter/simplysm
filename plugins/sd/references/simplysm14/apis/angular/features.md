@@ -1,8 +1,8 @@
 # @simplysm/angular — 테마·주소·에디터·시각화
 
-테마 provider/selector, 주소 검색 modal, TipTap/Markdown editor, label/note/progress/calendar/barcode/ECharts 표시 컴포넌트 군이다. 컴포넌트는 standalone · OnPush · `ViewEncapsulation.None`.
+테마 provider/selector, 주소 검색 modal, TipTap/Markdown editor, label/note/progress/calendar/barcode/ECharts 표시 컴포넌트 군임. 컴포넌트는 standalone · OnPush · `ViewEncapsulation.None`.
 
-`theme` literal(8색)은 컨트롤 공통값 `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"` 로, 각 값이 `--theme-<key>-*` CSS 변수 배경/색을 결정한다.
+`theme` literal(8색)은 컨트롤 공통값 `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"` 로, 각 값이 `--theme-<key>-*` CSS 변수 배경/색을 결정함.
 
 ## 테마
 
@@ -29,7 +29,7 @@ class SdThemeProvider {
 
 ### `SdThemeSelector` (`sd-theme-selector`)
 
-입력 없음. palette 아이콘 dropdown으로 글자 크기(+/- 버튼), "다크 모드"·"블루프린트" `sd-switch` 를 렌더하고 `SdThemeProvider` signal을 양방향 바인딩해 직접 토글한다.
+입력 없음. palette 아이콘 dropdown으로 글자 크기(+/- 버튼), "다크 모드"·"블루프린트" `sd-switch` 를 렌더하고 `SdThemeProvider` signal을 양방향 바인딩해 직접 토글함.
 
 ## 주소 검색
 
@@ -140,9 +140,9 @@ class SdProgress {
 }
 ```
 
-단일 진행 막대(`max` 입력 없음). `value` 는 0~1 비율로, `PercentPipe`("1.0-2")로 표시하고 막대 너비 = `clamp(value*100, 0, 100)%`.
+단일 진행 막대(`max` 입력 없음). `value` 는 0-1 비율로, `PercentPipe`("1.0-2")로 표시하고 막대 너비 = `clamp(value*100, 0, 100)%`.
 
-- `value` — **required**. 0~1 진행 비율.
+- `value` — **required**. 0-1 진행 비율.
 - `theme` — **required** 8색. 채워진 막대 색 `--theme-<key>-default`.
 - `size` — `"sm"`/`"lg"`/미지정 padding. `inset` — true면 라운드/테두리 제거.
 

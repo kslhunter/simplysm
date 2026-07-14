@@ -1,6 +1,6 @@
 # @simplysm/angular — 칸반
 
-`sd-kanban-board` > `sd-kanban-lane` > `sd-kanban` 3계층으로 카드 선택과 drag-drop 이동을 처리하는 군이다. standalone · OnPush · `ViewEncapsulation.None`. 제네릭 `<L, T>` 에서 `L` 은 lane 값 타입, `T` 는 card 값 타입이다. board는 데이터를 직접 변경하지 않고 `drop` 으로 source/target만 알려준다.
+`sd-kanban-board` > `sd-kanban-lane` > `sd-kanban` 3계층으로 카드 선택과 drag-drop 이동을 처리하는 군임. standalone · OnPush · `ViewEncapsulation.None`. 제네릭 `<L, T>` 에서 `L` 은 lane 값 타입, `T` 는 card 값 타입임. board는 데이터를 직접 변경하지 않고 `drop` 으로 source/target만 알려줌.
 
 ## `SdKanbanBoard<L, T>` (`sd-kanban-board`)
 
@@ -27,7 +27,7 @@ interface SdKanbanDropTarget<L, T> {
 lane들을 가로로 배치하는 보드. 내부 `dragKanban` signal로 현재 드래그 카드를 추적(plain signal, input 아님).
 
 - `selectedValues`(model) — 선택된 카드 값 배열. lane 전체선택·카드 shift-클릭으로 변경.
-- `drop` — 드롭 시 `{ sourceKanbanValue, targetLaneValue, targetKanbanValue }` emit. 보드는 리스트를 직접 정렬하지 않으므로 소비자가 이 정보로 자기 데이터를 갱신한다.
+- `drop` — 드롭 시 `{ sourceKanbanValue, targetLaneValue, targetKanbanValue }` emit. 보드는 리스트를 직접 정렬하지 않으므로 소비자가 이 정보로 자기 데이터를 갱신함.
 - 드롭 해석 — `targetKanbanValue` 가 있으면 "그 카드 앞에 삽입", 없으면(lane 빈 영역) "lane 끝에 append".
 
 ## `SdKanbanLane<L, T>` (`sd-kanban-lane`)

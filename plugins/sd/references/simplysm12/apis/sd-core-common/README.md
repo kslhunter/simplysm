@@ -2,7 +2,7 @@
 
 브라우저/Node 공용 코어 유틸 — 날짜·시간 타입, 배열/Map/Set 프로토타입 확장, 객체 복제·검증·비교, JSON/CSV/XML/Worker 직렬화, 비동기 큐·대기, ZIP, 데코레이터, 에러 클래스.
 
-import 시 `Array`/`Map`/`Set` 프로토타입이 전역 확장된다(`index.ts` 가 `Array.ext`/`Map.ext`/`Set.ext` 를 side-effect import). `reflect-metadata` 도 자동 import 된다.
+import 시 `Array`/`Map`/`Set` 프로토타입이 전역 확장됨(`index.ts` 가 `Array.ext`/`Map.ext`/`Set.ext` 를 side-effect import). `reflect-metadata` 도 자동 import 됨.
 
 ## 사용 트리거 인덱스
 
@@ -31,7 +31,7 @@ import 시 `Array`/`Map`/`Set` 프로토타입이 전역 확장된다(`index.ts`
 
 ## Map.ext / Set.ext (전역 프로토타입 확장)
 
-import 만으로 `Map`/`Set` 프로토타입에 메서드가 추가된다.
+import 만으로 `Map`/`Set` 프로토타입에 메서드가 추가됨.
 
 - `Map<K,V>.getOrCreate(key, newValue: V): V` — 키 있으면 그 값, 없으면 `newValue` 를 set 후 반환.
 - `Map<K,V>.getOrCreate(key, newValueFn: () => V): V` — 없을 때만 팩토리 호출(함수면 lazy 생성). 비싼 초기값에 사용.
@@ -56,14 +56,14 @@ import 만으로 `Map`/`Set` 프로토타입에 메서드가 추가된다.
 
 ## XmlConvert
 
-fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담긴다.
+fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담김.
 
 - `XmlConvert.parse(str, options?)` — 속성값·태그값은 파싱하지 않고 문자열 유지. 깊이 2 이상(`jPath`에 `.` 포함)인 비속성 노드는 배열로 강제. `options.stripTagPrefix?: boolean` true 면 태그명의 `ns:` 네임스페이스 prefix 제거(속성 `$` 는 유지).
 - `XmlConvert.stringify(obj, options?: XmlBuilderOptions)` — 객체를 XML 문자열로 빌드. `options` 는 fast-xml-parser `XmlBuilderOptions` 와 병합(기본값 위에 덮어씀).
 
 ## TransferableConvert (Worker thread)
 
-`worker_threads` postMessage 용. 특수타입을 구조체로 인코딩하고 Buffer/Uint8Array 의 ArrayBuffer 를 transferList 로 모은다.
+`worker_threads` postMessage 용. 특수타입을 구조체로 인코딩하고 Buffer/Uint8Array 의 ArrayBuffer 를 transferList 로 모음.
 
 - `TransferableConvert.encode(obj): { result: any; transferList: Transferable[] }` — `result` 는 전송용 객체, `transferList` 는 zero-copy 이전 대상(ArrayBuffer 목록). DateTime/DateOnly/Time→`{__type__,data:tick}`, Uuid→문자열, Error→직렬화 구조체(code/detail/cause 포함). Array/Map/Set/일반객체 재귀.
 - `TransferableConvert.decode(obj): any` — encode 의 역변환. 수신측에서 원래 인스턴스 복원. 배열/객체는 in-place 로 변환.
@@ -110,6 +110,7 @@ fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담긴다.
 ## NumberUtils / MathUtils / StringUtils
 
 `NumberUtils` (정적):
+
 - `parseInt(text, radix = 10): number | undefined` — 숫자면 반올림 반환, 문자열이면 숫자/`.`/`-` 외 제거 후 parseInt. NaN/undefined 면 undefined.
 - `parseFloat(text): number | undefined` — 위와 동일하나 실수 파싱.
 - `parseRoundedInt(text): number | undefined` — parseFloat 후 `Math.round`.
@@ -117,9 +118,11 @@ fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담긴다.
 - `format(val, digit?: { max?, min? }): string | undefined` — `toLocaleString`(천단위 구분). `digit.max`/`digit.min` 은 최대/최소 소수 자리. val 이 undefined 면 undefined.
 
 `MathUtils` (정적):
+
 - `getRandomInt(min, max): number` — `min` 이상 `max` 미만 정수.
 
 `StringUtils` (정적):
+
 - `getSuffix(text, type: "을"|"은"|"이"|"와"|"랑"|"로"|"라"): string` — text 마지막 글자의 받침 유무로 한글 조사 선택(예 받침有→"을", 받침無→"를").
 - `replaceSpecialDefaultChar(str): string` — 전각 영문/숫자/공백/괄호를 반각으로 치환.
 - `toPascalCase(str)` / `toCamelCase(str)` / `toKebabCase(str)` — `-`·`.`·`_` 경계 기준 케이스 변환.
@@ -135,7 +138,7 @@ fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담긴다.
 ## DateTimeFormatUtils
 
 - `DateTimeFormatUtils.format(format, args): string` — C# 커스텀 날짜포맷. `args`: `{ year?, month?, day?, hour?, minute?, second?, millisecond?, timezoneOffsetMinutes? }`(제공된 필드만 치환). 보통 `DateOnly`/`DateTime`/`Time`.toFormatString 이 내부 사용.
-  - 토큰: `yyyy`(4자리연), `yy`(2자리), `MM`/`M`(월, 0패딩 여부), `dd`/`d`(일), `ddd`(한글요일 일~토), `HH`/`H`(24시), `hh`/`h`(12시), `tt`(오전/오후), `mm`/`m`(분), `ss`/`s`(초), `fff`/`ff`/`f`(밀리초 3/2/1자리), `zzz`(±HH:mm), `zz`(±HH), `z`(±H).
+  - 토큰: `yyyy`(4자리연), `yy`(2자리), `MM`/`M`(월, 0패딩 여부), `dd`/`d`(일), `ddd`(한글요일 일-토), `HH`/`H`(24시), `hh`/`h`(12시), `tt`(오전/오후), `mm`/`m`(분), `ss`/`s`(초), `fff`/`ff`/`f`(밀리초 3/2/1자리), `zzz`(±HH:mm), `zz`(±HH), `z`(±H).
 
 ## FnUtils
 
@@ -143,7 +146,7 @@ fast-xml-parser 래퍼. 속성은 `$`, 텍스트노드는 `_` 키에 담긴다.
 
 ## 데코레이터
 
-레거시 데코레이터(`target`, `propertyName`, `descriptor`) 시그니처. `PropertyGetSetDecoratorBase` 가 reflect-metadata 로 저장공간을 만들고 get/set 을 재정의한다.
+레거시 데코레이터(`target`, `propertyName`, `descriptor`) 시그니처. `PropertyGetSetDecoratorBase` 가 reflect-metadata 로 저장공간을 만들고 get/set 을 재정의함.
 
 - `NotifyPropertyChange(): TPropertyDecoratorReturn<any>` — 속성에 붙이면 set 직후 해당 인스턴스의 `onPropertyChange(propertyName, oldValue, newValue)` 호출. 클래스는 `INotifyPropertyChange` 구현 필요.
 - `INotifyPropertyChange` — `onPropertyChange<K extends keyof this>(propertyName: K, oldValue: this[K], newValue: this[K]): void` 콜백 계약.

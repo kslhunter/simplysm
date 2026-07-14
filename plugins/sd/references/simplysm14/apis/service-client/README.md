@@ -1,6 +1,6 @@
 # @simplysm/service-client
 
-WebSocket 기반 서비스 클라이언트. 서비스 RPC 호출, 인증, 요청·응답·서버 진행률 추적, 파일 업·다운로드, 원격 ORM 실행의 클라이언트 진입점을 제공한다.
+WebSocket 기반 서비스 클라이언트. 서비스 RPC 호출, 인증, 요청·응답·서버 진행률 추적, 파일 업·다운로드, 원격 ORM 실행의 클라이언트 진입점을 제공함.
 
 ## 사용 트리거 인덱스
 
@@ -18,8 +18,8 @@ function createServiceClient(name: string, options: ServiceConnectionOptions): S
 class ServiceClient extends EventEmitter<ServiceClientEvents>;
 ```
 
-- `name: string` — 클라이언트 식별자. WebSocket 쿼리 `clientName`, 파일 업로드 헤더 `x-sd-client-name` 으로 전달된다.
-- `options: ServiceConnectionOptions` — 접속 설정(host, port, ssl, maxReconnectCount). 생성자에서 WebSocket URL(`/ws`)과 HTTP `hostUrl` 계산에 사용된다.
+- `name: string` — 클라이언트 식별자. WebSocket 쿼리 `clientName`, 파일 업로드 헤더 `x-sd-client-name` 으로 전달됨.
+- `options: ServiceConnectionOptions` — 접속 설정(host, port, ssl, maxReconnectCount). 생성자에서 WebSocket URL(`/ws`)과 HTTP `hostUrl` 계산에 사용됨.
 - `name: string` (readonly) — 생성자의 name 인자 보존.
 - `options: ServiceConnectionOptions` (readonly) — 생성자의 options 인자 보존.
 - `connected: boolean` (getter) — 내부 소켓의 WebSocket.OPEN 여부. `addListener` 호출 시 false 면 `"서버에 연결되지 않았습니다."` throw.

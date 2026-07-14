@@ -1,6 +1,6 @@
 # @simplysm/lint — recommended
 
-`@simplysm/lint/eslint-recommended` default export 가 만드는 ESLint flat config 배열. 프로젝트 lint 설정에 표준 JS·TS·Angular template 규칙 세트를 붙이거나, 어떤 규칙이 어떤 파일군에 어떤 옵션으로 켜지는지 확인할 때 읽는다. 커스텀 규칙(`@simplysm/*`)의 상세 동작은 [rules.md](./rules.md).
+`@simplysm/lint/eslint-recommended` default export 가 만드는 ESLint flat config 배열. 프로젝트 lint 설정에 표준 JS·TS·Angular template 규칙 세트를 붙이거나, 어떤 규칙이 어떤 파일군에 어떤 옵션으로 켜지는지 확인할 때 읽음. 커스텀 규칙(`@simplysm/*`)의 상세 동작은 [rules.md](./rules.md).
 
 ## default export
 
@@ -8,7 +8,7 @@
 export default tseslint.config(...configs); // FlatConfig[]
 ```
 
-- `tseslint.config(...)` — 아래 블록들을 순서대로 배열화한다. 뒤 블록이 같은 파일에 함께 매칭되면 flat config 병합 규칙으로 누적 적용된다.
+- `tseslint.config(...)` — 아래 블록들을 순서대로 배열화함. 뒤 블록이 같은 파일에 함께 매칭되면 flat config 병합 규칙으로 누적 적용됨.
 - 사용법: [client-rules.md](../../manuals/client-rules.md), [logging.md](../../manuals/logging.md)
 
 ## 1. ignores
@@ -17,9 +17,9 @@ export default tseslint.config(...configs); // FlatConfig[]
 { ignores: string[] }
 ```
 
-- `"**/node_modules/**"` — dependency 설치물 순회를 건너뛴다.
-- `"**/dist/**"` — 빌드 산출물 순회를 건너뛴다.
-- `"**/.*/**"` — dot 디렉토리 아래 파일 순회를 건너뛴다.
+- `"**/node_modules/**"` — dependency 설치물 순회를 건너뜀.
+- `"**/dist/**"` — 빌드 산출물 순회를 건너뜀.
+- `"**/.*/**"` — dot 디렉토리 아래 파일 순회를 건너뜀.
 
 ## 2. 공통 languageOptions
 
@@ -32,8 +32,8 @@ export default tseslint.config(...configs); // FlatConfig[]
 }
 ```
 
-- `ecmaVersion: "latest"` — 최신 ECMAScript 문법으로 파싱한다.
-- `sourceType: "module"` — 파일을 ESM 모듈로 파싱한다.
+- `ecmaVersion: "latest"` — 최신 ECMAScript 문법으로 파싱함.
+- `sourceType: "module"` — 파일을 ESM 모듈로 파싱함.
 
 ## 3. JS 파일 블록
 
@@ -46,8 +46,8 @@ export default tseslint.config(...configs); // FlatConfig[]
 }
 ```
 
-- `files` — `.js`/`.mjs`/`.cjs` 에만 이 블록을 적용한다.
-- `globals: globals.node` — Node 전역 식별자를 인식한다.
+- `files` — `.js`/`.mjs`/`.cjs` 에만 이 블록을 적용함.
+- `globals: globals.node` — Node 전역 식별자를 인식함.
 - `plugins["import-x"]` — `import-x/no-extraneous-dependencies` 규칙 제공.
 - `plugins["@simplysm"]` — 이 패키지 커스텀 규칙을 `@simplysm/<id>` 로 제공.
 - `plugins["unused-imports"]` — 미사용 import/변수 정리 규칙 제공.
@@ -68,7 +68,7 @@ export default tseslint.config(...configs); // FlatConfig[]
 ...angular.configs.tsRecommended
 ```
 
-- `angular.configs.tsRecommended` — `angular-eslint` 의 TypeScript 권장 config 배열을 이 위치에 그대로 펼친다.
+- `angular.configs.tsRecommended` — `angular-eslint` 의 TypeScript 권장 config 배열을 이 위치에 그대로 펼침.
 
 ## 5. TS 파일 블록
 
@@ -84,7 +84,7 @@ export default tseslint.config(...configs); // FlatConfig[]
 ```
 
 - `files: ["**/*.ts"]` — TypeScript 파일에만 적용.
-- `processor: angular.processInlineTemplates` — Angular 컴포넌트 인라인 템플릿을 template lint 대상으로 추출한다.
+- `processor: angular.processInlineTemplates` — Angular 컴포넌트 인라인 템플릿을 template lint 대상으로 추출함.
 - `plugins` — `@typescript-eslint`(type-aware 규칙), `@simplysm`(커스텀 TS/Angular 규칙), `import-x`, `unused-imports` 제공.
 - `settings["import-x/resolver-next"]` — import-x 의 TypeScript resolver 설정.
 - `alwaysTryTypes: true` — resolver 가 `@types/*` resolution 도 시도한다.
@@ -110,10 +110,10 @@ export default tseslint.config(...configs); // FlatConfig[]
 - `minimumDescriptionLength: 3` — 허용되는 `@ts-expect-error` 설명 최소 길이.
 - `@typescript-eslint/prefer-readonly: "error"` — 쓰기 없는 private member 를 readonly 로 요구.
 - `@typescript-eslint/naming-convention: ["error", options]` — private member naming 검사.
-- `selector: "memberLike"` — class/interface member 류를 검사 대상으로 삼는다.
-- `modifiers: ["private"]` — private member 만 대상으로 삼는다.
-- `format: null` — 특정 casing format 은 강제하지 않는다.
-- `leadingUnderscore: "require"` — private member 에 leading underscore 를 요구한다.
+- `selector: "memberLike"` — class/interface member 류를 검사 대상으로 삼음.
+- `modifiers: ["private"]` — private member 만 대상으로 삼음.
+- `format: null` — 특정 casing format 은 강제하지 않음.
+- `leadingUnderscore: "require"` — private member 에 leading underscore 를 요구함.
 - `@typescript-eslint/no-misused-promises: ["error", { checksVoidReturn: { arguments: false, inheritedMethods: false } }]` — Promise 오용 검사.
 - `checksVoidReturn.arguments: false` — callback argument 위치의 Promise 반환을 허용.
 - `checksVoidReturn.inheritedMethods: false` — inherited method 의 Promise 반환을 허용.
@@ -125,7 +125,7 @@ export default tseslint.config(...configs); // FlatConfig[]
 - `@simplysm/ts-no-throw-not-implemented-error: "warn"` — `NotImplementedError` 생성자 사용 경고. 자세히: [rules.md](./rules.md)
 - `@simplysm/ts-no-unused-injects: "error"` — 미사용 `inject()` 필드 오류 보고. 자세히: [rules.md](./rules.md) / 사용법: [client-rules.md](../../manuals/client-rules.md)
 - `@simplysm/ts-no-unused-protected-readonly: "error"` — 미사용 컴포넌트 `protected readonly` 필드 오류 보고. 자세히: [rules.md](./rules.md) / 사용법: [client-rules.md](../../manuals/client-rules.md)
-- `@angular-eslint/no-output-native: "off"` — native event 이름과 같은 output 이름 검사를 끈다.
+- `@angular-eslint/no-output-native: "off"` — native event 이름과 같은 output 이름 검사를 끔.
 - `import-x/no-extraneous-dependencies: "error"` — TS 파일에선 추가 option 없이 manifest 밖 import 오류 보고.
 - 추가로 `commonRules`, `unusedImportsRules`, `noNodeBuiltinsRules`, `noDirectEnvAccessRules` 묶음이 spread 된다.
 
@@ -148,7 +148,7 @@ export default tseslint.config(...configs); // FlatConfig[]
 - `@simplysm/ng-template-sd-require-binding-attrs: "error"` — 대상 컴포넌트 plain attribute 오류 보고. 자세히: [rules.md](./rules.md) / 사용법: [client-rules.md](../../manuals/client-rules.md)
 - `@angular-eslint/template/eqeqeq: ["error", { allowNullOrUndefined: true }]` — template equality 검사.
 - `allowNullOrUndefined: true` — null/undefined 와의 비교는 template eqeqeq 위반에서 제외.
-- `@angular-eslint/template/label-has-associated-control: "off"` — label-control 연결 접근성 검사를 끈다.
+- `@angular-eslint/template/label-has-associated-control: "off"` — label-control 연결 접근성 검사를 끔.
 - `@angular-eslint/template/no-any: "error"` — template `$any` 사용 오류 보고. 사용법: [client-rules.md](../../manuals/client-rules.md)
 
 ## 7. tests 오버라이드
@@ -158,9 +158,9 @@ export default tseslint.config(...configs); // FlatConfig[]
 ```
 
 - `files: ["**/tests/**/*.ts"]` — `tests` 디렉토리 아래 TS 파일에만 적용.
-- `no-console: "off"` — tests 에서 `console.*` 금지 규칙을 끈다.
-- `import-x/no-extraneous-dependencies: "off"` — tests 에서 manifest 밖 import 검사를 끈다.
-- `@simplysm/ts-no-throw-not-implemented-error: "off"` — tests 에서 `NotImplementedError` 경고를 끈다.
+- `no-console: "off"` — tests 에서 `console.*` 금지 규칙을 끔.
+- `import-x/no-extraneous-dependencies: "off"` — tests 에서 manifest 밖 import 검사를 끔.
+- `@simplysm/ts-no-throw-not-implemented-error: "off"` — tests 에서 `NotImplementedError` 경고를 끔.
 
 ## 8. vitest.config 오버라이드
 
@@ -169,7 +169,7 @@ export default tseslint.config(...configs); // FlatConfig[]
 ```
 
 - `files: ["**/vitest.config.ts"]` — Vitest 설정 파일에만 적용.
-- `no-restricted-properties: "off"` — Vitest 설정 파일에서 `process.env` 직접 접근 금지를 끈다.
+- `no-restricted-properties: "off"` — Vitest 설정 파일에서 `process.env` 직접 접근 금지를 끔.
 
 ## 공유 규칙 묶음
 

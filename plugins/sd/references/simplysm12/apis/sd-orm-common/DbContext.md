@@ -1,6 +1,6 @@
 # @simplysm/sd-orm-common — DbContext
 
-`abstract class DbContext`. ORM 진입점. 서브클래스에서 `Queryable`/`StoredProcedure` 필드(예: `users = new Queryable(this, User)`)와 `migrations` getter 를 선언한다. 실제 SQL 실행은 생성자에 주입된 `IDbContextExecutor` 가 담당(없으면 모든 실행 메서드가 "DB 실행기를 알 수 없습니다." throw).
+`abstract class DbContext`. ORM 진입점. 서브클래스에서 `Queryable`/`StoredProcedure` 필드(예: `users = new Queryable(this, User)`)와 `migrations` getter 를 선언함. 실제 SQL 실행은 생성자에 주입된 `IDbContextExecutor` 가 담당(없으면 모든 실행 메서드가 "DB 실행기를 알 수 없습니다." throw).
 
 ## 생성/필드
 
@@ -52,6 +52,7 @@
 ## 테이블 정의 → 쿼리 정의 변환 (마이그레이션 코드에서 스키마 변경 시)
 
 `ITableDef` 또는 컬럼/인덱스/FK 이름을 받아 `TQueryDef`(IR) 를 생성. 반환값은 `executeDefsAsync` 로 실행.
+
 - `getCreateTablesFullQueryDefsFromTableDef(tableDefs): TQueryDef[][]` — 테이블생성/FK추가/인덱스생성 3단계 배열.
 - `getCreateTableQueryDefFromTableDef(tableDef): TQueryDef` — view/procedure/일반 테이블 분기 생성. 컬럼 0개면 throw.
 - `getCreateFksQueryDefsFromTableDef` / `getCreateIndexesQueryDefsFromTableDef` — FK(+동명 인덱스) / 인덱스 정의들.

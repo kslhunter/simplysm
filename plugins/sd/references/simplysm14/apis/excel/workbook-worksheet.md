@@ -31,7 +31,7 @@ class ExcelWorkbook {
 - `getWorksheetNames(): Promise<string[]>` — 워크북에 등록된 시트 이름 배열 반환. `close()` 이후 호출하면 throw.
 - `addWorksheet(name: string): Promise<ExcelWorksheet>` — 새 시트 추가. 이름이 sanitize 되고(금지 문자 제거, 전부 제거되면 `"Sheet"` 로 대체), relId/sheetId 자동 증가, 빈 worksheet 파트 포맷별 등록. `close()` 이후 호출하면 throw.
 - `getWorksheet(nameOrIndex: string | number): Promise<ExcelWorksheet>` — 시트명 또는 0 기반 인덱스로 조회 후 `ExcelWorksheet` 반환. 같은 관계 ID 재호출 시 캐시된 인스턴스 반환. 없으면 throw. `close()` 이후 호출하면 throw.
-- `setDefaultStyle(opts: ExcelStyleOptions): Promise<void>` — 워크북 default cell style 설정. `xl/styles.xml` 의 0번 자원 슬롯(fonts[0]/fills[0]/borders[0])과 cellXfs[0].xf[0] 을 입력 옵션으로 덮어쓴다. 셀 xf 가 자원 id 명시하지 않으면 0번 슬롯이 자동 fallback 되므로 "표준" 스타일이 워크북 전역 적용. 미호출 시 원본 슬롯 보존. `close()` 이후 호출하면 throw.
+- `setDefaultStyle(opts: ExcelStyleOptions): Promise<void>` — 워크북 default cell style 설정. `xl/styles.xml` 의 0번 자원 슬롯(fonts[0]/fills[0]/borders[0])과 cellXfs[0].xf[0] 을 입력 옵션으로 덮어씀. 셀 xf 가 자원 id 명시하지 않으면 0번 슬롯이 자동 fallback 되므로 "표준" 스타일이 워크북 전역 적용. 미호출 시 원본 슬롯 보존. `close()` 이후 호출하면 throw.
 - `toBytes(): Promise<Bytes>` — 캐시된 모델 파트를 직렬화하고 ZIP 압축 결과를 `Bytes` 로 반환. `close()` 이후 호출하면 throw.
 - `toBlob(): Promise<Blob>` — `toBytes()` 결과를 MIME `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` Blob 으로 감쌈. `close()` 이후 호출하면 throw.
 - `close(): Promise<void>` — ZIP 리더와 내부 시트 캐시 정리. 이미 닫힌 상태면 no-op.
@@ -96,7 +96,7 @@ class ExcelWorksheet {
 - `setTabColor(color: string)` — worksheet `sheetPr.tabColor.rgb` 설정. ARGB 8자리(예: `"00FF0000"`).
 - `setZoom(percent: number)` — workbook view 골격 보장 후 worksheet `zoomScale` 설정. 단위: 퍼센트.
 - `freezeAt(point: { r?, c? })` — workbook view 골격 보장 후 worksheet pane 을 frozen 으로 설정. `r` = 틀 고정할 마지막 행, `c` = 마지막 열. 둘 다·하나만·없음 조합에 따라 고정 영역 결정.
-- `setAutoFilter(range: ExcelAddressRangePoint)` — worksheet `autoFilter.ref` 를 범위 A1 문자열로 설정. 헤더행~데이터 끝 전체 범위 지정 권장.
+- `setAutoFilter(range: ExcelAddressRangePoint)` — worksheet `autoFilter.ref` 를 범위 A1 문자열로 설정. 헤더행-데이터 끝 전체 범위 지정 권장.
 - `addConditionalFormat(opts)` — 셀/범위에 조건부 서식 규칙 배열 적용. 규칙별 dxf 를 styles 파트에 등록, worksheet `conditionalFormatting` 블록 누적. 옵션:
   - `ref: string` — 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) Excel 주소.
   - `rules: ExcelConditionalRule[]` — 규칙 배열. 배열 순서가 priority(앞이 우선). 호출 간에는 시트 전역 카운터로 이어붙음.

@@ -24,18 +24,21 @@ sd-service 클라이언트/서버가 공유하는 통신 프로토콜(메시지 
 ### ISdServiceMessageDecodeResult<T>
 
 `decode()` 반환 유니온. `type` 으로 분기:
+
 - `{ type: "complete"; uuid: string; message: T }` — 분할 조립 완료. 파싱된 메시지 사용 가능.
 - `{ type: "progress"; uuid: string; totalSize: number; completedSize: number }` — 아직 수신 중. 진행률(completedSize/totalSize) 표시 등에 사용.
 
 ## 메시지 프로토콜 타입 (protocol.types)
 
 방향별 유니온 (`name` 리터럴로 판별):
+
 - `TSdServiceMessage` — 모든 메시지의 합집합.
 - `TSdServiceClientMessage` — 클라→서버: request, auth, evt:add, evt:remove, evt:gets, evt:emit.
 - `TSdServiceServerMessage` — 서버→클라 비-raw: reload, response, error, evt:on.
 - `TSdServiceServerRawMessage` — `ISdServiceProgressMessage | TSdServiceServerMessage`. 분할 진행 알림을 포함한 서버 송신 전체.
 
 개별 메시지 인터페이스 (`name` = 판별 리터럴):
+
 - `ISdServiceReloadMessage` (`"reload"`, 서버→클라 알림) — body: `clientName: string | undefined`(대상 클라이언트명), `changedFileSet: Set<string>`(변경 파일 목록). 핫리로드 트리거용.
 - `ISdServiceProgressMessage` (`"progress"`, 서버) — body: `totalSize: number`(총 바이트), `completedSize: number`(수신 완료 바이트). 분할 메시지 수신 진행 알림.
 - `ISdServiceErrorMessage` (`"error"`, 서버) — body: `name`,`message`,`code`,`stack?`,`detail?`,`cause?`. 에러 발생 알림.
@@ -53,6 +56,7 @@ sd-service 클라이언트/서버가 공유하는 통신 프로토콜(메시지 
 서버 구현체와 클라 호출 프록시가 공유하는 메서드 시그니처. 구현 본문은 다른 패키지(server/client)에 있음.
 
 ### ISdOrmService — DB 연결/쿼리 실행 (sd-orm 기반)
+
 - `getInfo(opt: TDbConnOptions & { configName: string }): Promise<{ dialect; database?; schema? }>` — 설정명 기준 DB 방언/대상 DB·스키마 조회.
 - `connect(opt: Record<string, any>): Promise<number>` — 연결 생성, 연결 ID 반환.
 - `close(connId: number): Promise<void>` — 연결 종료.
@@ -65,20 +69,23 @@ sd-service 클라이언트/서버가 공유하는 통신 프로토콜(메시지 
 - `TDbConnOptions = { configName?: string; config?: Record<string, any> } & Record<string, any>` — 연결 옵션. `configName`(서버 설정 키로 연결) 또는 `config`(인라인 접속 정보) 중 선택, 추가 임의 키 허용.
 
 ### ISdCryptoService — 암호화 (sd-crypto 설정 기반)
+
 - `encrypt(data: string | Buffer): Promise<string>` — 해시/단방향 암호화 문자열 반환.
 - `encryptAes(data: Buffer): Promise<string>` — AES 양방향 암호화, 암호문 문자열 반환.
 - `decryptAes(encText: string): Promise<Buffer>` — AES 복호화, 원문 Buffer 반환.
 - `ICryptoConfig { key: string }` — 암호화에 사용할 키 설정.
 
 ### ISdSmtpClientService — 이메일 발송
+
 - `send(options: ISmtpClientSendOption): Promise<string>` — SMTP 접속정보를 옵션에 직접 담아 발송, 메시지 ID 반환.
 - `sendByConfig(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string>` — 서버 설정명으로 접속정보를 가져와 발송.
 - `ISmtpClientSendOption` — `host`(필수 SMTP 호스트), `port?`(포트), `secure?: boolean`(TLS 사용 여부), `user?`/`pass?`(인증), `from`(보내는이), `to`/`cc?`/`bcc?`(수신), `subject`, `html`(본문), `attachments?: ISmtpClientSendAttachment[]`.
-- `ISmtpClientSendByDefaultOption` — 위에서 접속정보(host~pass·from) 제외: `to`,`cc?`,`bcc?`,`subject`,`html`,`attachments?`. 접속정보는 configName으로 보강.
+- `ISmtpClientSendByDefaultOption` — 위에서 접속정보(host-pass·from) 제외: `to`,`cc?`,`bcc?`,`subject`,`html`,`attachments?`. 접속정보는 configName으로 보강.
 - `ISmtpClientSendAttachment` — `filename`(필수), `content?: Buffer`(인라인 데이터), `path?: any`(파일 경로), `contentType?: string`(MIME).
 - `ISmtpClientDefaultConfig` — sendByConfig용 서버 기본 설정: `senderName`(필수 발신자 이름), `senderEmail?`, `user?`/`pass?`, `host`(필수), `port?`, `secure?: boolean`.
 
 ### ISdAutoUpdateService — 앱 자동 업데이트
+
 - `getLastVersion(platform: string): { version: string; downloadPath: string } | undefined` — 플랫폼별 최신 버전·다운로드 경로 조회, 없으면 undefined.
 
 ## 이벤트/업로드 보조 타입 (types)

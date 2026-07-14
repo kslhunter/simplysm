@@ -1,6 +1,6 @@
 # @simplysm/service-common
 
-서버·클라이언트가 공유하는 서비스 이벤트 정의, 내장 서비스(ORM·자동업데이트) RPC 계약, 파일 업로드 결과 타입, 앱 메뉴/권한 구조 타입·유틸, 그리고 서비스 WebSocket 바이너리 프로토콜 메시지 타입·코덱을 제공한다.
+서버·클라이언트가 공유하는 서비스 이벤트 정의, 내장 서비스(ORM·자동업데이트) RPC 계약, 파일 업로드 결과 타입, 앱 메뉴/권한 구조 타입·유틸, 그리고 서비스 WebSocket 바이너리 프로토콜 메시지 타입·코덱을 제공함.
 
 ## 사용 트리거 인덱스
 
@@ -13,7 +13,7 @@
 
 ## 이벤트 정의
 
-서비스 이벤트의 이름과 info/data 타입을 한 객체로 정의한다. `$info`/`$data` 는 JSDoc 기준 런타임에서는 사용되지 않는 타입 추출 전용 마커이고, 런타임 값은 `eventName` 뿐이다.
+서비스 이벤트의 이름과 info/data 타입을 한 객체로 정의함. `$info`/`$data` 는 JSDoc 기준 런타임에서는 사용되지 않는 타입 추출 전용 마커이고, 런타임 값은 `eventName` 뿐임.
 
 ### defineEvent
 
@@ -23,10 +23,10 @@ function defineEvent<TInfo = unknown, TData = unknown>(
 ): ServiceEventDef<TInfo, TData>;
 ```
 
-- `TInfo = unknown` — 반환 객체 `$info` 마커의 타입. 이벤트 구독 필터 정보(info)의 타입을 지정할 때 쓴다.
-- `TData = unknown` — 반환 객체 `$data` 마커의 타입. 이벤트 데이터(data)의 타입을 지정할 때 쓴다.
+- `TInfo = unknown` — 반환 객체 `$info` 마커의 타입. 이벤트 구독 필터 정보(info)의 타입을 지정할 때 씀.
+- `TData = unknown` — 반환 객체 `$data` 마커의 타입. 이벤트 데이터(data)의 타입을 지정할 때 씀.
 - `eventName: string` — 반환 객체의 `eventName` 필드에 그대로 저장되는 이벤트 이름.
-- 반환값 — `{ eventName, $info: undefined, $data: undefined }`. 본문에서 `$info`/`$data` 는 `undefined` 를 해당 제네릭으로 캐스팅한 값이라 런타임에는 항상 `undefined` 이다.
+- 반환값 — `{ eventName, $info: undefined, $data: undefined }`. 본문에서 `$info`/`$data` 는 `undefined` 를 해당 제네릭으로 캐스팅한 값이라 런타임에는 항상 `undefined` 임.
 
 ### ServiceEventDef
 
@@ -39,16 +39,16 @@ interface ServiceEventDef<TInfo = unknown, TData = unknown> {
 ```
 
 - `eventName: string` — `defineEvent` 인자가 저장되는 이벤트 이름 필드.
-- `$info: TInfo` (readonly) — info 타입 추출 전용 마커. JSDoc 기준 런타임에서는 사용되지 않는다.
-- `$data: TData` (readonly) — data 타입 추출 전용 마커. JSDoc 기준 런타임에서는 사용되지 않는다.
+- `$info: TInfo` (readonly) — info 타입 추출 전용 마커. JSDoc 기준 런타임에서는 사용되지 않음.
+- `$data: TData` (readonly) — data 타입 추출 전용 마커. JSDoc 기준 런타임에서는 사용되지 않음.
 
 ## 내장 서비스 계약
 
-서버가 구현하고 클라이언트가 RPC 로 호출하는 내장 서비스 인터페이스다. 메서드 본문은 이 패키지에 없고 타입 계약만 정의한다.
+서버가 구현하고 클라이언트가 RPC 로 호출하는 내장 서비스 인터페이스임. 메서드 본문은 이 패키지에 없고 타입 계약만 정의함.
 
 ### OrmService
 
-DB 연결·트랜잭션·쿼리 실행을 제공하는 ORM 서비스 인터페이스. JSDoc 기준 MySQL·MSSQL·PostgreSQL 을 지원한다.
+DB 연결·트랜잭션·쿼리 실행을 제공하는 ORM 서비스 인터페이스. JSDoc 기준 MySQL·MSSQL·PostgreSQL 을 지원함.
 
 ```ts
 interface OrmService {
@@ -75,15 +75,15 @@ interface OrmService {
 }
 ```
 
-- `getInfo(opt)` — DB 연결 정보를 조회한다. `opt` 는 `DbConnOptions` 에 `configName: string` 필수가 더해진 교차 타입. 반환의 `dialect: Dialect` 는 DB dialect, `database?`/`schema?` 는 결과에 포함될 수 있는 DB명·스키마명.
-- `connect(opt)` — DB 연결을 생성한다. `opt` 는 `getInfo` 와 같은 교차 타입. 반환 `number` 는 이후 메서드의 `connId` 로 쓰는 연결 식별자.
-- `close(connId)` — `connId` 연결을 종료한다.
-- `beginTransaction(connId, isolationLevel?)` — `connId` 연결에서 트랜잭션을 시작한다. `isolationLevel?: IsolationLevel` 은 선택 격리 수준.
-- `commitTransaction(connId)` — `connId` 연결의 트랜잭션을 커밋한다.
-- `rollbackTransaction(connId)` — `connId` 연결의 트랜잭션을 롤백한다.
-- `executeParametrized(connId, query, params?)` — 파라미터화 문자열 쿼리를 실행한다. `query: string` 은 SQL, `params?: unknown[]` 은 선택 파라미터 배열, 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
-- `executeDefs(connId, defs, options?)` — 쿼리 정의 배열을 실행한다. `defs: QueryDef[]` 는 실행 정의, `options?: (ResultMeta | undefined)[]` 는 정의별 결과 메타(없으면 `undefined`), 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
-- `bulkInsert(connId, tableName, columnDefs, records)` — 대량 insert 를 수행한다. `tableName: string` 은 대상 테이블, `columnDefs: Record<string, ColumnMeta>` 는 컬럼명→컬럼 메타 맵, `records: Record<string, unknown>[]` 은 삽입 레코드 배열.
+- `getInfo(opt)` — DB 연결 정보를 조회함. `opt` 는 `DbConnOptions` 에 `configName: string` 필수가 더해진 교차 타입. 반환의 `dialect: Dialect` 는 DB dialect, `database?`/`schema?` 는 결과에 포함될 수 있는 DB명·스키마명.
+- `connect(opt)` — DB 연결을 생성함. `opt` 는 `getInfo` 와 같은 교차 타입. 반환 `number` 는 이후 메서드의 `connId` 로 쓰는 연결 식별자.
+- `close(connId)` — `connId` 연결을 종료함.
+- `beginTransaction(connId, isolationLevel?)` — `connId` 연결에서 트랜잭션을 시작함. `isolationLevel?: IsolationLevel` 은 선택 격리 수준.
+- `commitTransaction(connId)` — `connId` 연결의 트랜잭션을 커밋함.
+- `rollbackTransaction(connId)` — `connId` 연결의 트랜잭션을 롤백함.
+- `executeParametrized(connId, query, params?)` — 파라미터화 문자열 쿼리를 실행함. `query: string` 은 SQL, `params?: unknown[]` 은 선택 파라미터 배열, 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
+- `executeDefs(connId, defs, options?)` — 쿼리 정의 배열을 실행함. `defs: QueryDef[]` 는 실행 정의, `options?: (ResultMeta | undefined)[]` 는 정의별 결과 메타(없으면 `undefined`), 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
+- `bulkInsert(connId, tableName, columnDefs, records)` — 대량 insert 를 수행함. `tableName: string` 은 대상 테이블, `columnDefs: Record<string, ColumnMeta>` 는 컬럼명→컬럼 메타 맵, `records: Record<string, unknown>[]` 은 삽입 레코드 배열.
 
 ### DbConnOptions
 
@@ -91,7 +91,7 @@ interface OrmService {
 type DbConnOptions = { configName?: string; config?: Record<string, unknown> };
 ```
 
-- `configName?: string` — 연결 설정 이름. 자체로는 선택이지만 `OrmService.getInfo`/`connect` 인자에서는 `& { configName: string }` 으로 필수가 된다.
+- `configName?: string` — 연결 설정 이름. 자체로는 선택이지만 `OrmService.getInfo`/`connect` 인자에서는 `& { configName: string }` 으로 필수가 됨.
 - `config?: Record<string, unknown>` — 인라인 연결 설정 값을 담는 임의 키 객체.
 
 ### AutoUpdateService
@@ -104,7 +104,7 @@ interface AutoUpdateService {
 }
 ```
 
-- `getLastVersion(platform)` — 지정 플랫폼의 최신 버전 정보를 조회한다. `platform: string` 은 대상 플랫폼(JSDoc 예: `"win32"`, `"darwin"`, `"linux"`).
+- `getLastVersion(platform)` — 지정 플랫폼의 최신 버전 정보를 조회함. `platform: string` 은 대상 플랫폼(JSDoc 예: `"win32"`, `"darwin"`, `"linux"`).
 - 반환 `version: string` — 최신 버전 문자열.
 - 반환 `downloadPath: string` — 최신 버전 다운로드 경로.
 - 반환 `undefined` — JSDoc 기준 해당 플랫폼의 버전 정보가 없을 때.

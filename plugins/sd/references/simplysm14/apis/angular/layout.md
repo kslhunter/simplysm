@@ -1,6 +1,6 @@
 # @simplysm/angular — 레이아웃
 
-앱 shell의 sidebar/topbar와 menu/user menu 컴포넌트 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. 메뉴 데이터 타입(`SdMenu`)과 선택 판정 helper는 [routing-appstructure.md](./routing-appstructure.md) 참조.
+앱 shell의 sidebar/topbar와 menu/user menu 컴포넌트 군임. 모두 standalone · OnPush · `ViewEncapsulation.None`. 메뉴 데이터 타입(`SdMenu`)과 선택 판정 helper는 [routing-appstructure.md](./routing-appstructure.md) 참조.
 
 ## 사이드바
 
@@ -13,7 +13,7 @@ class SdSidebarContainer {
 }
 ```
 
-sidebar + 본문을 감싸는 컨테이너. `toggle` 이 단일 진리원이다(input/model 아닌 plain signal, 영속화 없음).
+sidebar + 본문을 감싸는 컨테이너. `toggle` 이 단일 진리원임(input/model 아닌 plain signal, 영속화 없음).
 
 - `toggle` — `false`(기본)=사이드바 표시, `true`=접힘. desktop은 `data-sd-toggle="true"` 시 본문 padding-left를 0으로 회수, mobile은 backdrop overlay 표시.
 - 라우터 연동 — `Router` 주입 가능 시 매 `NavigationStart` 마다 `toggle.set(false)`(이동 시 펼침으로 리셋).
@@ -70,7 +70,7 @@ class SdTopbar {
 }
 ```
 
-- `sidebarContainer` — 명시적으로 연결할 sidebar 컨테이너(DI로 못 닿을 때). 주입 가능한 컨테이너도 함께 본다. 둘 중 하나라도 있으면 햄버거 버튼을 렌더하고 클릭 시 그 컨테이너의 `toggle` 반전. 이후 `<ng-content>`(타이틀/탑바 내용).
+- `sidebarContainer` — 명시적으로 연결할 sidebar 컨테이너(DI로 못 닿을 때). 주입 가능한 컨테이너도 함께 봄. 둘 중 하나라도 있으면 햄버거 버튼을 렌더하고 클릭 시 그 컨테이너의 `toggle` 반전. 이후 `<ng-content>`(타이틀/탑바 내용).
 
 ### `SdTopbarMenu` (`sd-topbar-menu`)
 
@@ -81,7 +81,7 @@ class SdTopbarMenu {
 }
 ```
 
-각 top 메뉴를 `sd-dropdown` 트리거 버튼으로 렌더하고 children을 popup 안 중첩 `sd-list` 로 펼친다(`layout` input 없음). leaf 클릭 시 해당 dropdown 닫음, `url` 있으면 새 탭. 선택 판정 helper는 `SdSidebarMenu` 와 동일.
+각 top 메뉴를 `sd-dropdown` 트리거 버튼으로 렌더하고 children을 popup 안 중첩 `sd-list` 로 펼침(`layout` input 없음). leaf 클릭 시 해당 dropdown 닫음, `url` 있으면 새 탭. 선택 판정 helper는 `SdSidebarMenu` 와 동일.
 
 ### `SdTopbarUser` (`sd-topbar-user`)
 

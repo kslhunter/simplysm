@@ -1,8 +1,8 @@
 # @simplysm/sd-orm-common — QueryHelper (db.qh) + CASE 헬퍼
 
-`class QueryHelper`. `db.qh` 로 노출. WHERE 조건과 SQL 함수/식을 dialect 인지하며 생성한다. 조건 메서드는 `TQueryBuilderValue`(또는 그 배열)를 반환해 `Queryable.where`/`having`/`qh.and`/`qh.or` 인자로 쓰고, 필드/함수 메서드는 `QueryUnit<T>` 를 반환해 `select`/다른 함수의 인자로 합성한다. 인자 `TEntityValue<T>` = 평면 값 `T` 또는 `QueryUnit<T>`.
+`class QueryHelper`. `db.qh` 로 노출. WHERE 조건과 SQL 함수/식을 dialect 인지하며 생성함. 조건 메서드는 `TQueryBuilderValue`(또는 그 배열)를 반환해 `Queryable.where`/`having`/`qh.and`/`qh.or` 인자로 쓰고, 필드/함수 메서드는 `QueryUnit<T>` 를 반환해 `select`/다른 함수의 인자로 합성함. 인자 `TEntityValue<T>` = 평면 값 `T` 또는 `QueryUnit<T>`.
 
-생성: `new QueryHelper(dialect)`. dialect 가 mysql/sqlite/mssql/mssql-azure 인지에 따라 `<=>`, `||` vs `+`, `N'...'` vs `'...'`, `LONGTEXT` vs `NTEXT`, `TIMESTAMPDIFF` vs `DATEDIFF` 등이 갈린다.
+생성: `new QueryHelper(dialect)`. dialect 가 mysql/sqlite/mssql/mssql-azure 인지에 따라 `<=>`, `||` vs `+`, `N'...'` vs `'...'`, `LONGTEXT` vs `NTEXT`, `TIMESTAMPDIFF` vs `DATEDIFF` 등이 갈림.
 
 ## WHERE 조건 (→ TQueryBuilderValue[])
 
@@ -68,11 +68,13 @@
 ## CaseQueryHelper&lt;T&gt; (qh.case)
 
 `qh.case(predicate, then)` 이 반환. 단순 `CASE WHEN <조건> THEN ... [WHEN ...] ELSE ... END`.
+
 - `case(predicate: 조건 | TQueryBuilderValue, then): this` — WHEN/THEN 절 추가(체이닝).
 - `else(then): QueryUnit<T>` — ELSE 후 종료, 최종 QueryUnit 반환.
 
 ## CaseWhenQueryHelper&lt;T&gt; (qh.caseWhen)
 
 `qh.caseWhen(arg)` 이 반환. 단일 식 `arg` 를 여러 값과 동등 비교하는 `CASE ... END`(switch 형).
+
 - `when(arg, then): CaseWhenQueryHelper<T>` — `arg == when값` 일 때 then(내부적으로 `qh.equal`).
 - `else(then): QueryUnit<T>` — ELSE 후 종료.

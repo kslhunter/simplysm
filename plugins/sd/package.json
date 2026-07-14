@@ -18,8 +18,9 @@
     "skills",
     "references",
     "shared",
-    "rules"
+    "output-styles"
   ],
+  "outputStyles": "./output-styles",
   "pi": {
     "extensions": [
       "./extensions"

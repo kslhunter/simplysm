@@ -1,6 +1,6 @@
 # @simplysm/core-node — cpx
 
-자식 프로세스 실행 및 시스템 콘솔 인코딩 감지. `spawn/spawnSync`는 stdout/stderr를 자동 수집해 문자열로 디코딩하고, 종료 코드가 0이 아니면 오류를 throw한다(설정으로 비활성화 가능).
+자식 프로세스 실행 및 시스템 콘솔 인코딩 감지. `spawn/spawnSync`는 stdout/stderr를 자동 수집해 문자열로 디코딩하고, 종료 코드가 0이 아니면 오류를 throw함(설정으로 비활성화 가능).
 
 ## 타입·인터페이스
 

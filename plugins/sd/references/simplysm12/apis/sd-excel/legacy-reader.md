@@ -1,6 +1,6 @@
 # @simplysm/sd-excel — Legacy Reader
 
-`xlsx`(SheetJS) 라이브러리 기반의 **읽기 전용** 파서. codepage 949(EUC-KR)와 cpexcel 테이블을 미리 로드해 `.xls`(BIFF) 등 레거시/구버전 한글 인코딩 파일을 경고 없이 파싱한다. 신규 작성/수정은 고수준 `SdExcelWorkbook` 을 쓰고, 이 군은 구포맷 읽기에만 사용.
+`xlsx`(SheetJS) 라이브러리 기반의 **읽기 전용** 파서. codepage 949(EUC-KR)와 cpexcel 테이블을 미리 로드해 `.xls`(BIFF) 등 레거시/구버전 한글 인코딩 파일을 경고 없이 파싱함. 신규 작성/수정은 고수준 `SdExcelWorkbook` 을 쓰고, 이 군은 구포맷 읽기에만 사용함.
 
 ## SdExcelReader
 

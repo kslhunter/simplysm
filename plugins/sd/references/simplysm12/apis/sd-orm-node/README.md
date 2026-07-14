@@ -1,12 +1,12 @@
 # @simplysm/sd-orm-node
 
-Node 런타임에서 `@simplysm/sd-orm-common` 의 `DbContext` 를 실제 DB(MSSQL/MySQL/SQLite)에 연결·실행하는 어댑터. 드라이버(`tedious`/`mysql2`/`sqlite3`)는 peerDependency 로 동적 import 되며 옵셔널이다.
+Node 런타임에서 `@simplysm/sd-orm-common` 의 `DbContext` 를 실제 DB(MSSQL/MySQL/SQLite)에 연결·실행하는 어댑터. 드라이버(`tedious`/`mysql2`/`sqlite3`)는 peerDependency 로 동적 import 되며 옵셔널임.
 
 ## 사용 트리거 인덱스
 
 - **SdOrm** — `DbContext` 서브클래스를 실제 DB에 연결해 트랜잭션 안/밖에서 콜백을 실행할 때. 일반적인 진입점.
 - **DbConnFactory** — `TDbConnConf` 로부터 저수준 커넥션(`IDbConn`)을 직접 만들 때(풀링/SQLite 분기 포함). SdOrm 을 안 쓰고 raw 쿼리를 돌릴 때만.
-- **NodeDbContextExecutor** — `DbContext` 에 주입하는 실행기. 보통 SdOrm 이 내부에서 생성하므로 직접 다룰 일은 드물다.
+- **NodeDbContextExecutor** — `DbContext` 에 주입하는 실행기. 보통 SdOrm 이 내부에서 생성하므로 직접 다룰 일은 드묾.
 - **PooledDbConn / MssqlDbConn / MysqlDbConn / SqliteDbConn** — `DbConnFactory.createAsync` 가 반환하는 `IDbConn` 구현체. 타입 참조·instanceof 분기 외엔 직접 생성할 일 거의 없음.
 - **설정 타입(TDbConnConf 등)** — 연결 설정 객체를 만들 때 참조. `@simplysm/sd-orm-common` 에서 재export 되지 않고 그쪽에 정의됨(아래 표기).
 
@@ -27,11 +27,11 @@ connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R>
 
 - `connectAsync` — 연결 후 트랜잭션을 열고 `callback` 실행, 콜백 반환값을 그대로 돌려줌. `isolationLevel` 미지정 시 dialect 기본값(MSSQL `READ_COMMITTED`, MySQL `REPEATABLE_READ`) 적용. 트랜잭션이 필요한 쓰기 작업에 사용.
 - `connectWithoutTransactionAsync` — 트랜잭션 없이 연결만 하고 `callback` 실행. DDL이나 읽기 전용/대량작업 등 트랜잭션이 부적합할 때 사용.
-- 두 메서드 모두 매 호출마다 `new dbContextType(new NodeDbContextExecutor(config), opt)` 로 새 컨텍스트를 만들고 내부적으로 `DbContext.connectAsync`/`connectWithoutTransactionAsync` 에 위임한다. opt 의 `dialect`/`database`/`schema` 는 `dbContextOpt` → `config` 순으로 채워진다(SQLite는 database/schema 없음).
+- 두 메서드 모두 매 호출마다 `new dbContextType(new NodeDbContextExecutor(config), opt)` 로 새 컨텍스트를 만들고 내부적으로 `DbContext.connectAsync`/`connectWithoutTransactionAsync` 에 위임함. opt 의 `dialect`/`database`/`schema` 는 `dbContextOpt` → `config` 순으로 채워짐(SQLite는 database/schema 없음).
 
 ## DbConnFactory
 
-설정으로 저수준 `IDbConn` 을 만드는 정적 팩토리. 드라이버 모듈을 lazy `import` 하고 비-SQLite는 설정별 풀을 캐싱한다.
+설정으로 저수준 `IDbConn` 을 만드는 정적 팩토리. 드라이버 모듈을 lazy `import` 하고 비-SQLite는 설정별 풀을 캐싱함.
 
 ```ts
 DbConnFactory.createAsync(config: TDbConnConf): Promise<IDbConn>
@@ -40,11 +40,11 @@ DbConnFactory.createAsync(config: TDbConnConf): Promise<IDbConn>
 - `config.dialect === "sqlite"` 이면 풀링을 건너뛰고 매번 새 `SqliteDbConn` 반환(파일 락 회피 목적).
 - 그 외 dialect는 `JSON.stringify(config)` 를 키로 `generic-pool` 풀을 만들어 `PooledDbConn` 으로 감싸 반환. 풀 설정은 고정값: `min: 1, max: 10, acquireTimeoutMillis: 30000, idleTimeoutMillis: 30000, testOnBorrow: true`(빌려줄 때 `isConnected` 로 validate, 끊긴 커넥션은 폐기 후 재생성).
 - raw 드라이버 매핑: `mysql` → `mysql2/promise` + `MysqlDbConn`, `sqlite` → `sqlite3` + `SqliteDbConn`, 그 외(`mssql`/`mssql-azure`) → `tedious` + `MssqlDbConn`. 동적 import 한 모듈은 정적 `_modules` 캐시에 보관.
-- 반환된 `IDbConn` 은 이미 풀에서 connect 까지 끝난 게 아니라, 호출측이 `connectAsync()` 를 호출해야 실제 커넥션을 획득한다(`SqliteDbConn` 도 동일).
+- 반환된 `IDbConn` 은 이미 풀에서 connect 까지 끝난 게 아니라, 호출측이 `connectAsync()` 를 호출해야 실제 커넥션을 획득함(`SqliteDbConn` 도 동일).
 
 ## NodeDbContextExecutor
 
-`IDbContextExecutor` 구현. `DbContext` 생성자에 주입해 쿼리를 실제 커넥션으로 흘려보낸다. 대부분 `SdOrm` 이 내부에서 생성한다.
+`IDbContextExecutor` 구현. `DbContext` 생성자에 주입해 쿼리를 실제 커넥션으로 흘려보냄. 대부분 `SdOrm` 이 내부에서 생성함.
 
 ```ts
 new NodeDbContextExecutor(config: TDbConnConf)
@@ -60,7 +60,7 @@ new NodeDbContextExecutor(config: TDbConnConf)
 
 ## IDbConn 구현체 (반환 타입)
 
-`DbConnFactory.createAsync` 가 돌려주는 커넥션들. 모두 `EventEmitter` 를 상속하며 `"close"` 이벤트를 발생시키고 `IDbConn` 인터페이스(`config`, `isConnected`, `isOnTransaction`, `connectAsync`, `closeAsync`, `begin/commit/rollbackTransactionAsync`, `executeAsync`, `executeParametrizedAsync`, `bulkInsertAsync`, `bulkUpsertAsync`)를 구현한다.
+`DbConnFactory.createAsync` 가 돌려주는 커넥션들. 모두 `EventEmitter` 를 상속하며 `"close"` 이벤트를 발생시키고 `IDbConn` 인터페이스(`config`, `isConnected`, `isOnTransaction`, `connectAsync`, `closeAsync`, `begin/commit/rollbackTransactionAsync`, `executeAsync`, `executeParametrizedAsync`, `bulkInsertAsync`, `bulkUpsertAsync`)를 구현함.
 
 ### PooledDbConn
 
@@ -106,11 +106,12 @@ new SqliteDbConn(sqlite3: typeof import("sqlite3"), config: ISqliteDbConnConf)
 
 ## 설정 타입 (config 작성 시 참조)
 
-`TDbConnConf` 등은 본 패키지가 아니라 `@simplysm/sd-orm-common` 에 정의돼 있으나 `config` 인자로 항상 필요하므로 여기 정리한다.
+`TDbConnConf` 등은 본 패키지가 아니라 `@simplysm/sd-orm-common` 에 정의돼 있으나 `config` 인자로 항상 필요하므로 여기 정리함.
 
 `TDbConnConf = IDefaultDbConnConf | ISqliteDbConnConf` (dialect 로 판별).
 
 **IDefaultDbConnConf** (MySQL/MSSQL):
+
 - `dialect: "mysql" | "mssql" | "mssql-azure"` — 드라이버·암호화 분기. `mssql-azure` 만 TLS encrypt 켬.
 - `host: string` — 서버 주소.
 - `port?: number` — 포트. 미지정 시 드라이버 기본.
@@ -120,6 +121,7 @@ new SqliteDbConn(sqlite3: typeof import("sqlite3"), config: ISqliteDbConnConf)
 - `defaultIsolationLevel?: ISOLATION_LEVEL` — beginTransaction 시 격리수준 미지정이면 사용할 기본값.
 
 **ISqliteDbConnConf** (SQLite):
+
 - `dialect: "sqlite"` — 판별 리터럴.
 - `filePath: string` — DB 파일 경로.
 
@@ -128,6 +130,7 @@ new SqliteDbConn(sqlite3: typeof import("sqlite3"), config: ISqliteDbConnConf)
 **TDbContextOption = IDefaultDbContextOption | ISqliteDbContextOption** — SdOrm 의 `dbContextOpt` 로 넘기는 컨텍스트 옵션. 기본형은 `{ dialect, database?, schema? }`, SQLite형은 `{ dialect: "sqlite" }`.
 
 **IQueryColumnDef** (bulk 메서드의 `columnDefs` 항목):
+
 - `name: string` — 컬럼명.
 - `dataType: Type<TQueryValue> | TSdOrmDataType | string` — 컬럼 타입. JS 생성자(String/Number/...), `{ type: "STRING"|"TEXT"|"DECIMAL"|"FIXSTRING"|"BINARY", ... }` 객체, 또는 `"NVARCHAR(255)"` 같은 문자열.
 - `autoIncrement?: boolean` — true면 upsert 의 UPDATE 절에서 제외.

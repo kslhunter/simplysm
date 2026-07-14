@@ -1,8 +1,8 @@
 # @simplysm/angular — 오버레이·인쇄·파일
 
-modal, toast, busy overlay, file dialog, browser print/PDF를 동적으로 `document.body` 에 붙이거나 provider로 호출하는 군이다. 인쇄/PDF 사용법: [client-print.md](../../manuals/client-print.md)
+modal, toast, busy overlay, file dialog, browser print/PDF를 동적으로 `document.body` 에 붙이거나 provider로 호출하는 군임. 인쇄/PDF 사용법: [client-print.md](../../manuals/client-print.md)
 
-modal/toast/print 의 `inputs` 타입은 `DirectiveInputSignals<T>`(컴포넌트 `input()` property만 골라 값 타입으로 매핑) + `WithOptional`(`_optional*Inputs` 로 표시한 key를 optional)로 만들어진다. 컨텐츠 컴포넌트는 자기 `input()` 으로 데이터를 받고, 자기 `close` output 으로 결과를 emit해 스스로 닫는다.
+modal/toast/print 의 `inputs` 타입은 `DirectiveInputSignals<T>`(컴포넌트 `input()` property만 골라 값 타입으로 매핑) + `WithOptional`(`_optional*Inputs` 로 표시한 key를 optional)로 만들어짐. 컨텐츠 컴포넌트는 자기 `input()` 으로 데이터를 받고, 자기 `close` output 으로 결과를 emit해 스스로 닫음.
 
 ## 모달
 
@@ -24,7 +24,7 @@ class SdModal {
 }
 ```
 
-모달 dialog 컨테이너 컴포넌트. 보통 직접 쓰지 않고 `SdModalProvider.showAsync` 가 내부 생성한다. `SdModal` 은 결과를 직접 resolve하지 않고 `closeRequest` 만 emit하며, 타입 결과는 컨텐츠 컴포넌트의 `close` output에서 나온다.
+모달 dialog 컨테이너 컴포넌트. 보통 직접 쓰지 않고 `SdModalProvider.showAsync` 가 내부 생성함. `SdModal` 은 결과를 직접 resolve하지 않고 `closeRequest` 만 emit하며, 타입 결과는 컨텐츠 컴포넌트의 `close` output에서 나옴.
 
 - `open` — 열림 상태(양방향).
 - `key` — 지정 시 `SdSystemConfigProvider` 로 `sd-modal.<key>` 에 크기/위치를 저장·복원.
@@ -32,7 +32,7 @@ class SdModal {
 - `float` — 떠 있는 모달(backdrop 없음). `fill` — 전체 화면. `resizable` — 8방향 resize handle. `movable` — header 드래그 이동.
 - `position` — `"bottom-right"`/`"top-right"` 코너 고정.
 - `minHeightPx`/`minWidthPx`/`heightPx`/`widthPx` — 최소/초기 크기(px).
-- 닫기 가드 — `SdActivatedModalProvider.canDeactivateFn()` 이 false면 backdrop/Escape/닫기 버튼이 막힌다.
+- 닫기 가드 — `SdActivatedModalProvider.canDeactivateFn()` 이 false면 backdrop/Escape/닫기 버튼이 막힘.
 
 ### `SdModalProvider`
 
@@ -58,7 +58,7 @@ interface SdModalInfo<T extends SdModalContentDef<any>, X = ""> {
 }
 ```
 
-- `showAsync` — `modal.type` 컴포넌트를 동적 생성해 모달로 띄우고, 컨텐츠의 `close` output 값(`O | undefined`)으로 resolve한다. `closeRequest`(backdrop/Escape/X)는 `undefined` resolve. `modal.inputs` 의 각 값은 `setInput` 으로 바인딩.
+- `showAsync` — `modal.type` 컴포넌트를 동적 생성해 모달로 띄우고, 컨텐츠의 `close` output 값(`O | undefined`)으로 resolve함. `closeRequest`(backdrop/Escape/X)는 `undefined` resolve. `modal.inputs` 의 각 값은 `setInput` 으로 바인딩.
 - 컨텐츠 contract(`SdModalContentDef`) — `initialized: Signal<boolean>`(렌더 준비), `close = output<O | undefined>()`(결과 emit). 닫으려면 `this.close.emit(result)` 호출.
 - `modalCount` — 열린 모달 수 signal.
 
@@ -85,7 +85,7 @@ class SdActivatedModalProvider<T extends SdModalContentDef<any>> {
 }
 ```
 
-모달별 child injector로 제공된다. 컨텐츠 컴포넌트가 inject해 host `SdModal` 접근, `canDeactivateFn` 을 false 반환으로 덮어써 닫기 차단. 컨텐츠 자신의 input은 일반 `input()` 으로 읽고, 닫기는 자기 `close` output emit으로 한다.
+모달별 child injector로 제공됨. 컨텐츠 컴포넌트가 inject해 host `SdModal` 접근, `canDeactivateFn` 을 false 반환으로 덮어써 닫기 차단. 컨텐츠 자신의 input은 일반 `input()` 으로 읽고, 닫기는 자기 `close` output emit으로 함.
 
 ### `SdPromptModal` / `SdConfirmModal` (`sd-prompt-modal` / `sd-confirm-modal`)
 
@@ -147,7 +147,7 @@ class SdToastContainer {
 } // default false
 ```
 
-`SdToastProvider` 가 내부 생성한다. `SdToast` 는 `message` 텍스트 또는 투영 콘텐츠를 렌더하고 `useProgress` 면 progress bar 표시. severity별 `role`/`aria-live`(info/success→status/polite, warning/danger→alert/assertive).
+`SdToastProvider` 가 내부 생성함. `SdToast` 는 `message` 텍스트 또는 투영 콘텐츠를 렌더하고 `useProgress` 면 progress bar 표시. severity별 `role`/`aria-live`(info/success→status/polite, warning/danger→alert/assertive).
 
 ## busy
 
@@ -197,7 +197,7 @@ interface SdPrint { initialized: Signal<boolean>; readonly _optionalPrintInputs?
 interface SdPrintInput<T, X = ""> { type: Type<T>; inputs: WithOptional<Omit<DirectiveInputSignals<T>, "_optionalPrintInputs" | X>, ...>; }
 ```
 
-`print()` 메서드는 없다 — `printAsync`/`getPdfBufferAsync` 만 있다. 인쇄 대상 컴포넌트는 `initialized: Signal<boolean>` 을 노출해야 하며 provider가 준비를 기다린다.
+`print()` 메서드는 없음 — `printAsync`/`getPdfBufferAsync` 만 있음. 인쇄 대상 컴포넌트는 `initialized: Signal<boolean>` 을 노출해야 하며 provider가 준비를 기다림.
 
 - `printAsync` — `template.type` 컴포넌트를 생성·렌더하고(`inputs` 는 `inputBinding`), `@page { size; margin }` + print 전용 스타일을 주입한 뒤 이미지 로드 완료를 기다려 `window.print()`. `size` 기본 `"A4 auto"`, `margin` 기본 `"0"`.
 - `getPdfBufferAsync` — 같은 렌더 후 `.page` 요소들을 `html-to-image` 로 canvas 래스터화해 `jsPDF` 페이지로 추가하고 `Uint8Array` 반환. `orientation` 기본 `"portrait"`, `pageSize` 기본 `"a4"`.
@@ -215,7 +215,7 @@ class SdFileDialogProvider {
 }
 ```
 
-`<input type="file">` 을 잠시 body에 붙여 파일 선택 dialog를 띄운다.
+`<input type="file">` 을 잠시 body에 붙여 파일 선택 dialog를 띄움.
 
 - `multiple` — `true` 면 `File[]`, 생략/`false` 면 단일 `File` 반환.
 - `accept` — input `accept` 속성(MIME/확장자 필터). null이면 미설정.

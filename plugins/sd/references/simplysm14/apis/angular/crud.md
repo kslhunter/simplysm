@@ -1,8 +1,8 @@
 # @simplysm/angular — CRUD 골격·권한표·상태 프리셋
 
-목록/단건 화면 shell, 권한 table, 상태 preset 저장 UI 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. `sd-crud-list`/`sd-crud-detail` 사용법: [client-crud.md](../../manuals/client-crud.md), 권한 구조 사용법: [client-app-structure.md](../../manuals/client-app-structure.md), 설정 저장 사용법: [client-system-config.md](../../manuals/client-system-config.md)
+목록/단건 화면 shell, 권한 table, 상태 preset 저장 UI 군임. 모두 standalone · OnPush · `ViewEncapsulation.None`. `sd-crud-list`/`sd-crud-detail` 사용법: [client-crud.md](../../manuals/client-crud.md), 권한 구조 사용법: [client-app-structure.md](../../manuals/client-app-structure.md), 설정 저장 사용법: [client-system-config.md](../../manuals/client-system-config.md)
 
-`viewType: SdViewType`(`"page" | "modal" | "control"`)은 보통 `injectViewTypeSignal()` 값을 넣어 화면 종류별 레이아웃(topbar 유무, 저장 버튼 위치 등)을 분기한다. 자세히: [routing-appstructure.md](./routing-appstructure.md).
+`viewType: SdViewType`(`"page" | "modal" | "control"`)은 보통 `injectViewTypeSignal()` 값을 넣어 화면 종류별 레이아웃(topbar 유무, 저장 버튼 위치 등)을 분기함. 자세히: [routing-appstructure.md](./routing-appstructure.md).
 
 ## `SdBaseContainer` (`sd-base-container`)
 

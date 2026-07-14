@@ -11,7 +11,7 @@ Capacitor 파일 시스템 접근 플러그인. 권한 확인·요청(Android 10
 
 ## FileSystem
 
-`abstract class FileSystem` — 모든 메서드 static. `registerPlugin("FileSystem")` 으로 등록된 네이티브 플러그인을 감싼다. 인스턴스화 없이 `FileSystem.xxxAsync()` 호출.
+`abstract class FileSystem` — 모든 메서드 static. `registerPlugin("FileSystem")` 으로 등록된 네이티브 플러그인을 감쌈. 인스턴스화 없이 `FileSystem.xxxAsync()` 호출.
 
 ### 권한
 

@@ -1,6 +1,6 @@
 # @simplysm/sd-excel — Low-level (OOXML 파트)
 
-워크북을 구성하는 각 OOXML 파트를 객체로 표현하는 저수준 클래스 묶음. 고수준 API(`SdExcelWorkbook`/`Worksheet`/`Cell`)가 내부에서 이들을 조작한다. `workbook.zipCache.getAsync(path)` 로 직접 파트를 꺼내 쓸 때만 필요. 대부분 작업은 고수준 API 로 충분하다.
+워크북을 구성하는 각 OOXML 파트를 객체로 표현하는 저수준 클래스 묶음. 고수준 API(`SdExcelWorkbook`/`Worksheet`/`Cell`)가 내부에서 이들을 조작함. `workbook.zipCache.getAsync(path)` 로 직접 파트를 꺼내 쓸 때만 필요. 대부분 작업은 고수준 API 로 충분함.
 
 ## 공통 인터페이스
 
@@ -31,7 +31,7 @@
 
 셀 좌표는 0-base `{r,c}`. 내부 dataMap 으로 행/셀 캐싱.
 
-- `range: ISdExcelAddressRangePoint` (getter) — `s:{0,0}`~최대 셀.
+- `range: ISdExcelAddressRangePoint` (getter) — `s:{0,0}`-최대 셀.
 - `setCellType(addr, type: "s"|"b"|"str"|undefined)` / `getCellType(addr): string | undefined` — 셀 타입(s=sharedString, b=bool, str=수식문자열). undefined 면 속성 제거.
 - `setCellVal(addr, val: string | undefined)` / `getCellVal(addr): string | undefined` — 셀 raw 값(v 또는 inlineStr).
 - `setCellFormula(addr, val: string | undefined)` / `getCellFormula(addr): string | undefined` — 수식(f).

@@ -1,8 +1,8 @@
 # @simplysm/sd-orm-common — Queryable
 
-`class Queryable<D extends DbContext, T>`. 불변(immutable) 체이닝 쿼리 빌더. 각 메서드는 새 Queryable 을 반환(원본 유지). `db.<테이블필드>` 가 테이블 Queryable 이며 거기서 체이닝한다. `_def`(IQueryableDef)에 절을 누적하고, 실행 메서드에서 `getSelectQueryDef()` 등으로 `TQueryDef` 로 직렬화해 `db.executeDefsAsync` 호출.
+`class Queryable<D extends DbContext, T>`. 불변(immutable) 체이닝 쿼리 빌더. 각 메서드는 새 Queryable 을 반환(원본 유지). `db.<테이블필드>` 가 테이블 Queryable 이며 거기서 체이닝함. `_def`(IQueryableDef)에 절을 누적하고, 실행 메서드에서 `getSelectQueryDef()` 등으로 `TQueryDef` 로 직렬화해 `db.executeDefsAsync` 호출.
 
-타입: entity 콜백 인자는 `TEntity<T>`(각 컬럼이 `QueryUnit`, 관계는 중첩). `select` 후 커스텀 entity 가 되면 `_isCustomEntity=true` 로 표시되어 편집/INSERT 류가 금지된다.
+타입: entity 콜백 인자는 `TEntity<T>`(각 컬럼이 `QueryUnit`, 관계는 중첩). `select` 후 커스텀 entity 가 되면 `_isCustomEntity=true` 로 표시되어 편집/INSERT 류가 금지됨.
 
 ## 생성 / 식별
 

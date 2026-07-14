@@ -6,15 +6,15 @@
 
 `type PosixPath = string & { [POSIX]: never }`
 
-- 런타임 값은 평범한 `string` 이다.
-- `[POSIX]: never` — 모듈 내부 `Symbol("PosixPath")` 로 표현되는 타입상 브랜드 필드. `posix` 또는 `posixResolve` 반환으로만 이 타입을 얻을 수 있다.
+- 런타임 값은 평범한 `string` 임.
+- `[POSIX]: never` — 모듈 내부 `Symbol("PosixPath")` 로 표현되는 타입상 브랜드 필드. `posix` 또는 `posixResolve` 반환으로만 이 타입을 얻을 수 있음.
 
 ## posix
 
 `function posix(p: string): PosixPath`
 
 - `p: string` — POSIX 표기로 바꿀 경로 문자열.
-- 반환 `PosixPath` — `p.replace(/\\/g, "/")`. 경로 결합이나 절대 경로 resolve 는 하지 않는다.
+- 반환 `PosixPath` — `p.replace(/\\/g, "/")`. 경로 결합이나 절대 경로 resolve 는 하지 않음.
 
 ## posixResolve
 
@@ -31,7 +31,7 @@
 - `fromDirectory: string` — 기존 기준 디렉토리.
 - `toDirectory: string` — 새 기준 디렉토리.
 - 반환 `string` — `filePath === fromDirectory` 이면 `toDirectory`, 아니면 `path.resolve(toDirectory, path.relative(fromDirectory, filePath))`.
-- 예외 — `filePath` 가 `fromDirectory` 의 하위가 아니면 `ArgumentError` 를 throw 하고 error data 에 `filePath`, `fromDirectory` 를 담는다.
+- 예외 — `filePath` 가 `fromDirectory` 의 하위가 아니면 `ArgumentError` 를 throw 하고 error data 에 `filePath`, `fromDirectory` 를 담음.
 
 ## basenameWithoutExt
 
@@ -52,7 +52,7 @@
 
 `function filterByTargets(files: string[], targets: string[], cwd: string): string[]`
 
-- `files: string[]` — 필터링할 파일 경로 배열. 주석 기준 cwd 하위의 절대 경로를 기대한다(외부 경로는 `../` 상대 경로로 처리됨).
-- `targets: string[]` — cwd 기준 대상 경로 배열. 각 값은 `posix` 로 정규화된다(POSIX 스타일 권장).
+- `files: string[]` — 필터링할 파일 경로 배열. 주석 기준 cwd 하위의 절대 경로를 기대함(외부 경로는 `../` 상대 경로로 처리됨).
+- `targets: string[]` — cwd 기준 대상 경로 배열. 각 값은 `posix` 로 정규화됨(POSIX 스타일 권장).
 - `cwd: string` — `path.relative(cwd, file)` 계산 기준 경로.
-- 반환 `string[]` — `targets.length === 0` 이면 원본 `files`. 그 외에는 cwd 상대 POSIX 경로가 target 과 같거나 `target + "/"` 로 시작하는 파일만 남긴다.
+- 반환 `string[]` — `targets.length === 0` 이면 원본 `files`. 그 외에는 cwd 상대 POSIX 경로가 target 과 같거나 `target + "/"` 로 시작하는 파일만 남김.

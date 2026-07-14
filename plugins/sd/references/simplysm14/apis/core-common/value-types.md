@@ -1,6 +1,6 @@
 # @simplysm/core-common — value-types
 
-날짜/시간/UUID 불변 값 타입과 날짜 포맷 헬퍼 묶음. 파싱·포맷·불변 산술·주차 계산에서 함께 참조한다. `DateTime`/`DateOnly`/`Time` 은 로컬 타임존 기준이며 모든 변환·산술 메서드는 새 인스턴스를 반환한다.
+날짜/시간/UUID 불변 값 타입과 날짜 포맷 헬퍼 묶음. 파싱·포맷·불변 산술·주차 계산에서 함께 참조함. `DateTime`/`DateOnly`/`Time` 은 로컬 타임존 기준이며 모든 변환·산술 메서드는 새 인스턴스를 반환함.
 
 ## DateTime
 
@@ -23,12 +23,12 @@ class DateTime {
 }
 ```
 
-- `date: Date` — 내부 Date 복제본이다. getter 는 이 Date 에서 로컬 타임존 기준 값을 읽는다.
-- `constructor()` — 현재 시각으로 생성한다.
-- `year, month, day, hour?, minute?, second?, millisecond?` 생성 인자 — `month` 는 1~12 기준(내부 Date 에는 `month - 1` 전달). 시·분·초·밀리초 생략 시 0.
-- `constructor(tick)` — epoch 밀리초로 생성한다.
-- `constructor(date)` — 원본 Date 의 `getTime()` 으로 복제한다.
-- `static parse(str)` — 먼저 `Date.parse(str)` 를 시도하고, 실패하면 `yyyy-MM-dd AM|PM HH:mm:ss[.fff]`, `yyyy-MM-dd 오전|오후 HH:mm:ss[.fff]`, `yyyyMMddHHmmss`, `yyyy-MM-dd HH:mm:ss[.fff]` 순으로 처리한다. 전부 실패하면 `ArgumentError`.
+- `date: Date` — 내부 Date 복제본임. getter 는 이 Date 에서 로컬 타임존 기준 값을 읽음.
+- `constructor()` — 현재 시각으로 생성함.
+- `year, month, day, hour?, minute?, second?, millisecond?` 생성 인자 — `month` 는 1-12 기준(내부 Date 에는 `month - 1` 전달). 시·분·초·밀리초 생략 시 0.
+- `constructor(tick)` — epoch 밀리초로 생성함.
+- `constructor(date)` — 원본 Date 의 `getTime()` 으로 복제함.
+- `static parse(str)` — 먼저 `Date.parse(str)` 를 시도하고, 실패하면 `yyyy-MM-dd AM|PM HH:mm:ss[.fff]`, `yyyy-MM-dd 오전|오후 HH:mm:ss[.fff]`, `yyyyMMddHHmmss`, `yyyy-MM-dd HH:mm:ss[.fff]` 순으로 처리함. 전부 실패하면 `ArgumentError`.
 
 읽기 전용 getter:
 
@@ -40,13 +40,13 @@ class DateTime {
 
 불변 변환·산술(모두 새 DateTime 반환):
 
-- `setYear(year)` — 연도만 변경. 대상 연·월 말일보다 현재 일이 크면 말일로 줄인다.
-- `setMonth(month)` — 월만 변경. 1~12 밖 월은 연도로 이월하고, 말일 초과 일은 말일로 줄인다(`dt.normalizeMonth` 사용).
-- `setDay(day)` — 일만 변경. JS Date 의 월 이월 규칙을 따른다(예: 1월 32일 → 2월 1일).
+- `setYear(year)` — 연도만 변경. 대상 연·월 말일보다 현재 일이 크면 말일로 줄임.
+- `setMonth(month)` — 월만 변경. 1-12 밖 월은 연도로 이월하고, 말일 초과 일은 말일로 줄임(`dt.normalizeMonth` 사용).
+- `setDay(day)` — 일만 변경. JS Date 의 월 이월 규칙을 따름(예: 1월 32일 → 2월 1일).
 - `setHour(hour)`, `setMinute(minute)`, `setSecond(second)`, `setMillisecond(millisecond)` — 해당 구성요소만 변경.
 - `addYears(years)`, `addMonths(months)`, `addDays(days)` — `setYear`/`setMonth`/`setDay` 기반 달력 단위 덧셈.
-- `addHours(hours)`, `addMinutes(minutes)`, `addSeconds(seconds)`, `addMilliseconds(milliseconds)` — tick 에 밀리초를 더한다.
-- `toFormatString(formatStr: string): string` — `dt.format` 토큰으로 문자열화한다.
+- `addHours(hours)`, `addMinutes(minutes)`, `addSeconds(seconds)`, `addMilliseconds(milliseconds)` — tick 에 밀리초를 더함.
+- `toFormatString(formatStr: string): string` — `dt.format` 토큰으로 문자열화함.
 - `toString(): string` — `yyyy-MM-ddTHH:mm:ss.fffzzz` 형식.
 
 ## DateOnly
@@ -64,9 +64,9 @@ class DateOnly {
 
 - `date: Date` — 시간 부분을 자정으로 맞춘 내부 Date.
 - `constructor()` — 오늘 날짜(로컬 연·월·일)로 생성.
-- `year, month, day` 생성 인자 — `month` 는 1~12 기준, JS Date 정규화를 따른다.
+- `year, month, day` 생성 인자 — `month` 는 1-12 기준, JS Date 정규화를 따름.
 - `constructor(tick)` / `constructor(date)` — tick/Date 로 만든 뒤 로컬 연·월·일만 보존(시각 버림).
-- `static parse(str)` — `yyyy-MM-dd`·`yyyyMMdd` 는 문자열 숫자를 직접 추출(타임존 무관). 그 외 `Date.parse` 가능 문자열은 UTC tick 을 파싱 대상 날짜의 오프셋만큼 보정해 로컬 날짜로 변환한다. 실패하면 `ArgumentError`. 서버/클라이언트 타임존이 다르면 `yyyy-MM-dd` 권장.
+- `static parse(str)` — `yyyy-MM-dd`·`yyyyMMdd` 는 문자열 숫자를 직접 추출(타임존 무관). 그 외 `Date.parse` 가능 문자열은 UTC tick 을 파싱 대상 날짜의 오프셋만큼 보정해 로컬 날짜로 변환함. 실패하면 `ArgumentError`. 서버/클라이언트 타임존이 다르면 `yyyy-MM-dd` 권장.
 
 읽기 전용 getter:
 
@@ -76,9 +76,9 @@ class DateOnly {
 
 불변 변환·산술(새 DateOnly 반환):
 
-- `setYear(year)` — 연도만 변경. 대상 월 말일 초과 일은 말일로 줄인다.
-- `setMonth(month)` — 월만 변경. 1~12 밖 월은 연도로 이월, 말일 초과 일은 말일로 줄인다.
-- `setDay(day)` — 일만 변경. JS Date 월 이월 규칙을 따른다.
+- `setYear(year)` — 연도만 변경. 대상 월 말일 초과 일은 말일로 줄임.
+- `setMonth(month)` — 월만 변경. 1-12 밖 월은 연도로 이월, 말일 초과 일은 말일로 줄임.
+- `setDay(day)` — 일만 변경. JS Date 월 이월 규칙을 따름.
 - `addYears(years)`, `addMonths(months)`, `addDays(days)` — 각각 `setYear`/`setMonth`/`setDay` 기반.
 - `toFormatString(formatStr)` — `dt.format` 으로 포맷.
 - `toString()` — `yyyy-MM-dd`.
@@ -89,7 +89,7 @@ class DateOnly {
 - `getWeekSeqStartDate(weekStartDay = 1, minDaysInFirstWeek = 4): DateOnly` — 이 날짜가 속한 주의 시작 날짜.
 - `getWeekSeqOfYear(weekStartDay = 1, minDaysInFirstWeek = 4): { year: number; weekSeq: number }` — 연도 기준 주차 번호.
 - `getWeekSeqOfMonth(weekStartDay = 1, minDaysInFirstWeek = 4): { year: number; monthSeq: number; weekSeq: number }` — 월 기준 주차 번호.
-- `static getDateByYearWeekSeq(arg: { year: number; month?: number; weekSeq: number }, weekStartDay = 1, minDaysInFirstWeek = 4): DateOnly` — 지정 연도·선택 월·주차에서 해당 주 시작 날짜를 만든다. `arg.month` 생략 시 1월 기준.
+- `static getDateByYearWeekSeq(arg: { year: number; month?: number; weekSeq: number }, weekStartDay = 1, minDaysInFirstWeek = 4): DateOnly` — 지정 연도·선택 월·주차에서 해당 주 시작 날짜를 만듦. `arg.month` 생략 시 1월 기준.
 
 ## Time
 
@@ -103,13 +103,13 @@ class Time {
 }
 ```
 
-날짜 없이 시각만 저장한다. 내부 tick 은 하루 밀리초(`24*60*60*1000`)로 나눈 나머지이며 24시간 초과·음수 값은 하루 범위로 정규화된다(음수는 하루를 더함).
+날짜 없이 시각만 저장함. 내부 tick 은 하루 밀리초(`24*60*60*1000`)로 나눈 나머지이며 24시간 초과·음수 값은 하루 범위로 정규화됨(음수는 하루를 더함).
 
 - `constructor()` — 현재 시각의 시간 부분으로 생성.
-- `hour, minute, second?, millisecond?` 생성 인자 — 초·밀리초 생략 시 0. 24시간 밖 값도 정규화된다.
+- `hour, minute, second?, millisecond?` 생성 인자 — 초·밀리초 생략 시 0. 24시간 밖 값도 정규화됨.
 - `constructor(tick)` — 하루 범위로 정규화된 밀리초.
 - `constructor(date)` — Date 의 시·분·초·밀리초만 추출.
-- `static parse(str)` — `AM|PM HH:mm:ss[.fff]`, `HH:mm:ss[.fff]`, ISO 8601 `yyyy-MM-ddT...` 형태를 처리한다(ISO 는 로컬 시각으로 변환). 실패하면 `ArgumentError`.
+- `static parse(str)` — `AM|PM HH:mm:ss[.fff]`, `HH:mm:ss[.fff]`, ISO 8601 `yyyy-MM-ddT...` 형태를 처리함(ISO 는 로컬 시각으로 변환). 실패하면 `ArgumentError`.
 
 읽기 전용 getter:
 
@@ -120,7 +120,7 @@ class Time {
 불변 변환·산술(새 Time 반환, 24시간 순환):
 
 - `setHour(hour)`, `setMinute(minute)`, `setSecond(second)`, `setMillisecond(millisecond)` — 해당 구성요소만 변경.
-- `addHours(hours)`, `addMinutes(minutes)`, `addSeconds(seconds)`, `addMilliseconds(milliseconds)` — 24시간 순환으로 더한다(음수도 순환).
+- `addHours(hours)`, `addMinutes(minutes)`, `addSeconds(seconds)`, `addMilliseconds(milliseconds)` — 24시간 순환으로 더함(음수도 순환).
 - `toFormatString(formatStr)` — `dt.format` 으로 포맷.
 - `toString()` — `HH:mm:ss.fff`.
 
@@ -136,20 +136,20 @@ class Uuid {
 }
 ```
 
-- `static generate()` — `crypto.getRandomValues` 로 16바이트를 만들고 v4 비트를 설정한다(암호학적 난수).
-- `static fromBytes(bytes)` — 16바이트 Uint8Array 를 UUID 문자열로 변환한다. 길이가 16이 아니면 `ArgumentError`.
-- `constructor(uuid)` — `8-4-4-4-12` hex 문자열 형식이어야 한다. 형식이 안 맞으면 `ArgumentError`.
-- `toString()` — 내부 UUID 문자열을 반환한다.
-- `toBytes()` — 하이픈 제외 hex 쌍을 16바이트 Uint8Array 로 변환한다.
+- `static generate()` — `crypto.getRandomValues` 로 16바이트를 만들고 v4 비트를 설정함(암호학적 난수).
+- `static fromBytes(bytes)` — 16바이트 Uint8Array 를 UUID 문자열로 변환함. 길이가 16이 아니면 `ArgumentError`.
+- `constructor(uuid)` — `8-4-4-4-12` hex 문자열 형식이어야 함. 형식이 안 맞으면 `ArgumentError`.
+- `toString()` — 내부 UUID 문자열을 반환함.
+- `toBytes()` — 하이픈 제외 hex 쌍을 16바이트 Uint8Array 로 변환함.
 
 ## dt
 
-`import { dt } from "@simplysm/core-common"` 네임스페이스. 값 타입의 `toFormatString`/`parse` 가 내부적으로 쓰는 저수준 포맷·정규화 함수다.
+`import { dt } from "@simplysm/core-common"` 네임스페이스. 값 타입의 `toFormatString`/`parse` 가 내부적으로 쓰는 저수준 포맷·정규화 함수임.
 
-- `format(formatString: string, args: { year?: number; month?: number; day?: number; hour?: number; minute?: number; second?: number; millisecond?: number; timezoneOffsetMinutes?: number }): string` — 전달된 구성요소에 해당하는 토큰만 치환한다(C# 호환 토큰). 미전달 구성요소의 토큰은 그대로 남는다. `timezoneOffsetMinutes` 는 `zzz`/`zz`/`z` 토큰의 부호·시·분을 만든다.
-- `normalizeMonth(year: number, month: number, day: number): DtNormalizedMonth` — 1~12 밖 월을 연도로 이월하고(음수 월도 처리), `day` 를 대상 월 마지막 일 이하로 줄인다.
-- `convert12To24(rawHour: number, isPM: boolean): number` — 12시간제 시(1-12)를 24시간제(0-23)로 변환한다. `rawHour === 12` 이면 PM=12·AM=0, 그 외 PM=+12·AM 은 그대로.
-- `DtNormalizedMonth` — `normalizeMonth` 결과 타입. `year`(정규화 연도), `month`(1~12), `day`(말일 이하로 조정된 일).
+- `format(formatString: string, args: { year?: number; month?: number; day?: number; hour?: number; minute?: number; second?: number; millisecond?: number; timezoneOffsetMinutes?: number }): string` — 전달된 구성요소에 해당하는 토큰만 치환함(C# 호환 토큰). 미전달 구성요소의 토큰은 그대로 남음. `timezoneOffsetMinutes` 는 `zzz`/`zz`/`z` 토큰의 부호·시·분을 만듦.
+- `normalizeMonth(year: number, month: number, day: number): DtNormalizedMonth` — 1-12 밖 월을 연도로 이월하고(음수 월도 처리), `day` 를 대상 월 마지막 일 이하로 줄임.
+- `convert12To24(rawHour: number, isPM: boolean): number` — 12시간제 시(1-12)를 24시간제(0-23)로 변환함. `rawHour === 12` 이면 PM=12·AM=0, 그 외 PM=+12·AM 은 그대로.
+- `DtNormalizedMonth` — `normalizeMonth` 결과 타입. `year`(정규화 연도), `month`(1-12), `day`(말일 이하로 조정된 일).
 
 포맷 토큰(`format` / 값 타입의 `toFormatString`):
 

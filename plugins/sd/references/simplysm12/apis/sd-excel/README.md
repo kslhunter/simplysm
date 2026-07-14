@@ -91,7 +91,7 @@
 - `TSdExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | "Time"` — 셀 해석 분류. number=숫자, string=텍스트, 나머지=날짜/시간.
 - `sdExcelNumberFormats: TSdExcelNumberFormat[]` — 위 리터럴 5종의 런타임 배열.
 - `ISdExcelAddressPoint { r: number; c: number }` — 단일 셀 좌표(0-base).
-- `ISdExcelAddressRangePoint { s: ISdExcelAddressPoint; e: ISdExcelAddressPoint }` — 시작(s)~끝(e) 범위. getRangeAsync 반환형.
+- `ISdExcelAddressRangePoint { s: ISdExcelAddressPoint; e: ISdExcelAddressPoint }` — 시작(s)-끝(e) 범위. getRangeAsync 반환형.
 
 ## SdExcelUtils
 

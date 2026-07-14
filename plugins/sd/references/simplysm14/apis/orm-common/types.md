@@ -1,6 +1,6 @@
 # @simplysm/orm-common — 타입 / QueryDef·Expr AST / QueryBuilder / 결과 파싱
 
-executor·dialect 어댑터를 구현하거나 AST 를 직접 생성·검사하고 SQL 렌더링·결과 변환을 다룰 때 쓰는 저수준 타입·클래스 군. 대부분 라이브러리 구현·구현체 작성자용이며, 일반 앱은 `DbContext`/`Queryable`/`expr` 만으로 충분하다.
+executor·dialect 어댑터를 구현하거나 AST 를 직접 생성·검사하고 SQL 렌더링·결과 변환을 다룰 때 쓰는 저수준 타입·클래스 군. 대부분 라이브러리 구현·구현체 작성자용이며, 일반 앱은 `DbContext`/`Queryable`/`expr` 만으로 충분함.
 
 ## DB 런타임 타입 (`types/db.ts`)
 
@@ -26,7 +26,7 @@ executor·dialect 어댑터를 구현하거나 AST 를 직접 생성·검사하�
 
 ## Expr AST (`types/expr.ts`)
 
-`expr` 빌더가 만드는 노드 타입. 모두 `{ type: ... }` 판별 인터페이스. `ExprRendererBase` 가 `type` 별로 dispatch 한다.
+`expr` 빌더가 만드는 노드 타입. 모두 `{ type: ... }` 판별 인터페이스. `ExprRendererBase` 가 `type` 별로 dispatch 함.
 
 - `type Expr` — 전체 표현식 유니온(값·문자열·숫자·날짜·조건·집계·기타·윈도우·시스템). `select`/`orderBy` 등에서 쓰임.
 - `type WhereExpr` — WHERE 전용(boolean 반환) 유니온: 비교(`ExprEq`/`Gt`/`Lt`/`Gte`/`Lte`/`Between`/`IsNull`/`Like`/`Regexp`/`In`/`InQuery`/`Exists`) + 논리(`ExprNot`/`And`/`Or`).
@@ -71,4 +71,4 @@ executor·dialect 어댑터를 구현하거나 AST 를 직접 생성·검사하�
 - `createQueryBuilder(dialect: Dialect): QueryBuilderBase` — dialect 에 맞는 QueryBuilder 인스턴스 생성(팩토리).
 - `abstract class QueryBuilderBase` — QueryDef→SQL 추상 베이스. `build(def: QueryDef): QueryBuildResult` 가 `def.type` 으로 메서드 dispatch. dialect 공통 렌더링(where/orderBy/groupBy/having/join/from, LATERAL·재귀 self-join 감지)을 제공하고, DML/DDL 별 렌더는 abstract.
 - `abstract class ExprRendererBase` — Expr→SQL 추상 베이스. 생성자에 `buildSelect` 콜백 주입. `render(expr)` 가 `expr.type` dispatch, `renderWhere(exprs)` 는 AND 결합. public 유틸 `wrap(name)`(식별자 인용), `escapeString(value)`, `escapeValue(value)` 는 abstract.
-- dialect 구현 클래스(각 `QueryBuilderBase`/`ExprRendererBase` 확장): `MysqlQueryBuilder`+`MysqlExprRenderer`, `MssqlQueryBuilder`+`MssqlExprRenderer`, `PostgresqlQueryBuilder`+`PostgresqlExprRenderer`. dialect 차이(OUTPUT/LIMIT/식별자 인용/FK·시퀀스 처리 등)를 각자 구현한다.
+- dialect 구현 클래스(각 `QueryBuilderBase`/`ExprRendererBase` 확장): `MysqlQueryBuilder`+`MysqlExprRenderer`, `MssqlQueryBuilder`+`MssqlExprRenderer`, `PostgresqlQueryBuilder`+`PostgresqlExprRenderer`. dialect 차이(OUTPUT/LIMIT/식별자 인용/FK·시퀀스 처리 등)를 각자 구현함.
