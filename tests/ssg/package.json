@@ -13,17 +13,17 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@angular/common": "^22.0.5",
-    "@angular/compiler": "^22.0.5",
-    "@angular/core": "^22.0.5",
-    "@angular/platform-browser": "^22.0.5",
-    "@angular/platform-server": "^22.0.5",
-    "@angular/router": "^22.0.5",
+    "@angular/common": "^22.0.6",
+    "@angular/compiler": "^22.0.6",
+    "@angular/core": "^22.0.6",
+    "@angular/platform-browser": "^22.0.6",
+    "@angular/platform-server": "^22.0.6",
+    "@angular/router": "^22.0.6",
     "@simplysm/angular": "workspace:*",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@simplysm/sd-cli": "workspace:*",
-    "@types/node": "^24.13.2"
+    "@types/node": "^24.13.3"
   }
 }
