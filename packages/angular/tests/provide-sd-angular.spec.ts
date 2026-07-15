@@ -64,41 +64,41 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     });
   });
 
-  // ── Rule 3: 다크모드 복원·저장 ──
+  // ── Rule 3: 블루프린트 테마 복원·저장 ──
 
-  describe("Rule: 앱 시작 시 localStorage에서 다크모드를 복원하고 변경을 자동 저장한다", () => {
-    it("localStorage에 다크모드 설정이 있으면 복원한다", () => {
-      window.localStorage.setItem("test-app.sd-theme-dark", JSON.stringify(true));
+  describe("Rule: 앱 시작 시 localStorage에서 블루프린트 테마를 복원하고 변경을 자동 저장한다", () => {
+    it("localStorage에 블루프린트 설정이 있으면 복원한다", () => {
+      window.localStorage.setItem("test-app.sd-theme-blueprint", JSON.stringify(true));
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      expect(theme.dark()).toBe(true);
+      expect(theme.blueprint()).toBe(true);
     });
 
-    it("localStorage에 다크모드 설정이 없으면 기본값을 유지한다", () => {
+    it("localStorage에 블루프린트 설정이 없으면 기본값을 유지한다", () => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      expect(theme.dark()).toBe(false);
+      expect(theme.blueprint()).toBe(false);
     });
 
-    it("다크모드 변경 시 localStorage에 자동 저장된다", () => {
+    it("블루프린트 변경 시 localStorage에 자동 저장된다", () => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      theme.dark.set(true);
+      theme.blueprint.set(true);
       TestBed.flushEffects();
 
-      const stored = window.localStorage.getItem("test-app.sd-theme-dark");
+      const stored = window.localStorage.getItem("test-app.sd-theme-blueprint");
       expect(stored).toBe(JSON.stringify(true));
     });
   });
@@ -116,7 +116,9 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     it("unhandled promise rejection이 ErrorHandler로 전달된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
       const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
-      const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
 
       const event = new PromiseRejectionEvent("unhandledrejection", {
         reason: new Error("test rejection"),
@@ -135,7 +137,9 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     it("uncaught error가 ErrorHandler로 전달된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
       const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
-      const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
 
       const event = new ErrorEvent("error", {
         message: "test error",
@@ -154,7 +158,9 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     it("앱 파괴 시 에러 리스너가 정리된다", () => {
       const errorHandler = TestBed.inject(ErrorHandler);
       const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
-      const destroySpy = vi.spyOn(TestBed.inject(ApplicationRef), "destroy").mockImplementation(() => {});
+      const destroySpy = vi
+        .spyOn(TestBed.inject(ApplicationRef), "destroy")
+        .mockImplementation(() => {});
 
       // TestBed.resetTestingModule()로 환경 파괴 → DestroyRef.onDestroy 실행
       TestBed.resetTestingModule();
@@ -199,7 +205,14 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
       TestBed.configureTestingModule({
         providers: [
           provideSdAngular({ clientName: "test-app" }),
-          { provide: SwUpdate, useValue: { isEnabled: true, checkForUpdate: checkForUpdateSpy, activateUpdate: activateUpdateSpy } },
+          {
+            provide: SwUpdate,
+            useValue: {
+              isEnabled: true,
+              checkForUpdate: checkForUpdateSpy,
+              activateUpdate: activateUpdateSpy,
+            },
+          },
         ],
       });
       TestBed.inject(ApplicationRef);
@@ -220,7 +233,14 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
       TestBed.configureTestingModule({
         providers: [
           provideSdAngular({ clientName: "test-app" }),
-          { provide: SwUpdate, useValue: { isEnabled: true, checkForUpdate: checkForUpdateSpy, activateUpdate: activateUpdateSpy } },
+          {
+            provide: SwUpdate,
+            useValue: {
+              isEnabled: true,
+              checkForUpdate: checkForUpdateSpy,
+              activateUpdate: activateUpdateSpy,
+            },
+          },
         ],
       });
       TestBed.inject(ApplicationRef);
@@ -238,7 +258,6 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
       confirmSpy.mockRestore();
     });
   });
-
 });
 
 describe("FIX-1 Slice 3: provideSdAngular 수정", () => {
@@ -295,15 +314,12 @@ describe("FIX-1 Slice 3: provideSdAngular 수정", () => {
 
       // reject 후에도 setTimeout(fn, 5*60*1000)이 호출되어야 한다
       await new Promise((r) => setTimeout(r, 10));
-      const timeoutCalls = setTimeoutSpy.mock.calls.filter(
-        (call) => call[1] === 5 * 60 * 1000,
-      );
+      const timeoutCalls = setTimeoutSpy.mock.calls.filter((call) => call[1] === 5 * 60 * 1000);
       expect(timeoutCalls.length).toBeGreaterThan(0);
 
       setTimeoutSpy.mockRestore();
     });
   });
-
 });
 
 describe("Feature 4.3: 테마 write 방지", () => {
@@ -316,7 +332,7 @@ describe("Feature 4.3: 테마 write 방지", () => {
 
   describe("Rule: 테마 effect는 값 변경 시에만 localStorage에 write한다", () => {
     it("초기 실행 시 동일 값이면 localStorage에 다시 쓰지 않는다", () => {
-      window.localStorage.setItem("test-app.sd-theme-dark", JSON.stringify(true));
+      window.localStorage.setItem("test-app.sd-theme-blueprint", JSON.stringify(true));
 
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
@@ -328,9 +344,7 @@ describe("Feature 4.3: 테마 write 방지", () => {
       TestBed.inject(ApplicationRef);
       TestBed.flushEffects();
 
-      const themeSetCalls = setSpy.mock.calls.filter(
-        (call) => call[0] === "sd-theme-dark",
-      );
+      const themeSetCalls = setSpy.mock.calls.filter((call) => call[0] === "sd-theme-blueprint");
       expect(themeSetCalls).toHaveLength(0);
 
       setSpy.mockRestore();

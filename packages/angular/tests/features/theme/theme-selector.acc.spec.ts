@@ -153,41 +153,4 @@ describe("Feature 1.2 Slice 1: sd-theme-selector", () => {
       expect(plusBtn.disabled).toBe(true);
     });
   });
-
-  describe("Rule: 다크 모드 토글", () => {
-    it("다크 모드 OFF 상태에서 레이블과 sd-switch가 OFF로 표시된다", () => {
-      setupTestBed();
-      const fixture = TestBed.createComponent(SdThemeSelectorTest);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const sdTheme = TestBed.inject(SdThemeProvider);
-      expect(sdTheme.dark()).toBe(false);
-
-      const popup = openPopup(fixture);
-      expect(popup.textContent).toContain("다크 모드");
-
-      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
-      expect(switchEl).toBeTruthy();
-      expect(switchEl.getAttribute("data-sd-on")).toBe("false");
-    });
-
-    it("스위치 토글 시 다크 모드가 전환된다", () => {
-      setupTestBed();
-      const fixture = TestBed.createComponent(SdThemeSelectorTest);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const sdTheme = TestBed.inject(SdThemeProvider);
-      expect(sdTheme.dark()).toBe(false);
-
-      const popup = openPopup(fixture);
-      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
-      switchEl.click();
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      expect(sdTheme.dark()).toBe(true);
-    });
-  });
 });

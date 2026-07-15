@@ -3,9 +3,7 @@ import { isPlatformBrowser } from "@angular/common";
 
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {
-  dark = signal<boolean>(false);
-
-  // 블루프린트(엔지니어링 도면) 테마 — dark 토글과 직교. dark 와 조합해 4면을 만든다.
+  // 블루프린트(엔지니어링 도면) 테마
   blueprint = signal<boolean>(false);
 
   readonly fontSizePresets: readonly number[] = [12, 14, 16, 20, 24, 28];
@@ -15,10 +13,6 @@ export class SdThemeProvider {
   constructor() {
     // SSR(프리렌더) 가드: document 반영은 브라우저 전용
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
-
-    effect(() => {
-      document.body.classList.toggle("sd-theme-dark", this.dark());
-    });
 
     effect(() => {
       document.body.classList.toggle("sd-theme-blueprint", this.blueprint());

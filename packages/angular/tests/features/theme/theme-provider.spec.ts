@@ -3,34 +3,6 @@ import { TestBed } from "@angular/core/testing";
 import { ApplicationRef } from "@angular/core";
 import { SdThemeProvider } from "../../../src/features/theme/sd-theme-provider";
 
-describe("Feature 1.2.1 Slice 2: SdThemeProvider 단순화", () => {
-  let provider: SdThemeProvider;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    provider = TestBed.inject(SdThemeProvider);
-    document.body.className = "";
-    document.documentElement.style.fontSize = "";
-  });
-
-  describe("Rule: SdThemeProvider에서 크기 테마 기능을 제거한다", () => {
-    it("dark signal의 기본값이 false이다", () => {
-      expect(provider.dark()).toBe(false);
-    });
-
-    it("dark true일 때 body에 sd-theme-dark 클래스가 설정된다", () => {
-      provider.dark.set(true);
-      TestBed.inject(ApplicationRef).tick();
-      expect(document.body.classList.contains("sd-theme-dark")).toBe(true);
-    });
-
-    it("dark false일 때 body에 sd-theme-dark 클래스가 없다", () => {
-      TestBed.inject(ApplicationRef).tick();
-      expect(document.body.classList.contains("sd-theme-dark")).toBe(false);
-    });
-  });
-});
-
 describe("블루프린트 테마: SdThemeProvider", () => {
   let provider: SdThemeProvider;
 
@@ -53,14 +25,6 @@ describe("블루프린트 테마: SdThemeProvider", () => {
   it("blueprint false일 때 body에 sd-theme-blueprint 클래스가 없다", () => {
     TestBed.inject(ApplicationRef).tick();
     expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
-  });
-
-  it("blueprint와 dark는 독립적으로 동시 적용된다(직교)", () => {
-    provider.dark.set(true);
-    provider.blueprint.set(true);
-    TestBed.inject(ApplicationRef).tick();
-    expect(document.body.classList.contains("sd-theme-dark")).toBe(true);
-    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);
   });
 });
 
@@ -112,13 +76,13 @@ describe("FIX-1 Slice 4: SdThemeProvider classList.toggle", () => {
     document.documentElement.style.fontSize = "";
   });
 
-  it("다크 모드 전환 시 기존 body 클래스가 유지된다", () => {
+  it("테마 전환 시 기존 body 클래스가 유지된다", () => {
     document.body.classList.add("my-app");
 
-    provider.dark.set(true);
+    provider.blueprint.set(true);
     TestBed.inject(ApplicationRef).tick();
 
-    expect(document.body.classList.contains("sd-theme-dark")).toBe(true);
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);
     expect(document.body.classList.contains("my-app")).toBe(true);
   });
 });

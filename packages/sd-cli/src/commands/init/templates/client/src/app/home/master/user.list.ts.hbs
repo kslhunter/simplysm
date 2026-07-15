@@ -415,6 +415,8 @@ export class {{userEntityPascal}}List {
         }
       });
       await this._appSharedData.emitAsync("{{userEntityLabel}}", ids);
+      // 삭제된 {{userEntityLabel}} 세션에 인증정보 변경 통지 → tryReloadAuth 재검증(삭제 계정은 로그아웃 귀결)
+      await this._appService.authInfoChangedEvent.emit((info) => ids.includes(info.{{userEntityCamel}}Id), undefined);
       this._sdToast.success("삭제되었습니다.");
       await this._refresh();
     });
@@ -456,6 +458,8 @@ export class {{userEntityPascal}}List {
         }
       });
       await this._appSharedData.emitAsync("{{userEntityLabel}}", ids);
+      // 복구된 {{userEntityLabel}} 세션에 인증정보 변경 통지 → authInfo·권한 재로드
+      await this._appService.authInfoChangedEvent.emit((info) => ids.includes(info.{{userEntityCamel}}Id), undefined);
       this._sdToast.success("복구되었습니다.");
       await this._refresh();
     });

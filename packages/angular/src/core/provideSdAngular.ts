@@ -53,20 +53,6 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       const sdTheme = inject(SdThemeProvider);
       const sdLocalStorage = inject(SdLocalStorageProvider);
 
-      const savedDark = sdLocalStorage.get("sd-theme-dark");
-      if (savedDark != null) {
-        sdTheme.dark.set(savedDark);
-      }
-
-      let prevDark = sdTheme.dark();
-      effect(() => {
-        const dark = sdTheme.dark();
-        if (dark !== prevDark) {
-          sdLocalStorage.set("sd-theme-dark", dark);
-          prevDark = dark;
-        }
-      });
-
       const savedBlueprint = sdLocalStorage.get("sd-theme-blueprint");
       if (savedBlueprint != null) {
         sdTheme.blueprint.set(savedBlueprint);

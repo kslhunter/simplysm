@@ -1,5 +1,6 @@
 import { auth, defineService, type ServiceMethods } from "@simplysm/service-server";
 import { expr } from "@simplysm/orm-common";
+import { AuthInfoChangedEvent } from "@{{workspaceName}}/common";
 import bcrypt from "bcrypt";
 import { getOrm } from "../utils/orm.utils";
 import type { IAuthData } from "./auth.service";
@@ -76,7 +77,7 @@ export const {{userEntityPascal}}Service = defineService("{{userEntityPascal}}Se
       }
 
       const orm = await getOrm(ctx);
-      return orm.connect(async (db) => {
+      const saved = await orm.connect(async (db) => {
         const results: { id: number }[] = [];
         const activeNames: string[] = [];
 
@@ -184,6 +185,18 @@ export const {{userEntityPascal}}Service = defineService("{{userEntityPascal}}Se
 
         return results;
       });
+
+      // 저장으로 역할/로그인ID/비밀번호가 바뀌었을 수 있으므로, 저장된 각 사용자 세션에 인증정보 변경 통지
+      // → 해당 세션이 authInfo·권한을 재로드. roleId 는 이번 저장으로 바뀔 수 있어 {{userEntityCamel}}Id 로 타겟.
+      for (const { id } of saved) {
+        await ctx.server.emitEvent(
+          AuthInfoChangedEvent,
+          (info) => info.{{userEntityCamel}}Id === id,
+          undefined,
+        );
+      }
+
+      return saved;
     }),
   };
 });

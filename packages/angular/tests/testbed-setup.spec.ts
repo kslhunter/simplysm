@@ -10,14 +10,12 @@ describe("Feature 1.1.1 Slice 1: TestBed 환경 구성", () => {
       TestBed.configureTestingModule({});
       const provider = TestBed.inject(SdThemeProvider);
       expect(provider).toBeDefined();
-      expect(provider.dark()).toBe(false);
+      expect(provider.blueprint()).toBe(false);
     });
 
     it("TestBed.inject()로 EVENT_MANAGER_PLUGINS 플러그인을 생성한다", () => {
       TestBed.configureTestingModule({
-        providers: [
-          { provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true },
-        ],
+        providers: [{ provide: EVENT_MANAGER_PLUGINS, useClass: SdOptionEventPlugin, multi: true }],
       });
 
       const plugins = TestBed.inject(EVENT_MANAGER_PLUGINS);

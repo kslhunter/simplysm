@@ -67,26 +67,8 @@ describe("sd-theme-selector unit", () => {
     });
   });
 
-  describe("다크 모드", () => {
-    it("dark가 이미 true이면 sd-switch가 ON 상태이다", () => {
-      setupTestBed();
-      const fixture = TestBed.createComponent(SdThemeSelectorTest);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const sdTheme = TestBed.inject(SdThemeProvider);
-      sdTheme.dark.set(true);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const popup = openPopup(fixture);
-      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
-      expect(switchEl.getAttribute("data-sd-on")).toBe("true");
-    });
-  });
-
   describe("블루프린트", () => {
-    it("blueprint가 이미 true이면 두 번째 sd-switch가 ON 상태이다", () => {
+    it("blueprint가 이미 true이면 sd-switch가 ON 상태이다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
@@ -98,10 +80,8 @@ describe("sd-theme-selector unit", () => {
       TestBed.flushEffects();
 
       const popup = openPopup(fixture);
-      // 첫 스위치=다크 모드, 두 번째=블루프린트
-      const switches = popup.querySelectorAll("sd-switch");
-      expect(switches[0].getAttribute("data-sd-on")).toBe("false");
-      expect(switches[1].getAttribute("data-sd-on")).toBe("true");
+      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
+      expect(switchEl.getAttribute("data-sd-on")).toBe("true");
     });
   });
 });

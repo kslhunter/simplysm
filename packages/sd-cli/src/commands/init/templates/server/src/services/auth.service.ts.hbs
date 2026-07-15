@@ -79,7 +79,7 @@ export const AuthService = defineService("AuthService", (ctx) => {
       return orm.connect(async (db) => {
         const {{userEntityCamel}} = await db
           .{{userEntityCamel}}()
-          .where((c) => [expr.eq(c.loginId, loginId)])
+          .where((c) => [expr.eq(c.loginId, loginId), expr.eq(c.isDeleted, false)])
           .include((item) => item.role)
           .join("permissions", (qr, e) =>
             qr
@@ -142,7 +142,7 @@ export const AuthService = defineService("AuthService", (ctx) => {
         const {{userEntityCamel}} = await db
           .{{userEntityCamel}}()
           .include((item) => item.role)
-          .where((c) => [expr.eq(c.id, currentAuth.{{userEntityCamel}}Id)])
+          .where((c) => [expr.eq(c.id, currentAuth.{{userEntityCamel}}Id), expr.eq(c.isDeleted, false)])
           .join("permissions", (qr, e) =>
             qr
               .from(RolePermission)
