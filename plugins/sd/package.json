@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd",
-  "version": "14.1.17",
+  "version": "14.1.18",
   "description": "심플리즘 LLM 확장 패키지",
   "author": "심플리즘",
   "license": "Apache-2.0",
