@@ -418,7 +418,7 @@
     }
   }
 
-  @each $val in [start, end, center] {
+  @each $val in (start, end, center) {
     .main-align-#{$val} {
       justify-content: $val !important;
     }
