@@ -136,7 +136,7 @@ import { SdEvents } from "../../core/events/sd-events";
                   >
                     <ng-icon
                       [svg]="icons.tablerCaretRight"
-                      [class.tx-theme-primary-default]="expanding.isAllExpanded()"
+                      [class.tx-primary]="expanding.isAllExpanded()"
                       [style.transform]="expanding.isAllExpanded() ? 'rotate(90deg)' : undefined"
                       (click)="expanding.toggleAll()"
                     />
@@ -151,9 +151,7 @@ import { SdEvents } from "../../core/events/sd-events";
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
                     [attr.data-c]="cell.colIndex"
                     [attr.title]="cell.text"
-                    [style.left.px]="
-                      cell.fixed ? fixing.fixedLeftMap().get(cell.colIndex) : null
-                    "
+                    [style.left.px]="cell.fixed ? fixing.fixedLeftMap().get(cell.colIndex) : null"
                   >
                     <div class="_p-sheet">
                       <pre>{{ cell.text }}</pre>
@@ -192,7 +190,7 @@ import { SdEvents } from "../../core/events/sd-events";
                           } @else if (_sortDef?.desc === true) {
                             <ng-icon [svg]="icons.tablerSortDescending" />
                           } @else {
-                            <ng-icon [svg]="icons.tablerArrowsSort" class="tx-trans-lightest" />
+                            <ng-icon [svg]="icons.tablerArrowsSort" class="tx-faint" />
                           }
                           @if (_sortDef?.indexText) {
                             <sub>{{ _sortDef?.indexText }}</sub>
@@ -301,7 +299,7 @@ import { SdEvents } from "../../core/events/sd-events";
                     <ng-icon
                       [svg]="icons.tablerCaretRight"
                       [style.transform]="isExpanded(item) ? 'rotate(90deg)' : undefined"
-                      [class.tx-theme-primary-default]="isExpanded(item)"
+                      [class.tx-primary]="isExpanded(item)"
                       [attr.aria-expanded]="getAriaExpanded(item)"
                       (click)="onExpandClick($event, item)"
                     />
@@ -361,18 +359,18 @@ import { SdEvents } from "../../core/events/sd-events";
       $z-index-focus-row-indicator: 6;
       $z-index-resize-indicator: 7;
 
-      $border-color: var(--border-color-lighter);
-      $border-color-dark: var(--border-color-lighter);
-      $border-color-darker: var(--border-color-light);
+      $border-color: var(--sd-bd-soft);
+      $border-color-dark: var(--sd-bd-soft);
+      $border-color-darker: var(--sd-bd-default);
 
-      $border-radius: var(--border-radius-default);
+      $border-radius: var(--sd-radius-default);
 
       sd-sheet {
         border: 1px solid $border-color-dark;
         border-radius: $border-radius;
 
         > ._tool {
-          background: var(--control-color);
+          background-color: var(--sd-bg-control);
           border-top-left-radius: $border-radius;
           border-top-right-radius: $border-radius;
           border-bottom: 1px solid $border-color-dark;
@@ -380,7 +378,8 @@ import { SdEvents } from "../../core/events/sd-events";
 
         > ._sheet-container {
           position: relative;
-          background: var(--sheet-bg);
+          background-color: var(--sd-bg-sheet);
+          background-image: var(--sd-bg-sheet-image);
           border-bottom-left-radius: $border-radius;
           border-bottom-right-radius: $border-radius;
           overflow: auto;
@@ -391,6 +390,7 @@ import { SdEvents } from "../../core/events/sd-events";
             margin-right: 2px;
             margin-bottom: 2px;
             border-bottom-right-radius: $border-radius;
+            box-shadow: var(--sd-sheet-shadow);
 
             > * > tr > *:last-child {
               border-right: 1px solid $border-color-dark;
@@ -418,14 +418,14 @@ import { SdEvents } from "../../core/events/sd-events";
               }
 
               &._feature-cell {
-                background: var(--theme-gray-lightest);
-                min-width: calc(var(--font-size-default) + 2px + var(--sheet-ph) * 2);
-                padding: var(--sheet-pv) var(--sheet-ph);
+                background-color: var(--sd-bg-gray-subtle);
+                min-width: calc(var(--sd-font-size-default) + 2px + var(--sd-sheet-ph) * 2);
+                padding: var(--sd-sheet-pv) var(--sd-sheet-ph);
                 text-align: left;
 
                 > ng-icon {
                   cursor: pointer;
-                  color: var(--text-trans-lightest);
+                  color: var(--sd-tx-faint);
                 }
               }
 
@@ -446,7 +446,7 @@ import { SdEvents } from "../../core/events/sd-events";
 
               > tr > th {
                 position: relative;
-                background: var(--theme-gray-lightest);
+                background-color: var(--sd-bg-gray-subtle);
                 vertical-align: middle;
 
                 &._fixed {
@@ -471,8 +471,8 @@ import { SdEvents } from "../../core/events/sd-events";
 
                 > ._headerContent {
                   > ._sort-icon {
-                    padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
-                    background-color: var(--theme-gray-lightest);
+                    padding: var(--sd-gap-xs) var(--sd-gap-xs) var(--sd-gap-xs) 0;
+                    background-color: var(--sd-bg-gray-subtle);
                   }
                 }
 
@@ -492,7 +492,7 @@ import { SdEvents } from "../../core/events/sd-events";
                 }
 
                 > tr._summary-row > th {
-                  background: var(--theme-warning-lightest);
+                  background-color: var(--sd-bg-warning-subtle);
                   text-align: left;
                   border-bottom: 1px solid $border-color-dark;
                 }
@@ -500,8 +500,8 @@ import { SdEvents } from "../../core/events/sd-events";
             }
 
             > tbody > tr > td {
-              font-family: var(--font-family-field);
-              background: var(--control-color);
+              font-family: var(--sd-font-family-field);
+              background-color: var(--sd-bg-control);
               vertical-align: top;
 
               &._fixed {
@@ -513,8 +513,9 @@ import { SdEvents } from "../../core/events/sd-events";
                 margin-top: 0.4em;
                 width: 0.5em;
                 height: 0.5em;
-                border-left: 1px solid var(--text-trans-default);
-                border-bottom: 1px solid var(--text-trans-default);
+                // 셀 텍스트 색을 그대로 따르는 눈금 (구 --text-trans-default 고정과 시각 등가)
+                border-left: 1px solid currentColor;
+                border-bottom: 1px solid currentColor;
                 vertical-align: top;
               }
             }
@@ -524,12 +525,12 @@ import { SdEvents } from "../../core/events/sd-events";
             display: none;
             position: absolute;
             pointer-events: none;
-            background: rgba(158, 158, 158, 0.1);
+            background-color: var(--sd-bg-state-active);
             z-index: $z-index-focus-row-indicator;
 
             > ._focus-cell-indicator {
               position: absolute;
-              border: 2px solid var(--theme-primary-default);
+              border: 2px solid var(--sd-focus-ring-color);
               border-radius: $border-radius;
             }
           }
@@ -559,14 +560,14 @@ import { SdEvents } from "../../core/events/sd-events";
               left: 0;
               position: absolute;
               pointer-events: none;
-              background: var(--theme-primary-default);
+              background-color: var(--sd-bg-primary-solid);
               opacity: 0.1;
             }
           }
         }
 
         ._p-sheet {
-          padding: var(--sheet-pv) var(--sheet-ph);
+          padding: var(--sd-sheet-pv) var(--sd-sheet-ph);
         }
 
         &[data-sd-focus-mode="row"] {

@@ -4,174 +4,302 @@ $breakpoint-xxs: 800px;
 $breakpoint-xs: 1024px;
 $breakpoint-sm: 1280px;
 
-$vars: (
-  theme: (
-    // 중립색: 텍스트·보더 용도라 한 단계 밝은 스케일
-    "gray": (
-        lightest: var(--color-zinc-50),
-        lighter: var(--color-zinc-100),
-        light: var(--color-zinc-300),
-        default: var(--color-zinc-400),
-        dark: var(--color-zinc-500),
-        darker: var(--color-zinc-600),
-        darkest: var(--color-zinc-700),
+// ---------------------------------------------------------------------------
+// --sd-* 역할 토큰 카탈로그 — writeVars($sd, "sd") 로 :root 발행.
+// 테마는 이 역할 토큰의 값 맵만으로 완성된다(셀렉터 오버라이드 금지).
+//
+// 규칙:
+// - 어휘(DEC-013): 색 어휘는 --sd-{bg|tx|bd}-… 속성 우선. 유틸 클래스명 = 토큰명에서 --sd- 만 뗀 것.
+//   hover 변형은 -hover 접미. 비색상·컴포넌트 전용 그룹(팔레트·focus-ring·scrollbar·shadow·타이포·치수·z)은 그룹 구조 유지.
+// - 체이닝 금지: var() 참조는 팔레트(--sd-color-*, 테마 불변)로만 허용.
+//   테마·밀도가 덮는 토큰끼리의 체인은 재정의 스코프에서 하위가 안 따라오므로 리터럴로 푼다.
+// - 색 원천: 팔레트 + 흰/검 알파(rgba white/black)만. 커스텀 rgb 리터럴 금지.
+// - 라이트 기본값은 구 스케일 토큰과 시각 등가(값 불변·이름만 역할화).
+// - 구 스케일 어휘(--theme-*·--trans-*·--text-trans-* 등)는 발행하지 않는다(14.2 에서 발행 종료·브레이킹).
+// ---------------------------------------------------------------------------
+// 시맨틱 키 목록 — 컴포넌트 theme 변형 @each 순회용 (토큰 아님)
+$theme-keys: ("gray", blue-gray, primary, secondary, info, success, warning, danger);
+
+$sd: (
+  // 배경(bg)
+  bg: (
+      // 표면 — 앱 배경(canvas)·컨트롤(control)·카드/모달(elevated)·드롭다운/팝업(overlay)·시트(sheet)·반전면(inverse)
+      canvas: var(--sd-color-zinc-50),
+      // 배경 패턴(블루프린트 모눈 등) — 값 맵으로 패턴까지 테마화. 소비측은 background 단축 금지.
+      canvas-image: none,
+      control: white,
+      elevated: white,
+      overlay: white,
+      sheet: var(--sd-color-zinc-50),
+      // 시트 컨테이너 배경 패턴(블루프린트 모눈 등) — canvas-image 와 별개 축(방침 1, 2026-07-16 확정)
+      sheet-image: none,
+      inverse: black,
+      // 필드(인풋류) 면 — 구 "--theme-secondary-lightest 필드 배경 관례" 해체
+      field: var(--sd-color-blue-50),
+      // 트랙 면(스위치 off 트랙 등 손잡이·채움 뒤의 궤도) — 준역할(2026-07-16 확정)
+      track: var(--sd-color-zinc-100),
+      // 시맨틱 면 — solid(짙은 면)·subtle(옅은 면), hover 변형 포함
+      "gray": (
+          solid: var(--sd-color-zinc-400),
+          solid-hover: var(--sd-color-zinc-500),
+          subtle: var(--sd-color-zinc-50),
+          subtle-hover: var(--sd-color-zinc-100),
+        ),
+      blue-gray: (
+        solid: var(--sd-color-slate-400),
+        solid-hover: var(--sd-color-slate-500),
+        subtle: var(--sd-color-slate-50),
+        subtle-hover: var(--sd-color-slate-100),
       ),
-    blue-gray: (
-      lightest: var(--color-slate-50),
-      lighter: var(--color-slate-100),
-      light: var(--color-slate-300),
-      default: var(--color-slate-400),
-      dark: var(--color-slate-500),
-      darker: var(--color-slate-600),
-      darkest: var(--color-slate-700),
-    ),
-    // 시맨틱 solid 색: 500 기준
-    primary: (
-        lightest: var(--color-blue-50),
-        lighter: var(--color-blue-100),
-        light: var(--color-blue-200),
-        default: var(--color-blue-500),
-        dark: var(--color-blue-600),
-        darker: var(--color-blue-700),
-        darkest: var(--color-blue-800),
+      primary: (
+        solid: var(--sd-color-blue-500),
+        solid-hover: var(--sd-color-blue-600),
+        subtle: var(--sd-color-blue-50),
+        subtle-hover: var(--sd-color-blue-100),
       ),
-    secondary: (
-      lightest: var(--color-blue-50),
-      lighter: var(--color-blue-100),
-      light: var(--color-blue-200),
-      default: var(--color-blue-500),
-      dark: var(--color-blue-600),
-      darker: var(--color-blue-700),
-      darkest: var(--color-blue-800),
+      secondary: (
+        solid: var(--sd-color-blue-500),
+        solid-hover: var(--sd-color-blue-600),
+        subtle: var(--sd-color-blue-50),
+        subtle-hover: var(--sd-color-blue-100),
+      ),
+      info: (
+        solid: var(--sd-color-cyan-500),
+        solid-hover: var(--sd-color-cyan-600),
+        subtle: var(--sd-color-cyan-50),
+        subtle-hover: var(--sd-color-cyan-100),
+      ),
+      success: (
+        solid: var(--sd-color-lime-500),
+        solid-hover: var(--sd-color-lime-600),
+        subtle: var(--sd-color-lime-50),
+        subtle-hover: var(--sd-color-lime-100),
+      ),
+      warning: (
+        solid: var(--sd-color-orange-500),
+        solid-hover: var(--sd-color-orange-600),
+        subtle: var(--sd-color-orange-50),
+        subtle-hover: var(--sd-color-orange-100),
+      ),
+      danger: (
+        solid: var(--sd-color-red-500),
+        solid-hover: var(--sd-color-red-600),
+        subtle: var(--sd-color-red-50),
+        subtle-hover: var(--sd-color-red-100),
+      ),
+      // 상태 오버레이(알파) — hover/active/selected 전 컨트롤 공통
+      state: (
+          hover: rgba(0, 0, 0, 0.05),
+          active: rgba(0, 0, 0, 0.1),
+          selected: rgba(0, 0, 0, 0.07),
+        ),
+      // 비활성 — 색 치환 단일 규약(opacity 방식 폐기)
+      disabled: var(--sd-color-zinc-100),
+      busy-overlay: rgba(255, 255, 255, 0.6),
+      // busy 로딩 인디케이터 그래픽 면(큐브 로더 등) — 준역할(2026-07-16 확정)
+      busy-indicator: rgba(0, 0, 0, 0.1),
+      // 모달 뒤 스크림(배경 어둡히기) — 준역할(2026-07-16 확정)
+      backdrop: rgba(0, 0, 0, 0.2)
     ),
-    info: (
-      lightest: var(--color-cyan-50),
-      lighter: var(--color-cyan-100),
-      light: var(--color-cyan-200),
-      default: var(--color-cyan-500),
-      dark: var(--color-cyan-600),
-      darker: var(--color-cyan-700),
-      darkest: var(--color-cyan-800),
+  // 텍스트(tx) — 무채 텍스트는 표면색과 독립 축(흰/검 알파)
+  tx: (
+      strong: black,
+      default: rgba(0, 0, 0, 0.87),
+      muted: rgba(0, 0, 0, 0.6),
+      faint: rgba(0, 0, 0, 0.38),
+      on-inverse: white,
+      // 반전면 위 보조 텍스트(hover 감쇠·비활성) — 준역할(2026-07-16 확정)
+      on-inverse-muted: rgba(255, 255, 255, 0.7),
+      on-inverse-disabled: rgba(255, 255, 255, 0.5),
+      disabled: rgba(0, 0, 0, 0.38),
+      // 시맨틱 텍스트 — {key}(단독 텍스트·아이콘·링크, +hover)·{key}-solid(solid 면 위)·{key}-subtle(subtle 면 위)
+      // tx-{key} 가 리프라 시맨틱 키는 중첩 없이 평탄 표기
+      "gray": var(--sd-color-zinc-400),
+      gray-hover: var(--sd-color-zinc-500),
+      gray-solid: white,
+      gray-subtle: var(--sd-color-zinc-600),
+      blue-gray: var(--sd-color-slate-400),
+      blue-gray-hover: var(--sd-color-slate-500),
+      blue-gray-solid: white,
+      blue-gray-subtle: var(--sd-color-slate-600),
+      primary: var(--sd-color-blue-500),
+      primary-hover: var(--sd-color-blue-600),
+      primary-solid: white,
+      primary-subtle: var(--sd-color-blue-700),
+      secondary: var(--sd-color-blue-500),
+      secondary-hover: var(--sd-color-blue-600),
+      secondary-solid: white,
+      secondary-subtle: var(--sd-color-blue-700),
+      info: var(--sd-color-cyan-500),
+      info-hover: var(--sd-color-cyan-600),
+      info-solid: white,
+      info-subtle: var(--sd-color-cyan-700),
+      success: var(--sd-color-lime-500),
+      success-hover: var(--sd-color-lime-600),
+      success-solid: white,
+      success-subtle: var(--sd-color-lime-700),
+      warning: var(--sd-color-orange-500),
+      warning-hover: var(--sd-color-orange-600),
+      warning-solid: white,
+      warning-subtle: var(--sd-color-orange-700),
+      danger: var(--sd-color-red-500),
+      danger-hover: var(--sd-color-red-600),
+      danger-solid: white,
+      danger-subtle: var(--sd-color-red-700),
     ),
-    success: (
-      lightest: var(--color-lime-50),
-      lighter: var(--color-lime-100),
-      light: var(--color-lime-200),
-      default: var(--color-lime-500),
-      dark: var(--color-lime-600),
-      darker: var(--color-lime-700),
-      darkest: var(--color-lime-800),
+  // 보더(bd)
+  bd: (
+      hairline: var(--sd-color-zinc-100),
+      soft: var(--sd-color-zinc-200),
+      default: var(--sd-color-zinc-300),
+      strong: var(--sd-color-zinc-400),
+      emphasis: var(--sd-color-zinc-500),
+      field: var(--sd-color-zinc-300),
+      disabled: var(--sd-color-zinc-200),
+      // 시맨틱 보더 — solid(+hover)·subtle
+      "gray": (
+          solid: var(--sd-color-zinc-400),
+          solid-hover: var(--sd-color-zinc-500),
+          subtle: var(--sd-color-zinc-300),
+        ),
+      blue-gray: (
+        solid: var(--sd-color-slate-400),
+        solid-hover: var(--sd-color-slate-500),
+        subtle: var(--sd-color-slate-300),
+      ),
+      primary: (
+        solid: var(--sd-color-blue-500),
+        solid-hover: var(--sd-color-blue-600),
+        subtle: var(--sd-color-blue-200),
+      ),
+      secondary: (
+        solid: var(--sd-color-blue-500),
+        solid-hover: var(--sd-color-blue-600),
+        subtle: var(--sd-color-blue-200),
+      ),
+      info: (
+        solid: var(--sd-color-cyan-500),
+        solid-hover: var(--sd-color-cyan-600),
+        subtle: var(--sd-color-cyan-200),
+      ),
+      success: (
+        solid: var(--sd-color-lime-500),
+        solid-hover: var(--sd-color-lime-600),
+        subtle: var(--sd-color-lime-200),
+      ),
+      warning: (
+        solid: var(--sd-color-orange-500),
+        solid-hover: var(--sd-color-orange-600),
+        subtle: var(--sd-color-orange-200),
+      ),
+      danger: (
+        solid: var(--sd-color-red-500),
+        solid-hover: var(--sd-color-red-600),
+        subtle: var(--sd-color-red-200),
+      ),
     ),
-    warning: (
-      lightest: var(--color-orange-50),
-      lighter: var(--color-orange-100),
-      light: var(--color-orange-200),
-      default: var(--color-orange-500),
-      dark: var(--color-orange-600),
-      darker: var(--color-orange-700),
-      darkest: var(--color-orange-800),
+  // 포커스 링 — :focus-visible 전 컨트롤 단일 규약
+  focus-ring: (
+      color: var(--sd-color-blue-500),
+      width: 0.1667rem,
+      offset: 0.0833rem,
     ),
-    danger: (
-      lightest: var(--color-red-50),
-      lighter: var(--color-red-100),
-      light: var(--color-red-200),
-      default: var(--color-red-500),
-      dark: var(--color-red-600),
-      darker: var(--color-red-700),
-      darkest: var(--color-red-800),
-    ),
+  scrollbar: (
+    thumb: rgba(0, 0, 0, 0.05),
+    thumb-hover: rgba(0, 0, 0, 0.1),
+    track: rgba(0, 0, 0, 0.03),
   ),
-  trans: (
-    darkest: rgba(0, 0, 0, 0.5),
-    darker: rgba(0, 0, 0, 0.4),
-    dark: rgba(0, 0, 0, 0.3),
-    default: rgba(0, 0, 0, 0.2),
-    light: rgba(0, 0, 0, 0.1),
-    lighter: rgba(0, 0, 0, 0.05),
-    lightest: rgba(0, 0, 0, 0.03),
-    rev-default: rgba(255, 255, 255, 0.1),
-    rev-light: rgba(255, 255, 255, 0.2),
-    rev-lighter: rgba(255, 255, 255, 0.3),
-    rev-lightest: rgba(255, 255, 255, 0.4),
+  // 컴포넌트 장식 토큰(방침 1, 2026-07-16 확정) — 테마 오버라이드가 값 맵으로 못 잡던
+  // 장식(FIND-003 ③)의 소비 지점. 라이트 기본값은 현행 시각 등가.
+  card: (
+      bd: transparent,
+      // focus-within 시 상단 보더 색(ide-dark 액센트 라인용)
+      bd-active: transparent,
+      // 기본값 = elevation(2)/(4) 전개 등가 리터럴(체이닝 금지 규칙상 --sd-shadow-* 참조 불가)
+      shadow: (
+          0 0.1667rem 0.6667rem rgba(0, 0, 0, 0.05),
+          0 0.0833rem 0.0833rem rgba(0, 0, 0, 0.05),
+        ),
+      shadow-hover: (
+        0 0.3333rem 1.3333rem rgba(0, 0, 0, 0.05),
+        0 0.0833rem 0.0833rem rgba(0, 0, 0, 0.05),
+      ),
+    ),
+  modal: (
+    bd: transparent,
+    header-bg: var(--sd-color-zinc-50),
+    header-tx: rgba(0, 0, 0, 0.87),
+    header-tx-muted: var(--sd-color-zinc-400),
   ),
-  text-trans: (
-    dark: black,
-    default: rgba(0, 0, 0, 0.87),
-    light: rgba(0, 0, 0, 0.6),
-    lighter: rgba(0, 0, 0, 0.38),
-    lightest: rgba(0, 0, 0, 0.2),
-    rev-default: white,
-    rev-dark: rgba(255, 255, 255, 0.7),
-    rev-darker: rgba(255, 255, 255, 0.5),
+  dropdown: (
+    bd: var(--sd-color-zinc-300),
   ),
+  permission-group: (
+    bg: var(--sd-color-cyan-500),
+    tx: white,
+  ),
+  shadow: (
+    color: rgba(0, 0, 0, 0.05),
+    size: 0.0833rem,
+    blur-mult: 1,
+  ),
+  // 타이포
   font-size: (
-    lg: 1.1667rem,
-    default: 1rem,
-    sm: 0.9167rem,
-    h1: 2rem,
-    h2: 1.5rem,
-    h3: 1.3333rem,
-    h4: 1.1667rem,
-    h5: 1rem,
-    h6: 0.9167rem,
-  ),
+      lg: 1.1667rem,
+      default: 1rem,
+      sm: 0.9167rem,
+      h1: 2rem,
+      h2: 1.5rem,
+      h3: 1.3333rem,
+      h4: 1.1667rem,
+      h5: 1rem,
+      h6: 0.9167rem,
+    ),
+  font-family: "sans-serif",
+  font-family-field: "ui-sans-serif, system-ui, sans-serif",
+  font-family-monospace: "ui-monospace, monospace",
+  font-weight: 400,
+  // 형태(테마 소유) — 구 gap 체인 해체, 리터럴 고정
+  radius: (
+      xs: 0.0833rem,
+      sm: 0.1667rem,
+      default: 0.3333rem,
+      lg: 0.5rem,
+      xl: 0.6667rem,
+      xxl: 1rem,
+    ),
+  // 밀도 그룹(치수) — sd-density-compact 가 이 그룹만 덮는다. 테마 맵엔 치수 없음.
   gap: (
-    xxs: 0.0833rem,
-    xs: 0.1667rem,
-    sm: 0.3333rem,
-    default: 0.5rem,
-    lg: 0.6667rem,
-    xl: 1rem,
-    xxl: 1.5rem,
-    0: 0,
-    auto: "auto",
+      xxs: 0.0833rem,
+      xs: 0.1667rem,
+      sm: 0.3333rem,
+      default: 0.5rem,
+      lg: 0.6667rem,
+      xl: 1rem,
+      xxl: 1.5rem,
+      0: 0,
+      auto: "auto",
+    ),
+  line-height: 1.5em,
+  line-height-strip-unit: 1.5,
+  sheet: (
+    pv: 0.1667rem,
+    ph: 0.3333rem,
+    // shadow 는 테마 소유(블루프린트 하드 그림자용) — pv/ph 만 밀도 소유
+    shadow: none,
   ),
-  border-color: (
-    lightest: var(--color-zinc-100),
-    lighter: var(--color-zinc-200),
-    light: var(--color-zinc-300),
-    default: var(--color-zinc-400),
-    dark: var(--color-zinc-500),
-    darker: var(--color-zinc-600),
-    darkest: var(--color-zinc-700),
+  topbar: (
+    height: 2.5rem,
   ),
-  border-radius: (
-    xs: var(--gap-xxs),
-    sm: var(--gap-xs),
-    default: var(--gap-sm),
-    lg: var(--gap-default),
-    xl: var(--gap-lg),
-    xxl: var(--gap-xl),
+  sidebar: (
+    width: 14rem,
   ),
-  z-index: (
+  z: (
     toast: 9999,
     busy: 9998,
     dropdown: 5000,
     modal: 4000,
     sidebar: 3000,
   ),
-  line-height: 1.5em,
-  line-height-strip-unit: 1.5,
-  font-family: "sans-serif",
-  font-family-field: "ui-sans-serif, system-ui, sans-serif",
-  font-family-monospace: "ui-monospace, monospace",
-  background-color: var(--theme-gray-lightest),
-  background-rev-color: black,
-  control-color: white,
-  busy-overlay-bg: rgba(255, 255, 255, 0.6),
-  animation-duration: 0.2s,
-  elevation-size: 0.0833rem,
-  // elevation 그림자 blur 배수 (기본 1 = 현재 동작 유지). 테마에서 0으로 덮으면 하드 섀도.
-  elevation-blur-mult: 1,
-  sidebar: (
-    width: 14rem,
-  ),
-  topbar: (
-    height: 2.5rem,
-  ),
-  sheet: (
-    pv: var(--gap-xs),
-    ph: var(--gap-sm),
-    bg: var(--theme-gray-lightest),
-  ),
+  animation-duration: 0.2s
 );

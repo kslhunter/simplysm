@@ -70,18 +70,18 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
       sd-modal-select-button {
         display: flex;
         flex-direction: row;
-        gap: var(--gap-sm);
+        gap: var(--sd-gap-sm);
         position: relative;
         width: 100%;
         min-width: 3em;
 
-        border: 1px solid var(--trans-light);
-        border-radius: var(--border-radius-default);
+        border: 1px solid var(--sd-bd-soft);
+        border-radius: var(--sd-radius-default);
         overflow: hidden;
 
         > ._content {
           flex: 1;
-          padding: var(--gap-sm) var(--gap-default);
+          padding: var(--sd-gap-sm) var(--sd-gap-default);
         }
 
         > ._button {
@@ -90,12 +90,12 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
           @include mixins.flex-direction(row);
 
           > sd-anchor {
-            padding: var(--gap-sm) !important;
+            padding: var(--sd-gap-sm) !important;
           }
 
           > sd-button > button {
-            border-left: 1px solid var(--trans-lighter) !important;
-            padding: var(--gap-sm) !important;
+            border-left: 1px solid var(--sd-bd-hairline) !important;
+            padding: var(--sd-gap-sm) !important;
             height: 100%;
           }
         }
@@ -107,32 +107,32 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
 
         &[data-sd-size="sm"] {
           > ._content {
-            padding: var(--gap-xs) var(--gap-default);
+            padding: var(--sd-gap-xs) var(--sd-gap-default);
           }
 
           > ._button {
             > sd-anchor {
-              padding: var(--gap-xs) var(--gap-sm) !important;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm) !important;
             }
 
             > sd-button > button {
-              padding: var(--gap-xs) var(--gap-sm) !important;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm) !important;
             }
           }
         }
 
         &[data-sd-size="lg"] {
           > ._content {
-            padding: var(--gap-default) var(--gap-xl);
+            padding: var(--sd-gap-default) var(--sd-gap-xl);
           }
 
           > ._button {
             > sd-anchor {
-              padding: var(--gap-default) !important;
+              padding: var(--sd-gap-default) !important;
             }
 
             > sd-button > button {
-              padding: var(--gap-default) !important;
+              padding: var(--sd-gap-default) !important;
             }
           }
         }
@@ -145,10 +145,7 @@ export type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
     "[attr.data-sd-disabled]": "disabled()",
   },
 })
-export class SdModalSelectButton<
-  K,
-  M extends keyof SelectModeValue<K> = keyof SelectModeValue<K>,
-> {
+export class SdModalSelectButton<K, M extends keyof SelectModeValue<K> = keyof SelectModeValue<K>> {
   private readonly _sdModal = inject(SdModalProvider);
 
   modal = input.required<SdSelectModalInfo<SdSelectModal<K>>>();
@@ -205,8 +202,7 @@ export class SdModalSelectButton<
     });
 
     if (result) {
-      const newValue =
-        this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];
+      const newValue = this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];
       this.value.set(newValue as SelectModeValue<K>[M]);
     }
   }

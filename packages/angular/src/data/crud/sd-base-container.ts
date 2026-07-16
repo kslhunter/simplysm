@@ -31,7 +31,7 @@ import { NgTemplateOutlet } from "@angular/common";
     <sd-busy-container [busy]="initialized() && busyCount() > 0">
       @if (initialized()) {
         @if (restricted()) {
-          <div class="fill tx-theme-gray-light p-xxl tx-center">
+          <div class="fill tx-faint p-xxl tx-center">
             <br />
             <ng-icon [svg]="tablerAlertTriangle" [size]="'5rem'" />
             <br />
@@ -41,7 +41,7 @@ import { NgTemplateOutlet } from "@angular/common";
         } @else if (viewType() === "page") {
           <sd-topbar-container>
             <sd-topbar>
-              <h5 class="tx-trans-light">{{ viewTitle() }}</h5>
+              <h5 class="tx-muted">{{ viewTitle() }}</h5>
 
               <ng-template [ngTemplateOutlet]="topbarTplRef()" />
             </sd-topbar>
@@ -57,7 +57,7 @@ import { NgTemplateOutlet } from "@angular/common";
     <ng-template #content>
       <div class="flex-column fill bg-control">
         @if (commandTplRef()) {
-          <div class="p-sm-default flex-row gap-default  bdb bdb-color-lighter">
+          <div class="p-sm-default flex-row gap-default bdb bdb-soft">
             <ng-template [ngTemplateOutlet]="commandTplRef()" />
           </div>
         }
@@ -69,9 +69,7 @@ import { NgTemplateOutlet } from "@angular/common";
         </div>
 
         @if (bottomCommandTplRef()) {
-          <div
-            class="p-sm-default flex-row main-align-end gap-sm bdt bdt-theme-gray-lighter"
-          >
+          <div class="p-sm-default flex-row main-align-end gap-sm bdt bdt-hairline">
             <ng-template [ngTemplateOutlet]="bottomCommandTplRef()" />
           </div>
         }

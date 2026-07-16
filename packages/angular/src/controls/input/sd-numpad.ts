@@ -59,20 +59,12 @@ import { tablerArrowLeft, tablerEraser } from "@ng-icons/tabler-icons";
             </td>
           }
           <td [attr.colspan]="useMinusButton() ? 1 : 2">
-            <sd-button
-              [size]="'lg'"
-              [buttonClass]="'tx-theme-danger-default'"
-              (click)="onButtonClick('C')"
-            >
+            <sd-button [size]="'lg'" [buttonClass]="'tx-danger'" (click)="onButtonClick('C')">
               <ng-icon [svg]="tablerEraser" />
             </sd-button>
           </td>
           <td>
-            <sd-button
-              [size]="'lg'"
-              [buttonClass]="'tx-theme-warning-default'"
-              (click)="onButtonClick('BS')"
-            >
+            <sd-button [size]="'lg'" [buttonClass]="'tx-warning'" (click)="onButtonClick('BS')">
               <ng-icon [svg]="tablerArrowLeft" />
             </sd-button>
           </td>
@@ -108,7 +100,7 @@ import { tablerArrowLeft, tablerEraser } from "@ng-icons/tabler-icons";
 
           > * > tr > * {
             border: none;
-            padding: var(--gap-xxs);
+            padding: var(--sd-gap-xxs);
 
             > sd-button {
               border: none;

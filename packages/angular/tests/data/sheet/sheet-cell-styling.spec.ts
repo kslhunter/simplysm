@@ -40,20 +40,22 @@ function makeHeaderDef(overrides: Partial<SdSheetHeaderDef> = {}): SdSheetHeader
   };
 }
 
-function setup(overrides: {
-  columnDefs?: SdSheetColumnDef[];
-  fixedLeftMap?: Map<number, number>;
-  getItemCellStyleFn?: (item: Item, colKey: string) => string | undefined;
-  getItemCellClassFn?: (item: Item, colKey: string) => string;
-  getChildrenFn?: (item: Item, index: number) => Item[] | undefined;
-  expandingDef?: (item: Item) => ExpandItemDef<Item>;
-  isCellEditMode?: (addr: { r: number; c: number }) => boolean;
-} = {}) {
+function setup(
+  overrides: {
+    columnDefs?: SdSheetColumnDef[];
+    fixedLeftMap?: Map<number, number>;
+    getItemCellStyleFn?: (item: Item, colKey: string) => string | undefined;
+    getItemCellClassFn?: (item: Item, colKey: string) => string;
+    getChildrenFn?: (item: Item, index: number) => Item[] | undefined;
+    expandingDef?: (item: Item) => ExpandItemDef<Item>;
+    isCellEditMode?: (addr: { r: number; c: number }) => boolean;
+  } = {},
+) {
   const columnDefs = signal(overrides.columnDefs ?? [makeColDef()]);
   const fixedLeftMap = signal(overrides.fixedLeftMap ?? new Map<number, number>());
-  const getItemCellStyleFn = signal<((item: Item, colKey: string) => string | undefined) | undefined>(
-    overrides.getItemCellStyleFn,
-  );
+  const getItemCellStyleFn = signal<
+    ((item: Item, colKey: string) => string | undefined) | undefined
+  >(overrides.getItemCellStyleFn);
   const getItemCellClassFn = signal<((item: Item, colKey: string) => string) | undefined>(
     overrides.getItemCellClassFn,
   );
@@ -67,7 +69,9 @@ function setup(overrides: {
     getItemCellStyleFn,
     getItemCellClassFn,
     getChildrenFn,
-    expandingDef: overrides.expandingDef ?? ((item) => ({ item, parentDef: undefined, depth: 0, hasChildren: false })),
+    expandingDef:
+      overrides.expandingDef ??
+      ((item) => ({ item, parentDef: undefined, depth: 0, hasChildren: false })),
     isCellEditMode: overrides.isCellEditMode ?? (() => false),
   });
 
@@ -145,7 +149,7 @@ describe("useSheetCellStyling", () => {
       });
 
       const style = styling.getCellStyleWithIndent(testItem, makeColDef(), 0);
-      expect(style).toContain("padding-left: calc(var(--gap-default) + 2em)");
+      expect(style).toContain("padding-left: calc(var(--sd-gap-default) + 2em)");
     });
 
     it("트리 모드에서 depth 0인 아이템은 인덴트가 없다", () => {
@@ -191,12 +195,14 @@ describe("useSheetCellStyling", () => {
     it("colDef가 없는 비-leaf 셀은 null을 반환한다", () => {
       const { styling } = setup();
 
-      const style = styling.getHeaderCellStyle(makeHeaderDef({
-        text: "그룹",
-        isLastRow: false,
-        fixed: false,
-        colDef: undefined,
-      }));
+      const style = styling.getHeaderCellStyle(
+        makeHeaderDef({
+          text: "그룹",
+          isLastRow: false,
+          fixed: false,
+          colDef: undefined,
+        }),
+      );
 
       expect(style).toBeNull();
     });
@@ -208,7 +214,9 @@ describe("useSheetCellStyling", () => {
         columnDefs: [makeColDef({ collapse: true })],
       });
 
-      const style = styling.getHeaderCellStyle(makeHeaderDef({ colDef: makeColDef({ collapse: true }) }));
+      const style = styling.getHeaderCellStyle(
+        makeHeaderDef({ colDef: makeColDef({ collapse: true }) }),
+      );
       expect(style).toContain("width: 0");
       expect(style).toContain("padding: 0");
     });

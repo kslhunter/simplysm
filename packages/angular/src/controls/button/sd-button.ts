@@ -27,8 +27,6 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
       @use "../../../scss/commons/mixins";
 
@@ -36,28 +34,28 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         > button {
           @include mixins.form-control-base();
           user-select: none;
-          padding: var(--gap-sm) var(--gap-lg);
+          padding: var(--sd-gap-sm) var(--sd-gap-lg);
           width: 100%;
 
-          background: var(--control-color);
-          border-color: var(--theme-primary-default);
-          border-radius: var(--border-radius-default);
+          background-color: var(--sd-bg-control);
+          border-color: var(--sd-bd-primary-solid);
+          border-radius: var(--sd-radius-default);
 
           font-weight: bold;
           text-align: center;
           cursor: pointer;
 
-          transition: var(--animation-duration) linear;
+          transition: var(--sd-animation-duration) linear;
           transition-property: border, background;
 
           &:hover {
-            background: var(--theme-gray-lightest);
+            background-color: var(--sd-bg-state-hover);
           }
 
           &:disabled {
-            background: var(--control-color);
-            border-color: var(--theme-gray-lighter);
-            color: var(--text-trans-lighter);
+            background-color: var(--sd-bg-disabled);
+            border-color: var(--sd-bd-disabled);
+            color: var(--sd-tx-disabled);
             cursor: default;
           }
         }
@@ -65,36 +63,36 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         &[data-sd-inset="true"] > button {
           border-radius: 0;
           border: none;
-          color: var(--theme-primary-default);
+          color: var(--sd-tx-primary);
 
           &:hover {
-            color: var(--theme-primary-dark);
+            color: var(--sd-tx-primary-hover);
           }
 
           &:disabled {
-            background: var(--control-color);
-            border-color: var(--theme-gray-lighter);
-            color: var(--text-trans-default);
+            background-color: var(--sd-bg-disabled);
+            border-color: var(--sd-bd-disabled);
+            color: var(--sd-tx-disabled);
             cursor: default;
           }
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] > button {
-            background: var(--theme-#{$key}-default);
-            border-color: var(--theme-#{$key}-default);
-            color: var(--text-trans-rev-default);
+            background-color: var(--sd-bg-#{$key}-solid);
+            border-color: var(--sd-bd-#{$key}-solid);
+            color: var(--sd-tx-#{$key}-solid);
 
             &:hover {
-              background: var(--theme-#{$key}-dark);
-              border-color: var(--theme-#{$key}-dark);
-              color: var(--text-trans-rev-default);
+              background-color: var(--sd-bg-#{$key}-solid-hover);
+              border-color: var(--sd-bd-#{$key}-solid-hover);
+              color: var(--sd-tx-#{$key}-solid);
             }
 
             &:disabled {
-              background: var(--theme-gray-lighter);
-              border-color: var(--theme-gray-lighter);
-              color: var(--text-trans-lighter);
+              background-color: var(--sd-bg-disabled);
+              border-color: var(--sd-bd-disabled);
+              color: var(--sd-tx-disabled);
               cursor: default;
             }
           }
@@ -102,49 +100,49 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
 
         &[data-sd-theme="link"] > button {
           border-color: transparent;
-          background: transparent;
-          color: var(--theme-primary-default);
+          background-color: transparent;
+          color: var(--sd-tx-primary);
 
           &:hover {
-            color: var(--theme-primary-dark);
+            color: var(--sd-tx-primary-hover);
           }
 
           &:disabled {
             border-color: transparent;
-            color: var(--text-trans-lighter);
+            color: var(--sd-tx-disabled);
           }
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="link-#{$key}"] > button {
             border-color: transparent;
-            background: transparent;
-            color: var(--theme-#{$key}-default);
+            background-color: transparent;
+            color: var(--sd-tx-#{$key});
 
             &:hover {
-              background: var(--trans-lighter);
-              color: var(--theme-#{$key}-dark);
+              background-color: var(--sd-bg-state-hover);
+              color: var(--sd-tx-#{$key}-hover);
             }
 
             &:disabled {
               border-color: transparent;
-              color: var(--text-trans-lighter);
+              color: var(--sd-tx-disabled);
             }
           }
         }
 
         &[data-sd-theme="link-rev"] > button {
           border-color: transparent;
-          background: transparent;
-          color: var(--text-trans-rev-default);
+          background-color: transparent;
+          color: var(--sd-tx-on-inverse);
 
           &:hover {
-            color: var(--text-trans-rev-dark);
+            color: var(--sd-tx-on-inverse-muted);
           }
 
           &:disabled {
             border-color: transparent;
-            color: var(--text-trans-rev-darker);
+            color: var(--sd-tx-on-inverse-disabled);
           }
         }
 
@@ -155,15 +153,15 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         }
 
         &[data-sd-size="xs"] > button {
-          padding: var(--gap-xxs) var(--gap-xs);
+          padding: var(--sd-gap-xxs) var(--sd-gap-xs);
         }
-        
+
         &[data-sd-size="sm"] > button {
-          padding: var(--gap-xs) var(--gap-default);
+          padding: var(--sd-gap-xs) var(--sd-gap-default);
         }
 
         &[data-sd-size="lg"] > button {
-          padding: var(--gap-default) var(--gap-xl);
+          padding: var(--sd-gap-default) var(--sd-gap-xl);
         }
 
         &[data-sd-disabled="true"] {

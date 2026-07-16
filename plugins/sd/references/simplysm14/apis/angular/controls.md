@@ -230,7 +230,7 @@ class SdCheckbox {
 - `canChangeFn` — `setupModelHook` 게이트. `false` 면 변경 차단, `true`/resolve면 반영.
 - `radio` — true면 라디오 모드(둥근 dot, 클릭 시 항상 `true` 로만 설정, 해제 불가). false(기본)면 checkbox 토글.
 - `icon` — checkbox 모드 체크 아이콘(기본 `tablerCheck`). radio 모드에선 dot 사용.
-- `theme` — 8색 + `"white"`(흰 배경+lightest 테두리, 체크 시 primary).
+- `theme` — 8색 + `"white"`(흰 배경 `--sd-bg-control`+필드 테두리 `--sd-bd-field`, 체크 시 primary).
 
 ### `SdSwitch` (`sd-switch`)
 
@@ -244,7 +244,7 @@ class SdSwitch {
 }
 ```
 
-토글 스위치. `value` 클릭/Space 토글. on 상태(`data-sd-on`) 트랙 배경=`--theme-{theme}-default`, 테마 미지정 시 success 색.
+토글 스위치. `value` 클릭/Space 토글. on 상태(`data-sd-on`) 트랙 배경=`--sd-bg-{theme}-solid`, 테마 미지정 시 success 색.
 
 ### `SdCheckboxGroup<T>` / `SdCheckboxGroupItem<T>` (`sd-checkbox-group` / `sd-checkbox-group-item`)
 

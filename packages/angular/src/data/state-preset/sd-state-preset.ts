@@ -31,11 +31,11 @@ export interface SdStatePresetDef<TState> {
   template: `
     <div class="_sd-state-preset">
       <sd-anchor (click)="onAddClick()" class="_add-btn">
-        <ng-icon [svg]="tablerStar" class="tx-theme-warning-default" />
+        <ng-icon [svg]="tablerStar" class="tx-warning" />
       </sd-anchor>
       @for (preset of _presets(); track preset.name) {
         <div class="_preset-item">
-          <sd-anchor class="_preset-name tx-trans-default" (click)="onPresetClick(preset)">
+          <sd-anchor class="_preset-name tx-default" (click)="onPresetClick(preset)">
             {{ preset.name }}
           </sd-anchor>
           <sd-anchor class="_preset-save" (click)="onSaveClick(preset)">
@@ -57,52 +57,52 @@ export interface SdStatePresetDef<TState> {
         > ._sd-state-preset {
           display: flex;
           align-items: center;
-          gap: var(--gap-sm);
+          gap: var(--sd-gap-sm);
           flex-wrap: wrap;
 
           > ._add-btn {
-            line-height: var(--line-height);
+            line-height: var(--sd-line-height);
             border: 1px solid transparent;
-            padding: var(--gap-sm) var(--gap-default);
+            padding: var(--sd-gap-sm) var(--sd-gap-default);
           }
 
           > ._preset-item {
             display: inline-flex;
             align-items: center;
-            gap: var(--gap-xs);
-            line-height: var(--line-height);
+            gap: var(--sd-gap-xs);
+            line-height: var(--sd-line-height);
             border: 1px solid transparent;
-            border-radius: var(--border-radius-lg);
-            padding: var(--gap-sm) var(--gap-default);
-            background: var(--theme-gray-lightest);
+            border-radius: var(--sd-radius-lg);
+            padding: var(--sd-gap-sm) var(--sd-gap-default);
+            background-color: var(--sd-bg-gray-subtle);
 
             &:hover {
-              background: var(--theme-gray-lighter);
+              background-color: var(--sd-bg-gray-subtle-hover);
             }
 
             > sd-anchor {
-              padding: 0 var(--gap-sm);
+              padding: 0 var(--sd-gap-sm);
             }
           }
         }
 
         &[data-sd-size="sm"] > ._sd-state-preset {
           > ._add-btn {
-            padding: var(--gap-xs) var(--gap-default);
+            padding: var(--sd-gap-xs) var(--sd-gap-default);
           }
 
           > ._preset-item {
-            padding: var(--gap-xs) var(--gap-default);
+            padding: var(--sd-gap-xs) var(--sd-gap-default);
           }
         }
 
         &[data-sd-size="lg"] > ._sd-state-preset {
           > ._add-btn {
-            padding: var(--gap-default) var(--gap-lg);
+            padding: var(--sd-gap-default) var(--sd-gap-lg);
           }
 
           > ._preset-item {
-            padding: var(--gap-default) var(--gap-lg);
+            padding: var(--sd-gap-default) var(--sd-gap-lg);
           }
         }
       }

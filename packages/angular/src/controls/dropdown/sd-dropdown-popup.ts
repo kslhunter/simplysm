@@ -30,18 +30,18 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
 
       sd-dropdown-popup {
         position: fixed;
-        z-index: var(--z-index-dropdown);
+        z-index: var(--sd-z-dropdown);
         opacity: 0;
         transform: translateY(-0.625rem);
-        transition: var(--animation-duration) linear;
+        transition: var(--sd-animation-duration) linear;
         transition-property: transform, opacity;
         pointer-events: none;
-        background: var(--control-color);
+        background-color: var(--sd-bg-overlay);
         min-width: 7.5rem;
         @include mixins.elevation(4);
         overflow: hidden;
-        border-radius: var(--border-radius-default);
-        border: 1px solid var(--border-color-light);
+        border-radius: var(--sd-radius-default);
+        border: 1px solid var(--sd-dropdown-bd);
 
         > div {
           width: 100%;
@@ -51,12 +51,12 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
         }
 
         &:focus {
-          outline: 1px solid var(--theme-primary-default);
+          outline: 1px solid var(--sd-focus-ring-color);
         }
 
         @media all and (max-width: variables.$breakpoint-mobile) {
           @include mixins.elevation(0);
-          border: 1px solid var(--border-color-default);
+          border: 1px solid var(--sd-bd-strong);
         }
 
         &[data-sd-mobile] {
@@ -66,11 +66,11 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
           bottom: 0;
           top: auto;
           max-height: 80vh;
-          border-radius: var(--border-radius-default) var(--border-radius-default) 0 0;
+          border-radius: var(--sd-radius-default) var(--sd-radius-default) 0 0;
           opacity: 1;
           pointer-events: auto;
           transform: none;
-          animation: sd-dropdown-slide-up var(--animation-duration) ease-out;
+          animation: sd-dropdown-slide-up var(--sd-animation-duration) ease-out;
           @include mixins.elevation(8);
         }
       }
@@ -87,9 +87,7 @@ import { SdResizeDirective } from "../../core/events/sd-resize";
   ],
 })
 export class SdDropdownPopup {
-  private readonly _parentControl = inject<SdDropdown>(
-    forwardRef(() => SdDropdown),
-  );
+  private readonly _parentControl = inject<SdDropdown>(forwardRef(() => SdDropdown));
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private _capped = false;
 

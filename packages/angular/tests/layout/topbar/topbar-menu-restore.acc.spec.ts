@@ -21,7 +21,7 @@ describe("Feature 5.2 Slice 1: sd-topbar-menu flat 레이아웃 및 배경색 �
       const styleEl = findTopbarMenuStyleEl();
       expect(styleEl).toBeTruthy();
       expect(styleEl!.textContent).toMatch(
-        /sd-list\s+sd-list\s*\{[^}]*background:\s*var\(--trans-lightest\)/,
+        /sd-list\s+sd-list\s*\{[^}]*background-color:\s*var\(--sd-bg-gray-subtle\)/,
       );
     });
   });
@@ -51,9 +51,7 @@ describe("Feature 5.2 Slice 1: sd-topbar-menu flat 레이아웃 및 배경색 �
       }
 
       // collapse-icon이 없어야 한다
-      const collapseIcons = document.body.querySelectorAll(
-        "sd-dropdown-popup sd-collapse-icon",
-      );
+      const collapseIcons = document.body.querySelectorAll("sd-dropdown-popup sd-collapse-icon");
       expect(collapseIcons.length).toBe(0);
 
       // children이 있는 항목의 하위 메뉴가 항상 펼쳐져 있다

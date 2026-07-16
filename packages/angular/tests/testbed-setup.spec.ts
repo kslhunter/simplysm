@@ -10,7 +10,7 @@ describe("Feature 1.1.1 Slice 1: TestBed 환경 구성", () => {
       TestBed.configureTestingModule({});
       const provider = TestBed.inject(SdThemeProvider);
       expect(provider).toBeDefined();
-      expect(provider.blueprint()).toBe(false);
+      expect(provider.theme()).toBe("light");
     });
 
     it("TestBed.inject()로 EVENT_MANAGER_PLUGINS 플러그인을 생성한다", () => {

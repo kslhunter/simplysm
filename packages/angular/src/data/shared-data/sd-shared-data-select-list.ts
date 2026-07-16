@@ -40,15 +40,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    NgTemplateOutlet,
-    SdTextfield,
-    SdPagination,
-    SdAnchor,
-    SdList,
-    SdListItem,
-    NgIcon,
-  ],
+  imports: [NgTemplateOutlet, SdTextfield, SdPagination, SdAnchor, SdList, SdListItem, NgIcon],
   host: {
     class: "flex-column fill",
   },
@@ -99,7 +91,7 @@ import { tablerExternalLink } from "@ng-icons/tabler-icons";
               @if (undefinedTplRef()) {
                 <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
               } @else {
-                <span class="tx-theme-gray-default">미지정</span>
+                <span class="tx-gray">미지정</span>
               }
             </sd-list-item>
           }
@@ -132,9 +124,7 @@ export class SdSharedDataSelectList<
   private readonly _sdModal = inject(SdModalProvider);
 
   selectedItem = model<TItem>();
-  canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(
-    () => true,
-  );
+  canChangeFn = input<(item: TItem | undefined) => boolean | Promise<boolean>>(() => true);
 
   items = input.required<TItem[]>();
   selectedIcon = input<string>();
@@ -168,9 +158,7 @@ export class SdSharedDataSelectList<
     let result = this.items().filter((item) => !item.__isHidden);
 
     if (!str.isNullOrEmpty(this.searchText())) {
-      result = result.filter((item) =>
-        matchesSearchText(item.__searchText, this.searchText()),
-      );
+      result = result.filter((item) => matchesSearchText(item.__searchText, this.searchText()));
     }
 
     if (this.filterFn() != null) {
@@ -207,9 +195,7 @@ export class SdSharedDataSelectList<
       const items = this.items();
       const current = untracked(() => this.selectedItem());
       if (current != null) {
-        const updated = items.find(
-          (item) => item.__valueKey === current.__valueKey,
-        );
+        const updated = items.find((item) => item.__valueKey === current.__valueKey);
         if (updated !== current) {
           this.selectedItem.set(updated);
         }

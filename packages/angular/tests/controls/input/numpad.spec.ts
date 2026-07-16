@@ -26,9 +26,8 @@ function clickButton(host: HTMLElement, label: string): void {
 
 function getNumpadControl(fixture: any): SdNumpad {
   const numpadEl = fixture.nativeElement.querySelector("sd-numpad");
-  return fixture.debugElement.query(
-    (de: any) => de.nativeElement === numpadEl,
-  ).componentInstance as SdNumpad;
+  return fixture.debugElement.query((de: any) => de.nativeElement === numpadEl)
+    .componentInstance as SdNumpad;
 }
 
 // endregion
@@ -223,11 +222,11 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
     const host = fixture.nativeElement.querySelector("sd-numpad") as HTMLElement;
     // C button has ng-icon inside, find by the eraser icon button
     const buttons = host.querySelectorAll("sd-button");
-    // The C button is the one with tx-theme-danger-default class
+    // The C button is the one with tx-danger class
     let cBtn: HTMLButtonElement | null = null;
     for (const btn of Array.from(buttons)) {
       const innerBtn = btn.querySelector("button");
-      if (innerBtn?.classList.contains("tx-theme-danger-default")) {
+      if (innerBtn?.classList.contains("tx-danger")) {
         cBtn = innerBtn;
         break;
       }
@@ -253,12 +252,12 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
     TestBed.flushEffects();
 
     const host = fixture.nativeElement.querySelector("sd-numpad") as HTMLElement;
-    // BS button has tx-theme-warning-default class
+    // BS button has tx-warning class
     const buttons = host.querySelectorAll("sd-button");
     let bsBtn: HTMLButtonElement | null = null;
     for (const btn of Array.from(buttons)) {
       const innerBtn = btn.querySelector("button");
-      if (innerBtn?.classList.contains("tx-theme-warning-default")) {
+      if (innerBtn?.classList.contains("tx-warning")) {
         bsBtn = innerBtn;
         break;
       }
@@ -283,7 +282,7 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
     let bsBtn: HTMLButtonElement | null = null;
     for (const btn of Array.from(buttons)) {
       const innerBtn = btn.querySelector("button");
-      if (innerBtn?.classList.contains("tx-theme-warning-default")) {
+      if (innerBtn?.classList.contains("tx-warning")) {
         bsBtn = innerBtn;
         break;
       }
@@ -436,9 +435,7 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
 
     const host = fixture.nativeElement.querySelector("sd-numpad") as HTMLElement;
     const buttons = host.querySelectorAll("sd-button");
-    const minusBtn = Array.from(buttons).find(
-      (btn) => btn.textContent.trim() === "-",
-    );
+    const minusBtn = Array.from(buttons).find((btn) => btn.textContent.trim() === "-");
     expect(minusBtn).toBeUndefined();
   });
 
@@ -450,9 +447,7 @@ describe("Feature 5.2 Slice 1: SdNumpad", () => {
 
     const host = fixture.nativeElement.querySelector("sd-numpad") as HTMLElement;
     const buttons = host.querySelectorAll("sd-button");
-    const entBtn = Array.from(buttons).find(
-      (btn) => btn.textContent.trim() === "ENT",
-    );
+    const entBtn = Array.from(buttons).find((btn) => btn.textContent.trim() === "ENT");
     expect(entBtn).toBeUndefined();
   });
 });

@@ -1,5 +1,5 @@
-$border-color-light: var(--border-color-lighter);
-$border-color-dark: var(--border-color-light);
+$border-color-light: var(--sd-bd-soft);
+$border-color-dark: var(--sd-bd-default);
 
 .table {
   display: table;
@@ -12,7 +12,7 @@ $border-color-dark: var(--border-color-light);
   > * > tr,
   > tr {
     > * {
-      padding: var(--gap-xs) var(--gap-sm);
+      padding: var(--sd-gap-xs) var(--sd-gap-sm);
       border-left: 1px solid $border-color-light;
       border-top: 1px solid $border-color-light;
 
@@ -33,7 +33,7 @@ $border-color-dark: var(--border-color-light);
     }
 
     > th {
-      background: var(--theme-gray-lightest);
+      background-color: var(--sd-bg-gray-subtle);
     }
 
     > td {
@@ -42,7 +42,7 @@ $border-color-dark: var(--border-color-light);
   }
 
   > thead > tr > th {
-    background: var(--theme-gray-lightest);
+    background-color: var(--sd-bg-gray-subtle);
   }
 
   &.table-inset {

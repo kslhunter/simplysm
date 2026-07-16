@@ -35,7 +35,9 @@ import {
         class="page-anchor"
         [style.text-decoration]="page === currentPage() + 1 ? 'underline' : ''"
         (click)="goToPage(page - 1)"
-      >{{ page }}</sd-anchor>
+      >
+        {{ page }}
+      </sd-anchor>
     }
 
     <sd-anchor class="nav-next-group" [disabled]="!hasNext()" (click)="goToNextGroup()">
@@ -50,7 +52,7 @@ import {
       sd-pagination {
         > sd-anchor {
           display: inline-block;
-          padding: var(--gap-xxs) var(--gap-xs);
+          padding: var(--sd-gap-xxs) var(--sd-gap-xs);
         }
       }
     `,

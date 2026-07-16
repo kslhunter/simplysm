@@ -21,10 +21,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { useTiptapToolbar, type TiptapCommand } from "./useTiptapToolbar";
 
-const DEFAULT_EXTENSIONS: AnyExtension[] = [
-  StarterKit,
-  Markdown,
-];
+const DEFAULT_EXTENSIONS: AnyExtension[] = [StarterKit, Markdown];
 
 @Component({
   selector: "sd-markdown-editor",
@@ -36,32 +33,86 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
     @if (!disabled() && !readonly()) {
       <div class="_toolbar">
         <div class="_btn-group">
-          <button type="button" data-cmd="h1" [class._active]="activeStates().h1"
-                  (click)="execCmd('h1')">H1</button>
-          <button type="button" data-cmd="h2" [class._active]="activeStates().h2"
-                  (click)="execCmd('h2')">H2</button>
+          <button
+            type="button"
+            data-cmd="h1"
+            [class._active]="activeStates().h1"
+            (click)="execCmd('h1')"
+          >
+            H1
+          </button>
+          <button
+            type="button"
+            data-cmd="h2"
+            [class._active]="activeStates().h2"
+            (click)="execCmd('h2')"
+          >
+            H2
+          </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bold" [class._active]="activeStates().bold"
-                  (click)="execCmd('bold')">B</button>
-          <button type="button" data-cmd="italic" [class._active]="activeStates().italic"
-                  (click)="execCmd('italic')">I</button>
-          <button type="button" data-cmd="strike" [class._active]="activeStates().strike"
-                  (click)="execCmd('strike')">S</button>
+          <button
+            type="button"
+            data-cmd="bold"
+            [class._active]="activeStates().bold"
+            (click)="execCmd('bold')"
+          >
+            B
+          </button>
+          <button
+            type="button"
+            data-cmd="italic"
+            [class._active]="activeStates().italic"
+            (click)="execCmd('italic')"
+          >
+            I
+          </button>
+          <button
+            type="button"
+            data-cmd="strike"
+            [class._active]="activeStates().strike"
+            (click)="execCmd('strike')"
+          >
+            S
+          </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bulletList" [class._active]="activeStates().bulletList"
-                  (click)="execCmd('bulletList')">UL</button>
-          <button type="button" data-cmd="orderedList" [class._active]="activeStates().orderedList"
-                  (click)="execCmd('orderedList')">OL</button>
+          <button
+            type="button"
+            data-cmd="bulletList"
+            [class._active]="activeStates().bulletList"
+            (click)="execCmd('bulletList')"
+          >
+            UL
+          </button>
+          <button
+            type="button"
+            data-cmd="orderedList"
+            [class._active]="activeStates().orderedList"
+            (click)="execCmd('orderedList')"
+          >
+            OL
+          </button>
           <button type="button" data-cmd="indent" (click)="execCmd('indent')">→</button>
           <button type="button" data-cmd="outdent" (click)="execCmd('outdent')">←</button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="blockquote" [class._active]="activeStates().blockquote"
-                  (click)="execCmd('blockquote')">❝</button>
-          <button type="button" data-cmd="codeBlock" [class._active]="activeStates().codeBlock"
-                  (click)="execCmd('codeBlock')">&lt;/&gt;</button>
+          <button
+            type="button"
+            data-cmd="blockquote"
+            [class._active]="activeStates().blockquote"
+            (click)="execCmd('blockquote')"
+          >
+            ❝
+          </button>
+          <button
+            type="button"
+            data-cmd="codeBlock"
+            [class._active]="activeStates().codeBlock"
+            (click)="execCmd('codeBlock')"
+          >
+            &lt;/&gt;
+          </button>
         </div>
         <div class="_btn-group">
           <button type="button" data-cmd="clean" (click)="execCmd('clean')">Tx</button>
@@ -75,50 +126,50 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
       sd-markdown-editor {
         display: block;
         position: relative;
-        border: 1px solid var(--trans-lighter);
-        border-radius: var(--border-radius-default);
-        background: var(--theme-secondary-lightest);
+        border: 1px solid var(--sd-bd-field);
+        border-radius: var(--sd-radius-default);
+        background-color: var(--sd-bg-field);
 
         > ._toolbar {
           display: flex;
           flex-wrap: wrap;
-          gap: var(--gap-xs);
-          padding: var(--gap-xs);
-          border-bottom: 1px solid var(--trans-lighter);
+          gap: var(--sd-gap-xs);
+          padding: var(--sd-gap-xs);
+          border-bottom: 1px solid var(--sd-bd-hairline);
 
           > ._btn-group {
             display: flex;
             gap: 1px;
 
             > button {
-              padding: var(--gap-xs) var(--gap-sm);
-              border: 1px solid var(--trans-lighter);
-              border-radius: var(--border-radius-default);
-              background: transparent;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm);
+              border: 1px solid var(--sd-bd-hairline);
+              border-radius: var(--sd-radius-default);
+              background-color: transparent;
               cursor: pointer;
-              font-size: var(--font-size-default);
+              font-size: var(--sd-font-size-default);
               line-height: 1;
 
               &._active {
-                background: var(--theme-primary-default);
-                color: var(--text-trans-rev-default);
+                background-color: var(--sd-bg-primary-solid);
+                color: var(--sd-tx-primary-solid);
               }
 
               &:hover {
-                background: var(--trans-lighter);
+                background-color: var(--sd-bg-state-hover);
               }
 
               &._active:hover {
-                background: var(--theme-primary-default);
+                background-color: var(--sd-bg-primary-solid);
               }
             }
           }
         }
 
         > ._editor-container {
-          padding: var(--gap-sm);
+          padding: var(--sd-gap-sm);
           min-height: 6.25rem;
-          font-family: var(--font-family-field);
+          font-family: var(--sd-font-family-field);
 
           > .tiptap {
             outline: none;
@@ -129,9 +180,10 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009)
         &[data-sd-disabled="true"] {
-          background: var(--theme-gray-lightest);
-          color: var(--text-trans-light);
+          background-color: var(--sd-bg-disabled);
+          color: var(--sd-tx-disabled);
 
           > ._editor-container > .tiptap {
             cursor: not-allowed;
@@ -245,21 +297,23 @@ export class SdMarkdownEditor {
     const container = this._elRef.nativeElement.querySelector("._editor-container");
     if (container == null) return;
 
-    this.editor.set(new Editor({
-      element: container,
-      extensions,
-      content: initialContent ?? "",
-      contentType: "markdown",
-      editable: untracked(() => !this.disabled() && !this.readonly()),
-      onUpdate: ({ editor }) => {
-        const markdown = this._getEditorMarkdownFrom(editor);
-        this._lastEditorMarkdown = markdown;
-        this.value.set(markdown);
-      },
-      onTransaction: () => {
-        this._toolbar.refreshActiveStates();
-      },
-    }));
+    this.editor.set(
+      new Editor({
+        element: container,
+        extensions,
+        content: initialContent ?? "",
+        contentType: "markdown",
+        editable: untracked(() => !this.disabled() && !this.readonly()),
+        onUpdate: ({ editor }) => {
+          const markdown = this._getEditorMarkdownFrom(editor);
+          this._lastEditorMarkdown = markdown;
+          this.value.set(markdown);
+        },
+        onTransaction: () => {
+          this._toolbar.refreshActiveStates();
+        },
+      }),
+    );
   }
 
   private _destroyEditor(): void {

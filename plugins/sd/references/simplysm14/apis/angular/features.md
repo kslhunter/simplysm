@@ -2,17 +2,23 @@
 
 테마 provider/selector, 주소 검색 modal, TipTap/Markdown editor, label/note/progress/calendar/barcode/ECharts 표시 컴포넌트 군임. 컴포넌트는 standalone · OnPush · `ViewEncapsulation.None`.
 
-`theme` literal(8색)은 컨트롤 공통값 `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"` 로, 각 값이 `--theme-<key>-*` CSS 변수 배경/색을 결정함.
+`theme` literal(8색)은 컨트롤 공통값 `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"` 로, 각 값이 `--sd-bg-<key>-solid`·`--sd-tx-<key>` 등 `--sd-*` 역할 토큰(아래 "스타일 토큰·테마" 절)을 선택함.
 
 ## 테마
 
 ### `SdThemeProvider`
 
 ```ts
+// 내장 테마 단일 정의 — union·selector·body 클래스 토글의 단일 출처(SD_THEMES)
+const SD_THEMES: readonly { value: SdThemeName; label: string }[]; // light·blueprint·ide-dark
+type SdThemeName = "light" | "blueprint" | "ide-dark"; // SD_THEMES 에서 파생
+type SdDensity = "normal" | "compact";
+
 @Injectable({ providedIn: "root" })
 class SdThemeProvider {
-  dark: WritableSignal<boolean>; // default false
-  blueprint: WritableSignal<boolean>; // default false
+  readonly themes: readonly { value: SdThemeName; label: string }[]; // = SD_THEMES
+  theme: WritableSignal<SdThemeName>; // default "light"
+  density: WritableSignal<SdDensity>; // default "normal"
   fontSize: WritableSignal<number>; // default 12
   readonly fontSizePresets: readonly number[]; // [12, 14, 16, 20, 24, 28]
   increaseFontSize(): void;
@@ -20,16 +26,41 @@ class SdThemeProvider {
 }
 ```
 
-테마 상태를 body class / html font-size로 반영하는 root 서비스. browser에서만 effect 동작.
+테마·밀도·글자크기 상태를 body class / html font-size로 반영하는 root 서비스. browser에서만 effect 동작.
 
-- `dark` — true면 `<body>` 에 `sd-theme-dark` class. 다크 모드.
-- `blueprint` — true면 `sd-theme-blueprint` class(설계도 테마, dark와 직교 조합).
+- `theme` — 내장 테마 선택. `<body>` 에 선택 테마만 `sd-theme-{value}` class 토글(`light` 는 `:root` 기본값이라 클래스가 붙어도 무효). 새 테마 추가 = `SD_THEMES` 항목 1줄 + `scss/themes` 값 맵 + `_theme-variables` 의 `.sd-theme-{value}` 블록.
+- `density` — `"compact"` 면 `<body>` 에 `sd-density-compact` class. 치수 토큰 그룹(간격·행높이·시트 패딩 등)만 축소하며 테마와 직교(DEC-007) — 어느 테마에서든 조합 가능.
 - `fontSize` — `<html>` `font-size: {n}px`(기본 12).
 - `increaseFontSize`/`decreaseFontSize` — `fontSizePresets`(12/14/16/20/24/28) 내 다음/이전 단계로 이동.
+- 영속화 — `provideSdAngular` 가 localStorage `sd-theme`/`sd-theme-density`/`sd-theme-font-size` 로 복원·저장. 저장값이 `SD_THEMES` 에 없으면(구버전 제거 등) 경고 로그 후 기본 테마 유지(silent skip 아님).
 
 ### `SdThemeSelector` (`sd-theme-selector`)
 
-입력 없음. palette 아이콘 dropdown으로 글자 크기(+/- 버튼), "다크 모드"·"블루프린트" `sd-switch` 를 렌더하고 `SdThemeProvider` signal을 양방향 바인딩해 직접 토글함.
+입력 없음. palette 아이콘 dropdown으로 글자 크기(+/- 버튼), 테마 버튼 목록(`SD_THEMES` 렌더 — 선택 테마는 `primary`, 나머지는 `link-gray`), `compact` `sd-switch` 를 렌더하고 `SdThemeProvider` signal을 직접 조작함.
+
+### 스타일 토큰·테마
+
+전 컴포넌트 스타일이 `--sd-*` 역할 토큰만 소비함(팔레트·명도 스케일 직접 소비 없음). 테마는 이 역할 토큰의 **값 맵만으로** 완성됨 — 컴포넌트 셀렉터 오버라이드 없음.
+
+- **어휘 규약(DEC-013)**: 색 토큰은 `--sd-{bg|tx|bd}-…` 속성 우선. 유틸 클래스명 = 토큰명에서 `--sd-` 만 뗀 것(`--sd-bg-primary-solid` ↔ `.bg-primary-solid`). hover 변형은 `-hover` 접미(유틸 클래스는 미생성).
+- **역할군**:
+  - 배경 — `--sd-bg-{canvas,canvas-image,control,elevated,overlay,sheet,sheet-image,inverse,field,track}`, 상태 `--sd-bg-state-{hover,active,selected}`, `--sd-bg-{disabled,busy-overlay,busy-indicator,backdrop}`.
+  - 텍스트 — 무채 `--sd-tx-{strong,default,muted,faint}`, `--sd-tx-{disabled,on-inverse,on-inverse-muted,on-inverse-disabled}`.
+  - 보더 — 무채 `--sd-bd-{hairline,soft,default,strong,emphasis}`, `--sd-bd-{field,disabled}`.
+  - 시맨틱 슬롯(키: `gray`·`blue-gray`·`primary`·`secondary`·`info`·`success`·`warning`·`danger`) — `--sd-bg-{key}-{solid,subtle}`(+`-hover`), `--sd-tx-{key}`(+`-hover`)·`--sd-tx-{key}-{solid,subtle}`, `--sd-bd-{key}-{solid,subtle}`(+solid `-hover`).
+  - 포커스·스크롤바 — `--sd-focus-ring-{color,width,offset}`(`:focus-visible` 규약), `--sd-scrollbar-{thumb,thumb-hover,track}`.
+  - 컴포넌트 장식 — 카드·모달·드롭다운·시트·권한표 등 값 맵으로 안 잡히던 지점의 소비 토큰(`--sd-card-*`·`--sd-modal-*`·`--sd-dropdown-bd`·`--sd-sheet-shadow`·`--sd-permission-group-*`).
+  - 비색상 — 팔레트 `--sd-color-{hue}-{50..950}`, `--sd-shadow-*`, `--sd-z-*`, 타이포(`--sd-font-*`·`--sd-radius-*`), 밀도 그룹(`--sd-gap-*`·`--sd-line-height`·`--sd-sheet-{pv,ph}`·`--sd-topbar-height`·`--sd-sidebar-width`).
+- **그룹 소유권**: 테마 맵 = 색·폰트·형태(radius·그림자·표면 패턴) / 밀도 그룹 = 간격·행높이·시트 패딩·topbar 높이(`sd-density-compact` 가 밀도 그룹만 덮음).
+- **소비 규약**: 컴포넌트는 `background` 단축 금지(`background-color:` 사용 — `--sd-bg-canvas-image` 패턴 보존). 컴포넌트 config 의 인라인 var 지정 금지.
+- **색 원천·체이닝**: 테마 값은 팔레트(`--sd-color-*`) + 흰/검 알파만(커스텀 rgb 리터럴 금지). `:root` 발행 토큰의 `var()` 참조는 팔레트(테마 불변)만 허용 — 테마·밀도가 덮는 토큰끼리 체인 금지(재정의 스코프에서 하위가 안 따라옴).
+- 전체 토큰 표·라이트 기본값은 패키지의 `scss/sd-tokens.md` 카탈로그가 정본.
+
+#### 테마 커스터마이즈 / 추가
+
+- **앱 단위 커스터마이즈**: 내장 테마를 선택한 뒤 앱 style 파일에서 해당 `--sd-*` 역할 토큰을 재정의함(외부 주입 API 없음 — DEC-003). 예: `body { --sd-bg-canvas: var(--sd-color-blue-50); }`.
+- **라이브러리 테마 추가**: ① `SD_THEMES` 에 `{ value, label }` 1줄 추가 → ② `scss/themes/_variables-{value}.scss` 에 라이트 기본값과 다른 `--sd-*` 값만 기술(값 맵) → ③ `_theme-variables.scss` 에 `.sd-theme-{value}` writeVars 블록 추가. 컴포넌트 스타일 파일은 건드리지 않음.
+- **대비 검증**: `getWcagContrastRatio` 를 패키지에서 export — 테마 핵심 fg/bg 쌍 대비를 unit 으로 검산(본문 4.5:1·보조/UI 3:1).
 
 ## 주소 검색
 
@@ -109,9 +140,9 @@ class SdLabel {
 
 태그/배지 라벨. `<ng-content>` 투영.
 
-- `theme` — 8색. 배경 `--theme-<key>-default`(미지정 시 `--theme-gray-darker`), 텍스트는 항상 반전색.
-- `color` — raw CSS 색을 `[style.background]` 로 덮어쓰기.
-- `clickable` — true면 `cursor:pointer` + hover 시 진한 배경(`--theme-<key>-dark`).
+- `theme` — 8색. 배경 `--sd-bg-<key>-solid`(미지정 시 `--sd-bg-gray-solid`), 텍스트 `--sd-tx-<key>-solid`(solid 면 위 텍스트).
+- `color` — raw CSS 색을 `[style.background-color]` 로 덮어쓰기.
+- `clickable` — true면 `cursor:pointer` + hover 시 진한 배경(`--sd-bg-<key>-solid-hover`).
 
 ### `SdNote` (`sd-note`)
 
@@ -125,7 +156,7 @@ class SdNote {
 
 안내 박스. `<ng-content>` 투영.
 
-- `theme` — 8색. 배경/테두리 `--theme-<key>-lightest`(미지정 시 `--theme-gray-lightest`·테두리 없음).
+- `theme` — 8색. 배경 `--sd-bg-<key>-subtle`·테두리 동일 톤(미지정 시 `--sd-bg-gray-subtle`·테두리 없음).
 - `size` — `"sm"`(작은 글씨/padding)/`"lg"`(큰 padding)/미지정 기본.
 - `inset` — true면 `border-radius:0`.
 
@@ -143,7 +174,7 @@ class SdProgress {
 단일 진행 막대(`max` 입력 없음). `value` 는 0-1 비율로, `PercentPipe`("1.0-2")로 표시하고 막대 너비 = `clamp(value*100, 0, 100)%`.
 
 - `value` — **required**. 0-1 진행 비율.
-- `theme` — **required** 8색. 채워진 막대 색 `--theme-<key>-default`.
+- `theme` — **required** 8색. 채워진 막대 색 `--sd-bg-<key>-solid`.
 - `size` — `"sm"`/`"lg"`/미지정 padding. `inset` — true면 라운드/테두리 제거.
 
 ### `SdCalendar<T>` (`sd-calendar`)

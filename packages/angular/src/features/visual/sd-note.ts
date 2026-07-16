@@ -22,32 +22,31 @@ import {
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
 
       sd-note {
         display: block;
-        padding: var(--gap-sm) var(--gap-default);
-        background: var(--theme-gray-lightest);
+        padding: var(--sd-gap-sm) var(--sd-gap-default);
+        background-color: var(--sd-bg-gray-subtle);
 
         border: none;
-        border-radius: var(--border-radius-default);
+        border-radius: var(--sd-radius-default);
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
-            background: var(--theme-#{$key}-lightest);
-            border: 1px solid var(--theme-#{$key}-lightest);
+            background-color: var(--sd-bg-#{$key}-subtle);
+            // 보더는 배경과 동일 톤(라이트에선 비가시, 테마의 subtle 값을 그대로 추종)
+            border: 1px solid var(--sd-bg-#{$key}-subtle);
           }
         }
 
         &[data-sd-size="sm"] {
-          font-size: var(--font-size-sm);
-          padding: var(--gap-xs) var(--gap-sm);
+          font-size: var(--sd-font-size-sm);
+          padding: var(--sd-gap-xs) var(--sd-gap-sm);
         }
 
         &[data-sd-size="lg"] {
-          padding: var(--gap-default) var(--gap-lg);
+          padding: var(--sd-gap-default) var(--sd-gap-lg);
         }
 
         &[data-sd-inset="true"] {

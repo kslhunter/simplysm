@@ -25,7 +25,7 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
       @if (value()) {
         <pre>{{ value() }} </pre>
       } @else if (placeholder()) {
-        <span class="tx-trans-lighter">{{ placeholder() }}</span>
+        <span class="tx-faint">{{ placeholder() }}</span>
       } @else {
         <span>&nbsp;</span>
       }
@@ -44,8 +44,6 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
       @use "../../../scss/commons/mixins";
 
@@ -56,19 +54,19 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
         > textarea,
         > ._contents {
           @include mixins.form-control-base();
-          font-family: var(--font-family-field);
+          font-family: var(--sd-font-family-field);
           resize: none;
 
           overflow: auto;
           width: 100%;
 
-          border: 1px solid var(--trans-lighter);
-          border-radius: var(--border-radius-default);
-          background: var(--theme-secondary-lightest);
+          border: 1px solid var(--sd-bd-field);
+          border-radius: var(--sd-radius-default);
+          background-color: var(--sd-bg-field);
 
           &:focus {
             outline: none;
-            border-color: var(--theme-primary-default);
+            border-color: var(--sd-focus-ring-color);
           }
 
           &::-webkit-scrollbar {
@@ -76,7 +74,7 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
           }
 
           &::-webkit-input-placeholder {
-            color: var(--text-trans-lighter);
+            color: var(--sd-tx-faint);
           }
         }
 
@@ -93,11 +91,11 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
           margin-bottom: 0;
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
             > textarea,
             > ._contents {
-              background: var(--theme-#{$key}-lightest);
+              background-color: var(--sd-bg-#{$key}-subtle);
             }
           }
         }
@@ -105,14 +103,14 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
         &[data-sd-size="sm"] {
           > textarea,
           > ._contents {
-            padding: var(--gap-xs) var(--gap-sm);
+            padding: var(--sd-gap-xs) var(--sd-gap-sm);
           }
         }
 
         &[data-sd-size="lg"] {
           > textarea,
           > ._contents {
-            padding: var(--gap-default) var(--gap-lg);
+            padding: var(--sd-gap-default) var(--sd-gap-lg);
           }
         }
 
@@ -146,22 +144,24 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
           }
 
           > textarea:focus {
-            outline: 1px solid var(--theme-primary-default);
+            outline: 1px solid var(--sd-focus-ring-color);
             outline-offset: -1px;
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009)
         &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
-            background: var(--theme-gray-lightest);
-            color: var(--text-trans-light);
+            background-color: var(--sd-bg-disabled);
+            color: var(--sd-tx-disabled);
           }
 
+          // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-inset="true"] {
             > ._contents {
-              background: var(--control-color);
-              color: var(--text-trans-default);
+              background-color: var(--sd-bg-control);
+              color: var(--sd-tx-default);
             }
           }
         }

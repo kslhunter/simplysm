@@ -1,99 +1,145 @@
+// 블루프린트 테마 — 트레이싱지(라이트 면)를 --sd-* 역할 토큰 값 맵으로만 구성(셀렉터 오버라이드 0).
+// 라이트 기본값과 같은 항목은 생략(값 맵은 차이만 덮음).
+// 색 규칙(CONSTRAINT-007): --sd-color-* 팔레트 + 흰/검 알파만.
+// 모눈·그림자 청색 틴트는 rgb(28, 57, 142) ≈ --sd-color-blue-900 근사 리터럴(2026-07-16 확정 —
+// var() 를 알파와 조합할 수 없어 팔레트 성분을 리터럴로 풂).
+
+// 모눈: 24px 헤어라인 + 120px 메이저 — background-size 없이 성립하는 repeating-linear-gradient 형
+$grid-strong: rgba(28, 57, 142, 0.055);
+$grid-weak: rgba(28, 57, 142, 0.022);
+$grid-image: (
+  repeating-linear-gradient(to bottom, #{$grid-strong} 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(to right, #{$grid-strong} 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(to bottom, #{$grid-weak} 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(to right, #{$grid-weak} 0 1px, transparent 1px 24px)
+);
+
 $paper: (
-  theme: (
+  bg: (
+    // 모눈은 body(캔버스)와 시트 컨테이너에만 — 콘텐츠 내부는 무지(가독 우선)
+    canvas-image: $grid-image,
+    sheet-image: $grid-image,
     "gray": (
-      lightest: var(--color-zinc-50),
-      lighter: var(--color-zinc-100),
-      light: var(--color-zinc-300),
-      default: var(--color-zinc-500),
-      dark: var(--color-zinc-600),
-      darker: var(--color-zinc-700),
-      darkest: var(--color-zinc-800),
+      solid: var(--sd-color-zinc-500),
+      solid-hover: var(--sd-color-zinc-600),
     ),
     blue-gray: (
-      lightest: var(--color-slate-50),
-      lighter: var(--color-slate-100),
-      light: var(--color-slate-300),
-      default: var(--color-slate-500),
-      dark: var(--color-slate-600),
-      darker: var(--color-slate-700),
-      darkest: var(--color-slate-800),
+      solid: var(--sd-color-slate-500),
+      solid-hover: var(--sd-color-slate-600),
     ),
+    // 블루프린트 잉크 — primary 는 깊은 남색(900)
     primary: (
-      lightest: var(--color-blue-100),
-      lighter: var(--color-blue-300),
-      light: var(--color-blue-500),
-      default: var(--color-blue-900),
-      dark: var(--color-blue-950),
-      darker: var(--color-blue-950),
-      darkest: var(--color-blue-950),
-    ),
-    secondary: (
-      lightest: var(--color-blue-50),
-      lighter: var(--color-blue-100),
-      light: var(--color-blue-300),
-      default: var(--color-blue-500),
-      dark: var(--color-blue-600),
-      darker: var(--color-blue-700),
-      darkest: var(--color-blue-800),
-    ),
-    info: (
-      lightest: var(--color-cyan-50),
-      lighter: var(--color-cyan-100),
-      light: var(--color-cyan-300),
-      default: var(--color-cyan-500),
-      dark: var(--color-cyan-600),
-      darker: var(--color-cyan-700),
-      darkest: var(--color-cyan-800),
-    ),
+        solid: var(--sd-color-blue-900),
+        solid-hover: var(--sd-color-blue-950),
+        subtle: var(--sd-color-blue-100),
+        subtle-hover: var(--sd-color-blue-300),
+      ),
     success: (
-      lightest: var(--color-green-50),
-      lighter: var(--color-green-100),
-      light: var(--color-green-300),
-      default: var(--color-green-500),
-      dark: var(--color-green-600),
-      darker: var(--color-green-700),
-      darkest: var(--color-green-800),
+      solid: var(--sd-color-green-500),
+      solid-hover: var(--sd-color-green-600),
+      subtle: var(--sd-color-green-50),
+      subtle-hover: var(--sd-color-green-100),
     ),
     warning: (
-      lightest: var(--color-orange-100),
-      lighter: var(--color-orange-200),
-      light: var(--color-orange-300),
-      default: var(--color-orange-400),
-      dark: var(--color-orange-600),
-      darker: var(--color-orange-700),
-      darkest: var(--color-orange-800),
+      solid: var(--sd-color-orange-400),
+      solid-hover: var(--sd-color-orange-600),
+      subtle: var(--sd-color-orange-100),
+      subtle-hover: var(--sd-color-orange-200),
     ),
     danger: (
-      lightest: var(--color-red-50),
-      lighter: var(--color-red-100),
-      light: var(--color-red-200),
-      default: var(--color-red-400),
-      dark: var(--color-red-600),
-      darker: var(--color-red-700),
-      darkest: var(--color-red-800),
+      solid: var(--sd-color-red-400),
+      solid-hover: var(--sd-color-red-600),
     ),
   ),
-  background-color: var(--theme-gray-lightest),
-  control-color: white,
-  border-radius: (
-    xs: 0,
-    sm: 0,
-    default: 0,
-    lg: 0,
-    xl: 0,
-    xxl: 0,
+  tx: (
+    "gray": var(--sd-color-zinc-500),
+    gray-hover: var(--sd-color-zinc-600),
+    gray-subtle: var(--sd-color-zinc-700),
+    blue-gray: var(--sd-color-slate-500),
+    blue-gray-hover: var(--sd-color-slate-600),
+    blue-gray-subtle: var(--sd-color-slate-700),
+    primary: var(--sd-color-blue-900),
+    primary-hover: var(--sd-color-blue-950),
+    primary-subtle: var(--sd-color-blue-950),
+    success: var(--sd-color-green-500),
+    success-hover: var(--sd-color-green-600),
+    success-subtle: var(--sd-color-green-700),
+    warning: var(--sd-color-orange-400),
+    warning-hover: var(--sd-color-orange-600),
+    danger: var(--sd-color-red-400),
+    danger-hover: var(--sd-color-red-600),
   ),
-  elevation-blur-mult: 0,
+  bd: (
+    strong: var(--sd-color-zinc-500),
+    emphasis: var(--sd-color-zinc-600),
+    "gray": (
+      solid: var(--sd-color-zinc-500),
+      solid-hover: var(--sd-color-zinc-600),
+    ),
+    blue-gray: (
+      solid: var(--sd-color-slate-500),
+      solid-hover: var(--sd-color-slate-600),
+    ),
+    primary: (
+      solid: var(--sd-color-blue-900),
+      solid-hover: var(--sd-color-blue-950),
+      subtle: var(--sd-color-blue-300),
+    ),
+    success: (
+      solid: var(--sd-color-green-500),
+      solid-hover: var(--sd-color-green-600),
+      subtle: var(--sd-color-green-300),
+    ),
+    warning: (
+      solid: var(--sd-color-orange-400),
+      solid-hover: var(--sd-color-orange-600),
+      subtle: var(--sd-color-orange-300),
+    ),
+    danger: (
+      solid: var(--sd-color-red-400),
+      solid-hover: var(--sd-color-red-600),
+    ),
+  ),
+  focus-ring: (
+    color: var(--sd-color-blue-900),
+  ),
+  // 하드 섀도(blur 0) — 도면 인쇄 느낌
+  shadow: (
+      blur-mult: 0,
+    ),
+  card: (
+    bd: var(--sd-color-zinc-500),
+    bd-active: var(--sd-color-zinc-500),
+    shadow: (
+      3px 3px 0 rgba(28, 57, 142, 0.1),
+    ),
+    shadow-hover: (
+      5px 5px 0 rgba(28, 57, 142, 0.14),
+    ),
+  ),
+  // 모달 헤더 잉크 액센트
+  modal: (
+      header-bg: var(--sd-color-blue-900),
+      header-tx: white,
+      header-tx-muted: rgba(255, 255, 255, 0.7),
+    ),
   sheet: (
-    bg: var(--theme-gray-lightest),
+    shadow: (
+      1px 1px 0 rgba(28, 57, 142, 0.1),
+    ),
   ),
-  border-color: (
-    lightest: var(--color-zinc-100),
-    lighter: var(--color-zinc-200),
-    light: var(--color-zinc-300),
-    default: var(--color-zinc-500),
-    dark: var(--color-zinc-600),
-    darker: var(--color-zinc-700),
-    darkest: var(--color-zinc-800),
-  ),
+  // 권한표 그룹 행 — 원색 solid 를 무채 옅은 행으로
+  permission-group: (
+      bg: var(--sd-color-zinc-100),
+      tx: rgba(0, 0, 0, 0.87),
+    ),
+  // 도면 직각 — 라운드 0
+  radius: (
+      xs: 0,
+      sm: 0,
+      default: 0,
+      lg: 0,
+      xl: 0,
+      xxl: 0,
+    ),
 );

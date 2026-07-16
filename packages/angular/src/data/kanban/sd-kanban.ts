@@ -11,11 +11,7 @@ import {
   signal,
   ViewEncapsulation,
 } from "@angular/core";
-import {
-  SdKanbanBoard,
-  type SdKanbanDragRef,
-  type SdKanbanDropTarget,
-} from "./sd-kanban-board";
+import { SdKanbanBoard, type SdKanbanDragRef, type SdKanbanDropTarget } from "./sd-kanban-board";
 import { SdKanbanLane } from "./sd-kanban-lane";
 import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resize";
 
@@ -85,19 +81,19 @@ import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resi
         }
 
         > ._drop-position {
-          border-radius: var(--border-radius-default);
-          background: var(--trans-light);
+          border-radius: var(--sd-radius-default);
+          background-color: var(--sd-bg-state-active);
 
           height: 0;
           margin-bottom: 0;
           visibility: hidden;
-          transition: var(--animation-duration) linear;
+          transition: var(--sd-animation-duration) linear;
           transition-property: height, margin-bottom, visibility;
         }
 
         &[data-sd-drag-over="true"] {
           > ._drop-position {
-            margin-bottom: var(--gap-lg);
+            margin-bottom: var(--sd-gap-lg);
             visibility: visible;
           }
         }
@@ -105,19 +101,15 @@ import { SdResizeDirective, type SdResizeEvent } from "../../core/events/sd-resi
         > .card {
           white-space: normal;
           user-select: none;
-          margin-bottom: var(--gap-lg);
+          margin-bottom: var(--sd-gap-lg);
         }
       }
     `,
   ],
 })
 export class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget<L, T> {
-  private readonly _boardControl = inject<SdKanbanBoard<L, T>>(
-    forwardRef(() => SdKanbanBoard),
-  );
-  private readonly _laneControl = inject<SdKanbanLane<L, T>>(
-    forwardRef(() => SdKanbanLane),
-  );
+  private readonly _boardControl = inject<SdKanbanBoard<L, T>>(forwardRef(() => SdKanbanBoard));
+  private readonly _laneControl = inject<SdKanbanLane<L, T>>(forwardRef(() => SdKanbanLane));
   private readonly _elRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly thisRef = this;
@@ -186,9 +178,7 @@ export class SdKanban<L, T> implements SdKanbanDragRef<L, T>, SdKanbanDropTarget
 
   onCardResize(event: SdResizeEvent) {
     const marginBottom = getComputedStyle(event.target).marginBottom;
-    this.cardHeight.set(
-      event.target.clientHeight + (parseInt(marginBottom) || 0),
-    );
+    this.cardHeight.set(event.target.clientHeight + (parseInt(marginBottom) || 0));
   }
 
   onCardDragStart() {

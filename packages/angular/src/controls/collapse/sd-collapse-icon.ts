@@ -46,7 +46,7 @@ export class SdCollapseIcon {
 
   transitionStyle = computed(() => {
     return this.open()
-      ? "transform var(--animation-duration) ease-out"
-      : "transform var(--animation-duration) ease-in";
+      ? "transform var(--sd-animation-duration) ease-out"
+      : "transform var(--sd-animation-duration) ease-in";
   });
 }

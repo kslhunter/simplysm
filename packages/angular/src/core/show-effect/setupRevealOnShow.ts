@@ -28,7 +28,7 @@ export function setupRevealOnShow(
         Object.assign(el.style, {
           opacity: "1",
           transform: "none",
-          transitionDuration: "var(--animation-duration)",
+          transitionDuration: "var(--sd-animation-duration)",
           transitionTimingFunction: "ease-out",
           transitionProperty: "opacity, transform",
         });

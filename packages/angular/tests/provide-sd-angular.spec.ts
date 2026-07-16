@@ -64,42 +64,42 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     });
   });
 
-  // ── Rule 3: 블루프린트 테마 복원·저장 ──
+  // ── Rule 3: 테마 복원·저장 ──
 
-  describe("Rule: 앱 시작 시 localStorage에서 블루프린트 테마를 복원하고 변경을 자동 저장한다", () => {
-    it("localStorage에 블루프린트 설정이 있으면 복원한다", () => {
-      window.localStorage.setItem("test-app.sd-theme-blueprint", JSON.stringify(true));
+  describe("Rule: 앱 시작 시 localStorage에서 테마를 복원하고 변경을 자동 저장한다", () => {
+    it("localStorage에 테마 설정이 있으면 복원한다", () => {
+      window.localStorage.setItem("test-app.sd-theme", JSON.stringify("ide-dark"));
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      expect(theme.blueprint()).toBe(true);
+      expect(theme.theme()).toBe("ide-dark");
     });
 
-    it("localStorage에 블루프린트 설정이 없으면 기본값을 유지한다", () => {
+    it("localStorage에 테마 설정이 없으면 기본값을 유지한다", () => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      expect(theme.blueprint()).toBe(false);
+      expect(theme.theme()).toBe("light");
     });
 
-    it("블루프린트 변경 시 localStorage에 자동 저장된다", () => {
+    it("테마 변경 시 localStorage에 자동 저장된다", () => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
       });
       TestBed.inject(ApplicationRef);
 
       const theme = TestBed.inject(SdThemeProvider);
-      theme.blueprint.set(true);
+      theme.theme.set("ide-dark");
       TestBed.flushEffects();
 
-      const stored = window.localStorage.getItem("test-app.sd-theme-blueprint");
-      expect(stored).toBe(JSON.stringify(true));
+      const stored = window.localStorage.getItem("test-app.sd-theme");
+      expect(stored).toBe(JSON.stringify("ide-dark"));
     });
   });
 
@@ -332,7 +332,7 @@ describe("Feature 4.3: 테마 write 방지", () => {
 
   describe("Rule: 테마 effect는 값 변경 시에만 localStorage에 write한다", () => {
     it("초기 실행 시 동일 값이면 localStorage에 다시 쓰지 않는다", () => {
-      window.localStorage.setItem("test-app.sd-theme-blueprint", JSON.stringify(true));
+      window.localStorage.setItem("test-app.sd-theme", JSON.stringify("ide-dark"));
 
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
@@ -344,7 +344,7 @@ describe("Feature 4.3: 테마 write 방지", () => {
       TestBed.inject(ApplicationRef);
       TestBed.flushEffects();
 
-      const themeSetCalls = setSpy.mock.calls.filter((call) => call[0] === "sd-theme-blueprint");
+      const themeSetCalls = setSpy.mock.calls.filter((call) => call[0] === "sd-theme");
       expect(themeSetCalls).toHaveLength(0);
 
       setSpy.mockRestore();

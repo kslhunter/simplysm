@@ -67,21 +67,70 @@ describe("sd-theme-selector unit", () => {
     });
   });
 
-  describe("블루프린트", () => {
-    it("blueprint가 이미 true이면 sd-switch가 ON 상태이다", () => {
+  describe("테마 선택", () => {
+    it("theme=blueprint이면 블루프린트 버튼이 primary(활성)이다", () => {
       setupTestBed();
       const fixture = TestBed.createComponent(SdThemeSelectorTest);
       fixture.detectChanges();
       TestBed.flushEffects();
 
       const sdTheme = TestBed.inject(SdThemeProvider);
-      sdTheme.blueprint.set(true);
+      sdTheme.theme.set("blueprint");
       fixture.detectChanges();
       TestBed.flushEffects();
 
       const popup = openPopup(fixture);
-      const switchEl = popup.querySelector("sd-switch") as HTMLElement;
-      expect(switchEl.getAttribute("data-sd-on")).toBe("true");
+      const buttons = popup.querySelectorAll("sd-button");
+      // [0]글자-, [1]글자+, [2]라이트, [3]블루프린트, [4]다크
+      const blueprintBtn = buttons[3];
+      expect(blueprintBtn.getAttribute("data-sd-theme")).toBe("primary");
+    });
+
+    it("내장 테마 목록이 버튼으로 렌더된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      const popup = openPopup(fixture);
+      for (const def of sdTheme.themes) {
+        expect(popup.textContent).toContain(def.label);
+      }
+    });
+  });
+
+  describe("밀도 스위치", () => {
+    it("density=compact이면 스위치가 on이다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      sdTheme.density.set("compact");
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const popup = openPopup(fixture);
+      const sw = popup.querySelector("sd-switch") as HTMLElement;
+      expect(sw.getAttribute("data-sd-on")).toBe("true");
+    });
+
+    it("스위치를 클릭하면 density가 compact로 토글된다", () => {
+      setupTestBed();
+      const fixture = TestBed.createComponent(SdThemeSelectorTest);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const sdTheme = TestBed.inject(SdThemeProvider);
+      const popup = openPopup(fixture);
+      const sw = popup.querySelector("sd-switch") as HTMLElement;
+      sw.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(sdTheme.density()).toBe("compact");
     });
   });
 });

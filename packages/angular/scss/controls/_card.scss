@@ -1,19 +1,23 @@
-@use "../commons/mixins";
-
 .card {
   display: block;
-  background: var(--control-color);
-  border-radius: var(--border-radius-default);
-  transition: box-shadow var(--animation-duration) ease-in-out;
-  @include mixins.elevation(2);
-  animation: sd-card var(--animation-duration) ease-out;
+  background-color: var(--sd-bg-elevated);
+  // 장식 토큰 소비(방침 1) — 기본 transparent/elevation 등가, 테마가 값 맵으로 덮는다
+  border: 1px solid var(--sd-card-bd);
+  border-radius: var(--sd-radius-default);
+  transition: box-shadow var(--sd-animation-duration) ease-in-out;
+  box-shadow: var(--sd-card-shadow);
+  animation: sd-card var(--sd-animation-duration) ease-out;
   opacity: 0;
   transform: translateY(-1em);
   animation-fill-mode: forwards;
 
   &:hover,
   &:focus-within {
-    @include mixins.elevation(4);
+    box-shadow: var(--sd-card-shadow-hover);
+  }
+
+  &:focus-within {
+    border-top-color: var(--sd-card-bd-active);
   }
 }
 

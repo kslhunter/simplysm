@@ -25,13 +25,14 @@ import { SwUpdate } from "@angular/service-worker";
 import { provideNgIconsConfig } from "@ng-icons/core";
 import { SdBusyProvider } from "./busy/sd-busy.provider";
 import { SdAngularConfigProvider } from "./config/sd-angular-config.provider";
-import { SdThemeProvider } from "../features/theme/sd-theme-provider";
+import { SD_THEMES, SdThemeProvider } from "../features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "./config/sd-local-storage.provider";
 import { SdGlobalErrorHandlerPlugin } from "./error-handler/sd-global-error-handler.plugin";
 import { SdOptionEventPlugin } from "./events/sd-option-event.plugin";
 import { createLogger } from "@simplysm/core-common";
 
 const logger = createLogger("angular:sw-update");
+const themeLogger = createLogger("angular:theme");
 
 export function provideSdAngular(opt: { clientName: string }): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -42,9 +43,10 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
         disableImageLazyLoadWarning: true,
       },
     },
+    // size 는 지정하지 않음 — 인라인 스타일로 박혀 styles.scss 의
+    // line-height 연동 calc(--ng-icon__size)를 덮어버림.
     provideNgIconsConfig({
       strokeWidth: 1.5,
-      size: "1.33em",
     }),
     provideEnvironmentInitializer(() => {
       // SSR(프리렌더) 가드: 테마 저장·복원은 브라우저 전용
@@ -53,17 +55,39 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       const sdTheme = inject(SdThemeProvider);
       const sdLocalStorage = inject(SdLocalStorageProvider);
 
-      const savedBlueprint = sdLocalStorage.get("sd-theme-blueprint");
-      if (savedBlueprint != null) {
-        sdTheme.blueprint.set(savedBlueprint);
+      const savedTheme = sdLocalStorage.get("sd-theme");
+      if (savedTheme != null) {
+        const matched = SD_THEMES.find((def) => def.value === savedTheme);
+        if (matched != null) {
+          sdTheme.theme.set(matched.value);
+        } else {
+          // 저장된 테마가 내장 목록에 없음(구버전 제거 등) — 기본 테마 유지 + 사용자 인지용 경고
+          themeLogger.warn(
+            `저장된 테마 '${String(savedTheme)}' 가 내장 테마 목록에 없어 기본 테마로 표시합니다.`,
+          );
+        }
       }
 
-      let prevBlueprint = sdTheme.blueprint();
+      let prevTheme = sdTheme.theme();
       effect(() => {
-        const blueprint = sdTheme.blueprint();
-        if (blueprint !== prevBlueprint) {
-          sdLocalStorage.set("sd-theme-blueprint", blueprint);
-          prevBlueprint = blueprint;
+        const theme = sdTheme.theme();
+        if (theme !== prevTheme) {
+          sdLocalStorage.set("sd-theme", theme);
+          prevTheme = theme;
+        }
+      });
+
+      const savedDensity = sdLocalStorage.get("sd-theme-density");
+      if (savedDensity === "compact" || savedDensity === "normal") {
+        sdTheme.density.set(savedDensity);
+      }
+
+      let prevDensity = sdTheme.density();
+      effect(() => {
+        const density = sdTheme.density();
+        if (density !== prevDensity) {
+          sdLocalStorage.set("sd-theme-density", density);
+          prevDensity = density;
         }
       });
 

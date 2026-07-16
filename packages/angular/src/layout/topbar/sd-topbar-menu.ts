@@ -39,13 +39,13 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
     NgIcon,
   ],
   host: {
-    "class": "flex-row gap-sm",
+    class: "flex-row gap-sm",
   },
   styles: [
     /* language=SCSS */ `
       sd-topbar-menu {
         sd-list sd-list {
-          background: var(--trans-lightest);
+          background-color: var(--sd-bg-gray-subtle);
         }
       }
     `,
@@ -88,7 +88,7 @@ import { tablerCaretDown } from "@ng-icons/tabler-icons";
       @for (menu of currMenus; track menu.codeChain.join(".")) {
         <sd-list-item
           [style.padding-left.em]="depth > 0 ? (depth + 1) * 0.5 : undefined"
-          [style.padding-block]="depth === 0 ? 'var(--gap-default)' : undefined"
+          [style.padding-block]="depth === 0 ? 'var(--sd-gap-default)' : undefined"
           [sdRouterLink]="getMenuRouterLinkOption(menu)"
           (click)="onMenuClick(menu, dropdownIndex)"
           [selected]="getIsMenuSelected(menu)"

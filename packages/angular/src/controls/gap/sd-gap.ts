@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 
 @Component({
   selector: "sd-gap",
@@ -12,13 +18,13 @@ import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation 
       @use "../../../scss/commons/variables";
 
       sd-gap {
-        @each $key, $val in map.get(variables.$vars, gap) {
+        @each $key, $val in map.get(variables.$sd, gap) {
           &[data-sd-height="#{$key}"] {
-            height: var(--gap-#{$key});
+            height: var(--sd-gap-#{$key});
           }
 
           &[data-sd-width="#{$key}"] {
-            width: var(--gap-#{$key});
+            width: var(--sd-gap-#{$key});
           }
         }
       }
@@ -44,11 +50,7 @@ export class SdGap {
   _displayStyle = computed(() => {
     if (this.widthPx() === 0 || this.heightPx() === 0 || this.widthEm() === 0) {
       return "none";
-    } else if (
-      this.width() != null ||
-      this.widthPx() != null ||
-      this.widthEm() != null
-    ) {
+    } else if (this.width() != null || this.widthPx() != null || this.widthEm() != null) {
       return "inline-block";
     } else if (this.height() != null || this.heightPx() != null) {
       return "block";

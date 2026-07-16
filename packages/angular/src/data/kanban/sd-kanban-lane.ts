@@ -16,10 +16,7 @@ import {
 } from "@angular/core";
 import { SdBusyContainer } from "../../core/busy/sd-busy-container";
 import { SdCheckbox } from "../../controls/checkbox/sd-checkbox";
-import {
-  SdKanbanBoard,
-  type SdKanbanDropTarget,
-} from "./sd-kanban-board";
+import { SdKanbanBoard, type SdKanbanDropTarget } from "./sd-kanban-board";
 import { SdKanban } from "./sd-kanban";
 import { SdAnchor } from "../../controls/button/sd-anchor";
 import { NgIcon } from "@ng-icons/core";
@@ -89,20 +86,20 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
       sd-kanban-lane {
         > .flex-fill {
           > sd-busy-container {
-            padding: var(--gap-xl) var(--gap-lg);
-            background: var(--theme-gray-lightest);
-            border-radius: var(--border-radius-default);
+            padding: var(--sd-gap-xl) var(--sd-gap-lg);
+            background-color: var(--sd-bg-gray-subtle);
+            border-radius: var(--sd-radius-default);
             height: 100%;
 
             > ._drop-position {
               pointer-events: none;
-              border-radius: var(--border-radius-default);
-              background: var(--trans-light);
+              border-radius: var(--sd-radius-default);
+              background-color: var(--sd-bg-state-active);
 
               height: 0;
               margin-bottom: 0;
               visibility: hidden;
-              transition: var(--animation-duration) linear;
+              transition: var(--sd-animation-duration) linear;
               transition-property: height, margin-bottom, visibility;
             }
           }
@@ -110,7 +107,7 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
 
         &[data-sd-drag-over="true"] {
           > .flex-fill > sd-busy-container > ._drop-position {
-            margin-bottom: var(--gap-lg);
+            margin-bottom: var(--sd-gap-lg);
             visibility: visible;
           }
         }
@@ -119,9 +116,7 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
   ],
 })
 export class SdKanbanLane<L, T> implements SdKanbanDropTarget<L, T> {
-  private readonly _boardControl = inject<SdKanbanBoard<L, T>>(
-    forwardRef(() => SdKanbanBoard),
-  );
+  private readonly _boardControl = inject<SdKanbanBoard<L, T>>(forwardRef(() => SdKanbanBoard));
 
   busy = input(false, { transform: booleanAttribute });
 

@@ -1,8 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
 import { setupRipple } from "../../core/ripple/setupRipple";
 
 @Component({
@@ -18,15 +14,15 @@ import { setupRipple } from "../../core/ripple/setupRipple";
     /* language=SCSS */ `
       sd-select-button {
         display: block;
-        background: var(--control-color);
+        background-color: var(--sd-bg-control);
         font-weight: bold;
         cursor: pointer;
-        color: var(--theme-primary-default);
-        transition: background var(--animation-duration) linear;
+        color: var(--sd-tx-primary);
+        transition: background var(--sd-animation-duration) linear;
 
         &:hover {
-          color: var(--theme-primary-darker);
-          background: var(--theme-gray-lightest);
+          color: var(--sd-tx-primary-hover);
+          background-color: var(--sd-bg-state-hover);
         }
       }
     `,

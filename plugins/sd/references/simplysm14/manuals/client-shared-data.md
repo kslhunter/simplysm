@@ -224,7 +224,7 @@ await this._appSharedData.emitAsync("역할", changedIds);
   </sd-shared-data-select-list>
 
   @let _selectedRole = selectedRole(); @if (_selectedRole == null) {
-  <div class="flex-fill tx-theme-gray-default p-xxl" style="font-size: 48px; line-height: 1.5em">
+  <div class="flex-fill tx-gray p-xxl" style="font-size: 48px; line-height: 1.5em">
     <ng-icon [svg]="tablerArrowLeft" />
     역할을 선택하세요.
   </div>

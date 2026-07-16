@@ -16,38 +16,37 @@ import {
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
 
       sd-anchor {
         display: inline-block;
         cursor: pointer;
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
-            color: var(--theme-#{$key}-default);
+            color: var(--sd-tx-#{$key});
 
             &:hover {
-              color: var(--theme-#{$key}-darker);
+              color: var(--sd-tx-#{$key}-hover);
               text-decoration: underline;
             }
 
             &:active {
-              color: var(--theme-#{$key}-default);
+              color: var(--sd-tx-#{$key});
             }
 
             @media all and (pointer: coarse) {
               &:hover {
-                color: var(--theme-#{$key}-default);
+                color: var(--sd-tx-#{$key});
                 text-decoration: none;
               }
             }
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009 — opacity 방식 폐기)
         &[data-sd-disabled="true"] {
-          opacity: 0.3;
+          color: var(--sd-tx-disabled) !important;
           pointer-events: none;
         }
       }

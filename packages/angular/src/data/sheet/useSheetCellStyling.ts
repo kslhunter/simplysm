@@ -66,7 +66,11 @@ export function useSheetCellStyling<T>(options: {
     return getFixedLeftStyle(colIdx);
   }
 
-  function getCellStyleWithIndent(item: T, colDef: SdSheetColumnDef, colIdx: number): string | null {
+  function getCellStyleWithIndent(
+    item: T,
+    colDef: SdSheetColumnDef,
+    colIdx: number,
+  ): string | null {
     const parts: string[] = [];
     const cellStyle = getCellStyle(item, colDef);
     if (cellStyle != null) {
@@ -75,13 +79,18 @@ export function useSheetCellStyling<T>(options: {
     if (colIdx === 0 && options.getChildrenFn() != null) {
       const itemDef = options.expandingDef(item);
       if (itemDef.depth > 0) {
-        parts.push(`padding-left: calc(var(--gap-default) + ${itemDef.depth}em)`);
+        parts.push(`padding-left: calc(var(--sd-gap-default) + ${itemDef.depth}em)`);
       }
     }
     return parts.length > 0 ? parts.join("; ") : null;
   }
 
-  function getDataCellClass(item: T, colDef: SdSheetColumnDef, r: number, c: number): string | null {
+  function getDataCellClass(
+    item: T,
+    colDef: SdSheetColumnDef,
+    r: number,
+    c: number,
+  ): string | null {
     const parts: string[] = [];
     const classFn = options.getItemCellClassFn();
     const customClass = classFn != null ? classFn(item, colDef.key) : undefined;

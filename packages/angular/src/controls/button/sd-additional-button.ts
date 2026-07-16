@@ -25,12 +25,12 @@ import {
       @use "../../../scss/commons/mixins";
 
       sd-additional-button {
-        border: 1px solid var(--trans-light);
-        border-radius: var(--border-radius-default);
+        border: 1px solid var(--sd-bd-soft);
+        border-radius: var(--sd-radius-default);
         overflow: hidden;
 
         > ._content {
-          padding: var(--gap-sm) var(--gap-default);
+          padding: var(--sd-gap-sm) var(--sd-gap-default);
         }
 
         > ._button {
@@ -39,12 +39,12 @@ import {
           @include mixins.flex-direction(row);
 
           > sd-anchor {
-            padding: var(--gap-sm) !important;
+            padding: var(--sd-gap-sm) !important;
           }
 
           > sd-button > button {
-            border-left: 1px solid var(--trans-lighter) !important;
-            padding: var(--gap-sm) !important;
+            border-left: 1px solid var(--sd-bd-hairline) !important;
+            padding: var(--sd-gap-sm) !important;
             height: 100%;
           }
         }
@@ -56,32 +56,32 @@ import {
 
         &[data-sd-size="sm"] {
           > ._content {
-            padding: var(--gap-xs) var(--gap-default);
+            padding: var(--sd-gap-xs) var(--sd-gap-default);
           }
 
           > ._button {
             > sd-anchor {
-              padding: var(--gap-xs) var(--gap-sm) !important;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm) !important;
             }
 
             > sd-button > button {
-              padding: var(--gap-xs) var(--gap-sm) !important;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm) !important;
             }
           }
         }
 
         &[data-sd-size="lg"] {
           > ._content {
-            padding: var(--gap-default) var(--gap-xl);
+            padding: var(--sd-gap-default) var(--sd-gap-xl);
           }
 
           > ._button {
             > sd-anchor {
-              padding: var(--gap-default) !important;
+              padding: var(--sd-gap-default) !important;
             }
 
             > sd-button > button {
-              padding: var(--gap-default) !important;
+              padding: var(--sd-gap-default) !important;
             }
           }
         }

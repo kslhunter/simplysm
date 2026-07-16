@@ -2,7 +2,7 @@
 
 .form-box {
   display: flex;
-  @include mixins.flex-direction(column, var(--gap-default));
+  @include mixins.flex-direction(column, var(--sd-gap-default));
 
   > div,
   > .form-box-item {
@@ -10,17 +10,17 @@
 
     > label {
       display: block;
-      margin-bottom: var(--gap-xs);
+      margin-bottom: var(--sd-gap-xs);
       white-space: nowrap;
       font-weight: bold;
       border: 1px solid transparent;
     }
 
     @media all and (pointer: coarse) {
-      margin-bottom: var(--gap-default);
+      margin-bottom: var(--sd-gap-default);
 
       > label {
-        margin-bottom: var(--gap-xxs);
+        margin-bottom: var(--sd-gap-xxs);
       }
     }
   }
@@ -29,7 +29,7 @@
 .form-box-inline {
   display: inline-flex;
   flex-wrap: wrap;
-  @include mixins.flex-direction(row, var(--gap-sm));
+  @include mixins.flex-direction(row, var(--sd-gap-sm));
 
   > div,
   > .form-box-item {
@@ -42,8 +42,8 @@
       white-space: nowrap;
       font-weight: bold;
       border: 1px solid transparent;
-      padding-left: var(--gap-sm);
-      padding-right: var(--gap-sm);
+      padding-left: var(--sd-gap-sm);
+      padding-right: var(--sd-gap-sm);
     }
   }
 }

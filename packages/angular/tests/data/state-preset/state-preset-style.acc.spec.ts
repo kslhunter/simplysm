@@ -30,7 +30,7 @@ describe("Feature 2.3: sd-state-preset 스타일 복원", () => {
   });
 
   describe("Rule: Star 아이콘은 warning 테마 색상이어야 한다", () => {
-    it("star ng-icon 요소에 tx-theme-warning-default 클래스가 있다", () => {
+    it("star ng-icon 요소에 tx-warning 클래스가 있다", () => {
       const fixture = TestBed.createComponent(SdStatePresetTestHost);
       fixture.detectChanges();
 
@@ -38,12 +38,12 @@ describe("Feature 2.3: sd-state-preset 스타일 복원", () => {
         "sd-state-preset sd-anchor ng-icon",
       ) as HTMLElement;
       expect(starIcon).not.toBeNull();
-      expect(starIcon.classList.contains("tx-theme-warning-default")).toBe(true);
+      expect(starIcon.classList.contains("tx-warning")).toBe(true);
     });
   });
 
-  describe("Rule: 프리셋 이름 앵커는 tx-trans-default 클래스를 가져야 한다", () => {
-    it("프리셋이 존재할 때 이름 앵커에 tx-trans-default 클래스가 있다", async () => {
+  describe("Rule: 프리셋 이름 앵커는 tx-default 클래스를 가져야 한다", () => {
+    it("프리셋이 존재할 때 이름 앵커에 tx-default 클래스가 있다", async () => {
       const fixture = TestBed.createComponent(SdStatePresetTestHost);
       fixture.detectChanges();
       await fixture.whenStable();
@@ -57,7 +57,7 @@ describe("Feature 2.3: sd-state-preset 스타일 복원", () => {
         "sd-state-preset ._preset-name",
       ) as HTMLElement;
       expect(nameAnchor).not.toBeNull();
-      expect(nameAnchor.classList.contains("tx-trans-default")).toBe(true);
+      expect(nameAnchor.classList.contains("tx-default")).toBe(true);
     });
   });
 

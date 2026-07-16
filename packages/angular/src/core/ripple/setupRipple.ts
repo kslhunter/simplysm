@@ -35,14 +35,14 @@ export function setupRipple(enableFn?: () => boolean): void {
         position: "absolute",
         pointerEvents: "none",
         borderRadius: "100%",
-        background: "var(--trans-light)",
+        backgroundColor: "var(--sd-bg-state-active)",
 
         width: size * 2 + "px",
         height: size * 2 + "px",
         top: y - size + "px",
         left: x - size + "px",
 
-        transition: "calc(2 * var(--animation-duration)) linear",
+        transition: "calc(2 * var(--sd-animation-duration)) linear",
         transitionProperty: "transform, opacity",
         transform: "scale(0.1)",
       });

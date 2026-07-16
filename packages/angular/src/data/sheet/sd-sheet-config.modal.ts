@@ -92,7 +92,9 @@ interface ConfigItem {
                     <ng-icon [svg]="tablerChevronUp" />
                   </sd-anchor>
                   <sd-anchor
-                    [disabled]="index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)"
+                    [disabled]="
+                      index === items().length - 1 || (item.fixed && !items()[index + 1].fixed)
+                    "
                     (click)="onMoveDown(item)"
                   >
                     <ng-icon [svg]="tablerChevronDown" />
@@ -147,7 +149,7 @@ interface ConfigItem {
           </sd-sheet>
         </div>
 
-        <div class="p-sm-default flex-row gap-sm bdt bdt-theme-gray-lightest">
+        <div class="p-sm-default flex-row gap-sm bdt bdt-hairline">
           <div class="flex-fill align-start">
             <sd-button
               [size]="'sm'"
@@ -167,11 +169,7 @@ interface ConfigItem {
           >
             OK
           </sd-button>
-          <sd-button
-            [size]="'sm'"
-            [buttonStyle]="'min-width: 60px;'"
-            (click)="onCancelClick()"
-          >
+          <sd-button [size]="'sm'" [buttonStyle]="'min-width: 60px;'" (click)="onCancelClick()">
             Cancel
           </sd-button>
         </div>

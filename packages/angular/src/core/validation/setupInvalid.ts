@@ -46,12 +46,12 @@ function createIndicatorEl(renderer: Renderer2, hostEl: HTMLElement): HTMLDivEle
     display: "none",
     position: "absolute",
     zIndex: "1",
-    background: "var(--theme-danger-default)",
+    backgroundColor: "var(--sd-bg-danger-solid)",
 
-    top: "var(--gap-xs)",
-    left: "var(--gap-xs)",
-    width: "var(--gap-sm)",
-    height: "var(--gap-sm)",
+    top: "var(--sd-gap-xs)",
+    left: "var(--sd-gap-xs)",
+    width: "var(--sd-gap-sm)",
+    height: "var(--sd-gap-sm)",
     borderRadius: "100%",
 
     userSelect: "none",

@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { ApplicationRef } from "@angular/core";
 import { SdThemeProvider } from "../../../src/features/theme/sd-theme-provider";
 
-describe("블루프린트 테마: SdThemeProvider", () => {
+describe("테마 전환: SdThemeProvider", () => {
   let provider: SdThemeProvider;
 
   beforeEach(() => {
@@ -12,19 +12,72 @@ describe("블루프린트 테마: SdThemeProvider", () => {
     document.body.className = "";
   });
 
-  it("blueprint signal의 기본값이 false이다", () => {
-    expect(provider.blueprint()).toBe(false);
+  it("theme signal의 기본값이 light이다", () => {
+    expect(provider.theme()).toBe("light");
   });
 
-  it("blueprint true일 때 body에 sd-theme-blueprint 클래스가 설정된다", () => {
-    provider.blueprint.set(true);
+  it("themes 에 내장 테마 목록(light·blueprint·ide-dark)이 정의된다", () => {
+    expect(provider.themes.map((def) => def.value)).toEqual(["light", "blueprint", "ide-dark"]);
+  });
+
+  it("theme=blueprint일 때 body에 sd-theme-blueprint 클래스가 설정된다", () => {
+    provider.theme.set("blueprint");
     TestBed.inject(ApplicationRef).tick();
     expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);
+    expect(document.body.classList.contains("sd-theme-ide-dark")).toBe(false);
   });
 
-  it("blueprint false일 때 body에 sd-theme-blueprint 클래스가 없다", () => {
+  it("theme=ide-dark일 때 body에 sd-theme-ide-dark 클래스가 설정된다", () => {
+    provider.theme.set("ide-dark");
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-theme-ide-dark")).toBe(true);
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
+  });
+
+  it("테마 전환 시 이전 테마 클래스가 제거된다", () => {
+    provider.theme.set("blueprint");
+    TestBed.inject(ApplicationRef).tick();
+    provider.theme.set("ide-dark");
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-theme-ide-dark")).toBe(true);
+    expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
+  });
+
+  it("theme=light일 때 body에 blueprint·ide-dark 클래스가 없다", () => {
+    provider.theme.set("blueprint");
+    TestBed.inject(ApplicationRef).tick();
+    provider.theme.set("light");
     TestBed.inject(ApplicationRef).tick();
     expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
+    expect(document.body.classList.contains("sd-theme-ide-dark")).toBe(false);
+  });
+});
+
+describe("밀도: SdThemeProvider", () => {
+  let provider: SdThemeProvider;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    provider = TestBed.inject(SdThemeProvider);
+    document.body.className = "";
+  });
+
+  it("density signal의 기본값이 normal이다", () => {
+    expect(provider.density()).toBe("normal");
+  });
+
+  it("density=compact일 때 body에 sd-density-compact 클래스가 설정된다", () => {
+    provider.density.set("compact");
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-density-compact")).toBe(true);
+  });
+
+  it("density=normal로 되돌리면 sd-density-compact 클래스가 제거된다", () => {
+    provider.density.set("compact");
+    TestBed.inject(ApplicationRef).tick();
+    provider.density.set("normal");
+    TestBed.inject(ApplicationRef).tick();
+    expect(document.body.classList.contains("sd-density-compact")).toBe(false);
   });
 });
 
@@ -79,7 +132,7 @@ describe("FIX-1 Slice 4: SdThemeProvider classList.toggle", () => {
   it("테마 전환 시 기존 body 클래스가 유지된다", () => {
     document.body.classList.add("my-app");
 
-    provider.blueprint.set(true);
+    provider.theme.set("blueprint");
     TestBed.inject(ApplicationRef).tick();
 
     expect(document.body.classList.contains("sd-theme-blueprint")).toBe(true);

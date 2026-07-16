@@ -1,0 +1,215 @@
+// IDE 다크 테마 — VSCode "Dark 2026" 을 --sd-* 역할 토큰 값 맵으로만 구성(셀렉터 오버라이드 0).
+// 레퍼런스: microsoft/vscode extensions/theme-defaults/themes/2026-dark.json (v1.113 기본 테마)
+// 색 규칙(CONSTRAINT-007): --sd-color-* 팔레트 + 흰/검 알파(rgba white/black)만.
+// 값 이전 기준(FIND-015): 구 스케일 맵·ide-dark-surfaces 확정 상태를 라이트 기본값 등가 슬롯으로 역매핑.
+// 치수(gap·line-height·sheet pv/ph·topbar height)는 밀도 그룹 소유(DEC-007) — 이 맵엔 없음.
+$dark: (
+  bg: (
+    // 계층: canvas zinc-950 → control zinc-900 → elevated/overlay zinc-800
+    canvas: var(--sd-color-zinc-950),
+    control: var(--sd-color-zinc-900),
+    elevated: var(--sd-color-zinc-800),
+    overlay: var(--sd-color-zinc-800),
+    sheet: var(--sd-color-zinc-950),
+    inverse: white,
+    // 필드 배경 — input.background 근사
+    field: var(--sd-color-zinc-900),
+    track: var(--sd-color-zinc-700),
+    // 시맨틱 solid = 깊은 스텝(600) + hover 한 단계 밝게(500) — VSCode 방식(다크에서 500 배경은 과함)
+    "gray": (
+        solid: var(--sd-color-zinc-400),
+        solid-hover: var(--sd-color-zinc-300),
+        subtle: var(--sd-color-zinc-800),
+        subtle-hover: var(--sd-color-zinc-700),
+      ),
+    blue-gray: (
+      solid: var(--sd-color-slate-400),
+      solid-hover: var(--sd-color-slate-300),
+      subtle: var(--sd-color-slate-800),
+      subtle-hover: var(--sd-color-slate-700),
+    ),
+    primary: (
+      solid: var(--sd-color-sky-600),
+      solid-hover: var(--sd-color-sky-500),
+      subtle: var(--sd-color-sky-950),
+      subtle-hover: var(--sd-color-sky-900),
+    ),
+    secondary: (
+      solid: var(--sd-color-sky-600),
+      solid-hover: var(--sd-color-sky-500),
+      subtle: var(--sd-color-zinc-900),
+      subtle-hover: var(--sd-color-sky-900),
+    ),
+    info: (
+      solid: var(--sd-color-cyan-600),
+      solid-hover: var(--sd-color-cyan-500),
+      subtle: var(--sd-color-cyan-950),
+      subtle-hover: var(--sd-color-cyan-900),
+    ),
+    success: (
+      solid: var(--sd-color-green-600),
+      solid-hover: var(--sd-color-green-500),
+      subtle: var(--sd-color-green-950),
+      subtle-hover: var(--sd-color-green-900),
+    ),
+    warning: (
+      solid: var(--sd-color-amber-600),
+      solid-hover: var(--sd-color-amber-500),
+      subtle: var(--sd-color-amber-950),
+      subtle-hover: var(--sd-color-amber-900),
+    ),
+    // errorForeground #f48771 근사 = red-400 (solid 는 400 기준·hover 500)
+    danger: (
+        solid: var(--sd-color-red-400),
+        solid-hover: var(--sd-color-red-500),
+        subtle: var(--sd-color-red-950),
+        subtle-hover: var(--sd-color-red-900),
+      ),
+    // 오버레이·hover: list.hoverBackground #FFFFFF14 근사 — 흰 알파
+    state: (
+        hover: rgba(255, 255, 255, 0.05),
+        active: rgba(255, 255, 255, 0.08),
+        selected: rgba(255, 255, 255, 0.07),
+      ),
+    disabled: var(--sd-color-zinc-800),
+    busy-overlay: rgba(0, 0, 0, 0.6),
+    busy-indicator: rgba(255, 255, 255, 0.13),
+  ),
+  // 텍스트: 흰색 알파 스케일 (Dark 2026 근사 — #ededed/#bfbfbf/#8c8c8c/#555)
+  tx: (
+      strong: rgba(255, 255, 255, 0.93),
+      default: rgba(255, 255, 255, 0.75),
+      muted: rgba(255, 255, 255, 0.55),
+      faint: rgba(255, 255, 255, 0.33),
+      on-inverse: white,
+      on-inverse-muted: rgba(255, 255, 255, 0.75),
+      on-inverse-disabled: rgba(255, 255, 255, 0.55),
+      disabled: rgba(255, 255, 255, 0.33),
+      // 링크·단독 텍스트 = 깊은 톤(600), hover 시 500 (쨍함 억제)
+      "gray": var(--sd-color-zinc-400),
+      gray-hover: var(--sd-color-zinc-300),
+      gray-subtle: var(--sd-color-zinc-200),
+      blue-gray: var(--sd-color-slate-400),
+      blue-gray-hover: var(--sd-color-slate-300),
+      blue-gray-subtle: var(--sd-color-slate-200),
+      primary: var(--sd-color-sky-600),
+      primary-hover: var(--sd-color-sky-500),
+      primary-subtle: var(--sd-color-sky-400),
+      secondary: var(--sd-color-sky-600),
+      secondary-hover: var(--sd-color-sky-500),
+      secondary-subtle: var(--sd-color-sky-400),
+      info: var(--sd-color-cyan-600),
+      info-hover: var(--sd-color-cyan-500),
+      info-subtle: var(--sd-color-cyan-300),
+      success: var(--sd-color-green-600),
+      success-hover: var(--sd-color-green-500),
+      success-subtle: var(--sd-color-green-300),
+      warning: var(--sd-color-amber-600),
+      warning-hover: var(--sd-color-amber-500),
+      warning-subtle: var(--sd-color-amber-300),
+      danger: var(--sd-color-red-400),
+      danger-hover: var(--sd-color-red-500),
+      danger-subtle: var(--sd-color-red-300),
+    ),
+  // 보더: 흰색 알파 헤어라인 (widget #2A2B2C·input #333536 근사)
+  bd: (
+      hairline: rgba(255, 255, 255, 0.05),
+      soft: rgba(255, 255, 255, 0.08),
+      default: rgba(255, 255, 255, 0.1),
+      strong: rgba(255, 255, 255, 0.12),
+      emphasis: rgba(255, 255, 255, 0.16),
+      field: rgba(255, 255, 255, 0.1),
+      disabled: rgba(255, 255, 255, 0.08),
+      "gray": (
+        solid: var(--sd-color-zinc-400),
+        solid-hover: var(--sd-color-zinc-300),
+        subtle: var(--sd-color-zinc-600),
+      ),
+      blue-gray: (
+        solid: var(--sd-color-slate-400),
+        solid-hover: var(--sd-color-slate-300),
+        subtle: var(--sd-color-slate-600),
+      ),
+      primary: (
+        solid: var(--sd-color-sky-600),
+        solid-hover: var(--sd-color-sky-500),
+        subtle: var(--sd-color-sky-500),
+      ),
+      secondary: (
+        solid: var(--sd-color-sky-600),
+        solid-hover: var(--sd-color-sky-500),
+        subtle: var(--sd-color-sky-500),
+      ),
+      info: (
+        solid: var(--sd-color-cyan-600),
+        solid-hover: var(--sd-color-cyan-500),
+        subtle: var(--sd-color-cyan-600),
+      ),
+      success: (
+        solid: var(--sd-color-green-600),
+        solid-hover: var(--sd-color-green-500),
+        subtle: var(--sd-color-green-600),
+      ),
+      warning: (
+        solid: var(--sd-color-amber-600),
+        solid-hover: var(--sd-color-amber-500),
+        subtle: var(--sd-color-amber-600),
+      ),
+      danger: (
+        solid: var(--sd-color-red-400),
+        solid-hover: var(--sd-color-red-500),
+        subtle: var(--sd-color-red-400),
+      ),
+    ),
+  focus-ring: (
+    color: var(--sd-color-sky-600),
+  ),
+  // Dark 2026 scrollbarSlider.* 근사 (DEC-011)
+  scrollbar: (
+      thumb: rgba(255, 255, 255, 0.1),
+      thumb-hover: rgba(255, 255, 255, 0.16),
+      track: rgba(255, 255, 255, 0.03),
+    ),
+  // 그림자 전면 제거 — VSCode 는 경계를 보더로 세움
+  shadow: (
+      size: 0,
+      blur-mult: 0,
+    ),
+  // 다크는 그림자가 약해 카드 경계를 헤어라인으로, 포커스 시 상단 액센트 라인
+  // (tab.activeBorderTop #3994BC 근사 = sky-500)
+  card: (
+      bd: rgba(255, 255, 255, 0.08),
+      bd-active: var(--sd-color-sky-500),
+      shadow: none,
+      shadow-hover: none,
+    ),
+  // 오버레이 elevated 경계 — editorWidget/menu 배경 + widget.border #2A2B2C 근사
+  modal: (
+      bd: rgba(255, 255, 255, 0.22),
+      header-bg: var(--sd-color-zinc-800),
+      header-tx: rgba(255, 255, 255, 0.75),
+      header-tx-muted: var(--sd-color-zinc-400),
+    ),
+  dropdown: (
+    bd: rgba(255, 255, 255, 0.22),
+  ),
+  // 권한표 그룹 행 — theme 원색 solid 를 무채 어두운 행으로
+  permission-group: (
+      bg: var(--sd-color-zinc-800),
+      tx: rgba(255, 255, 255, 0.75),
+    ),
+  // VSCode 수준 소형 라운드 — 버튼·인풋 2px, 위젯·메뉴 4px 급 (12px 기준)
+  radius: (
+      xs: 0.0833rem,
+      sm: 0.0833rem,
+      default: 0.1667rem,
+      lg: 0.25rem,
+      xl: 0.3333rem,
+      xxl: 0.5rem,
+    ),
+  // 폰트는 이 테마 컨셉이라 여기서만 Sarasa Fixed K 로 덮는다(라이트·블루프린트 불변)
+  font-family: '"Sarasa Fixed K", ui-monospace, monospace',
+  font-family-field: '"Sarasa Fixed K", ui-monospace, monospace',
+  font-family-monospace: '"Sarasa Fixed K", ui-monospace, monospace',
+  font-weight: 300,
+);

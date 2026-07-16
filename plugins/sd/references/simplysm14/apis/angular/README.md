@@ -19,7 +19,7 @@ Angular 22 기반 클라이언트 UI 라이브러리. 앱 초기화, UI 컨트�
 - **CRUD 기본** — 목록·상세 화면 기본 구조, 행 선택/삭제/복구/엑셀. 사용법: [client-crud.md](../../manuals/client-crud.md). 자세히: [crud.md](./crud.md)
 - **인쇄·바쁨** — 화면 인쇄/PDF, 로딩 오버레이. 사용법: [client-print.md](../../manuals/client-print.md)
 - **선택·정렬·확장 관리** — 행 선택 매니저, 정렬, 트리 확장.
-- **테마·주소·에디터·시각화** — 테마 선택(라이트/다크/색상), 주소 검색, 리치 에디터, 시각 컴포넌트(라벨/진행도/달력/바코드/차트).
+- **테마·주소·에디터·시각화** — 테마 선택(라이트/블루프린트/IDE 다크)·밀도·글자크기, 주소 검색, 리치 에디터, 시각 컴포넌트(라벨/진행도/달력/바코드/차트).
 
 ## 앱 부트스트랩
 
@@ -30,7 +30,7 @@ function provideSdAngular(opt: { clientName: string }): EnvironmentProviders;
 ```
 
 - `opt.clientName: string` — `SdAngularConfigProvider.clientName` 에 저장되는 클라이언트 이름. `SdLocalStorageProvider` 키 prefix(`${clientName}.${key}`)와 service-client 생성에 쓰임.
-- 등록 항목 — `IMAGE_CONFIG`(이미지 size/lazy 경고 비활성), `NgIcons` 기본(`strokeWidth:1.5`, `size:"1.33em"`), theme localStorage 복원·저장(`sd-theme-dark`/`-blueprint`/`-font-size`), browser `error`/`unhandledrejection` → `ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(EVENT_MANAGER_PLUGINS), `SdGlobalErrorHandlerPlugin`(ErrorHandler), `provideZonelessChangeDetection`, service-worker 자동 업데이트 polling(5분-60분 지수 backoff, 확인 시 reload), Router navigation 동안 `SdBusyProvider.globalBusyCount` 증감.
+- 등록 항목 — `IMAGE_CONFIG`(이미지 size/lazy 경고 비활성), `NgIcons` 기본(`strokeWidth:1.5`; size 미지정 — styles.scss 의 line-height 연동 calc 를 인라인 var 가 덮지 않게), theme/density/fontSize localStorage 복원·저장(`sd-theme`/`sd-theme-density`/`sd-theme-font-size`), browser `error`/`unhandledrejection` → `ErrorHandler`, `SdAngularConfigProvider`(clientName 주입), `SdOptionEventPlugin`(EVENT_MANAGER_PLUGINS), `SdGlobalErrorHandlerPlugin`(ErrorHandler), `provideZonelessChangeDetection`, service-worker 자동 업데이트 polling(5분-60분 지수 backoff, 확인 시 reload), Router navigation 동안 `SdBusyProvider.globalBusyCount` 증감.
 - browser guard — theme 저장·전역 window listener·service-worker·busy는 `isPlatformBrowser` 조건에서만 동작함.
 
 ## 코어 유틸·타입 헬퍼
@@ -41,12 +41,10 @@ function provideSdAngular(opt: { clientName: string }): EnvironmentProviders;
 function setupBgTheme(options?: {
   theme?:
     "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray";
-  lightness?: "lightest" | "lighter";
 }): void;
 ```
 
-- `theme` — body `--background-color` 를 `var(--theme-{theme}-{lightness})` 로 바꿀 테마. 없으면 빈 값으로 되돌림.
-- `lightness` — 색 단계. `"lightest"`(기본)/`"lighter"`.
+- `theme` — 앱 배경(body 가 소비하는 `--sd-bg-canvas`)을 `var(--sd-bg-{theme}-subtle)` 시맨틱 subtle 면으로 덮음. 없으면 빈 값으로 되돌림.
 - 동작 — browser에서만 `effect` 로 적용, cleanup 시 빈 값 복원.
 
 ### `setSafeStyle`

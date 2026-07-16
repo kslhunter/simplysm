@@ -118,14 +118,14 @@ import "@simplysm/core-browser";
       sd-modal {
         display: block;
         position: fixed;
-        z-index: var(--z-index-modal);
+        z-index: var(--sd-z-modal);
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        padding-top: calc(var(--topbar-height) + var(--gap-sm));
+        padding-top: calc(var(--sd-topbar-height) + var(--sd-gap-sm));
         opacity: 0;
-        transition: opacity var(--animation-duration) ease-in-out;
+        transition: opacity var(--sd-animation-duration) ease-in-out;
         pointer-events: none;
 
         > ._backdrop {
@@ -134,7 +134,7 @@ import "@simplysm/core-browser";
           left: 0;
           width: 100%;
           height: 100%;
-          background: var(--trans-default);
+          background-color: var(--sd-bg-backdrop);
         }
 
         > ._dialog {
@@ -144,12 +144,13 @@ import "@simplysm/core-browser";
           margin: 0 auto;
           width: fit-content;
           min-width: 200px;
-          background: var(--control-color);
+          background-color: var(--sd-bg-elevated);
+          border: 1px solid var(--sd-modal-bd);
           overflow: hidden;
           @include mixins.elevation(16);
-          border-radius: var(--border-radius-default);
+          border-radius: var(--sd-radius-default);
           transform: translateY(-25px);
-          transition: transform var(--animation-duration) ease-in-out;
+          transition: transform var(--sd-animation-duration) ease-in-out;
 
           &:focus {
             outline: none;
@@ -159,16 +160,22 @@ import "@simplysm/core-browser";
             display: flex;
             align-items: center;
             user-select: none;
-            border-bottom: 1px solid var(--theme-gray-lighter);
-            background: var(--theme-gray-lightest);
+            border-bottom: 1px solid var(--sd-bd-hairline);
+            background-color: var(--sd-modal-header-bg);
+            color: var(--sd-modal-header-tx);
 
             > ._title {
               flex: 1;
-              padding: var(--gap-sm) var(--gap-default);
+              padding: var(--sd-gap-sm) var(--sd-gap-default);
             }
 
             > ._close-btn {
-              padding: var(--gap-sm) var(--gap-default);
+              padding: var(--sd-gap-sm) var(--sd-gap-default);
+              color: var(--sd-modal-header-tx-muted);
+
+              &:hover {
+                color: var(--sd-modal-header-tx);
+              }
             }
           }
 
@@ -183,7 +190,7 @@ import "@simplysm/core-browser";
             &._resize-left {
               top: 0;
               left: 0;
-              width: var(--gap-sm);
+              width: var(--sd-gap-sm);
               height: 100%;
               cursor: ew-resize;
             }
@@ -191,7 +198,7 @@ import "@simplysm/core-browser";
             &._resize-right {
               top: 0;
               right: 0;
-              width: var(--gap-sm);
+              width: var(--sd-gap-sm);
               height: 100%;
               cursor: ew-resize;
             }
@@ -200,15 +207,15 @@ import "@simplysm/core-browser";
               top: 0;
               left: 0;
               width: 100%;
-              height: var(--gap-sm);
+              height: var(--sd-gap-sm);
               cursor: ns-resize;
             }
 
             &._resize-top-right {
               right: 0;
               top: 0;
-              width: var(--gap-sm);
-              height: var(--gap-sm);
+              width: var(--sd-gap-sm);
+              height: var(--sd-gap-sm);
               z-index: 1;
               cursor: nesw-resize;
             }
@@ -216,8 +223,8 @@ import "@simplysm/core-browser";
             &._resize-top-left {
               left: 0;
               top: 0;
-              width: var(--gap-sm);
-              height: var(--gap-sm);
+              width: var(--sd-gap-sm);
+              height: var(--sd-gap-sm);
               cursor: nwse-resize;
               z-index: 1;
             }
@@ -226,15 +233,15 @@ import "@simplysm/core-browser";
               bottom: 0;
               left: 0;
               width: 100%;
-              height: var(--gap-sm);
+              height: var(--sd-gap-sm);
               cursor: ns-resize;
             }
 
             &._resize-bottom-right {
               right: 0;
               bottom: 0;
-              width: var(--gap-sm);
-              height: var(--gap-sm);
+              width: var(--sd-gap-sm);
+              height: var(--sd-gap-sm);
               z-index: 1;
               cursor: nwse-resize;
             }
@@ -242,8 +249,8 @@ import "@simplysm/core-browser";
             &._resize-bottom-left {
               left: 0;
               bottom: 0;
-              width: var(--gap-sm);
-              height: var(--gap-sm);
+              width: var(--sd-gap-sm);
+              height: var(--sd-gap-sm);
               cursor: nesw-resize;
               z-index: 1;
             }
@@ -270,7 +277,7 @@ import "@simplysm/core-browser";
             pointer-events: auto;
             opacity: 0;
             @include mixins.elevation(4);
-            border: 1px solid var(--theme-gray-lighter);
+            border: 1px solid var(--sd-bd-hairline);
 
             &:focus {
               @include mixins.elevation(16);
@@ -290,16 +297,16 @@ import "@simplysm/core-browser";
         &[data-sd-position="bottom-right"] {
           > ._dialog {
             position: absolute;
-            right: calc(var(--gap-xxl) * 2);
-            bottom: var(--gap-xxl);
+            right: calc(var(--sd-gap-xxl) * 2);
+            bottom: var(--sd-gap-xxl);
           }
         }
 
         &[data-sd-position="top-right"] {
           > ._dialog {
             position: absolute;
-            right: var(--gap-xxl);
-            top: var(--gap-xxl);
+            right: var(--sd-gap-xxl);
+            top: var(--sd-gap-xxl);
           }
         }
 
@@ -313,8 +320,8 @@ import "@simplysm/core-browser";
             border-radius: 0;
 
             > ._header {
-              background: transparent;
-              color: var(--text-trans-lighter);
+              background-color: transparent;
+              color: var(--sd-tx-faint);
             }
           }
         }
@@ -519,8 +526,7 @@ export class SdModal {
     if (this._sdSystemConfig == null) return;
 
     const config = (await this._sdSystemConfig.getAsync(`sd-modal.${k}`)) as
-      | Record<string, string | undefined>
-      | undefined;
+      Record<string, string | undefined> | undefined;
     if (config == null) return;
 
     const dialogEl = this._getDialogEl();

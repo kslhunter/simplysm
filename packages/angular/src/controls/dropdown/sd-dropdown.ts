@@ -74,7 +74,7 @@ export class SdDropdown {
           const backdrop = document.createElement("div");
           backdrop.setAttribute("data-sd-dropdown-backdrop", "");
           backdrop.style.cssText =
-            "position:fixed;inset:0;background:var(--busy-overlay-bg);z-index:var(--z-index-dropdown)";
+            "position:fixed;inset:0;background-color:var(--sd-bg-busy-overlay);z-index:var(--sd-z-dropdown)";
           backdrop.addEventListener("click", () => {
             this._closePopup();
           });

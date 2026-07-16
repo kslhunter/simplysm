@@ -51,8 +51,27 @@ import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
             </div>
           </div>
           <div class="flex-row gap-sm cross-align-center">
-            <span>블루프린트</span>
-            <sd-switch [(value)]="_sdTheme.blueprint" />
+            <span>테마</span>
+            <div class="flex-row gap-xs cross-align-center">
+              @for (item of _sdTheme.themes; track item.value) {
+                <sd-button
+                  [inline]="true"
+                  [size]="'sm'"
+                  [theme]="_sdTheme.theme() === item.value ? 'primary' : 'link-gray'"
+                  (click)="_sdTheme.theme.set(item.value)"
+                >
+                  {{ item.label }}
+                </sd-button>
+              }
+            </div>
+          </div>
+          <div class="flex-row gap-sm cross-align-center">
+            <span>compact</span>
+            <sd-switch
+              [inline]="true"
+              [value]="_sdTheme.density() === 'compact'"
+              (valueChange)="_sdTheme.density.set($event ? 'compact' : 'normal')"
+            />
           </div>
         </div>
       </sd-dropdown-popup>

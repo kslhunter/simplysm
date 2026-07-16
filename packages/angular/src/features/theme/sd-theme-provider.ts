@@ -1,10 +1,28 @@
 import { effect, inject, Injectable, PLATFORM_ID, signal } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 
+// 내장 테마 단일 정의 — 새 테마 추가 시 여기 항목 1줄 +
+// scss/themes 값 맵 + _theme-variables 의 .sd-theme-{value} writeVars 블록만 추가하면 된다.
+// light 는 :root 기본값이라 값 맵/블록이 없어도 동작한다(클래스가 붙어도 규칙이 없어 무효).
+export const SD_THEMES = [
+  { value: "light", label: "라이트" },
+  { value: "blueprint", label: "블루프린트" },
+  { value: "ide-dark", label: "IDE 다크" },
+] as const;
+
+export type SdThemeName = (typeof SD_THEMES)[number]["value"];
+
+// 밀도 축 — 테마와 직교(DEC-007). compact 는 치수 토큰 그룹(sd-density-compact)만 덮는다.
+export type SdDensity = "normal" | "compact";
+
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {
-  // 블루프린트(엔지니어링 도면) 테마
-  blueprint = signal<boolean>(false);
+  readonly themes: readonly { value: SdThemeName; label: string }[] = SD_THEMES;
+
+  // 라이트(기본) / 블루프린트(도면) / IDE 다크
+  theme = signal<SdThemeName>("light");
+
+  density = signal<SdDensity>("normal");
 
   readonly fontSizePresets: readonly number[] = [12, 14, 16, 20, 24, 28];
 
@@ -15,7 +33,14 @@ export class SdThemeProvider {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
 
     effect(() => {
-      document.body.classList.toggle("sd-theme-blueprint", this.blueprint());
+      const theme = this.theme();
+      for (const def of this.themes) {
+        document.body.classList.toggle(`sd-theme-${def.value}`, def.value === theme);
+      }
+    });
+
+    effect(() => {
+      document.body.classList.toggle("sd-density-compact", this.density() === "compact");
     });
 
     effect(() => {

@@ -33,8 +33,6 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
       @use "../../../scss/commons/mixins";
 
@@ -44,14 +42,15 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         cursor: pointer;
 
         height: calc(
-          var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2 + 2px
+          var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-sm) * 2 +
+            2px
         );
-        gap: var(--gap-sm);
+        gap: var(--sd-gap-sm);
 
         @supports not (appearance: auto) {
           gap: 0;
           > * + * {
-            margin-left: var(--gap-sm);
+            margin-left: var(--sd-gap-sm);
           }
         }
 
@@ -60,16 +59,16 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
           vertical-align: -0.125em;
           user-select: none;
 
-          width: calc(var(--font-size-default) + 2px);
-          height: calc(var(--font-size-default) + 2px);
-          border: 1px solid var(--border-color-light);
-          background: var(--theme-secondary-lightest);
+          width: calc(var(--sd-font-size-default) + 2px);
+          height: calc(var(--sd-font-size-default) + 2px);
+          border: 1px solid var(--sd-bd-field);
+          background-color: var(--sd-bg-field);
 
           > ._indicator {
             margin: -1px -2px;
             text-align: center;
             opacity: 0;
-            color: var(--text-trans-rev-default);
+            color: var(--sd-tx-primary-solid);
 
             > ng-icon {
               > svg {
@@ -83,7 +82,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         ._contents {
           display: inline-block;
           vertical-align: top;
-          padding-left: var(--gap-sm);
+          padding-left: var(--sd-gap-sm);
         }
 
         > ._indicator_rect + ._contents:empty {
@@ -91,13 +90,13 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         }
 
         &:focus > ._indicator_rect {
-          border-color: var(--theme-primary-dark);
+          border-color: var(--sd-focus-ring-color);
         }
 
         &[data-sd-checked="true"] {
           > ._indicator_rect {
-            border-color: var(--theme-primary-default);
-            background: var(--theme-primary-default);
+            border-color: var(--sd-bd-primary-solid);
+            background-color: var(--sd-bg-primary-solid);
 
             > ._indicator {
               opacity: 1;
@@ -105,30 +104,30 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
           }
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
             > ._indicator_rect {
-              background: var(--theme-#{$key}-lightest);
+              background-color: var(--sd-bg-#{$key}-subtle);
 
               > ._indicator {
-                color: var(--theme-#{$key}-default);
+                color: var(--sd-tx-#{$key});
               }
             }
 
             &[data-sd-checked="true"] {
               > ._indicator_rect {
-                border-color: var(--theme-#{$key}-default);
-                background: var(--theme-#{$key}-default);
+                border-color: var(--sd-bd-#{$key}-solid);
+                background-color: var(--sd-bg-#{$key}-solid);
 
                 > ._indicator {
-                  color: var(--text-trans-rev-default);
+                  color: var(--sd-tx-#{$key}-solid);
                 }
               }
             }
 
             &:focus {
               > ._indicator_rect {
-                border-color: var(--theme-#{$key}-dark);
+                border-color: var(--sd-focus-ring-color);
               }
             }
           }
@@ -136,20 +135,20 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
 
         &[data-sd-theme="white"] {
           > ._indicator_rect {
-            background: var(--control-color);
-            border-color: var(--text-trans-lightest);
+            background-color: var(--sd-bg-control);
+            border-color: var(--sd-bd-field);
           }
 
           &[data-sd-checked="true"] {
             > ._indicator_rect {
-              border-color: var(--theme-primary-default);
-              background: var(--theme-primary-default);
+              border-color: var(--sd-bd-primary-solid);
+              background-color: var(--sd-bg-primary-solid);
             }
           }
 
           &:focus {
             > ._indicator_rect {
-              border-color: var(--theme-primary-dark);
+              border-color: var(--sd-focus-ring-color);
             }
           }
         }
@@ -157,57 +156,59 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
         &[data-sd-radio="true"] {
           > ._indicator_rect {
             border-radius: 100%;
-            padding: var(--gap-xs);
+            padding: var(--sd-gap-xs);
 
             > ._indicator {
               border-radius: 100%;
               width: 100%;
               height: 100%;
-              background: var(--theme-primary-default);
+              background-color: var(--sd-bg-primary-solid);
             }
           }
 
           &[data-sd-checked="true"] {
             > ._indicator_rect {
-              background: var(--theme-secondary-lightest);
-              border-color: var(--theme-primary-dark);
+              background-color: var(--sd-bg-field);
+              border-color: var(--sd-bd-primary-solid);
             }
           }
         }
 
         &[data-sd-size="sm"] {
           height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2 + 2px
+            var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-xs) * 2 +
+              2px
           );
-          padding: var(--gap-xs) var(--gap-sm);
-          gap: var(--gap-xs);
+          padding: var(--sd-gap-xs) var(--sd-gap-sm);
+          gap: var(--sd-gap-xs);
 
           @supports not (appearance: auto) {
             gap: 0;
             > * + * {
-              margin-left: var(--gap-xs);
+              margin-left: var(--sd-gap-xs);
             }
           }
         }
 
         &[data-sd-size="lg"] {
           height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2 + 2px
+            var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-default) *
+              2 + 2px
           );
-          padding: var(--gap-default) var(--gap-lg);
-          gap: var(--gap-default);
+          padding: var(--sd-gap-default) var(--sd-gap-lg);
+          gap: var(--sd-gap-default);
 
           @supports not (appearance: auto) {
             gap: 0;
             > * + * {
-              margin-left: var(--gap-default);
+              margin-left: var(--sd-gap-default);
             }
           }
         }
 
         &[data-sd-inset="true"] {
           height: calc(
-            var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
+            var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-sm) * 2
           );
           border: none;
           justify-content: center;
@@ -215,13 +216,14 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
 
           &[data-sd-size="sm"] {
             height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
+              var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-xs) * 2
             );
           }
 
           &[data-sd-size="lg"] {
             height: calc(
-              var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
+              var(--sd-font-size-default) * var(--sd-line-height-strip-unit) +
+                var(--sd-gap-default) * 2
             );
           }
         }
@@ -231,13 +233,23 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
           vertical-align: top;
           padding: 0;
           border: none;
-          height: calc(var(--font-size-default) * var(--line-height-strip-unit));
+          height: calc(var(--sd-font-size-default) * var(--sd-line-height-strip-unit));
           width: auto;
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009 — opacity 방식 폐기)
         &[data-sd-disabled="true"] {
-          opacity: 0.3;
+          color: var(--sd-tx-disabled) !important;
           pointer-events: none;
+
+          > ._indicator_rect {
+            background-color: var(--sd-bg-disabled) !important;
+            border-color: var(--sd-bd-disabled) !important;
+
+            > ._indicator {
+              color: var(--sd-tx-disabled) !important;
+            }
+          }
         }
       }
     `,

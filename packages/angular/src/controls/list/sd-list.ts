@@ -21,18 +21,18 @@ import {
         display: flex;
         flex-direction: column;
         user-select: none;
-        background: var(--control-color);
-        border: 1px solid var(--border-color-default);
-        border-radius: var(--border-radius-default);
-        padding: var(--gap-sm);
-        gap: var(--gap-xs);
+        background-color: var(--sd-bg-control);
+        border: 1px solid var(--sd-bd-strong);
+        border-radius: var(--sd-radius-default);
+        padding: var(--sd-gap-sm);
+        gap: var(--sd-gap-xs);
 
         &[data-sd-inset="true"] {
-          background: transparent;
+          background-color: transparent;
           border: none;
 
           sd-list {
-            background: transparent;
+            background-color: transparent;
           }
         }
 
@@ -41,7 +41,7 @@ import {
           border-color: transparent;
           border-radius: 0;
           padding: 0;
-          background: transparent;
+          background-color: transparent;
         }
       }
     `,

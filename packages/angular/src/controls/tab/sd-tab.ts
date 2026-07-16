@@ -10,9 +10,9 @@ import { ChangeDetectionStrategy, Component, model, ViewEncapsulation } from "@a
     /* language=SCSS */ `
       sd-tab {
         display: block;
-        border-bottom: 2px solid var(--theme-gray-lighter);
+        border-bottom: 2px solid var(--sd-bd-hairline);
 
-        padding: 0 calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
+        padding: 0 calc(var(--sd-gap-default) + 1px) 0 calc(var(--sd-gap-default) - 1px);
       }
     `,
   ],

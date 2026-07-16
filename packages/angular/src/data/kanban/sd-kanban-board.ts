@@ -28,7 +28,7 @@ import {
         flex-wrap: nowrap;
         white-space: nowrap;
         height: 100%;
-        @include mixins.flex-direction(row, var(--gap-lg));
+        @include mixins.flex-direction(row, var(--sd-gap-lg));
       }
     `,
   ],

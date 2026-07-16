@@ -26,7 +26,7 @@ import { DateOnly } from "@simplysm/core-common";
         display: flex;
         align-items: center;
 
-        @include mixins.flex-direction(row, var(--gap-sm));
+        @include mixins.flex-direction(row, var(--sd-gap-sm));
       }
     `,
   ],

@@ -14,8 +14,9 @@ import {
 
 describe("Feature 4.1 Slice 2: sd-list", () => {
   it("기본 목록이 렌더링되고 user-select가 none이다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListDefaultTest] })
-      .createComponent(SdListDefaultTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListDefaultTest],
+    }).createComponent(SdListDefaultTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -27,8 +28,9 @@ describe("Feature 4.1 Slice 2: sd-list", () => {
   });
 
   it("중첩 목록이 정상 렌더링된다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListNestedTest] })
-      .createComponent(SdListNestedTest);
+    const fixture = TestBed.configureTestingModule({ imports: [SdListNestedTest] }).createComponent(
+      SdListNestedTest,
+    );
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -45,8 +47,9 @@ describe("Feature 4.1 Slice 2: sd-list", () => {
 
 describe("Feature 4.1 Slice 2: sd-list-item layout", () => {
   it("accordion 레이아웃에서 _content 클릭 시 open이 토글되고 sd-collapse-icon이 표시된다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemAccordionTest] })
-      .createComponent(SdListItemAccordionTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemAccordionTest],
+    }).createComponent(SdListItemAccordionTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -75,8 +78,9 @@ describe("Feature 4.1 Slice 2: sd-list-item layout", () => {
   });
 
   it("accordion open=true이면 하위 sd-list가 sd-collapse를 통해 펼쳐진다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemAccordionOpenTest] })
-      .createComponent(SdListItemAccordionOpenTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemAccordionOpenTest],
+    }).createComponent(SdListItemAccordionOpenTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -89,8 +93,9 @@ describe("Feature 4.1 Slice 2: sd-list-item layout", () => {
   });
 
   it("flat 레이아웃에서 하위 목록이 항상 펼쳐져 있고 sd-collapse-icon이 없다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemFlatTest] })
-      .createComponent(SdListItemFlatTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemFlatTest],
+    }).createComponent(SdListItemFlatTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -111,8 +116,9 @@ describe("Feature 4.1 Slice 2: sd-list-item layout", () => {
   });
 
   it("하위 항목이 없으면 hasChildren이 false이고 sd-collapse 영역이 없다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemNoChildrenTest] })
-      .createComponent(SdListItemNoChildrenTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemNoChildrenTest],
+    }).createComponent(SdListItemNoChildrenTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -131,33 +137,36 @@ describe("Feature 4.1 Slice 2: sd-list-item layout", () => {
 });
 
 describe("Feature 4.1 Slice 2: sd-list-item selection & readonly", () => {
-  it("selected=true이고 selectedIcon이 있으면 아이콘이 tx-theme-primary-default 클래스를 가진다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemSelectedIconTest] })
-      .createComponent(SdListItemSelectedIconTest);
+  it("selected=true이고 selectedIcon이 있으면 아이콘이 tx-primary 클래스를 가진다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemSelectedIconTest],
+    }).createComponent(SdListItemSelectedIconTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-list-item") as HTMLElement;
     const iconEl = host.querySelector("ng-icon") as HTMLElement;
     expect(iconEl).toBeTruthy();
-    expect(iconEl.classList.contains("tx-theme-primary-default")).toBe(true);
+    expect(iconEl.classList.contains("tx-primary")).toBe(true);
   });
 
-  it("selected=false이고 selectedIcon이 있으면 아이콘이 tx-trans-lightest 클래스를 가진다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemUnselectedIconTest] })
-      .createComponent(SdListItemUnselectedIconTest);
+  it("selected=false이고 selectedIcon이 있으면 아이콘이 tx-faint 클래스를 가진다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemUnselectedIconTest],
+    }).createComponent(SdListItemUnselectedIconTest);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const host = fixture.nativeElement.querySelector("sd-list-item") as HTMLElement;
     const iconEl = host.querySelector("ng-icon") as HTMLElement;
     expect(iconEl).toBeTruthy();
-    expect(iconEl.classList.contains("tx-trans-lightest")).toBe(true);
+    expect(iconEl.classList.contains("tx-faint")).toBe(true);
   });
 
   it("toolTpl이 정의되어 있으면 _content 우측에 tool 영역이 렌더링된다", async () => {
-    const fixture = TestBed.configureTestingModule({ imports: [SdListItemToolTest] })
-      .createComponent(SdListItemToolTest);
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdListItemToolTest],
+    }).createComponent(SdListItemToolTest);
     fixture.detectChanges();
     await fixture.whenStable();
 

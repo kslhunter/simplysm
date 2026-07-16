@@ -15,10 +15,7 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 import { setupInvalid } from "../../core/validation/setupInvalid";
-import {
-  textfieldTypeHandlers,
-  type SdTextfieldTypes,
-} from "./sd-textfield-type-handlers";
+import { textfieldTypeHandlers, type SdTextfieldTypes } from "./sd-textfield-type-handlers";
 
 @Component({
   selector: "sd-textfield",
@@ -34,12 +31,12 @@ import {
       [style.visibility]="!readonly() && !disabled() ? 'hidden' : undefined"
     >
       @if (controlType() === "password") {
-        <span class="tx-trans-light">****</span>
+        <span class="tx-muted">****</span>
       } @else {
         @if (controlValue()) {
           <pre>{{ controlValueText() ? controlValueText() : " " }}</pre>
         } @else if (placeholder()) {
-          <span class="tx-trans-lighter">{{ placeholder() }}</span>
+          <span class="tx-faint">{{ placeholder() }}</span>
         } @else {
           <span>&nbsp;</span>
         }
@@ -67,8 +64,6 @@ import {
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
       @use "../../../scss/commons/mixins";
 
@@ -79,25 +74,25 @@ import {
         > input,
         > ._contents {
           @include mixins.form-control-base();
-          font-family: var(--font-family-field);
+          font-family: var(--sd-font-family-field);
 
           overflow: auto;
           width: 100%;
 
-          border: 1px solid var(--border-color-light);
-          border-radius: var(--border-radius-default);
-          background: var(--theme-secondary-lightest);
+          border: 1px solid var(--sd-bd-field);
+          border-radius: var(--sd-radius-default);
+          background-color: var(--sd-bg-field);
 
           &:focus {
             outline: none;
-            border-color: var(--theme-primary-default);
+            border-color: var(--sd-focus-ring-color);
           }
 
           &[type="date"],
           &[type="month"],
           &[type="datetime-local"] {
-            padding-top: calc(var(--gap-sm) - 1px);
-            padding-bottom: calc(var(--gap-sm) - 1px);
+            padding-top: calc(var(--sd-gap-sm) - 1px);
+            padding-bottom: calc(var(--sd-gap-sm) - 1px);
           }
 
           &::-webkit-scrollbar {
@@ -105,7 +100,7 @@ import {
           }
 
           &::-webkit-input-placeholder {
-            color: var(--text-trans-lighter);
+            color: var(--sd-tx-faint);
           }
 
           &::-webkit-outer-spin-button,
@@ -135,11 +130,11 @@ import {
           }
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
             > input,
             > ._contents {
-              background: var(--theme-#{$key}-lightest);
+              background-color: var(--sd-bg-#{$key}-subtle);
             }
           }
         }
@@ -147,14 +142,14 @@ import {
         &[data-sd-size="sm"] {
           > input,
           > ._contents {
-            padding: var(--gap-xs) var(--gap-sm);
+            padding: var(--sd-gap-xs) var(--sd-gap-sm);
 
             &[type="date"],
             &[type="month"],
             &[type="datetime-local"],
             &[type="color"] {
-              padding-top: calc(var(--gap-xs) - 1px);
-              padding-bottom: calc(var(--gap-xs) - 1px);
+              padding-top: calc(var(--sd-gap-xs) - 1px);
+              padding-bottom: calc(var(--sd-gap-xs) - 1px);
             }
           }
         }
@@ -162,14 +157,14 @@ import {
         &[data-sd-size="lg"] {
           > input,
           > ._contents {
-            padding: var(--gap-default) var(--gap-lg);
+            padding: var(--sd-gap-default) var(--sd-gap-lg);
 
             &[type="date"],
             &[type="month"],
             &[type="datetime-local"],
             &[type="color"] {
-              padding-top: calc(var(--gap-default) - 1px);
-              padding-bottom: calc(var(--gap-default) - 1px);
+              padding-top: calc(var(--sd-gap-default) - 1px);
+              padding-bottom: calc(var(--sd-gap-default) - 1px);
             }
           }
         }
@@ -204,7 +199,7 @@ import {
           }
 
           > input:focus {
-            outline: 1px solid var(--theme-primary-default);
+            outline: 1px solid var(--sd-focus-ring-color);
             outline-offset: -1px;
           }
 
@@ -240,7 +235,8 @@ import {
             > input,
             > ._contents {
               height: calc(
-                var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-sm) * 2
+                var(--sd-font-size-default) * var(--sd-line-height-strip-unit) + var(--sd-gap-sm) *
+                  2
               );
             }
 
@@ -248,7 +244,8 @@ import {
               > input,
               > ._contents {
                 height: calc(
-                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-xs) * 2
+                  var(--sd-font-size-default) * var(--sd-line-height-strip-unit) +
+                    var(--sd-gap-xs) * 2
                 );
               }
             }
@@ -257,24 +254,27 @@ import {
               > input,
               > ._contents {
                 height: calc(
-                  var(--font-size-default) * var(--line-height-strip-unit) + var(--gap-default) * 2
+                  var(--sd-font-size-default) * var(--sd-line-height-strip-unit) +
+                    var(--sd-gap-default) * 2
                 );
               }
             }
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009)
         &[data-sd-disabled="true"] {
           > ._contents {
             display: block;
-            background: var(--trans-lightest);
-            color: var(--text-trans-light);
+            background-color: var(--sd-bg-disabled);
+            color: var(--sd-tx-disabled);
           }
 
+          // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-inset="true"] {
             > ._contents {
-              background: var(--control-color);
-              color: var(--text-trans-default);
+              background-color: var(--sd-bg-control);
+              color: var(--sd-tx-default);
             }
           }
         }
@@ -356,9 +356,11 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   controlValueText = computed(() => {
     const value = this.value();
     if (value == null) return undefined;
-    return this._handler().toDisplayText(value, {
-      minDigits: this.minDigits(),
-    }) ?? this.controlValue();
+    return (
+      this._handler().toDisplayText(value, {
+        minDigits: this.minDigits(),
+      }) ?? this.controlValue()
+    );
   });
 
   constructor() {
@@ -379,8 +381,8 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
           const domParsed = this._handler().parse(inputEl.value, { format: this.format() });
           // DOM raw 가 현재 모델의 유효한 표현이면(사용자 입력 유래) 되쓰지 않아 캐럿·IME 보호
           const domReflectsModel =
-            domParsed != null
-            && this._handler().toControlValue(domParsed, {
+            domParsed != null &&
+            this._handler().toControlValue(domParsed, {
               useNumberComma: this.useNumberComma(),
               format: this.format(),
             }) === controlValue;

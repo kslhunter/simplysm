@@ -79,9 +79,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
 
     // Popup is moved to document.body when open
     // sd-collapse wraps nested sd-list inside ._content
-    const nestedLists = document.body.querySelectorAll(
-      "sd-dropdown-popup sd-list",
-    );
+    const nestedLists = document.body.querySelectorAll("sd-dropdown-popup sd-list");
     // First sd-list is the root, any additional is a nested list from children
     expect(nestedLists.length).toBeGreaterThan(1);
   });
@@ -103,9 +101,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     // depth 2 item: (2+1)*0.5 = 1.5em
     // Popup is moved to document.body when open
     // sd-collapse wraps the nested list in ._content div
-    const allListItems = document.body.querySelectorAll(
-      "sd-dropdown-popup sd-list-item",
-    );
+    const allListItems = document.body.querySelectorAll("sd-dropdown-popup sd-list-item");
     // Find the deepest item (depth 2)
     const deepItem = (Array.from(allListItems) as HTMLElement[]).find(
       (el) => el.style.paddingLeft === "1.5em",
@@ -128,11 +124,9 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     // Popup is moved to document.body when open
-    const listItem = document.body.querySelector(
-      "sd-dropdown-popup sd-list-item",
-    ) as HTMLElement;
+    const listItem = document.body.querySelector("sd-dropdown-popup sd-list-item") as HTMLElement;
     expect(listItem).toBeTruthy();
-    expect(listItem.style.paddingBlock).toBe("var(--gap-default)");
+    expect(listItem.style.paddingBlock).toBe("var(--sd-gap-default)");
   });
 
   it("children과 url이 없는 메뉴는 라우터 링크로 연결된다", async () => {
@@ -143,8 +137,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenu;
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdTopbarMenu;
     const menu = { title: "Test", codeChain: ["module", "page"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -159,8 +152,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenu;
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdTopbarMenu;
     const menu = { title: "QS", codeChain: ["module", "page?key=value"] };
     const option = ctrl.getMenuRouterLinkOption(menu);
     expect(option).toBeTruthy();
@@ -204,8 +196,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenu;
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdTopbarMenu;
     const menu = {
       title: "Parent",
       codeChain: ["parent"],
@@ -223,8 +214,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenu;
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdTopbarMenu;
     // With empty URL, fullPageCode = "" and codeChain.join('.') = "" -> match for empty
     const result = ctrl.getIsMenuSelected({ title: "X", codeChain: [] });
     expect(typeof result).toBe("boolean");
@@ -238,8 +228,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const ctrl = fixture.debugElement.children[0]
-      .componentInstance as SdTopbarMenu;
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdTopbarMenu;
     const menu = { title: "Custom", codeChain: ["custom"] };
     expect(ctrl.getIsMenuSelected(menu)).toBe(true);
   });
@@ -260,9 +249,9 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const dropdownCtrl = fixture.debugElement
-      .query((el) => el.componentInstance instanceof SdDropdown)
-      .componentInstance as SdDropdown;
+    const dropdownCtrl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof SdDropdown,
+    ).componentInstance as SdDropdown;
     expect(dropdownCtrl.open()).toBe(true);
 
     // Click list item in popup (popup is on document.body)
@@ -294,9 +283,7 @@ describe("Feature 4.4 Slice 2: SdTopbarMenu 드롭다운 메뉴", () => {
     await fixture.whenStable();
 
     // 리프 메뉴(children 없음)도 layout="flat"이어야 한다
-    const listItem = document.body.querySelector(
-      "sd-dropdown-popup sd-list-item",
-    ) as HTMLElement;
+    const listItem = document.body.querySelector("sd-dropdown-popup sd-list-item") as HTMLElement;
     expect(listItem).toBeTruthy();
     expect(listItem.getAttribute("data-sd-layout")).toBe("flat");
     // children이 없으므로 has-children은 false

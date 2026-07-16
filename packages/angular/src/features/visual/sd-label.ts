@@ -14,7 +14,7 @@ import {
   imports: [],
   host: {
     "[attr.data-sd-theme]": "theme()",
-    "[style.background]": "color()",
+    "[style.background-color]": "color()",
     "[attr.data-sd-clickable]": "clickable()",
   },
   template: `
@@ -22,21 +22,20 @@ import {
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
 
       sd-label {
         display: inline-block;
-        background: var(--theme-gray-darker);
-        color: var(--text-trans-rev-default);
-        padding: 0 var(--gap-sm);
-        border-radius: var(--border-radius-default);
+        background-color: var(--sd-bg-gray-solid);
+        color: var(--sd-tx-gray-solid);
+        padding: 0 var(--sd-gap-sm);
+        border-radius: var(--sd-radius-default);
         text-indent: 0;
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
-            background: var(--theme-#{$key}-default);
+            background-color: var(--sd-bg-#{$key}-solid);
+            color: var(--sd-tx-#{$key}-solid);
           }
         }
 
@@ -44,11 +43,11 @@ import {
           cursor: pointer;
 
           &:hover {
-            background: var(--theme-gray-dark);
+            background-color: var(--sd-bg-gray-solid-hover);
 
-            @each $key, $val in map.get(variables.$vars, theme) {
+            @each $key in variables.$theme-keys {
               &[data-sd-theme="#{$key}"] {
-                background: var(--theme-#{$key}-dark);
+                background-color: var(--sd-bg-#{$key}-solid-hover);
               }
             }
           }

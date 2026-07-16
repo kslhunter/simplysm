@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { NavigationStart, Router } from "@angular/router";
 import { filter } from "rxjs";
@@ -14,7 +21,13 @@ import { filter } from "rxjs";
   },
   template: `
     <ng-content />
-    <div class="_backdrop" tabindex="0" role="button" (click)="onBackdropClick()" (keydown.enter)="onBackdropClick()"></div>
+    <div
+      class="_backdrop"
+      tabindex="0"
+      role="button"
+      (click)="onBackdropClick()"
+      (keydown.enter)="onBackdropClick()"
+    ></div>
   `,
   styles: [
     /* language=SCSS */ `
@@ -24,12 +37,12 @@ import { filter } from "rxjs";
         display: block;
         position: relative;
         height: 100%;
-        padding-left: var(--sidebar-width);
-        transition: padding-left var(--animation-duration) ease-out;
+        padding-left: var(--sd-sidebar-width);
+        transition: padding-left var(--sd-animation-duration) ease-out;
 
         &[data-sd-toggle="true"] {
           padding-left: 0;
-          transition: padding-left var(--animation-duration) ease-in;
+          transition: padding-left var(--sd-animation-duration) ease-in;
         }
 
         > ._backdrop {
@@ -44,15 +57,15 @@ import { filter } from "rxjs";
           > ._backdrop {
             position: absolute;
             display: block;
-            z-index: calc(var(--z-index-sidebar) - 1);
+            z-index: calc(var(--sd-z-sidebar) - 1);
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--background-rev-color);
+            background-color: var(--sd-bg-inverse);
             opacity: 0;
             pointer-events: none;
-            transition: opacity var(--animation-duration) ease-in-out;
+            transition: opacity var(--sd-animation-duration) ease-in-out;
           }
 
           &[data-sd-toggle="true"] {

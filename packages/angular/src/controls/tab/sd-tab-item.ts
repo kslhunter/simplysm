@@ -26,17 +26,17 @@ import { SdTab } from "./sd-tab";
     /* language=SCSS */ `
       sd-tab-item {
         display: inline-block;
-        padding: var(--gap-sm) var(--gap-default);
+        padding: var(--sd-gap-sm) var(--sd-gap-default);
         cursor: pointer;
         margin-bottom: -2px;
 
         border-bottom: 2px solid transparent !important;
         font-weight: bold;
-        color: var(--theme-gray-default);
+        color: var(--sd-tx-gray);
 
         &[data-sd-selected="true"] {
-          border-bottom: 3px solid var(--theme-primary-default) !important;
-          color: var(--theme-primary-default);
+          border-bottom: 3px solid var(--sd-bd-primary-solid) !important;
+          color: var(--sd-tx-primary);
         }
       }
     `,

@@ -21,13 +21,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdTypedTemplate,
-    NgTemplateOutlet,
-    SdCollapseIcon,
-    SdCheckbox,
-    SdAnchor,
-  ],
+  imports: [SdTypedTemplate, NgTemplateOutlet, SdCollapseIcon, SdCheckbox, SdAnchor],
   styles: [
     /* language=SCSS */ `
       sd-permission-table {
@@ -36,22 +30,22 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
 
           > * > tr {
             > * {
-              padding: var(--gap-sm) var(--gap-lg);
+              padding: var(--sd-gap-sm) var(--sd-gap-lg);
               position: sticky;
               top: 0;
               border-top: 1px solid transparent;
               border-bottom: 1px solid transparent;
 
-              color: var(--text-trans-default);
+              color: var(--sd-tx-default);
 
               > * {
-                color: var(--text-trans-default) !important;
+                color: var(--sd-tx-default) !important;
               }
 
               &._title {
                 border-top-left-radius: 14px;
                 border-bottom-left-radius: 14px;
-                padding-left: var(--gap-lg);
+                padding-left: var(--sd-gap-lg);
               }
             }
 
@@ -63,12 +57,12 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
               > * {
                 &._title,
                 &._after {
-                  background: var(--theme-info-default);
+                  background-color: var(--sd-permission-group-bg);
 
-                  color: var(--text-trans-rev-default);
+                  color: var(--sd-permission-group-tx);
 
                   > * {
-                    color: var(--text-trans-rev-default) !important;
+                    color: var(--sd-permission-group-tx) !important;
                   }
                 }
               }
@@ -78,7 +72,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
               > * {
                 &._title,
                 &._after {
-                  background: var(--theme-info-lightest);
+                  background-color: var(--sd-bg-info-subtle);
                 }
               }
             }
@@ -87,7 +81,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
               > * {
                 &._title,
                 &._after {
-                  background: var(--theme-warning-lightest);
+                  background-color: var(--sd-bg-warning-subtle);
                 }
               }
             }
@@ -96,7 +90,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
               > * {
                 &._title,
                 &._after {
-                  background: var(--theme-success-lightest);
+                  background-color: var(--sd-bg-success-subtle);
                 }
               }
             }
@@ -130,9 +124,7 @@ import { SdAnchor } from "../../controls/button/sd-anchor";
       let-depth="depth"
       let-parent="parent"
     >
-      @if (
-        (item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)
-      ) {
+      @if ((item.children && item.children.length !== 0) || (item.perms && item.perms.length > 0)) {
         <tr
           [attr.data-sd-collapse]="!!parent && getIsPermCollapsed(parent)"
           [attr.data-sd-theme]="

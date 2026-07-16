@@ -85,18 +85,18 @@ import { NgTemplateOutlet } from "@angular/common";
           border-collapse: collapse;
           width: 100%;
           height: 100%;
-          border-radius: var(--border-radius-default);
+          border-radius: var(--sd-radius-default);
           overflow: hidden;
 
           > * > tr > * {
-            padding: var(--gap-sm) var(--gap-default);
-            border: 1px solid var(--theme-gray-light);
+            padding: var(--sd-gap-sm) var(--sd-gap-default);
+            border: 1px solid var(--sd-bd-default);
 
             width: calc(100% / 7);
           }
 
           > thead > tr > th {
-            background: var(--theme-gray-lighter);
+            background-color: var(--sd-bg-gray-subtle);
             height: 10%;
           }
 
@@ -105,14 +105,14 @@ import { NgTemplateOutlet } from "@angular/common";
             height: 15%;
 
             > .day {
-              margin-bottom: var(--gap-sm);
+              margin-bottom: var(--sd-gap-sm);
             }
 
             &.not-current {
-              background: var(--theme-gray-lightest);
+              background-color: var(--sd-bg-canvas);
 
               > .day {
-                color: var(--theme-gray-default);
+                color: var(--sd-tx-gray);
               }
             }
 
@@ -120,7 +120,7 @@ import { NgTemplateOutlet } from "@angular/common";
               display: flex;
               flex-wrap: nowrap;
 
-              @include mixins.flex-direction(column, var(--gap-sm));
+              @include mixins.flex-direction(column, var(--sd-gap-sm));
             }
           }
         }

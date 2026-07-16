@@ -115,10 +115,7 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
       <app-outbound-instruction-list #headerSheet selectMode="single" class="flex-min" />
 
       @let _selectedId = headerSheet.selectedKeys().first(); @if (_selectedId == null) {
-      <div
-        class="flex-fill tx-theme-gray-default p-xxl"
-        style="font-size: 48px; line-height: 1.5em"
-      >
+      <div class="flex-fill tx-gray p-xxl" style="font-size: 48px; line-height: 1.5em">
         <ng-icon [svg]="tablerArrowLeft" />
         선택하세요.
       </div>
@@ -646,7 +643,7 @@ async onSubmit(): Promise<void> {
 - 숫자값 출력은 **`| number` 파이프 기본 적용** (천단위 구분). 예: `{{ item.quantity | number }}`.
 - `[cell]="items()"` 는 타입 추론용 더미. 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 보유.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
-- 셀 안 div 에 배경색 클래스(`bg-theme-*-lightest` 등) 를 토글할 때는 빈 값 자리에 `&nbsp;` 를 채워 div 가 셀 높이를 유지하게 함 (table cell 자식 div 가 콘텐츠 없을 시 높이 0 → bg 가 셀을 채우지 못함).
+- 셀 안 div 에 배경색 클래스(`bg-*-subtle` 등) 를 토글할 때는 빈 값 자리에 `&nbsp;` 를 채워 div 가 셀 높이를 유지하게 함 (table cell 자식 div 가 콘텐츠 없을 시 높이 0 → bg 가 셀을 채우지 못함).
   - 좋은 예: `{{ item.surveyLocationCode ?? "&nbsp;" }}`.
   - 나쁜 예: `{{ item.surveyLocationCode }}`, `{{ item.surveyLocationCode ?? "" }}`, `{{ item.surveyLocationCode ?? " " }}`.
 
@@ -840,8 +837,8 @@ Provider 정의·새 마스터 데이터 등록 컨벤션은 [client-shared-data
 - **부모 가득 채움**: `fill`.
 - **패딩**: `p-{vertical}-{horizontal}` (예: `p-default`, `p-xs-sm`, `p-sm-default`). 단일 방향: `pt-` / `pb-` / `pl-` / `pr-`.
 - **텍스트**: `tx-left` / `tx-center` / `tx-right`.
-- **테마 색**: 텍스트 `tx-theme-{theme}-default`, 배경 `bg-{theme}-lightest`.
-- **테두리**: `bd`, `bd-radius-default`, `bd-trans-light`.
+- **테마 색**: 텍스트 `tx-{theme}`, 배경 `bg-{theme}-subtle`.
+- **테두리**: `bd`, `bd-radius-default`, `bd-soft`.
 
 **약속**:
 

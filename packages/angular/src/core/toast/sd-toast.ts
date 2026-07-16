@@ -43,11 +43,10 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
     /* language=SCSS */ `
       @use "../../../scss/commons/variables";
       @use "../../../scss/commons/mixins";
-      @use "sass:map";
 
       sd-toast {
         display: block;
-        margin-bottom: var(--gap-sm);
+        margin-bottom: var(--sd-gap-sm);
         text-align: center;
         width: 100%;
         pointer-events: none;
@@ -55,43 +54,43 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         > ._sd-toast-block {
           display: inline-block;
           text-align: left;
-          color: var(--text-trans-rev-default);
           transform: translateY(-100%);
-          border-radius: var(--border-radius-lg);
+          border-radius: var(--sd-radius-lg);
           opacity: 0;
           @include mixins.elevation(12);
           pointer-events: auto;
 
           > ._sd-toast-message {
-            padding: var(--gap-default) var(--gap-lg);
+            padding: var(--sd-gap-default) var(--sd-gap-lg);
             word-break: break-all;
             white-space: pre-wrap;
           }
 
           > ._sd-toast-progress {
-            background: var(--theme-gray-default);
+            background-color: var(--sd-bg-state-active);
             height: 4px;
-            border-radius: var(--border-radius-xl);
+            border-radius: var(--sd-radius-xl);
             margin: 0 4px 4px 4px;
 
             > ._sd-toast-progress-bar {
-              border-radius: var(--border-radius-xl);
+              border-radius: var(--sd-radius-xl);
               height: 4px;
               transition: width 1s ease-out;
             }
           }
         }
 
-        @each $theme-name, $theme-map in map.get(variables.$vars, theme) {
-          &[data-sd-theme="#{$theme-name}"] {
+        @each $key in variables.$theme-keys {
+          &[data-sd-theme="#{$key}"] {
             > ._sd-toast-block {
-              background: var(--theme-#{$theme-name}-default);
+              background-color: var(--sd-bg-#{$key}-solid);
+              color: var(--sd-tx-#{$key}-solid);
 
               > ._sd-toast-progress {
-                background: var(--theme-#{$theme-name}-darker);
+                background-color: var(--sd-bg-state-active);
 
                 > ._sd-toast-progress-bar {
-                  background: var(--theme-#{$theme-name}-lighter);
+                  background-color: var(--sd-bg-#{$key}-subtle);
                 }
               }
             }
@@ -101,7 +100,7 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         &[data-sd-open="true"] {
           > ._sd-toast-block {
             transform: none;
-            transition: var(--animation-duration) ease-out;
+            transition: var(--sd-animation-duration) ease-out;
             transition-property: transform, opacity;
             opacity: 1;
           }
@@ -110,7 +109,7 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
         &[data-sd-open="false"] {
           > ._sd-toast-block {
             transform: translateY(-100%);
-            transition: var(--animation-duration) ease-in;
+            transition: var(--sd-animation-duration) ease-in;
             transition-property: transform, opacity;
             opacity: 0;
           }
@@ -118,11 +117,11 @@ const ASSERTIVE_THEMES: ReadonlySet<string> = new Set(["warning", "danger"]);
 
         @media all and (max-width: variables.$breakpoint-mobile) {
           > ._sd-toast-block {
-            border-radius: calc(var(--line-height) / 2);
+            border-radius: calc(var(--sd-line-height) / 2);
             transform: translateY(100%);
 
             > ._sd-toast-message {
-              padding: var(--gap-xs) var(--gap-default);
+              padding: var(--sd-gap-xs) var(--sd-gap-default);
             }
           }
 

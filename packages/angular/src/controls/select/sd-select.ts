@@ -39,15 +39,7 @@ export type SelectModeValue<T> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    SdDropdown,
-    SdDropdownPopup,
-    SdAnchor,
-    SdGap,
-    NgTemplateOutlet,
-    SdRipple,
-    NgIcon,
-  ],
+  imports: [SdDropdown, SdDropdownPopup, SdAnchor, SdGap, NgTemplateOutlet, SdRipple, NgIcon],
   template: `
     <sd-dropdown [disabled]="disabled()" [(open)]="dropdownOpen">
       <div
@@ -92,7 +84,12 @@ export type SelectModeValue<T> = {
           @for (item of _flatItems(); track trackByFn()(item.data, item.index)) {
             <ng-template
               [ngTemplateOutlet]="tpl"
-              [ngTemplateOutletContext]="{ $implicit: item.data, item: item.data, index: item.index, depth: item.depth }"
+              [ngTemplateOutletContext]="{
+                $implicit: item.data,
+                item: item.data,
+                index: item.index,
+                depth: item.depth,
+              }"
             />
           }
         } @else {
@@ -113,23 +110,23 @@ export type SelectModeValue<T> = {
           display: flex;
           overflow: hidden;
 
-          border: 1px solid var(--border-color-light);
-          border-radius: var(--border-radius-default);
-          background: var(--theme-secondary-lightest);
+          border: 1px solid var(--sd-bd-field);
+          border-radius: var(--sd-radius-default);
+          background-color: var(--sd-bg-field);
 
           &:focus,
           &:focus-within {
-            border-color: var(--theme-primary-default);
+            border-color: var(--sd-focus-ring-color);
           }
 
           > ._sd-select-control {
             display: flex;
             position: relative;
-            gap: var(--gap-default);
+            gap: var(--sd-gap-default);
             flex-grow: 1;
-            padding: var(--gap-sm) var(--gap-default);
+            padding: var(--sd-gap-sm) var(--sd-gap-default);
             cursor: pointer;
-            font-family: var(--font-family-field);
+            font-family: var(--sd-font-family-field);
 
             > ._sd-select-control-content {
               flex: 1;
@@ -150,22 +147,23 @@ export type SelectModeValue<T> = {
           }
 
           > sd-select-button {
-            padding: var(--gap-sm);
-            border-left: 1px solid var(--theme-gray-lightest);
+            padding: var(--sd-gap-sm);
+            border-left: 1px solid var(--sd-bd-hairline);
 
             &:last-of-type {
-              border-top-right-radius: var(--border-radius-default);
-              border-bottom-right-radius: var(--border-radius-default);
+              border-top-right-radius: var(--sd-radius-default);
+              border-bottom-right-radius: var(--sd-radius-default);
             }
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009)
         &[data-sd-disabled="true"] {
           > sd-dropdown {
-            background: var(--theme-gray-lightest);
+            background-color: var(--sd-bg-disabled);
 
             > ._sd-select-control {
-              color: var(--text-trans-light);
+              color: var(--sd-tx-disabled);
               cursor: default;
 
               > ._sd-select-control-icon {
@@ -184,12 +182,12 @@ export type SelectModeValue<T> = {
         &[data-sd-size="sm"] {
           > sd-dropdown {
             > ._sd-select-control {
-              padding: var(--gap-xs) var(--gap-sm);
-              gap: var(--gap-sm);
+              padding: var(--sd-gap-xs) var(--sd-gap-sm);
+              gap: var(--sd-gap-sm);
             }
 
             > sd-select-button {
-              padding: var(--gap-xs);
+              padding: var(--sd-gap-xs);
             }
           }
         }
@@ -197,12 +195,12 @@ export type SelectModeValue<T> = {
         &[data-sd-size="lg"] {
           > sd-dropdown {
             > ._sd-select-control {
-              padding: var(--gap-default) var(--gap-lg);
-              gap: var(--gap-lg);
+              padding: var(--sd-gap-default) var(--sd-gap-lg);
+              gap: var(--sd-gap-lg);
             }
 
             > sd-select-button {
-              padding: var(--gap-default);
+              padding: var(--sd-gap-default);
             }
           }
         }
@@ -221,21 +219,22 @@ export type SelectModeValue<T> = {
 
             &:focus,
             &:focus-within {
-              outline: 1px solid var(--theme-primary-default);
+              outline: 1px solid var(--sd-focus-ring-color);
               outline-offset: -1px;
 
               > sd-select-button {
-                outline: 1px solid var(--theme-primary-default);
+                outline: 1px solid var(--sd-focus-ring-color);
                 outline-offset: -1px;
               }
             }
           }
 
+          // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-disabled="true"] > sd-dropdown {
-            background: var(--control-color);
+            background-color: var(--sd-bg-control);
 
             > ._sd-select-control {
-              color: var(--text-trans-default);
+              color: var(--sd-tx-default);
             }
           }
         }
@@ -243,8 +242,8 @@ export type SelectModeValue<T> = {
 
       ._sd-select-all-bar {
         display: flex;
-        padding: var(--gap-sm) var(--gap-default);
-        border-bottom: 1px solid var(--border-color-light);
+        padding: var(--sd-gap-sm) var(--sd-gap-default);
+        border-bottom: 1px solid var(--sd-bd-default);
       }
     `,
   ],

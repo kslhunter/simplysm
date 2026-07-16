@@ -7,7 +7,7 @@
   > * > tr,
   > tr {
     > * {
-      padding: 0 var(--gap-default) var(--gap-sm) 0;
+      padding: 0 var(--sd-gap-default) var(--sd-gap-sm) 0;
       vertical-align: middle;
 
       &:last-child {
@@ -20,20 +20,20 @@
     }
 
     > th {
-      padding-left: var(--gap-sm);
+      padding-left: var(--sd-gap-sm);
       text-align: right;
       width: 0;
       white-space: nowrap;
 
       &.form-table-header {
         text-align: left;
-        line-height: var(--line-height);
-        margin-bottom: var(--gap-sm);
-        color: var(--theme-gray-default);
+        line-height: var(--sd-line-height);
+        margin-bottom: var(--sd-gap-sm);
+        color: var(--sd-tx-gray);
         font-weight: normal;
 
-        padding: var(--gap-xxl) 0 var(--gap-sm) 0;
-        font-size: var(--font-size-sm);
+        padding: var(--sd-gap-xxl) 0 var(--sd-gap-sm) 0;
+        font-size: var(--sd-font-size-sm);
       }
     }
   }

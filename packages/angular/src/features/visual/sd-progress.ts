@@ -27,8 +27,6 @@ import { PercentPipe } from "@angular/common";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
 
       sd-progress {
@@ -36,15 +34,15 @@ import { PercentPipe } from "@angular/common";
         display: block;
         width: 100%;
         white-space: nowrap;
-        background: var(--theme-gray-lightest);
-        border: 1px solid var(--theme-gray-lightest);
-        border-radius: var(--border-radius-default);
+        background-color: var(--sd-bg-gray-subtle);
+        border: 1px solid var(--sd-bd-hairline);
+        border-radius: var(--sd-radius-default);
         overflow: hidden;
 
         > ._content {
           position: relative;
           z-index: 2;
-          padding: var(--gap-lg) var(--gap-default);
+          padding: var(--sd-gap-lg) var(--sd-gap-default);
         }
 
         > ._progress {
@@ -55,24 +53,24 @@ import { PercentPipe } from "@angular/common";
           height: 100%;
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] > ._progress {
-            background: var(--theme-#{$key}-default);
+            background-color: var(--sd-bg-#{$key}-solid);
           }
         }
 
         &[data-sd-size="sm"] > ._content {
-          padding: var(--gap-xs) var(--gap-default);
+          padding: var(--sd-gap-xs) var(--sd-gap-default);
         }
 
         &[data-sd-size="lg"] > ._content {
-          padding: var(--gap-default) var(--gap-xl);
+          padding: var(--sd-gap-default) var(--sd-gap-xl);
         }
 
         &[data-sd-inset="true"] {
           border-radius: 0;
           border: none;
-          background: var(--control-color);
+          background-color: var(--sd-bg-control);
         }
       }
     `,

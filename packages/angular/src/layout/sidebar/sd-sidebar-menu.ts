@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, ViewEncapsulation } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from "@angular/core";
 import { injectFullPageCodeSignal } from "../../core/routing/injectFullPageCodeSignal";
 import {
   type SdMenu,
@@ -17,14 +23,7 @@ import { NgIcon } from "@ng-icons/core";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [
-    NgTemplateOutlet,
-    SdTypedTemplate,
-    SdRouterLink,
-    SdList,
-    SdListItem,
-    NgIcon,
-  ],
+  imports: [NgTemplateOutlet, SdTypedTemplate, SdRouterLink, SdList, SdListItem, NgIcon],
   host: {
     "class": "flex-column fill",
     "[attr.data-sd-root-layout]": "rootLayout()",
@@ -70,15 +69,14 @@ import { NgIcon } from "@ng-icons/core";
   styles: [
     /* language=SCSS */ `
       sd-sidebar-menu {
-        /*> sd-list[data-sd-inset="true"] {
-          sd-list {
-            background: var(--trans-lightest);
-          }
-        }*/
-
         &[data-sd-root-layout="flat"] {
-          > sd-list[data-sd-inset="true"] > sd-list-item > sd-collapse > ._content > ._children > sd-list {
-            background: transparent;
+          > sd-list[data-sd-inset="true"]
+            > sd-list-item
+            > sd-collapse
+            > ._content
+            > ._children
+            > sd-list {
+            background-color: transparent;
           }
         }
       }

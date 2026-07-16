@@ -92,14 +92,13 @@ import { matchesSearchText } from "./matchesSearchText";
 
       <ng-template #beforeTpl>
         @if (
-          (!required() && selectMode() === "single") ||
-          (useUndefined() && selectMode() === "multi")
+          (!required() && selectMode() === "single") || (useUndefined() && selectMode() === "multi")
         ) {
           <sd-select-item>
             @if (undefinedTplRef()) {
               <ng-template [ngTemplateOutlet]="undefinedTplRef()!" />
             } @else {
-              <span class="tx-theme-gray-default">미지정</span>
+              <span class="tx-gray">미지정</span>
             }
           </sd-select-item>
         }
@@ -117,9 +116,7 @@ import { matchesSearchText } from "./matchesSearchText";
         ) {
           <sd-select-item [value]="item.__valueKey" [hidden]="!getItemVisible(item, index)">
             <span
-              [style.text-decoration]="
-                getIsHiddenFn()(item, index) ? 'line-through' : undefined
-              "
+              [style.text-decoration]="getIsHiddenFn()(item, index) ? 'line-through' : undefined"
             >
               <ng-template
                 [ngTemplateOutlet]="itemTplRef() ?? null"
@@ -165,13 +162,10 @@ export class SdSharedDataSelect<
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical">();
-  getIsHiddenFn = input<(item: TItem, index: number) => boolean>(
-    (item) => item.__isHidden,
-  );
-  getSearchTextFn = input<(item: TItem, index: number) => string>(
-    (item) => item.__searchText,
-  );
-  displayOrderByFn = input<(item: TItem) => string | number | DateOnly | DateTime | Time | undefined>();
+  getIsHiddenFn = input<(item: TItem, index: number) => boolean>((item) => item.__isHidden);
+  getSearchTextFn = input<(item: TItem, index: number) => string>((item) => item.__searchText);
+  displayOrderByFn =
+    input<(item: TItem) => string | number | DateOnly | DateTime | Time | undefined>();
 
   itemTplRef = contentChild<SdItemOfTemplate<TItem>, TemplateRef<SdItemOfTemplateContext<TItem>>>(
     SdItemOfTemplate,
@@ -187,9 +181,7 @@ export class SdSharedDataSelect<
 
   isDropdownOpen = computed(() => this._selectCtrl()?.dropdownOpen() ?? false);
 
-  hasParentKey = computed(() =>
-    this.items().some((item) => item.__parentKey != null),
-  );
+  hasParentKey = computed(() => this.items().some((item) => item.__parentKey != null));
 
   itemByParentKeyMap = computed(() => {
     if (!this.hasParentKey()) return undefined;
@@ -296,10 +288,7 @@ export class SdSharedDataSelect<
   }
 
   getItemVisible(item: TItem, index: number): boolean {
-    if (
-      this.isIncludeSearchText(item, index) &&
-      !this.getIsHiddenFn()(item, index)
-    ) {
+    if (this.isIncludeSearchText(item, index) && !this.getIsHiddenFn()(item, index)) {
       return true;
     }
     // 현재 선택된 항목은 항상 표시
@@ -328,10 +317,7 @@ export class SdSharedDataSelect<
   });
 
   getChildren = (item: SharedDataBase<string | number>): TItem[] => {
-    return (
-      this._sortedChildrenMap()?.get(item.__valueKey) ??
-      []
-    );
+    return this._sortedChildrenMap()?.get(item.__valueKey) ?? [];
   };
 
   async onModalButtonClick(event: MouseEvent): Promise<void> {
@@ -351,10 +337,7 @@ export class SdSharedDataSelect<
     });
 
     if (result != null) {
-      const newValue =
-        this.selectMode() === "multi"
-          ? result.selectedKeys
-          : result.selectedKeys[0];
+      const newValue = this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];
       this.value.set(newValue);
     }
   }

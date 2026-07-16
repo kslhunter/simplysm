@@ -18,8 +18,8 @@ import { NgIcon } from "@ng-icons/core";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [SdCollapseIcon, SdCollapse, SdRipple, SdList, SdListItem, NgIcon],
-  host:{
-    "[class]": "'pv-lg'"
+  host: {
+    "[class]": "'pv-lg'",
   },
   template: `
     <div class="p-xs-default">
@@ -60,21 +60,21 @@ import { NgIcon } from "@ng-icons/core";
           display: block;
           cursor: pointer;
           user-select: none;
-          color: var(--text-trans-light);
+          color: var(--sd-tx-muted);
 
-          padding: var(--gap-sm) var(--gap-default);
-          border-radius: var(--border-radius-default);
-          margin: 0 var(--gap-sm);
+          padding: var(--sd-gap-sm) var(--sd-gap-default);
+          border-radius: var(--sd-radius-default);
+          margin: 0 var(--sd-gap-sm);
 
           &:hover {
-            background: var(--trans-lighter);
+            background-color: var(--sd-bg-state-hover);
           }
         }
 
         > sd-collapse > ._content > sd-list {
-          background: var(--trans-lightest);
-          padding: var(--gap-xs) 0;
-          margin: 0 var(--gap-sm);
+          background-color: var(--sd-bg-gray-subtle);
+          padding: var(--sd-gap-xs) 0;
+          margin: 0 var(--sd-gap-sm);
         }
       }
     `,

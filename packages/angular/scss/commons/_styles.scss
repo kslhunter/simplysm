@@ -9,7 +9,6 @@
   *:after,
   *:before {
     box-sizing: border-box;
-    outline-color: var(--theme-primary-default);
 
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -17,6 +16,12 @@
 
   *:focus {
     outline: none;
+  }
+
+  // 포커스 링 단일 규약 (DEC-010) — 키보드 포커스(:focus-visible)에만 링 표시
+  *:focus-visible {
+    outline: var(--sd-focus-ring-width) solid var(--sd-focus-ring-color);
+    outline-offset: var(--sd-focus-ring-offset);
   }
 
   html {
@@ -32,12 +37,14 @@
   }
 
   body {
-    background: var(--background-color);
-    color: var(--text-trans-default);
-    font-family: var(--font-family);
+    background-color: var(--sd-bg-canvas);
+    background-image: var(--sd-bg-canvas-image);
+    color: var(--sd-tx-default);
+    font-family: var(--sd-font-family);
     font-variant-numeric: tabular-nums;
-    font-size: var(--font-size-default);
-    line-height: var(--line-height);
+    font-size: var(--sd-font-size-default);
+    font-weight: var(--sd-font-weight);
+    line-height: var(--sd-line-height);
   }
 
   *::-webkit-scrollbar {
@@ -47,31 +54,31 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: var(--trans-lighter);
+    background-color: var(--sd-scrollbar-thumb);
     border-radius: 0.6667rem;
     background-clip: padding-box;
     border: 2px solid transparent;
   }
 
   *:hover::-webkit-scrollbar-thumb {
-    background-color: var(--trans-light);
+    background-color: var(--sd-scrollbar-thumb-hover);
   }
 
   *::-webkit-scrollbar-track:hover {
-    background-color: var(--trans-lightest);
+    background-color: var(--sd-scrollbar-track);
     border-radius: 0.6667rem;
     background-clip: padding-box;
     border: 2px solid transparent;
   }
 
   *::-webkit-scrollbar-corner {
-    background: transparent;
+    background-color: transparent;
   }
 
   hr {
     border: none;
     height: 1px;
-    background-color: var(--border-color-lighter);
+    background-color: var(--sd-bd-soft);
     width: 100%;
     display: block;
   }
@@ -82,18 +89,18 @@
 
   pre,
   code {
-    font-size: var(--font-size-default);
-    line-height: var(--line-height);
+    font-size: var(--sd-font-size-default);
+    line-height: var(--sd-line-height);
     margin: 0;
   }
 
   pre {
-    font-family: var(--font-family);
+    font-family: var(--sd-font-family);
     font-variant-numeric: tabular-nums;
   }
 
   code {
-    font-family: var(--font-family-monospace);
+    font-family: var(--sd-font-family-monospace);
     font-variant-numeric: tabular-nums;
   }
 
@@ -129,55 +136,35 @@
 
   @each $h in (h1, h2, h3, h4, h5, h6) {
     #{$h} {
-      font-size: var(--font-size-#{$h});
-      line-height: var(--line-height);
+      font-size: var(--sd-font-size-#{$h});
+      line-height: var(--sd-line-height);
       margin: 0;
     }
   }
 
-  @each $key, $val in map.get(variables.$vars, font-size) {
+  @each $key, $val in map.get(variables.$sd, font-size) {
     .ft-size-#{$key} {
-      font-size: var(--font-size-#{$key}) !important;
-      line-height: var(--line-height) !important;
+      font-size: var(--sd-font-size-#{$key}) !important;
+      line-height: var(--sd-line-height) !important;
     }
   }
 
-  //-- BACKGROUND COLOR
+  //-- BACKGROUND COLOR (클래스명 = 토큰명 - "--sd-", DEC-013)
 
-  @each $key, $val in map.get(variables.$vars, theme) {
-    @each $key1, $val1 in $val {
-      .bg-theme-#{$key}-#{$key1} {
-        background: var(--theme-#{$key}-#{$key1}) !important;
+  @each $name, $val in mixins.flatKeys(map.get(variables.$sd, bg)) {
+    @if mixins.isUtilityToken($name) {
+      .bg-#{$name} {
+        background-color: var(--sd-bg-#{$name}) !important;
       }
     }
   }
 
-  @each $key, $val in map.get(variables.$vars, trans) {
-    .bg-trans-#{$key} {
-      background: var(--trans-#{$key}) !important;
-    }
-  }
-
-  .bg-default {
-    background: var(--background-color) !important;
-  }
-
-  .bg-control {
-    background: var(--control-color) !important;
-  }
-
   //-- TEXT COLOR
 
-  @each $key, $val in map.get(variables.$vars, text-trans) {
-    .tx-trans-#{$key} {
-      color: var(--text-trans-#{$key}) !important;
-    }
-  }
-
-  @each $key, $val in map.get(variables.$vars, theme) {
-    @each $key1, $val1 in $val {
-      .tx-theme-#{$key}-#{$key1} {
-        color: var(--theme-#{$key}-#{$key1}) !important;
+  @each $name, $val in mixins.flatKeys(map.get(variables.$sd, tx)) {
+    @if mixins.isUtilityToken($name) {
+      .tx-#{$name} {
+        color: var(--sd-tx-#{$name}) !important;
       }
     }
   }
@@ -197,23 +184,11 @@
     border: 1px solid !important;
   }
 
-  @each $key, $val in map.get(variables.$vars, theme) {
-    @each $key1, $val1 in $val {
-      .bd-theme-#{$key}-#{$key1} {
-        border-color: var(--theme-#{$key}-#{$key1}) !important;
+  @each $name, $val in mixins.flatKeys(map.get(variables.$sd, bd)) {
+    @if mixins.isUtilityToken($name) {
+      .bd-#{$name} {
+        border-color: var(--sd-bd-#{$name}) !important;
       }
-    }
-  }
-
-  @each $key, $val in map.get(variables.$vars, trans) {
-    .bd-trans-#{$key} {
-      border-color: var(--trans-#{$key}) !important;
-    }
-  }
-
-  @each $key, $val in map.get(variables.$vars, border-color) {
-    .bd-color-#{$key} {
-      border-color: var(--border-color-#{$key}) !important;
     }
   }
 
@@ -231,15 +206,15 @@
   }
 
   //-- BORDER WIDTH
-  @each $key, $val in map.get(variables.$vars, gap) {
+  @each $key, $val in map.get(variables.$sd, gap) {
     .bd-width-#{$key} {
-      border-width: var(--gap-#{$key}) !important;
+      border-width: var(--sd-gap-#{$key}) !important;
     }
 
     @each $dir in (top, right, bottom, left) {
       $d: string.slice($dir, 1, 1);
       .bd#{$d}-width-#{$key} {
-        border-#{$dir}-width: var(--gap-#{$key}) !important;
+        border-#{$dir}-width: var(--sd-gap-#{$key}) !important;
       }
     }
   }
@@ -265,15 +240,15 @@
     ),
   );
 
-  @each $key, $val in map.get(variables.$vars, border-radius) {
+  @each $key, $val in map.get(variables.$sd, radius) {
     .bd-radius-#{$key} {
-      border-radius: var(--border-radius-#{$key}) !important;
+      border-radius: var(--sd-radius-#{$key}) !important;
     }
 
     @each $d, $corners in $radius-dirs {
       .bd#{$d}-radius-#{$key} {
         @each $corner in $corners {
-          border-#{$corner}-radius: var(--border-radius-#{$key}) !important;
+          border-#{$corner}-radius: var(--sd-radius-#{$key}) !important;
         }
       }
     }
@@ -281,68 +256,68 @@
 
   //-- PADDING, MARGIN
 
-  @each $key, $val in map.get(variables.$vars, gap) {
+  @each $key, $val in map.get(variables.$sd, gap) {
     .p-#{$key} {
-      padding: var(--gap-#{$key}) !important;
+      padding: var(--sd-gap-#{$key}) !important;
     }
 
     .m-#{$key} {
-      margin: var(--gap-#{$key}) !important;
+      margin: var(--sd-gap-#{$key}) !important;
     }
 
     .pv-#{$key} {
-      padding-top: var(--gap-#{$key}) !important;
-      padding-bottom: var(--gap-#{$key}) !important;
+      padding-top: var(--sd-gap-#{$key}) !important;
+      padding-bottom: var(--sd-gap-#{$key}) !important;
     }
 
     .ph-#{$key} {
-      padding-left: var(--gap-#{$key}) !important;
-      padding-right: var(--gap-#{$key}) !important;
+      padding-left: var(--sd-gap-#{$key}) !important;
+      padding-right: var(--sd-gap-#{$key}) !important;
     }
 
     .mv-#{$key} {
-      margin-top: var(--gap-#{$key}) !important;
-      margin-bottom: var(--gap-#{$key}) !important;
+      margin-top: var(--sd-gap-#{$key}) !important;
+      margin-bottom: var(--sd-gap-#{$key}) !important;
     }
 
     .mh-#{$key} {
-      margin-left: var(--gap-#{$key}) !important;
-      margin-right: var(--gap-#{$key}) !important;
+      margin-left: var(--sd-gap-#{$key}) !important;
+      margin-right: var(--sd-gap-#{$key}) !important;
     }
 
     .sw-#{$key} {
-      width: var(--gap-#{$key}) !important;
+      width: var(--sd-gap-#{$key}) !important;
     }
 
     .sh-#{$key} {
-      height: var(--gap-#{$key}) !important;
+      height: var(--sd-gap-#{$key}) !important;
     }
 
     @each $dir in (top, right, bottom, left) {
       $d: string.slice($dir, 1, 1);
 
       .p#{$d}-#{$key} {
-        padding-#{$dir}: var(--gap-#{$key}) !important;
+        padding-#{$dir}: var(--sd-gap-#{$key}) !important;
       }
 
       .m#{$d}-#{$key} {
-        margin-#{$dir}: var(--gap-#{$key}) !important;
+        margin-#{$dir}: var(--sd-gap-#{$key}) !important;
       }
 
       .#{$d}-#{$key} {
-        #{$dir}: var(--gap-#{$key}) !important;
+        #{$dir}: var(--sd-gap-#{$key}) !important;
       }
     }
   }
 
-  @each $key, $val in map.get(variables.$vars, gap) {
-    @each $key1, $val1 in map.get(variables.$vars, gap) {
+  @each $key, $val in map.get(variables.$sd, gap) {
+    @each $key1, $val1 in map.get(variables.$sd, gap) {
       .p-#{$key}-#{$key1} {
-        padding: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
+        padding: var(--sd-gap-#{$key}) var(--sd-gap-#{$key1}) !important;
       }
 
       .m-#{$key}-#{$key1} {
-        margin: var(--gap-#{$key}) var(--gap-#{$key1}) !important;
+        margin: var(--sd-gap-#{$key}) var(--sd-gap-#{$key1}) !important;
       }
     }
   }
@@ -358,11 +333,11 @@
   //-- ETC
 
   .sh-topbar {
-    height: var(--topbar-height) !important;
+    height: var(--sd-topbar-height) !important;
   }
 
   .sw-sidebar {
-    width: var(--sidebar-width) !important;
+    width: var(--sd-sidebar-width) !important;
   }
 
   .form-control {
@@ -374,18 +349,18 @@
   }
 
   .control-header {
-    line-height: var(--line-height);
-    font-size: var(--font-size-sm);
-    color: var(--theme-gray-default);
+    line-height: var(--sd-line-height);
+    font-size: var(--sd-font-size-sm);
+    color: var(--sd-tx-gray);
   }
 
   .page-header {
-    line-height: var(--line-height);
-    margin-bottom: var(--gap-sm);
-    color: var(--theme-gray-default);
+    line-height: var(--sd-line-height);
+    margin-bottom: var(--sd-gap-sm);
+    color: var(--sd-tx-gray);
 
-    padding-bottom: var(--gap-xxs);
-    font-size: var(--font-size-sm);
+    padding-bottom: var(--sd-gap-xxs);
+    font-size: var(--sd-font-size-sm);
   }
 
   .sticky-top {
@@ -412,9 +387,9 @@
     overflow: auto;
   }
 
-  @each $key, $val in map.get(variables.$vars, gap) {
+  @each $key, $val in map.get(variables.$sd, gap) {
     .gap-#{$key} {
-      gap: var(--gap-#{$key});
+      gap: var(--sd-gap-#{$key});
     }
   }
 

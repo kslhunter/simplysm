@@ -29,8 +29,8 @@ import {
         height: 100%;
         width: 100%;
         pointer-events: none;
-        padding: var(--gap-xxl);
-        z-index: map.get(variables.$vars, z-index, toast);
+        padding: var(--sd-gap-xxl);
+        z-index: map.get(variables.$sd, z, toast);
 
         @include mixins.flex-direction(column);
 
@@ -43,9 +43,9 @@ import {
 
           > sd-toast {
             position: absolute;
-            bottom: var(--gap-xxl);
-            left: var(--gap-xxl);
-            right: var(--gap-xxl);
+            bottom: var(--sd-gap-xxl);
+            left: var(--sd-gap-xxl);
+            right: var(--sd-gap-xxl);
             width: auto;
           }
         }

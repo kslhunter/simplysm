@@ -77,13 +77,13 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
           left: 0;
           width: 100%;
           height: 100%;
-          z-index: map.get(variables.$vars, z-index, busy);
+          z-index: map.get(variables.$sd, z, busy);
 
           visibility: hidden;
           pointer-events: none;
 
           opacity: 0;
-          transition: opacity var(--animation-duration);
+          transition: opacity var(--sd-animation-duration);
           transition-timing-function: linear;
 
           > ._progress {
@@ -93,7 +93,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
             left: 0;
             height: 4px;
             width: 100%;
-            background-color: var(--background-color);
+            background-color: var(--sd-bg-canvas);
 
             > ._progress-bar {
               position: absolute;
@@ -103,11 +103,11 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
               content: "";
               height: 4px;
               width: 100%;
-              transition: var(--animation-duration) ease-in;
+              transition: var(--sd-animation-duration) ease-in;
               transition-property: transform;
               transform-origin: left;
               transform: scaleX(0);
-              background-color: var(--theme-primary-default);
+              background-color: var(--sd-bg-primary-solid);
             }
           }
         }
@@ -124,7 +124,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
         &[data-sd-type="spinner"] {
           > ._screen > ._rect {
             transform: translateY(-100%);
-            transition: var(--animation-duration) ease-in;
+            transition: var(--sd-animation-duration) ease-in;
             transition-property: transform;
 
             > ._indicator {
@@ -132,11 +132,12 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
               width: 30px;
               height: 30px;
               margin: 20px auto 0 auto;
-              border: 6px solid var(--background-color);
+              // 링은 캔버스색, 하단 호는 primary 면색을 그대로 사용하는 그래픽
+              border: 6px solid var(--sd-bg-canvas);
               border-radius: 100%;
-              border-bottom-color: var(--theme-primary-default);
+              border-bottom-color: var(--sd-bg-primary-solid);
               animation: sd-busy-spin 1s linear infinite;
-              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 2px 4px var(--sd-shadow-color);
 
               > div {
                 display: none;
@@ -147,17 +148,17 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
               position: absolute;
               top: 55px;
               width: 100%;
-              color: var(--background-color);
+              color: var(--sd-bg-canvas);
               font-weight: bold;
               text-align: center;
-              text-shadow: 0 0 2px var(--background-rev-color);
+              text-shadow: 0 0 2px var(--sd-bg-inverse);
             }
           }
 
           &[data-sd-busy="true"] {
             > ._screen > ._rect {
               transform: none;
-              transition: var(--animation-duration) ease-out;
+              transition: var(--sd-animation-duration) ease-out;
             }
           }
         }
@@ -173,7 +174,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
                 left: 0;
                 height: 4px;
                 width: 100%;
-                background-color: var(--background-color);
+                background-color: var(--sd-bg-canvas);
 
                 &:before,
                 &:after {
@@ -189,12 +190,12 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
                 }
 
                 &:before {
-                  background-color: var(--theme-primary-default);
+                  background-color: var(--sd-bg-primary-solid);
                   animation: sd-busy-bar-indicator-before 2s infinite ease-in;
                 }
 
                 &:after {
-                  background-color: var(--background-color);
+                  background-color: var(--sd-bg-canvas);
                   animation: sd-busy-bar-indicator-after 2s infinite ease-out;
                 }
 
@@ -239,7 +240,7 @@ import { SdBusyProvider, type SdBusyType } from "./sd-busy.provider";
                   left: 0;
                   width: 100%;
                   height: 100%;
-                  background-color: var(--trans-light);
+                  background-color: var(--sd-bg-busy-indicator);
                   animation: sd-busy-cube 2.4s infinite linear both;
                   transform-origin: 100% 100%;
                 }

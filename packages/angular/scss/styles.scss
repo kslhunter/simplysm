@@ -1,9 +1,6 @@
 @use "commons/theme-variables";
 @use "commons/styles";
 
-// 블루프린트 모눈 그리드 면 (언레이어드 — 파일 내 주석 참조)
-@use "themes/blueprint-surfaces";
-
 @use "controls/flex";
 @use "controls/grid";
 @use "controls/card";
@@ -12,7 +9,9 @@
 @use "controls/table";
 
 ng-icon {
-  --ng-icon__size: 1.33em;
+  // 아이콘 박스 + 아래 시프트(0.2em)가 라인박스를 절대 못 넘게 line-height 에서 유도.
+  // 고정 배율(1.33em)이던 시절 1.33+0.2 > line-height 로 행 높이가 부풀었음.
+  --ng-icon__size: calc(var(--sd-line-height) - 0.2em);
   vertical-align: -0.2em !important;
 
   svg {

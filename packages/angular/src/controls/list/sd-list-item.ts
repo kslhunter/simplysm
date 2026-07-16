@@ -35,8 +35,8 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
     >
       @if (selectedIcon() != null && !hasChildren()) {
         <ng-icon
-          [class.tx-theme-primary-default]="selected()"
-          [class.tx-trans-lightest]="!selected()"
+          [class.tx-primary]="selected()"
+          [class.tx-faint]="!selected()"
           [svg]="selectedIcon()!"
         />
       }
@@ -70,11 +70,11 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
 
         > ._content {
           display: flex;
-          padding: var(--gap-sm) var(--gap-default);
+          padding: var(--sd-gap-sm) var(--sd-gap-default);
           cursor: pointer;
-          gap: var(--gap-xs);
-          border-radius: var(--border-radius-default);
-          transition: background var(--animation-duration) ease-in;
+          gap: var(--sd-gap-xs);
+          border-radius: var(--sd-radius-default);
+          transition: background var(--sd-animation-duration) ease-in;
 
           > ._label {
             flex: 1 1 auto;
@@ -83,21 +83,21 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
 
           &:focus-visible {
             outline: none;
-            transition: background var(--animation-duration) ease-out;
-            background: var(--trans-light);
+            transition: background var(--sd-animation-duration) ease-out;
+            background-color: var(--sd-bg-state-hover);
           }
         }
 
         &[data-sd-selected="true"] > ._content {
-          background: var(--trans-light);
+          background-color: var(--sd-bg-state-selected);
           font-weight: bold;
         }
 
         &[data-sd-has-selected-icon="true"][data-sd-selected="true"] > ._content {
-          color: var(--text-trans-default);
+          color: var(--sd-tx-default);
 
           &:hover {
-            background: var(--trans-light);
+            background-color: var(--sd-bg-state-hover);
           }
         }
 
@@ -119,7 +119,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
             bottom: 0;
             left: 1em;
             width: 0;
-            border-left: 1px solid var(--trans-light);
+            border-left: 1px solid var(--sd-bd-soft);
             pointer-events: none;
           }
         }
@@ -127,8 +127,8 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         &[data-sd-layout="accordion"] {
           &:not([data-sd-readonly="true"]) {
             > ._content:hover {
-              transition: background var(--animation-duration) ease-out;
-              background: var(--trans-light);
+              transition: background var(--sd-animation-duration) ease-out;
+              background-color: var(--sd-bg-state-hover);
             }
           }
 
@@ -142,9 +142,9 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         &[data-sd-layout="flat"][data-sd-has-children="true"] {
           > ._content {
             display: block;
-            background: transparent;
+            background-color: transparent;
             cursor: default;
-            font-size: var(--font-size-sm);
+            font-size: var(--sd-font-size-sm);
             opacity: 0.7;
             margin: 0;
           }
@@ -153,7 +153,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
 
       .sd-theme-mobile > sd-list-item {
         > ._content:hover {
-          background: transparent;
+          background-color: transparent;
         }
       }
     `,

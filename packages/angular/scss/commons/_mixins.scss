@@ -1,6 +1,7 @@
 @use "./variables";
 @use "sass:meta";
 @use "sass:map";
+@use "sass:string";
 
 @mixin writeVars($value, $prevKey) {
   @if meta.type-of($value) == map {
@@ -16,41 +17,65 @@
   }
 }
 
-// blur 항에 --elevation-blur-mult(기본 1, 항등)를 곱해 테마별로 blur 제거 가능.
+// $sd 색 그룹(bg/tx/bd)의 중첩 맵을 "이름: 값" 평탄 맵으로 펼친다 (유틸 클래스 생성용).
+@function flatKeys($map, $prefix: "") {
+  $result: ();
+  @each $key, $val in $map {
+    $name: "#{$key}";
+    @if $prefix != "" {
+      $name: "#{$prefix}-#{$key}";
+    }
+    @if meta.type-of($val) == map {
+      $result: map.merge($result, flatKeys($val, $name));
+    } @else {
+      $result: map.set($result, $name, $val);
+    }
+  }
+  @return $result;
+}
+
+// -hover 변형·bg-canvas-image·bg-sheet-image 는 유틸 클래스 미생성 (DEC-013)
+@function isUtilityToken($name) {
+  @return string.slice($name, -6) != "-hover" and $name != "canvas-image" and $name != "sheet-image";
+}
+
+// blur 항에 --sd-shadow-blur-mult(기본 1, 항등)를 곱해 테마별로 blur 제거 가능.
 // 블루프린트 테마는 이 토큰을 0으로 덮어 하드 오프셋(blur 0) 섀도를 만든다.
 @mixin elevation($value) {
   @if $value == none or $value == 0 {
     box-shadow: none;
   } @else if $value < 0 {
     box-shadow:
-      inset 0 0 calc(0.1667rem * var(--elevation-blur-mult)) var(--trans-lighter),
+      inset 0 0 calc(0.1667rem * var(--sd-shadow-blur-mult)) var(--sd-shadow-color),
       inset
         0
-        calc(#{$value * -1} * var(--elevation-size))
-        calc(#{$value * -1} * 4 * var(--elevation-size) * var(--elevation-blur-mult))
-        var(--trans-lighter);
+        calc(#{$value * -1} * var(--sd-shadow-size))
+        calc(#{$value * -1} * 4 * var(--sd-shadow-size) * var(--sd-shadow-blur-mult))
+        var(--sd-shadow-color);
   } @else {
     box-shadow:
       0
-        calc(#{$value} * var(--elevation-size))
-        calc(#{$value} * 4 * var(--elevation-size) * var(--elevation-blur-mult))
-        var(--trans-lighter),
-      0 var(--elevation-size) calc(var(--elevation-size) * var(--elevation-blur-mult))
-        var(--trans-lighter);
+        calc(#{$value} * var(--sd-shadow-size))
+        calc(#{$value} * 4 * var(--sd-shadow-size) * var(--sd-shadow-blur-mult))
+        var(--sd-shadow-color),
+      0
+        var(--sd-shadow-size)
+        calc(var(--sd-shadow-size) * var(--sd-shadow-blur-mult))
+        var(--sd-shadow-color);
   }
 }
 
 @mixin form-control-base() {
   display: block;
-  padding: var(--gap-sm) var(--gap-default);
+  padding: var(--sd-gap-sm) var(--sd-gap-default);
   border: 1px solid transparent;
 
-  font-size: var(--font-size-default);
-  font-family: var(--font-family);
+  font-size: var(--sd-font-size-default);
+  font-family: var(--sd-font-family);
   font-variant-numeric: tabular-nums;
-  line-height: var(--line-height);
+  line-height: var(--sd-line-height);
 
-  color: var(--text-trans-default);
+  color: var(--sd-tx-default);
 }
 
 @mixin help() {
@@ -64,23 +89,11 @@
     border-#{$dir}: 1px solid !important;
   }
 
-  @each $key, $val in map.get(variables.$vars, theme) {
-    @each $key1, $val1 in $val {
-      .bd#{$d}-theme-#{$key}-#{$key1} {
-        border-#{$dir}-color: var(--theme-#{$key}-#{$key1}) !important;
+  @each $name, $val in flatKeys(map.get(variables.$sd, bd)) {
+    @if isUtilityToken($name) {
+      .bd#{$d}-#{$name} {
+        border-#{$dir}-color: var(--sd-bd-#{$name}) !important;
       }
-    }
-  }
-
-  @each $key, $val in map.get(variables.$vars, trans) {
-    .bd#{$d}-trans-#{$key} {
-      border-#{$dir}-color: var(--trans-#{$key}) !important;
-    }
-  }
-
-  @each $key, $val in map.get(variables.$vars, border-color) {
-    .bd#{$d}-color-#{$key} {
-      border-#{$dir}-color: var(--border-color-#{$key}) !important;
     }
   }
 
@@ -113,14 +126,14 @@
       }
     }
 
-    @each $key, $val in map.get(variables.$vars, gap) {
+    @each $key, $val in map.get(variables.$sd, gap) {
       &.gap-#{$key} {
         gap: 0;
         > * + * {
           @if ($direction == row) {
-            margin-left: var(--gap-#{$key});
+            margin-left: var(--sd-gap-#{$key});
           } @else {
-            margin-top: var(--gap-#{$key});
+            margin-top: var(--sd-gap-#{$key});
           }
         }
       }

@@ -41,7 +41,7 @@ import type { SdTextfieldTypes } from "./sd-textfield-type-handlers";
         display: flex;
         align-items: center;
 
-        @include mixins.flex-direction(row, var(--gap-sm));
+        @include mixins.flex-direction(row, var(--sd-gap-sm));
       }
     `,
   ],

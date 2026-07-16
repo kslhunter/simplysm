@@ -27,31 +27,29 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
 
       sd-sidebar {
         position: absolute;
-        z-index: var(--z-index-sidebar);
+        z-index: var(--sd-z-sidebar);
         top: 0;
         left: 0;
-        width: var(--sidebar-width);
+        width: var(--sd-sidebar-width);
         height: 100%;
-        //background: var(--control-color);
-        //background: var(--theme-gray-lightest);
-        border-right: 1px solid var(--border-color-lighter);
+        border-right: 1px solid var(--sd-bd-soft);
 
         @media not all and (max-width: variables.$breakpoint-mobile) {
-          transition: transform var(--animation-duration) ease-out;
+          transition: transform var(--sd-animation-duration) ease-out;
 
           &[data-sd-toggle="true"] {
             transform: translateX(-100%);
-            transition: transform var(--animation-duration) ease-in;
+            transition: transform var(--sd-animation-duration) ease-in;
           }
         }
 
         @media all and (max-width: variables.$breakpoint-mobile) {
-          transition: transform var(--animation-duration) ease-in;
+          transition: transform var(--sd-animation-duration) ease-in;
           transform: translateX(-100%);
 
           &[data-sd-toggle="true"] {
             transform: none;
-            transition: transform var(--animation-duration) ease-out;
+            transition: transform var(--sd-animation-duration) ease-out;
             @include mixins.elevation(16);
           }
         }

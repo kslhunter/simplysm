@@ -38,32 +38,33 @@ import { SdGap } from "../gap/sd-gap";
 
       sd-select-item {
         display: block;
-        padding: var(--gap-sm) var(--gap-default);
+        padding: var(--sd-gap-sm) var(--sd-gap-default);
         cursor: pointer;
-        font-family: var(--font-family-field);
-        transition: background var(--animation-duration) ease-in;
-        background: var(--control-color);
+        font-family: var(--sd-font-family-field);
+        transition: background var(--sd-animation-duration) ease-in;
+        background-color: var(--sd-bg-overlay);
 
         &:hover {
-          transition: background var(--animation-duration) ease-out;
-          background: rgba(0, 0, 0, 0.07);
+          transition: background var(--sd-animation-duration) ease-out;
+          background-color: var(--sd-bg-state-hover);
         }
 
         &:focus {
           outline: none;
-          transition: background var(--animation-duration) ease-out;
-          background: rgba(0, 0, 0, 0.07);
+          transition: background var(--sd-animation-duration) ease-out;
+          background-color: var(--sd-bg-state-hover);
         }
 
         &[data-sd-selected="true"] {
-          color: var(--theme-primary-default);
+          color: var(--sd-tx-primary);
           font-weight: bold;
-          background: rgba(0, 0, 0, 0.07);
+          background-color: var(--sd-bg-state-selected);
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009 — opacity 방식 폐기)
         &[data-sd-disabled="true"] {
-          background: var(--theme-gray-default);
-          opacity: 0.3;
+          background-color: var(--sd-bg-disabled);
+          color: var(--sd-tx-disabled);
           cursor: default;
           pointer-events: none;
         }
@@ -85,9 +86,7 @@ import { SdGap } from "../gap/sd-gap";
   },
 })
 export class SdSelectItem<T> {
-  protected readonly _parentControl = inject<SdSelect<any, T>>(
-    forwardRef(() => SdSelect),
-  );
+  protected readonly _parentControl = inject<SdSelect<any, T>>(forwardRef(() => SdSelect));
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _destroyRef = inject(DestroyRef);
 

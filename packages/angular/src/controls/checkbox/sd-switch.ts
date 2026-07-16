@@ -32,41 +32,39 @@ import { setupModelHook } from "../../core/setupModelHook";
   `,
   styles: [
     /* language=SCSS */ `
-      @use "sass:map";
-
       @use "../../../scss/commons/variables";
 
       sd-switch {
         display: block;
-        padding: var(--gap-sm) 0;
+        padding: var(--sd-gap-sm) 0;
         border: 1px solid transparent;
         vertical-align: top;
         cursor: pointer;
 
         > div {
-          height: var(--line-height);
-          width: calc(var(--line-height) * 2 - var(--gap-xs));
-          padding: calc(var(--gap-xs) / 2);
-          border-radius: calc(var(--line-height) / 2);
+          height: var(--sd-line-height);
+          width: calc(var(--sd-line-height) * 2 - var(--sd-gap-xs));
+          padding: calc(var(--sd-gap-xs) / 2);
+          border-radius: calc(var(--sd-line-height) / 2);
           text-align: left;
 
-          background: var(--theme-gray-lighter);
+          background-color: var(--sd-bg-track);
 
           > div {
             display: inline-block;
-            width: calc(var(--line-height) - var(--gap-xs));
-            height: calc(var(--line-height) - var(--gap-xs));
+            width: calc(var(--sd-line-height) - var(--sd-gap-xs));
+            height: calc(var(--sd-line-height) - var(--sd-gap-xs));
             border-radius: 100%;
 
-            background: var(--control-color);
+            background-color: var(--sd-bg-control);
 
-            transition: transform var(--animation-duration);
+            transition: transform var(--sd-animation-duration);
           }
         }
 
         &[data-sd-on="true"] {
           > div {
-            background: var(--theme-success-default);
+            background-color: var(--sd-bg-success-solid);
 
             > div {
               transform: translateX(100%);
@@ -85,29 +83,30 @@ import { setupModelHook } from "../../core/setupModelHook";
         }
 
         &[data-sd-size="sm"] {
-          padding: var(--gap-sm) 0;
+          padding: var(--sd-gap-sm) 0;
         }
 
         &[data-sd-size="lg"] {
-          padding: var(--gap-default) 0;
+          padding: var(--sd-gap-default) 0;
         }
 
-        @each $key, $val in map.get(variables.$vars, theme) {
+        @each $key in variables.$theme-keys {
           &[data-sd-theme="#{$key}"] {
             &[data-sd-on="true"] {
               > div {
-                background: var(--theme-#{$key}-default);
+                background-color: var(--sd-bg-#{$key}-solid);
               }
             }
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009 — opacity 방식 폐기)
         &[data-sd-disabled="true"] {
           > div {
-            opacity: 0.5;
+            background-color: var(--sd-bg-disabled) !important;
 
             > div {
-              background: var(--theme-gray-default);
+              background-color: var(--sd-bg-gray-solid);
             }
           }
         }

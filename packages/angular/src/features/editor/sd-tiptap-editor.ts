@@ -46,56 +46,148 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
     @if (!disabled()) {
       <div class="_toolbar">
         <div class="_btn-group">
-          <button type="button" data-cmd="h1" [class._active]="activeStates().h1"
-                  (click)="execCmd('h1')">H1</button>
-          <button type="button" data-cmd="h2" [class._active]="activeStates().h2"
-                  (click)="execCmd('h2')">H2</button>
+          <button
+            type="button"
+            data-cmd="h1"
+            [class._active]="activeStates().h1"
+            (click)="execCmd('h1')"
+          >
+            H1
+          </button>
+          <button
+            type="button"
+            data-cmd="h2"
+            [class._active]="activeStates().h2"
+            (click)="execCmd('h2')"
+          >
+            H2
+          </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bold" [class._active]="activeStates().bold"
-                  (click)="execCmd('bold')">B</button>
-          <button type="button" data-cmd="italic" [class._active]="activeStates().italic"
-                  (click)="execCmd('italic')">I</button>
-          <button type="button" data-cmd="underline" [class._active]="activeStates().underline"
-                  (click)="execCmd('underline')">U</button>
-          <button type="button" data-cmd="strike" [class._active]="activeStates().strike"
-                  (click)="execCmd('strike')">S</button>
+          <button
+            type="button"
+            data-cmd="bold"
+            [class._active]="activeStates().bold"
+            (click)="execCmd('bold')"
+          >
+            B
+          </button>
+          <button
+            type="button"
+            data-cmd="italic"
+            [class._active]="activeStates().italic"
+            (click)="execCmd('italic')"
+          >
+            I
+          </button>
+          <button
+            type="button"
+            data-cmd="underline"
+            [class._active]="activeStates().underline"
+            (click)="execCmd('underline')"
+          >
+            U
+          </button>
+          <button
+            type="button"
+            data-cmd="strike"
+            [class._active]="activeStates().strike"
+            (click)="execCmd('strike')"
+          >
+            S
+          </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="textColor" class="_color-btn"
-                  (click)="toggleColorPicker('text')">
+          <button
+            type="button"
+            data-cmd="textColor"
+            class="_color-btn"
+            (click)="toggleColorPicker('text')"
+          >
             <span class="_color-indicator" [style.background-color]="activeColor()"></span>
             A
           </button>
-          <button type="button" data-cmd="bgColor" class="_color-btn"
-                  (click)="toggleColorPicker('bg')">
+          <button
+            type="button"
+            data-cmd="bgColor"
+            class="_color-btn"
+            (click)="toggleColorPicker('bg')"
+          >
             <span class="_color-indicator" [style.background-color]="activeBgColor()"></span>
             BG
           </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="bulletList" [class._active]="activeStates().bulletList"
-                  (click)="execCmd('bulletList')">UL</button>
-          <button type="button" data-cmd="orderedList" [class._active]="activeStates().orderedList"
-                  (click)="execCmd('orderedList')">OL</button>
+          <button
+            type="button"
+            data-cmd="bulletList"
+            [class._active]="activeStates().bulletList"
+            (click)="execCmd('bulletList')"
+          >
+            UL
+          </button>
+          <button
+            type="button"
+            data-cmd="orderedList"
+            [class._active]="activeStates().orderedList"
+            (click)="execCmd('orderedList')"
+          >
+            OL
+          </button>
           <button type="button" data-cmd="indent" (click)="execCmd('indent')">→</button>
           <button type="button" data-cmd="outdent" (click)="execCmd('outdent')">←</button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="blockquote" [class._active]="activeStates().blockquote"
-                  (click)="execCmd('blockquote')">❝</button>
-          <button type="button" data-cmd="codeBlock" [class._active]="activeStates().codeBlock"
-                  (click)="execCmd('codeBlock')">&lt;/&gt;</button>
+          <button
+            type="button"
+            data-cmd="blockquote"
+            [class._active]="activeStates().blockquote"
+            (click)="execCmd('blockquote')"
+          >
+            ❝
+          </button>
+          <button
+            type="button"
+            data-cmd="codeBlock"
+            [class._active]="activeStates().codeBlock"
+            (click)="execCmd('codeBlock')"
+          >
+            &lt;/&gt;
+          </button>
         </div>
         <div class="_btn-group">
-          <button type="button" data-cmd="alignLeft" [class._active]="activeStates().alignLeft"
-                  (click)="execCmd('alignLeft')">≡L</button>
-          <button type="button" data-cmd="alignCenter" [class._active]="activeStates().alignCenter"
-                  (click)="execCmd('alignCenter')">≡C</button>
-          <button type="button" data-cmd="alignRight" [class._active]="activeStates().alignRight"
-                  (click)="execCmd('alignRight')">≡R</button>
-          <button type="button" data-cmd="alignJustify" [class._active]="activeStates().alignJustify"
-                  (click)="execCmd('alignJustify')">≡J</button>
+          <button
+            type="button"
+            data-cmd="alignLeft"
+            [class._active]="activeStates().alignLeft"
+            (click)="execCmd('alignLeft')"
+          >
+            ≡L
+          </button>
+          <button
+            type="button"
+            data-cmd="alignCenter"
+            [class._active]="activeStates().alignCenter"
+            (click)="execCmd('alignCenter')"
+          >
+            ≡C
+          </button>
+          <button
+            type="button"
+            data-cmd="alignRight"
+            [class._active]="activeStates().alignRight"
+            (click)="execCmd('alignRight')"
+          >
+            ≡R
+          </button>
+          <button
+            type="button"
+            data-cmd="alignJustify"
+            [class._active]="activeStates().alignJustify"
+            (click)="execCmd('alignJustify')"
+          >
+            ≡J
+          </button>
         </div>
         <div class="_btn-group">
           <button type="button" data-cmd="clean" (click)="execCmd('clean')">Tx</button>
@@ -104,13 +196,17 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
       @if (colorPickerMode() != undefined) {
         <div class="_color-picker">
           @for (color of colorPresets; track color) {
-            <button type="button" class="_color-swatch"
-                    [style.background-color]="color"
-                    [attr.aria-label]="color"
-                    (click)="applyColor(color)"></button>
+            <button
+              type="button"
+              class="_color-swatch"
+              [style.background-color]="color"
+              [attr.aria-label]="color"
+              (click)="applyColor(color)"
+            ></button>
           }
-          <button type="button" class="_color-swatch _no-color"
-                  (click)="applyColor(undefined)">✕</button>
+          <button type="button" class="_color-swatch _no-color" (click)="applyColor(undefined)">
+            ✕
+          </button>
         </div>
       }
     }
@@ -121,41 +217,41 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
       sd-tiptap-editor {
         display: block;
         position: relative;
-        border: 1px solid var(--trans-lighter);
-        border-radius: var(--border-radius-default);
-        background: var(--theme-secondary-lightest);
+        border: 1px solid var(--sd-bd-field);
+        border-radius: var(--sd-radius-default);
+        background-color: var(--sd-bg-field);
 
         > ._toolbar {
           display: flex;
           flex-wrap: wrap;
-          gap: var(--gap-xs);
-          padding: var(--gap-xs);
-          border-bottom: 1px solid var(--trans-lighter);
+          gap: var(--sd-gap-xs);
+          padding: var(--sd-gap-xs);
+          border-bottom: 1px solid var(--sd-bd-hairline);
 
           > ._btn-group {
             display: flex;
             gap: 1px;
 
             > button {
-              padding: var(--gap-xs) var(--gap-sm);
-              border: 1px solid var(--trans-lighter);
-              border-radius: var(--border-radius-default);
-              background: transparent;
+              padding: var(--sd-gap-xs) var(--sd-gap-sm);
+              border: 1px solid var(--sd-bd-hairline);
+              border-radius: var(--sd-radius-default);
+              background-color: transparent;
               cursor: pointer;
-              font-size: var(--font-size-default);
+              font-size: var(--sd-font-size-default);
               line-height: 1;
 
               &._active {
-                background: var(--theme-primary-default);
-                color: var(--text-trans-rev-default);
+                background-color: var(--sd-bg-primary-solid);
+                color: var(--sd-tx-primary-solid);
               }
 
               &:hover {
-                background: var(--trans-lighter);
+                background-color: var(--sd-bg-state-hover);
               }
 
               &._active:hover {
-                background: var(--theme-primary-default);
+                background-color: var(--sd-bg-primary-solid);
               }
             }
           }
@@ -165,13 +261,13 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
           display: flex;
           flex-wrap: wrap;
           gap: 2px;
-          padding: var(--gap-xs);
-          border-bottom: 1px solid var(--trans-lighter);
+          padding: var(--sd-gap-xs);
+          border-bottom: 1px solid var(--sd-bd-hairline);
 
           > ._color-swatch {
             width: 1.25rem;
             height: 1.25rem;
-            border: 1px solid var(--trans-lighter);
+            border: 1px solid var(--sd-bd-hairline);
             border-radius: 2px;
             cursor: pointer;
             padding: 0;
@@ -180,16 +276,16 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
               display: flex;
               align-items: center;
               justify-content: center;
-              background: var(--control-color);
+              background-color: var(--sd-bg-control);
               font-size: 0.625rem;
             }
           }
         }
 
         > ._editor-container {
-          padding: var(--gap-sm);
+          padding: var(--sd-gap-sm);
           min-height: 6.25rem;
-          font-family: var(--font-family-field);
+          font-family: var(--sd-font-family-field);
 
           > .tiptap {
             outline: none;
@@ -200,9 +296,10 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
           }
         }
 
+        // disabled 는 색 치환 단일 규약 (DEC-009)
         &[data-sd-disabled="true"] {
-          background: var(--theme-gray-lightest);
-          color: var(--text-trans-light);
+          background-color: var(--sd-bg-disabled);
+          color: var(--sd-tx-disabled);
 
           > ._editor-container > .tiptap {
             cursor: not-allowed;
@@ -248,11 +345,46 @@ export class SdTiptapEditor {
   private readonly _destroyRef = inject(DestroyRef);
 
   readonly colorPresets = [
-    "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc", "#d9d9d9", "#efefef",
-    "#f3f3f3", "#ffffff", "#980000", "#ff0000", "#ff9900", "#ffff00", "#00ff00", "#00ffff",
-    "#4a86e8", "#0000ff", "#9900ff", "#ff00ff", "#e6b8af", "#f4cccc", "#fce5cd", "#fff2cc",
-    "#d9ead3", "#d0e0e3", "#c9daf8", "#cfe2f3", "#d9d2e9", "#ead1dc", "#dd7e6b", "#ea9999",
-    "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd",
+    "#000000",
+    "#434343",
+    "#666666",
+    "#999999",
+    "#b7b7b7",
+    "#cccccc",
+    "#d9d9d9",
+    "#efefef",
+    "#f3f3f3",
+    "#ffffff",
+    "#980000",
+    "#ff0000",
+    "#ff9900",
+    "#ffff00",
+    "#00ff00",
+    "#00ffff",
+    "#4a86e8",
+    "#0000ff",
+    "#9900ff",
+    "#ff00ff",
+    "#e6b8af",
+    "#f4cccc",
+    "#fce5cd",
+    "#fff2cc",
+    "#d9ead3",
+    "#d0e0e3",
+    "#c9daf8",
+    "#cfe2f3",
+    "#d9d2e9",
+    "#ead1dc",
+    "#dd7e6b",
+    "#ea9999",
+    "#f9cb9c",
+    "#ffe599",
+    "#b6d7a8",
+    "#a2c4c9",
+    "#a4c2f4",
+    "#9fc5e8",
+    "#b4a7d6",
+    "#d5a6bd",
   ];
 
   /** @internal -- TipTap Editor 인스턴스. 테스트 및 고급 사용자용 */
@@ -344,20 +476,22 @@ export class SdTiptapEditor {
     const container = this._elRef.nativeElement.querySelector("._editor-container");
     if (container == null) return;
 
-    this.editor.set(new Editor({
-      element: container,
-      extensions,
-      content: initialContent ?? "",
-      editable: untracked(() => !this.disabled() && !this.readonly()),
-      onUpdate: ({ editor }) => {
-        const html = this._getEditorHtmlFrom(editor);
-        this._lastEditorHtml = html;
-        this.value.set(html);
-      },
-      onTransaction: () => {
-        this._toolbar.refreshActiveStates();
-      },
-    }));
+    this.editor.set(
+      new Editor({
+        element: container,
+        extensions,
+        content: initialContent ?? "",
+        editable: untracked(() => !this.disabled() && !this.readonly()),
+        onUpdate: ({ editor }) => {
+          const html = this._getEditorHtmlFrom(editor);
+          this._lastEditorHtml = html;
+          this.value.set(html);
+        },
+        onTransaction: () => {
+          this._toolbar.refreshActiveStates();
+        },
+      }),
+    );
   }
 
   private _destroyEditor(): void {
@@ -374,5 +508,4 @@ export class SdTiptapEditor {
     if (editor.isEmpty) return undefined;
     return html;
   }
-
 }

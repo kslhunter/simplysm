@@ -18,7 +18,7 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
   standalone: true,
   imports: [SdButton, NgIcon],
   host: {
-    "class": "flex-row gap-sm cross-align-center main-align-start"
+    class: "flex-row gap-sm cross-align-center main-align-start",
   },
   template: `
     @if (hasSidebar()) {
@@ -31,45 +31,43 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
         <ng-icon [svg]="tablerMenu2" />
       </sd-button>
     }
-    
+
     <ng-content />
   `,
   styles: [
     /* language=SCSS */ `
       sd-topbar {
-        min-height: var(--topbar-height);
+        min-height: var(--sd-topbar-height);
         overflow-x: auto;
         overflow-y: hidden;
         user-select: none;
 
-        //background: var(--control-color);
-        //background: var(--theme-gray-lightest);
-        color: var(--text-trans-default);
-        border-bottom: 1px solid var(--border-color-lighter);
-        padding-left: var(--gap-xs);
+        color: var(--sd-tx-default);
+        border-bottom: 1px solid var(--sd-bd-soft);
+        padding-left: var(--sd-gap-xs);
 
         @each $h in (h1, h2, h3, h4, h5, h6) {
           > #{$h} {
-            padding-right: var(--gap-xl);
+            padding-right: var(--sd-gap-xl);
           }
         }
 
         &::-webkit-scrollbar-track {
-          background-color: var(--trans-light);
+          background-color: var(--sd-scrollbar-track);
         }
 
         &::-webkit-scrollbar-corner {
-          background-color: var(--trans-light);
+          background-color: var(--sd-scrollbar-track);
         }
 
         &::-webkit-scrollbar {
-          width: var(--gap-sm);
-          height: var(--gap-sm);
+          width: var(--sd-gap-sm);
+          height: var(--sd-gap-sm);
           background-color: transparent;
         }
 
         &::-webkit-scrollbar-thumb {
-          background-color: var(--trans-default);
+          background-color: var(--sd-scrollbar-thumb-hover);
         }
       }
     `,
