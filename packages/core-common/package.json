@@ -30,9 +30,9 @@
     "@types/node": "^24.13.3"
   },
   "dependencies": {
-    "@zip.js/zip.js": "^2.8.29",
+    "@zip.js/zip.js": "^2.8.31",
     "consola": "^3.4.2",
-    "fast-xml-parser": "^5.10.0",
+    "fast-xml-parser": "^5.10.1",
     "yaml": "^2.9.0"
   }
 }

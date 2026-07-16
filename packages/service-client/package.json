@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",
-    "ws": "^8.21.0"
+    "ws": "^8.21.1"
   },
   "peerDependencies": {
     "ws": "^8"

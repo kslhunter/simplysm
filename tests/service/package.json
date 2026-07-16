@@ -19,6 +19,6 @@
     "@simplysm/service-server": "workspace:*",
     "@types/ws": "^8.18.1",
     "jose": "^6.2.3",
-    "ws": "^8.21.0"
+    "ws": "^8.21.1"
   }
 }
