@@ -99,38 +99,4 @@ describe("sd-theme-selector unit", () => {
       }
     });
   });
-
-  describe("밀도 스위치", () => {
-    it("density=compact이면 스위치가 on이다", () => {
-      setupTestBed();
-      const fixture = TestBed.createComponent(SdThemeSelectorTest);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const sdTheme = TestBed.inject(SdThemeProvider);
-      sdTheme.density.set("compact");
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const popup = openPopup(fixture);
-      const sw = popup.querySelector("sd-switch") as HTMLElement;
-      expect(sw.getAttribute("data-sd-on")).toBe("true");
-    });
-
-    it("스위치를 클릭하면 density가 compact로 토글된다", () => {
-      setupTestBed();
-      const fixture = TestBed.createComponent(SdThemeSelectorTest);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      const sdTheme = TestBed.inject(SdThemeProvider);
-      const popup = openPopup(fixture);
-      const sw = popup.querySelector("sd-switch") as HTMLElement;
-      sw.click();
-      fixture.detectChanges();
-      TestBed.flushEffects();
-
-      expect(sdTheme.density()).toBe("compact");
-    });
-  });
 });

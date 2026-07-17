@@ -60,6 +60,16 @@ const BLOCKED_PATTERNS: ReadonlyArray<{ pattern: RegExp; label: string }> = [
       "global install forbidden (npm/pnpm/yarn/bun -g/--global). Install locally or ask the user.",
   },
   {
+    // pnpm 은 npm 과 달리 `--` 를 벗겨내지 않고 하위 명령에 literal 인자로 넘김 —
+    // 필터·인자가 조용히 무시되거나(playwright test filter 증발) unknown option 오류가 남.
+    pattern: new RegExp(
+      `${COMMAND_POSITION_PATTERN}pnpm(?:\\.cmd)?\\s+[^;&|\\n]*?\\s--(?=\\s|$)`,
+      "i",
+    ),
+    label:
+      "pnpm ... -- <args> (pnpm passes `--` through literally, unlike npm; drop it — `pnpm <script> <args>`)",
+  },
+  {
     pattern: new RegExp(`${COMMAND_POSITION_PATTERN}yarn(?:\\.cmd)?\\s+global\\b`, "i"),
     label: "global install forbidden (yarn global). Install locally or ask the user.",
   },

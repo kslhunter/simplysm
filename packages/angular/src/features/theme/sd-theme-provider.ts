@@ -12,17 +12,12 @@ export const SD_THEMES = [
 
 export type SdThemeName = (typeof SD_THEMES)[number]["value"];
 
-// 밀도 축 — 테마와 직교(DEC-007). compact 는 치수 토큰 그룹(sd-density-compact)만 덮는다.
-export type SdDensity = "normal" | "compact";
-
 @Injectable({ providedIn: "root" })
 export class SdThemeProvider {
   readonly themes: readonly { value: SdThemeName; label: string }[] = SD_THEMES;
 
   // 라이트(기본) / 블루프린트(도면) / IDE 다크
   theme = signal<SdThemeName>("light");
-
-  density = signal<SdDensity>("normal");
 
   readonly fontSizePresets: readonly number[] = [12, 14, 16, 20, 24, 28];
 
@@ -37,10 +32,6 @@ export class SdThemeProvider {
       for (const def of this.themes) {
         document.body.classList.toggle(`sd-theme-${def.value}`, def.value === theme);
       }
-    });
-
-    effect(() => {
-      document.body.classList.toggle("sd-density-compact", this.density() === "compact");
     });
 
     effect(() => {

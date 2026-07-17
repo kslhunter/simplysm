@@ -12,16 +12,14 @@ import {
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content />
-  `,
+  template: ` <ng-content /> `,
   styles: [
     /* language=SCSS */ `
       sd-list {
         display: flex;
         flex-direction: column;
         user-select: none;
-        background-color: var(--sd-bg-control);
+        background-color: var(--sd-bg-content);
         border: 1px solid var(--sd-bd-strong);
         border-radius: var(--sd-radius-default);
         padding: var(--sd-gap-sm);

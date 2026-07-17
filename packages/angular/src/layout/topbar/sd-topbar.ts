@@ -42,6 +42,7 @@ import { tablerMenu2 } from "@ng-icons/tabler-icons";
         overflow-y: hidden;
         user-select: none;
 
+        background-color: var(--sd-bg-canvas);
         color: var(--sd-tx-default);
         border-bottom: 1px solid var(--sd-bd-soft);
         padding-left: var(--sd-gap-xs);

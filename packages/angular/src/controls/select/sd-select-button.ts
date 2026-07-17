@@ -7,14 +7,12 @@ import { setupRipple } from "../../core/ripple/setupRipple";
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [],
-  template: `
-    <ng-content />
-  `,
+  template: ` <ng-content /> `,
   styles: [
     /* language=SCSS */ `
       sd-select-button {
         display: block;
-        background-color: var(--sd-bg-control);
+        background-color: var(--sd-bg-content);
         font-weight: bold;
         cursor: pointer;
         color: var(--sd-tx-primary);

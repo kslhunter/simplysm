@@ -57,9 +57,7 @@ import {
   ],
 })
 export class SdNote {
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
   size = input<"sm" | "lg">();
   inset = input(false, { transform: booleanAttribute });
 }

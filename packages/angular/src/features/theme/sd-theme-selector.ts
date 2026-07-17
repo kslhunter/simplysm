@@ -8,7 +8,6 @@ import {
 import { SdDropdown } from "../../controls/dropdown/sd-dropdown";
 import { SdDropdownPopup } from "../../controls/dropdown/sd-dropdown-popup";
 import { SdButton } from "../../controls/button/sd-button";
-import { SdSwitch } from "../../controls/checkbox/sd-switch";
 import { NgIcon } from "@ng-icons/core";
 import { SdThemeProvider } from "./sd-theme-provider";
 import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
@@ -18,7 +17,7 @@ import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [SdDropdown, SdDropdownPopup, SdButton, SdSwitch, NgIcon],
+  imports: [SdDropdown, SdDropdownPopup, SdButton, NgIcon],
   template: `
     <sd-dropdown>
       <sd-button [inline]="true" [theme]="'link-gray'">
@@ -64,14 +63,6 @@ import { tablerMinus, tablerPalette, tablerPlus } from "@ng-icons/tabler-icons";
                 </sd-button>
               }
             </div>
-          </div>
-          <div class="flex-row gap-sm cross-align-center">
-            <span>compact</span>
-            <sd-switch
-              [inline]="true"
-              [value]="_sdTheme.density() === 'compact'"
-              (valueChange)="_sdTheme.density.set($event ? 'compact' : 'normal')"
-            />
           </div>
         </div>
       </sd-dropdown-popup>

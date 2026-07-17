@@ -37,7 +37,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           padding: var(--sd-gap-sm) var(--sd-gap-lg);
           width: 100%;
 
-          background-color: var(--sd-bg-control);
+          background-color: var(--sd-bg-content);
           border-color: var(--sd-bd-primary-solid);
           border-radius: var(--sd-radius-default);
 
@@ -184,7 +184,6 @@ export class SdButton {
   type = input<"button" | "submit">("button");
   theme = input<
     | "primary"
-    | "secondary"
     | "info"
     | "success"
     | "warning"
@@ -193,7 +192,6 @@ export class SdButton {
     | "blue-gray"
     | "link"
     | "link-primary"
-    | "link-secondary"
     | "link-info"
     | "link-success"
     | "link-warning"

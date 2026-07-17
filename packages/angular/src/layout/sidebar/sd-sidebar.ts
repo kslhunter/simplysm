@@ -17,9 +17,7 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
   host: {
     "[attr.data-sd-toggle]": "toggle()",
   },
-  template: `
-    <ng-content />
-  `,
+  template: ` <ng-content /> `,
   styles: [
     /* language=SCSS */ `
       @use "../../../scss/commons/mixins";
@@ -32,6 +30,7 @@ import { SdSidebarContainer } from "./sd-sidebar-container";
         left: 0;
         width: var(--sd-sidebar-width);
         height: 100%;
+        background-color: var(--sd-bg-canvas);
         border-right: 1px solid var(--sd-bd-soft);
 
         @media not all and (max-width: variables.$breakpoint-mobile) {

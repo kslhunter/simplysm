@@ -135,7 +135,7 @@ import { tablerCheck } from "@ng-icons/tabler-icons";
 
         &[data-sd-theme="white"] {
           > ._indicator_rect {
-            background-color: var(--sd-bg-control);
+            background-color: var(--sd-bg-checkbox);
             border-color: var(--sd-bd-field);
           }
 
@@ -279,15 +279,7 @@ export class SdCheckbox {
   inline = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
   theme = input<
-    | "primary"
-    | "secondary"
-    | "info"
-    | "success"
-    | "warning"
-    | "danger"
-    | "gray"
-    | "blue-gray"
-    | "white"
+    "primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray" | "white"
   >();
 
   contentStyle = input<string>();

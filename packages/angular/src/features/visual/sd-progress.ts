@@ -70,7 +70,7 @@ import { PercentPipe } from "@angular/common";
         &[data-sd-inset="true"] {
           border-radius: 0;
           border: none;
-          background-color: var(--sd-bg-control);
+          background-color: var(--sd-bg-track);
         }
       }
     `,
@@ -80,7 +80,7 @@ export class SdProgress {
   inset = input(false, { transform: booleanAttribute });
   size = input<"sm" | "lg">();
   theme = input.required<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
+    "primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
   >();
 
   value = input.required<number>();

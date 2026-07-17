@@ -231,7 +231,7 @@ export type SelectModeValue<T> = {
 
           // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-disabled="true"] > sd-dropdown {
-            background-color: var(--sd-bg-control);
+            background-color: var(--sd-bg-content);
 
             > ._sd-select-control {
               color: var(--sd-tx-default);

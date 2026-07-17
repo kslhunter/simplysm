@@ -9,7 +9,19 @@
           },
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\""
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 00-remote.md"
+          },
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 10-content.md"
+          },
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 20-write.md"
+          },
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 30-local.md"
           },
           {
             "type": "command",

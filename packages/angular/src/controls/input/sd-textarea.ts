@@ -160,7 +160,7 @@ import { setupInvalid } from "../../core/validation/setupInvalid";
           // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-inset="true"] {
             > ._contents {
-              background-color: var(--sd-bg-control);
+              background-color: var(--sd-bg-content);
               color: var(--sd-tx-default);
             }
           }
@@ -190,9 +190,7 @@ export class SdTextarea {
   inset = input(false, { transform: booleanAttribute });
   size = input<"sm" | "lg">();
   validatorFn = input<(value: string | undefined) => string | undefined>();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
   inputStyle = input<string>();
   inputClass = input<string>();
 

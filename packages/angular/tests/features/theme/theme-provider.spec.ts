@@ -53,34 +53,6 @@ describe("테마 전환: SdThemeProvider", () => {
   });
 });
 
-describe("밀도: SdThemeProvider", () => {
-  let provider: SdThemeProvider;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    provider = TestBed.inject(SdThemeProvider);
-    document.body.className = "";
-  });
-
-  it("density signal의 기본값이 normal이다", () => {
-    expect(provider.density()).toBe("normal");
-  });
-
-  it("density=compact일 때 body에 sd-density-compact 클래스가 설정된다", () => {
-    provider.density.set("compact");
-    TestBed.inject(ApplicationRef).tick();
-    expect(document.body.classList.contains("sd-density-compact")).toBe(true);
-  });
-
-  it("density=normal로 되돌리면 sd-density-compact 클래스가 제거된다", () => {
-    provider.density.set("compact");
-    TestBed.inject(ApplicationRef).tick();
-    provider.density.set("normal");
-    TestBed.inject(ApplicationRef).tick();
-    expect(document.body.classList.contains("sd-density-compact")).toBe(false);
-  });
-});
-
 describe("Feature 1.1 Slice 1: SdThemeProvider 폰트 크기 — Unit", () => {
   let provider: SdThemeProvider;
 

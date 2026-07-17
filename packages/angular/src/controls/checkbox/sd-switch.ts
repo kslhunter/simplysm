@@ -56,7 +56,7 @@ import { setupModelHook } from "../../core/setupModelHook";
             height: calc(var(--sd-line-height) - var(--sd-gap-xs));
             border-radius: 100%;
 
-            background-color: var(--sd-bg-control);
+            background-color: var(--sd-bg-knob);
 
             transition: transform var(--sd-animation-duration);
           }
@@ -123,9 +123,7 @@ export class SdSwitch {
   inset = input(false, { transform: booleanAttribute });
 
   size = input<"sm" | "lg">();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
 
   constructor() {
     setupModelHook(this.value, this.canChangeFn);

@@ -14,7 +14,7 @@ const THEMES = ["light", "blueprint", "ide-dark"] as const;
 // [fg 토큰, bg 토큰, 최소 대비율]
 const CORE_PAIRS: [string, string, number][] = [
   ["--sd-tx-default", "--sd-bg-canvas", 4.5],
-  ["--sd-tx-default", "--sd-bg-control", 4.5],
+  ["--sd-tx-default", "--sd-bg-content", 4.5],
   ["--sd-tx-default", "--sd-bg-elevated", 4.5],
   ["--sd-tx-default", "--sd-bg-field", 4.5],
   ["--sd-tx-muted", "--sd-bg-canvas", 3],

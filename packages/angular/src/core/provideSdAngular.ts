@@ -77,20 +77,6 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
         }
       });
 
-      const savedDensity = sdLocalStorage.get("sd-theme-density");
-      if (savedDensity === "compact" || savedDensity === "normal") {
-        sdTheme.density.set(savedDensity);
-      }
-
-      let prevDensity = sdTheme.density();
-      effect(() => {
-        const density = sdTheme.density();
-        if (density !== prevDensity) {
-          sdLocalStorage.set("sd-theme-density", density);
-          prevDensity = density;
-        }
-      });
-
       const savedFontSize = sdLocalStorage.get("sd-theme-font-size");
       if (savedFontSize != null) {
         sdTheme.fontSize.set(savedFontSize);

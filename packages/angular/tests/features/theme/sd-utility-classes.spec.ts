@@ -9,22 +9,23 @@ import cssText from "../../../scss/commons/_styles.scss?inline";
 // - 구 유틸 어휘(.bg-theme-* 등)는 deprecated alias 파일 전용 — 여기 없어야 함.
 //
 
-const SEMANTIC_KEYS = [
-  "gray",
-  "blue-gray",
-  "primary",
-  "secondary",
-  "info",
-  "success",
-  "warning",
-  "danger",
-];
+const SEMANTIC_KEYS = ["gray", "blue-gray", "primary", "info", "success", "warning", "danger"];
 
 // 카탈로그 색 토큰(-hover 변형·canvas-image 제외) — 클래스명 = 토큰명 - "--sd-"
 const BG_CLASSES = [
-  ...["canvas", "control", "elevated", "overlay", "sheet", "inverse", "field", "track"].map(
-    (k) => `bg-${k}`,
-  ),
+  ...[
+    "canvas",
+    "content",
+    "elevated",
+    "overlay",
+    "sheet",
+    "inverse",
+    "field",
+    "track",
+    "knob",
+    "checkbox",
+    "drop-target",
+  ].map((k) => `bg-${k}`),
   ...SEMANTIC_KEYS.flatMap((k) => [`bg-${k}-solid`, `bg-${k}-subtle`]),
   "bg-state-active",
   "bg-state-selected",
@@ -109,6 +110,8 @@ describe("역할 기반 유틸 클래스 (DEC-013)", () => {
       "bg-canvas-image",
       "bg-sheet-image",
       "bg-state-hover",
+      // control 삭제(surface 면 분리)
+      "bg-control",
       ...SEMANTIC_KEYS.flatMap((k) => [
         `bg-${k}-solid-hover`,
         `bg-${k}-subtle-hover`,

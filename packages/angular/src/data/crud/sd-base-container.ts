@@ -55,7 +55,7 @@ import { NgTemplateOutlet } from "@angular/common";
     </sd-busy-container>
 
     <ng-template #content>
-      <div class="flex-column fill bg-control">
+      <div class="flex-column fill bg-content">
         @if (commandTplRef()) {
           <div class="p-sm-default flex-row gap-default bdb bdb-soft">
             <ng-template [ngTemplateOutlet]="commandTplRef()" />

@@ -57,9 +57,7 @@ import {
   ],
 })
 export class SdLabel {
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
   color = input<string>();
   clickable = input(false, { transform: booleanAttribute });
 }

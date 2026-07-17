@@ -1,15 +1,15 @@
 {
   "name": "simplysm",
   "version": "14.2.2",
+  "private": true,
   "description": "심플리즘 패키지",
+  "license": "Apache-2.0",
   "author": "심플리즘",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git"
   },
   "type": "module",
-  "license": "Apache-2.0",
-  "private": true,
   "scripts": {
     "watch": "pnpm sd-cli watch",
     "dev": "pnpm sd-cli dev",
@@ -33,8 +33,8 @@
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.7.0",
     "jiti": "^2.7.0",
+    "oxfmt": "^0.59.0",
     "playwright": "^1.61.1",
-    "prettier": "^3.9.5",
     "sass": "^1.101.0",
     "tsx": "^4.23.1",
     "typescript": "~6.0.3",

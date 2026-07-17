@@ -60,7 +60,7 @@ import {
 })
 export class SdAnchor {
   disabled = input(false, { transform: booleanAttribute });
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >("primary");
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">(
+    "primary",
+  );
 }

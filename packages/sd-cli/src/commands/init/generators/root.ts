@@ -11,18 +11,11 @@ const TPL = path.join(TEMPLATES_ROOT, "workspace-root");
 const FIXED: (string | [string, string])[] = [
   ".editorconfig",
   ["gitignore", ".gitignore"],
-  ".prettierrc.yaml",
   "eslint.config.ts",
   "pnpm-workspace.yaml",
 ];
 
-const HBS = [
-  "mise.toml",
-  "package.json",
-  "tsconfig.json",
-  "sd.config.ts",
-  "vitest.config.ts",
-];
+const HBS = ["mise.toml", "package.json", "tsconfig.json", "sd.config.ts", "vitest.config.ts"];
 
 export async function generateRoot(cwd: string, data: RenderData): Promise<void> {
   for (const entry of FIXED) {

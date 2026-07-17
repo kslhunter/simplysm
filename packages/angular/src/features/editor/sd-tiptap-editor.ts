@@ -276,7 +276,7 @@ const DEFAULT_EXTENSIONS: AnyExtension[] = [
               display: flex;
               align-items: center;
               justify-content: center;
-              background-color: var(--sd-bg-control);
+              background-color: var(--sd-bg-content);
               font-size: 0.625rem;
             }
           }

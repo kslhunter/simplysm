@@ -99,6 +99,15 @@ export default defineConfig({
           },
         },
       },
+      // Plugin tests (에이전트 확장 - rules 주입 구조 등)
+      {
+        extends: true,
+        test: {
+          name: "plugins",
+          environment: "node",
+          include: ["plugins/*/tests/**/*.spec.ts"],
+        },
+      },
       // Integration tests - esbuild banner env injection
       {
         extends: true,

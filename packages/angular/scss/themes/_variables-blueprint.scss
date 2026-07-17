@@ -1,8 +1,7 @@
 // 블루프린트 테마 — 트레이싱지(라이트 면)를 --sd-* 역할 토큰 값 맵으로만 구성(셀렉터 오버라이드 0).
 // 라이트 기본값과 같은 항목은 생략(값 맵은 차이만 덮음).
-// 색 규칙(CONSTRAINT-007): --sd-color-* 팔레트 + 흰/검 알파만.
-// 모눈·그림자 청색 틴트는 rgb(28, 57, 142) ≈ --sd-color-blue-900 근사 리터럴(2026-07-16 확정 —
-// var() 를 알파와 조합할 수 없어 팔레트 성분을 리터럴로 풂).
+// 색 원천: 리터럴 rgb + 흰/검 알파(팔레트 배타 폐기 — 값 자립).
+// 모눈·그림자 청색 틴트는 rgb(28, 57, 142)(구 blue-900 등가) 리터럴.
 
 // 모눈: 24px 헤어라인 + 120px 메이저 — background-size 없이 성립하는 repeating-linear-gradient 형
 $grid-strong: rgba(28, 57, 142, 0.055);
@@ -19,97 +18,100 @@ $paper: (
     // 모눈은 body(캔버스)와 시트 컨테이너에만 — 콘텐츠 내부는 무지(가독 우선)
     canvas-image: $grid-image,
     sheet-image: $grid-image,
+    // 드롭 자리·텍스트 선택 — 블루프린트 잉크(blue-900) 틴트
+    drop-target: rgba(28, 57, 142, 0.1),
+    selection: rgba(28, 57, 142, 0.2),
     "gray": (
-      solid: var(--sd-color-zinc-500),
-      solid-hover: var(--sd-color-zinc-600),
+      solid: rgb(113, 113, 123),
+      solid-hover: rgb(82, 82, 92),
     ),
     blue-gray: (
-      solid: var(--sd-color-slate-500),
-      solid-hover: var(--sd-color-slate-600),
+      solid: rgb(98, 116, 142),
+      solid-hover: rgb(69, 85, 108),
     ),
-    // 블루프린트 잉크 — primary 는 깊은 남색(900)
+    // 블루프린트 잉크 — primary 는 깊은 남색(blue-900 등가)
     primary: (
-        solid: var(--sd-color-blue-900),
-        solid-hover: var(--sd-color-blue-950),
-        subtle: var(--sd-color-blue-100),
-        subtle-hover: var(--sd-color-blue-300),
+        solid: rgb(28, 57, 142),
+        solid-hover: rgb(22, 36, 86),
+        subtle: rgb(219, 234, 254),
+        subtle-hover: rgb(142, 197, 255),
       ),
     success: (
-      solid: var(--sd-color-green-500),
-      solid-hover: var(--sd-color-green-600),
-      subtle: var(--sd-color-green-50),
-      subtle-hover: var(--sd-color-green-100),
+      solid: rgb(0, 201, 80),
+      solid-hover: rgb(0, 166, 62),
+      subtle: rgb(240, 253, 244),
+      subtle-hover: rgb(220, 252, 231),
     ),
     warning: (
-      solid: var(--sd-color-orange-400),
-      solid-hover: var(--sd-color-orange-600),
-      subtle: var(--sd-color-orange-100),
-      subtle-hover: var(--sd-color-orange-200),
+      solid: rgb(255, 137, 4),
+      solid-hover: rgb(245, 73, 0),
+      subtle: rgb(255, 237, 212),
+      subtle-hover: rgb(255, 214, 167),
     ),
     danger: (
-      solid: var(--sd-color-red-400),
-      solid-hover: var(--sd-color-red-600),
-    ),
+      solid: rgb(255, 100, 103),
+      solid-hover: rgb(231, 0, 11),
+    )
   ),
   tx: (
-    "gray": var(--sd-color-zinc-500),
-    gray-hover: var(--sd-color-zinc-600),
-    gray-subtle: var(--sd-color-zinc-700),
-    blue-gray: var(--sd-color-slate-500),
-    blue-gray-hover: var(--sd-color-slate-600),
-    blue-gray-subtle: var(--sd-color-slate-700),
-    primary: var(--sd-color-blue-900),
-    primary-hover: var(--sd-color-blue-950),
-    primary-subtle: var(--sd-color-blue-950),
-    success: var(--sd-color-green-500),
-    success-hover: var(--sd-color-green-600),
-    success-subtle: var(--sd-color-green-700),
-    warning: var(--sd-color-orange-400),
-    warning-hover: var(--sd-color-orange-600),
-    danger: var(--sd-color-red-400),
-    danger-hover: var(--sd-color-red-600),
+    "gray": rgb(113, 113, 123),
+    gray-hover: rgb(82, 82, 92),
+    gray-subtle: rgb(63, 63, 70),
+    blue-gray: rgb(98, 116, 142),
+    blue-gray-hover: rgb(69, 85, 108),
+    blue-gray-subtle: rgb(49, 65, 88),
+    primary: rgb(28, 57, 142),
+    primary-hover: rgb(22, 36, 86),
+    primary-subtle: rgb(22, 36, 86),
+    success: rgb(0, 201, 80),
+    success-hover: rgb(0, 166, 62),
+    success-subtle: rgb(0, 130, 54),
+    warning: rgb(255, 137, 4),
+    warning-hover: rgb(245, 73, 0),
+    danger: rgb(255, 100, 103),
+    danger-hover: rgb(231, 0, 11),
   ),
   bd: (
-    strong: var(--sd-color-zinc-500),
-    emphasis: var(--sd-color-zinc-600),
+    strong: rgb(113, 113, 123),
+    emphasis: rgb(82, 82, 92),
     "gray": (
-      solid: var(--sd-color-zinc-500),
-      solid-hover: var(--sd-color-zinc-600),
+      solid: rgb(113, 113, 123),
+      solid-hover: rgb(82, 82, 92),
     ),
     blue-gray: (
-      solid: var(--sd-color-slate-500),
-      solid-hover: var(--sd-color-slate-600),
+      solid: rgb(98, 116, 142),
+      solid-hover: rgb(69, 85, 108),
     ),
     primary: (
-      solid: var(--sd-color-blue-900),
-      solid-hover: var(--sd-color-blue-950),
-      subtle: var(--sd-color-blue-300),
+      solid: rgb(28, 57, 142),
+      solid-hover: rgb(22, 36, 86),
+      subtle: rgb(142, 197, 255),
     ),
     success: (
-      solid: var(--sd-color-green-500),
-      solid-hover: var(--sd-color-green-600),
-      subtle: var(--sd-color-green-300),
+      solid: rgb(0, 201, 80),
+      solid-hover: rgb(0, 166, 62),
+      subtle: rgb(123, 241, 168),
     ),
     warning: (
-      solid: var(--sd-color-orange-400),
-      solid-hover: var(--sd-color-orange-600),
-      subtle: var(--sd-color-orange-300),
+      solid: rgb(255, 137, 4),
+      solid-hover: rgb(245, 73, 0),
+      subtle: rgb(255, 184, 106),
     ),
     danger: (
-      solid: var(--sd-color-red-400),
-      solid-hover: var(--sd-color-red-600),
+      solid: rgb(255, 100, 103),
+      solid-hover: rgb(231, 0, 11),
     ),
   ),
   focus-ring: (
-    color: var(--sd-color-blue-900),
+    color: rgb(28, 57, 142),
   ),
   // 하드 섀도(blur 0) — 도면 인쇄 느낌
   shadow: (
       blur-mult: 0,
     ),
   card: (
-    bd: var(--sd-color-zinc-500),
-    bd-active: var(--sd-color-zinc-500),
+    bd: rgb(113, 113, 123),
+    bd-active: rgb(113, 113, 123),
     shadow: (
       3px 3px 0 rgba(28, 57, 142, 0.1),
     ),
@@ -119,7 +121,7 @@ $paper: (
   ),
   // 모달 헤더 잉크 액센트
   modal: (
-      header-bg: var(--sd-color-blue-900),
+      header-bg: rgb(28, 57, 142),
       header-tx: white,
       header-tx-muted: rgba(255, 255, 255, 0.7),
     ),
@@ -128,9 +130,9 @@ $paper: (
       1px 1px 0 rgba(28, 57, 142, 0.1),
     ),
   ),
-  // 권한표 그룹 행 — 원색 solid 를 무채 옅은 행으로
+  // 권한표 그룹 행 — 원색 solid 를 무채 옅은 행으로 (zinc-100 등가)
   permission-group: (
-      bg: var(--sd-color-zinc-100),
+      bg: rgb(244, 244, 245),
       tx: rgba(0, 0, 0, 0.87),
     ),
   // 도면 직각 — 라운드 0
@@ -141,5 +143,5 @@ $paper: (
       lg: 0,
       xl: 0,
       xxl: 0,
-    ),
+    )
 );

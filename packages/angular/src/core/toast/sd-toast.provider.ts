@@ -20,7 +20,7 @@ import { SdSystemLogProvider } from "../config/sd-system-log.provider";
 import "@simplysm/core-browser";
 
 export type SdToastSeverity = "info" | "success" | "warning" | "danger";
-export type SdToastTheme = "primary" | "secondary" | SdToastSeverity | "gray" | "blue-gray";
+export type SdToastTheme = "primary" | SdToastSeverity | "gray" | "blue-gray";
 
 export interface SdToastContentDef<O> {
   close: OutputEmitterRef<O | undefined>;
@@ -91,7 +91,9 @@ export class SdToastProvider {
     return this._show("danger", message, useProgress);
   }
 
-  notify<T extends SdToastContentDef<any>>(input: SdToastInput<T>): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
+  notify<T extends SdToastContentDef<any>>(
+    input: SdToastInput<T>,
+  ): Promise<Parameters<T["close"]["emit"]>[0] | undefined> {
     return new Promise((resolve) => {
       // overlap 모드: 기존 토스트 모두 제거
       if (this.overlap()) {

@@ -68,7 +68,7 @@ import { SdEvents } from "../../core/events/sd-events";
     { directive: SdEvents, outputs: ["keydown.capture", "focus.capture", "blur.capture"] },
   ],
   host: {
-    "class": "flex-column fill",
+    class: "flex-column fill",
     "[attr.data-sd-inset]": "inset()",
     "[attr.data-sd-focus-mode]": "focusMode()",
     "(keydown.capture)": "onKeydownCapture($event)",
@@ -370,7 +370,7 @@ import { SdEvents } from "../../core/events/sd-events";
         border-radius: $border-radius;
 
         > ._tool {
-          background-color: var(--sd-bg-control);
+          background-color: var(--sd-bg-canvas);
           border-top-left-radius: $border-radius;
           border-top-right-radius: $border-radius;
           border-bottom: 1px solid $border-color-dark;
@@ -501,7 +501,7 @@ import { SdEvents } from "../../core/events/sd-events";
 
             > tbody > tr > td {
               font-family: var(--sd-font-family-field);
-              background-color: var(--sd-bg-control);
+              background-color: var(--sd-bg-content);
               vertical-align: top;
 
               &._fixed {

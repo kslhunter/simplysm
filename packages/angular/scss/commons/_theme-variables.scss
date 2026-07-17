@@ -1,7 +1,5 @@
 @use "mixins";
 @use "variables";
-@use "colors";
-@use "density";
 @use "../themes/variables-blueprint" as blueprint;
 @use "../themes/variables-ide-dark" as ide-dark;
 
@@ -9,7 +7,6 @@
 
 @layer base {
   :root {
-    @include colors.vars;
     @include mixins.writeVars(variables.$sd, "sd");
   }
 }
@@ -25,10 +22,5 @@
   // IDE 다크 — VSCode Dark 2026 팔레트, Sarasa Fixed K
   .sd-theme-ide-dark {
     @include mixins.writeVars(ide-dark.$dark, "sd");
-  }
-
-  // 밀도 축(DEC-007) — 테마와 직교, 밀도 그룹(치수)만 덮음
-  .sd-density-compact {
-    @include mixins.writeVars(density.$compact, "sd");
   }
 }

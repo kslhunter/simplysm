@@ -5,40 +5,36 @@
 
 ## 규칙
 
-- **어휘(DEC-013)**: 색 어휘는 `--sd-{bg|tx|bd}-…` 속성 우선. 유틸 클래스명 = 토큰명에서 `--sd-` 만 뗀 것(`--sd-bg-primary-solid` ↔ `.bg-primary-solid`). hover 변형은 `-hover` 접미. 비색상·컴포넌트 전용 그룹(팔레트·focus-ring·scrollbar·shadow·타이포·치수·z)은 그룹 구조 유지.
-- **체이닝 금지**: `:root` 발행 토큰의 `var()` 참조는 팔레트(`--sd-color-*`, 테마 불변)만 허용함. 테마·밀도가 덮는 토큰끼리 체인을 두면 재정의 스코프에서 하위가 안 따라옴(확정값 상속). 파생 calc 는 소비 지점에서 계산함.
-- **색 원천**: 팔레트 + 흰/검 알파(rgba white/black)만. 커스텀 rgb 리터럴 금지.
-- **그룹 소유권**: 테마 맵 = 색·폰트·형태(radius·그림자·표면 패턴) / 밀도 그룹 = 간격·행높이·시트 패딩·topbar 높이(`sd-density-compact` 가 밀도 그룹만 덮음).
+- **어휘(DEC-013)**: 색 어휘는 `--sd-{bg|tx|bd}-…` 속성 우선. 유틸 클래스명 = 토큰명에서 `--sd-` 만 뗀 것(`--sd-bg-primary-solid` ↔ `.bg-primary-solid`). hover 변형은 `-hover` 접미. 비색상·컴포넌트 전용 그룹(focus-ring·scrollbar·shadow·타이포·치수·z)은 그룹 구조 유지.
+- **체이닝 금지**: 테마가 덮는 토큰끼리 `var()` 체인 금지 — 재정의 스코프에서 하위가 안 따라옴(확정값 상속). 색 값은 리터럴 rgb 로 자립. 파생 calc 는 소비 지점에서 계산함.
+- **색 원천**: 리터럴 rgb + 흰/검 알파(rgba white/black). 팔레트(`--sd-color-*`) 배타 모델은 폐기됨(값 자립).
+- **그룹 소유권**: 색·폰트·형태(radius·그림자·표면 패턴)와 치수(간격·행높이·시트 패딩·topbar 높이) 모두 테마 맵 소유. 치수는 라이트/블루프린트가 기본값(넉넉), IDE 다크가 오밀조밀로 덮음.
 - **소비 규약**: 컴포넌트는 `background` 단축 금지(`background-color:` 사용 — `--sd-bg-canvas-image` 패턴 보존). 컴포넌트 config 의 인라인 var 지정 금지.
-- 구 스케일 어휘(`--theme-*-{lightest..darkest}`·`--trans-*`·`--text-trans-*`·rev 계열)는 카탈로그에 없고 발행도 종료됨(14.2 브레이킹). 구 어휘를 소비하던 앱은 이 카탈로그 어휘로 전환해야 함.
+- 구 스케일 어휘(`--theme-*-{lightest..darkest}`·`--trans-*`·`--text-trans-*`·`--sd-color-*` 팔레트·rev 계열)는 카탈로그에 없고 발행도 종료됨(브레이킹). 구 어휘를 소비하던 앱은 이 카탈로그 어휘로 전환해야 함.
 
 ## 토큰 표 (라이트 기본값 = 구 어휘 시각 등가)
 
-### 팔레트
-
-| 토큰                         | 기본값                                    |
-| ---------------------------- | ----------------------------------------- |
-| `--sd-color-{hue}-{50..950}` | Tailwind v4 rgb 고정값 (22 hue × 11 step) |
-
 ### 배경(bg)
 
-| 토큰                                    | 역할                                 | 기본값                 |
-| --------------------------------------- | ------------------------------------ | ---------------------- |
-| `--sd-bg-canvas`                        | 앱 배경                              | zinc-50                |
-| `--sd-bg-canvas-image`                  | 배경 패턴(블루프린트 모눈 등)        | none                   |
-| `--sd-bg-control`                       | 컨트롤 면(인풋·카드 내부 등 백색 면) | white                  |
-| `--sd-bg-elevated`                      | 카드·모달 승격 면                    | white                  |
-| `--sd-bg-overlay`                       | 드롭다운·팝업 면                     | white                  |
-| `--sd-bg-sheet`                         | 시트 컨테이너 면                     | zinc-50                |
-| `--sd-bg-sheet-image`                   | 시트 컨테이너 배경 패턴              | none                   |
-| `--sd-bg-inverse`                       | 반전 면                              | black                  |
-| `--sd-bg-field`                         | 인풋류 필드 면                       | blue-50                |
-| `--sd-bg-track`                         | 트랙 면(스위치 off 트랙 등)          | zinc-100               |
-| `--sd-bg-state-{hover,active,selected}` | 상태 오버레이(알파) — 전 컨트롤 공통 | rgba(0,0,0,.05/.1/.07) |
-| `--sd-bg-disabled`                      | 비활성 면(색 치환 규약)              | zinc-100               |
-| `--sd-bg-busy-overlay`                  | busy 오버레이 면                     | rgba(255,255,255,.6)   |
-| `--sd-bg-busy-indicator`                | busy 인디케이터 그래픽 면(큐브 등)   | rgba(0,0,0,.1)         |
-| `--sd-bg-backdrop`                      | 모달 뒤 스크림(배경 어둡히기)        | rgba(0,0,0,.2)         |
+| 토큰                                    | 역할                                              | 기본값                 |
+| --------------------------------------- | ------------------------------------------------- | ---------------------- |
+| `--sd-bg-canvas`                        | 앱 배경                                           | zinc-50                |
+| `--sd-bg-canvas-image`                  | 배경 패턴(블루프린트 모눈 등)                     | none                   |
+| `--sd-bg-content`                       | 콘텐츠(에디터/본문) 면 — 메인·시트셀·리스트·inset | white                  |
+| `--sd-bg-elevated`                      | 카드·모달 승격 면                                 | white                  |
+| `--sd-bg-overlay`                       | 드롭다운·팝업 면                                  | white                  |
+| `--sd-bg-sheet`                         | 시트 컨테이너 면                                  | zinc-50                |
+| `--sd-bg-sheet-image`                   | 시트 컨테이너 배경 패턴                           | none                   |
+| `--sd-bg-inverse`                       | 반전 면                                           | black                  |
+| `--sd-bg-field`                         | 인풋류 필드 면                                    | blue-50                |
+| `--sd-bg-track`                         | 트랙 면(스위치 off 트랙 등)                       | zinc-100               |
+| `--sd-bg-knob`                          | 스위치 노브(손잡이) 면                            | white                  |
+| `--sd-bg-checkbox`                      | 체크박스 박스 면(VS Code checkbox.background)     | white                  |
+| `--sd-bg-state-{hover,active,selected}` | 상태 오버레이(알파) — 전 컨트롤 공통              | rgba(0,0,0,.05/.1/.07) |
+| `--sd-bg-disabled`                      | 비활성 면(색 치환 규약)                           | zinc-100               |
+| `--sd-bg-busy-overlay`                  | busy 오버레이 면                                  | rgba(255,255,255,.6)   |
+| `--sd-bg-busy-indicator`                | busy 인디케이터 그래픽 면(큐브 등)                | rgba(0,0,0,.1)         |
+| `--sd-bg-backdrop`                      | 모달 뒤 스크림(배경 어둡히기)                     | rgba(0,0,0,.2)         |
 
 ### 텍스트(tx)
 
@@ -58,7 +54,7 @@
 | `--sd-bd-field`                                   | 인풋류 필드 보더          | zinc-300                 |
 | `--sd-bd-disabled`                                | 비활성 보더(색 치환 규약) | zinc-200                 |
 
-### 시맨틱 슬롯 (키: gray·blue-gray·primary·secondary·info·success·warning·danger)
+### 시맨틱 슬롯 (키: gray·blue-gray·primary·info·success·warning·danger)
 
 | 토큰                               | 역할                    | 기본값(일반 키 / gray·blue-gray) |
 | ---------------------------------- | ----------------------- | -------------------------------- |
@@ -111,7 +107,7 @@
 | `--sd-font-family{,-field,-monospace}` / `--sd-font-weight` | sans-serif / ui-sans-serif… / ui-monospace… / 400                |
 | `--sd-radius-{xs,sm,default,lg,xl,xxl}`                     | 0.0833 / 0.1667 / 0.3333 / 0.5 / 0.6667 / 1 rem                  |
 
-### 밀도 그룹(치수 — compact 가 덮음)
+### 치수 그룹 (라이트/블루프린트 기본값 — IDE 다크가 오밀조밀로 덮음)
 
 | 토큰                                               | 기본값                                                           |
 | -------------------------------------------------- | ---------------------------------------------------------------- |
@@ -120,10 +116,10 @@
 | `--sd-sheet-{pv,ph}`                               | 0.1667 / 0.3333 rem                                              |
 | `--sd-topbar-height` / `--sd-sidebar-width`        | 2.5rem / 14rem                                                   |
 
-## 테마·밀도 값 맵
+## 테마 값 맵
 
 - 테마 = `--sd-*` 값 맵만(`scss/themes/_variables-*.scss` → theme-variant 레이어 발행). 셀렉터 오버라이드 금지 — surfaces 파일 없음.
-- 밀도 = `sd-density-compact` 클래스가 밀도 그룹(치수)만 덮음(`scss/commons/_density.scss`).
+- 치수(간격·행높이·시트 패딩·topbar 높이)도 테마 소유 — IDE 다크(`_variables-ide-dark.scss`)가 오밀조밀 치수를 값 맵으로 덮음.
 - 값 맵은 라이트 기본값과의 차이만 기술함(같은 항목 생략).
 
 ## 검증

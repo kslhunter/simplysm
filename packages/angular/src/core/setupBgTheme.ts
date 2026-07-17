@@ -2,8 +2,7 @@ import { effect, inject, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 
 export function setupBgTheme(options?: {
-  theme?:
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray";
+  theme?: "primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray";
 }): void {
   // SSR(프리렌더) 가드: document 반영은 브라우저 전용
   if (!isPlatformBrowser(inject(PLATFORM_ID))) return;

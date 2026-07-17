@@ -273,7 +273,7 @@ import { textfieldTypeHandlers, type SdTextfieldTypes } from "./sd-textfield-typ
           // inset(시트 셀 등)의 disabled 는 일반 콘텐츠처럼 표시(현행 유지)
           &[data-sd-inset="true"] {
             > ._contents {
-              background-color: var(--sd-bg-control);
+              background-color: var(--sd-bg-content);
               color: var(--sd-tx-default);
             }
           }
@@ -326,9 +326,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
   inline = input(false, { transform: booleanAttribute });
   inset = input(false, { transform: booleanAttribute });
   size = input<"sm" | "lg">();
-  theme = input<
-    "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"
-  >();
+  theme = input<"primary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray">();
 
   private readonly _inputElRef = viewChild<ElementRef<HTMLInputElement>>("inputEl");
 

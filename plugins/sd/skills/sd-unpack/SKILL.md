@@ -14,7 +14,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/sd-unpack/scripts/unpack.py" <입력파일 
 
 스크립트가 형식 분기·재귀 풀이·README 생성까지 처리함. stdout 으로 결과 폴더 절대경로 출력함.
 
-여러 파일을 풀어달라는 요청이 오면 단일 파일 단위로 반복 호출함.
+여러 파일을 풀어달라는 요청이 오면 단일 파일 단위로 반복 호출할 것.
 
 ## 환경
 
@@ -174,7 +174,7 @@ paragraph 안 hyperlink 가 있으면 `hyperlinks`: `[{"text":"...", "url":"..."
   - `table_cell`: `{"page":N, "type":"table_cell", "table_idx":T, "table_bbox":[...], "row":R, "col":C, "text":"..."}`.
   - `form_field`: `{"page":N, "type":"form_field", "name":"...", "field_type":"text", "value":"...", "bbox":[...]}` (PDF 양식 입력란).
   - `annotation`: `{"page":N, "type":"annotation", "subtype":"Highlight", "bbox":[...], "content":"...", "author":"..."}` (주석·highlight·sticky note).
-- 모든 블록 보존함 (표 영역과 겹쳐도 skip 하지 않음) — find_tables 정확도 100% 가정 시 정보 손실 위험을 회피함. text_block·image_block·table_cell 노드가 동일 영역에 중복 출력될 수 있음. 양쪽을 비교하여 판단함.
+- 모든 블록 보존함 (표 영역과 겹쳐도 skip 하지 않음) — find_tables 정확도 100% 가정 시 정보 손실 위험을 회피함. text_block·image_block·table_cell 노드가 동일 영역에 중복 출력될 수 있음. 양쪽을 비교하여 판단할 것.
 - bbox 는 PDF 기준 좌표 (left-top, pt 단위, raw float).
 
 heading 추출은 미적용함 (PDF 는 style 정보 없음). OCR 미적용함 (스캔 PDF 는 image_block 만 추출).
