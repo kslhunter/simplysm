@@ -58,26 +58,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 00-core.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 10-output.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 20-code.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 30-tool.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 40-troubleshoot.md"
-          },
-          {
-            "type": "command",
             "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-simplysm.ts\""
           },
           {
