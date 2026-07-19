@@ -32,7 +32,10 @@ export interface SdNpmPublishConfig {
  * - SdLocalDirectoryPublishConfig: 로컬 디렉토리로 복사
  * - SdStoragePublishConfig: FTP/FTPS/SFTP 서버에 업로드
  */
-export type SdPublishConfig = SdNpmPublishConfig | SdLocalDirectoryPublishConfig | SdStoragePublishConfig;
+export type SdPublishConfig =
+  | SdNpmPublishConfig
+  | SdLocalDirectoryPublishConfig
+  | SdStoragePublishConfig;
 
 /**
  * 로컬 디렉토리 배포 설정
@@ -68,6 +71,18 @@ export interface SdPostPublishScriptConfig {
 //#endregion
 
 /**
+ * 워크스페이스 내 다른 경로의 디렉토리를 패키지 dist/로 복사하는 설정
+ */
+export interface SdCopyFilesConfig {
+  /** 소스 디렉토리 (워크스페이스 루트 기준 상대 경로) */
+  from: string;
+  /** 대상 디렉토리 (패키지 dist/ 기준 상대 경로) */
+  to: string;
+  /** 제외할 glob 패턴 (from 기준 상대 경로) */
+  ignore?: string[];
+}
+
+/**
  * 패키지 설정 (node/browser/neutral)
  */
 export interface SdBuildPackageConfig {
@@ -77,6 +92,8 @@ export interface SdBuildPackageConfig {
   publish?: SdPublishConfig;
   /** src/에서 dist/로 복사할 파일의 glob 패턴 (src/ 기준 상대 경로) */
   copySrc?: string[];
+  /** 워크스페이스 내 다른 경로에서 dist/로 복사할 디렉토리 (빌드 시에만 수행, watch 모드는 미지원) */
+  copyFiles?: SdCopyFilesConfig[];
   /** watch 훅 설정 (설정 시, watch 모드에서 빌드 엔진과 함께 훅이 실행됨) */
   watch?: SdWatchHookConfig;
 }

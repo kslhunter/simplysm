@@ -14,7 +14,7 @@ describe("validateTargets", () => {
   const packages = {
     "core-node": { target: "node" },
     "core-common": { target: "neutral" },
-    "storage": { target: "node" },
+    storage: { target: "node" },
   };
 
   it("does nothing when targets is empty", () => {
@@ -26,15 +26,11 @@ describe("validateTargets", () => {
   });
 
   it("throws SdError for a single unknown target", () => {
-    expect(() => validateTargets(["nonexistent"], packages)).toThrow(
-      "Unknown target: nonexistent",
-    );
+    expect(() => validateTargets(["nonexistent"], packages)).toThrow("Unknown target: nonexistent");
   });
 
   it("throws SdError listing all unknown targets", () => {
-    expect(() => validateTargets(["bad1", "bad2"], packages)).toThrow(
-      "Unknown target: bad1, bad2",
-    );
+    expect(() => validateTargets(["bad1", "bad2"], packages)).toThrow("Unknown target: bad1, bad2");
   });
 
   it("throws SdError when some targets are valid and some are not", () => {
@@ -82,8 +78,8 @@ describe("discoverWorkspacePackages", () => {
     fs.mkdirSync(path.join(tmpDir, "tests", "orm"), { recursive: true });
     fs.mkdirSync(path.join(tmpDir, "plugins", "sd"), { recursive: true });
     fs.writeFileSync(
-      path.join(tmpDir, "package.json"),
-      JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*", "plugins/*"] }),
+      path.join(tmpDir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/*\n  - tests/*\n  - plugins/*\n",
     );
     fs.writeFileSync(path.join(tmpDir, "packages", "app", "package.json"), "{}");
     fs.writeFileSync(path.join(tmpDir, "tests", "orm", "package.json"), "{}");
@@ -108,8 +104,8 @@ describe("discoverWorkspacePackages", () => {
     it("throws when same directory name exists in both packages/ and tests/", () => {
       fs.mkdirSync(path.join(tmpDir, "packages", "foo"), { recursive: true });
       fs.writeFileSync(
-        path.join(tmpDir, "package.json"),
-        JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*"] }),
+        path.join(tmpDir, "pnpm-workspace.yaml"),
+        "packages:\n  - packages/*\n  - tests/*\n",
       );
       fs.writeFileSync(path.join(tmpDir, "packages", "foo", "package.json"), "{}");
       fs.mkdirSync(path.join(tmpDir, "tests", "foo"), { recursive: true });
@@ -174,9 +170,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
       "core-common": { target: "neutral" },
     };
-    const workspacePackages = new Map([
-      ["core-common", "packages/core-common"],
-    ]);
+    const workspacePackages = new Map([["core-common", "packages/core-common"]]);
 
     const { merged } = mergeTestsPackagesIntoConfig(configPackages, workspacePackages);
 
@@ -201,11 +195,9 @@ describe("mergeTestsPackagesIntoConfig", () => {
   // Acceptance: 이름 충돌 시 에러 발생
   it("throws when config package name collides with tests package name", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
-      "orm": { target: "node" },
+      orm: { target: "node" },
     };
-    const workspacePackages = new Map([
-      ["orm", "tests/orm"],
-    ]);
+    const workspacePackages = new Map([["orm", "tests/orm"]]);
 
     expect(() => mergeTestsPackagesIntoConfig(configPackages, workspacePackages)).toThrow(
       /Duplicate package name.*orm/,
@@ -232,7 +224,7 @@ describe("iteratePackages", () => {
     const packages = {
       "core-common": { target: "neutral" } as SdBuildPackageConfig,
       "core-node": { target: "node" } as SdBuildPackageConfig,
-      "storage": { target: "node" } as SdBuildPackageConfig,
+      storage: { target: "node" } as SdBuildPackageConfig,
     };
 
     const result = iteratePackages(packages, ["core-common", "storage"]);
@@ -244,8 +236,8 @@ describe("iteratePackages", () => {
   // Unit: returns all when targets is empty
   it("returns all non-null entries when targets is empty", () => {
     const packages = {
-      "a": { target: "node" } as SdBuildPackageConfig,
-      "b": { target: "browser" } as SdBuildPackageConfig,
+      a: { target: "node" } as SdBuildPackageConfig,
+      b: { target: "browser" } as SdBuildPackageConfig,
     };
 
     const result = iteratePackages(packages, []);
@@ -256,8 +248,8 @@ describe("iteratePackages", () => {
   // Unit: returns empty when all configs are null
   it("returns empty array when all configs are null/undefined", () => {
     const packages = {
-      "a": undefined,
-      "b": undefined,
+      a: undefined,
+      b: undefined,
     };
 
     const result = iteratePackages(packages, []);
@@ -280,7 +272,7 @@ describe("hasAngularCoreDependency", () => {
     fs.writeFileSync(
       path.join(pkgDir, "package.json"),
       JSON.stringify({
-        dependencies: { "@angular/core": "^21.0.0", "rxjs": "^7" },
+        dependencies: { "@angular/core": "^21.0.0", rxjs: "^7" },
       }),
     );
 
@@ -308,7 +300,7 @@ describe("hasAngularCoreDependency", () => {
     fs.writeFileSync(
       path.join(pkgDir, "package.json"),
       JSON.stringify({
-        dependencies: { "rxjs": "^7" },
+        dependencies: { rxjs: "^7" },
         devDependencies: { "@angular/compiler": "^21.0.0" },
       }),
     );
@@ -327,10 +319,7 @@ describe("hasAngularCoreDependency", () => {
   it("returns false when no dependencies or peerDependencies", () => {
     const pkgDir = path.join(tmpDir, "empty-deps");
     fs.mkdirSync(pkgDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(pkgDir, "package.json"),
-      JSON.stringify({ name: "test" }),
-    );
+    fs.writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify({ name: "test" }));
 
     expect(hasAngularCoreDependency(pkgDir)).toBe(false);
   });

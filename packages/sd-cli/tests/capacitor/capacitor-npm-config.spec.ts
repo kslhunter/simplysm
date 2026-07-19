@@ -19,7 +19,9 @@ let PKG_PATH: string;
 
 beforeAll(() => {
   tmpRoot = mkdtempSync(path.join(tmpdir(), "cap-npm-config-"));
-  writeFileSync(path.join(tmpRoot, "package.json"), JSON.stringify({ private: true, workspaces: ["pkg"] }));
+  // 워크스페이스 루트 판정은 pnpm-workspace.yaml 기반
+  writeFileSync(path.join(tmpRoot, "pnpm-workspace.yaml"), "packages:\n  - pkg\n");
+  writeFileSync(path.join(tmpRoot, "package.json"), JSON.stringify({ private: true }));
   PKG_PATH = path.join(tmpRoot, "pkg");
   CAP_PATH = path.join(PKG_PATH, ".capacitor");
 });
@@ -60,15 +62,20 @@ describe("setupCapNpmConfig", () => {
       return true;
     }) as never);
 
-    const { setupCapNpmConfig } = await import(
-      "../../src/capacitor/capacitor-npm-config.js"
-    );
+    const { setupCapNpmConfig } = await import("../../src/capacitor/capacitor-npm-config.js");
 
     await expect(
-      setupCapNpmConfig(CAP_PATH, PKG_PATH, {
-        appId: "com.test.app",
-        appName: "Test App",
-      }, { name: "test-pkg", version: "1.0.0" }, [], []),
+      setupCapNpmConfig(
+        CAP_PATH,
+        PKG_PATH,
+        {
+          appId: "com.test.app",
+          appName: "Test App",
+        },
+        { name: "test-pkg", version: "1.0.0" },
+        [],
+        [],
+      ),
     ).rejects.toThrow("루트 package.json");
   });
 
@@ -79,14 +86,19 @@ describe("setupCapNpmConfig", () => {
       return true;
     }) as never);
 
-    const { setupCapNpmConfig } = await import(
-      "../../src/capacitor/capacitor-npm-config.js"
-    );
+    const { setupCapNpmConfig } = await import("../../src/capacitor/capacitor-npm-config.js");
 
-    const changed = await setupCapNpmConfig(CAP_PATH, PKG_PATH, {
-      appId: "com.test.app",
-      appName: "Test App",
-    }, { name: "test-pkg", version: "1.0.0" }, [], []);
+    const changed = await setupCapNpmConfig(
+      CAP_PATH,
+      PKG_PATH,
+      {
+        appId: "com.test.app",
+        appName: "Test App",
+      },
+      { name: "test-pkg", version: "1.0.0" },
+      [],
+      [],
+    );
 
     // 빈 설정에서 시작하므로 dependencies가 추가되어 변경됨
     expect(changed).toBe(true);

@@ -14,7 +14,7 @@ import * as electronMod from "../../src/electron/electron";
 
 import { loadSdConfig } from "../../src/utils/sd-config";
 import { getVersion } from "../../src/utils/build-env";
-import { copySrcFiles } from "../../src/utils/copy-src";
+import { copyDirFiles, copySrcFiles } from "../../src/utils/copy-src";
 import { runLintInWorker } from "../../src/lint/lint-utils";
 import { Worker, fsx } from "@simplysm/core-node";
 import { createBuildEngine } from "../../src/engines/engine-factory";
@@ -93,8 +93,12 @@ beforeEach(() => {
   vi.spyOn(sdConfig, "loadSdConfig").mockResolvedValue({ packages: {} });
   vi.spyOn(buildEnv, "getVersion").mockResolvedValue("1.0.0");
   vi.spyOn(copySrc, "copySrcFiles").mockResolvedValue(undefined);
+  vi.spyOn(copySrc, "copyDirFiles").mockResolvedValue(undefined);
   vi.spyOn(lintUtils, "runLintInWorker").mockResolvedValue({
-    success: true, errorCount: 0, warningCount: 0, formattedOutput: "",
+    success: true,
+    errorCount: 0,
+    warningCount: 0,
+    formattedOutput: "",
   });
   vi.spyOn(outputUtils, "formatBuildMessages").mockImplementation(
     (name: string, target: string, msgs: string[]) => `${name} (${target}): ${msgs.join(", ")}`,
@@ -135,9 +139,7 @@ describe("BuildOrchestrator.initialize", () => {
     const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
     await orchestrator.initialize();
 
-    expect(loadSdConfig).toHaveBeenCalledWith(
-      expect.objectContaining({ dev: false }),
-    );
+    expect(loadSdConfig).toHaveBeenCalledWith(expect.objectContaining({ dev: false }));
   });
 
   it("throws and sets exitCode=1 when sd.config.ts load fails", async () => {
@@ -169,9 +171,7 @@ describe("BuildOrchestrator.initialize", () => {
     const orchestrator = new BuildOrchestrator({ targets: [], options: ["production"] });
     await orchestrator.initialize();
 
-    expect(loadSdConfig).toHaveBeenCalledWith(
-      expect.objectContaining({ opt: ["production"] }),
-    );
+    expect(loadSdConfig).toHaveBeenCalledWith(expect.objectContaining({ opt: ["production"] }));
   });
 
   it("returns false when only scripts packages exist", async () => {
@@ -204,9 +204,7 @@ describe("BuildOrchestrator.start", () => {
     await orchestrator.initialize();
     await orchestrator.start();
 
-    expect(fsx.rm).toHaveBeenCalledWith(
-      expect.stringContaining("core-common"),
-    );
+    expect(fsx.rm).toHaveBeenCalledWith(expect.stringContaining("core-common"));
   });
 
   it("uses BuildEngine for buildPackages", async () => {
@@ -224,7 +222,12 @@ describe("BuildOrchestrator.start", () => {
 
     // BuildEngine should be created and run() called
     expect(createBuildEngine).toHaveBeenCalledOnce();
-    expect(mockEngines[0].run).toHaveBeenCalledWith({ js: true, dts: true, lint: false, includeTests: false });
+    expect(mockEngines[0].run).toHaveBeenCalledWith({
+      js: true,
+      dts: true,
+      lint: false,
+      includeTests: false,
+    });
     expect(mockEngines[0].stop).toHaveBeenCalled();
   });
 
@@ -316,6 +319,84 @@ describe("BuildOrchestrator.start", () => {
     await orchestrator.start();
 
     expect(copySrcFiles).not.toHaveBeenCalled();
+  });
+
+  it("calls copyDirFiles for each copyFiles entry, resolving paths from workspace root to dist", async () => {
+    setupDefaults({
+      packages: {
+        "core-node": {
+          target: "node",
+          publish: { type: "npm" },
+          copyFiles: [
+            { from: "plugins/sd", to: "plugins/sd", ignore: ["**/node_modules/**"] },
+            { from: "plugins/sd-wiki", to: "plugins/sd-wiki" },
+          ],
+        },
+      },
+    });
+    const mockProxy = createMockWorkerProxy();
+    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
+
+    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
+    await orchestrator.initialize();
+    await orchestrator.start();
+
+    expect(copyDirFiles).toHaveBeenCalledTimes(2);
+    expect(copyDirFiles).toHaveBeenCalledWith(
+      expect.stringContaining("plugins/sd"),
+      expect.stringContaining("packages/core-node/dist/plugins/sd"),
+      ["**/node_modules/**"],
+    );
+    expect(copyDirFiles).toHaveBeenCalledWith(
+      expect.stringContaining("plugins/sd-wiki"),
+      expect.stringContaining("packages/core-node/dist/plugins/sd-wiki"),
+      undefined,
+    );
+  });
+
+  it("does not call copyDirFiles when the package build failed", async () => {
+    setupDefaults({
+      packages: {
+        "core-node": {
+          target: "node",
+          publish: { type: "npm" },
+          copyFiles: [{ from: "plugins/sd", to: "plugins/sd" }],
+        },
+      },
+    });
+    const mockProxy = createMockWorkerProxy();
+    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
+    vi.mocked(engineFactory.createBuildEngine).mockImplementation(
+      () =>
+        ({
+          run: vi.fn().mockResolvedValue({
+            build: { success: false, errors: ["build error"], warnings: [] },
+          }),
+          stop: vi.fn().mockResolvedValue(undefined),
+        }) as any,
+    );
+
+    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
+    await orchestrator.initialize();
+    await orchestrator.start();
+
+    expect(copyDirFiles).not.toHaveBeenCalled();
+  });
+
+  it("does not call copyDirFiles when copyFiles is not configured", async () => {
+    setupDefaults({
+      packages: {
+        "core-common": { target: "neutral", publish: { type: "npm" } },
+      },
+    });
+    const mockProxy = createMockWorkerProxy();
+    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
+
+    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
+    await orchestrator.initialize();
+    await orchestrator.start();
+
+    expect(copyDirFiles).not.toHaveBeenCalled();
   });
 
   it("stops engine even when build fails", async () => {
@@ -463,7 +544,6 @@ describe("BuildOrchestrator.start", () => {
 
     expect(mockLogger.warn).toHaveBeenCalled();
   });
-
 });
 
 describe("classifyPackages", () => {
@@ -493,19 +573,15 @@ describe("classifyPackages", () => {
 
   // Acceptance: Scenario "targets 필터에 미포함된 client 패키지 제외"
   it("excludes client packages not in targets", () => {
-    const result = classifyPackages(
-      { "my-client": { target: "client", server: "srv" } as any },
-      ["other-pkg"],
-    );
+    const result = classifyPackages({ "my-client": { target: "client", server: "srv" } as any }, [
+      "other-pkg",
+    ]);
     expect(result.clientPackages).toHaveLength(0);
   });
 
   // Acceptance: Scenario "scripts target은 여전히 제외"
   it("still excludes scripts target", () => {
-    const result = classifyPackages(
-      { "sd-claude": { target: "scripts" } },
-      [],
-    );
+    const result = classifyPackages({ "sd-claude": { target: "scripts" } }, []);
     expect(result.buildPackages).toHaveLength(0);
     expect(result.serverPackages).toHaveLength(0);
     expect(result.clientPackages).toHaveLength(0);
@@ -575,7 +651,12 @@ describe("BuildOrchestrator client build", () => {
       expect.any(Object),
     );
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
+    expect(engineMock.run).toHaveBeenCalledWith({
+      js: true,
+      dts: false,
+      lint: false,
+      includeTests: false,
+    });
     expect(engineMock.stop).toHaveBeenCalled();
   });
 
@@ -645,9 +726,7 @@ describe("BuildOrchestrator client build", () => {
     await orchestrator.initialize();
     await orchestrator.start();
 
-    expect(fsx.rm).toHaveBeenCalledWith(
-      expect.stringContaining("my-client"),
-    );
+    expect(fsx.rm).toHaveBeenCalledWith(expect.stringContaining("my-client"));
   });
 
   // Acceptance: Scenario "client 패키지 빌드 실행"
@@ -802,7 +881,12 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
     // ViteEngine should have been called
     expect(createBuildEngine).toHaveBeenCalled();
     const engineMock = vi.mocked(createBuildEngine).mock.results[0].value;
-    expect(engineMock.run).toHaveBeenCalledWith({ js: true, dts: false, lint: false, includeTests: false });
+    expect(engineMock.run).toHaveBeenCalledWith({
+      js: true,
+      dts: false,
+      lint: false,
+      includeTests: false,
+    });
 
     // Capacitor should have been created, initialized, and built
     expect(Capacitor.create).toHaveBeenCalledWith(
@@ -811,9 +895,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
       undefined,
     );
     expect(mockCapacitorInstance.initialize).toHaveBeenCalled();
-    expect(mockCapacitorInstance.build).toHaveBeenCalledWith(
-      expect.stringContaining("dist"),
-    );
+    expect(mockCapacitorInstance.build).toHaveBeenCalledWith(expect.stringContaining("dist"));
   });
 
   // Acceptance: Scenario "Electron 빌드 통합"
@@ -840,9 +922,7 @@ describe("BuildOrchestrator native build integration (Slice 1)", () => {
       undefined,
     );
     expect(mockElectronInstance.initialize).toHaveBeenCalled();
-    expect(mockElectronInstance.build).toHaveBeenCalledWith(
-      expect.stringContaining("dist"),
-    );
+    expect(mockElectronInstance.build).toHaveBeenCalledWith(expect.stringContaining("dist"));
   });
 
   // Acceptance: Scenario "Capacitor + Electron 동시 빌드"

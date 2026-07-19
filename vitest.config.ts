@@ -65,6 +65,7 @@ export default defineConfig({
           name: "browser",
           include: ["packages/*/tests/**/*.spec.{ts,js,mjs,cjs}"],
           exclude: [
+            "packages/cc/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/sd-cli/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/core-node/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/lint/tests/**/*.spec.{ts,js,mjs,cjs}",

@@ -10,10 +10,10 @@ describe("collectDeps — packages/ 외 워크스페이스 제외", () => {
 
   beforeEach(() => {
     tmpDir = pathx.posix(fs.mkdtempSync(path.join(os.tmpdir(), "sd-cli-test-")));
-    // 워크스페이스 루트 선언 (discoverWorkspacePackages는 package.json#workspaces 기반)
+    // 워크스페이스 루트 선언 (discoverWorkspacePackages는 pnpm-workspace.yaml 기반)
     fs.writeFileSync(
-      pathx.posix(path.join(tmpDir, "package.json")),
-      JSON.stringify({ private: true, workspaces: ["packages/*", "tests/*", "plugins/*"] }),
+      pathx.posix(path.join(tmpDir, "pnpm-workspace.yaml")),
+      "packages:\n  - packages/*\n  - tests/*\n  - plugins/*\n",
     );
   });
 

@@ -212,6 +212,19 @@ importers:
         specifier: ^8.4.2
         version: 8.4.2
 
+  packages/cc:
+    dependencies:
+      '@simplysm/core-common':
+        specifier: workspace:*
+        version: link:../core-common
+    devDependencies:
+      '@simplysm/core-node':
+        specifier: workspace:*
+        version: link:../core-node
+      '@types/node':
+        specifier: ^24.13.3
+        version: 24.13.3
+
   packages/core-browser:
     dependencies:
       '@simplysm/core-common':

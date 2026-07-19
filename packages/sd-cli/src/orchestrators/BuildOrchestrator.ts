@@ -8,10 +8,15 @@ import type {
 } from "../sd-config.types";
 import { loadAndValidateConfig } from "../utils/orchestrator-utils";
 import { getVersion } from "../utils/build-env";
-import { copySrcFiles } from "../utils/copy-src";
+import { copyDirFiles, copySrcFiles } from "../utils/copy-src";
 import { formatBuildMessages } from "../utils/output-utils";
 import { createBuildEngine } from "../engines/engine-factory";
-import type { BuildOutput, BuildPackageInfo, ClientPackageInfo, ServerPackageInfo } from "../engines/types";
+import type {
+  BuildOutput,
+  BuildPackageInfo,
+  ClientPackageInfo,
+  ServerPackageInfo,
+} from "../engines/types";
 import { runWithConcurrency, getMaxConcurrency } from "../utils/concurrency";
 import { iteratePackages } from "../utils/package-classify";
 import { Capacitor } from "../capacitor/capacitor";
@@ -99,7 +104,9 @@ export function classifyPackages(
  * dist 폴더 삭제
  */
 async function cleanDistFolders(cwd: string, packageNames: string[]): Promise<void> {
-  await Promise.all(packageNames.map((name) => fsx.rm(pathx.posixResolve(cwd, "packages", name, "dist"))));
+  await Promise.all(
+    packageNames.map((name) => fsx.rm(pathx.posixResolve(cwd, "packages", name, "dist"))),
+  );
 }
 
 //#endregion
@@ -280,8 +287,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
         type: "build",
         success: engineResult.build.success,
         errors: engineResult.build.errors.length > 0 ? engineResult.build.errors : undefined,
-        warnings:
-          engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
+        warnings: engineResult.build.warnings.length > 0 ? engineResult.build.warnings : undefined,
       };
     } finally {
       await engine.stop();
@@ -313,6 +319,19 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
           this._logger.debug(`[${name}] copySrc 파일 복사 중 (${config.copySrc.length}개)`);
           await copySrcFiles(pkgDir, config.copySrc);
+        }
+
+        // 빌드 실패 시 복사하지 않는다 — 낡은 산출물에 최신 복사본만 얹힌 배포물이 만들어지는 것을 막는다.
+        if (result.success && config.copyFiles != null && config.copyFiles.length > 0) {
+          const distDir = pathx.posixResolve(this._cwd, "packages", name, "dist");
+          this._logger.debug(`[${name}] copyFiles 복사 중 (${config.copyFiles.length}개)`);
+          for (const copyFile of config.copyFiles) {
+            await copyDirFiles(
+              pathx.posixResolve(this._cwd, copyFile.from),
+              pathx.posixResolve(distDir, copyFile.to),
+              copyFile.ignore,
+            );
+          }
         }
         this._logger.debug(`[${name}] (${config.target}) 빌드 완료`);
       });
@@ -365,9 +384,8 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
         this._logger.debug(`[${name}] (client) 빌드 시작`);
         const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
         const isNativeBuild = config.capacitor != null || config.electron != null;
-        const outDir = config.capacitor != null
-          ? pathx.posixResolve(pkgDir, ".capacitor/www")
-          : undefined;
+        const outDir =
+          config.capacitor != null ? pathx.posixResolve(pkgDir, ".capacitor/www") : undefined;
 
         const result = await this._runEngineTask({
           name,
@@ -446,10 +464,7 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
    *
    * @returns 에러 발생 여부 (true: 에러 있음)
    */
-  private _printBuildResults(
-    results: BuildStepResult[],
-    hasUntrackedError: boolean,
-  ): boolean {
+  private _printBuildResults(results: BuildStepResult[], hasUntrackedError: boolean): boolean {
     for (const result of results) {
       const typeLabel = result.type === "lint" ? "lint" : result.target;
 
