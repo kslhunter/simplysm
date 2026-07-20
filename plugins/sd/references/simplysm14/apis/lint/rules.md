@@ -134,7 +134,7 @@ export { MyFunction } from "@simplysm/storage";
 await import("@simplysm/orm-common");
 ```
 
-#### 지원하는 import 형태
+#### 지원 import 형태
 
 - 정적 import: `import { x } from "..."`
 - 동적 import: `import(...)`

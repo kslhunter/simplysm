@@ -1,6 +1,8 @@
 # @simplysm/excel — OOXML XML-shape 타입
 
-ZIP 내 OOXML/BIFF XML 파트의 파싱 결과 구조 타입. 일반 workbook API 사용보다 패키지 내부 XML 모델·디버그에서 `ExcelXml.data` 트리 shape 를 해석할 때 사용. 모든 필드는 OOXML 속성/엘리먼트를 `xml2js` 스타일(`$` = 속성, `_` = 텍스트, 배열 래핑)로 표현.
+ZIP 내 OOXML/BIFF XML 파트의 파싱 결과 구조 타입.
+일반 workbook API 사용보다 패키지 내부 XML 모델, 디버그에서 `ExcelXml.data` 트리 shape 를 해석할 때 사용.
+모든 필드는 OOXML 속성/엘리먼트를 `xml2js` 스타일(`$` = 속성, `_` = 텍스트, 배열 래핑)로 표현.
 
 ## 패키지 메타데이터 XML
 
@@ -124,8 +126,12 @@ interface ExcelCellData {
 ```
 
 - `ExcelRowData.$.r` — 1 기반 행 주소; `c` — 해당 행 셀 배열.
-- `ExcelCellData.$.r` — 셀 A1 주소; `$.s` — styleId; `$.t` — 셀 타입(`ExcelCellType`).
-- `v` — 셀 값 tuple; `f` — formula tuple; `is` — inline string 컨테이너(`is.t` 는 문자열 또는 `{ _: string }`).
+- `ExcelCellData.$.r` — 셀 A1 주소.
+- `ExcelCellData.$.s` — styleId.
+- `ExcelCellData.$.t` — 셀 타입(`ExcelCellType`).
+- `v` — 셀 값 tuple.
+- `f` — formula tuple.
+- `is` — inline string 컨테이너(`is.t` 는 문자열 또는 `{ _: string }`).
 
 ### ExcelXmlConditionalFormattingData / ExcelXmlCfRuleData
 
@@ -160,8 +166,10 @@ interface ExcelXmlCfRuleData {
 
 - `sqref` — 조건부 서식 적용 범위.
 - `type` — OOXML cfRule type(비교/텍스트/수식 구분).
-- `operator` — 비교·텍스트 매칭 연산자(expression 규칙에는 없음).
-- `priority` — 시트 전역 우선순위; `dxfId` — styles dxfs 인덱스; `text` — 텍스트 매칭 원본 검색 문자열.
+- `operator` — 비교, 텍스트 매칭 연산자(expression 규칙에는 없음).
+- `priority` — 시트 전역 우선순위.
+- `dxfId` — styles dxfs 인덱스.
+- `text` — 텍스트 매칭 원본 검색 문자열.
 - `formula` — cfRule formula 문자열 배열.
 
 ## drawing / shared string XML
@@ -185,7 +193,7 @@ interface ExcelXmlDrawingData {
 - `wsDr.$.{xmlns,xmlns:a,xmlns:r}` — drawing spreadsheet / drawing main / relationship namespace.
 - `twoCellAnchor` — 두 셀 anchor 기반 그림 배치 배열.
 - `from`/`to` — 시작/끝 anchor. `col`/`row` 0 기반 열/행 문자열, `colOff`/`rowOff` EMU 오프셋.
-- `pic` — 그림 메타(`nvPicPr`), blip 채움(`blipFill["a:blip"].$["r:embed"]` = 이미지 관계 ID), shape 속성(`spPr` 의 `a:xfrm` 위치·크기, `a:prstGeom` 도형).
+- `pic` — 그림 메타(`nvPicPr`), blip 채움(`blipFill["a:blip"].$["r:embed"]` = 이미지 관계 ID), shape 속성(`spPr` 의 `a:xfrm` 위치, 크기, `a:prstGeom` 도형).
 - `clientData` — drawing clientData 컨테이너.
 
 ### ExcelXmlSharedStringData / ExcelXmlSharedStringDataSi / ExcelXmlSharedStringDataText

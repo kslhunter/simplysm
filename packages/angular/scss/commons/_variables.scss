@@ -10,11 +10,11 @@ $breakpoint-sm: 1280px;
 //
 // 규칙:
 // - 어휘(DEC-013): 색 어휘는 --sd-{bg|tx|bd}-… 속성 우선. 유틸 클래스명 = 토큰명에서 --sd- 만 뗀 것.
-//   hover 변형은 -hover 접미. 비색상·컴포넌트 전용 그룹(focus-ring·scrollbar·shadow·타이포·치수·z)은 그룹 구조 유지.
+//   hover 변형은 -hover 접미. 비색상, 컴포넌트 전용 그룹(focus-ring, scrollbar, shadow, 타이포, 치수, z)은 그룹 구조 유지.
 // - 색 원천: 리터럴 rgb + 흰/검 알파. 팔레트(--sd-color-*) 배타 모델은 폐기됨(테마 값 자립).
-//   테마·밀도가 덮는 토큰끼리의 체인은 재정의 스코프에서 하위가 안 따라오므로 리터럴로 푼다.
-// - 라이트 기본값은 구 팔레트 스텝과 시각 등가(값 불변·표기만 리터럴화).
-// - 구 스케일 어휘(--theme-*·--trans-*·--text-trans-*·--sd-color-* 등)는 발행하지 않는다(브레이킹).
+//   테마, 밀도가 덮는 토큰끼리의 체인은 재정의 스코프에서 하위가 안 따라오므로 리터럴로 푼다.
+// - 라이트 기본값은 구 팔레트 스텝과 시각 등가(값 불변, 표기만 리터럴화).
+// - 구 스케일 어휘(--theme-*, --trans-*, --text-trans-*, --sd-color-* 등)는 발행하지 않는다(브레이킹).
 // ---------------------------------------------------------------------------
 // 시맨틱 키 목록 — 컴포넌트 theme 변형 @each 순회용 (토큰 아님)
 $theme-keys: ("gray", blue-gray, primary, info, success, warning, danger);
@@ -22,11 +22,11 @@ $theme-keys: ("gray", blue-gray, primary, info, success, warning, danger);
 $sd: (
   // 배경(bg)
   bg: (
-      // 표면 — 앱 배경(canvas)·콘텐츠 면(content)·카드/모달(elevated)·드롭다운/팝업(overlay)·시트(sheet)·반전면(inverse)
+      // 표면 — 앱 배경(canvas), 콘텐츠 면(content), 카드/모달(elevated), 드롭다운/팝업(overlay), 시트(sheet), 반전면(inverse)
       canvas: rgb(250, 250, 250),
       // 배경 패턴(블루프린트 모눈 등) — 값 맵으로 패턴까지 테마화. 소비측은 background 단축 금지.
       canvas-image: none,
-      // 콘텐츠(에디터/본문) 면 — 메인·시트셀·리스트·inset 콘텐츠
+      // 콘텐츠(에디터/본문) 면 — 메인, 시트셀, 리스트, inset 콘텐츠
       content: white,
       elevated: white,
       overlay: white,
@@ -36,13 +36,13 @@ $sd: (
       inverse: black,
       // 필드(인풋류) 면 — 구 "--theme-secondary-lightest 필드 배경 관례" 해체 (blue-50 등가)
       field: rgb(239, 246, 255),
-      // 트랙 면(스위치 off 트랙 등 손잡이·채움 뒤의 궤도) — 준역할(2026-07-16 확정) (zinc-100 등가)
+      // 트랙 면(스위치 off 트랙 등 손잡이, 채움 뒤의 궤도) — 준역할(2026-07-16 확정) (zinc-100 등가)
       track: rgb(244, 244, 245),
       // 스위치 노브(손잡이) 면 — 트랙 위로 도드라지는 별도 부품. 라이트 white
       knob: white,
       // 체크박스 박스 면 — VS Code checkbox.background 별도 면. 라이트는 white(현행 관례 유지)
       checkbox: white,
-      // 시맨틱 면 — solid(짙은 면)·subtle(옅은 면), hover 변형 포함
+      // 시맨틱 면 — solid(짙은 면), subtle(옅은 면), hover 변형 포함
       "gray": (
           solid: rgb(159, 159, 169),
           solid-hover: rgb(113, 113, 123),
@@ -110,11 +110,11 @@ $sd: (
       muted: rgba(0, 0, 0, 0.6),
       faint: rgba(0, 0, 0, 0.38),
       on-inverse: white,
-      // 반전면 위 보조 텍스트(hover 감쇠·비활성) — 준역할(2026-07-16 확정)
+      // 반전면 위 보조 텍스트(hover 감쇠, 비활성) — 준역할(2026-07-16 확정)
       on-inverse-muted: rgba(255, 255, 255, 0.7),
       on-inverse-disabled: rgba(255, 255, 255, 0.5),
       disabled: rgba(0, 0, 0, 0.38),
-      // 시맨틱 텍스트 — {key}(단독 텍스트·아이콘·링크, +hover)·{key}-solid(solid 면 위)·{key}-subtle(subtle 면 위)
+      // 시맨틱 텍스트 — {key}(단독 텍스트, 아이콘, 링크, +hover), {key}-solid(solid 면 위), {key}-subtle(subtle 면 위)
       // tx-{key} 가 리프라 시맨틱 키는 중첩 없이 평탄 표기
       "gray": rgb(159, 159, 169),
       gray-hover: rgb(113, 113, 123),
@@ -154,7 +154,7 @@ $sd: (
       emphasis: rgb(113, 113, 123),
       field: rgb(212, 212, 216),
       disabled: rgb(228, 228, 231),
-      // 시맨틱 보더 — solid(+hover)·subtle
+      // 시맨틱 보더 — solid(+hover), subtle
       "gray": (
           solid: rgb(159, 159, 169),
           solid-hover: rgb(113, 113, 123),

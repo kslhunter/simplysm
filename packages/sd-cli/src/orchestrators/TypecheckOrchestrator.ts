@@ -54,7 +54,7 @@ export interface TypecheckResult {
 const TARGET_PATH_PATTERN = /^[^/]+\/([^/]+)/;
 
 /**
- * 대상 경로에서 패키지명을 추출한다. 워크스페이스 종류(packages/·tests/·plugins/ 등)를 가리지 않는다.
+ * 대상 경로에서 패키지명을 추출한다. 워크스페이스 종류(packages/, tests/, plugins/ 등)를 가리지 않는다.
  * "packages/core-common" → "core-common"
  * "tests/orm" → "orm"
  * "plugins/sd" → "sd"

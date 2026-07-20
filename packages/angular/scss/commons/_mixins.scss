@@ -34,7 +34,7 @@
   @return $result;
 }
 
-// -hover 변형·bg-canvas-image·bg-sheet-image 는 유틸 클래스 미생성 (DEC-013)
+// -hover 변형, bg-canvas-image, bg-sheet-image 는 유틸 클래스 미생성 (DEC-013)
 @function isUtilityToken($name) {
   @return string.slice($name, -6) != "-hover" and $name != "canvas-image" and $name != "sheet-image";
 }

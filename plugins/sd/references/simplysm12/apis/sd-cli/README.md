@@ -1,18 +1,20 @@
 # @simplysm/sd-cli
 
-심플리즘 모노레포 프로젝트의 빌드·변경감지·타입체크/린트·배포·로컬업데이트·플랫폼 실행(Electron/Cordova/Capacitor)·AI 커밋을 수행하는 CLI. 라이브러리 export 는 없고 `bin`(`sd-cli`) 으로만 사용함. 모든 명령은 작업공간 루트의 설정 파일(`simplysm.js`, default export 함수)을 읽어 동작함.
+심플리즘 모노레포 프로젝트의 빌드, 변경감지, 타입체크/린트, 배포, 로컬업데이트, 플랫폼 실행(Electron/Cordova/Capacitor), AI 커밋을 수행하는 CLI.
+라이브러리 export 는 없고 `bin`(`sd-cli`) 으로만 사용함.
+모든 명령은 작업공간 루트의 설정 파일(`simplysm.js`, default export 함수)을 읽어 동작함.
 
 ## 사용 트리거 인덱스
 
 - **`build` / `watch` 명령** — 모노레포 패키지를 1회 빌드하거나 변경감지 빌드할 때.
-- **`check` 명령** — 타입체크·ESLint 만 돌려 오류를 확인할 때(emit 없음).
+- **`check` 명령** — 타입체크, ESLint 만 돌려 오류를 확인할 때(emit 없음).
 - **`publish` 명령** — 빌드+버전증가+git태그+npm/로컬/FTP 배포를 한 번에 할 때.
 - **`local-update` 명령** — `node_modules` 안의 의존 라이브러리를 로컬 소스로 덮어쓸 때(로컬 개발 동기화).
 - **`run-electron` / `build-electron-for-dev` 명령** — watch 중인 클라이언트를 Electron 앱으로 띄우거나 dev용 Electron 빌드할 때.
 - **`run-cordova` / `run-capacitor` 명령** — watch 중인 클라이언트를 모바일 디바이스에 webview 앱으로 띄울 때.
-- **`commit` 명령** — git 변경분을 AI로 커밋 메시지 생성→커밋·푸시할 때.
+- **`commit` 명령** — git 변경분을 AI로 커밋 메시지 생성 후 커밋, 푸시할 때.
 - **`postinstall` 명령** — 설치 직후 의존 패키지(`@angular/build`, `cordova`) 패치를 적용할 때(보통 npm `postinstall` 훅에서 자동).
-- **`simplysm.js` 설정 스키마** — 위 명령들이 읽는 프로젝트 설정 파일을 작성·수정할 때. 자세히: [project-config.md](./project-config.md)
+- **`simplysm.js` 설정 스키마** — 위 명령들이 읽는 프로젝트 설정 파일을 작성, 수정할 때. 자세히: [project-config.md](./project-config.md)
 
 ## 공통 옵션
 
@@ -21,7 +23,7 @@
 - `--debug` (boolean, 기본 `false`) — 디버그 로그 출력. `true` 면 `SD_DEBUG=true` 설정 + 콘솔 로그 레벨 debug, `false` 면 점(dot) 진행 표시만.
 - `--help` / `-h` — 도움말.
 
-빌드/체크/배포 계열 명령에 공통:
+빌드, 체크, 배포 계열 명령에 공통:
 
 - `--config <path>` (string, 기본 `"simplysm.js"`) — 설정 파일 경로. 작업공간 루트 기준 상대경로.
 - `--options <...>` (string 배열) — 설정 함수에 전달되는 옵션 문자열들. 설정 함수의 2번째 인자(`opts: string[]`)로 들어감.
@@ -53,16 +55,31 @@
 
 ### `publish`
 
-`sd-cli publish [--packages <...>] [--noBuild]` — 배포. 흐름: (npm 배포 대상 있으면) npm/yarn 로그인 토큰 확인 → (git 이면) 미커밋 변경 확인 → 버전 patch 증가 → 빌드 → git 커밋·`v<버전>` 태그·push → 패키지별 `publish` 설정에 따라 배포 → `postPublish` 스크립트 실행. 완료 후 `process.exit(0)`.
+`sd-cli publish [--packages <...>] [--noBuild]` — 배포. 완료 후 `process.exit(0)`.
 
-- `--noBuild` (boolean, 기본 `false`) — 빌드·버전증가·git작업 생략하고 기존 `dist` 만 배포. 위험 경고 후 5초 대기.
+흐름:
+
+1. (npm 배포 대상 있으면) npm/yarn 로그인 토큰 확인.
+2. (git 이면) 미커밋 변경 확인.
+3. 버전 patch 증가.
+4. 빌드.
+5. git 커밋, `v<버전>` 태그, push.
+6. 패키지별 `publish` 설정에 따라 배포.
+7. `postPublish` 스크립트 실행.
+
+- `--noBuild` (boolean, 기본 `false`) — 빌드, 버전증가, git작업 생략하고 기존 `dist` 만 배포. 위험 경고 후 5초 대기.
 - `--packages <...>` (string 배열) — 배포 대상 패키지명 필터.
-- 배포 경로 문자열의 `%SD_VERSION%`(패키지 버전)·`%SD_PROJECT_PATH%`(작업공간 경로)·`%ENV%`(환경변수) 치환 지원.
+- 배포 경로 문자열의 치환 지원.
+  - `%SD_VERSION%`: 패키지 버전.
+  - `%SD_PROJECT_PATH%`: 작업공간 경로.
+  - `%ENV%`: 환경변수.
 
 ### `local-update`
 
-`sd-cli local-update` — 설정의 `localUpdates`(glob→소스경로 매핑)를 따라 `node_modules`(루트 및 각 패키지 하위)의 대상 패키지를 소스 디렉토리에서 복사. `node_modules`·`package.json` 은 복사 제외. `localUpdates` 없으면 즉시 종료.
+`sd-cli local-update` — 설정의 `localUpdates`(glob→소스경로 매핑)를 따라 `node_modules`(루트 및 각 패키지 하위)의 대상 패키지를 소스 디렉토리에서 복사.
 
+- `node_modules`, `package.json` 은 복사 제외.
+- `localUpdates` 없으면 즉시 종료.
 - `--config`, `--options` 만 받음.
 - 배포본(`.js`) 실행 시 `local-update` 외 명령은 시작 전 자동으로 한 번 `local-update` 를 선행 실행함(`sd-cli.ts`).
 
@@ -92,7 +109,11 @@
 
 ### `commit`
 
-`sd-cli commit` — `git add .` 후 staged diff 를 Anthropic API(`claude-haiku-4-5`)로 보내 한국어 커밋 메시지 생성 → 커밋·푸시. `ANTHROPIC_API_KEY` 환경변수 필수(없으면 에러). staged 변경이 없으면 에러. `.*`/`_*`/`yarn.lock`/`**/package.json`/`styles.css`/`*.map` 은 diff 에서 제외.
+`sd-cli commit` — `git add .` 후 staged diff 를 Anthropic API(`claude-haiku-4-5`)로 보내 한국어 커밋 메시지 생성 후 커밋, 푸시.
+
+- `ANTHROPIC_API_KEY` 환경변수 필수(없으면 에러).
+- staged 변경이 없으면 에러.
+- `.*`/`_*`/`yarn.lock`/`**/package.json`/`styles.css`/`*.map` 은 diff 에서 제외.
 
 ### `postinstall`
 

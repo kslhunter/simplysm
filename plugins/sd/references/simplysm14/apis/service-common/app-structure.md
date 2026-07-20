@@ -1,6 +1,7 @@
 # @simplysm/service-common — AppStructure
 
-앱 메뉴/권한/모듈 구조 항목 타입과, 항목 배열에서 모듈 조건을 판정하고 권한 코드를 평탄화하는 standalone 유틸 묶음임. 사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
+앱 메뉴/권한/모듈 구조 항목 타입과, 항목 배열에서 모듈 조건을 판정하고 권한 코드를 평탄화하는 standalone 유틸 묶음임.
+사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
 
 ## 구조 타입
 
@@ -12,7 +13,8 @@ type AppStructureItem<TModule = unknown> =
 ```
 
 - `TModule = unknown` — `modules`/`requiredModules` 에 쓰는 모듈 식별자 타입.
-- 그룹 항목(`children` 보유)과 leaf 항목(`perms`/`subPerms` 보유 가능)의 유니언. `getFlatPermissions` 는 `"children" in item` 으로 그룹을, `"perms"`/`"subPerms" in item` 으로 leaf 권한을 구분함.
+- 그룹 항목(`children` 보유)과 leaf 항목(`perms`/`subPerms` 보유 가능)의 유니언.
+  - `getFlatPermissions` 는 `"children" in item` 으로 그룹을, `"perms"`/`"subPerms" in item` 으로 leaf 권한을 구분함.
 
 ### AppStructureGroupItem
 
@@ -50,8 +52,8 @@ interface AppStructureLeafItem<TModule> {
 }
 ```
 
-- `code: string` — 항목 코드. `codeChain` 구성에 쓰인다.
-- `title: string` — 항목 제목. `titleChain` 구성에 쓰인다.
+- `code: string` — 항목 코드. `codeChain` 구성에 쓰임.
+- `title: string` — 항목 제목. `titleChain` 구성에 쓰임.
 - `modules?: TModule[]` — 모듈 OR 조건(위 그룹과 동일 규칙).
 - `requiredModules?: TModule[]` — 모듈 AND 조건(위 그룹과 동일 규칙).
 - `perms?: ("use" | "edit")[]` — 직접 권한 코드 배열. `"use"` 는 사용 권한, `"edit"` 는 편집 권한을 뜻하며 값이 그대로 `codeChain` 끝에 붙음(유틸 내부에 값별 분기는 없음).
@@ -137,4 +139,9 @@ function getFlatPermissions<TModule>(
 - `items` — 순회할 root 항목 배열. 내부에서 BFS 큐로 항목과 자식을 순회함.
 - `usableModules` — 각 항목과 sub permission 의 `modules`/`requiredModules` 조건 판정에 쓰는 활성 모듈 배열.
 - 반환 — 모듈 조건을 통과한 항목의 직접 `perms` 와 `subPerms.perms` 를 평탄화한 `FlatPermission` 배열.
-- 동작 — 항목마다 `title`/`code`/`modules`(존재 시만)/`requiredModules`(존재 시만)를 부모 체인에 누적하고, `isUsableModulesChain` 으로 경로 누적 조건을 검사해 실패하면 그 항목과 자식을 건너뜀. 통과 시 `children` 을 큐에 넣고, `perms` 가 있으면 각 `perm` 마다 결과 한 건씩(`codeChain` = 현재 코드 체인 + `perm`)을 만듦. `subPerms` 는 `subPerm` 자체의 모듈 조건을 추가 통과한 경우에만 각 `perm` 마다 결과를 만들며 `codeChain` = 현재 코드 체인 + `subPerm.code` + `perm`, `modulesChain` 끝에 `subPerm.modules ?? []` 를 더함.
+- 동작
+  - 항목마다 `title`/`code`/`modules`(존재 시만)/`requiredModules`(존재 시만)를 부모 체인에 누적함.
+  - `isUsableModulesChain` 으로 경로 누적 조건을 검사해 실패하면 그 항목과 자식을 건너뜀.
+  - 통과 시 `children` 을 큐에 넣고, `perms` 가 있으면 각 `perm` 마다 결과 한 건씩(`codeChain` = 현재 코드 체인 + `perm`)을 만듦.
+  - `subPerms` 는 `subPerm` 자체의 모듈 조건을 추가 통과한 경우에만 각 `perm` 마다 결과를 만들며,
+    `codeChain` = 현재 코드 체인 + `subPerm.code` + `perm`, `modulesChain` 끝에 `subPerm.modules ?? []` 를 더함.

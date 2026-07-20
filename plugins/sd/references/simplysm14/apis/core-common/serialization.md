@@ -1,6 +1,6 @@
 # @simplysm/core-common — serialization
 
-커스텀 값 타입을 보존하는 JSON/Worker 직렬화, XML 변환, 바이트 인코딩, ZIP 처리 묶음. 외부 전송·저장·압축 경계에서 함께 확인함.
+커스텀 값 타입을 보존하는 JSON/Worker 직렬화, XML 변환, 바이트 인코딩, ZIP 처리 묶음. 외부 전송, 저장, 압축 경계에서 함께 확인함.
 
 ## json
 
@@ -23,7 +23,8 @@ json.parse<TResult = unknown>(json: string): TResult
 
 `json.parse<TResult>`:
 
-- `{ __type__, data }` key 를 가진 객체를 타입 태그로 인식해 `"Date"`, `"DateTime"`, `"DateOnly"`, `"Time"`, `"Uuid"`, `"Set"`, `"Map"`, `"Error"`, `"Uint8Array"` 를 복원함. 사용자 데이터에 같은 형태가 있으면 의도치 않게 변환될 수 있음.
+- `{ __type__, data }` key 를 가진 객체를 타입 태그로 인식해 `"Date"`, `"DateTime"`, `"DateOnly"`, `"Time"`, `"Uuid"`, `"Set"`, `"Map"`, `"Error"`, `"Uint8Array"` 를 복원함.
+  - 사용자 데이터에 같은 형태가 있으면 의도치 않게 변환될 수 있음.
 - 모든 JSON null 은 `obj.nullToUndefined` 를 거쳐 undefined 로 변환됨(simplysm null-free 규칙).
 - 파싱 실패 — `parseBoolEnv(env("DEV"))` 가 true 면 전체 JSON 문자열을, 아니면 JSON 길이만 메시지에 담은 `SdError` 를 throw 함.
 
@@ -36,8 +37,11 @@ xml.parse(str: string, options?: { stripTagPrefix?: boolean }): unknown
 xml.stringify(obj: unknown, options?: XmlBuilderOptions): string
 ```
 
-- `xml.parse(str, options?)` — 속성은 `$` 객체, 텍스트 노드는 `_` key, 루트보다 깊은 자식 요소는 배열로 만듦. `options.stripTagPrefix` true 면 요소 태그명의 첫 `:` 앞 네임스페이스 접두사를 제거함(속성 key 는 유지).
-- `xml.stringify(obj, options?)` — 객체를 XML 문자열로 직렬화함. `options` 는 `XMLBuilder` 옵션에 덮어씀. 기본값: 속성 무시 안 함, 속성 그룹 `$`, 텍스트 노드 `_`, boolean attribute 억제 안 함.
+- `xml.parse(str, options?)` — 속성은 `$` 객체, 텍스트 노드는 `_` key, 루트보다 깊은 자식 요소는 배열로 만듦.
+  - `options.stripTagPrefix` true 면 요소 태그명의 첫 `:` 앞 네임스페이스 접두사를 제거함(속성 key 는 유지).
+- `xml.stringify(obj, options?)` — 객체를 XML 문자열로 직렬화함.
+  - `options` 는 `XMLBuilder` 옵션에 덮어씀.
+  - 기본값: 속성 무시 안 함, 속성 그룹 `$`, 텍스트 노드 `_`, boolean attribute 억제 안 함.
 
 ## bytes
 
@@ -47,7 +51,9 @@ xml.stringify(obj: unknown, options?: XmlBuilderOptions): string
 - `toHex(bytes: Bytes): string` — 각 바이트를 2자리 소문자 hex 로 이어붙임.
 - `fromHex(hex: string): Bytes` — hex 문자열(대소문자 허용)을 Uint8Array 로 변환함. 홀수 길이 또는 비 hex 문자가 있으면 `ArgumentError`.
 - `toBase64(bytes: Bytes): string` — 자체 base64 테이블로 인코딩함. 빈 배열은 빈 문자열, 남는 바이트는 `=` 패딩으로 채움.
-- `fromBase64(base64: string): Bytes` — 공백과 끝 패딩 제거 후 디코딩함. 빈 문자열은 빈 Uint8Array. 비 base64 문자 또는 정규화 길이 `% 4 === 1` 이면 `ArgumentError`.
+- `fromBase64(base64: string): Bytes` — 공백과 끝 패딩 제거 후 디코딩함.
+  - 빈 문자열은 빈 Uint8Array.
+  - 비 base64 문자 또는 정규화 길이 `% 4 === 1` 이면 `ArgumentError`.
 
 ## transfer
 
@@ -58,7 +64,8 @@ transfer.encode(obj: unknown): { result: unknown; transferList: ArrayBuffer[] }
 transfer.decode(obj: unknown): unknown
 ```
 
-- `encode(obj)` — 특수 타입(`Date`, `DateTime`, `DateOnly`, `Time`, `Uuid`, `RegExp`, `Error`)을 태그 객체로 바꾸고 Array/Map/Set/일반 객체를 재귀 인코딩함. `result` 와 함께 zero-copy 전송용 `transferList`(ArrayBuffer 배열)를 반환함.
+- `encode(obj)` — 특수 타입(`Date`, `DateTime`, `DateOnly`, `Time`, `Uuid`, `RegExp`, `Error`)을 태그 객체로 바꾸고 Array/Map/Set/일반 객체를 재귀 인코딩함.
+  - `result` 와 함께 zero-copy 전송용 `transferList`(ArrayBuffer 배열)를 반환함.
 - Error data — `name`, `message`, `stack`, 선택 `code`, 선택 `detail`(재귀), 선택 `cause`(재귀)를 포함함.
 - `Uint8Array` — result 는 원래 Uint8Array 그대로, buffer 가 SharedArrayBuffer 가 아니면 `transferList` 에 추가함(같은 ArrayBuffer 중복 추가 안 함).
 - 순환 참조 — 현재 재귀 스택 객체를 다시 만나면 경로(`root`/`a.b` 등)를 포함한 `TypeError` 를 throw 함. 동일 객체가 여러 곳에서 참조되면 캐시 결과를 재사용함.
@@ -88,9 +95,13 @@ class ZipArchive {
 ```
 
 - `constructor(data?)` — `data` 가 있으면 읽기용 ZipReader 를 만듦(Uint8Array→`Uint8ArrayReader`, Blob→`BlobReader`). 없으면 빈 아카이브(cache 만 보유).
-- `ZipArchiveProgress.fileName` — 현재 처리 중 entry 파일명. `totalSize` — 비디렉터리 entry 의 `uncompressedSize` 합계. `extractedSize` — 누적 추출 바이트(진행 중에는 현재 entry 진행량 가산).
-- `extractAll(progressCallback?)` — 모든 비디렉터리 entry 를 추출해 cache 에 저장하고 cache Map 을 반환함. reader 가 없으면 현재 cache 반환. `progressCallback` 은 entry 시작·진행·완료 시 호출됨.
-- `get(fileName)` — cache 에 있으면 cache 값, 없으면 entry 를 찾아 추출·cache 함. reader/entry 가 없으면 undefined 를 cache·반환.
+- `ZipArchiveProgress.fileName` — 현재 처리 중 entry 파일명.
+- `ZipArchiveProgress.totalSize` — 비디렉터리 entry 의 `uncompressedSize` 합계.
+- `ZipArchiveProgress.extractedSize` — 누적 추출 바이트(진행 중에는 현재 entry 진행량 가산).
+- `extractAll(progressCallback?)` — 모든 비디렉터리 entry 를 추출해 cache 에 저장하고 cache Map 을 반환함.
+  - reader 가 없으면 현재 cache 반환.
+  - `progressCallback` 은 entry 시작, 진행, 완료 시 호출됨.
+- `get(fileName)` — cache 에 있으면 cache 값, 없으면 entry 를 찾아 추출, cache 함. reader/entry 가 없으면 undefined 를 cache, 반환.
 - `exists(fileName)` — cache 에 있으면 값이 null/undefined 가 아닌지 확인, 아니면 entry 목록에서 파일명을 찾음.
 - `write(fileName, bytes)` — cache 에 파일 bytes 를 저장함(같은 이름 재기록 시 cache 값 갱신). 실제 ZIP 은 `compress` 시 만들어짐.
 - `compress()` — `extractAll()` 로 cache 를 채운 뒤 cache 값이 있는 항목을 새 ZIP 으로 씀(undefined 값은 건너뜀). 대용량은 메모리 사용에 주의.

@@ -1,13 +1,15 @@
 # @simplysm/sd-excel — SdExcelWrapper
 
-필드 스키마(키→표시명·타입·필수)를 정의해, 객체 배열↔엑셀 시트를 타입검증과 함께 변환하는 고수준 래퍼. 헤더는 스키마의 `displayName`, 데이터는 스키마 키 순서로 매핑됨.
+필드 스키마(키→표시명, 타입, 필수)를 정의해, 객체 배열↔엑셀 시트를 타입검증과 함께 변환하는 고수준 래퍼. 헤더는 스키마의 `displayName`, 데이터는 스키마 키 순서로 매핑됨.
 
 ## 타입
 
 - `TValidFieldSpec<T extends Type<any>>` (내부형, 스키마 값) 의 필드:
   - `displayName: string` — 시트 헤더에 쓰는 표시명(읽기 시 헤더 매칭 기준).
   - `type: T` — 생성자(String/Number/Boolean/DateOnly/DateTime 등). 읽기 시 이 타입으로 변환.
-  - `notnull?: boolean` — 필수 여부. read 시 첫 notnull 필드값이 null 인 행은 skip, 전부 비면 throw. 결과 타입에서 notnull=true 는 필수 프로퍼티, 아니면 옵셔널.
+  - `notnull?: boolean` — 필수 여부.
+    - read 시 첫 notnull 필드값이 null 인 행은 skip, 전부 비면 throw.
+    - 결과 타입에서 notnull=true 는 필수 프로퍼티, 아니면 옵셔널.
   - `includes?: InstanceType<T>[]` — 허용값 목록(결과 값 타입을 이 유니온으로 좁힘).
   - `hidden?: boolean` — true 면 `_getFieldConf` 단계에서 스키마에서 제거(해당 필드 제외).
 - `TExcelValidObject = Record<string, TValidFieldSpec<any>>` — 스키마 전체 형태.
@@ -33,4 +35,4 @@
 ## 주의
 
 - read 시 스키마에 notnull 필드가 하나도 없으면 throw("Not Null 필드가 없습니다") — 행 skip 판정에 첫 notnull 필드를 쓰기 때문.
-- `hidden: true` 필드는 read 의 변환·검증 대상에서 빠짐.
+- `hidden: true` 필드는 read 의 변환, 검증 대상에서 빠짐.

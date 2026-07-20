@@ -18,7 +18,7 @@
     "@types/pg": "^8.20.0",
     "@types/pg-copy-streams": "^1.2.5",
     "execa": "^9.6.1",
-    "mysql2": "^3.23.0",
+    "mysql2": "^3.23.1",
     "pg": "^8.22.0",
     "pg-copy-streams": "^7.0.0",
     "tedious": "^20.0.0"

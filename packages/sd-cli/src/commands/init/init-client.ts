@@ -59,7 +59,7 @@ export async function runInitClient(opts: InitClientOptions): Promise<void> {
   const needsAppStructure = data.hasAuth && client.hasRouter;
 
   //-- 기존 라우팅 클라이언트 0개면 기본 메뉴 구조 export("appStructureItems")는
-  //   파일에 남기되 서버 초기화의 import·권한 계산에서 신규 export 로 대체 (init 동등)
+  //   파일에 남기되 서버 초기화의 import, 권한 계산에서 신규 export 로 대체 (init 동등)
   const isFirstRouterClient = recovered.input.clients.every((c) => !c.hasRouter);
   const fallbackExportName =
     isFirstRouterClient && recovered.appStructureExportNames.includes("appStructureItems")

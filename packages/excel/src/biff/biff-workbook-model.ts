@@ -13,7 +13,7 @@ import {
 
 const WRITE_NOT_SUPPORTED = "xlsb 쓰기는 아직 지원되지 않습니다 (Stage 3 이후 예정).";
 
-/** workbook.bin (BIFF12) 읽기 모델. 시트 목록·관계 ID 조회. */
+/** workbook.bin (BIFF12) 읽기 모델. 시트 목록, 관계 ID 조회. */
 export class BiffWorkbookModel implements IWorkbookModel {
   private readonly _sheets: { name: string; relId: string }[];
 

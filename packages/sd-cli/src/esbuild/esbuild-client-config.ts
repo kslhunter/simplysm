@@ -175,7 +175,7 @@ export async function createClientEsbuildContext(
     entryNames: isDev ? "[name]" : "[name]-[hash]",
     chunkNames: "[name]-[hash]",
     assetNames: isDev ? "[name]" : "[name]-[hash]",
-    // CSS/SCSS url() 로 참조하는 폰트·이미지 자산을 outdir로 복사하고 url을 출력 경로로 재작성.
+    // CSS/SCSS url() 로 참조하는 폰트, 이미지 자산을 outdir로 복사하고 url을 출력 경로로 재작성.
     // esbuild 기본 loader 맵에는 js/ts/css/json/text만 있어, 미설정 시 url(*.woff) 등에서
     // "No loader is configured" 에러가 발생한다.
     loader: {

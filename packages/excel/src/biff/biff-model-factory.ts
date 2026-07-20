@@ -48,7 +48,7 @@ function createXlsbContentTypeData(): ExcelXmlContentTypeData {
  * xlsb(BIFF12) 포맷의 파트 모델 팩토리.
  *
  * - workbook/sharedStrings/worksheet `.bin` → BIFF12 모델로 디코드.
- * - `[Content_Types].xml`·`*.rels`·drawing `.xml` → xlsb 도 OOXML XML 이므로 `XmlModelFactory` 에 위임.
+ * - `[Content_Types].xml`, `*.rels`, drawing `.xml` → xlsb 도 OOXML XML 이므로 `XmlModelFactory` 에 위임.
  * - styles.bin 은 Stage 4 까지 모델로 다루지 않음(원시 바이트 passthrough).
  */
 export class BiffModelFactory implements IExcelModelFactory {
@@ -88,7 +88,7 @@ export class BiffModelFactory implements IExcelModelFactory {
   createSharedString(): ISharedStringModel {
     return new BiffSharedStringModel();
   }
-  // [Content_Types].xml·*.rels·drawing 은 xlsb 도 XML → xml 구현 재사용.
+  // [Content_Types].xml, *.rels, drawing 은 xlsb 도 XML → xml 구현 재사용.
   createContentType(): IContentTypeModel {
     return new ExcelXmlContentType(createXlsbContentTypeData());
   }

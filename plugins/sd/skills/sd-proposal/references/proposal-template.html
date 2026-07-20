@@ -9,28 +9,28 @@
   - 인쇄/PDF 에서는 @page size:1280px 720px + 슬라이드마다 break-after:page → 1 슬라이드 = 1 페이지.
 
   사용법 — ★ template 대로 만드는 게 아니다. 이 파일은 "고정 양식"이 아니라 디자인 시스템 + 슬라이드 예시 메뉴이며,
-  이를 참고해 입력 자료에 가장 적합한 deck 을 자유롭게 구성한다. 디자인은 고정, 구성·내용은 자유.
-  - [고정 — 지킬 것] 디자인 토큰(:root)·슬라이드 프레임(.frame/.slide, 16:9)·@media print/@page·fit/페이지번호 스크립트.
+  이를 참고해 입력 자료에 가장 적합한 deck 을 자유롭게 구성한다. 디자인은 고정, 구성, 내용은 자유.
+  - [고정 — 지킬 것] 디자인 토큰(:root), 슬라이드 프레임(.frame/.slide, 16:9), @media print/@page, fit/페이지번호 스크립트.
     시각 일관성과 PDF 품질(1슬라이드=1페이지, 배경 출력, 자동 페이지번호)의 근간이므로 수정하지 않는다.
     페이지 번호(.pg)는 스크립트가 자동으로 채우므로 비워 둔다.
-  - [자유 — 구성·내용] 어떤 슬라이드를·몇 장·어떤 순서로·무슨 내용으로 담을지는 자유롭게 설계한다.
+  - [자유 — 구성, 내용] 어떤 슬라이드를, 몇 장, 어떤 순서로, 무슨 내용으로 담을지는 자유롭게 설계한다.
     아래 슬라이드들은 권장 예시일 뿐 — 필요한 슬라이드는 새로 추가하고(예시에 없는 주제도), 의미 없는 슬라이드는
-    빼고, 쪼개거나 합치고 순서도 바꾼다. [공통·필수]/[선택] 라벨도 강제가 아니라 "흔히 유용함 / 상황별" 신호다.
+    빼고, 쪼개거나 합치고 순서도 바꾼다. [공통, 필수]/[선택] 라벨도 강제가 아니라 "흔히 유용함 / 상황별" 신호다.
   - [컴포넌트] 아래 카탈로그(.pain/.mod/.cmp/.cyc/.arch/.timeline/.effc/.step/.legacy/.open-i 등)를 우선 재사용하되,
-    마땅치 않으면 같은 디자인 언어(토큰·카드/그림자·여백 리듬) 안에서 새 레이아웃을 구성해도 된다.
+    마땅치 않으면 같은 디자인 언어(토큰, 카드/그림자, 여백 리듬) 안에서 새 레이아웃을 구성해도 된다.
     단 슬라이드 프레임과 print/page/스크립트는 건드리지 않는다.
   - 액센트 1색만 도메인/브랜드에 맞게 바꿀 수 있다(예: --cyan 강조 ↔ --rose 강조). navy+blue 베이스 팔레트는 고정.
-  - 단일 자기완결 HTML. 외부 폰트·CDN·스크립트 의존 없음(Pretendard 있으면 쓰고 없으면 시스템 폰트로 폴백).
+  - 단일 자기완결 HTML. 외부 폰트, CDN, 스크립트 의존 없음(Pretendard 있으면 쓰고 없으면 시스템 폰트로 폴백).
   - 플레이스홀더 「…」 는 전부 실제 내용으로 채우고, 채울 근거가 없으면 그 항목을 빼거나 [OPEN] 으로 표시한다.
 
   ★ 슬라이드는 720px 안에 콘텐츠가 다 들어가야 한다(overflow:hidden — 넘치면 잘림).
     한 슬라이드에 내용이 많으면 둘로 쪼개고, 폰트/패딩은 카탈로그 값을 유지하며 항목 수로 조절한다.
     산출 후 각 슬라이드 잘림 여부를 확인한다(헤드리스 스크린샷 또는 브라우저). PDF 는 추출하지 않는다.
 
-  슬라이드 선택 가이드 (자주 쓰는 조합 예시일 뿐 — 강제 아님. 내용에 맞게 가감·추가):
-  - As-Is 가 있는 전환·통합·마이그레이션 제안 → §현황진단(legacy 카드) + §변화비교표(cmp 비교형) 사용, §도전과제 삭제
-  - As-Is 가 없는 신규 구축 제안               → §도전과제(challenge-grid) 사용, §현황진단·비교표 삭제
-  - 계산·판정 로직이 핵심이면                  → §핵심 메커니즘(timeline/formula/statuses) 사용
+  슬라이드 선택 가이드 (자주 쓰는 조합 예시일 뿐 — 강제 아님. 내용에 맞게 가감, 추가):
+  - As-Is 가 있는 전환, 통합, 마이그레이션 제안 → §현황진단(legacy 카드) + §변화비교표(cmp 비교형) 사용, §도전과제 삭제
+  - As-Is 가 없는 신규 구축 제안               → §도전과제(challenge-grid) 사용, §현황진단, 비교표 삭제
+  - 계산, 판정 로직이 핵심이면                  → §핵심 메커니즘(timeline/formula/statuses) 사용
   - 외부 연동/인터페이스 규격이 있으면         → §연동 명세(cmp 명세형) 사용
   - 미확정 항목이 있으면                       → §협의사항(opens) 사용
 
@@ -64,7 +64,7 @@
   p{color:var(--muted)}
   b{color:var(--ink)}
 
-  /* ═══════════ [공통·필수] 슬라이드 프레임 (수정 금지) ═══════════ */
+  /* ═══════════ [공통, 필수] 슬라이드 프레임 (수정 금지) ═══════════ */
   .slide{width:1280px;height:720px;position:relative;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
   .s-pad{flex:1;display:flex;flex-direction:column;padding:48px 60px 0;min-height:0}
   .s-head{flex:none;margin-bottom:22px}
@@ -98,7 +98,7 @@
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 
-  /* ═══════════ [공통·필수] 표지 / 클로징 (cover · 네이비) ═══════════ */
+  /* ═══════════ [공통, 필수] 표지 / 클로징 (cover,  네이비) ═══════════ */
   .cover{color:#fff;
     background:radial-gradient(1100px 560px at 84% -8%,rgba(6,182,212,.22),transparent 58%),
                radial-gradient(820px 500px at 6% 112%,rgba(37,99,235,.32),transparent 56%),
@@ -133,7 +133,7 @@
   .cl-info{margin-top:34px;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;font-size:13px;color:#9db4dc}
   .cl-info b{color:#e6eefc}
 
-  /* ═══════════ [선택 A] 현황 진단 — As-Is 레거시 카드 (전환·통합형) ═══════════ */
+  /* ═══════════ [선택 A] 현황 진단 — As-Is 레거시 카드 (전환, 통합형) ═══════════ */
   .legacy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px}
   .legacy{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);position:relative}
   .legacy:before{content:"";position:absolute;top:0;left:22px;right:22px;height:4px;border-radius:0 0 4px 4px;background:var(--asis)}
@@ -160,7 +160,7 @@
   .pain .ic{font-size:16px}
   .pain p{font-size:12px;line-height:1.5}
 
-  /* ═══════════ [공통·필수] To-Be 비전 — 사이클 흐름 + 아키텍처 ═══════════ */
+  /* ═══════════ [공통, 필수] To-Be 비전 — 사이클 흐름 + 아키텍처 ═══════════ */
   .vis-lbl{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--teal);margin-bottom:11px}
   .cycle{display:flex;gap:10px;margin-bottom:20px}
   .cyc{flex:1;background:linear-gradient(160deg,#f0f7ff,#eafaf8);border:1px solid #d6e7fb;border-radius:12px;padding:14px 12px;text-align:center;position:relative}
@@ -181,7 +181,7 @@
   .arch-note{font-size:11.5px;color:var(--muted);margin-top:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
   .arch-note b{color:var(--navy)}
 
-  /* ═══════════ [선택] 핵심 메커니즘 — 계산·판정 로직 ═══════════ */
+  /* ═══════════ [선택] 핵심 메커니즘 — 계산, 판정 로직 ═══════════ */
   .mech-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow);display:flex;flex-direction:column}
   .panel .ptag{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);margin-bottom:7px}
@@ -207,7 +207,7 @@
   .st.done .d{background:var(--teal)}.st.late{border-color:#fca5b1;color:var(--rose);background:#fff1f3}.st.late .d{background:var(--rose);box-shadow:0 0 0 3px rgba(225,29,72,.18)}
   .ver-box{margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
 
-  /* ═══════════ [공통·필수] 기능/구축 범위 — 모듈 그리드 ═══════════ */
+  /* ═══════════ [공통, 필수] 기능/구축 범위 — 모듈 그리드 ═══════════ */
   .grp-lbl{font-size:12px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin:0 0 13px;display:flex;align-items:center;gap:10px}
   .grp-lbl:after{content:"";flex:1;height:1px;background:var(--line)}
   .mods{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}  /* 3종이면 repeat(3,1fr) */
@@ -218,7 +218,7 @@
   .mod .open{font-size:9.5px;font-weight:800;color:#b45309;background:#fef3c7;border-radius:5px;padding:2px 6px}  /* 미확정 표시 */
   .base .mod .ic{background:linear-gradient(160deg,#eef1f6,#e9edf3);color:var(--navy-2)}  /* 기반 모듈은 중립색 */
 
-  /* ═══════════ [선택] 표 — As-Is/To-Be 비교(비교형) · 인터페이스 명세(명세형) ═══════════ */
+  /* ═══════════ [선택] 표 — As-Is/To-Be 비교(비교형),  인터페이스 명세(명세형) ═══════════ */
   .if-grid{display:grid;grid-template-columns:1fr 300px;gap:22px;flex:1;min-height:0}  /* 명세형: 표 + 사이드 */
   .cmp{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);font-size:12.5px}
   .cmp th,.cmp td{padding:11px 16px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
@@ -244,7 +244,7 @@
   .if-note{font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;line-height:1.5}
   .if-note b{color:var(--navy)}
 
-  /* ═══════════ [공통·필수] 도입 효과 ═══════════ */
+  /* ═══════════ [공통, 필수] 도입 효과 ═══════════ */
   .eff{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;flex:1;min-height:0}  /* 2개씩이면 repeat(2,1fr) */
   .effc{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:22px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column}
   .effc:before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.10),transparent 70%)}
@@ -252,7 +252,7 @@
   .effc h4{font-size:17px;color:var(--navy);margin:9px 0 11px;position:relative;line-height:1.25}
   .effc p{font-size:13px;line-height:1.55;position:relative}
 
-  /* ═══════════ [공통·필수] 추진 일정 — 로드맵 ═══════════ */
+  /* ═══════════ [공통, 필수] 추진 일정 — 로드맵 ═══════════ */
   .road-head{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:22px}
   .golive{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--rose),#be123c);color:#fff;padding:11px 18px;border-radius:12px;font-weight:800;font-size:14.5px;box-shadow:0 8px 22px rgba(225,29,72,.25)}
   .road{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:step;flex:1;align-content:center}
@@ -277,10 +277,10 @@
 <body>
 <div class="deck">
 
-<!-- ════════ [공통·필수] S · 표지 ════════ -->
+<!-- ════════ [공통, 필수] S,  표지 ════════ -->
 <div class="frame"><section class="slide cover">
   <div class="s-pad">
-    <span class="cv-eye">「대상 업종 · 한 줄 위치 설명」</span>
+    <span class="cv-eye">「대상 업종,  한 줄 위치 설명」</span>
     <h1 class="cv-title">「핵심 한 문장」<br><span class="grad">「강조구」</span>「마무리」</h1>
     <p class="cv-lead">「제안 한 단락 — 무엇을 어떻게 해결하는지. <b>핵심은 강조</b>. 근거 있는 사실만, 과장 금지.」</p>
     <div class="cv-meta">
@@ -295,22 +295,22 @@
   <div class="s-foot"><span class="dot"></span><b>「공급자」</b><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택 A] S · 현황 진단 (전환·통합·마이그레이션) — As-Is 레거시 카드 + 통증 ════════
+<!-- ════════ [선택 A] S,  현황 진단 (전환, 통합, 마이그레이션) — As-Is 레거시 카드 + 통증 ════════
      신규 구축이면 이 슬라이드를 삭제하고 [선택 B] 도전 과제를 사용. -->
 <div class="frame"><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow warn">AS-IS · 현황 진단</span>
+      <span class="eyebrow warn">AS-IS,  현황 진단</span>
       <h2 class="s-title">「현행의 한계 한 문장」</h2>
-      <p class="s-sub">「As-Is 를 사실대로 — 현행을 비하·왜곡하지 않는다. 통증은 아래 카드로.」</p>
+      <p class="s-sub">「As-Is 를 사실대로 — 현행을 비하, 왜곡하지 않는다. 통증은 아래 카드로.」</p>
     </div>
     <div class="s-body">
       <div class="legacy-grid">
-        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류 · 버전」</span>
+        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류,  버전」</span>
           <ul><li>「담당 영역」</li><li>「담당 영역」</li><li>「담당 영역」</li></ul></div>
-        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류 · 버전」</span>
+        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류,  버전」</span>
           <ul><li>「담당 영역」</li><li>「담당 영역」</li></ul></div>
-        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류 · 버전」</span>
+        <div class="legacy"><h3>「현행 시스템명」</h3><span class="ver">「분류,  버전」</span>
           <ul><li>「담당 영역」</li><li>「담당 영역」</li></ul></div>
       </div>
       <div class="pains">
@@ -323,12 +323,12 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택 B] S · 도전 과제 (신규 구축) — KPI 박스 + 통증 카드 ════════
+<!-- ════════ [선택 B] S,  도전 과제 (신규 구축) — KPI 박스 + 통증 카드 ════════
      [선택 A] 와 택일. As-Is 가 없을 때 사용(없으면 이 슬라이드 삭제). -->
 <div class="frame" hidden><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow warn">CHALLENGE · 「난이도 요약」</span>
+      <span class="eyebrow warn">CHALLENGE,  「난이도 요약」</span>
       <h2 class="s-title">「왜 이 시스템이 필요한가」</h2>
       <p class="s-sub">「문제의 본질 한 단락」</p>
     </div>
@@ -357,11 +357,11 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [공통·필수] S · To-Be 비전 — 사이클 흐름 + 아키텍처 ════════ -->
+<!-- ════════ [공통, 필수] S,  To-Be 비전 — 사이클 흐름 + 아키텍처 ════════ -->
 <div class="frame"><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow good">TO-BE · 비전</span>
+      <span class="eyebrow good">TO-BE,  비전</span>
       <h2 class="s-title">「제안의 핵심 한 문장」</h2>
       <p class="s-sub">「To-Be 가 그리는 그림 한 단락」</p>
     </div>
@@ -380,7 +380,7 @@
           <div class="arch-side"><b>「계층명」</b><small>「부연」</small></div>
           <div class="arch-main">
             <div class="node accent">「핵심 노드」</div><span class="conn">—</span><div class="node accent">「핵심 노드」</div>
-            <span class="conn">·</span><div class="node">「구성요소」</div><div class="node">「구성요소」</div><div class="node">「구성요소」</div>
+            <span class="conn">, </span><div class="node">「구성요소」</div><div class="node">「구성요소」</div><div class="node">「구성요소」</div>
           </div>
         </div>
         <div class="arch-row">
@@ -396,19 +396,19 @@
           </div>
         </div>
       </div>
-      <div class="arch-note"><b>·</b><span>「연동·결합에 대한 사실 한 줄」</span></div>
+      <div class="arch-note"><b>, </b><span>「연동, 결합에 대한 사실 한 줄」</span></div>
     </div>
   </div>
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택] S · 핵심 메커니즘 — 계산·판정 로직이 핵심일 때 ════════ -->
+<!-- ════════ [선택] S,  핵심 메커니즘 — 계산, 판정 로직이 핵심일 때 ════════ -->
 <div class="frame" hidden><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow">CORE · 핵심 메커니즘</span>
+      <span class="eyebrow">CORE,  핵심 메커니즘</span>
       <h2 class="s-title">「핵심 로직 한 문장」</h2>
-      <p class="s-sub">「무엇을 자동으로 계산·판정하는지」</p>
+      <p class="s-sub">「무엇을 자동으로 계산, 판정하는지」</p>
     </div>
     <div class="s-body">
       <div class="mech-grid">
@@ -446,11 +446,11 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [공통·필수] S · 기능/구축 범위 — 모듈 그리드 ════════ -->
+<!-- ════════ [공통, 필수] S,  기능/구축 범위 — 모듈 그리드 ════════ -->
 <div class="frame"><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow good">SCOPE · 기능 범위</span>
+      <span class="eyebrow good">SCOPE,  기능 범위</span>
       <h2 class="s-title">「무엇을 만드나」</h2>
       <p class="s-sub">「업무 모듈 N개 + 운영 기반 M개 구성」</p>
     </div>
@@ -474,7 +474,7 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택] S · 변화 비교표(비교형) — 전환·통합형에서 사용 ════════
+<!-- ════════ [선택] S,  변화 비교표(비교형) — 전환, 통합형에서 사용 ════════
      ※ 연동 명세가 핵심이면 이 슬라이드를 아래 [명세형] 으로 교체. 둘 다 필요하면 슬라이드를 둘로. -->
 <div class="frame" hidden><section class="slide">
   <div class="s-pad">
@@ -498,12 +498,12 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택] S · 연동 명세(명세형) — 외부 인터페이스 규격이 있을 때 ════════
-     표(좌) + 주고받는 순서·주석(우). 위 [비교형] 과 택일하거나 별도 슬라이드로. -->
+<!-- ════════ [선택] S,  연동 명세(명세형) — 외부 인터페이스 규격이 있을 때 ════════
+     표(좌) + 주고받는 순서, 주석(우). 위 [비교형] 과 택일하거나 별도 슬라이드로. -->
 <div class="frame" hidden><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow">INTERFACE · 「상대 시스템」 연동</span>
+      <span class="eyebrow">INTERFACE,  「상대 시스템」 연동</span>
       <h2 class="s-title">「연동 방식 한 문장」</h2>
       <p class="s-sub">「무엇을 어떤 규격으로 주고받는지 한 단락」</p>
     </div>
@@ -525,8 +525,8 @@
             <div class="if-step"><span class="b">2</span><span class="x"><b>「주체 동작」</b> — 「설명」</span></div>
             <div class="if-step"><span class="b">3</span><span class="x"><b>「주체 동작」</b> — 「설명」</span></div>
           </div>
-          <div class="if-note"><b>·</b><span>「규격·전제 주석」</span></div>
-          <div class="if-note"><b>·</b><span>「가용성·예외 처리 주석」</span></div>
+          <div class="if-note"><b>, </b><span>「규격, 전제 주석」</span></div>
+          <div class="if-note"><b>, </b><span>「가용성, 예외 처리 주석」</span></div>
         </div>
       </div>
     </div>
@@ -534,31 +534,31 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [공통·필수] S · 도입 효과 — 근거에서 도출된 효과만. 정량 배수 단정 금지 ════════ -->
+<!-- ════════ [공통, 필수] S,  도입 효과 — 근거에서 도출된 효과만. 정량 배수 단정 금지 ════════ -->
 <div class="frame"><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow">EFFECT · 도입 효과</span>
+      <span class="eyebrow">EFFECT,  도입 효과</span>
       <h2 class="s-title">「얻는 것」</h2>
       <p class="s-sub">「효과 한 단락」</p>
     </div>
     <div class="s-body">
       <div class="eff">
-        <div class="effc"><div class="n">01 · 「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
-        <div class="effc"><div class="n">02 · 「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
-        <div class="effc"><div class="n">03 · 「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
-        <div class="effc"><div class="n">04 · 「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
+        <div class="effc"><div class="n">01,  「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
+        <div class="effc"><div class="n">02,  「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
+        <div class="effc"><div class="n">03,  「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
+        <div class="effc"><div class="n">04,  「축」</div><h4>「효과」</h4><p>「비교에서 도출된 근거 있는 효과」</p></div>
       </div>
     </div>
   </div>
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [공통·필수] S · 추진 일정 — 로드맵. 일정은 추정이며 가변임을 명시 ════════ -->
+<!-- ════════ [공통, 필수] S,  추진 일정 — 로드맵. 일정은 추정이며 가변임을 명시 ════════ -->
 <div class="frame"><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow good">ROADMAP · 추진 일정</span>
+      <span class="eyebrow good">ROADMAP,  추진 일정</span>
       <h2 class="s-title">「단계 요약」</h2>
       <p class="s-sub">「역산 기준 등 — 요건 확정에 따라 조정될 수 있음을 명시」</p>
     </div>
@@ -578,14 +578,14 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [선택] S · 협의 사항 — 미확정([OPEN])·선행 항목이 있을 때 ════════
+<!-- ════════ [선택] S,  협의 사항 — 미확정([OPEN]), 선행 항목이 있을 때 ════════
      항목 6개면 .opens 에 rows2 클래스 추가(3×2). -->
 <div class="frame" hidden><section class="slide">
   <div class="s-pad">
     <div class="s-head">
-      <span class="eyebrow warn">OPEN · 확정·협의 필요</span>
+      <span class="eyebrow warn">OPEN,  확정, 협의 필요</span>
       <h2 class="s-title">함께 확정해 갈 항목</h2>
-      <p class="s-sub">「본 제안 시점 미확정 항목 — 확정 결과에 따라 범위·일정 조정」</p>
+      <p class="s-sub">「본 제안 시점 미확정 항목 — 확정 결과에 따라 범위, 일정 조정」</p>
     </div>
     <div class="s-body">
       <div class="opens rows2">
@@ -601,7 +601,7 @@
   <div class="s-foot"><span class="dot"></span><span>「제안 약칭」</span><span class="pg"></span></div>
 </section></div>
 
-<!-- ════════ [공통·필수] S · 클로징 — 공급자·작성일·근거 출처 명시 ════════ -->
+<!-- ════════ [공통, 필수] S,  클로징 — 공급자, 작성일, 근거 출처 명시 ════════ -->
 <div class="frame"><section class="slide cover close">
   <div class="s-pad">
     <div class="cl-eye">「제안 제목」</div>
@@ -613,12 +613,12 @@
       <span>근거 <b>「출처 자료」</b></span>
     </div>
   </div>
-  <div class="s-foot"><span class="dot"></span><span>본 제안서는 「근거」 기반 초안이며, OPEN 항목 확정 후 범위·일정이 조정될 수 있습니다.</span><span class="pg"></span></div>
+  <div class="s-foot"><span class="dot"></span><span>본 제안서는 「근거」 기반 초안이며, OPEN 항목 확정 후 범위, 일정이 조정될 수 있습니다.</span><span class="pg"></span></div>
 </section></div>
 
 </div>
 
-<!-- ════════ [공통·필수] 화면 자동 축소(fit) + 페이지 번호 자동 채움 (수정 불필요) ════════ -->
+<!-- ════════ [공통, 필수] 화면 자동 축소(fit) + 페이지 번호 자동 채움 (수정 불필요) ════════ -->
 <script>
   (function(){
     function visibleSlides(){return document.querySelectorAll('.frame:not([hidden]) .slide')}

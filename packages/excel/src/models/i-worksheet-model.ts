@@ -2,7 +2,7 @@ import type { ExcelAddressPoint, ExcelAddressRangePoint, ExcelCellType } from ".
 import type { ICfRuleSpec } from "./shared/excel-cf-spec";
 import type { IExcelModel } from "./excel-model";
 
-/** xl/worksheets/sheet*.{xml,bin} 파트 모델 계약. 셀·병합·뷰·CF 관리. */
+/** xl/worksheets/sheet*.{xml,bin} 파트 모델 계약. 셀, 병합, 뷰, CF 관리. */
 export interface IWorksheetModel extends IExcelModel {
   /** 데이터가 존재하는 셀 범위 (s: 좌상단, e: 우하단). */
   readonly range: ExcelAddressRangePoint;

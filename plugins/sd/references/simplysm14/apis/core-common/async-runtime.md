@@ -1,6 +1,7 @@
 # @simplysm/core-common — async-runtime
 
-타입 안전 이벤트, 디바운스/직렬 큐, 자동 만료 Map, 비동기 대기 유틸 묶음. 비동기 작업 순서·재시도·수명 정리가 필요할 때 함께 봄. `DebounceQueue`/`SerialQueue` 는 `EventEmitter` 를 상속함.
+타입 안전 이벤트, 디바운스/직렬 큐, 자동 만료 Map, 비동기 대기 유틸 묶음. 비동기 작업 순서, 재시도, 수명 정리가 필요할 때 함께 봄.
+`DebounceQueue`/`SerialQueue` 는 `EventEmitter` 를 상속함.
 
 ## EventEmitter
 
@@ -17,7 +18,7 @@ class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown } = Record<st
 }
 ```
 
-브라우저·Node 공용 타입 안전 이미터(내부적으로 `EventTarget` 사용).
+브라우저, Node 공용 타입 안전 이미터(내부적으로 `EventTarget` 사용).
 
 - `TEvents` — 이벤트 이름을 key, payload 타입을 value 로 갖는 타입 맵.
 - `on(type, listener)` — 리스너 등록. 같은 이벤트에 같은 함수가 이미 있으면 무시(중복 등록 방지).
@@ -42,7 +43,7 @@ class DebounceQueue extends EventEmitter<{ error: SdError }> {
 - `run(fn)` — 대기 중 함수를 새 함수로 교체함. 실행 중이 아니면 타이머를 잡아 마지막 함수만 실행. dispose 뒤에는 무시.
 - 실행 중 추가 요청 — 현재 실행이 끝난 직후 디바운스 지연 없이 즉시 처리(요청 누락 방지 설계).
 - `fn` 오류 — Error 가 아니면 `String(err)` 로 Error 화한 뒤 `SdError(error, "작업 실행 중 오류 발생")` 로 감쌈. `error` 리스너가 있으면 emit, 없으면 내부 logger 로 출력.
-- `dispose()` — disposed flag 를 켜고 타이머·대기 함수를 비운 뒤 부모 `dispose()` 로 리스너 제거.
+- `dispose()` — disposed flag 를 켜고 타이머, 대기 함수를 비운 뒤 부모 `dispose()` 로 리스너 제거.
 
 ## SerialQueue
 
@@ -85,7 +86,8 @@ class LazyGcMap<TKey, TValue> {
 }
 ```
 
-LRU 방식 자동 만료 Map. 마지막 접근 후 `expireTime` 이 지나면 GC 타이머가 삭제함. **사용 후 반드시 `dispose()` 호출**(안 하면 GC 타이머가 계속 돌아 메모리 누수).
+LRU 방식 자동 만료 Map. 마지막 접근 후 `expireTime` 이 지나면 GC 타이머가 삭제함.
+**사용 후 반드시 `dispose()` 호출**(안 하면 GC 타이머가 계속 돌아 메모리 누수).
 
 - `options.expireTime: number` — 마지막 접근 후 만료까지 시간(ms).
 - `options.gcInterval?: number` — GC 실행 주기(ms). 생략 시 `Math.max(expireTime / 10, 1000)`.
@@ -97,7 +99,7 @@ LRU 방식 자동 만료 Map. 마지막 접근 후 `expireTime` 이 지나면 GC
 - `delete(key)` — 삭제. 비면 GC 타이머 정지. dispose 뒤 false.
 - `clear()` — 모든 항목 삭제, GC 타이머 정지. dispose 뒤 무시(인스턴스는 계속 사용 가능).
 - `dispose()` — destroyed flag 를 켜고 Map 을 비운 뒤 GC 타이머 정지. 중복 호출 무시.
-- `getOrCreate(key, factory)` — 값이 없으면 `factory()` 결과를 set·반환, 있으면 접근 시간 갱신. dispose 뒤 호출하면 Error throw.
+- `getOrCreate(key, factory)` — 값이 없으면 `factory()` 결과를 set, 반환, 있으면 접근 시간 갱신. dispose 뒤 호출하면 Error throw.
 - `values()` / `keys()` / `entries()` — dispose 안 된 경우 내부 Map 순서대로 순회(값만 노출).
 - 만료 처리 — GC 실행 중이면 중복 실행 건너뜀. `onExpire` 중 같은 key 가 새로 set 되면(참조가 바뀌면) 새 항목은 삭제하지 않음.
 
@@ -111,6 +113,8 @@ wait.time(millisecond: number): Promise<void>
 wait.immediate(): Promise<void>
 ```
 
-- `until(forwarder, milliseconds = 100, maxCount?)` — `forwarder` 가 true 를 반환할 때까지 반복함. 첫 검사에서 true 면 즉시 반환. `milliseconds` 는 false 후 다음 검사까지 대기(ms). `maxCount` 는 false 허용 최대 횟수로, 도달하면 `TimeoutError(count)` throw(undefined 면 무제한).
+- `until(forwarder, milliseconds = 100, maxCount?)` — `forwarder` 가 true 를 반환할 때까지 반복함. 첫 검사에서 true 면 즉시 반환.
+  - `milliseconds` — false 후 다음 검사까지 대기(ms).
+  - `maxCount` — false 허용 최대 횟수로, 도달하면 `TimeoutError(count)` throw(undefined 면 무제한).
 - `time(millisecond)` — `setTimeout` 으로 지정 ms 만큼 대기함.
 - `immediate()` — `globalThis.setImmediate` 가 있으면 그것으로 이벤트 루프에 한 번 양보, 없으면 `setTimeout(0)` 폴백.

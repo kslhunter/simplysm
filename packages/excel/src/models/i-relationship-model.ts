@@ -8,6 +8,6 @@ export interface IRelationshipModel extends IExcelModel {
   addAndGetId(target: string, type: string): number;
   /** 지정 rId 위치에 삽입하고 이후 id 를 시프트. */
   insert(rId: number, target: string, type: string): this;
-  /** 특정 Type 의 첫 관계를 찾아 relId(`rId..`)·target 반환. addImage 의 drawing rel 탐색용. */
+  /** 특정 Type 의 첫 관계를 찾아 relId(`rId..`), target 반환. addImage 의 drawing rel 탐색용. */
   findRelByType(type: string): { relId: string; target: string } | undefined;
 }

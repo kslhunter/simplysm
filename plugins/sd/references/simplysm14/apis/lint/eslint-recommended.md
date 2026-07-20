@@ -260,7 +260,7 @@ JS와 동일한 규칙 적용.
 
 **대상 파일**: `**/tests/**/*.ts`, `**/*.spec.ts`, `**/*.test.ts`
 
-#### 예외 규칙
+예외 규칙:
 
 ```
 no-console: off                              // 테스트 로깅 허용
@@ -274,7 +274,7 @@ import-x/no-extraneous-dependencies: off    // devDependencies 검사 불필요
 
 **대상 파일**: `**/eslint.config.ts`, `**/vitest.config.ts` 등
 
-#### eslint.config.ts 예외
+eslint.config.ts 예외:
 
 ```
 no-restricted-properties: off  // process.env 직접 사용 허용
@@ -354,15 +354,18 @@ export default [
 ];
 ```
 
-## troubleshooting
+## 문제 해결
 
 ### "Cannot find module '@simplysm/...' with conditions"
 
-parseOptions.project 설정에 의해 TypeScript 프로젝트 기반 해석이 활성됨. `tsconfig.json`에 올바른 paths 설정 필요.
+- parseOptions.project 설정에 의해 TypeScript 프로젝트 기반 해석이 활성됨.
+- `tsconfig.json`에 올바른 paths 설정 필요.
 
 ### Node 프로젝트에서 buffer 관련 오류
 
-ESM import 기반 프로젝트. Node Buffer 대신 Uint8Array 사용 권유. 필요시 @simplysm/core-common의 BytesUtils 활용.
+- ESM import 기반 프로젝트.
+- Node Buffer 대신 Uint8Array 사용 권유.
+- 필요시 @simplysm/core-common의 BytesUtils 활용.
 
 ### 특정 파일에서만 규칙 비활성화
 

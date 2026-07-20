@@ -1,6 +1,7 @@
 # @simplysm/sd-storage
 
-Node 전용 FTP / FTPS / SFTP 원격 파일 저장소 클라이언트. 연결·디렉토리·파일 업/다운로드를 공통 인터페이스로 다룸.
+Node 전용 FTP / FTPS / SFTP 원격 파일 저장소 클라이언트.
+연결, 디렉토리, 파일 업/다운로드를 공통 인터페이스로 다룸.
 
 ## 사용 트리거 인덱스
 
@@ -19,11 +20,18 @@ static SdStorage.connectAsync<T extends "sftp" | "ftp" | "ftps", R>(
 ): Promise<R>
 ```
 
-- `type` — 프로토콜 선택. `"sftp"` → `SdSftpStorage`(ssh2-sftp-client), `"ftp"` → `SdFtpStorage(secure=false)`, `"ftps"` → `SdFtpStorage(secure=true)`(TLS FTP). 콜백에 넘어오는 인스턴스 타입이 `type`에 따라 달라짐(`sftp`면 `SdSftpStorage`, 그 외 `SdFtpStorage`).
+- `type` — 프로토콜 선택.
+  - `"sftp"` → `SdSftpStorage`(ssh2-sftp-client).
+  - `"ftp"` → `SdFtpStorage(secure=false)`.
+  - `"ftps"` → `SdFtpStorage(secure=true)`(TLS FTP).
+  - 콜백에 넘어오는 인스턴스 타입이 `type`에 따라 달라짐(`sftp`면 `SdSftpStorage`, 그 외 `SdFtpStorage`).
 - `conf` — 접속 정보. `ISdStorageConnConf`.
 - `fn` — 연결된 storage를 받아 작업하는 콜백. 반환값 `R`이 그대로 `connectAsync`의 결과가 됨.
-- 동작: 접속 → `fn` 실행 → 모든 동시 작업이 끝날 때까지 대기 후 `closeAsync` → 결과 반환. `fn`에서 예외가 나면 닫고 다시 throw 함.
-- `static busyCount: number` — 동시에 열린 storage 수를 셈. 한 storage를 닫을 때 아직 작업 중인 다른 storage가 같이 닫히는 것을 막기 위해, `busyCount`가 0이 될 때까지 기다린 뒤에만 close 함. 외부에서 직접 만질 필요는 없음.
+- 동작: 접속 → `fn` 실행 → 모든 동시 작업이 끝날 때까지 대기 후 `closeAsync` → 결과 반환.
+  - `fn`에서 예외가 나면 닫고 다시 throw 함.
+- `static busyCount: number` — 동시에 열린 storage 수를 셈.
+  - 한 storage를 닫을 때 아직 작업 중인 다른 storage가 같이 닫히는 것을 막기 위해, `busyCount`가 0이 될 때까지 기다린 뒤에만 close 함.
+  - 외부에서 직접 만질 필요는 없음.
 
 ## 접속 설정: ISdStorageConnConf
 
@@ -79,7 +87,9 @@ ssh2-sftp-client 기반. `ISdStorage` 외에 추가 메서드를 제공함.
 
 ## 구체 구현: SdFtpStorage (type: "ftp" / "ftps")
 
-basic-ftp 기반. 생성자 `new SdFtpStorage(secure: boolean)` — `secure=true`면 FTPS(TLS), `false`면 평문 FTP. `connectAsync`가 이 값을 `access({secure})`로 전달.
+basic-ftp 기반.
+생성자 `new SdFtpStorage(secure: boolean)` — `secure=true`면 FTPS(TLS), `false`면 평문 FTP.
+`connectAsync`가 이 값을 `access({secure})`로 전달.
 
 - `mkdirAsync(path)` — `ensureDir`로 경로 보장 생성.
 - `renameAsync(from, to)` — 이름변경/이동.
@@ -95,4 +105,5 @@ basic-ftp 기반. 생성자 `new SdFtpStorage(secure: boolean)` — `secure=true
 
 - `readdirAsync` 반환형: SFTP는 `string[]`, FTP/FTPS는 `{ name, isFile }[]`.
 - `readFileAsync` 반환형: SFTP는 `any`(라이브러리 `get` 원형), FTP/FTPS는 `Buffer`.
-- `existsAsync`는 SFTP에만, `removeAsync`는 FTP/FTPS에만 존재. 콜백에서 `type`에 맞는 메서드만 호출할 것.
+- `existsAsync`는 SFTP에만, `removeAsync`는 FTP/FTPS에만 존재.
+  - 콜백에서 `type`에 맞는 메서드만 호출하세요.

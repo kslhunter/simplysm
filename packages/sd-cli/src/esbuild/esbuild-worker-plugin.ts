@@ -226,7 +226,7 @@ export function transformWorkerPatterns(
   options?: TransformWorkerOptions,
 ): TransformWorkerResult | undefined {
   // 빠른 사전 필터 — new Worker(), new SharedWorker(), import.meta.resolve()의 단어 경계
-  // 호출 형태만 통과시킨다. 식별자·타입·interface로만 등장하는 Worker 키워드는 차단하여
+  // 호출 형태만 통과시킨다. 식별자, 타입, interface로만 등장하는 Worker 키워드는 차단하여
   // TS transformSync 오버헤드를 줄인다. 정확성은 후속 AST 판별(findWorkerPatterns)이 담당한다.
   // new 와 Worker/SharedWorker 사이에 주석이 낀 호출(예: `new /* c */ Worker`)은 의도된
   // 트레이드오프로 탈락한다. 실발생 가능성이 희박하여 현행을 유지한다.

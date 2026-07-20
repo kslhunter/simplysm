@@ -15,7 +15,7 @@ import type { IWorksheetModel } from "./i-worksheet-model";
  * - `createXxx()`: 빈(신규) 파트 모델 생성 — 상위 레이어의 `new XmlXxx()` 직접 생성을 대체.
  * - `parse()`: ZIP 내부 파일 바이트를 경로 패턴에 맞는 파트 모델로 역직렬화 — `ZipCache.get` 의 분기 대체.
  *
- * `ZipCache` 는 워크북 포맷에 맞는 팩토리 1개를 보유하고 모든 파트 생성·복원을 위임한다.
+ * `ZipCache` 는 워크북 포맷에 맞는 팩토리 1개를 보유하고 모든 파트 생성, 복원을 위임한다.
  */
 export interface IExcelModelFactory {
   readonly format: ExcelFormat;

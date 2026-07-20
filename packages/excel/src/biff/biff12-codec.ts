@@ -1,7 +1,7 @@
 /**
  * BIFF12 (MS-XLSB) record 프레이밍 + 프리미티브 코덱.
  *
- * adtek `biff12.ts` 에서 포팅한 재사용 기반(varint record 프레이밍·LE r/w·XLWideString·cell prefix·RK decode).
+ * adtek `biff12.ts` 에서 포팅한 재사용 기반(varint record 프레이밍, LE r/w, XLWideString, cell prefix, RK decode).
  * 레코드 종류별 encode/decode 는 `biff-records.ts`, 모델 단위 직렬화는 `biff-*-model.ts` 가 담당한다.
  *
  * record 형식:

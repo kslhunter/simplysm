@@ -34,7 +34,7 @@ import {
           }
         }
 
-        // 아이템 내부에 중첩된 리스트는 카드 외형(테두리·라운드·배경)을 제거
+        // 아이템 내부에 중첩된 리스트는 카드 외형(테두리, 라운드, 배경)을 제거
         sd-list-item sd-list {
           border-color: transparent;
           border-radius: 0;

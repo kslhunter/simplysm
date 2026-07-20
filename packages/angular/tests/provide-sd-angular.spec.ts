@@ -24,7 +24,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
   // ── Rule 1: 일괄 등록 ──
 
-  describe("Rule: provideSdAngular가 플러그인·프로바이더·설정을 일괄 등록한다", () => {
+  describe("Rule: provideSdAngular가 플러그인, 프로바이더, 설정을 일괄 등록한다", () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [provideSdAngular({ clientName: "test-app" })],
@@ -64,7 +64,7 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
     });
   });
 
-  // ── Rule 3: 테마 복원·저장 ──
+  // ── Rule 3: 테마 복원, 저장 ──
 
   describe("Rule: 앱 시작 시 localStorage에서 테마를 복원하고 변경을 자동 저장한다", () => {
     it("localStorage에 테마 설정이 있으면 복원한다", () => {

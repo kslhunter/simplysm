@@ -272,7 +272,7 @@ describe("esbuild Worker Bundle Plugin — Acceptance", () => {
     const mainOutput = result.outputFiles!.find((f) => path.basename(f.path).startsWith("entry"));
     const content = mainOutput!.text;
 
-    // 브라우저 워커는 번들·치환됨
+    // 브라우저 워커는 번들, 치환됨
     expect(content).not.toContain('"./worker.js"');
     expect(content).toMatch(/worker-[A-Z0-9]+\.js/i);
     // node 워커는 그대로 남음 (browser 빌드에서 스킵)

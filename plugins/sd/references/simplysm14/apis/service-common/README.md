@@ -1,15 +1,19 @@
 # @simplysm/service-common
 
-서버·클라이언트가 공유하는 서비스 이벤트 정의, 내장 서비스(ORM·자동업데이트) RPC 계약, 파일 업로드 결과 타입, 앱 메뉴/권한 구조 타입·유틸, 그리고 서비스 WebSocket 바이너리 프로토콜 메시지 타입·코덱을 제공함.
+서버, 클라이언트가 공유하는 서비스 이벤트 정의, 내장 서비스(ORM, 자동업데이트) RPC 계약, 파일 업로드 결과 타입,
+앱 메뉴/권한 구조 타입, 유틸, 그리고 서비스 WebSocket 바이너리 프로토콜 메시지 타입, 코덱을 제공함.
 
 ## 사용 트리거 인덱스
 
-- **defineEvent / ServiceEventDef** — 서비스 이벤트 이름과 info/data 타입을 한 정의 객체로 묶어 클라이언트·서버가 공유할 때. 아래 "이벤트 정의" 절. 사용법: [event.md](../../manuals/event.md), [client-service.md](../../manuals/client-service.md)
-- **OrmService / DbConnOptions** — 내장 ORM 서비스의 연결·트랜잭션·쿼리 실행 RPC 시그니처를 확인할 때. 아래 "내장 서비스 계약" 절. 사용법: [client-orm.md](../../manuals/client-orm.md), [orm.md](../../manuals/orm.md)
+- **defineEvent / ServiceEventDef** — 서비스 이벤트 이름과 info/data 타입을 한 정의 객체로 묶어 클라이언트, 서버가 공유할 때. 아래 "이벤트 정의" 절.
+  사용법: [event.md](../../manuals/event.md), [client-service.md](../../manuals/client-service.md)
+- **OrmService / DbConnOptions** — 내장 ORM 서비스의 연결, 트랜잭션, 쿼리 실행 RPC 시그니처를 확인할 때. 아래 "내장 서비스 계약" 절.
+  사용법: [client-orm.md](../../manuals/client-orm.md), [orm.md](../../manuals/orm.md)
 - **AutoUpdateService** — 플랫폼별 최신 앱 버전 조회 서비스의 RPC 시그니처를 확인할 때. 아래 "내장 서비스 계약" 절.
-- **ServiceUploadResult** — 파일 업로드 완료 후 서버 저장 경로·원본 파일명·크기를 받는 응답 타입을 확인할 때. 아래 "파일 업로드 결과" 절.
-- **AppStructure 타입·유틸** — 앱 메뉴/권한/모듈 구조 타입과 권한 평탄화·모듈 사용 가능 판정 유틸을 다룰 때. 자세히: [app-structure.md](./app-structure.md). 사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
-- **Service protocol** — 서비스 WebSocket 메시지 타입, 청킹 상수, 바이너리 인코딩·재조립 코덱을 다룰 때. 자세히: [protocol.md](./protocol.md)
+- **ServiceUploadResult** — 파일 업로드 완료 후 서버 저장 경로, 원본 파일명, 크기를 받는 응답 타입을 확인할 때. 아래 "파일 업로드 결과" 절.
+- **AppStructure 타입, 유틸** — 앱 메뉴/권한/모듈 구조 타입과 권한 평탄화, 모듈 사용 가능 판정 유틸을 다룰 때.
+  자세히: [app-structure.md](./app-structure.md). 사용법: [client-app-structure.md](../../manuals/client-app-structure.md)
+- **Service protocol** — 서비스 WebSocket 메시지 타입, 청킹 상수, 바이너리 인코딩, 재조립 코덱을 다룰 때. 자세히: [protocol.md](./protocol.md)
 
 ## 이벤트 정의
 
@@ -48,7 +52,7 @@ interface ServiceEventDef<TInfo = unknown, TData = unknown> {
 
 ### OrmService
 
-DB 연결·트랜잭션·쿼리 실행을 제공하는 ORM 서비스 인터페이스. JSDoc 기준 MySQL·MSSQL·PostgreSQL 을 지원함.
+DB 연결, 트랜잭션, 쿼리 실행을 제공하는 ORM 서비스 인터페이스. JSDoc 기준 MySQL, MSSQL, PostgreSQL 을 지원함.
 
 ```ts
 interface OrmService {
@@ -75,15 +79,21 @@ interface OrmService {
 }
 ```
 
-- `getInfo(opt)` — DB 연결 정보를 조회함. `opt` 는 `DbConnOptions` 에 `configName: string` 필수가 더해진 교차 타입. 반환의 `dialect: Dialect` 는 DB dialect, `database?`/`schema?` 는 결과에 포함될 수 있는 DB명·스키마명.
-- `connect(opt)` — DB 연결을 생성함. `opt` 는 `getInfo` 와 같은 교차 타입. 반환 `number` 는 이후 메서드의 `connId` 로 쓰는 연결 식별자.
+- `getInfo(opt)` — DB 연결 정보를 조회함.
+  `opt` 는 `DbConnOptions` 에 `configName: string` 필수가 더해진 교차 타입.
+  반환의 `dialect: Dialect` 는 DB dialect, `database?`/`schema?` 는 결과에 포함될 수 있는 DB명, 스키마명.
+- `connect(opt)` — DB 연결을 생성함.
+  `opt` 는 `getInfo` 와 같은 교차 타입, 반환 `number` 는 이후 메서드의 `connId` 로 쓰는 연결 식별자.
 - `close(connId)` — `connId` 연결을 종료함.
 - `beginTransaction(connId, isolationLevel?)` — `connId` 연결에서 트랜잭션을 시작함. `isolationLevel?: IsolationLevel` 은 선택 격리 수준.
 - `commitTransaction(connId)` — `connId` 연결의 트랜잭션을 커밋함.
 - `rollbackTransaction(connId)` — `connId` 연결의 트랜잭션을 롤백함.
-- `executeParametrized(connId, query, params?)` — 파라미터화 문자열 쿼리를 실행함. `query: string` 은 SQL, `params?: unknown[]` 은 선택 파라미터 배열, 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
-- `executeDefs(connId, defs, options?)` — 쿼리 정의 배열을 실행함. `defs: QueryDef[]` 는 실행 정의, `options?: (ResultMeta | undefined)[]` 는 정의별 결과 메타(없으면 `undefined`), 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
-- `bulkInsert(connId, tableName, columnDefs, records)` — 대량 insert 를 수행함. `tableName: string` 은 대상 테이블, `columnDefs: Record<string, ColumnMeta>` 는 컬럼명→컬럼 메타 맵, `records: Record<string, unknown>[]` 은 삽입 레코드 배열.
+- `executeParametrized(connId, query, params?)` — 파라미터화 문자열 쿼리를 실행함.
+  `query: string` 은 SQL, `params?: unknown[]` 은 선택 파라미터 배열, 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
+- `executeDefs(connId, defs, options?)` — 쿼리 정의 배열을 실행함.
+  `defs: QueryDef[]` 는 실행 정의, `options?: (ResultMeta | undefined)[]` 는 정의별 결과 메타(없으면 `undefined`), 반환 `unknown[][]` 은 결과 행/컬럼 값 배열.
+- `bulkInsert(connId, tableName, columnDefs, records)` — 대량 insert 를 수행함.
+  `tableName: string` 은 대상 테이블, `columnDefs: Record<string, ColumnMeta>` 는 컬럼명→컬럼 메타 맵, `records: Record<string, unknown>[]` 은 삽입 레코드 배열.
 
 ### DbConnOptions
 

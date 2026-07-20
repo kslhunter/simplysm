@@ -5,7 +5,7 @@ import { err as errNs } from "@simplysm/core-common";
 /**
  * 워킹트리에 미커밋 변경사항이 있으면 throw 한다.
  * 배포는 깨끗한 워킹트리에서만 진행한다 — 커밋은 사용자가 직접 수행해야 한다.
- * @throws 미커밋(unstaged·staged) 변경사항이 있을 때 Error
+ * @throws 미커밋(unstaged, staged) 변경사항이 있을 때 Error
  */
 export async function ensureCleanWorkingTree(
   hasGit: boolean,

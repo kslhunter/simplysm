@@ -1,26 +1,39 @@
 # 클라이언트 화면 컴포넌트 작성 일반 규약
 
-이 매뉴얼은 v12(`@simplysm/sd-angular`) 기반 프로젝트에서 **모든 화면 컴포넌트가 공통으로 따르는 규약**을 다룸. 목록/편집 시트의 골격(`AbsSdDataSheet` / `sd-data-sheet`, `AbsSdDataDetail` / `sd-data-detail`) 자체는 [client-data-sheet.md](./client-data-sheet.md) 로 위임하고, 여기서는 화면의 종류와 무관하게 적용되는 사항(파일·데코레이터·시그널·권한·토스트·모달·레이아웃·아이콘·DI)을 정리함.
+이 매뉴얼은 v12(`@simplysm/sd-angular`) 기반 프로젝트에서 **모든 화면 컴포넌트가 공통으로 따르는 규약**을 다룸.
+
+- 목록/편집 시트의 골격(`AbsSdDataSheet` / `sd-data-sheet`, `AbsSdDataDetail` / `sd-data-detail`) 자체는 [client-data-sheet.md](./client-data-sheet.md) 로 위임함.
+- 여기서는 화면의 종류와 무관하게 적용되는 사항을 정리함.
+  - 대상: 파일, 데코레이터, 시그널, 권한, 토스트, 모달, 레이아웃, 아이콘, DI.
 
 ---
 
-## 새 화면 파일을 만들 때 — 이름·역할 접미사·위치·selector
+## 새 화면 파일의 이름, 역할 접미사, 위치, selector 를 정함
 
-화면 파일은 **PascalCase 클래스명 + 역할 접미사**로 짓고, 파일명을 클래스명과 동일하게 둠(`UserPage.ts` 안에 `class UserPage`). 역할 접미사로 화면의 책임을 표시함.
+화면 파일은 **PascalCase 클래스명 + 역할 접미사**로 짓고, 파일명을 클래스명과 동일하게 둠(`UserPage.ts` 안에 `class UserPage`).
+역할 접미사로 화면의 책임을 표시함.
 
 | 접미사                | 역할                                                              | 골격                                   |
 | --------------------- | ----------------------------------------------------------------- | -------------------------------------- |
-| `XxxPage.ts`          | 목록 화면(라우팅 진입 단위). 검색·페이징·CRUD.                    | `AbsSdDataSheet` + `<sd-data-sheet>`   |
-| `XxxDetail.ts`        | 단건 편집 화면(모달 또는 페이지로 사용).                          | `AbsSdDataDetail` + `<sd-data-detail>` |
-| `XxxModal.ts`         | 단건 CRUD 가 아닌 모달 전용 화면(도구·검색·재발급 다이얼로그 등). | `implements ISdModal` + 자체 구성      |
+| `XxxPage.ts`          | 목록 화면(라우팅 진입 단위). 검색, 페이징, CRUD.                     | `AbsSdDataSheet` + `<sd-data-sheet>`   |
+| `XxxDetail.ts`        | 단건 편집 화면(모달 또는 페이지로 사용).                             | `AbsSdDataDetail` + `<sd-data-detail>` |
+| `XxxModal.ts`         | 단건 CRUD 가 아닌 모달 전용 화면(도구, 검색, 재발급 다이얼로그 등).  | `implements ISdModal` + 자체 구성      |
 | `XxxControl.ts`       | 여러 화면에서 재사용되는 부분 컨트롤.                             | 자체 구성                              |
 | `XxxPrintTemplate.ts` | 인쇄 양식. `SdPrintProvider.printAsync` 대상.                     | `implements ISdPrint`                  |
 
-실제 예: `simplysm-ts/client-admin` 의 `UserPage.ts`(목록·`AbsSdDataSheet`), `LoginPage.ts`(로그인 화면), `PasswordResetModal.ts`(`implements ISdModal<void>`), `centurymes/client-admin` 의 `GoodsPage.ts`(목록) + `GoodsDetail.ts`(단건 편집·`AbsSdDataDetail`).
+실제 예:
 
-**위치**: 화면은 도메인 폴더에 클래스 파일을 모음. 예: `src/app/home/base/user/UserPage.ts`, `src/app/home/base/goods/GoodsPage.ts` + `GoodsDetail.ts`. 라우팅 폴더 경로는 dash-case(`base/goods`), 그 안의 파일·클래스는 PascalCase.
+- `simplysm-ts/client-admin` 의 `UserPage.ts`(목록, `AbsSdDataSheet`), `LoginPage.ts`(로그인 화면), `PasswordResetModal.ts`(`implements ISdModal<void>`).
+- `centurymes/client-admin` 의 `GoodsPage.ts`(목록) + `GoodsDetail.ts`(단건 편집, `AbsSdDataDetail`).
 
-**`Modal` 과 `Detail` 의 구분**은 표시 방식이 아니라 **화면의 본질**로 정함. 한 레코드를 로드·저장하는 단건 화면이면 `AbsSdDataDetail` 을 상속한 `XxxDetail.ts` 로 만들고, 모달로 띄울 때도 그 `Detail` 을 그대로 `showAsync` 함(아래 "다른 화면을 모달로 띄우기"). `XxxModal.ts` 는 단건 CRUD 도 라우팅 페이지도 아닌, 모달로만 존재하는 비-CRUD UI(예: `PasswordResetModal` — 아이디·이메일로 임시 비밀번호 재발급)에만 씀.
+**위치**: 화면은 도메인 폴더에 클래스 파일을 모음.
+예: `src/app/home/base/user/UserPage.ts`, `src/app/home/base/goods/GoodsPage.ts` + `GoodsDetail.ts`.
+라우팅 폴더 경로는 dash-case(`base/goods`), 그 안의 파일, 클래스는 PascalCase.
+
+**`Modal` 과 `Detail` 의 구분**은 표시 방식이 아니라 **화면의 본질**로 정함.
+한 레코드를 로드, 저장하는 단건 화면이면 `AbsSdDataDetail` 을 상속한 `XxxDetail.ts` 로 만듦.
+모달로 띄울 때도 그 `Detail` 을 그대로 `showAsync` 함(아래 "다른 화면을 모달로 띄움").
+`XxxModal.ts` 는 단건 CRUD 도 라우팅 페이지도 아닌, 모달로만 존재하는 비-CRUD UI(예: `PasswordResetModal` — 아이디, 이메일로 임시 비밀번호 재발급)에만 씀.
 
 **selector** 는 항상 `app-` prefix 를 붙인 dash-case 로 지음. 클래스명을 그대로 dash-case 화하지 않아도 되며 화면을 식별할 수 있는 짧은 이름이면 됨.
 
@@ -62,7 +75,8 @@ v12 화면 컴포넌트의 `@Component` 데코레이터는 다음을 **항상** 
 - **`changeDetection: ChangeDetectionStrategy.OnPush`** — 항상. v12 는 zoneless 변경감지(`provideSdAngular` 가 `provideZonelessChangeDetection()` 등록)이므로 시그널 기반 OnPush 가 전제.
 - **`encapsulation: ViewEncapsulation.None`** — 항상. 글로벌 SCSS 유틸 클래스(`flex-*`, `p-*`, `tx-*` 등)를 그대로 쓰기 위함.
 - **`standalone: true`** — 항상. NgModule 을 새로 만들지 않음.
-- **`imports`** — 템플릿에서 쓰는 컨트롤·디렉티브·파이프를 모두 명시함. 위 `UserPage` 처럼 `sd-data-sheet` 를 쓰면 `SdDataSheetControl` + `SdDataSheetColumnDirective` + 셀 템플릿 디렉티브 `SdSheetColumnCellTemplateDirective` 를 함께 import 함.
+- **`imports`** — 템플릿에서 쓰는 컨트롤, 디렉티브, 파이프를 모두 명시함.
+  - 위 `UserPage` 처럼 `sd-data-sheet` 를 쓰면 `SdDataSheetControl` + `SdDataSheetColumnDirective` + 셀 템플릿 디렉티브 `SdSheetColumnCellTemplateDirective` 를 함께 import 함.
 - **`template`** — 인라인(별도 `.html` 파일 분리 없음). `selector` 는 위 "selector" 규약대로 `app-` prefix.
 
 ---
@@ -122,9 +136,10 @@ data = $signal<ILogin>({});
 
 - `$signal(initialValue)` — 초기값을 주면 `SdWritableSignal<T>`. 초기값 없이 `$signal<T>()` 이면 `T | undefined`.
 - `$computed(fn)` — 파생값. `$computed(() => this.sharedCustomers().filter((item) => item.isVendor))` 처럼 다른 시그널에서 계산.
-- `$effect([deps], async fn)` — `deps` 배열에 나열한 시그널만 추적하고 본문은 `untracked` 로 실행함(본문 내부에서 시그널을 읽어도 재실행 트리거가 되지 않음). `[]` 를 주면 최초 1회만 실행 — 화면 진입 시 초기 로드에 씀.
+- `$effect([deps], async fn)` — `deps` 배열에 나열한 시그널만 추적하고 본문은 `untracked` 로 실행함(본문 내부에서 시그널을 읽어도 재실행 트리거가 되지 않음).
+  - `[]` 를 주면 최초 1회만 실행 — 화면 진입 시 초기 로드에 씀.
 
-### 객체·배열 시그널의 내부 필드 변경 알림 — `$mark()`
+### 객체, 배열 시그널의 내부 필드 변경 알림 — `$mark()`
 
 `$signal` 이 들고 있는 객체의 **필드만** 바꾸면 시그널 자체는 변경 알림을 보내지 않음(참조가 그대로이기 때문). 양방향 바인딩 입력의 변경 이벤트에 `$mark()` 를 묶어 호출함.
 
@@ -147,13 +162,17 @@ data = $signal<ILogin>({});
 ```
 
 - 객체 시그널(`filter`, `data`)은 `시그널.$mark()`, 배열 시그널(`items`)도 `items.$mark()` 로 알림.
-- `[(value)]="filter().name"` 같이 시그널이 반환한 객체의 필드를 직접 양방향 바인딩하므로, 그 필드 변경을 외부에 알리려면 반드시 `(valueChange)="filter.$mark()"` 를 함께 둠. 빠뜨리면 입력은 반영되지만 그 값에 의존하는 `$computed` / `$effect` 가 재발화하지 않음.
+- `[(value)]="filter().name"` 같이 시그널이 반환한 객체의 필드를 직접 양방향 바인딩하므로, 그 필드 변경을 외부에 알리려면 반드시 `(valueChange)="filter.$mark()"` 를 함께 둠.
+  - 빠뜨리면 입력은 반영되지만 그 값에 의존하는 `$computed` / `$effect` 가 재발화하지 않음.
 
-`AbsSdDataSheet` / `AbsSdDataDetail` 를 상속한 화면은 `items` / `filter` / `data` 같은 표준 시그널을 기반 클래스가 제공하므로 직접 선언하지 않음(자세히는 [client-data-sheet.md](./client-data-sheet.md)). 위 `$mark()` 호출 규약은 동일하게 적용됨.
+`AbsSdDataSheet` / `AbsSdDataDetail` 를 상속한 화면은 `items` / `filter` / `data` 같은 표준 시그널을 기반 클래스가 제공하므로 직접 선언하지 않음.
+
+- 자세히는 [client-data-sheet.md](./client-data-sheet.md).
+- 위 `$mark()` 호출 규약은 동일하게 적용됨.
 
 ---
 
-## 권한(`usePermsSignal`)으로 표시·편집을 가드함
+## 권한(`usePermsSignal`)으로 표시, 편집을 가드함
 
 화면 권한은 `usePermsSignal(<권한 path 목록>, <확인할 action 목록>)` 으로 받음. 반환 시그널을 `perms` 라는 이름으로 둠.
 
@@ -205,13 +224,16 @@ override canEdit = $computed(() => this.perms().includes("edit") && !this.disabl
 override hideTool = $computed(() => !!this.disabled());
 ```
 
-`AbsSdDataSheet` 는 `canUse()` 가 false 면 접근 제한 화면을, `canEdit()` 이 false 면 편집/저장 도구를 비활성으로 처리함(상세 동작은 [client-data-sheet.md](./client-data-sheet.md)). `Abs*` 를 상속하지 않는 화면에서는 위 `@if (perms().includes("use"))` 처럼 직접 가드함.
+`AbsSdDataSheet` 는 `canUse()` 가 false 면 접근 제한 화면을, `canEdit()` 이 false 면 편집/저장 도구를 비활성으로 처리함(상세 동작은 [client-data-sheet.md](./client-data-sheet.md)).
+`Abs*` 를 상속하지 않는 화면에서는 위 `@if (perms().includes("use"))` 처럼 직접 가드함.
 
 ---
 
 ## 비동기 작업을 `SdToastProvider.try` 로 감싸고, `busyCount` 로 busy 를 표시함
 
-데이터 로드·저장 같은 비동기 작업은 `SdToastProvider.try(async () => { ... })` 로 감쌈. 콜백 안에서 throw 된 `Error` 는 danger 토스트로 표시되고 시스템 로그에 기록되며 외부로 전파되지 않음. 작업 전후로 `busyCount` 를 증감해 busy 상태를 표시함.
+데이터 로드, 저장 같은 비동기 작업은 `SdToastProvider.try(async () => { ... })` 로 감쌈.
+콜백 안에서 throw 된 `Error` 는 danger 토스트로 표시되고 시스템 로그에 기록되며 외부로 전파되지 않음.
+작업 전후로 `busyCount` 를 증감해 busy 상태를 표시함.
 
 ```ts
 // LoginPage
@@ -273,13 +295,17 @@ this.#sdToast.success("저장되었습니다.");
 this.#sdToast.danger("바코드 스캔이 잘못되었습니다."); // info/warning/danger 동일
 ```
 
-`Abs*` 를 상속한 목록/편집 화면은 `busyCount` / `initialized` / busy 표시를 기반 클래스가 처리하므로, 화면 코드에서는 `search()` / `submit()` 같은 오버라이드 메서드 본문만 작성함(상세는 [client-data-sheet.md](./client-data-sheet.md)). 위 패턴은 `Abs*` 를 쓰지 않는 화면(로그인·PDA·리포트·모달 등)에서 직접 적용함.
+`Abs*` 를 상속한 목록/편집 화면은 `busyCount` / `initialized` / busy 표시를 기반 클래스가 처리하므로, 화면 코드에서는 `search()` / `submit()` 같은 오버라이드 메서드 본문만 작성함.
+
+- 상세는 [client-data-sheet.md](./client-data-sheet.md).
+- 위 패턴은 `Abs*` 를 쓰지 않는 화면(로그인, PDA, 리포트, 모달 등)에서 직접 적용함.
 
 ---
 
 ## 다른 화면을 모달로 띄움 (`SdModalProvider.showAsync`)
 
-다른 화면을 모달로 띄울 때는 `SdModalProvider.showAsync({ type, title, inputs })` 를 씀. 모달로 띄울 컴포넌트는 `ISdModal<O>` 를 구현해야 함(`initialized: Signal<boolean>` + `close: output<O | undefined>`).
+다른 화면을 모달로 띄울 때는 `SdModalProvider.showAsync({ type, title, inputs })` 를 씀.
+모달로 띄울 컴포넌트는 `ISdModal<O>` 를 구현해야 함(`initialized: Signal<boolean>` + `close: output<O | undefined>`).
 
 ```ts
 // LoginPage → PasswordResetModal 을 모달로
@@ -308,19 +334,22 @@ override async editItem(item?: IItem) {
 }
 ```
 
-- **`type`** — `ISdModal` 을 구현한 컴포넌트 클래스. `GoodsDetail`(`AbsSdDataDetail` 상속, `ISdModal` 구현), `PasswordResetModal`(`implements ISdModal<void>`) 처럼 단건 편집 `Detail` 도 별도 `Modal` 없이 그대로 띄움.
+- **`type`** — `ISdModal` 을 구현한 컴포넌트 클래스.
+  - `GoodsDetail`(`AbsSdDataDetail` 상속, `ISdModal` 구현), `PasswordResetModal`(`implements ISdModal<void>`) 처럼 단건 편집 `Detail` 도 별도 `Modal` 없이 그대로 띄움.
 - **`title`** — 모달 헤더 제목. 등록/수정에 따라 분기해도 됨.
 - **`inputs`** — 모달 컴포넌트가 받을 `input()` 시그널 값. 없으면 `{}`.
-- **반환값** — 모달 컴포넌트가 `close.emit(payload)` 한 값. 사용자가 배경 클릭·ESC·X 로 닫으면 `undefined`. 취소 가드는 `if (!result) return;`.
-- 둘째 인자 `options` 의 `key` 는 모달 위치·크기를 저장할 식별자임(선택). 그 외 옵션(헤더 숨김·배경 클릭 닫기 등)은 [overlay.md](../apis/sd-angular/overlay.md) 참조.
+- **반환값** — 모달 컴포넌트가 `close.emit(payload)` 한 값.
+  - 사용자가 배경 클릭, ESC, X 로 닫으면 `undefined`. 취소 가드는 `if (!result) return;`.
+- 둘째 인자 `options` 의 `key` 는 모달 위치, 크기를 저장할 식별자임(선택).
+  - 그 외 옵션(헤더 숨김, 배경 클릭 닫기 등)은 [overlay.md](../apis/sd-angular/overlay.md) 참조.
 
-모달로 띄워질 컴포넌트 쪽 구현(`close` output·`initialized`·`busyCount`)은 위 `PasswordResetModal` 코드를 따름.
+모달로 띄워질 컴포넌트 쪽 구현(`close` output, `initialized`, `busyCount`)은 위 `PasswordResetModal` 코드를 따름.
 
 ---
 
 ## flex 유틸 클래스와 `sd-base-container` 로 레이아웃을 잡음
 
-화면 영역 분할·배치는 글로벌 flex 유틸 클래스로 구성함(자체 `styles` 작성은 최후 수단).
+화면 영역 분할, 배치는 글로벌 flex 유틸 클래스로 구성함(자체 `styles` 작성은 최후 수단).
 
 **상하 분할**(본문 fill + 하단 고정 버튼 영역) — `PasswordResetModal` 의 모달 본문:
 
@@ -349,9 +378,10 @@ override async editItem(item?: IItem) {
 - **Flex**: `flex-row` / `flex-column`(컨테이너), `flex-fill`(남은 공간 차지), `flex-min`(콘텐츠 크기), `gap-sm` / `gap-default`.
 - **부모 가득 채움**: `fill`.
 - **패딩**: `p-{세로}-{가로}`(예: `p-default`, `p-xs-sm`, `p-sm-default`, `p-0-default`), 단일 방향 `pt-` / `pb-` / `pl-` / `pr-`.
-- **텍스트 정렬·색**: `tx-left` / `tx-center` / `tx-right`, `tx-theme-gray-default`.
+- **텍스트 정렬, 색**: `tx-left` / `tx-center` / `tx-right`, `tx-theme-gray-default`.
 
-**`sd-base-container`** 는 `Abs*` 를 쓰지 않는 화면(특히 PDA·리포트 화면)의 공통 골격임. busy·초기화 오버레이·제목 영역을 제공하고, 본문은 `#contentTpl` 슬롯에 둠.
+**`sd-base-container`** 는 `Abs*` 를 쓰지 않는 화면(특히 PDA, 리포트 화면)의 공통 골격임.
+busy, 초기화 오버레이, 제목 영역을 제공하고, 본문은 `#contentTpl` 슬롯에 둠.
 
 ```html
 <!-- InvInboundPage -->
@@ -366,13 +396,15 @@ override async editItem(item?: IItem) {
 - 본문은 반드시 `<ng-template #contentTpl>` 안에 둠(이 슬롯이 필수).
 - `AbsSdDataSheet`/`AbsSdDataDetail` 를 상속한 목록/편집 화면은 `<sd-data-sheet>`/`<sd-data-detail>` 이 내부에서 `sd-base-container` 역할을 겸하므로 직접 감싸지 않음.
 
-폼 항목 정렬에는 `form-table`(`<table>` 기반, `<th>` 라벨 + `<td>` 입력)과 검색 폼의 `<div><label>...</label><입력></div>` 나열(`#filterTpl` 안)을 씀. 폼 컨트롤 상세는 [client-form.md](./client-component.md) 참조.
+폼 항목 정렬에는 `form-table`(`<table>` 기반, `<th>` 라벨 + `<td>` 입력)과 검색 폼의 `<div><label>...</label><입력></div>` 나열(`#filterTpl` 안)을 씀.
+폼 컨트롤 상세는 [ui-controls.md](../apis/sd-angular/ui-controls.md) 참조.
 
 ---
 
 ## 아이콘을 사용함
 
-v12 화면은 **`@fortawesome` 아이콘 + `FaIconComponent`** 를 씀. 사용할 아이콘을 단일 import 경로에서 가져와 컴포넌트 클래스에 `protected readonly` 멤버로 노출한 뒤, 템플릿에서 `<fa-icon [icon]=...>` 로 바인딩함.
+v12 화면은 **`@fortawesome` 아이콘 + `FaIconComponent`** 를 씀.
+사용할 아이콘을 단일 import 경로에서 가져와 컴포넌트 클래스에 `protected readonly` 멤버로 노출한 뒤, 템플릿에서 `<fa-icon [icon]=...>` 로 바인딩함.
 
 ```ts
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
@@ -417,7 +449,7 @@ export class LoginPage {
 
 ## inject 멤버를 `#private` 로 명명함
 
-`inject()` 한 의존성은 외부에 노출되는 멤버(시그널·input·output·공개 메서드)와 구분하기 위해 **hard private(`#`) 필드**로 둠.
+`inject()` 한 의존성은 외부에 노출되는 멤버(시그널, input, output, 공개 메서드)와 구분하기 위해 **hard private(`#`) 필드**로 둠.
 
 ```ts
 // UserPage / GoodsPage / LoginPage 공통
@@ -438,10 +470,10 @@ export class LoginPage {
 
 ## 관련 매뉴얼
 
-- 목록/편집 시트 골격(`AbsSdDataSheet`·`AbsSdDataDetail`, `search`/`submit`/`editItem`/`toggleDeleteItems`, 컬럼·셀·페이징): [client-data-sheet.md](./client-data-sheet.md)
-- ORM 쿼리 작성(`connectAsync`·`where`·`select`·`upsertAsync`·`insertDataLogAsync` 등): [orm.md](./orm.md)
-- 서비스 호출·커스텀 ServiceClient·실시간 이벤트: [client-service.md](./client-service.md)
-- 공유데이터 등록·선택(`AppSharedDataProvider`·`useSharedSignal`·`sd-shared-data-select`): [client-shared-data.md](./client-shared-data.md)
-- 폼·입력 컨트롤·탭: [client-form.md](./client-component.md)
-- 인쇄(`ISdPrint`·`SdPrintProvider`): [client-print.md](./client-print.md)
-- 메뉴·권한 트리(`appStructureItems`·`sd-permission-table`): [client-app-structure.md](./client-app-structure.md)
+- 목록/편집 시트 골격(`AbsSdDataSheet`, `AbsSdDataDetail`, `search`/`submit`/`editItem`/`toggleDeleteItems`, 컬럼, 셀, 페이징): [client-data-sheet.md](./client-data-sheet.md)
+- ORM 쿼리 작성(`connectAsync`, `where`, `select`, `upsertAsync`, `insertDataLogAsync` 등): [orm.md](./orm.md)
+- 서비스 호출, 커스텀 ServiceClient, 실시간 이벤트: [client-service.md](./client-service.md)
+- 공유데이터 등록, 선택(`AppSharedDataProvider`, `useSharedSignal`, `sd-shared-data-select`): [client-shared-data.md](./client-shared-data.md)
+- 폼, 입력 컨트롤, 탭: [ui-controls.md](../apis/sd-angular/ui-controls.md)
+- 인쇄(`ISdPrint`, `SdPrintProvider`): [client-print.md](./client-print.md)
+- 메뉴, 권한 트리(`appStructureItems`, `sd-permission-table`): [client-app-structure.md](./client-app-structure.md)

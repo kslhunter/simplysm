@@ -65,7 +65,7 @@ import 시 Node native `fs.FSWatcher.prototype.emit`을 보호 flag로 래핑하
 ## EPERM 자동 복구
 
 - 감지: chokidar error 이벤트 + `code === "EPERM"` + 이미 복구 중이 아님.
-- 로깅: `sd-fs-watcher` logger로 오류·재시도 상황 출력(creation stack 포함).
+- 로깅: `sd-fs-watcher` logger로 오류, 재시도 상황 출력(creation stack 포함).
 - 재시도 조건: 최대 3회, 시도 간 1000ms 대기.
 - 복구 절차 (매 시도마다):
   1. 기존 watcher close

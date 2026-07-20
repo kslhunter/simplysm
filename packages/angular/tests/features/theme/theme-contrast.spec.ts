@@ -4,7 +4,7 @@ import { getWcagContrastRatio } from "@simplysm/angular";
 
 //
 // 테마별 핵심 fg/bg 쌍 WCAG 대비 게이트 (DEC-012)
-// - 본문 텍스트 4.5:1, 대형/보조·UI 3:1.
+// - 본문 텍스트 4.5:1, 대형/보조, UI 3:1.
 // - 알파 값은 표면 합성 후 계산(getWcagContrastRatio 의 base).
 // - 의도적 저대비(현행 디자인 값 보존 — RISK-001 값 불변 원칙)는 명시 예외 목록으로만 허용.
 //
@@ -28,7 +28,7 @@ const CORE_PAIRS: [string, string, number][] = [
 // 의도적 저대비 예외 — "테마명|fg|bg" (현행 테마 확정 값 보존이 사유일 때만 추가)
 const EXCEPTIONS = new Set<string>([
   // 구 테마 확정 값 보존(값 불변 원칙) — danger solid = red-400 + 백색(2.89:1).
-  // errorForeground(#f48771) 근사·경고 원색 유지가 디자인 의도.
+  // errorForeground(#f48771) 근사, 경고 원색 유지가 디자인 의도.
   "blueprint|--sd-tx-danger-solid|--sd-bg-danger-solid",
   "ide-dark|--sd-tx-danger-solid|--sd-bg-danger-solid",
 ]);

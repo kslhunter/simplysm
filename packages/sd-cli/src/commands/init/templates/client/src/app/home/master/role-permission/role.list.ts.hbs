@@ -248,7 +248,7 @@ export class RoleList implements SdModalContentDef<SelectModalOutputResult<numbe
 
     this.busyCount.update((v) => v + 1);
     await this._sdToast.try(async () => {
-      // 파생 컬럼(수정일시·수정자)은 업로드에서 제외하고 파싱. 삭제 여부는 읽어서 반영.
+      // 파생 컬럼(수정일시, 수정자)은 업로드에서 제외하고 파싱. 삭제 여부는 읽어서 반영.
       const records = await this._excelWrapper.read(files[0], 0, {
         excludes: ["lastModifiedAt", "lastModifiedBy"],
       });
@@ -448,7 +448,7 @@ export class RoleList implements SdModalContentDef<SelectModalOutputResult<numbe
           .update(() => ({ isDeleted: false }));
 
         // 복구 후 이름 비삭제 유니크 재검증 — 복구로 활성 중복이 생겼으면 throw(트랜잭션 롤백).
-        // 대상끼리 충돌·기존 활성과의 충돌을 복구한 이름으로 한정해 한 번에 검사.
+        // 대상끼리 충돌, 기존 활성과의 충돌을 복구한 이름으로 한정해 한 번에 검사.
         const conflicts = await db
           .role()
           .where((c) => [expr.in(c.name, names), expr.eq(c.isDeleted, false)])

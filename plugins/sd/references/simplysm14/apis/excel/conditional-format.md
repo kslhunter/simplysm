@@ -1,6 +1,7 @@
 # @simplysm/excel — 조건부 서식
 
-`ExcelWorksheet.addConditionalFormat()` 로 셀 범위에 값 비교·텍스트 매칭·수식 기반 조건부 서식을 추가함. 규칙별 강조 스타일은 styles 파트의 dxf 로 등록하고 worksheet `conditionalFormatting` 블록에 누적함.
+`ExcelWorksheet.addConditionalFormat()` 로 셀 범위에 값 비교, 텍스트 매칭, 수식 기반 조건부 서식을 추가함.
+규칙별 강조 스타일은 styles 파트의 dxf 로 등록하고 worksheet `conditionalFormatting` 블록에 누적함.
 
 ## addConditionalFormat
 
@@ -8,7 +9,8 @@
 ws.addConditionalFormat(opts: { ref: string; rules: ExcelConditionalRule[] }): Promise<void>
 ```
 
-- `opts.ref` — 적용할 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) A1 주소. worksheet `sqref` 로 저장되고, 텍스트 규칙 formula 의 기준 top-left 셀(`ref.split(":")[0]`)을 여기서 뽑음.
+- `opts.ref` — 적용할 단일 셀(`"A1"`) 또는 범위(`"A1:B10"`) A1 주소.
+  - worksheet `sqref` 로 저장되고, 텍스트 규칙 formula 의 기준 top-left 셀(`ref.split(":")[0]`)을 여기서 뽑음.
 - `opts.rules` — 규칙 배열. 배열 순서가 priority(앞이 우선)이며, 빈 배열이면 아무 작업도 하지 않음.
 - 누적: 같은 시트에 여러 번 호출하면 호출마다 `<conditionalFormatting>` 블록이 누적되고, priority 는 시트 전역 카운터로 호출 간 이어붙음.
 - 합성: 정적 셀 스타일과 조건부 서식의 합성은 Excel native CF 오버레이에 위임함.
@@ -60,9 +62,22 @@ type ExcelConditionalRule =
 - `type: "expression"` — `formula` 는 raw Excel 수식 문자열로 그대로 formula 배열 1개에 들어감(operator/text 없음).
 - `style` — dxf 로 등록할 강조 스타일(`ExcelConditionalRuleStyle`).
 
-`op` → OOXML operator 매핑(`cellIs`): `<`→`lessThan`, `>`→`greaterThan`, `<=`→`lessThanOrEqual`, `>=`→`greaterThanOrEqual`, `=`→`equal`, `<>`→`notEqual`, `between`→`between`, `notBetween`→`notBetween`.
+`op` → OOXML operator 매핑(`cellIs`):
 
-`value` 인코딩(`cellIs`): `number` 는 따옴표 없는 숫자 리터럴(예: `<formula>4999</formula>`), `string` 은 큰따옴표로 감싼 리터럴(내부 `"` 는 `""` escape, 예: `<formula>"OK"</formula>`). 구간은 양쪽 값을 formula 2개로 저장함.
+- `<` → `lessThan`
+- `>` → `greaterThan`
+- `<=` → `lessThanOrEqual`
+- `>=` → `greaterThanOrEqual`
+- `=` → `equal`
+- `<>` → `notEqual`
+- `between` → `between`
+- `notBetween` → `notBetween`
+
+`value` 인코딩(`cellIs`):
+
+- `number` — 따옴표 없는 숫자 리터럴(예: `<formula>4999</formula>`).
+- `string` — 큰따옴표로 감싼 리터럴(내부 `"` 는 `""` escape, 예: `<formula>"OK"</formula>`).
+- 구간은 양쪽 값을 formula 2개로 저장함.
 
 `text` 규칙 formula(top-left = `ref` 첫 주소):
 
@@ -71,7 +86,7 @@ type ExcelConditionalRule =
 - `beginsWith` — type/operator `beginsWith`; `LEFT(topLeft,LEN("value"))="value"`.
 - `endsWith` — type/operator `endsWith`; `RIGHT(topLeft,LEN("value"))="value"`.
 
-## 누적·저장 동작
+## 누적, 저장 동작
 
 - 각 rule 의 `style` 은 `styleData.addDxf(...)` 로 dxfId 를 받아 cfRule 에 연결됨.
 - `wsData.addConditionalFormatting(ref, dxfRules)` 로 worksheet 에 블록을 추가함.

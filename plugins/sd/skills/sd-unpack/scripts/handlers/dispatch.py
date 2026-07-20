@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 from . import _common
 
@@ -38,7 +37,7 @@ def unpack_to(input_path: Path, out_dir: Path) -> None:
         )
 
 
-def maybe_recurse_attachment(saved_attachment_path: Path, attachments_dir: Path) -> Optional[Path]:
+def maybe_recurse_attachment(saved_attachment_path: Path, attachments_dir: Path) -> Path | None:
     """저장된 첨부가 컨테이너 형식이면 재귀 풀이.
 
     - 풀린 폴더(<basename>_<ext>/) 반환 (재귀했을 때).

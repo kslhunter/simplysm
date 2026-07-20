@@ -11,12 +11,11 @@ vi.spyOn(fsx, "glob");
 vi.spyOn(fsx, "mkdir");
 vi.spyOn(fsx, "copy");
 vi.spyOn(fsx, "rm");
-vi.spyOn(fsx, "exists");
 vi.spyOn(FsWatcher, "watch").mockImplementation(() =>
   Promise.resolve({ onChange: mockOnChange, close: mockWatcherClose } as any),
 );
 
-import { copyDirFiles, copySrcFiles, watchCopySrcFiles } from "../../src/utils/copy-src";
+import { copySrcFiles, watchCopySrcFiles } from "../../src/utils/copy-src";
 
 const pkgDir = toPosix(path.resolve("/workspace/packages/my-pkg"));
 const srcDir = toPosix(path.join(pkgDir, "src"));
@@ -64,58 +63,6 @@ describe("copySrcFiles", () => {
 
     await copySrcFiles(pkgDir, ["**/*.css"]);
 
-    expect(fsx.copy).not.toHaveBeenCalled();
-  });
-});
-
-describe("copyDirFiles", () => {
-  const fromDir = toPosix(path.resolve("/workspace/plugins/sd"));
-  const toDir = toPosix(path.join(distDir, "plugins", "sd"));
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(fsx.exists).mockResolvedValue(true);
-    vi.mocked(fsx.mkdir).mockResolvedValue(undefined);
-    vi.mocked(fsx.copy).mockResolvedValue(undefined);
-  });
-
-  it("copies files from an outside directory preserving relative paths", async () => {
-    vi.mocked(fsx.glob).mockResolvedValue([toPosix(path.join(fromDir, "hooks", "check-shell.ts"))]);
-
-    await copyDirFiles(fromDir, toDir);
-
-    expect(fsx.copy).toHaveBeenCalledWith(
-      toPosix(path.join(fromDir, "hooks", "check-shell.ts")),
-      toPosix(path.join(toDir, "hooks", "check-shell.ts")),
-    );
-  });
-
-  it("includes dotfiles so plugin manifests are not dropped", async () => {
-    vi.mocked(fsx.glob).mockResolvedValue([]);
-
-    await copyDirFiles(fromDir, toDir);
-
-    expect(fsx.glob).toHaveBeenCalledWith(
-      "**/*",
-      expect.objectContaining({ cwd: fromDir, absolute: true, dot: true, nodir: true }),
-    );
-  });
-
-  it("passes ignore patterns through to the file scan", async () => {
-    vi.mocked(fsx.glob).mockResolvedValue([]);
-
-    await copyDirFiles(fromDir, toDir, ["**/node_modules/**", "**/__pycache__/**"]);
-
-    expect(fsx.glob).toHaveBeenCalledWith(
-      "**/*",
-      expect.objectContaining({ ignore: ["**/node_modules/**", "**/__pycache__/**"] }),
-    );
-  });
-
-  it("throws when the source directory does not exist", async () => {
-    vi.mocked(fsx.exists).mockResolvedValue(false);
-
-    await expect(copyDirFiles(fromDir, toDir)).rejects.toThrow(fromDir);
     expect(fsx.copy).not.toHaveBeenCalled();
   });
 });

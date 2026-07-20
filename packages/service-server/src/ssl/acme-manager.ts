@@ -44,7 +44,7 @@ export interface AcmeCertMaterial {
 }
 
 /**
- * Let's Encrypt(ACME) 인증서 자동 발급·갱신 매니저.
+ * Let's Encrypt(ACME) 인증서 자동 발급, 갱신 매니저.
  *
  * `cloudflareApiToken` 이 있으면 DNS-01 챌린지(Cloudflare TXT 자동 등록)로 발급하고,
  * 없으면 TLS-ALPN-01 챌린지로 발급한다. TLS-ALPN-01 의 챌린지 응답 인증서는
@@ -152,7 +152,7 @@ export class AcmeManager {
   }
 
   private _directoryUrl(): string {
-    // 운영 환경 변수로 ACME 디렉토리 URL 재정의 가능 (사설 CA·테스트용 pebble 등)
+    // 운영 환경 변수로 ACME 디렉토리 URL 재정의 가능 (사설 CA, 테스트용 pebble 등)
     const override = env("SD_ACME_DIRECTORY_URL");
     if (override != null && override !== "") return override;
 
@@ -161,7 +161,7 @@ export class AcmeManager {
       : acme.directory.letsencrypt.production;
   }
 
-  /** 캐시된 인증서의 발급 CA(directoryUrl). 메타 부재·파싱 실패 시 undefined */
+  /** 캐시된 인증서의 발급 CA(directoryUrl). 메타 부재, 파싱 실패 시 undefined */
   private async _readIssuedDirectoryUrl(): Promise<string | undefined> {
     if (!(await fsx.exists(this._metaPath))) return undefined;
     try {
@@ -235,7 +235,7 @@ export class AcmeManager {
     };
   }
 
-  /** DNS-01: Cloudflare 에 `_acme-challenge` TXT 를 등록·삭제하고 전파를 확인 */
+  /** DNS-01: Cloudflare 에 `_acme-challenge` TXT 를 등록, 삭제하고 전파를 확인 */
   private _dns01AutoOptions(token: string): AcmeAutoChallengeOptions {
     return {
       challengePriority: ["dns-01"],
@@ -326,7 +326,7 @@ export class AcmeManager {
 
   /**
    * DNS-01: TXT 가 도메인 권위 NS 에 전파됐는지 best-effort 로 확인.
-   * 권위 NS 조회 실패·전파 타임아웃 시 경고 후 진행 (CA 가 최종 검증).
+   * 권위 NS 조회 실패, 전파 타임아웃 시 경고 후 진행 (CA 가 최종 검증).
    */
   private async _waitForDnsPropagation(
     zoneName: string,

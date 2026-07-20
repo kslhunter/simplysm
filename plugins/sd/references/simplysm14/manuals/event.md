@@ -1,8 +1,11 @@
 # 서비스 이벤트 매뉴얼
 
-클라이언트끼리(또는 서버 → 클라이언트로) 실시간 알림을 주고받으려 할 때 참조. 예: 한 사용자가 주문 상태를 바꾸면 같은 화면을 보는 다른 사용자에게 즉시 반영.
+클라이언트끼리(또는 서버 → 클라이언트로) 실시간 알림을 주고받으려 할 때 참조.
 
-`@simplysm/service-common` 의 `defineEvent` 로 이벤트를 정의하고, `ServiceClient`(`@simplysm/service-client`) 또는 서버 `ServiceContext` 로 발생·구독함. WebSocket 위에서 동작하므로 연결된 클라이언트에만 전달됨.
+- 예: 한 사용자가 주문 상태를 바꾸면 같은 화면을 보는 다른 사용자에게 즉시 반영.
+
+`@simplysm/service-common` 의 `defineEvent` 로 이벤트를 정의하고, `ServiceClient`(`@simplysm/service-client`) 또는 서버 `ServiceContext` 로 발생, 구독함.
+WebSocket 위에서 동작하므로 연결된 클라이언트에만 전달됨.
 
 흐름:
 
@@ -20,12 +23,13 @@
 ```
 
 - **구독(리스너 등록)은 클라이언트에만 있음**. 서버는 발생만 가능(구독 불가).
-- **발생은 클라이언트·서버 양쪽 가능**. 화면 동작에서 비롯되는 변경 알림이 대부분이라 클라이언트 발생이 더 흔함.
+- **발생은 클라이언트, 서버 양쪽 가능**. 화면 동작에서 비롯되는 변경 알림이 대부분이라 클라이언트 발생이 더 흔함.
 - 클라이언트 발생의 `selector` 함수는 서버로 직렬화되지 않고 발생 클라이언트에서 실행됨. 서버 발생의 `selector` 는 서버에서 실행됨.
 
 ## 이벤트를 정의하려면
 
-`defineEvent<TInfo, TData>(eventName)` 로 정의해 **공통 패키지(`@<workspace>/common`)에서 export**. 발생측·구독측이 같은 정의 객체를 값으로 import 하므로, 서버·클라이언트 양쪽에서 import 가능한 공통 패키지에 둠.
+`defineEvent<TInfo, TData>(eventName)` 로 정의해 **공통 패키지(`@<workspace>/common`)에서 export**.
+발생측, 구독측이 같은 정의 객체를 값으로 import 하므로, 서버, 클라이언트 양쪽에서 import 가능한 공통 패키지에 둠.
 
 ```ts
 // @<workspace>/common 의 events.ts
@@ -41,7 +45,9 @@ export const OrderStatusChangedEvent = defineEvent<
   - `TInfo` — 구독자가 "무엇을 구독하는지" 식별하는 메타데이터. 발생측이 이 값으로 대상을 골라냄.
   - `TData` — 이벤트가 실어 나르는 페이로드.
 - 인자 `eventName` 은 라우팅 키. 같은 이름이면 같은 이벤트로 취급되므로 앱 내에서 고유하게.
-- **이름·타입의 단일 소스는 이 정의 객체**. 발생·구독 호출 시 정의 객체를 그대로 첫 인자로 넘기면 이름과 타입이 자동 추론됨 — 문자열 이름이나 `<typeof X>` 를 따로 적지 않음.
+- **이름, 타입의 단일 소스는 이 정의 객체**.
+  - 발생, 구독 호출 시 정의 객체를 그대로 첫 인자로 넘기면 이름과 타입이 자동 추론됨.
+  - 문자열 이름이나 `<typeof X>` 를 따로 적지 않음.
 
 ## 클라이언트에서 이벤트를 구독하려면
 
@@ -61,7 +67,9 @@ const listenerKey = await event.addListener(
 
 - `info` 는 정의의 `TInfo` 타입. 발생측의 selector 가 이 값을 보고 전달 여부를 결정(아래 "특정 구독자에게만").
 - 콜백의 `data` 는 정의의 `TData` 로 타입이 잡힘.
-- `addListener` 는 서버 연결 완료 후 등록. 앱 provider 패턴이면 `AppServiceProvider.connectAsync()`, raw `ServiceClient` 를 직접 쓰면 `client.connect()` 완료 뒤 호출.
+- `addListener` 는 서버 연결 완료 후 등록.
+  - 앱 provider 패턴이면 `AppServiceProvider.connectAsync()` 완료 뒤 호출.
+  - raw `ServiceClient` 를 직접 쓰면 `client.connect()` 완료 뒤 호출.
 - AppServiceProvider 에서 이벤트 프록시를 getter 로 노출하는 패턴은 [client-service.md](./client-service.md) 참조.
 
 ## 구독을 해제하려면
@@ -72,11 +80,14 @@ const listenerKey = await event.addListener(
 await client.removeListener(listenerKey);
 ```
 
-- 키 없이 일괄 해제하는 API 는 없음. 등록 시 받은 키를 화면·프로바이더 상태로 들고 있다가 해제.
+- 키 없이 일괄 해제하는 API 는 없음. 등록 시 받은 키를 화면, 프로바이더 상태로 들고 있다가 해제.
 
 ## 클라이언트에서 이벤트를 발생시키려면
 
-화면 동작으로 생긴 변경을 다른 클라이언트에 알리는 가장 흔한 경우. `client.emitEvent(EventDef, infoSelector, data)` 호출. 프록시의 `.emit()` 도 동일.
+화면 동작으로 생긴 변경을 다른 클라이언트에 알리는 가장 흔한 경우.
+
+- `client.emitEvent(EventDef, infoSelector, data)` 호출.
+- 프록시의 `.emit()` 도 동일.
 
 ```ts
 // 7번 창고를 구독 중인 클라이언트에게만 전달
@@ -134,8 +145,12 @@ await client.emitEvent(OrderStatusChangedEvent, (info) => info.warehouseId === 7
 
 ## 지킬 것
 
-- 이벤트 정의는 공통 패키지에 두고 정의 객체를 그대로 발생·구독에 넘김. 발생·구독 호출부에 이벤트 이름 문자열이나 `<typeof X>` 제네릭을 중복으로 적지 않음.
-- 구독은 클라이언트에서만. 서버는 발생 전용이며 `addListener` 가 없음 — 서버가 다른 서버 동작을 기다려야 한다면 이벤트가 아닌 다른 수단을 사용.
-- `addListener` 로 받은 키는 반드시 보관하고 화면·프로바이더 파기 시 `removeListener` 로 해제. 미해제 리스너는 재연결 때마다 누적됨.
+- 이벤트 정의는 공통 패키지에 두고 정의 객체를 그대로 발생, 구독에 넘김.
+  - 발생, 구독 호출부에 이벤트 이름 문자열이나 `<typeof X>` 제네릭을 중복으로 적지 않음.
+- 구독은 클라이언트에서만. 서버는 발생 전용이며 `addListener` 가 없음.
+  - 서버가 다른 서버 동작을 기다려야 한다면 이벤트가 아닌 다른 수단을 사용.
+- `addListener` 로 받은 키는 반드시 보관하고 화면, 프로바이더 파기 시 `removeListener` 로 해제.
+  - 미해제 리스너는 재연결 때마다 누적됨.
 - 재연결 시 등록된 리스너는 자동으로 재구독되므로, 연결 복구를 감지해 수동으로 다시 `addListener` 하지 않음.
-- 전달은 그 시점에 연결된 클라이언트에만 일어남. 오프라인 클라이언트를 위한 보관·재전송은 없으므로, 놓치면 안 되는 상태는 이벤트가 아니라 조회(재로딩)로 확정.
+- 전달은 그 시점에 연결된 클라이언트에만 일어남.
+  - 오프라인 클라이언트를 위한 보관, 재전송은 없으므로, 놓치면 안 되는 상태는 이벤트가 아니라 조회(재로딩)로 확정.

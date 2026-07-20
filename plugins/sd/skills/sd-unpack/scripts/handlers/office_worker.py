@@ -23,7 +23,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 # ====================================================================
 # path helpers (worker 단독 동작 위해 inline)
 # ====================================================================
@@ -181,7 +180,7 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
     last_row = last_col = 0
     chart_w = chart_h = 0.0
     try:
-        # 진짜 데이터(값) 가 있는 마지막 행·열을 Find 로 산출.
+        # 진짜 데이터(값) 가 있는 마지막 행, 열을 Find 로 산출.
         # UsedRange 는 서식만 남은 빈 영역까지 포함 → 부적절.
         # xlFormulas=-4123, xlPart=2, xlByRows=1, xlByColumns=2, xlPrevious=2
         a1 = ws.Cells(1, 1)

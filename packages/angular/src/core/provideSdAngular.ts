@@ -49,7 +49,7 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
       strokeWidth: 1.5,
     }),
     provideEnvironmentInitializer(() => {
-      // SSR(프리렌더) 가드: 테마 저장·복원은 브라우저 전용
+      // SSR(프리렌더) 가드: 테마 저장, 복원은 브라우저 전용
       if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
 
       const sdTheme = inject(SdThemeProvider);

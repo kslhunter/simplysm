@@ -57,13 +57,11 @@ describe("validateTargets", () => {
 });
 
 describe("discoverWorkspacePackages", () => {
-  it("discovers packages, tests, and plugins workspace directories", () => {
+  it("discovers workspace directories declared in pnpm-workspace.yaml", () => {
     const result = discoverWorkspacePackages(process.cwd());
     expect(result.get("core-common")).toBe("packages/core-common");
     expect(result.get("orm")).toBe("tests/orm");
     expect(result.get("service")).toBe("tests/service");
-    expect(result.get("sd")).toBe("plugins/sd");
-    expect(result.get("sd-wiki")).toBe("plugins/sd-wiki");
   });
 
   it("returns empty map when directory does not exist", () => {
@@ -71,7 +69,7 @@ describe("discoverWorkspacePackages", () => {
     expect(result.size).toBe(0);
   });
 
-  it("includes all workspace kinds (packages/·tests/·plugins/)", () => {
+  it("includes all workspace kinds (packages/, tests/, plugins/)", () => {
     const tmpDir = path.join(process.cwd(), ".tmp", "test-workspace-plugins");
     fs.rmSync(tmpDir, { recursive: true, force: true });
     fs.mkdirSync(path.join(tmpDir, "packages", "app"), { recursive: true });
@@ -119,8 +117,8 @@ describe("discoverWorkspacePackages", () => {
 });
 
 describe("mergeTestsPackagesIntoConfig", () => {
-  // Acceptance: targets 없이 watch 실행 시 비배포 워크스페이스(tests/·plugins/)가 포함된다
-  it("merges non-deploy workspaces (tests/·plugins/) into config with target node", () => {
+  // Acceptance: targets 없이 watch 실행 시 비배포 워크스페이스(tests/, plugins/)가 포함된다
+  it("merges non-deploy workspaces (tests/, plugins/) into config with target node", () => {
     const configPackages: Record<string, SdPackageConfig | undefined> = {
       "core-common": { target: "neutral" },
       "core-node": { target: "node" },
@@ -135,7 +133,7 @@ describe("mergeTestsPackagesIntoConfig", () => {
 
     const { merged, pathMap } = mergeTestsPackagesIntoConfig(configPackages, workspacePackages);
 
-    // non-deploy workspaces (tests/·plugins/) are included as node
+    // non-deploy workspaces (tests/, plugins/) are included as node
     expect(merged["orm"]).toEqual({ target: "node" });
     expect(merged["service"]).toEqual({ target: "node" });
     expect(merged["sd"]).toEqual({ target: "node" });

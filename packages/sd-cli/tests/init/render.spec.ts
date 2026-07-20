@@ -496,7 +496,7 @@ describe("client-common/src/providers/app-orm.provider.ts.hbs", () => {
     expect(out).toContain('configName: "MAIN"');
   });
 
-  it("custom dbContextName=order → OrderDbContext 가 import·DbClass 에 반영", async () => {
+  it("custom dbContextName=order → OrderDbContext 가 import, DbClass 에 반영", async () => {
     const data = buildData({
       workspaceName: "demo",
       description: "Demo",
@@ -1018,7 +1018,7 @@ describe("SSG 클라이언트 스캐폴드", () => {
     expect(out).toContain('provideSdAngular({ clientName: "client-portal" }),');
     expect(out).toContain("provideServerRendering(),");
     expect(out).toContain("export default bootstrap;");
-    // 프리렌더는 빌드 시점 — 서버 연결·로그 배선 제외
+    // 프리렌더는 빌드 시점 — 서버 연결, 로그 배선 제외
     expect(out).not.toContain("connectAsync");
   });
 });

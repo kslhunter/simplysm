@@ -243,7 +243,7 @@ export class SdToastProvider {
     let dismissPending = false;
     let dismissed = false;
 
-    // 타이머·리스너 정리. 외부 파괴 경로(_dismissToast/_destroyToast)에서도 호출되어
+    // 타이머, 리스너 정리. 외부 파괴 경로(_dismissToast/_destroyToast)에서도 호출되어
     // 죽은 toastRef 에 대해 타이머가 깨어나는 race 와 리스너 누수를 막는다.
     const cleanup = () => {
       dismissed = true;

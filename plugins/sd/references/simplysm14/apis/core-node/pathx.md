@@ -1,6 +1,6 @@
 # @simplysm/core-node — pathx
 
-`export * as pathx` 네임스페이스 (`utils/path.ts`). 경로 문자열을 POSIX 슬래시로 정규화하고, 하위 경로 판정·디렉토리 치환·basename 추출·target 필터링을 할 때 읽는 군.
+`export * as pathx` 네임스페이스 (`utils/path.ts`). 경로 문자열을 POSIX 슬래시로 정규화하고, 하위 경로 판정, 디렉토리 치환, basename 추출, target 필터링을 할 때 읽는 군.
 
 ## PosixPath
 

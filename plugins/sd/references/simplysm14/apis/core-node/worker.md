@@ -1,6 +1,7 @@
 # @simplysm/core-node — Worker / createWorker
 
-worker_threads를 타입 안전한 메서드 프록시, 이벤트, stdout 전달 프로토콜로 감쌈. 워커 스레드 측은 `createWorker`, 메인 스레드 측은 `Worker.create`를 사용함.
+worker_threads를 타입 안전한 메서드 프록시, 이벤트, stdout 전달 프로토콜로 감쌉니다.
+워커 스레드 측은 `createWorker`, 메인 스레드 측은 `Worker.create`를 사용합니다.
 
 ## 타입
 
@@ -75,7 +76,7 @@ type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
 
 `function createWorker<TMethods, TEvents>(methods: TMethods): { send, __methods, __events }`
 
-워커 메서드·이벤트 정의 및 메인 스레드 요청 처리.
+워커 메서드, 이벤트 정의 및 메인 스레드 요청 처리.
 
 ### 인자
 
@@ -84,7 +85,8 @@ type WorkerProxy<TModule extends WorkerModule> = PromisifyMethods<
 
 ### 반환값
 
-- `send<TEventName>(event: TEventName, data?: TEvents[TEventName]): void` — 이벤트를 메인 스레드로 전송. 내부에서 `{ type: "event", event, body: data }`를 `transfer.encode` 후 `parentPort.postMessage`.
+- `send<TEventName>(event: TEventName, data?: TEvents[TEventName]): void` — 이벤트를 메인 스레드로 전송.
+  - 내부에서 `{ type: "event", event, body: data }`를 `transfer.encode` 후 `parentPort.postMessage`.
 - `__methods: TMethods` — 메인 측 타입 추론 전용.
 - `__events: TEvents` — 메인 측 타입 추론 전용.
 

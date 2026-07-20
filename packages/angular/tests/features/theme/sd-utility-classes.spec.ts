@@ -4,14 +4,14 @@ import cssText from "../../../scss/commons/_styles.scss?inline";
 //
 // 역할 기반 유틸 클래스 검증 (DEC-013)
 // - 유틸 클래스명 = 토큰명에서 --sd- 만 뗀 것 (완전 1:1 어휘).
-// - bg/tx/bd 색 토큰 전수 기계 생성. 단 -hover 변형·bg-canvas-image 는 미생성.
+// - bg/tx/bd 색 토큰 전수 기계 생성. 단 -hover 변형, bg-canvas-image 는 미생성.
 // - 방향 보더 변형은 .bd{t,r,b,l}-… 로 동일 어휘 재생성.
 // - 구 유틸 어휘(.bg-theme-* 등)는 deprecated alias 파일 전용 — 여기 없어야 함.
 //
 
 const SEMANTIC_KEYS = ["gray", "blue-gray", "primary", "info", "success", "warning", "danger"];
 
-// 카탈로그 색 토큰(-hover 변형·canvas-image 제외) — 클래스명 = 토큰명 - "--sd-"
+// 카탈로그 색 토큰(-hover 변형, canvas-image 제외) — 클래스명 = 토큰명 - "--sd-"
 const BG_CLASSES = [
   ...[
     "canvas",
@@ -105,7 +105,7 @@ describe("역할 기반 유틸 클래스 (DEC-013)", () => {
     expect(missing).toEqual([]);
   });
 
-  it("-hover 변형·bg-canvas-image·bg-sheet-image 클래스는 생성하지 않는다", () => {
+  it("-hover 변형, bg-canvas-image, bg-sheet-image 클래스는 생성하지 않는다", () => {
     const forbidden = [
       "bg-canvas-image",
       "bg-sheet-image",
@@ -142,7 +142,7 @@ describe("역할 기반 유틸 클래스 (DEC-013)", () => {
     expect(missing.map(([cls]) => cls)).toEqual([]);
   });
 
-  it("구 유틸 어휘(.bg-theme-*·.tx-trans-* 등)는 생성하지 않는다 (alias 파일 전용)", () => {
+  it("구 유틸 어휘(.bg-theme-*, .tx-trans-* 등)는 생성하지 않는다 (alias 파일 전용)", () => {
     const oldPatterns = [
       /\.bg-theme-/,
       /\.bg-trans-/,

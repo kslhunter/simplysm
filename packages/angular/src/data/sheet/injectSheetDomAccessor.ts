@@ -51,6 +51,12 @@ export function injectSheetDomAccessor() {
     return tbody.querySelector<HTMLTableRowElement>(`tr[data-r='${r}']`);
   }
 
+  function getRows(): HTMLTableRowElement[] {
+    const tbody = getTable().querySelector("tbody");
+    if (tbody == null) return [];
+    return Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr[data-r]"));
+  }
+
   function getCell(r: number, c: number): HTMLTableCellElement | null {
     const row = getRow(r);
     if (row == null) return null;
@@ -69,6 +75,7 @@ export function injectSheetDomAccessor() {
     getSelectRowIndicators,
     getColumnResizeIndicator,
     getRow,
+    getRows,
     getCell,
   };
 }

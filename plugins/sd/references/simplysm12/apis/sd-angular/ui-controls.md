@@ -1,6 +1,9 @@
-# @simplysm/sd-angular — UI controls (폼·레이아웃·내비게이션·시각화·리스트)
+# @simplysm/sd-angular — UI controls (폼, 레이아웃, 내비게이션, 시각화, 리스트)
 
-sd-* 표준 컨트롤. 모두 standalone, OnPush. `boolean` input 은 transformBoolean(빈 attribute=true). 공통 테마 리터럴 `Theme = "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"`(컨트롤별 추가 값 명시). 시트(sd-sheet)는 [sheet.md](./sheet.md), 데이터/공유데이터 화면은 [features.md](./features.md), 오버레이 provider 는 [overlay.md](./overlay.md).
+- sd-* 표준 컨트롤. 모두 standalone, OnPush.
+- `boolean` input 은 transformBoolean(빈 attribute=true).
+- 공통 테마 리터럴 `Theme = "primary"|"secondary"|"info"|"success"|"warning"|"danger"|"gray"|"blue-gray"`(컨트롤별 추가 값 명시).
+- 시트(sd-sheet)는 [sheet.md](./sheet.md), 데이터/공유데이터 화면은 [features.md](./features.md), 오버레이 provider 는 [overlay.md](./overlay.md).
 
 ## 폼 — 버튼
 
@@ -14,7 +17,7 @@ sd-* 표준 컨트롤. 모두 standalone, OnPush. `boolean` input 은 transformB
 
 ### `sd-anchor` (SdAnchorControl)
 
-- **disabled: boolean** — 비활성(cursor·이벤트 차단). **theme** — Theme + `link-*` 변형.
+- **disabled: boolean** — 비활성(cursor, 이벤트 차단). **theme** — Theme + `link-*` 변형.
 
 ### `sd-additional-button` (SdAdditionalButtonControl)
 
@@ -53,7 +56,7 @@ ripple 만 적용된 선택 버튼 컨테이너(입력 없음).
 
 드롭다운 선택. ng-content 로 `<sd-select-item>` 또는 `[itemOf]` 템플릿.
 
-- **value: model<single이면 T, multi면 T[]>** / **open: model<boolean>** — 선택값·드롭다운 열림.
+- **value: model<single이면 T, multi면 T[]>** / **open: model<boolean>** — 선택값, 드롭다운 열림.
 - **selectMode: "single" | "multi"**(기본 single).
 - **items: T[]** / **trackByFn** / **getChildrenFn: (item,index,depth) => T[]** — 트리 선택 지원.
 - **required/disabled/inline/inset: boolean**, **size: "sm"|"lg"**.
@@ -63,7 +66,7 @@ ripple 만 적용된 선택 버튼 컨테이너(입력 없음).
 
 ### `sd-state-preset` (SdStatePresetControl)
 
-필터/뷰 상태 프리셋 저장·복원 버튼군.
+필터/뷰 상태 프리셋 저장, 복원 버튼군.
 
 - **state: model<any>** — 현재 상태. **key: string (required)** — 저장 키. **size: "sm"|"lg"**.
 - **ISdStatePreset** `{ name: string; state: any }`.
@@ -72,7 +75,9 @@ ripple 만 적용된 선택 버튼 컨테이너(입력 없음).
 
 ### `sd-textfield` (SdTextfieldControl<K extends keyof TSdTextfieldTypes>)
 
-- **type: K (required)** — 입력 종류. **TSdTextfieldTypes**: number→number; text/password/color/email/format→string; date/month/year→DateOnly; datetime/datetime-sec→DateTime; time/time-sec→Time. (`sdTextfieldTypes` 는 키 배열 상수)
+- **type: K (required)** — 입력 종류.
+  - **TSdTextfieldTypes**: number→number; text/password/color/email/format→string; date/month/year→DateOnly; datetime/datetime-sec→DateTime; time/time-sec→Time.
+  - (`sdTextfieldTypes` 는 키 배열 상수)
 - **value: model<TSdTextfieldTypes[K]>** — 값(타입 자동).
 - **placeholder/title/inputStyle/inputClass: string**.
 - **disabled/readonly/required: boolean**.
@@ -118,11 +123,16 @@ from-to 범위 입력(sd-textfield 두 개).
 
 ### `sd-dock-container` / `sd-dock`
 
-가장자리 도킹 레이아웃. container: **contentClass: string**, dockControls 자식.
+가장자리 도킹 레이아웃.
 
+- **sd-dock-container**: **contentClass: string**, dockControls 자식.
 - **sd-dock**: **key: string**(크기 저장), **position: "top"|"bottom"|"right"|"left"**(기본 top), **resizable: boolean**.
 
-### `sd-pane` (`[sd-pane]`) — 스크롤 가능 내용 영역. / `sd-card` — 카드 박스. / `sd-table` (`[sd-table]`) — 테이블 스타일.
+### `sd-pane` (`[sd-pane]`) / `sd-card` / `sd-table` (`[sd-table]`)
+
+- sd-pane: 스크롤 가능 내용 영역.
+- sd-card: 카드 박스.
+- sd-table: 테이블 스타일.
 
 ### `sd-flex` (`sd-flex,[sd-flex]`) / `[sd-flex-grow]`
 
@@ -173,7 +183,10 @@ from-to 범위 입력(sd-textfield 두 개).
 
 ### `sd-tabview` / `sd-tabview-item` (제네릭 `<T>`)
 
-탭 + 내용 전환. tabview: **value: model<T>**. tabview-item: **value: T (required)**, **header: string**.
+탭 + 내용 전환.
+
+- tabview: **value: model<T>**.
+- tabview-item: **value: T (required)**, **header: string**.
 
 ### `sd-collapse` / `sd-collapse-icon`
 
@@ -223,7 +236,10 @@ bwip-js 로 SVG 바코드 렌더.
 ### `sd-list` / `sd-list-item`
 
 - list: **inset: boolean**.
-- list-item: **open: model<boolean>**(아코디언 펼침), **selected: boolean**, **selectedIcon: string**, **layout: "flat"|"accordion"**(기본 accordion), **readonly: boolean**, **contentStyle/contentClass: string**, `toolTpl`. 자식 `sd-list` 중첩 지원.
+- list-item:
+  - **open: model<boolean>**(아코디언 펼침), **selected: boolean**, **selectedIcon: string**.
+  - **layout: "flat"|"accordion"**(기본 accordion), **readonly: boolean**, **contentStyle/contentClass: string**, `toolTpl`.
+  - 자식 `sd-list` 중첩 지원.
 
 ## 오버레이 컨트롤 (provider 가 주로 동적생성; 직접 사용 가능)
 

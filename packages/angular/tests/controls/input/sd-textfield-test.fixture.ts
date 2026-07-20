@@ -83,6 +83,22 @@ export class SdTextfieldRequiredTest {
 }
 
 @Component({
+  selector: "sd-textfield-maxlength-test",
+  template: `<sd-textfield
+    [type]="'text'"
+    [(value)]="value"
+    [maxlength]="3"
+    [disabled]="disabled()"
+  />`,
+  standalone: true,
+  imports: [SdTextfield],
+})
+export class SdTextfieldMaxlengthTest {
+  value = signal<string | undefined>("too long value");
+  disabled = signal(false);
+}
+
+@Component({
   selector: "sd-textfield-inline-test",
   template: `<sd-textfield [type]="'text'" [inline]="true" />`,
   standalone: true,

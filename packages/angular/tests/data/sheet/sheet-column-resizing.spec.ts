@@ -15,6 +15,7 @@ function setup(configInitial?: SdSheetConfig) {
     getTable: () => document.createElement("table"),
     getTHead: () => document.createElement("thead"),
     getRow: () => null,
+    getRows: () => [],
     getCell: () => null,
     getColumnResizeIndicator: () => document.createElement("div"),
     getLastDepthFixedHeaders: () => [],

@@ -85,7 +85,7 @@ export class RolePermissionView {
 
   detail = viewChild(RolePermissionDetail);
 
-  // 미저장 권한 변경 보호: 페이지 이탈·역할 전환 전에 자식 detail 의 변경 가드 확인
+  // 미저장 권한 변경 보호: 페이지 이탈, 역할 전환 전에 자식 detail 의 변경 가드 확인
   protected readonly checkCanLeave = (): boolean => {
     const detail = this.detail();
     return detail == null || detail.checkIgnoreChanges();

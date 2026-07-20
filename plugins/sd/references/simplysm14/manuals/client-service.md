@@ -1,15 +1,17 @@
-# 앱에서 서버 서비스·이벤트 호출 매뉴얼
+# 앱에서 서버 서비스, 이벤트 호출 매뉴얼
 
-앱이 서버와 통신(서비스 RPC 호출·실시간 이벤트 구독)하려면 `AppServiceProvider` 가 필요. `@simplysm/service-client` 위에 앱이 만드는 root provider 로, 서버 연결·서비스 프록시·이벤트 프록시·ORM 커넥터의 공통 진입점.
+앱이 서버와 통신(서비스 RPC 호출, 실시간 이벤트 구독)하려면 `AppServiceProvider` 가 필요.
+`@simplysm/service-client` 위에 앱이 만드는 root provider 로, 서버 연결, 서비스 프록시, 이벤트 프록시, ORM 커넥터의 공통 진입점.
 
 - 새 앱이라 provider 자체가 없으면 → 아래 "AppServiceProvider 를 정의하려면".
-- provider 는 이미 있고 서비스·이벤트만 더할 때 → "새 서비스 호출을 추가하려면" / "새 이벤트 프록시를 추가하려면".
+- provider 는 이미 있고 서비스, 이벤트만 더할 때 → "새 서비스 호출을 추가하려면", "새 이벤트 프록시를 추가하려면".
 
-ORM 사용은 [client-orm.md](./client-orm.md), 이벤트 정의·발생 메커니즘은 [event.md](./event.md) 참조.
+ORM 사용은 [client-orm.md](./client-orm.md), 이벤트 정의, 발생 메커니즘은 [event.md](./event.md) 참조.
 
 ## AppServiceProvider 를 정의하려면 (새 앱 1회성)
 
-서버 연결·서비스·이벤트·ORM 진입점을 한 root provider 에 모음. 서비스·이벤트는 `private _xxx?` 캐시 필드 + getter 로 lazy 노출(`??=`).
+서버 연결, 서비스, 이벤트, ORM 진입점을 한 root provider 에 모음.
+서비스, 이벤트는 `private _xxx?` 캐시 필드 + getter 로 lazy 노출(`??=`).
 
 ```ts
 export const APP_MAIN_SERVICE_KEY = "MAIN";
@@ -55,13 +57,21 @@ export class AppServiceProvider {
 **약속**:
 
 - `@Injectable({ providedIn: "root" })`.
-- `client` getter — `SdServiceClientFactoryProvider.get(APP_MAIN_SERVICE_KEY)` 결과. 서비스·이벤트·ORM 의 공통 진입점. 서비스 키(`"MAIN"`)는 `client.get`·`connectAsync` 등 여러 곳에서 참조하므로 상수로 추출.
-- `orm` getter — `createOrmClientConnector(this.client)` 결과. DB 설정을 얹는 `AppOrmProvider` 가 이 위에 올라감 ([client-orm.md](./client-orm.md)).
-- `connectAsync()` — 앱 부트스트랩 시점에 서버 연결 수행. 클라이언트·서버를 다른 호스트로 배포할 때를 위해 env(`SERVER_HOST`·`SERVER_PORT`·`SERVER_SSL`)로 연결 옵션을 주입(미설정이면 same-origin). `env`·`num`·`parseBoolEnv` 는 `@simplysm/core-common`. `addListener` 등 통신은 이 호출 이후에만 가능.
+- `client` getter — `SdServiceClientFactoryProvider.get(APP_MAIN_SERVICE_KEY)` 결과.
+  - 서비스, 이벤트, ORM 의 공통 진입점.
+  - 서비스 키(`"MAIN"`)는 `client.get`, `connectAsync` 등 여러 곳에서 참조하므로 상수로 추출.
+- `orm` getter — `createOrmClientConnector(this.client)` 결과.
+  - DB 설정을 얹는 `AppOrmProvider` 가 이 위에 올라감 ([client-orm.md](./client-orm.md)).
+- `connectAsync()` — 앱 부트스트랩 시점에 서버 연결 수행.
+  - 클라이언트, 서버를 다른 호스트로 배포할 때를 위해 env 로 연결 옵션을 주입(미설정이면 same-origin).
+    - env 값: `SERVER_HOST`, `SERVER_PORT`, `SERVER_SSL`.
+  - `env`, `num`, `parseBoolEnv` 는 `@simplysm/core-common`.
+  - `addListener` 등 통신은 이 호출 이후에만 가능.
 
 ## 부트스트랩에서 서버에 연결하려면
 
-`provideAppInitializer` 안에서 `AppServiceProvider.connectAsync()` 를 호출하고 그 Promise 를 반환. Angular 가 이 Promise 를 기다린 뒤 앱을 띄우므로, 화면·프로바이더가 통신을 시작하는 시점에는 연결이 이미 끝나 있음.
+`provideAppInitializer` 안에서 `AppServiceProvider.connectAsync()` 를 호출하고 그 Promise 를 반환.
+Angular 가 이 Promise 를 기다린 뒤 앱을 띄우므로, 화면, 프로바이더가 통신을 시작하는 시점에는 연결이 이미 끝나 있음.
 
 ```ts
 // 앱 부트스트랩 (main.ts)
@@ -70,7 +80,8 @@ provideAppInitializer(async () => {
 });
 ```
 
-- `connectAsync()` 의 Promise 를 **반환**해야 Angular 가 연결 완료까지 부트스트랩을 대기. 반환을 빠뜨리면 연결 전에 화면이 떠 통신 호출이 실패함.
+- `connectAsync()` 의 Promise 를 **반환**해야 Angular 가 연결 완료까지 부트스트랩을 대기.
+  - 반환을 빠뜨리면 연결 전에 화면이 떠 통신 호출이 실패함.
 - 프리렌더(SSG) 클라이언트면 이 배선은 `main.ts` 에만 둠 — 제약은 [client-ssg.md](./client-ssg.md) 참조.
 
 ## 새 서비스 호출을 추가하려면
@@ -95,7 +106,8 @@ export class AppServiceProvider {
 
 ## 새 이벤트 프록시를 추가하려면
 
-`client.getEvent(XxxEvent)` 결과를 캐시 필드 + getter 로 노출. `appService.client.getEvent(...)` 를 매번 적는 대신 `appService.xxxEvent` 로 짧게 씀.
+`client.getEvent(XxxEvent)` 결과를 캐시 필드 + getter 로 노출.
+`appService.client.getEvent(...)` 를 매번 적는 대신 `appService.xxxEvent` 로 짧게 씀.
 
 ```ts
 @Injectable({ providedIn: "root" })
@@ -109,12 +121,14 @@ export class AppServiceProvider {
 }
 ```
 
-- `XxxEvent` 는 공통 패키지가 `defineEvent(...)` 로 export 한 정의 객체 — 이름·타입이 객체에서 추론됨. 문자열 이름이나 `<typeof X>` 를 따로 적지 않음.
+- `XxxEvent` 는 공통 패키지가 `defineEvent(...)` 로 export 한 정의 객체 — 이름, 타입이 객체에서 추론됨.
+  - 문자열 이름이나 `<typeof X>` 를 따로 적지 않음.
 - 구독: `const key = await this._appService.orderStatusChangedEvent.addListener(info, cb)`.
-- 이벤트 정의·발생·구독 메커니즘 전반은 [event.md](./event.md) 참조.
+- 이벤트 정의, 발생, 구독 메커니즘 전반은 [event.md](./event.md) 참조.
 
 ## 지킬 것
 
 - 캐시 필드(`private _xxx?`)와 getter(`??=`)를 항목별로 인접 배치하고, 항목마다 동일 패턴 유지.
-- 서비스 이름·이벤트 정의 객체는 단일 소스(server `defineService` 이름 / 공통 `defineEvent` 객체)를 그대로 따름. 호출부에서 문자열·제네릭을 중복으로 적지 않음.
+- 서비스 이름, 이벤트 정의 객체는 단일 소스(server `defineService` 이름, 공통 `defineEvent` 객체)를 그대로 따름.
+  - 호출부에서 문자열, 제네릭을 중복으로 적지 않음.
 - `connectAsync()` 이전에는 통신 호출 불가 — 부트스트랩 순서 준수.

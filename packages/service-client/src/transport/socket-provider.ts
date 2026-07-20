@@ -95,7 +95,7 @@ export function createSocketProvider(
       throw new Error("WebSocket이 연결되지 않았습니다.");
     }
     // TS6: Bytes는 Uint8Array<ArrayBufferLike>로 추론되나 WebSocket.send는 ArrayBuffer 기반 BufferSource를 요구.
-    // 새 Uint8Array(ArrayBuffer 기반)로 복사해 캐스팅 없이 타입·런타임 모두 안전하게 전달.
+    // 새 Uint8Array(ArrayBuffer 기반)로 복사해 캐스팅 없이 타입, 런타임 모두 안전하게 전달.
     currentWs.send(new Uint8Array(data));
   }
 

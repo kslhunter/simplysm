@@ -1,10 +1,12 @@
 # sd-crud-list / sd-crud-detail 매뉴얼
 
-화면 작성 시 표준 목록 컴포넌트(`sd-crud-list`) 또는 표준 단건 편집 컴포넌트(`sd-crud-detail`) 를 채택하기로 결정했을 때의 사용법. 컴포넌트 일반 규약·데이터 흐름은 [client-component.md](./client-component.md).
+화면 작성 시 표준 목록 컴포넌트(`sd-crud-list`) 또는 표준 단건 편집 컴포넌트(`sd-crud-detail`) 를 채택하기로 결정했을 때의 사용법.
+컴포넌트 일반 규약, 데이터 흐름은 [client-component.md](./client-component.md).
 
 ## `sd-crud-list`
 
-목록 화면의 표준 골격. 다음 기능을 일괄 제공: 시트, 검색 폼, 등록/삭제/복구 버튼, CTRL+S 단축키 저장, 모달 선택 모드.
+목록 화면의 표준 골격.
+다음 기능을 일괄 제공: 시트, 검색 폼, 등록/삭제/복구 버튼, CTRL+S 단축키 저장, 모달 선택 모드.
 
 ### 표준 호출
 
@@ -42,23 +44,31 @@
 </sd-crud-list>
 ```
 
-- **`canEdit()`** — 등록·편집·삭제 권한을 한 번에 게이트하는 화면 computed. 순수 권한이면 `computed(() => this.perms().includes("edit"))`, 추가 조건이 있으면 그 조건까지 결합 ([client-component.md "권한 (perms)"](./client-component.md) 의 capability 입력 예외). `canCreate`/`canEdit`/`canDelete` 입력과 핸들러 가드가 공용.
-- **`[currDeletedItems]`** — 삭제(soft delete)된 행을 시트에서 취소선으로 구분하고 "선택 복구" 버튼을 띄우는 입력. `deletedItems = computed(() => this.items().filter((i) => i.isDeleted))` 를 넘김. 삭제항목 포함 검색을 지원하는 목록에는 필수 — 빠뜨리면 삭제 행이 일반 행과 구분되지 않고 복구 버튼이 나오지 않음.
+- **`canEdit()`** — 등록, 편집, 삭제 권한을 한 번에 게이트하는 화면 computed.
+  - 순수 권한이면 `computed(() => this.perms().includes("edit"))`.
+  - 추가 조건이 있으면 그 조건까지 결합 ([client-component.md "권한 (perms)"](./client-component.md) 의 capability 입력 예외).
+  - `canCreate`/`canEdit`/`canDelete` 입력과 핸들러 가드가 공용.
+- **`[currDeletedItems]`** — 삭제(soft delete)된 행을 시트에서 취소선으로 구분하고 "선택 복구" 버튼을 띄우는 입력.
+  - `deletedItems = computed(() => this.items().filter((i) => i.isDeleted))` 를 넘김.
+  - 삭제항목 포함 검색을 지원하는 목록에는 필수 — 빠뜨리면 삭제 행이 일반 행과 구분되지 않고 복구 버튼이 나오지 않음.
 
 ### 슬롯 규약
 
-| 슬롯                | 용도                                                                                                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `#filterTpl`        | 검색 폼 필드. 있으면 상단에 조회 버튼과 함께 노출. 내부는 이미 `form-box-inline` 으로 감싸진 상태이므로, 슬롯 내용물을 별도 `form-box-inline` 으로 다시 묶지 말 것. |
-| `#toolTpl`          | 등록/삭제 버튼 옆 추가 도구 버튼.                                                                                                                                   |
-| `#commandTpl`       | 상단 명령 영역(viewType 이 `modal`·`control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼.                                                                       |
-| `#bottomCommandTpl` | 하단 좌측 추가 영역. 이 슬롯이 있으면 viewType 과 무관하게 하단 바가 렌더됨. modal + selectMode 인 경우 오른쪽에 "선택 해제/확인" 버튼도 함께 표시.                 |
+- `#filterTpl` — 검색 폼 필드.
+  - 있으면 상단에 조회 버튼과 함께 노출.
+  - 내부는 이미 `form-box-inline` 으로 감싸진 상태이므로, 슬롯 내용물을 별도 `form-box-inline` 으로 다시 묶지 마세요.
+- `#toolTpl` — 등록/삭제 버튼 옆 추가 도구 버튼.
+- `#commandTpl` — 상단 명령 영역(viewType 이 `modal`, `control` 인 경우 해당 모드의 명령 영역)에 추가 액션 버튼.
+- `#bottomCommandTpl` — 하단 좌측 추가 영역.
+  - 이 슬롯이 있으면 viewType 과 무관하게 하단 바가 렌더됨.
+  - modal + selectMode 인 경우 오른쪽에 "선택 해제/확인" 버튼도 함께 표시.
 
 `<sd-sheet-column>` 은 `<sd-crud-list>` 의 직속 자식으로 두면 내부 시트로 자동 투영됨.
 
 ### 와이어프레임이 표준 버튼 위치와 충돌하면
 
-`(create)/(delete)/(restore)` 표준 출력이 와이어프레임에 명시된 버튼 위치를 가린다면, 표준 출력 사용을 포기하고 `#toolTpl` 등 슬롯 안에 `sd-button` 으로 직접 배치. 시각 요소 배치는 와이어프레임이 1순위 ([client-component.md "시각 요소 배치 기준"](./client-component.md)).
+`(create)/(delete)/(restore)` 표준 출력이 와이어프레임에 명시된 버튼 위치를 가린다면, 표준 출력 사용을 포기하고 `#toolTpl` 등 슬롯 안에 `sd-button` 으로 직접 배치하세요.
+시각 요소 배치는 와이어프레임이 1순위 ([client-component.md "시각 요소 배치 기준"](./client-component.md)).
 
 ### viewType 별 동작
 
@@ -69,8 +79,14 @@
 ### 편집 방식 (`inlineEdit`, 기본 `true`)
 
 - `true` — `canEdit` 면 시트를 `<sd-form>` 으로 감싸 셀 인라인 편집 + 저장 버튼/CTRL+S. per-row 삭제 컬럼은 `canDelete` 면 표시.
-- `false` — 인라인 편집 chrome 제거. 시트는 조회·선택 전용이며, 편집은 호스트가 `selectedKeys`(또는 별도 진입)로 상세/모달을 열어 처리. 등록·선택 삭제·복구·필터·페이징은 그대로 유지. 이 모드에선 `submit` 출력이 발화하지 않음.
-- `canCreate`/`canEdit`/`canDelete` 와 직교: `inlineEdit` 은 편집을 인라인으로 표현할지만 정함. `canEdit=false` 면 `inlineEdit` 값과 무관하게 인라인 편집 비활성, `canEdit=true` + `inlineEdit=false` 면 편집은 가능하되 인라인이 아님(외부 모달·상세). 각 동작 사용여부는 세 입력이 정함(읽기 전용 = 셋 다 false).
+- `false` — 인라인 편집 chrome 제거.
+  - 시트는 조회, 선택 전용이며, 편집은 호스트가 `selectedKeys`(또는 별도 진입)로 상세/모달을 열어 처리.
+  - 등록, 선택 삭제, 복구, 필터, 페이징은 그대로 유지.
+  - 이 모드에선 `submit` 출력이 발화하지 않음.
+- `canCreate`/`canEdit`/`canDelete` 와 직교: `inlineEdit` 은 편집을 인라인으로 표현할지만 정함.
+  - `canEdit=false` 면 `inlineEdit` 값과 무관하게 인라인 편집 비활성.
+  - `canEdit=true` + `inlineEdit=false` 면 편집은 가능하되 인라인이 아님(외부 모달, 상세).
+  - 각 동작 사용여부는 세 입력이 정함(읽기 전용 = 셋 다 false).
 
 ### 모달 선택 모드
 
@@ -81,11 +97,16 @@
 
 호출측은 `_sdModal.showAsync(...)` 결과로 `{ selectedKeys }` 페이로드 수신.
 
-`selectMode` 는 capability 입력과 독립 — selectMode 지정만으로는 편집·삭제가 막히지 않음. 등록·인라인 편집·삭제는 각 `canCreate`/`canEdit`/`canDelete` 로 정해지고, `single` 일 때 "선택 삭제/복구" 버튼만 숨김. 읽기 전용이 필요하면 `canCreate`/`canEdit`/`canDelete` 를 false 로 전달. `sd-shared-data-select-list` 가 모달을 띄울 때도 `selectMode="single"` 만 주입하므로 모달 내용은 편집 가능 상태로 유지됨.
+`selectMode` 는 capability 입력과 독립 — selectMode 지정만으로는 편집, 삭제가 막히지 않음.
+
+- 등록, 인라인 편집, 삭제는 각 `canCreate`/`canEdit`/`canDelete` 로 정해지고, `single` 일 때 "선택 삭제/복구" 버튼만 숨김.
+- 읽기 전용이 필요하면 `canCreate`/`canEdit`/`canDelete` 를 false 로 전달하세요.
+- `sd-shared-data-select-list` 가 모달을 띄울 때도 `selectMode="single"` 만 주입하므로 모달 내용은 편집 가능 상태로 유지됨.
 
 ### 행을 클릭해 상세 편집으로 진입하려면 (inlineEdit=false)
 
-`inlineEdit=false` 목록의 편집 진입은 첫 컬럼(`#`)을 권한 분기된 진입점으로 만들어 처리. 편집 가능하면 편집 아이콘이 붙은 앵커를 눌러 상세 모달을 열고, 불가하면 값만 표시.
+`inlineEdit=false` 목록의 편집 진입은 첫 컬럼(`#`)을 권한 분기된 진입점으로 만들어 처리.
+편집 가능하면 편집 아이콘이 붙은 앵커를 눌러 상세 모달을 열고, 불가하면 값만 표시.
 
 ```html
 <sd-sheet-column [key]="'id'" [header]="'#'">
@@ -111,11 +132,13 @@ async onEdit(item: IItem, event: Event): Promise<void> {
 ```
 
 - `canEdit()` 가 false 면 앵커 대신 텍스트만 — 권한 없는 사용자에게 편집 진입을 노출하지 않음.
-- 앵커 레이아웃(`flex-row`·아이콘/값 정렬)은 화면 사정에 맞춤. 정규는 "`#` 컬럼 = 권한 분기된 편집 진입점" 까지.
+- 앵커 레이아웃(`flex-row`, 아이콘/값 정렬)은 화면 사정에 맞춤.
+  - 정규는 "`#` 컬럼 = 권한 분기된 편집 진입점" 까지.
 
 ### 현재 검색 결과를 엑셀로 내려받게 하려면
 
-`#toolTpl` 에 다운로드 버튼을 두고, 페이징을 무시한 **현재 검색·필터 결과 전체**를 받아 엑셀로 변환. `ExcelWrapper`(zod 스키마) + `downloadBlob` 을 화면에 직접 둠.
+`#toolTpl` 에 다운로드 버튼을 두고, 페이징을 무시한 **현재 검색, 필터 결과 전체**를 받아 엑셀로 변환.
+`ExcelWrapper`(zod 스키마) + `downloadBlob` 을 화면에 직접 둠.
 
 ```html
 <ng-template #toolTpl>
@@ -158,14 +181,18 @@ async onDownloadExcelButtonClick(): Promise<void> {
 ```
 
 - 조회는 목록과 같은 `_search` 를 페이징 인자만 꺼서 재사용 — 보이는 페이지가 아니라 결과 전체를 받음.
-- 파일명은 `<화면제목>_<yyMMdd>.xlsx`. 화면 제목은 `injectViewTitleSignal()`.
-- 양식 컬럼 = 화면 표시 컬럼 + `삭제`(참/거짓) + `수정일시`·`수정자`([data-log.md](./data-log.md) 의 표시 규약). 참조 마스터는 명칭으로 출력.
+- 파일명은 `<화면제목>_<yyMMdd>.xlsx`.
+  - 화면 제목은 `injectViewTitleSignal()`.
+- 양식 컬럼 = 화면 표시 컬럼 + `삭제`(참/거짓) + `수정일시`, `수정자`([data-log.md](./data-log.md) 의 표시 규약).
+  - 참조 마스터는 명칭으로 출력.
 - 같은 `_excelWrapper`(zod 스키마) 를 아래 업로드 레시피와 **공유**함 — `write` 가 다운로드, `read` 가 업로드.
-- `ExcelWrapper`/`downloadBlob` 자체 사용법은 [apis/excel/README.md](../apis/excel/README.md) · [apis/core-browser/README.md](../apis/core-browser/README.md).
+- `ExcelWrapper`/`downloadBlob` 자체 사용법은 [apis/excel/README.md](../apis/excel/README.md), [apis/core-browser/README.md](../apis/core-browser/README.md).
 
-### 엑셀 업로드로 일괄 등록·수정하려면
+### 엑셀 업로드로 일괄 등록, 수정하려면
 
-다운로드와 **같은 `_excelWrapper`(zod 스키마) 를 공유**해 역방향으로 읽음. `#toolTpl` 의 다운로드 버튼 옆에 업로드 버튼을 `edit` 권한으로 게이팅해 두고, `openFileDialog` → `_excelWrapper.read` → 정합성 검증 → `save` 일괄 저장. 아래 예시는 참조 마스터(예: 역할) 컬럼을 포함한 목록 기준.
+다운로드와 **같은 `_excelWrapper`(zod 스키마) 를 공유**해 역방향으로 읽음.
+`#toolTpl` 의 다운로드 버튼 옆에 업로드 버튼을 `edit` 권한으로 게이팅해 두고, `openFileDialog` → `_excelWrapper.read` → 정합성 검증 → `save` 일괄 저장.
+아래 예시는 참조 마스터(예: 역할) 컬럼을 포함한 목록 기준.
 
 ```html
 <ng-template #toolTpl>
@@ -252,17 +279,26 @@ async onUploadExcelButtonClick(): Promise<void> {
 }
 ```
 
-- 다운로드와 같은 `_excelWrapper` 를 그대로 재사용 — `read(file, sheetIndex, { excludes })` 가 역방향. `excludes` 로 파생 컬럼(수정일시·수정자)을 파싱에서 뺌.
+- 다운로드와 같은 `_excelWrapper` 를 그대로 재사용 — `read(file, sheetIndex, { excludes })` 가 역방향.
+  - `excludes` 로 파생 컬럼(수정일시, 수정자)을 파싱에서 뺌.
 - 빈 파일(0건)은 throw — 정상 처리하지 않음.
-- 참조 마스터(역할 등)는 **명칭 → ID 역변환**. 매칭 안 되는 명칭은 throw — 일부만 건너뛰지 않음(다중 작업 원자성).
-- `id` 유무로 신규/수정 분기. `id` 있는 행은 DB의 `(id, name)` 과 대조해 존재·정합성 확인(없으면 throw).
+- 참조 마스터(역할 등)는 **명칭 → ID 역변환**.
+  - 매칭 안 되는 명칭은 throw — 일부만 건너뛰지 않음(다중 작업 원자성).
+- `id` 유무로 신규/수정 분기.
+  - `id` 있는 행은 DB의 `(id, name)` 과 대조해 존재, 정합성 확인(없으면 throw).
 - 기존 이름(비즈니스키) 변경은 엑셀 행이 밀린 사고일 수 있어, 변경 건수를 직접 입력받아 확인 후 진행.
 - 저장은 `save(inputs)` 한 번으로 일괄 — 한 건이라도 실패하면 전체 롤백(트랜잭션 원자성).
-- 업로드 버튼은 `edit` 권한일 때만 노출. import 추가: `openFileDialog`(`@simplysm/core-browser`) · `tablerUpload`(`@ng-icons/tabler-icons`).
+- 업로드 버튼은 `edit` 권한일 때만 노출.
+  - import 추가: `openFileDialog`(`@simplysm/core-browser`), `tablerUpload`(`@ng-icons/tabler-icons`).
 
-### 특정 행의 선택·삭제를 막으려면
+### 특정 행의 선택, 삭제를 막으려면
 
-`[getItemSelectableFn]` 로 행별 선택 가능 여부를 반환. `true` 가 아니면 해당 행은 선택(→삭제) 불가. 문자열을 반환하면 multi 선택 체크박스에는 `title` 로 사유가 노출되고, single 선택 모드에서는 선택 앵커 자체가 렌더되지 않아 사유가 별도 표시되지 않을 수 있음. 개별 선택·전체 선택 모든 경로에 적용됨.
+`[getItemSelectableFn]` 로 행별 선택 가능 여부를 반환.
+`true` 가 아니면 해당 행은 선택(→삭제) 불가.
+
+- 문자열을 반환하면 multi 선택 체크박스에는 `title` 로 사유가 노출됨.
+- single 선택 모드에서는 선택 앵커 자체가 렌더되지 않아 사유가 별도 표시되지 않을 수 있음.
+- 개별 선택, 전체 선택 모든 경로에 적용됨.
 
 ```ts
 // 로그인한 본인 계정은 선택(→삭제) 불가
@@ -270,12 +306,15 @@ getItemSelectableFn = (item: IItem): boolean | string =>
   item.id === this._appAuth.authInfo()?.employeeId ? "본인 계정은 삭제할 수 없습니다." : true;
 ```
 
-- `true` = 선택 가능, `string` = 선택 불가 + 사유. 선택 자체가 막히므로 핸들러에 같은 가드를 또 두지 않아도 됨.
-- 단건 상세에는 선택 개념이 없으므로, 같은 제약을 삭제 버튼을 조건부로 숨겨 적용(`@if (!isSelf() && perms().includes("edit")) { ...삭제 버튼... }`).
+- `true` = 선택 가능, `string` = 선택 불가 + 사유.
+  - 선택 자체가 막히므로 핸들러에 같은 가드를 또 두지 않아도 됨.
+- 단건 상세에는 선택 개념이 없으므로, 같은 제약을 삭제 버튼을 조건부로 숨겨 적용.
+  - 예: `@if (!isSelf() && perms().includes("edit")) { ...삭제 버튼... }`
 
 ### 시트 정렬을 서버 정렬로 반영하려면
 
-`[(sorts)]="sortingDefs"` 로 받은 정렬 조건을 `_search` 쿼리에 반영. 시트 컬럼 `key` 가 select 별칭과 일치하므로, 컬럼별 분기 없이 `obj.getChainValue` 로 `key` 를 컬럼으로 풀어 `orderBy` 에 전달.
+`[(sorts)]="sortingDefs"` 로 받은 정렬 조건을 `_search` 쿼리에 반영.
+시트 컬럼 `key` 가 select 별칭과 일치하므로, 컬럼별 분기 없이 `obj.getChainValue` 로 `key` 를 컬럼으로 풀어 `orderBy` 에 전달.
 
 ```ts
 // 화면 사용자가 지정한 정렬을 우선순위대로 적용
@@ -288,14 +327,18 @@ if (!this.sortingDefs().some((s) => s.key === "id")) {
 }
 ```
 
-- 아래 `if` 블록이 그 화면의 기본 정렬을 정하는 자리. 예시는 `id DESC` — 다른 기본 정렬이 필요하면 `orderBy` 의 컬럼·방향과 `s.key` 를 같은 키로 함께 바꿈.
+- 아래 `if` 블록이 그 화면의 기본 정렬을 정하는 자리.
+  - 예시는 `id DESC` — 다른 기본 정렬이 필요하면 `orderBy` 의 컬럼, 방향과 `s.key` 를 같은 키로 함께 바꿈.
 - 화면 사용자가 시트 헤더로 정렬하면 그 정렬이 1순위로 적용되고, 기본 정렬은 맨 뒤에 깔림.
-- 컬럼마다 `if (sort.key === "X") orderBy((c) => c.X, ...)` 식 분기 금지 — `sort.key` 가 select 별칭과 일치하므로 한 줄로 처리.
+- 컬럼마다 `if (sort.key === "X") orderBy((c) => c.X, ...)` 식으로 분기하지 마세요 — `sort.key` 가 select 별칭과 일치하므로 한 줄로 처리.
 - `obj` 는 `@simplysm/core-common`, `SortingDef` 는 `@simplysm/angular`.
 
 ### 페이징 목록 요약 집계
 
-시트 요약 행([client-component.md](./client-component.md) 의 "요약 행")의 합계·평균은 **전체 필터 결과** 기준이어야 함. `items()` 는 현재 페이지뿐이라 컴포넌트에서 합산하면 페이지 합으로 틀어짐. `_search` 안에서 정렬·`limit` 적용 전 쿼리에 집계 쿼리를 별도로 실행해 받음.
+시트 요약 행([client-component.md](./client-component.md) 의 "요약 행")의 합계, 평균은 **전체 필터 결과** 기준이어야 함.
+
+- `items()` 는 현재 페이지뿐이라 컴포넌트에서 합산하면 페이지 합으로 틀어짐.
+- `_search` 안에서 정렬, `limit` 적용 전 쿼리에 집계 쿼리를 별도로 실행해 받음.
 
 ```ts
 summaryData = signal<{ amount: number }>({ amount: 0 });
@@ -314,13 +357,15 @@ if (usePagination) {
 this.summaryData.set(r.summary);
 ```
 
-- 집계는 `orderBy`·`limit` 적용 전 쿼리에 실행 — 정렬·현재 페이지와 무관한 전체 합. 정렬·페이지를 적용한 `qr2` 에 실행하면 페이지 합으로 잘못 나옴.
+- 집계는 `orderBy`, `limit` 적용 전 쿼리에 실행 — 정렬, 현재 페이지와 무관한 전체 합.
+  - 정렬, 페이지를 적용한 `qr2` 에 실행하면 페이지 합으로 잘못 나옴.
 - `usePagination=false`(엑셀 내보내기 등 전건 조회)면 집계 쿼리를 건너뜀 — 받은 전건을 컴포넌트에서 합산하면 됨.
 - 누적값(잔액 등)은 합산하지 않음 — 행별 누적값이라 합계가 의미 없음.
 
 ## `sd-crud-detail`
 
-단일 레코드 편집 화면의 표준 골격. 다음 기능을 일괄 제공: 폼 래핑, CTRL+S 단축키 저장, 저장 버튼, 모달의 "확인" 버튼 자동 처리.
+단일 레코드 편집 화면의 표준 골격.
+다음 기능을 일괄 제공: 폼 래핑, CTRL+S 단축키 저장, 저장 버튼, 모달의 "확인" 버튼 자동 처리.
 
 ### 표준 호출
 
@@ -342,11 +387,11 @@ this.summaryData.set(r.summary);
 
 ### 슬롯 규약
 
-| 슬롯                 | 용도                                                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `#contentTpl` (필수) | 폼 본문. `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.                                                        |
-| `#commandTpl`        | 상단/명령 영역 추가 버튼.                                                                                        |
-| `#bottomCommandTpl`  | 하단 좌측 추가 영역. 이 슬롯이 있거나 `viewType='modal'` 이면 하단 바가 렌더되고 우측 "확인" 버튼이 자동 추가됨. |
+- `#contentTpl` (필수) — 폼 본문.
+  - `readonly` 면 `<sd-form>` 래핑 없이 그대로 표시.
+- `#commandTpl` — 상단/명령 영역 추가 버튼.
+- `#bottomCommandTpl` — 하단 좌측 추가 영역.
+  - 이 슬롯이 있거나 `viewType='modal'` 이면 하단 바가 렌더되고 우측 "확인" 버튼이 자동 추가됨.
 
 ### viewType 별 동작
 
@@ -355,9 +400,10 @@ this.summaryData.set(r.summary);
 - **`'modal'`** — 모달. 하단 우측에 "확인" 버튼이 자동으로 추가.
 - `page`/`control` 에서도 `#bottomCommandTpl` 을 주면 하단 바와 "확인" 버튼이 렌더되므로, 하단 명령 영역이 필요한 경우에만 둠.
 
-## 삭제·복구를 처리하려면 (목록·단건 공통)
+## 삭제, 복구를 처리하려면 (목록, 단건 공통)
 
-삭제는 soft delete, 복구는 그 반대. 두 처리 모두 변경 이력 적재([data-log.md](./data-log.md))와 공유데이터 통지([client-shared-data.md](./client-shared-data.md))를 같은 트랜잭션·동작 안에서 함께 수행.
+삭제는 soft delete, 복구는 그 반대.
+두 처리 모두 변경 이력 적재([data-log.md](./data-log.md))와 공유데이터 통지([client-shared-data.md](./client-shared-data.md))를 같은 트랜잭션, 동작 안에서 함께 수행.
 
 ### 삭제 (onDelete)
 
@@ -390,7 +436,10 @@ async onDelete(targets: IItem[]): Promise<void> {
 }
 ```
 
-**단건 삭제 (detail)**: `sd-crud-detail` 표준 호출에는 `(delete)` output 이 없으므로, 삭제 버튼을 슬롯에 직접 둠 — 모달로 띄우는 detail 은 `#bottomCommandTpl`(모달 "확인" 버튼과 같은 하단 줄)에 두고 `(click)="onDelete()"` 로 배선. 목록의 `_refresh()` 대신 detail 통지 output(임베드면 `submitted.emit(true)`, 모달이면 `close.emit(payload)`)으로 부모(list) 에 통지.
+**단건 삭제 (detail)**: `sd-crud-detail` 표준 호출에는 `(delete)` output 이 없으므로, 삭제 버튼을 슬롯에 직접 둠.
+
+- 모달로 띄우는 detail 은 `#bottomCommandTpl`(모달 "확인" 버튼과 같은 하단 줄)에 두고 `(click)="onDelete()"` 로 배선.
+- 목록의 `_refresh()` 대신 detail 통지 output 으로 부모(list) 에 통지 (임베드면 `submitted.emit(true)`, 모달이면 `close.emit(payload)`).
 
 ```ts
 async onDelete(): Promise<void> {
@@ -416,7 +465,11 @@ async onDelete(): Promise<void> {
 
 ### 복구 (onRestore)
 
-복구는 `confirm` 없이 진행하되, **활성 유니크 컬럼(명칭·코드)이 있으면 복구로 활성 중복이 생기지 않는지 재검증**해야 함(삭제된 동안 같은 값의 활성 레코드가 생겼을 수 있음). 검증 위치가 단건/벌크에서 다름. 활성 유니크 정책 자체는 [orm.md](./orm.md) 의 유니크 전략.
+복구는 `confirm` 없이 진행하되, **활성 유니크 컬럼(명칭, 코드)이 있으면 복구로 활성 중복이 생기지 않는지 재검증**해야 함.
+
+- 재검증 이유: 삭제된 동안 같은 값의 활성 레코드가 생겼을 수 있음.
+- 검증 위치가 단건/벌크에서 다름.
+- 활성 유니크 정책 자체는 [orm.md](./orm.md) 의 유니크 전략.
 
 **단건 복구 (detail) — 선검증**: 복구 전에 `exists` 로 충돌을 막음.
 
@@ -440,7 +493,8 @@ await db.role().insertDataLog({ action: "복구", itemId: roleId, employeeId });
 // → emitAsync → refresh (단건 복구는 닫지 않고 refresh)
 ```
 
-**벌크 복구 (list) — 후검증**: update 전엔 대상이 모두 삭제 상태라 대상끼리 충돌을 쿼리로 못 봄 → update **후** 한 쿼리로 활성 중복을 검사하고, 충돌 시 throw 해 트랜잭션 전체를 롤백.
+**벌크 복구 (list) — 후검증**: update 전엔 대상이 모두 삭제 상태라 대상끼리 충돌을 쿼리로 못 봄.
+→ update **후** 한 쿼리로 활성 중복을 검사하고, 충돌 시 throw 해 트랜잭션 전체를 롤백.
 
 ```ts
 await db
@@ -469,7 +523,11 @@ for (const id of ids) {
 
 ### 지킬 것
 
-- 삭제·복구·이력 적재는 한 `connectAsync` 트랜잭션 안에서 수행 — 데이터만 바뀌고 이력이 빠지거나 그 반대가 되지 않게 함.
-- 벌크 복구는 하나라도 충돌하면 전체 롤백(원자성). 충돌분만 빼고 나머지를 복구하지 않음.
-- 활성 유니크 검증은 복구 경로에서 빠뜨리지 않음 — 단건은 선검증, 벌크는 후검증. 활성 유니크가 없는 모델이면 생략 가능.
-- 단건(detail)은 삭제 후 부모에 통지 — 임베드(컨트롤)면 `submitted.emit(true)`, 모달이면 `close.emit(payload)` 로 결과 반환(호출 측이 `showAsync` 반환으로 refresh). 두 output 은 독립이며 사용 맥락에 따라 한쪽 또는 양쪽 ([client-component.md "detail 데이터 흐름"](./client-component.md) 참조). 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.
+- 삭제, 복구, 이력 적재는 한 `connectAsync` 트랜잭션 안에서 수행 — 데이터만 바뀌고 이력이 빠지거나 그 반대가 되지 않게 함.
+- 벌크 복구는 하나라도 충돌하면 전체 롤백(원자성).
+  - 충돌분만 빼고 나머지를 복구하지 않음.
+- 활성 유니크 검증은 복구 경로에서 빠뜨리지 않음 — 단건은 선검증, 벌크는 후검증.
+  - 활성 유니크가 없는 모델이면 생략 가능.
+- 단건(detail)은 삭제 후 부모에 통지 — 임베드(컨트롤)면 `submitted.emit(true)`, 모달이면 `close.emit(payload)` 로 결과 반환(호출 측이 `showAsync` 반환으로 refresh).
+  - 두 output 은 독립이며 사용 맥락에 따라 한쪽 또는 양쪽 ([client-component.md "detail 데이터 흐름"](./client-component.md) 참조).
+  - 복구 후엔 닫지 않고 refresh — 복구 직후 상세를 계속 보도록.

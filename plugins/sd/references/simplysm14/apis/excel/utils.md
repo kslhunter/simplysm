@@ -67,6 +67,10 @@ static convertNumFmtNameToId(numFmtName: ExcelNumberFormat): number;
 
 메서드 동작:
 
-- `convertNumFmtCodeToName(numFmtCode)` — `General` 은 `number`; 날짜·시간 token 이 모두 있으면 `DateTime`, 날짜만 `DateOnly`, 시간만 `Time`, 숫자 패턴이면 `number`. (시간 문맥의 `mm` 은 분으로 처리해 날짜 판별에서 제외)
+- `convertNumFmtCodeToName(numFmtCode)` — formatCode 패턴을 분류함.
+  - `General` 은 `number`.
+  - 날짜, 시간 token 이 모두 있으면 `DateTime`, 날짜만 있으면 `DateOnly`, 시간만 있으면 `Time`.
+  - 숫자 패턴이면 `number`.
+  - 시간 문맥의 `mm` 은 분으로 처리해 날짜 판별에서 제외함.
 - `convertNumFmtIdToName(numFmtId)` — 내장 ID 범위 표에 따라 분류함.
 - `convertNumFmtNameToId(numFmtName)` — literal 을 대표 내장 numFmtId 로 변환함.

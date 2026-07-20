@@ -1,6 +1,8 @@
 # @simplysm/excel — ExcelWrapper
 
-Zod object schema 로 Excel 파일을 타입 안전하게 읽고 쓰는 고수준 래퍼. 각 필드의 `.describe()` 설명을 Excel 헤더명으로 사용(미설정 시 필드 key). 읽을 때 Zod 로 타입 변환·유효성 검사, 쓸 때 필드별 스타일(테두리·필수 필드 강조) 자동 적용.
+Zod object schema 로 Excel 파일을 타입 안전하게 읽고 쓰는 고수준 래퍼.
+각 필드의 `.describe()` 설명을 Excel 헤더명으로 사용(미설정 시 필드 key).
+읽을 때 Zod 로 타입 변환, 유효성 검사, 쓸 때 필드별 스타일(테두리, 필수 필드 강조) 자동 적용.
 
 화면 목록 데이터 엑셀 다운로드/업로드는 [../../manuals/client-crud.md](../../manuals/client-crud.md) 참조.
 
@@ -25,7 +27,7 @@ class ExcelWrapper<TSchema extends z.ZodObject<z.ZodRawShape>> {
 - `schema` — 레코드 구조를 정의하는 Zod object. 각 field schema 의 `description` 이 Excel 헤더명으로 쓰임(없으면 field key).
 - `file` — 읽을 Excel 파일 데이터. 내부에서 `ExcelWorkbook(file)` 로 열고 `finally` 에서 `close()` 함.
 - `wsNameOrIndex` — 읽을 워크시트 이름 또는 0 기반 인덱스. 기본값 `0`.
-- `options.excludes` — 읽기/쓰기에서 제외할 schema field key 배열. 제외된 field 는 헤더 매핑·변환 대상에서 빠진다.
+- `options.excludes` — 읽기/쓰기에서 제외할 schema field key 배열. 제외된 field 는 헤더 매핑, 변환 대상에서 빠짐.
 - `wsName` — 새 워크북에 추가할 worksheet 이름.
 - `records` — 쓸 레코드 배열(`Partial`). 각 값은 내부에서 `ExcelValueType` 으로 셀에 전달됨.
 
@@ -37,9 +39,9 @@ read(file, wsNameOrIndex = 0, options?): Promise<z.infer<TSchema>[]>
 
 - 헤더 매핑 — schema shape 의 key 별 `fieldSchema.description ?? key` 를 display name 으로 만듦.
 - 헤더 필터 — worksheet `getDataTable` 의 `usableHeaderNameFn` 으로 기대 display name 만 읽음.
-- 빈 데이터 — 필터된 rawData 길이가 0이면 `[시트명] Excel 파일에서 데이터를 찾을 수 없습니다 ...` 오류를 throw.
+- 빈 데이터 — 필터된 rawData 길이가 0이면 `[시트명] Excel 파일에서 데이터를 찾을 수 없습니다 ...` 오류를 throw 함.
 - 빈 행 — 매핑 대상 raw 값이 모두 `null`/`undefined`/빈 문자열이면 결과에서 건너뜀.
-- 검증 — 변환된 record 를 `schema.safeParse` 로 검증하고, 실패 시 issue path/message 를 합쳐 throw.
+- 검증 — 변환된 record 를 `schema.safeParse` 로 검증하고, 실패 시 issue path/message 를 합쳐 throw 함.
 - 리소스 — 성공/실패와 무관하게 내부 workbook 을 `close()` 함.
 
 값 변환(`_convertValue`):

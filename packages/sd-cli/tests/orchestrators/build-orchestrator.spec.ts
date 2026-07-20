@@ -14,7 +14,7 @@ import * as electronMod from "../../src/electron/electron";
 
 import { loadSdConfig } from "../../src/utils/sd-config";
 import { getVersion } from "../../src/utils/build-env";
-import { copyDirFiles, copySrcFiles } from "../../src/utils/copy-src";
+import { copySrcFiles } from "../../src/utils/copy-src";
 import { runLintInWorker } from "../../src/lint/lint-utils";
 import { Worker, fsx } from "@simplysm/core-node";
 import { createBuildEngine } from "../../src/engines/engine-factory";
@@ -93,7 +93,6 @@ beforeEach(() => {
   vi.spyOn(sdConfig, "loadSdConfig").mockResolvedValue({ packages: {} });
   vi.spyOn(buildEnv, "getVersion").mockResolvedValue("1.0.0");
   vi.spyOn(copySrc, "copySrcFiles").mockResolvedValue(undefined);
-  vi.spyOn(copySrc, "copyDirFiles").mockResolvedValue(undefined);
   vi.spyOn(lintUtils, "runLintInWorker").mockResolvedValue({
     success: true,
     errorCount: 0,
@@ -319,84 +318,6 @@ describe("BuildOrchestrator.start", () => {
     await orchestrator.start();
 
     expect(copySrcFiles).not.toHaveBeenCalled();
-  });
-
-  it("calls copyDirFiles for each copyFiles entry, resolving paths from workspace root to dist", async () => {
-    setupDefaults({
-      packages: {
-        "core-node": {
-          target: "node",
-          publish: { type: "npm" },
-          copyFiles: [
-            { from: "plugins/sd", to: "plugins/sd", ignore: ["**/node_modules/**"] },
-            { from: "plugins/sd-wiki", to: "plugins/sd-wiki" },
-          ],
-        },
-      },
-    });
-    const mockProxy = createMockWorkerProxy();
-    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    expect(copyDirFiles).toHaveBeenCalledTimes(2);
-    expect(copyDirFiles).toHaveBeenCalledWith(
-      expect.stringContaining("plugins/sd"),
-      expect.stringContaining("packages/core-node/dist/plugins/sd"),
-      ["**/node_modules/**"],
-    );
-    expect(copyDirFiles).toHaveBeenCalledWith(
-      expect.stringContaining("plugins/sd-wiki"),
-      expect.stringContaining("packages/core-node/dist/plugins/sd-wiki"),
-      undefined,
-    );
-  });
-
-  it("does not call copyDirFiles when the package build failed", async () => {
-    setupDefaults({
-      packages: {
-        "core-node": {
-          target: "node",
-          publish: { type: "npm" },
-          copyFiles: [{ from: "plugins/sd", to: "plugins/sd" }],
-        },
-      },
-    });
-    const mockProxy = createMockWorkerProxy();
-    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
-    vi.mocked(engineFactory.createBuildEngine).mockImplementation(
-      () =>
-        ({
-          run: vi.fn().mockResolvedValue({
-            build: { success: false, errors: ["build error"], warnings: [] },
-          }),
-          stop: vi.fn().mockResolvedValue(undefined),
-        }) as any,
-    );
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    expect(copyDirFiles).not.toHaveBeenCalled();
-  });
-
-  it("does not call copyDirFiles when copyFiles is not configured", async () => {
-    setupDefaults({
-      packages: {
-        "core-common": { target: "neutral", publish: { type: "npm" } },
-      },
-    });
-    const mockProxy = createMockWorkerProxy();
-    vi.mocked(Worker.create).mockReturnValue(mockProxy as any);
-
-    const orchestrator = new BuildOrchestrator({ targets: [], options: [] });
-    await orchestrator.initialize();
-    await orchestrator.start();
-
-    expect(copyDirFiles).not.toHaveBeenCalled();
   });
 
   it("stops engine even when build fails", async () => {

@@ -3,9 +3,9 @@ import { server } from "vitest/browser";
 
 //
 // 역할 토큰 소비 순도 검증 (AC-002)
-// - src·scss(controls·commons 소비부)는 --sd-* 역할 토큰만 소비한다.
-// - 구 스케일 어휘 var() 참조·rgb()/rgba() 색 리터럴·background 단축 소비를 금지한다.
-// - 발행부(_variables.scss·_colors.scss·_theme-variables.scss·themes/**)는 팔레트·역할 토큰
+// - src, scss(controls, commons 소비부)는 --sd-* 역할 토큰만 소비한다.
+// - 구 스케일 어휘 var() 참조, rgb()/rgba() 색 리터럴, background 단축 소비를 금지한다.
+// - 발행부(_variables.scss, _colors.scss, _theme-variables.scss, themes/**)는 팔레트, 역할 토큰
 //   정의부라 스캔 대상이 아니다. 구 어휘 발행은 14.2 에서 제거됨(부재 단언은 sd-tokens.spec).
 //
 // 파일 열거는 lazy import.meta.glob 의 키로만 하고(모듈 로드 없음),

@@ -78,10 +78,10 @@ export function rmSync(targetPath: string): void {
  * 파일 또는 디렉토리를 삭제한다 (비동기).
  * @param targetPath - 삭제할 경로
  * @remarks
- * - Windows + 디렉토리: `rd /s /q`로 우선 삭제한다. node_modules 처럼 소형 파일·junction 이
+ * - Windows + 디렉토리: `rd /s /q`로 우선 삭제한다. node_modules 처럼 소형 파일, junction 이
  *   대량인 디렉토리에서 `fs.rm`(약 2배 느림)보다 빠르고 junction/symlink 에 안전하다.
  *   rd 가 실패하거나(잠긴 파일 등) 경로가 남으면 아래 `fs.rm` 재시도 경로로 폴백한다.
- * - 그 외(비Windows·파일·rd 실패): 파일 잠금 등 일시적 오류에 대해 최대 6회(500ms 간격) 재시도한다.
+ * - 그 외(비Windows, 파일, rd 실패): 파일 잠금 등 일시적 오류에 대해 최대 6회(500ms 간격) 재시도한다.
  */
 export async function rm(targetPath: string): Promise<void> {
   if (process.platform === "win32") {
@@ -93,7 +93,7 @@ export async function rm(targetPath: string): Promise<void> {
     }
 
     if (isDirectory) {
-      // rd 실패(잠긴 파일 잔존)·기동 실패(셸 부재 등) 모두 아래 fs.rm 재시도로 폴백
+      // rd 실패(잠긴 파일 잔존), 기동 실패(셸 부재 등) 모두 아래 fs.rm 재시도로 폴백
       try {
         await spawn("cmd", ["/c", "rd", "/s", "/q", targetPath]);
       } catch {

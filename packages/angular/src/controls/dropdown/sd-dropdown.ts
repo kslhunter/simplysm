@@ -42,7 +42,8 @@ export class SdDropdown {
   });
 
   private _popupEl?: HTMLElement;
-  private _mouseoverEl?: HTMLElement;
+  /** `<svg>` 등 비-HTML 요소도 hover 대상이 되므로 `Element` 로 받는다. */
+  private _mouseoverEl?: Element;
   private _backdropEl?: HTMLElement;
   private readonly _isMobile;
   private readonly _mql: MediaQueryList;
@@ -88,7 +89,8 @@ export class SdDropdown {
           this._onDocumentScrollCapture(event);
         };
         const onMouseover = (event: Event) => {
-          this._mouseoverEl = (event as MouseEvent).target as HTMLElement;
+          const target = (event as MouseEvent).target;
+          this._mouseoverEl = target instanceof Element ? target : undefined;
         };
         const onBlur = (event: Event) => {
           this._onDocumentBlurCapture(event as FocusEvent);
@@ -245,23 +247,45 @@ export class SdDropdown {
       }
     }
 
+    // 팝업 내부 요소가 disabled 로 전환되며 포커스를 잃은 경우.
+    // 브라우저가 렌더 도중 동기 blur 를 발사하는 경로이며, 사용자가 팝업을 벗어난 것이 아니다.
+    // 여기서 팝업을 닫으면 렌더 중 signal 쓰기가 되어 NG0600 이 발생한다.
+    const blurredEl = event.target;
+    if (
+      relatedTarget == null &&
+      blurredEl instanceof HTMLElement &&
+      (contentEl.contains(blurredEl) === true || popupEl.contains(blurredEl) === true) &&
+      blurredEl.matches(":disabled")
+    ) {
+      this._restoreFocus();
+      return;
+    }
+
     const mouseoverEl = this._mouseoverEl;
     if (
       relatedTarget == null &&
-      mouseoverEl instanceof HTMLElement &&
+      mouseoverEl instanceof Element &&
       (contentEl.contains(mouseoverEl) === true || popupEl.contains(mouseoverEl) === true)
     ) {
-      const tabbable = popupEl.findFirstTabbableChild();
-      if (tabbable != null) {
-        tabbable.focus();
-      } else {
-        contentEl.focus();
-      }
+      this._restoreFocus();
       return;
     }
 
     if (this.open()) {
       this._closePopup();
+    }
+  }
+
+  /** 팝업이 열린 상태를 유지해야 할 때 포커스를 팝업 안으로 되돌린다. */
+  private _restoreFocus(): void {
+    const popupEl = this._popupEl;
+    if (popupEl == null) return;
+
+    const tabbable = popupEl.findFirstTabbableChild();
+    if (tabbable != null) {
+      tabbable.focus();
+    } else {
+      this._elRef.nativeElement.focus();
     }
   }
 

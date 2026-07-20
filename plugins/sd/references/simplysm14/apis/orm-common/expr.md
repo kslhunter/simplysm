@@ -1,21 +1,31 @@
 # @simplysm/orm-common — expr 표현식 빌더
 
-`expr` 는 dialect 독립 SQL 표현식을 JSON AST(`Expr`)로 만드는 빌더 객체. 결과는 `ExprUnit`(값/스칼라) 또는 `WhereExprUnit`(조건)으로 래핑되며, QueryBuilder 가 각 DBMS SQL 로 변환함. `Queryable` 콜백 안에서 사용함. 사용법: [orm.md](../../manuals/orm.md).
-
-대부분 인자는 `ExprInput<T>`(= `ExprUnit<T> | T` 리터럴) 또는 `ExprUnit<T>` 를 받음. 반환 값의 nullability(`T | undefined`)는 입력 컬럼의 nullable 여부를 끝까지 전파함.
+- `expr` 는 dialect 독립 SQL 표현식을 JSON AST(`Expr`)로 만드는 빌더 객체.
+  - 결과는 `ExprUnit`(값/스칼라) 또는 `WhereExprUnit`(조건)으로 래핑되며, QueryBuilder 가 각 DBMS SQL 로 변환함.
+  - `Queryable` 콜백 안에서 사용함.
+  - 사용법: [orm.md](../../manuals/orm.md).
+- 대부분 인자는 `ExprInput<T>`(= `ExprUnit<T> | T` 리터럴) 또는 `ExprUnit<T>` 를 받음.
+  - 반환 값의 nullability(`T | undefined`)는 입력 컬럼의 nullable 여부를 끝까지 전파함.
 
 ## ExprUnit / WhereExprUnit / ExprInput (`expr/expr-unit.ts`)
 
-- `class ExprUnit<TPrimitive extends ColumnPrimitive>` — 타입 안전 표현식 래퍼. `$infer`(추론용 phantom), `dataType: ColumnPrimitiveStr`, `expr: Expr` 보유. getter `n` 은 타입을 `NonNullable<TPrimitive>` 로 좁힌 동일 expr(개발자가 NULL 아님을 단언).
-- `class WhereExprUnit` — WHERE 조건 래퍼. `expr: WhereExpr` 보유. `where`/`having`/논리 연산 인자로 쓰임.
+- `class ExprUnit<TPrimitive extends ColumnPrimitive>` — 타입 안전 표현식 래퍼.
+  - `$infer`(추론용 phantom), `dataType: ColumnPrimitiveStr`, `expr: Expr` 보유.
+  - getter `n` 은 타입을 `NonNullable<TPrimitive>` 로 좁힌 동일 expr(개발자가 NULL 아님을 단언).
+- `class WhereExprUnit` — WHERE 조건 래퍼.
+  - `expr: WhereExpr` 보유.
+  - `where`/`having`/논리 연산 인자로 쓰임.
 - `type ExprInput<TPrimitive>` — `ExprUnit<TPrimitive> | TPrimitive`. 리터럴 값 또는 표현식 둘 다 허용하는 입력 타입.
 - `SwitchExprBuilder<T>` — `switch()` 가 반환. `case(condition: WhereExprUnit, then: ExprInput<T>)` 누적 후 `default(value): ExprUnit<T>` 로 종료.
 
 ## 값 생성
 
-- `val(dataType, value)` — 리터럴을 `ExprUnit` 으로 래핑. `value` 가 `undefined` 면 결과 타입에 `undefined` 포함. `dataType` 은 `ColumnPrimitiveStr`("string"/"number"/"boolean"/"DateTime"/"DateOnly"/"Time"/"Uuid"/"Bytes").
+- `val(dataType, value)` — 리터럴을 `ExprUnit` 으로 래핑. `value` 가 `undefined` 면 결과 타입에 `undefined` 포함.
+  - `dataType`: `ColumnPrimitiveStr` — "string", "number", "boolean", "DateTime", "DateOnly", "Time", "Uuid", "Bytes".
 - `col(dataType, ...path)` — 컬럼 참조 `ExprUnit<T | undefined>`. 보통 직접 쓰지 않고 컬럼 프록시로 접근.
-- `raw(dataType)` — 태그드 템플릿 함수 반환(이스케이프 해치). 보간 값은 자동 파라미터화. ORM 미지원 DB 전용 구문에 사용.
+- `raw(dataType)` — 태그드 템플릿 함수 반환(이스케이프 해치).
+  - 보간 값은 자동 파라미터화.
+  - ORM 미지원 DB 전용 구문에 사용.
 - `toExpr(value)` — `ExprInput` 을 `Expr` AST 로 변환(내부/고급용).
 
 ## WHERE — 비교 (반환 `WhereExprUnit`)

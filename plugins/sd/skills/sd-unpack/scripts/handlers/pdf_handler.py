@@ -1,6 +1,6 @@
 """PDF 핸들러. PyMuPDF (fitz) 로 페이지별 PNG + 블록 단위 JSONL + 표 셀 단위 노드.
 
-블록 단위 (text_block·image_block) 는 bbox 좌표 보존. 표는 find_tables() 로 셀 단위 노드.
+블록 단위 (text_block, image_block) 는 bbox 좌표 보존. 표는 find_tables() 로 셀 단위 노드.
 """
 from __future__ import annotations
 
@@ -70,7 +70,8 @@ def run(input_path: Path, out_dir: Path) -> None:
         source_size=input_path.stat().st_size,
         tool="PyMuPDF (fitz)",
         loss_notes=(
-            "PDF 양식 필드(form field)·서명·OCR 미적용(스캔 PDF). "
+            "서명, OCR 미적용(스캔 PDF 는 image_block 만 추출). "
+            "양식 필드(form field), 주석(annotation)은 jsonl 에 노드로 추출됨. "
             "구조는 pages/<NNN>.jsonl (블록 bbox + 표 셀 단위 노드), 시각은 .png. "
             "이미지 블록은 images/ 로 별도 저장."
         ),
@@ -85,10 +86,10 @@ def _pdf_page_to_jsonl(
     """한 PDF 페이지 → jsonl 라인 list + counts.
 
     추출:
-    1. get_text("dict") 의 모든 블록 (text_block·image_block) — 표 영역 겹쳐도 그대로 보존
+    1. get_text("dict") 의 모든 블록 (text_block, image_block) — 표 영역 겹쳐도 그대로 보존
     2. find_tables() 로 표 셀 단위 노드 추가 (블록과 중복 가능, Claude 가 양쪽 비교 판단)
     3. page.widgets() 로 form field 노드 (양식 입력란)
-    4. page.annots() 로 annotation 노드 (주석·highlight·sticky note)
+    4. page.annots() 로 annotation 노드 (주석, highlight, sticky note)
     """
     counts = {
         "text_blocks": 0,
@@ -186,7 +187,7 @@ def _pdf_page_to_jsonl(
         })
         counts["form_fields"] += 1
 
-    # annotations (주석·highlight·sticky note 등)
+    # annotations (주석, highlight, sticky note 등)
     annots = page.annots() or []
     for annot in annots:
         rect = list(annot.rect)

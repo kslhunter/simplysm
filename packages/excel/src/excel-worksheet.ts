@@ -562,7 +562,7 @@ export class ExcelWorksheet {
   }
 
   private async _ensureStyleData(): Promise<IStyleModel> {
-    // styles 파트 content-type·rel 은 포맷(xlsx/.xml, xlsb/.bin)에 맞춰야 하므로 zipCache 에 위임.
+    // styles 파트 content-type, rel 은 포맷(xlsx/.xml, xlsb/.bin)에 맞춰야 하므로 zipCache 에 위임.
     return this._zipCache.ensureStyles();
   }
 

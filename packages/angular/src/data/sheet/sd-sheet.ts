@@ -46,6 +46,7 @@ import { useSheetDisplayPipeline } from "./useSheetDisplayPipeline";
 import { useSheetCellStyling } from "./useSheetCellStyling";
 import { useSheetFocusIndicator } from "./useSheetFocusIndicator";
 import { injectSheetSelectRowIndicator } from "./injectSheetSelectRowIndicator";
+import { injectSheetDragSelection } from "./injectSheetDragSelection";
 import { SdModalProvider } from "../../core/modal/sd-modal.provider";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 import { SdEvents } from "../../core/events/sd-events";
@@ -262,6 +263,7 @@ import { SdEvents } from "../../core/events/sd-events";
                     [canChangeFn]="selection.getCanChangeFn(item)"
                     (valueChange)="selection.toggle(item)"
                     (mousedown)="onSelectorMouseDown($event, rowIdx)"
+                    (pointerdown)="onSelectorPointerDown($event, rowIdx)"
                     [inline]="true"
                     [theme]="'white'"
                     [disabled]="_selectable !== true"
@@ -717,6 +719,13 @@ export class SdSheet<TItem> {
     trackByFn: this.trackByFn,
   });
 
+  // Drag(paint) selection
+  private readonly _dragSelection = injectSheetDragSelection<TItem>({
+    domAccessor: this.domAccessor,
+    displayItems: this.displayItems,
+    selection: this.selection,
+  });
+
   // Icons
   icons = {
     tablerSettings,
@@ -851,6 +860,10 @@ export class SdSheet<TItem> {
       newMap.set(key, width);
       return newMap;
     });
+  }
+
+  onSelectorPointerDown(event: PointerEvent, r: number): void {
+    this._dragSelection.onSelectorPointerDown(event, r);
   }
 
   onSelectorMouseDown(event: MouseEvent, r: number): void {

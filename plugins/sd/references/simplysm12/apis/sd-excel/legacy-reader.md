@@ -1,6 +1,9 @@
 # @simplysm/sd-excel — Legacy Reader
 
-`xlsx`(SheetJS) 라이브러리 기반의 **읽기 전용** 파서. codepage 949(EUC-KR)와 cpexcel 테이블을 미리 로드해 `.xls`(BIFF) 등 레거시/구버전 한글 인코딩 파일을 경고 없이 파싱함. 신규 작성/수정은 고수준 `SdExcelWorkbook` 을 쓰고, 이 군은 구포맷 읽기에만 사용함.
+`xlsx`(SheetJS) 라이브러리 기반의 **읽기 전용** 파서입니다.
+
+- codepage 949(EUC-KR)와 cpexcel 테이블을 미리 로드해 `.xls`(BIFF) 등 레거시/구버전 한글 인코딩 파일을 경고 없이 파싱합니다.
+- 신규 작성, 수정은 고수준 `SdExcelWorkbook` 을 쓰고, 이 군은 구포맷 읽기에만 사용하세요.
 
 ## SdExcelReader
 
@@ -12,7 +15,9 @@
 
 - `range: XLSX.Range` (getter) — 시트 데이터 범위(`!ref` 디코드, 0-base s/e).
 - `val(r: number, c: number): string | number | boolean | Date | undefined` — 0-base 좌표 셀 원값. 셀 없음/빈문자열→undefined.
-- `dataTable(startRow?, startCol?, endRow?, endCol?): SdExcelReaderDataTable` — 범위를 지정해 데이터테이블 생성. 각 인자 생략 시 range 끝값 사용, 음수면 range 끝에서 상대(`range.e + 음수`) 계산.
+- `dataTable(startRow?, startCol?, endRow?, endCol?): SdExcelReaderDataTable`
+  - 범위를 지정해 데이터테이블 생성.
+  - 각 인자 생략 시 range 끝값 사용, 음수면 range 끝에서 상대(`range.e + 음수`) 계산.
 
 ## SdExcelReaderDataTable
 

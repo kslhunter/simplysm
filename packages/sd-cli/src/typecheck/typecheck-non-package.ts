@@ -28,7 +28,7 @@ export function typecheckNonPackageFiles(cwd: string): NonPackageTypecheckResult
   const parsedConfig = parseTsconfig(cwd);
   const packagesDir = path.join(cwd, "packages");
 
-  // packages/(배포 대상)가 아닌 워크스페이스(tests/·plugins/·향후 추가분)는 각자 엔진 타입체크가
+  // packages/(배포 대상)가 아닌 워크스페이스(tests/, plugins/, 향후 추가분)는 각자 엔진 타입체크가
   // 자기 tsconfig로 담당하므로 루트 sweep에서 제외한다. 루트 tsconfig로 검사하면 그 워크스페이스
   // 고유 옵션(allowImportingTsExtensions 등)이 무시돼 거짓 에러가 난다. 디렉터리명에 의존하지 않는다.
   const nonDeployWorkspaceDirs = collectWorkspacePackages(cwd)

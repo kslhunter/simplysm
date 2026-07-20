@@ -43,7 +43,7 @@ describe("ExcelWorksheet.setAutoFilter", () => {
     await wb.close();
   });
 
-  it("cleanup 후 autoFilter 가 sheetData 뒤·conditionalFormatting 앞에 위치한다", async () => {
+  it("cleanup 후 autoFilter 가 sheetData 뒤, conditionalFormatting 앞에 위치한다", async () => {
     const wb = new ExcelWorkbook();
     const ws = await wb.addWorksheet("Test");
 

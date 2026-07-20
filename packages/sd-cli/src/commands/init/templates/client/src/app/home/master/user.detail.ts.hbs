@@ -281,7 +281,7 @@ export class {{userEntityPascal}}Detail implements SdModalContentDef<{ id: numbe
       });
 
       await this._appSharedData.emitAsync("{{userEntityLabel}}", [{{userEntityCamel}}Id]);
-      // 복구된 {{userEntityLabel}} 세션에 인증정보 변경 통지 → authInfo·권한 재로드
+      // 복구된 {{userEntityLabel}} 세션에 인증정보 변경 통지 → authInfo, 권한 재로드
       await this._appService.authInfoChangedEvent.emit((info) => info.{{userEntityCamel}}Id === {{userEntityCamel}}Id, undefined);
       this._sdToast.success("복구되었습니다.");
       await this._refresh();

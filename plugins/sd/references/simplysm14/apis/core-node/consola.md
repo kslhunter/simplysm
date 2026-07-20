@@ -1,6 +1,8 @@
 # @simplysm/core-node — consola 설정/리포터
 
-consola reporter를 환경별로 구성하고, PrettyReporter(콘솔 출력) 및 FileReporter(로그 파일)를 직접 조합. 사용법: [logging.md](../../manuals/logging.md)
+consola reporter를 환경별로 구성하고, PrettyReporter(콘솔 출력) 및 FileReporter(로그 파일)를 직접 조합.
+
+사용법: [logging.md](../../manuals/logging.md)
 
 ## setupConsola
 
@@ -25,7 +27,7 @@ consola 전역 `level`과 `reporters`를 환경 기반으로 설정.
 3. **dev 기본**: 위 모두 아님
    - `level = LogLevels.debug`
    - `reporters = [createFileReporter(), withMaxLevel(new PrettyReporter(), LogLevels.info)]`
-   - (파일에는 debug까지 모두, 콘솔에는 info까지만)
+     - 파일에는 debug까지 모두, 콘솔에는 info까지만
 
 ## withMaxLevel
 
@@ -65,11 +67,13 @@ reporter 감싸서 level 필터링.
 **Error 처리**
 
 - args 안 Error 객체는 message + stack + cause 체인을 들여쓰기로 포매팅
-- stack은 cwd 경로·`file://` prefix 정리
+- stack은 cwd 경로, `file://` prefix 정리
 
 ### formatPlain(logObj: LogObject, formatOptions?: Partial<FormatOpts>): string
 
-색·날짜·badge 여백 제외해 포매팅. File reporter 등이 콘솔과 동일 포맷 재사용용.
+색, 날짜, badge 여백 제외해 포매팅.
+
+File reporter 등이 콘솔과 동일 포맷 재사용용.
 
 - `formatOptions.colors` — 항상 false (색 미적용)
 - `formatOptions.date` — 항상 false (날짜 미표시)
@@ -81,7 +85,9 @@ reporter 감싸서 level 필터링.
 
 `function createFileReporter(options?: FileReporterOptions): ConsolaReporter`
 
-로그 파일에 append하는 reporter. `<process.cwd()>/.logs/` 아래에 기록.
+로그 파일에 append하는 reporter.
+
+`<process.cwd()>/.logs/` 아래에 기록.
 
 ### FileReporterOptions
 

@@ -1,10 +1,9 @@
 packages:
   - packages/*
   - tests/*
-  - plugins/*
 allowBuilds:
-  '@google/genai': true
-  '@parcel/watcher': true
+  "@google/genai": true
+  "@parcel/watcher": true
   bufferutil: true
   core-js: true
   cpu-features: true

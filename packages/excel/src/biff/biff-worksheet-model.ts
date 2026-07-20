@@ -508,7 +508,7 @@ export class BiffWorksheetModel implements IWorksheetModel {
       parts.push(encodeMarker(REC.BrtEndAFilter));
     }
 
-    // CF 규칙 priority 는 시트 전역 1-base 카운터(고유·>0 필수, [MS-XLSB] 2.4.23 iPri).
+    // CF 규칙 priority 는 시트 전역 1-base 카운터(고유, >0 필수, [MS-XLSB] 2.4.23 iPri).
     let cfPriority = 1;
     for (const cf of this._cfs) {
       parts.push(encodeBrtBeginConditionalFormatting(cf.sqref, cf.rules.length));

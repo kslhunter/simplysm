@@ -1,6 +1,8 @@
 # @simplysm/sd-angular — sheet (sd-sheet 데이터 그리드)
 
-`sd-sheet` 는 컬럼 고정/리사이즈/정렬/선택/페이징/트리·셀 편집을 지원하는 테이블 그리드. 컬럼은 `<sd-sheet-column>` 디렉티브 + `<ng-template cell>` 로 정의. 사용자별 컬럼 구성은 `key` 와 SdSystemConfig 로 영속화.
+`sd-sheet` 는 컬럼 고정/리사이즈/정렬/선택/페이징/트리, 셀 편집을 지원하는 테이블 그리드.
+컬럼은 `<sd-sheet-column>` 디렉티브 + `<ng-template cell>` 로 정의.
+사용자별 컬럼 구성은 `key` 와 SdSystemConfig 로 영속화.
 
 ## `sd-sheet` (SdSheetControl<T>)
 
@@ -37,15 +39,15 @@
 - **focusMode: "row" | "cell"**(기본 cell) — 키보드 포커스 단위.
 - **itemKeydown / cellKeydown: output<ISdSheetItemKeydownEventParam<T>>** — 행/셀 키다운(`{ item; key?; event }`).
 
-### `<sd-sheet-column>` (SdSheetColumnDirective<T>)
-- **key: string (required)** — 컬럼 식별·구성 저장 키.
+## `<sd-sheet-column>` (SdSheetColumnDirective<T>)
+- **key: string (required)** — 컬럼 식별, 구성 저장 키.
 - **fixed: boolean** — 좌측 고정.
 - **header: string | string[]** — 헤더 텍스트(배열이면 다단 헤더/그룹핑).
-- **headerStyle / tooltip / width: string** — 헤더 스타일·툴팁·너비(예 `"100px"`).
-- **disableSorting / disableResizing / hidden / collapse: boolean** — 정렬·리사이즈 비활성, 숨김, 접기.
+- **headerStyle / tooltip / width: string** — 헤더 스타일, 툴팁, 너비(예 `"100px"`).
+- **disableSorting / disableResizing / hidden / collapse: boolean** — 정렬, 리사이즈 비활성, 숨김, 접기.
 - 자식 `<ng-template cell let-item>` 필수(셀 본문), 선택적 `#headerTpl`/`#summaryTpl`.
 
-### `SdSheetColumnCellTemplateDirective` (`ng-template[cell]`)
+## `SdSheetColumnCellTemplateDirective` (`ng-template[cell]`)
 셀 템플릿. context `SdSheetColumnCellTemplateContext<T>` = `{ $implicit: T; item: T; index: number; depth: number; edit: boolean }`(edit=현재 셀 편집모드 여부).
 
 ## `sd-sheet-config-modal` (SdSheetConfigModal<T>, implements ISdModal<ISdSheetConfig>)
@@ -62,8 +64,8 @@
 
 ## 내부 엔진 클래스 (SdSheetControl 가 생성자 주입; 직접 사용 드묾)
 구현 세부로 export 됨. 시트 동작 커스터마이즈/디버깅 시에만 참조.
-- **SdSheetLayoutEngine<T>** — config+컬럼으로 columnDefs/headerDefs(고정·순서·숨김·다단 헤더) 계산.
-- **SdSheetCellAgent** — 셀 주소(r,c)·편집모드 상태 관리.
+- **SdSheetLayoutEngine<T>** — config+컬럼으로 columnDefs/headerDefs(고정, 순서, 숨김, 다단 헤더) 계산.
+- **SdSheetCellAgent** — 셀 주소(r,c), 편집모드 상태 관리.
 - **SdSheetColumnFixingManager** — 고정 컬럼 left offset 계산.
 - **SdSheetDomAccessor** — 시트 DOM 셀/행 접근.
 - **SdSheetFocusIndicatorRenderer** — 포커스 셀 인디케이터 렌더.

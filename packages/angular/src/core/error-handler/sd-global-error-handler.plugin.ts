@@ -21,7 +21,7 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
   private _hasDisplayedError = false;
 
   handleError(event: unknown) {
-    // SSR(프리렌더) 가드: 서버에는 화면 오버레이·브라우저 전역 이벤트 타입이 없음 — 로그만 남김
+    // SSR(프리렌더) 가드: 서버에는 화면 오버레이, 브라우저 전역 이벤트 타입이 없음 — 로그만 남김
     if (!this._isBrowser) {
       logger.error(event);
       return false;

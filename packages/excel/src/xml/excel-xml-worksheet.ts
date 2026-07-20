@@ -60,7 +60,7 @@ export class ExcelXmlWorksheet implements IWorksheetModel {
     );
   }
 
-  /** @internal 테스트·디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
+  /** @internal 테스트, 디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
   get data(): ExcelXmlWorksheetData {
     return this._data;
   }

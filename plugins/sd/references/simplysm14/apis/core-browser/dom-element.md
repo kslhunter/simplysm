@@ -1,8 +1,12 @@
 # @simplysm/core-browser — DOM 요소 확장
 
-DOM 요소를 직접 다루는 작업에서 함께 읽는 묶음이다. entry(`src/index.ts`)에서 `extensions/element-ext`를 사이드 이펙트로 import할 때, 브라우저 환경에서 `Element.prototype`과 `HTMLElement.prototype`에 메서드를 등록함. SSR(node) 환경에서는 `typeof Element !== "undefined"` 가드에 의해 등록을 건너뜀.
+DOM 요소를 직접 다룰 때 함께 읽는 묶음입니다.
 
-## Element 확장 메서드
+- 구성: prototype 확장(`Element`, `HTMLElement`)과 이벤트, 다중요소용 정적 함수.
+- 확장 메서드는 `typeof Element !== "undefined"`, `typeof HTMLElement !== "undefined"` 가드 안에서만 등록됩니다.
+  - SSR(프리렌더) 경로에서는 등록되지 않으므로 서버 실행 코드에서 호출하면 안 됩니다.
+
+## Element 확장
 
 ```ts
 interface Element {
@@ -17,16 +21,29 @@ interface Element {
 }
 ```
 
-- `findAll(selector)` — CSS 선택자로 하위 요소를 검색함. 반환 타입을 `TEl`로 지정할 수 있음(기본값 `Element`). 선택자를 `trim()` 후 빈 문자열이면 `[]`를 반환하고, 그 외에는 `querySelectorAll` 결과를 배열로 변환함.
-- `findFirst(selector)` — CSS 선택자로 첫 번째 하위 요소를 검색함. 반환 타입을 `TEl`로 지정할 수 있음(기본값 `Element`). 선택자를 `trim()` 후 빈 문자열이면 `undefined`를 반환하고, 그 외에는 `querySelector` 첫 일치 결과를 반환함(없으면 `undefined`).
-- `prependChild(child)` — 자식 요소를 첫 번째 위치에 삽입함. `insertBefore(child, firstElementChild)`를 사용하고 삽입된 자식 요소를 반환함.
-- `getParents()` — 조상 요소를 모두 수집함. `parentNode`를 거슬러 올라가며 `Element` 타입인 조상만 배열에 담고, 가까운 순서부터 먼 순서로 반환함.
-- `findTabbableParent()` — 탭 이동 가능한 조상 요소를 찾음. `parentElement`를 위로 순회하며 `tabbable` 라이브러리의 `isTabbable()` 함수가 참을 반환하는 첫 `HTMLElement` 조상을 찾아 반환하고, 없으면 `undefined`를 반환함.
-- `findFirstTabbableChild()` — 탭 이동 가능한 첫 번째 자식 요소를 찾음. `document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT)`로 깊이 우선 순회하며 `isTabbable()`이 참인 첫 `HTMLElement` 자식을 찾아 반환하고, 없으면 `undefined`를 반환함.
-- `isOffsetElement()` — 요소가 CSS offset 기준 요소(positioned element)인지 판정함. `getComputedStyle(this).position`이 `"relative"`, `"absolute"`, `"fixed"`, `"sticky"` 중 하나면 `true`, 그 외 값이면 `false`를 반환함. 위치 기준이 필요한 영역 계산에 씀.
-- `isVisible()` — 요소가 화면에 보이는지 판정함. `getClientRects().length > 0` (DOM 위치 점유), `visibility !== "hidden"`, `opacity !== "0"`을 모두 만족하면 `true`를 반환함.
+- `findAll(selector)` — 선택자와 일치하는 모든 하위 요소를 배열로 반환합니다.
+  - `selector.trim()` 이 빈 문자열이면 `querySelectorAll` 을 호출하지 않고 `[]` 를 반환합니다(선택자를 조건부로 조립할 때 빈 문자열 가드가 불필요).
+  - `TEl` 로 결과 요소 타입을 지정합니다(기본 `Element`).
+- `findFirst(selector)` — 선택자와 일치하는 첫 요소입니다.
+  - 빈 선택자면 `undefined`, 일치 없으면 `undefined`(`querySelector` 의 `null` 을 `undefined` 로 정규화).
+  - `TEl` 로 결과 타입을 지정합니다.
+- `prependChild(child)` — `insertBefore(child, this.firstElementChild)` 로 첫 자식 위치에 삽입하고 삽입한 자식을 그대로 반환합니다.
+  - 반환값을 이어서 조작할 때 씁니다.
+- `getParents()` — `parentNode` 를 거슬러 올라가며 `Element` 인 조상만 수집합니다.
+  - 가까운 조상부터 먼 조상 순서입니다.
+  - `Element` 가 아닌 노드(예: `ShadowRoot`, `Document`)를 만나면 순회를 멈춥니다.
+- `findTabbableParent()` — `parentElement` 를 위로 올라가며 `tabbable` 의 `isTabbable()` 이 참인 첫 조상을 반환합니다.
+  - 없으면 `undefined` 입니다.
+  - 포커스를 상위로 되돌릴 대상을 찾을 때 씁니다.
+- `findFirstTabbableChild()` — `document.createTreeWalker(this, NodeFilter.SHOW_ELEMENT)` 로 문서 순서 순회하며 `isTabbable()` 이 참인 첫 `HTMLElement` 후손을 반환합니다.
+  - 없으면 `undefined` 입니다.
+  - 컨테이너 진입 시 첫 입력 요소로 포커스를 넘길 때 씁니다.
+- `isOffsetElement()` — `getComputedStyle(this).position` 이 `"relative"|"absolute"|"fixed"|"sticky"` 중 하나면 `true` 입니다.
+  - 상대좌표 계산의 기준 요소(containing block) 후보를 가릴 때 씁니다.
+- `isVisible()` — `getClientRects().length > 0` 이고 `visibility !== "hidden"` 이고 `opacity !== "0"` 이면 `true` 입니다.
+  - `display:none`, 화면 밖 미배치는 `getClientRects()` 로 걸러집니다.
 
-## HTMLElement 확장 메서드
+## HTMLElement 확장
 
 ```ts
 interface HTMLElement {
@@ -39,14 +56,24 @@ interface HTMLElement {
 }
 ```
 
-- `repaint()` — 강제 동기 레이아웃을 트리거하여 리페인트를 발생시킴. `offsetHeight`에 접근하면 브라우저가 현재 레이아웃을 동기 계산하고 스타일 변경이 즉시 반영되어 리페인트가 일어남. 반환값 없음.
-- `getRelativeOffset(parent)` — 기준 부모(`parent`) 기준으로 상대 위치를 계산함. `parent`가 문자열이면 `this.closest(parent)`로 찾고, 결과가 `HTMLElement`가 아니면 `ArgumentError({ parent })`를 던짐. CSS `top`/`left` 속성에 직접 사용할 수 있는 좌표를 객체로 반환함. 계산 과정: (1) 뷰포트 기준 위치 `getBoundingClientRect()` 차이, (2) 부모의 스크롤 오프셋 추가, (3) 중간 부모들의 border 너비 누적, (4) transform 행렬 역변환으로 보정.
-- `getRelativeOffset` 반환 `top` — 부모 기준 상단 좌표. 계산식: `elementRect.top - parentRect.top + parentEl.scrollTop + 중간부모들의borderTopWidth - transform보정`. CSS `top` 속성 값으로 직접 사용 가능.
-- `getRelativeOffset` 반환 `left` — 부모 기준 좌측 좌표. 계산식: `elementRect.left - parentRect.left + parentEl.scrollLeft + 중간부모들의borderLeftWidth - transform보정`. CSS `left` 속성 값으로 직접 사용 가능.
-- `scrollIntoViewIfNeeded(target, offset?)` — 고정 헤더·컬럼 등에 가려진 대상을 스크롤해 보이게 함. 상단/좌측 경계 침범만 처리하고, 하단/우측은 브라우저 기본 포커스 스크롤에 의존함.
-- `scrollIntoViewIfNeeded` `target.top` — 컨테이너 내 대상의 상단 위치. 대상이 offset 영역 상단보다 높으면(가려지면) `scrollTop`을 조정해 보이게 함. 조정: `target.top - scrollTop < offset.top`이면 `scrollTop = target.top - offset.top`.
-- `scrollIntoViewIfNeeded` `target.left` — 컨테이너 내 대상의 좌측 위치. 대상이 offset 영역 좌측보다 왼쪽이면(가려지면) `scrollLeft`를 조정해 보이게 함. 조정: `target.left - scrollLeft < offset.left`이면 `scrollLeft = target.left - offset.left`.
-- `scrollIntoViewIfNeeded` `offset.top`/`offset.left` — 각각 상단/좌측에서 가려지면 안 되는 영역의 크기(고정 헤더 높이, 고정 컬럼 너비 등). 미지정 시 `{ top: 0, left: 0 }`을 사용함.
+- `repaint()` — `this.offsetHeight` 를 읽어 강제 동기 레이아웃(reflow)을 트리거합니다.
+  - 직전 스타일 변경을 즉시 반영해야 하는 경우(예: 트랜지션 재시작) 사용합니다.
+- `getRelativeOffset(parent)` — `parent` 기준 상대 좌표를 `{ top, left }` 로 반환합니다.
+  - CSS `top`/`left` 에 그대로 넣을 수 있는 값입니다.
+  - `parent: HTMLElement | string` — 기준 요소입니다.
+    - 문자열이면 `this.closest(parent)` 로 조상 중에서 찾습니다.
+    - 결과가 `HTMLElement` 가 아니면(선택자 불일치 포함) `ArgumentError({ parent })` 를 던집니다.
+  - 계산 순서:
+    - (1) `getBoundingClientRect()` 차 + `parentEl.scrollTop/scrollLeft` 가산합니다.
+    - (2) 자신-부모 사이 중간 조상들의 `borderTopWidth`/`borderLeftWidth` 를 누적 가산합니다(`parseFloat` 실패 시 0).
+    - (3) 자신 또는 부모에 `transform` 이 걸려 있고 행렬이 항등이 아니면 `parentMatrix.inverse().multiply(elementMatrix)` 로 좌표를 변환합니다.
+  - 부모 내부 스크롤이 반영되므로 스크롤된 컨테이너 안에서도 동일한 좌표를 얻습니다.
+- `scrollIntoViewIfNeeded(target, offset?)` — 컨테이너(`this`)를 스크롤해 `target` 위치가 offset 영역에 가려지지 않게 합니다.
+  - 상단/좌측 침범만 보정하며, 하단/우측은 보정하지 않습니다(브라우저 기본 포커스 스크롤에 위임).
+  - `target: { top, left }` — 컨테이너 내부 기준 대상 위치입니다(`offsetTop`, `offsetLeft` 를 넣는 용도).
+  - `offset?: { top, left }` — 가려지면 안 되는 고정 영역 크기입니다(고정 헤더 높이, 고정 컬럼 너비).
+    - 기본값은 `{ top: 0, left: 0 }` 입니다.
+  - 보정식: `target.top - scrollTop < offset.top` 이면 `scrollTop = target.top - offset.top`. `left` 도 동일합니다.
 
 ## copyElement
 
@@ -54,9 +81,11 @@ interface HTMLElement {
 function copyElement(event: ClipboardEvent): void;
 ```
 
-`copy` 이벤트 핸들러로 사용함. 이벤트 타겟 요소 내 첫 번째 `input` 또는 `textarea`의 `value`를 클립보드에 기록하고 기본 copy 동작을 취소함. 클립보드 데이터가 없거나 타겟이 `Element`가 아니면 아무 작업도 하지 않음. 타겟 내에 입력 요소가 없으면 클립보드와 기본 동작은 변경하지 않음.
+`copy` 이벤트 핸들러입니다.
+`event.target` 안 첫 `input, textarea` 의 `value` 를 `text/plain` 으로 클립보드에 쓰고 `preventDefault()` 합니다.
 
-- `event` — `copy` 이벤트 객체. `event.clipboardData`에 데이터를 기록하고 `event.preventDefault()`를 호출함.
+- `event: ClipboardEvent` — `clipboardData` 가 `null` 이거나 `target` 이 `Element` 가 아니면 아무 것도 하지 않습니다.
+  - 대상 안에 입력 요소가 없어도 기본 동작을 막지 않으므로 브라우저 기본 복사가 그대로 수행됩니다.
 
 ## pasteToElement
 
@@ -64,9 +93,13 @@ function copyElement(event: ClipboardEvent): void;
 function pasteToElement(event: ClipboardEvent): void;
 ```
 
-`paste` 이벤트 핸들러로 사용함. 클립보드의 평문(`text/plain`) 내용을 이벤트 타겟 요소 내 첫 번째 `input` 또는 `textarea`의 `value`로 설정함. 커서 위치나 선택 영역은 고려하지 않고 전체 값을 교체함. 클립보드 데이터가 없거나 타겟이 `Element`가 아니면 아무 작업도 하지 않음. 타겟 내에 입력 요소가 없으면 값과 기본 동작은 변경하지 않음.
+`paste` 이벤트 핸들러입니다.
+클립보드 `text/plain` 을 `event.target` 안 첫 `input, textarea` 의 `value` 로 통째 교체하고, `new Event("input", { bubbles: true })` 를 dispatch 한 뒤 `preventDefault()` 합니다.
 
-- `event` — `paste` 이벤트 객체. 값 설정 후 input 이벤트(bubbles: true)를 dispatch하고 `event.preventDefault()`를 호출함.
+- `event: ClipboardEvent` — 커서 위치, 선택 영역을 고려하지 않고 값 전체를 덮어씁니다.
+  - `clipboardData` 가 `null` 이거나 `target` 이 `Element` 가 아니면 아무 것도 하지 않습니다.
+  - 입력 요소가 없으면 기본 붙여넣기가 그대로 수행됩니다.
+- `input` 이벤트를 bubbles 로 발생시키므로 상위 프레임워크의 양방향 바인딩이 갱신됩니다.
 
 ## ElementBounds / getBounds
 
@@ -82,13 +115,17 @@ interface ElementBounds {
 function getBounds(els: Element[], timeout?: number): Promise<ElementBounds[]>;
 ```
 
-`IntersectionObserver`를 사용하여 여러 요소의 뷰포트 기준 경계(바운딩 박스)를 비동기로 측정함.
+`IntersectionObserver` 로 여러 요소의 뷰포트 기준 경계를 한 번에 비동기 측정합니다.
+동기 `getBoundingClientRect()` 반복 호출로 인한 강제 레이아웃을 피할 때 씁니다.
 
-- `els` — 측정 대상 요소 배열. `Map`으로 중복 요소를 제거하고 결과는 입력 배열의 인덱스 순서로 정렬해 반환함. 빈 배열이면 즉시 `[]`로 resolve함.
-- `timeout` — 제한 시간(밀리초), 기본값 `5000`. 제한 시간 내에 모든 요소의 관측 결과가 모이지 않으면 `TimeoutError(undefined, "<timeout>ms timeout")`로 reject함.
-- `ElementBounds.target` — 관측된 요소 자체.
-- `ElementBounds.top` — `IntersectionObserverEntry.boundingClientRect.top` (뷰포트 기준 상단 좌표).
-- `ElementBounds.left` — `IntersectionObserverEntry.boundingClientRect.left` (뷰포트 기준 좌측 좌표).
-- `ElementBounds.width` — `IntersectionObserverEntry.boundingClientRect.width` (요소 너비).
-- `ElementBounds.height` — `IntersectionObserverEntry.boundingClientRect.height` (요소 높이).
-- 정리 — 관측 완료·타임아웃 어느 경로에서도 `finally` 블록에서 `observer.disconnect()`를 호출하여 리소스를 해제함.
+- `els: Element[]` — 측정 대상입니다.
+  - 내부에서 `Map` 으로 중복 제거하고, 결과는 입력 인덱스 순서로 정렬해 반환합니다.
+  - 중복 제거 후 비어 있으면 즉시 `[]` 로 resolve 합니다.
+- `timeout?: number` — 제한 시간(ms)이며 기본값은 `5000` 입니다.
+  - 시간 내 모든 요소의 entry 가 도착하지 않으면 `TimeoutError(undefined, "<timeout>ms timeout")` 로 reject 합니다.
+- `ElementBounds.target: Element` — 측정된 요소 자신입니다. 입력 배열과 대응시킬 때 씁니다.
+- `ElementBounds.top: number` — `entry.boundingClientRect.top`. 뷰포트 기준 상단입니다.
+- `ElementBounds.left: number` — `entry.boundingClientRect.left`. 뷰포트 기준 좌측입니다.
+- `ElementBounds.width: number` — `entry.boundingClientRect.width`.
+- `ElementBounds.height: number` — `entry.boundingClientRect.height`.
+- 성공, 타임아웃 어느 경로든 `finally` 에서 `observer.disconnect()` 로 관측을 해제합니다.

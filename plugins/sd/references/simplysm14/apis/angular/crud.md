@@ -1,8 +1,18 @@
-# @simplysm/angular — CRUD 골격·권한표·상태 프리셋
+# @simplysm/angular — CRUD 골격, 권한표, 상태 프리셋
 
-목록/단건 화면 shell, 권한 table, 상태 preset 저장 UI 군임. 모두 standalone · OnPush · `ViewEncapsulation.None`. `sd-crud-list`/`sd-crud-detail` 사용법: [client-crud.md](../../manuals/client-crud.md), 권한 구조 사용법: [client-app-structure.md](../../manuals/client-app-structure.md), 설정 저장 사용법: [client-system-config.md](../../manuals/client-system-config.md)
+목록/단건 화면 shell, 권한 table, 상태 preset 저장 UI 군입니다.
+모두 standalone, OnPush, `ViewEncapsulation.None`.
 
-`viewType: SdViewType`(`"page" | "modal" | "control"`)은 보통 `injectViewTypeSignal()` 값을 넣어 화면 종류별 레이아웃(topbar 유무, 저장 버튼 위치 등)을 분기함. 자세히: [routing-appstructure.md](./routing-appstructure.md).
+사용법
+
+- `sd-crud-list`/`sd-crud-detail`: [client-crud.md](../../manuals/client-crud.md)
+- 권한 구조: [client-app-structure.md](../../manuals/client-app-structure.md)
+- 설정 저장: [client-system-config.md](../../manuals/client-system-config.md)
+
+`viewType: SdViewType`(`"page" | "modal" | "control"`)은 보통 `injectViewTypeSignal()` 값을 넣습니다.
+
+- 화면 종류별 레이아웃(topbar 유무, 저장 버튼 위치 등)을 분기합니다.
+- 자세히: [routing-appstructure.md](./routing-appstructure.md).
 
 ## `SdBaseContainer` (`sd-base-container`)
 
@@ -16,7 +26,7 @@ class SdBaseContainer {
 }
 ```
 
-화면 공통 골격(busy·권한·topbar·content·command 바). 컨텐츠 슬롯은 ng-template 참조 변수로 투영.
+화면 공통 골격(busy, 권한, topbar, content, command 바). 컨텐츠 슬롯은 ng-template 참조 변수로 투영.
 
 - `initialized` — false면 아무것도 안 그림. true가 되어야 렌더.
 - `busyCount` — `initialized && busyCount>0` 이면 busy overlay.
@@ -60,7 +70,10 @@ class SdCrudList<TItem, TKey> {
 - `items`/`currDeletedItems` — 행 데이터/삭제 표시 항목(취소선 셀 스타일).
 - `selectedKeys`(model)/`currentPage`/`sorts` — 선택 key/페이지/정렬(시트와 양방향).
 - `totalPageCount`/`itemsPerPage`/`visiblePageCount` — 페이징(`useAutoSort` 는 `totalPageCount===0` 일 때).
-- `filterSubmit` — 조회 폼 submit. `submit` — 인라인 편집 저장. `create` — 등록 버튼. `delete(items)`/`restore(items)` — 선택 삭제/복구.
+- `filterSubmit` — 조회 폼 submit.
+- `submit` — 인라인 편집 저장.
+- `create` — 등록 버튼.
+- `delete(items)`/`restore(items)` — 선택 삭제/복구.
 - 슬롯 — `#commandTpl`, `#filterTpl`(조회 폼 필드), `#toolTpl`(툴바 버튼), `#bottomCommandTpl`, 투영 `<sd-sheet-column>`(시트로 전달).
 
 ## `SdCrudDetail` (`sd-crud-detail`)
@@ -99,7 +112,11 @@ class SdPermissionTable<TModule> {
 - `value`(model) — 권한 맵. key는 `"<codeChain.join('.')>.<use|edit>"`, 값은 checked boolean. 토글 시 `obj.clone` 후 갱신.
 - `items` — 권한 트리(`SdPermission<TModule>[]`, [routing-appstructure.md](./routing-appstructure.md) 참조). leaf는 `perms`, 그룹은 children.
 - `disabled` — true면 모든 체크박스 비활성.
-- 규칙 — `edit` 는 `use` 가 체크돼야 활성. `use` 해제 시 `edit` 자동 false. 그룹 토글은 모든 하위로 전파. 깊이별 색·접기(collapse) 지원.
+- 규칙
+  - `edit` 는 `use` 가 체크돼야 활성.
+  - `use` 해제 시 `edit` 자동 false.
+  - 그룹 토글은 모든 하위로 전파.
+  - 깊이별 색, 접기(collapse) 지원.
 
 ## `SdStatePreset<TState>` (`sd-state-preset`)
 
@@ -120,4 +137,4 @@ interface SdStatePresetDef<TState> {
 - `key` — **required**. 프리셋 저장 key.
 - `state`(model.required) — 저장/적용 대상 상태. 프리셋 클릭 시 `state.set(clone(preset.state))` 로 적용(output 없음, model로 반영).
 - `size` — `"sm"`/`"lg"`/미지정 padding(외형만).
-- 동작 — 별표 추가 버튼(`SdPromptModal` 로 이름 입력, 중복 시 toast 경고), 행별 저장(현재 state 덮어쓰기)·삭제(`SdConfirmModal`).
+- 동작 — 별표 추가 버튼(`SdPromptModal` 로 이름 입력, 중복 시 toast 경고), 행별 저장(현재 state 덮어쓰기), 삭제(`SdConfirmModal`).

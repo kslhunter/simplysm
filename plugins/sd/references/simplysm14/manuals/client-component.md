@@ -1,40 +1,46 @@
 # 클라이언트 화면 작성 매뉴얼
 
-프리렌더(SSG) 대상 화면을 작성할 때는 [client-ssg.md](./client-ssg.md) 의 SSR-safe·서버 연결 제약을 함께 적용.
+프리렌더(SSG) 대상 화면을 작성할 때는 [client-ssg.md](./client-ssg.md) 의 SSR-safe, 서버 연결 제약을 함께 적용.
 
-## 파일명·역할·위치
+## 파일명, 역할, 위치
 
 화면 파일명은 `<domain>.<역할>.ts` 형식. 역할 접미사로 책임을 표시.
 
-| 파일명 형식                  | 역할                                                                                                             |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `<domain>.view.ts`           | 여러 영역을 합성·분할한 화면. list/detail 자식 합성형(트리거 중계) 또는 분할·리포트형(영역 직접 포함·직접 페치). |
-| `<domain>.list.ts`           | 목록. `sd-crud-list` 사용.                                                                                       |
-| `<domain>.detail.ts`         | 단건 보기/편집. `sd-crud-detail` 사용.                                                                           |
-| `<domain>.modal.ts`          | 모달 전용 화면.                                                                                                  |
-| `<domain>.print-template.ts` | 프린트 템플릿. `SdPrintProvider.printAsync` 호출 대상.                                                           |
-| `<domain>.types.ts`          | 도메인 화면들이 공유하는 타입 정의.                                                                              |
-| `<domain>.ts`                | 컨트롤(접미사 없음). 여러 화면에서 재사용되는 단위.                                                              |
+- `<domain>.view.ts` — 여러 영역을 합성, 분할한 화면.
+  - list/detail 자식 합성형(트리거 중계) 또는 분할, 리포트형(영역 직접 포함, 직접 페치).
+- `<domain>.list.ts` — 목록. `sd-crud-list` 사용.
+- `<domain>.detail.ts` — 단건 보기/편집. `sd-crud-detail` 사용.
+- `<domain>.modal.ts` — 모달 전용 화면.
+- `<domain>.print-template.ts` — 프린트 템플릿. `SdPrintProvider.printAsync` 호출 대상.
+- `<domain>.types.ts` — 도메인 화면들이 공유하는 타입 정의.
+- `<domain>.ts` — 컨트롤(접미사 없음). 여러 화면에서 재사용되는 단위.
 
 - 모든 파일명은 dash-case.
 - 라이브러리(`@simplysm/angular`) 의 파일은 `sd-` prefix 적용 (`sd-button.ts`, `sd-crud-list.ts`).
 
-**화면 정의 → 파일 구성**: 화면 정의(와이어프레임·동작) 의 화면 유형을 다음 역할 파일로 매핑.
+**화면 정의 → 파일 구성**: 화면 정의(와이어프레임, 동작) 의 화면 유형을 다음 역할 파일로 매핑.
 
-| 화면 유형 패턴                                     | 파일 역할                                                                                       |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 마스터(체크박스·`[E N]`·5버튼바) / 시트 단일       | `<domain>.list.ts`                                                                              |
-| 단건 입력 폼                                       | `<domain>.detail.ts`                                                                            |
-| 좌 목록 + 우 단건 (항목-상세)                      | `<domain>.view.ts` + `.list.ts` + `.detail.ts`                                                  |
-| 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 헤더-상세 | `<domain>.view.ts` + `.list.ts` + `.detail.ts` — 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인) |
-| 좌 그룹 목록 + 우 항목(라인) 목록 (그룹-항목)      | `<domain>.view.ts` + `.list.ts` + `.list.ts` — 우 항목 영역은 `.list.ts` (라인 목록)            |
-| 모달 전용 비-CRUD 화면 (도구·검색·설정 등)         | `<domain>.modal.ts`                                                                             |
-| 프린트 양식                                        | `<domain>.print-template.ts`                                                                    |
+- 마스터(체크박스, `[E N]`, 5버튼바) / 시트 단일 → `<domain>.list.ts`
+- 단건 입력 폼 → `<domain>.detail.ts`
+- 좌 목록 + 우 단건 (항목-상세) → `<domain>.view.ts` + `.list.ts` + `.detail.ts`
+- 좌 헤더 목록 + 우(헤더 정보 + 라인 시트) 헤더-상세 → `<domain>.view.ts` + `.list.ts` + `.detail.ts`
+  - 우 라인 영역은 `.detail.ts` (헤더 단건 + 라인)
+- 좌 그룹 목록 + 우 항목(라인) 목록 (그룹-항목) → `<domain>.view.ts` + `.list.ts` + `.list.ts`
+  - 우 항목 영역은 `.list.ts` (라인 목록)
+- 모달 전용 비-CRUD 화면 (도구, 검색, 설정 등) → `<domain>.modal.ts`
+- 프린트 양식 → `<domain>.print-template.ts`
 
 - `<domain>` 은 화면명을 dash-case 영문으로 음역한 슬러그. 같은 역할 파일이 2개 이상이면 아래 "변형 파일" 규칙 적용.
-- 동작 정의의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님. 화면.X 가 단건 편집이면 `.detail.ts` 를 모달로 띄우고(= "단건 입력 폼" 행), 모달 전용 비-CRUD UI 일 때만 `.modal.ts`. 판별 기준은 아래 "detail 과 modal 구분" 참조.
+- 동작 정의의 `→ [화면.X] 을 모달로 띄움` 표기는 표시 방식일 뿐 파일 역할이 아님.
+  - 화면.X 가 단건 편집이면 `.detail.ts` 를 모달로 띄움(= "단건 입력 폼" 항목).
+  - 모달 전용 비-CRUD UI 일 때만 `.modal.ts`.
+  - 판별 기준은 아래 "detail 과 modal 구분" 참조.
 
-**위치**: 도메인이 있는 파일은 도메인 폴더 안에 둠. 도메인이 없는(범용) 파일은 `src/<역할>s/` 하위에 둠. 예: `src/controls/`, `src/modals/`.
+**위치**:
+
+- 도메인이 있는 파일은 도메인 폴더 안에 둠.
+- 도메인이 없는(범용) 파일은 `src/<역할>s/` 하위에 둠.
+  - 예: `src/controls/`, `src/modals/`.
 
 **변형 파일**: 한 도메인 폴더 안에 같은 역할 파일이 2개 이상이면 `<domain>-<갈래>.<역할>.ts` 형식으로 갈래를 표시. 예 (`outbound-instruction/` 폴더):
 
@@ -48,8 +54,11 @@
 
 `.detail.ts` 와 `.modal.ts` 는 **표시 방식이 아니라 화면의 본질**로 정함. detail 도 모달로 띄울 수 있으므로 "모달로 띄움" 은 분류 기준이 아님.
 
-- `.detail.ts` — 한 레코드를 로드·저장하는 단건 화면(`sd-crud-detail` 골격, 식별자 input + `submitted`/`close`). 같은 파일이 라우팅 페이지(`viewType='page'`)·view 자식(`viewType='control'`)·모달(`showAsync`) 어디로든 쓰임. 모달로 띄워도 detail.
-- `.modal.ts` — 모달로만 존재하고 단건 CRUD detail 도 라우팅 페이지도 임베드 control 도 아닌 화면(도구·검색·설정 다이얼로그 등 비-CRUD UI). `sd-crud-detail` 을 쓰지 않고 `sd-busy-container` 등으로 자체 구성.
+- `.detail.ts` — 한 레코드를 로드, 저장하는 단건 화면(`sd-crud-detail` 골격, 식별자 input + `submitted`/`close`).
+  - 같은 파일이 라우팅 페이지(`viewType='page'`), view 자식(`viewType='control'`), 모달(`showAsync`) 어디로든 쓰임.
+  - 모달로 띄워도 detail.
+- `.modal.ts` — 모달로만 존재하고 단건 CRUD detail 도 라우팅 페이지도 임베드 control 도 아닌 화면(도구, 검색, 설정 다이얼로그 등 비-CRUD UI).
+  - `sd-crud-detail` 을 쓰지 않고 `sd-busy-container` 등으로 자체 구성.
 
 판별:
 
@@ -90,17 +99,20 @@ Angular 기본과 다른 부분만 명시:
 
 ## 시각 요소 배치 기준
 
-화면 정의의 와이어프레임이 모든 시각 요소(버튼·필터·시트·탭·검색) 의 **존재·영역·순서** 결정의 1순위. 표준 슬롯이나 기본 UI 와 충돌하면 와이어프레임에 맞춰 슬롯을 비우거나 컴포넌트를 교체. 줄 수·픽셀 좌표는 기준이 아님 (폼 inline 자동 wrap 등의 표현 한계 때문).
+화면 정의의 와이어프레임이 모든 시각 요소(버튼, 필터, 시트, 탭, 검색) 의 **존재, 영역, 순서** 결정의 1순위.
+
+- 표준 슬롯이나 기본 UI 와 충돌하면 와이어프레임에 맞춰 슬롯을 비우거나 컴포넌트를 교체.
+- 줄 수, 픽셀 좌표는 기준이 아님 (폼 inline 자동 wrap 등의 표현 한계 때문).
 
 ## 화면 합성 패턴
 
 화면은 list / detail / view 단위로 책임을 분리해 합성함.
 
-- **`*.list.ts`** — 자체 검색·페이지·정렬·재조회를 책임. `selectMode` 같은 입력을 받아 부모가 선택 동작을 제어할 수 있게 노출.
-- **`*.detail.ts`** — 식별자(`input.required`) 를 받아 자체 로드·저장. 변경·삭제 후 `submitted` output 으로 부모에게 알림.
-- **`*.view.ts`** — 여러 영역을 합성·분할한 화면. 두 형태:
+- **`*.list.ts`** — 자체 검색, 페이지, 정렬, 재조회를 책임. `selectMode` 같은 입력을 받아 부모가 선택 동작을 제어할 수 있게 노출.
+- **`*.detail.ts`** — 식별자(`input.required`) 를 받아 자체 로드, 저장. 변경, 삭제 후 `submitted` output 으로 부모에게 알림.
+- **`*.view.ts`** — 여러 영역을 합성, 분할한 화면. 두 형태:
   - (a) **합성형** — list/detail 자식을 두고 자식 간 트리거만 중계. 데이터 페치는 자식에 위임하고 view 가 직접 페치하지 않음.
-  - (b) **분할·리포트형** — 재사용 list/detail 로 나누지 않고 필터·시트 등 영역을 view 가 직접 품는 읽기 전용 리포트·대시보드. 이 경우 view 가 직접 페치함.
+  - (b) **분할, 리포트형** — 재사용 list/detail 로 나누지 않고 필터, 시트 등 영역을 view 가 직접 품는 읽기 전용 리포트, 대시보드. 이 경우 view 가 직접 페치함.
 
 화면이 list 또는 detail 하나로 끝나면 view 를 만들지 않음. 이 경우 list/detail 자체가 라우팅 진입 단위.
 
@@ -134,9 +146,10 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 핵심 약속:
 
 - view 는 list 컴포넌트를 템플릿 변수(`#headerSheet`) 로 잡아 `selectedKeys()` 를 읽고 `doRefresh()` 를 호출.
-- detail 의 단건 변경·삭제는 list 가 표시하는 동일 데이터에 반영해야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화.
+- detail 의 단건 변경, 삭제는 list 가 표시하는 동일 데이터에 반영해야 하므로, detail 의 `submitted` → list 의 `doRefresh()` 호출로 동기화.
 - view 는 `sd-base-container` 를 루트로 두고, 내부 콘텐츠는 `#contentTpl` 슬롯에 배치.
-- 미선택 빈 상태는 위 예시의 구조(아이콘 + 안내 문구 `div`)를 그대로 사용하되, 안내 문구는 무엇을 선택하는지 드러내는 맥락 문구로 작성(예: `역할을 선택하세요.`). `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
+- 미선택 빈 상태는 위 예시의 구조(아이콘 + 안내 문구 `div`)를 그대로 사용하되, 안내 문구는 무엇을 선택하는지 드러내는 맥락 문구로 작성(예: `역할을 선택하세요.`).
+  - `tablerArrowLeft` 아이콘을 쓰므로 화면 컴포넌트에 `NgIcon` 등록 필요 ([아이콘](#아이콘) 참조).
 
 ### list + list 합성 (그룹-항목)
 
@@ -165,12 +178,12 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 핵심 약속:
 
 - 우 list 는 좌 list 의 선택 키를 `input` 으로 받아 자동 재조회. 외부 input → filter 머지 패턴은 아래 "외부 input 을 filter 에 반영" 섹션 참조.
-- 우 list 의 저장·삭제 후 좌 헤더 목록까지 갱신해야 하면, 우 list 가 `submitted` output 을 emit 하고, view 가 받아 `#headerSheet.doRefresh()` 호출.
+- 우 list 의 저장, 삭제 후 좌 헤더 목록까지 갱신해야 하면, 우 list 가 `submitted` output 을 emit 하고, view 가 받아 `#headerSheet.doRefresh()` 호출.
 - 우 list 안에 추가 분기(탭 등) 가 필요하면 [client-tab.md](./client-tab.md) 매뉴얼 따름.
 
 ### 공유데이터 목록 + detail 합성
 
-마스터가 자체 `*.list` 가 아니라 공유데이터 목록(`sd-shared-data-select-list`)인 합성. 좌측에서 마스터 항목(역할·창고 등)을 고르고 우측 detail 이 그 항목을 편집:
+마스터가 자체 `*.list` 가 아니라 공유데이터 목록(`sd-shared-data-select-list`)인 합성. 좌측에서 마스터 항목(역할, 창고 등)을 고르고 우측 detail 이 그 항목을 편집:
 
 ```html
 <sd-base-container [(ready)]="ready" [initialized]="initialized()" [(busyCount)]="busyCount" ...>
@@ -199,16 +212,22 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 핵심 약속:
 
 - 마스터를 `[(selectedItem)]` 모델로 받음 — 선택 키가 아니라 **항목 객체**. detail 에는 거기서 꺼낸 식별자(`_selectedRole.id`)를 전달.
-- 마스터 목록 자체의 등록·수정은 `[modal]` 로 위임 ([client-shared-data.md](./client-shared-data.md) 의 '선택 컨트롤에서 관리·선택 모달 띄우기' 참조). view 가 모달을 직접 열지 않음.
+- 마스터 목록 자체의 등록, 수정은 `[modal]` 로 위임 ([client-shared-data.md](./client-shared-data.md) 의 '선택 컨트롤에서 관리, 선택 모달 띄우기' 참조). view 가 모달을 직접 열지 않음.
 - list+detail 합성과 달리 view 가 재조회를 중계하지 않음 — 공유데이터는 detail 의 저장이 `emitAsync` 로 알리면 자동 갱신되므로 `submitted` → `doRefresh` 배선이 불필요.
 
 #### 편집형 detail 임베드 시 — 미저장 변경 가드
 
-임베드한 detail 이 편집 가능(미저장 변경 상태를 가짐)하면, 페이지 이탈뿐 아니라 **마스터 전환**도 막아야 함. 마스터 전환은 라우터가 아니라 `sd-shared-data-select-list` 를 통해 일어나므로, 두 가드를 모두 배선할 수 있는 **view 로 가드를 끌어올림**. 가드 배선 코드(`viewChild`·`checkCanLeave`·`setupCanDeactivate`·`[canChangeFn]`)는 [client-shared-data.md](./client-shared-data.md) 의 '좌측 선택 목록 + 우측 상세(master-detail) 레이아웃' 섹션 참조.
+임베드한 detail 이 편집 가능(미저장 변경 상태를 가짐)하면, 페이지 이탈뿐 아니라 **마스터 전환**도 막아야 함.
+
+- 마스터 전환은 라우터가 아니라 `sd-shared-data-select-list` 를 통해 일어나므로, 두 가드를 모두 배선할 수 있는 **view 로 가드를 끌어올림**.
+- 가드 배선 코드는 [client-shared-data.md](./client-shared-data.md) 의 '좌측 선택 목록 + 우측 상세(master-detail) 레이아웃' 섹션 참조.
+  - 대상 코드: `viewChild`, `checkCanLeave`, `setupCanDeactivate`, `[canChangeFn]`.
 
 배선 약속:
 
-- detail 은 변경 가드를 **public 메서드**(`checkIgnoreChanges()`, `_` 접두 없음)로 노출하고, **자체 `setupCanDeactivate` 는 두지 않음** — 라우팅 진입 단위가 아니라 view 자식(`viewType='control'`)이기 때문. 모달·페이지 단독으로 동작하는 detail 은 반대로 자체 `setupCanDeactivate` + private `_checkIgnoreChanges` 를 둠 ([detail 데이터 흐름](#detail-데이터-흐름) 참조).
+- detail 은 변경 가드를 **public 메서드**(`checkIgnoreChanges()`, `_` 접두 없음)로 노출하고, **자체 `setupCanDeactivate` 는 두지 않음**.
+  - 이유: 라우팅 진입 단위가 아니라 view 자식(`viewType='control'`)이기 때문.
+  - 모달, 페이지 단독으로 동작하는 detail 은 반대로 자체 `setupCanDeactivate` + private `_checkIgnoreChanges` 를 둠 ([detail 데이터 흐름](#detail-데이터-흐름) 참조).
 - view 가 그 public 메서드를 `viewChild` 로 잡아, select-list 의 `[canChangeFn]` 과 자신의 `setupCanDeactivate` **양쪽**에 위임.
 - detail 미렌더(미선택 빈 상태) 시 `viewChild` 가 `undefined` 이므로 `detail == null` 단락으로 통과시킴.
 - `[canChangeFn]` 을 빠뜨리면 페이지 이탈만 막히고, 다른 마스터를 클릭하면 미저장 편집이 경고 없이 사라짐.
@@ -216,11 +235,11 @@ view 의 합성 패턴 (예: `outbound-instruction.view.ts`):
 
 ## 화면 컴포넌트의 표준 시그널
 
-화면 컴포넌트(view/list/detail/modal) 가 공통으로 사용하는 시그널 4종. **필요한 것만 채택**하되, 채택 시 아래 약속된 이름·의미·전파를 그대로 따름.
+화면 컴포넌트(view/list/detail/modal) 가 공통으로 사용하는 시그널 4종. **필요한 것만 채택**하되, 채택 시 아래 약속된 이름, 의미, 전파를 그대로 따름.
 
 | 이름          | 종류                     | 의미                                                                                                                                     |
 | ------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `ready`       | `signal(false)`          | 컴포넌트가 데이터 로드를 시작해도 되는 시점. 부모·컨테이너가 true 로 set 하면 자식의 effect 발화.                                        |
+| `ready`       | `signal(false)`          | 컴포넌트가 데이터 로드를 시작해도 되는 시점. 부모, 컨테이너가 true 로 set 하면 자식의 effect 발화.                                       |
 | `initialized` | `signal(false)`          | 첫 데이터 로드 완료 여부. 자식이 자기 로드 종료 후 true 로 set.                                                                          |
 | `busyCount`   | `signal(0)`              | 진행 중인 비동기 작업 수. 시작 시 `+1`, 종료 시 `-1`. 값이 0 보다 크면 화면이 busy 표시.                                                 |
 | `viewType`    | `injectViewTypeSignal()` | 화면이 page / control / modal 중 어느 컨텍스트에서 동작 중인지. 라우팅 진입이면 `'page'`, view 자식이면 `'control'`, 모달이면 `'modal'`. |
@@ -253,7 +272,7 @@ perms = injectPermsSignal(
 
 **사용 약속**:
 
-- 단순 권한 체크는 `this.perms().includes("use")` 를 템플릿·코드에 인라인으로 작성. 별도 computed 로 묶지 않음.
+- 단순 권한 체크는 `this.perms().includes("use")` 를 템플릿, 코드에 인라인으로 작성. 별도 computed 로 묶지 않음.
 - `restricted` 입력은 `[restricted]="!perms().includes('use')"` 형태로 인라인 전달. 별도 `canUse` / `restricted` computed 생성 금지.
 - 권한 체크 뒤에 추가 조건(데이터 상태 등) 이 결합되어 **같은 결합이 2회 이상 참조되는 경우에만** computed 로 묶음.
 
@@ -261,7 +280,11 @@ perms = injectPermsSignal(
 canEdit = computed(() => this.perms().includes("edit") && this.data().state === "작성");
 ```
 
-- **단, capability 입력(`sd-crud-list` 의 `canCreate`/`canEdit`/`canDelete`·`sd-crud-detail` 의 `readonly`)은 예외** — 순수 권한이라도 화면 게이트 computed(`canEdit()`) 하나로 묶어 세 입력·핸들러에서 공용. 같은 권한식을 여러 입력·핸들러에 반복하지 않기 위함(DRY). 추가 조건이 있으면 위 예시처럼 그 조건까지 같은 computed 에 결합하고, 단순 권한이면 `canEdit = computed(() => this.perms().includes("edit"))`.
+- **단, capability 입력은 예외** — 순수 권한이라도 화면 게이트 computed(`canEdit()`) 하나로 묶어 세 입력, 핸들러에서 공용.
+  - capability 입력: `sd-crud-list` 의 `canCreate`/`canEdit`/`canDelete`, `sd-crud-detail` 의 `readonly`.
+  - 같은 권한식을 여러 입력, 핸들러에 반복하지 않기 위함(DRY).
+  - 추가 조건이 있으면 위 예시처럼 그 조건까지 같은 computed 에 결합.
+  - 단순 권한이면 `canEdit = computed(() => this.perms().includes("edit"))`.
 - list/detail 의 effect 진입에서도 인라인으로 가드:
 
 ```ts
@@ -274,9 +297,12 @@ effect(() => {
 });
 ```
 
-## 에러·토스트
+## 에러, 토스트
 
-비동기 작업은 `_sdToast.try(async () => { ... })` 로 감쌈. 콜백 내에서 throw 된 `Error` 인스턴스는 토스트와 시스템 로그로 처리되고 외부로 전파되지 않음. 문자열 등 non-Error throw 는 그대로 전파되므로 업무 오류도 `throw new Error(...)` 로 발생시킴.
+비동기 작업은 `_sdToast.try(async () => { ... })` 로 감쌈.
+
+- 콜백 내에서 throw 된 `Error` 인스턴스는 토스트와 시스템 로그로 처리되고 외부로 전파되지 않음.
+- 문자열 등 non-Error throw 는 그대로 전파되므로 업무 오류도 `throw new Error(...)` 로 발생시킴.
 
 ```ts
 private readonly _sdToast = inject(SdToastProvider);
@@ -305,7 +331,7 @@ if (this.busyCount() > 0) return;
 
 ## DI 명명
 
-`inject()` 한 의존은 외부 노출 멤버(시그널·output·공개 메서드 등) 와 구분하기 위해 `_` prefix 적용.
+`inject()` 한 의존은 외부 노출 멤버(시그널, output, 공개 메서드 등) 와 구분하기 위해 `_` prefix 적용.
 
 ```ts
 private readonly _sdToast = inject(SdToastProvider);
@@ -314,7 +340,7 @@ private readonly _appOrm = inject(AppOrmProvider);
 private readonly _router = inject(Router);
 ```
 
-- 시그널·input·output·공개 메서드는 prefix 없음.
+- 시그널, input, output, 공개 메서드는 prefix 없음.
 - DI 멤버는 항상 `private readonly`.
 
 ## 모달 호출
@@ -336,15 +362,19 @@ if (!result) return;
 // result 처리
 ```
 
-- **`type`** — `SdModalContentDef<O>` 를 구현한 컴포넌트 클래스 (`initialized` 시그널 + `close` output 보유. `O` 는 close 페이로드 타입). `SdModal` 은 라이브러리 모달 셸 컴포넌트이므로 상속 대상이 아님.
+- **`type`** — `SdModalContentDef<O>` 를 구현한 컴포넌트 클래스 (`initialized` 시그널 + `close` output 보유. `O` 는 close 페이로드 타입).
+  - `SdModal` 은 라이브러리 모달 셸 컴포넌트이므로 상속 대상이 아님.
 - **`title`** — 모달 헤더 제목.
 - **`inputs`** — 모달 컴포넌트가 받을 input 시그널 값. 없으면 `{}`.
-- **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 닫기(X)·취소로 닫으면 `undefined`.
+- **반환값** — 모달 컴포넌트가 close 시 emit 한 페이로드. 사용자가 닫기(X), 취소로 닫으면 `undefined`.
 - **close 규약** — 모달 컴포넌트는 `SdModalContentDef` 의 `close` output 만 사용. 임의 close output 규약을 따로 만들지 말 것 — 호출 측은 위 반환값(페이로드) 으로만 결과를 받음.
 
 ## `mark` 헬퍼
 
-`@simplysm/angular` 의 `mark(signal)` 은 배열이면 shallow array copy, 객체면 shallow object copy 를 새 참조로 `set` 하여 변경 알림을 발행. effect 가 의존하는 시그널을 강제 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 사용. `null`/`undefined` 는 복제할 대상이 없어 그대로 둠.
+`@simplysm/angular` 의 `mark(signal)` 은 배열이면 shallow array copy, 객체면 shallow object copy 를 새 참조로 `set` 하여 변경 알림을 발행.
+
+- effect 가 의존하는 시그널을 강제 재발화시키거나, 객체 시그널 내부 필드 변경을 알릴 때 사용.
+- `null`/`undefined` 는 복제할 대상이 없어 그대로 둠.
 
 **1. 외부 트리거로 effect 재발화** — 값의 의미는 동일하지만 새 참조로 effect 를 다시 발화시켜야 할 때.
 
@@ -354,7 +384,7 @@ doRefresh(): void {
 }
 ```
 
-**2. 객체·배열 시그널 내부 변경 알림** — 시그널이 들고 있는 객체의 _필드만_ 변경된 경우 시그널 자체는 변경 알림을 보내지 않음. 양방향 바인딩 자식의 변경 이벤트에 묶어 호출.
+**2. 객체, 배열 시그널 내부 변경 알림** — 시그널이 들고 있는 객체의 _필드만_ 변경된 경우 시그널 자체는 변경 알림을 보내지 않음. 양방향 바인딩 자식의 변경 이벤트에 묶어 호출.
 
 ```ts
 filter = signal<IFilter>({ ... });
@@ -371,7 +401,7 @@ mark(this.data);
 
 ## list 데이터 흐름
 
-list 컴포넌트는 자체 검색·페이지·정렬·재조회를 책임.
+list 컴포넌트는 자체 검색, 페이지, 정렬, 재조회를 책임.
 
 ### 시그널 구성
 
@@ -447,7 +477,7 @@ private async _refresh(): Promise<void> {
 
 ### 페이지네이션
 
-두 패턴 중 택일. 데이터 규모와 검색·정렬 책임에 따라 화면 작성자가 판단 (명확한 컷오프 없음).
+두 패턴 중 택일. 데이터 규모와 검색, 정렬 책임에 따라 화면 작성자가 판단 (명확한 컷오프 없음).
 
 **서버 페이징** — 한 페이지 분량만 매번 서버에서 가져옴. 위의 "시그널 구성" / "자동 재조회 effect" / "`_refresh` 구조" 섹션이 가정하는 기본 패턴.
 
@@ -455,7 +485,7 @@ private async _refresh(): Promise<void> {
 - `page` / `sortingDefs` / `lastFilter` 모두 effect 의존성. 변경 시 재조회.
 - `<sd-crud-list>` 에 `[totalPageCount]="pageLength()"` 전달. `[itemsPerPage]` 는 생략 (= 0).
 
-**클라이언트 페이징** — 전체 데이터를 한 번에 로드. 시트가 자체적으로 slice·sort 수행.
+**클라이언트 페이징** — 전체 데이터를 한 번에 로드. 시트가 자체적으로 slice, sort 수행.
 
 - `pageLength` 시그널과 `sortingDefs` effect 의존성 불필요 (정렬은 시트 내부에서 처리).
 - `_refresh` 는 전체 아이템을 한 번에 `items.set(all)`.
@@ -495,11 +525,15 @@ constructor() {
 
 ## detail 데이터 흐름
 
-detail 컴포넌트는 식별자를 받아 자체 로드·저장을 수행하고, 저장·삭제 결과를 부모에게 알림. 알림 output 은 사용 맥락에 따라 두 종류이며 **서로 독립**(배타 아님):
+detail 컴포넌트는 식별자를 받아 자체 로드, 저장을 수행하고, 저장, 삭제 결과를 부모에게 알림. 알림 output 은 사용 맥락에 따라 두 종류이며 **서로 독립**(배타 아님):
 
 - **`submitted`** (`output<boolean>`) — 트리거: detail 을 컨트롤로 임베드한 부모가 저장을 감지해 refresh 해야 할 때. 부모가 `(submitted)="doRefresh()"` 로 받음.
-- **`close`** (`SdModalContentDef` 의 output) — 트리거: detail 을 모달로 띄울 때. 저장·삭제 후 `close.emit(payload)` 로 결과를 반환하고, 호출 측은 `showAsync` 반환값으로 받아 refresh ([모달 호출](#모달-호출) 참조).
-- 한 detail 이 모달·임베드 양쪽으로 쓰이면 둘 다 둠. 모달 전용이면 `close` 만, 임베드 전용이면 `submitted` 만, page 전용·공유데이터 뷰면 둘 다 없이 self-refresh·`emitAsync` 로 처리. 아래 시그널·예시는 `submitted`(임베드) 기준.
+- **`close`** (`SdModalContentDef` 의 output) — 트리거: detail 을 모달로 띄울 때.
+  - 저장, 삭제 후 `close.emit(payload)` 로 결과를 반환하고, 호출 측은 `showAsync` 반환값으로 받아 refresh ([모달 호출](#모달-호출) 참조).
+- 한 detail 이 모달, 임베드 양쪽으로 쓰이면 둘 다 둠.
+  - 모달 전용이면 `close` 만, 임베드 전용이면 `submitted` 만.
+  - page 전용, 공유데이터 뷰면 둘 다 없이 self-refresh, `emitAsync` 로 처리.
+  - 아래 시그널, 예시는 `submitted`(임베드) 기준.
 
 ### 시그널 구성
 
@@ -596,14 +630,14 @@ async onSubmit(): Promise<void> {
 
 **핵심 약속**:
 
-- 식별자 input 은 조회·수정 전용이면 `input.required<number>()`, 신규 등록까지 한 detail 로 처리하면 `input<number>()`(undefined = 신규).
+- 식별자 input 은 조회, 수정 전용이면 `input.required<number>()`, 신규 등록까지 한 detail 로 처리하면 `input<number>()`(undefined = 신규).
 - 로드 후 `_orgData = obj.clone(loaded)` 로 원본 보관.
 - 페이지 이탈 가드는 `setupCanDeactivate` + `obj.equal` 비교로 처리.
 - 저장 완료 후 `_refresh()` 로 다시 로드 → `submitted.emit(true)`.
-- 삭제·취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list) 가 새로고침할 수 있게 함.
+- 삭제, 취소 등 다른 액션도 끝에 `submitted.emit(true)` 를 emit 해 부모(list) 가 새로고침할 수 있게 함.
 - 모달로 띄우는 detail 은 위 `submitted.emit` 대신 `close.emit(payload)` ([detail 데이터 흐름](#detail-데이터-흐름) 의 두 output 독립 규약 참조).
 
-## 시트 컬럼·셀 표준
+## 시트 컬럼, 셀 표준
 
 ```html
 <sd-sheet-column [key]="'name'" [header]="'이름'">
@@ -613,7 +647,10 @@ async onSubmit(): Promise<void> {
 </sd-sheet-column>
 ```
 
-**다단(그룹) 헤더**: `[header]` 에 문자열 배열을 주면 다단 헤더가 됨. 배열의 각 원소가 위에서 아래로 헤더 행이 되고, 인접 컬럼이 같은 상위 행 텍스트를 가지면 그 상위 셀이 가로로 병합되어 그룹 헤더로 묶임. 단일 문자열 컬럼은 전체 헤더 높이를 세로로 차지.
+**다단(그룹) 헤더**: `[header]` 에 문자열 배열을 주면 다단 헤더가 됨.
+
+- 배열의 각 원소가 위에서 아래로 헤더 행이 되고, 인접 컬럼이 같은 상위 행 텍스트를 가지면 그 상위 셀이 가로로 병합되어 그룹 헤더로 묶임.
+- 단일 문자열 컬럼은 전체 헤더 높이를 세로로 차지.
 
 ```html
 <sd-sheet-column [key]="'salesAmount'" [header]="['홈택스', '매출']">
@@ -633,13 +670,15 @@ async onSubmit(): Promise<void> {
 
 - `[width]` 는 **미명시가 기본** (자동). px 지정은 사용자가 명시 지시한 경우에만 적용.
 - 영역 폭(`flex-min` 의 `style="width: ..."` 등) 도 동일.
-- 명시 지시로 px 폭을 지정할 땐 그 의도·근거를 바로 위 코드 주석으로 남김 — 주석 없는 px 폭은 리뷰에서 비-합의 지정으로 간주됨.
+- 명시 지시로 px 폭을 지정할 땐 그 의도, 근거를 바로 위 코드 주석으로 남김 — 주석 없는 px 폭은 리뷰에서 비-합의 지정으로 간주됨.
 
 **셀 본문 약속**:
 
 - 시트 셀에는 패딩이 없으므로 본문 div 에 `p-xs-sm` 클래스 적용이 기본.
-- 정렬 클래스(`tx-right` / `tx-center` / `tx-left`) 는 **사용자가 명시 지시한 경우에만** 사용. 기본은 미지정 (브라우저 기본 left). "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
-- 단, **숫자 셀은 `tx-right` 기본 적용** (수량·금액·단가·합계 등 숫자값 컬럼).
+- 정렬 클래스(`tx-right` / `tx-center` / `tx-left`) 는 **사용자가 명시 지시한 경우에만** 사용.
+  - 기본은 미지정 (브라우저 기본 left).
+  - "라벨은 가운데" 같은 자동 휴리스틱 적용 금지.
+- 단, **숫자 셀은 `tx-right` 기본 적용** (수량, 금액, 단가, 합계 등 숫자값 컬럼).
 - 숫자값 출력은 **`| number` 파이프 기본 적용** (천단위 구분). 예: `{{ item.quantity | number }}`.
 - `[cell]="items()"` 는 타입 추론용 더미. 실제 행 데이터는 `<sd-sheet>` 의 `[items]` 가 보유.
 - 셀 컨텍스트: `let-item="item"` / `let-index="index"` / `let-depth="depth"` / `let-edit="edit"`.
@@ -682,15 +721,18 @@ async onSubmit(): Promise<void> {
 
 - 컬럼 중 하나라도 `#summaryTpl` 을 가지면 요약 행 전체가 활성화됨. 정의 없는 컬럼은 빈 셀로 표시.
 - 셀 본문 약속(`p-xs-sm`, 정렬 클래스 등) 은 요약 셀에도 동일하게 적용.
-- 합계·평균 등 집계 값은 시트가 계산하지 않음. 집계 출처는 목록의 **페이징 여부** 로 갈림.
+- 합계, 평균 등 집계 값은 시트가 계산하지 않음. 집계 출처는 목록의 **페이징 여부** 로 갈림.
 
-**페이징 없는 전건 로드 목록** (자식·상세 목록 등) — `items()` 가 곧 전체이므로 `computed` 합산.
+**페이징 없는 전건 로드 목록** (자식, 상세 목록 등) — `items()` 가 곧 전체이므로 `computed` 합산.
 
 ```ts
 totalQuantity = computed(() => this.items().sum((i) => i.quantity) ?? 0);
 ```
 
-**페이징 목록** — `items()` 는 현재 페이지뿐이라 `computed` 합산 금지 (페이지 합계만 나와 요약이 틀어짐). 전체 결과의 집계값을 별도 시그널로 받아 바인딩. 집계는 데이터 로딩 시 별도 쿼리로 구함 ([client-crud.md](./client-crud.md) 의 "페이징 목록 요약 집계" 참조).
+**페이징 목록** — `items()` 는 현재 페이지뿐이라 `computed` 합산 금지 (페이지 합계만 나와 요약이 틀어짐).
+
+- 전체 결과의 집계값을 별도 시그널로 받아 바인딩.
+- 집계는 데이터 로딩 시 별도 쿼리로 구함 ([client-crud.md](./client-crud.md) 의 "페이징 목록 요약 집계" 참조).
 
 ```ts
 summaryData = signal<{ amount: number }>({ amount: 0 });
@@ -702,15 +744,17 @@ summaryData = signal<{ amount: number }>({ amount: 0 });
 </ng-template>
 ```
 
-## 폼·입력 컨트롤
+## 폼, 입력 컨트롤
 
 ### 폼 항목 레이아웃
 
 label 과 입력 그룹을 묶는 전용 클래스 3종:
 
 - `form-box` — 세로 스택. `> div` 안에 `<label>` + 입력. 항목 사이 간격은 `gap-default`.
-- `form-box-inline` — 가로 인라인 flex (wrap). 라벨이 입력 옆에 붙음. 검색·필터 폼에 사용. 라벨 없는 `form-box-item` 도 허용 (버튼 등).
-- `form-table` — `<table>` 기반. `<th>` 가 우측 정렬 라벨, `<td>` 가 입력. `<th class="form-table-header">` 는 섹션 헤더 (좌측 정렬, 회색, 위쪽 여백 큼). 라벨·입력 폭을 정렬해야 하는 등록·편집 폼에 사용.
+- `form-box-inline` — 가로 인라인 flex (wrap). 라벨이 입력 옆에 붙음. 검색, 필터 폼에 사용. 라벨 없는 `form-box-item` 도 허용 (버튼 등).
+- `form-table` — `<table>` 기반. `<th>` 가 우측 정렬 라벨, `<td>` 가 입력.
+  - `<th class="form-table-header">` 는 섹션 헤더 (좌측 정렬, 회색, 위쪽 여백 큼).
+  - 라벨, 입력 폭을 정렬해야 하는 등록, 편집 폼에 사용.
 
 ```html
 <div class="form-box-inline">
@@ -736,24 +780,22 @@ label 과 입력 그룹을 묶는 전용 클래스 3종:
 
 ### 표준 입력 컨트롤
 
-| 용도                 | 컨트롤                                                       |
-| -------------------- | ------------------------------------------------------------ |
-| 텍스트 / 숫자 / 날짜 | `<sd-textfield [type]="..." />`                              |
-| 날짜 범위            | `<sd-date-range-picker [(from)] [(to)] />`                   |
-| 정적 선택지          | `<sd-select>` + `<sd-select-item>`                           |
-| 공유데이터 선택지    | `<sd-shared-data-select [items]>` + `<ng-template [itemOf]>` |
-| 체크박스 / 라디오    | `<sd-checkbox [radio]>`                                      |
-| 라벨/배지            | `<sd-label [theme]>`                                         |
-| 버튼/액션            | `<sd-button>`, `<sd-anchor>`                                 |
+- 텍스트 / 숫자 / 날짜 — `<sd-textfield [type]="..." />`
+- 날짜 범위 — `<sd-date-range-picker [(from)] [(to)] />`
+- 정적 선택지 — `<sd-select>` + `<sd-select-item>`
+- 공유데이터 선택지 — `<sd-shared-data-select [items]>` + `<ng-template [itemOf]>`
+- 체크박스 / 라디오 — `<sd-checkbox [radio]>`
+- 라벨/배지 — `<sd-label [theme]>`
+- 버튼/액션 — `<sd-button>`, `<sd-anchor>`
 
 ### 버튼 스타일
 
-화면 액션 `<sd-button>` 은 역할별로 `theme`·`size` 를 구분 적용.
+화면 액션 `<sd-button>` 은 역할별로 `theme`, `size` 를 구분 적용.
 
 | 역할                                                          | `[theme]`                                                                 | `[size]` |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------- | -------- |
-| 데이터 자체를 통으로 변경하는 최상위 액션 (저장·삭제·생성 등) | 일반 시리즈 (`primary` / `danger` / `success` / `warning` 등 의미에 맞춰) | 기본     |
-| 위 액션 옆 유틸리티 버튼 (양식 다운로드·인쇄 등)              | link 시리즈 (`link-primary` 등)                                           | 기본     |
+| 데이터 자체를 통으로 변경하는 최상위 액션 (저장, 삭제, 생성 등) | 일반 시리즈 (`primary` / `danger` / `success` / `warning` 등 의미에 맞춰) | 기본     |
+| 위 액션 옆 유틸리티 버튼 (양식 다운로드, 인쇄 등)             | link 시리즈 (`link-primary` 등)                                           | 기본     |
 | 시트 위(또는 시트 셀 안)에 나열되는 버튼                      | link 시리즈 또는 `link`                                                   | `sm`     |
 
 ### `<sd-form>` 으로 감싸기
@@ -770,7 +812,7 @@ await this._appService.user.someMethod(...);
 const listenerKey = await this._appService.authInfoChangedEvent.addListener(info, async () => { ... });
 ```
 
-Provider 정의·서비스·이벤트 호출 추가 컨벤션은 [client-service.md](./client-service.md) 참조.
+Provider 정의, 서비스, 이벤트 호출 추가 컨벤션은 [client-service.md](./client-service.md) 참조.
 
 ## ORM 호출 (`AppOrmProvider`)
 
@@ -786,7 +828,7 @@ await this._appOrm.connectAsync(async (db) => {
 
 ## 공유데이터 (`useSharedSignal`)
 
-마스터 데이터(고객사·품목 등) 는 `AppSharedDataProvider` 에 등록되어 있고, 화면에서는 `useSharedSignal(name)` 으로 접근.
+마스터 데이터(고객사, 품목 등) 는 `AppSharedDataProvider` 에 등록되어 있고, 화면에서는 `useSharedSignal(name)` 으로 접근.
 
 ```ts
 sharedCustomers = useSharedSignal("고객사");
@@ -799,9 +841,9 @@ sharedCustomers = useSharedSignal("고객사");
 <sd-shared-data-select [items]="sharedCustomers.items()" [(value)]="data().customerId" ... />
 ```
 
-Provider 정의·새 마스터 데이터 등록 컨벤션은 [client-shared-data.md](./client-shared-data.md) 참조.
+Provider 정의, 새 마스터 데이터 등록 컨벤션은 [client-shared-data.md](./client-shared-data.md) 참조.
 
-## 레이아웃·유틸 클래스
+## 레이아웃, 유틸 클래스
 
 **화면 레이아웃** (영역 분할) 은 flex 유틸 클래스로 구성.
 
@@ -842,7 +884,7 @@ Provider 정의·새 마스터 데이터 등록 컨벤션은 [client-shared-data
 
 **약속**:
 
-- 영역 분할·배치 모두 flex 유틸 클래스 우선 적용. 자체 styles 작성은 최후 수단.
+- 영역 분할, 배치 모두 flex 유틸 클래스 우선 적용. 자체 styles 작성은 최후 수단.
 - 글로벌 클래스 정의 위치는 `@simplysm/angular/scss/commons/`.
 
 ## 아이콘
@@ -873,4 +915,7 @@ export class SomeComponent {
 
 ## sd-crud-\* 컴포넌트
 
-목록 화면 표준 골격은 `sd-crud-list`, 단건 편집 화면 표준 골격은 `sd-crud-detail`. 화면 작성 시 채택 여부를 결정. 채택 시 사용법은 [client-crud.md](./client-crud.md) 참조.
+목록 화면 표준 골격은 `sd-crud-list`, 단건 편집 화면 표준 골격은 `sd-crud-detail`.
+
+- 화면 작성 시 채택 여부를 결정.
+- 채택 시 사용법은 [client-crud.md](./client-crud.md) 참조.

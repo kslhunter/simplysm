@@ -18,7 +18,7 @@ import { XmlModelFactory } from "../xml/xml-model-factory";
  * 모델 파트는 포맷별 팩토리로 파싱/직렬화하고, 기타 파일(media 등)은 바이트 배열로 캐싱한다.
  *
  * @remarks
- * ## 포맷 판별·경로 정규화
+ * ## 포맷 판별, 경로 정규화
  *
  * 기존 파일은 `xl/workbook.bin` 존재 여부로 xlsx/xlsb 를 1회 판별한다(없으면 xlsx).
  * 상위 레이어는 `xl/workbook.xml` 같은 OOXML(.xml) 경로를 사용하므로, xlsb 워크북에서는
@@ -131,7 +131,7 @@ export class ZipCache {
 
   //#endregion
 
-  //#region Part 등록 (포맷별 content-type·rel·part 생성)
+  //#region Part 등록 (포맷별 content-type, rel, part 생성)
 
   /**
    * 워크시트 파트를 등록한다. content-type override, workbook rels, 빈 worksheet 모델을 포맷에 맞게 생성하고

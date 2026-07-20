@@ -1,6 +1,7 @@
 # @simplysm/orm-node — 저수준 DB 연결
 
-`createOrm` 추상화를 거치지 않고 DB 연결·raw SQL·파라미터 쿼리·bulk insert·DbContextExecutor를 직접 다룰 때 읽는 묶음. ORM 쿼리 작성·조회 흐름은 [orm.md](../../manuals/orm.md).
+`createOrm` 추상화를 거치지 않고 DB 연결, raw SQL, 파라미터 쿼리, bulk insert, DbContextExecutor를 직접 다룰 때 읽는 묶음.
+ORM 쿼리 작성, 조회 흐름은 [orm.md](../../manuals/orm.md).
 
 ## createDbConn
 
@@ -15,7 +16,7 @@ config.dialect에 따라 dialect별 구현체 인스턴스를 생성하는 연�
   - `config.dialect: "postgresql"` → pg와 pg-copy-streams를 지연 import하고 `new PostgresqlDbConn(pg, pgCopyStreams, config)` 반환.
   - `config.dialect: "mssql" | "mssql-azure"` → tedious를 지연 import하고 `new MssqlDbConn(tedious, config)` 반환.
 - 반환값: `Promise<DbConn>` — 아직 연결되지 않은 연결 객체. 실제 TCP 연결은 반환된 객체의 `connect()` 호출 시 수립.
-- 모듈 캐싱: 한 번 import된 드라이버 모듈(mysql2·pg·pg-copy-streams·tedious)은 함수 내부 모듈 캐시에 저장되어 다음 호출에서 재사용.
+- 모듈 캐싱: 한 번 import된 드라이버 모듈(mysql2, pg, pg-copy-streams, tedious)은 함수 내부 모듈 캐시에 저장되어 다음 호출에서 재사용.
 
 ## DbConn
 
@@ -39,7 +40,8 @@ interface DbConn extends EventEmitter<{ close: void }> {
 }
 ```
 
-각 DBMS 구현체(MysqlDbConn·MssqlDbConn·PostgresqlDbConn)가 구현하는 저수준 연결 인터페이스. EventEmitter<{ close: void }>를 상속하며 연결 종료 시 close 이벤트 발생.
+각 DBMS 구현체(MysqlDbConn, MssqlDbConn, PostgresqlDbConn)가 구현하는 저수준 연결 인터페이스.
+EventEmitter<{ close: void }>를 상속하며 연결 종료 시 close 이벤트 발생.
 
 - `config`: `DbConnConfig` — 이 연결이 받은 dialect별 접속 설정.
 - `isConnected`: `boolean` — 연결 수립 후 true, 종료 후 false로 변경되는 연결 상태.
@@ -56,7 +58,9 @@ interface DbConn extends EventEmitter<{ close: void }> {
   - `query`: `string` — 실행할 SQL 문자열. 오류 시 메시지에 포함될 수 있음.
   - `params`: `unknown[] | undefined` — 파라미터 값 배열. dialect 드라이버의 파라미터 바인딩으로 전달.
 - `bulkInsert`: `(tableName, columnMetas, records) => Promise<void>` — dialect별 native bulk 경로로 여러 레코드를 한 번에 삽입.
-  - `tableName`: `string` — bulk insert 대상 테이블명. `database.table` 또는 `database.schema.table` 형식. 구현체가 SQL/드라이버 bulk API에 그대로 전달.
+  - `tableName`: `string` — bulk insert 대상 테이블명.
+    - 형식: `database.table` 또는 `database.schema.table`.
+    - 구현체가 SQL/드라이버 bulk API에 그대로 전달.
   - `columnMetas`: `Record<string, ColumnMeta>` — 컬럼명→ColumnMeta 매핑. 키 순서가 레코드 값 추출 순서 결정.
   - `records`: `Record<string, unknown>[]` — 삽입할 레코드 배열. 길이 0이면 삽입 경로 스킵하고 즉시 반환.
 
@@ -98,7 +102,7 @@ interface PostgresqlDbConnConfig {
 }
 ```
 
-dialect별 데이터베이스 연결 설정. createDbConn·NodeDbContextExecutor·createOrm의 연결 설정 인자로 사용.
+dialect별 데이터베이스 연결 설정. createDbConn, NodeDbContextExecutor, createOrm의 연결 설정 인자로 사용.
 
 - `DbConnConfig`: dialect별 config 유니온 타입.
 - `MysqlDbConnConfig.dialect: "mysql"` — MySQL 연결 구현체 선택.
@@ -108,7 +112,9 @@ dialect별 데이터베이스 연결 설정. createDbConn·NodeDbContextExecutor
 - `port`: `number | undefined` — 서버 포트. 미지정 시: PostgreSQL은 5432, MySQL/MSSQL은 드라이버 기본값(MySQL 3306, MSSQL 1433).
 - `username`: `string` — 인증 사용자명. MSSQL은 `authentication.options.userName`으로 전달.
 - `password`: `string` — 인증 비밀번호.
-- `database`: `string | undefined` — 연결 후 기본 데이터베이스. createOrm에서 OrmOptions.database가 없을 때 DbContext 생성 옵션으로도 사용. 둘 다 없거나 빈 문자열이면 오류.
+- `database`: `string | undefined` — 연결 후 기본 데이터베이스.
+  - createOrm에서 OrmOptions.database가 없을 때 DbContext 생성 옵션으로도 사용.
+  - 둘 다 없거나 빈 문자열이면 오류.
 - `schema`: `string | undefined` — MSSQL/PostgreSQL 스키마명. createOrm에서 OrmOptions.schema가 없을 때 DbContext 생성 옵션으로 사용 (연결 자체에는 전달 안 됨).
 - `defaultIsolationLevel`: `IsolationLevel | undefined` — beginTransaction 인자가 없을 때 사용할 기본 트랜잭션 격리 수준.
 
@@ -137,8 +143,11 @@ class MysqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
 
 mysql2/promise 기반 MySQL 연결 구현체.
 
-- `_mysql2`: `typeof import("mysql2/promise")` — 드라이버 모듈. createConnection·query·transaction API 제공.
-- `connect`: createConnection에 `multipleStatements: true`(멀티 statement 활성), `charset: "utf8mb4_bin"`(바이너리 정렬), `infileStreamFactory`(LOAD DATA LOCAL INFILE 지원)를 포함해 연결. 성공 시 isConnected = true.
+- `_mysql2`: `typeof import("mysql2/promise")` — 드라이버 모듈. createConnection, query, transaction API 제공.
+- `connect`: createConnection에 아래 옵션을 포함해 연결. 성공 시 isConnected = true.
+  - `multipleStatements: true` — 멀티 statement 활성.
+  - `charset: "utf8mb4_bin"` — 바이너리 정렬.
+  - `infileStreamFactory` — LOAD DATA LOCAL INFILE 지원.
 - `beginTransaction`: `SET SESSION TRANSACTION ISOLATION LEVEL <level>` 실행 후 드라이버 beginTransaction() 호출. level 문자열의 `_`를 공백으로 치환.
 - `executeParametrized`: conn.query({ sql, timeout, values: params })로 실행. 반환: 단일 DML → [[]], 멀티 statement → statement별 결과배열(DML은 []), 단일 SELECT → [rows].
 - `bulkInsert`: 임시 TSV 파일 생성 → LOAD DATA LOCAL INFILE 실행 → finally에서 임시 파일 삭제 시도 (삭제 실패 무시). UUID/binary 컬럼은 @_컬럼명 임시변수로 읽은 뒤 SET 컬럼=UNHEX(@_컬럼명)으로 복원.
@@ -156,12 +165,18 @@ class MssqlDbConn extends EventEmitter<{ close: void }> implements DbConn {
 
 tedious 기반 MSSQL/Azure SQL 연결 구현체.
 
-- `_tedious`: `typeof import("tedious")` — 드라이버 모듈. Connection·Request·BulkLoad·TYPES·ISOLATION_LEVEL 제공.
-- `connect`: tedious Connection 생성. config.dialect === "mssql-azure"면 encrypt: true, 그 외 false. 함께 rowCollectionOnDone: true, useUTC: false, trustServerCertificate: true, requestTimeout/connectTimeout 설정.
+- `_tedious`: `typeof import("tedious")` — 드라이버 모듈. Connection, Request, BulkLoad, TYPES, ISOLATION_LEVEL 제공.
+- `connect`: tedious Connection 생성. config.dialect === "mssql-azure"면 encrypt: true, 그 외 false.
+  - 함께 설정: rowCollectionOnDone: true, useUTC: false, trustServerCertificate: true, requestTimeout/connectTimeout.
 - `close`: 진행 중인 request 모두 cancel 후 요청 목록 비워질 때까지(최대 30초) 대기. 연결 종료 시 close 이벤트 발생.
 - `beginTransaction`: tedious beginTransaction에 ISOLATION_LEVEL[isolationLevel ?? config.defaultIsolationLevel ?? "READ_UNCOMMITTED"]으로 격리 수준 전달.
-- `executeParametrized`: params 유무에 따라 p0·p1·... 이름으로 addParameter 후 execSql 또는 execSqlBatch 실행. 값→tedious 타입: string→NVarChar, 정수 number→BigInt, 실수 number→Decimal, boolean→Bit, DateTime→DateTime2, DateOnly→Date, Time→Time, Uuid→UniqueIdentifier, Uint8Array→VarBinary. null/undefined/미지원 타입 → SdError.
-- `bulkInsert`: tedious BulkLoad 사용. ColumnMeta.dataType을 tedious bulk column type으로 변환. 값 변환: Uuid→문자열, Uint8Array→Buffer, DateTime/DateOnly→내부 Date, Time→"HH:mm:ss".
+- `executeParametrized`: params 유무에 따라 p0, p1, ... 이름으로 addParameter 후 execSql 또는 execSqlBatch 실행.
+  - 값→tedious 타입: string→NVarChar, 정수 number→BigInt, 실수 number→Decimal, boolean→Bit,
+    DateTime→DateTime2, DateOnly→Date, Time→Time, Uuid→UniqueIdentifier, Uint8Array→VarBinary.
+  - null/undefined/미지원 타입 → SdError.
+- `bulkInsert`: tedious BulkLoad 사용.
+  - ColumnMeta.dataType을 tedious bulk column type으로 변환.
+  - 값 변환: Uuid→문자열, Uint8Array→Buffer, DateTime/DateOnly→내부 Date, Time→"HH:mm:ss".
 
 ## 구현체: PostgresqlDbConn
 
@@ -216,7 +231,9 @@ DbContext가 실제 DB 작업을 위임하는 Node.js 실행자. createOrm이 �
 - `connect`: createDbConn(config)로 새 DbConn 생성 후 conn.connect() 호출.
 - `close`: 현재 연결의 close() 호출하고 내부 연결 참조를 undefined로 변경.
 - `beginTransaction` / `commitTransaction` / `rollbackTransaction` / `executeParametrized` / `bulkInsert`: 현재 연결의 동명 메서드에 위임.
-- `executeDefs<T>`: QueryDef 배열을 SQL로 변환·실행하고 ResultMeta로 타입 변환. resultMetas[i]가 있으면 parseQueryResult<T>로 변환, 없으면 raw 결과셋을 T[]로 반환. 최적화: 모든 resultMetas가 null/undefined면 모든 SQL을 줄바꿈으로 합쳐 한 번에 실행한 뒤 빈 배열들 반환.
+- `executeDefs<T>`: QueryDef 배열을 SQL로 변환, 실행하고 ResultMeta로 타입 변환.
+  - resultMetas[i]가 있으면 parseQueryResult<T>로 변환, 없으면 raw 결과셋을 T[]로 반환.
+  - 최적화: 모든 resultMetas가 null/undefined면 모든 SQL을 줄바꿈으로 합쳐 한 번에 실행한 뒤 빈 배열들 반환.
   - `defs`: `QueryDef[]` — SQL로 변환해 실행할 query definition 배열.
   - `resultMetas`: `(ResultMeta | undefined)[] | undefined` — 각 항목의 타입 변환 메타. 항목이 없으면 raw 결과셋 그대로 반환.
 - 미연결 상태: 내부 연결이 없으면 모든 메서드는 `SdError(DB_CONN_ERRORS.NOT_CONNECTED)` throw.

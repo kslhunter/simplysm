@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { SdDropdown } from "../../../src/controls/dropdown/sd-dropdown";
 import { SdDropdownPopup } from "../../../src/controls/dropdown/sd-dropdown-popup";
 
@@ -61,4 +61,28 @@ export class SdDropdownTestScrollable {}
   `,
 })
 export class SdDropdownTestWithTabbable {}
+
+/**
+ * 팝업 내부의 포커스된 버튼이 클릭 결과로 자기 자신을 disabled 시키는 케이스.
+ * 렌더 도중 native `disabled` 가 적용되면 브라우저가 동기 blur 를 발사한다.
+ */
+@Component({
+  selector: "sd-dropdown-test-self-disabling",
+  standalone: true,
+  imports: [SdDropdown, SdDropdownPopup],
+  template: `
+    <sd-dropdown>
+      trigger
+      <sd-dropdown-popup>
+        <button class="self-disabling-button" [disabled]="isDisabled()" (click)="isDisabled.set(true)">
+          disable me
+        </button>
+        <span class="popup-text">text</span>
+      </sd-dropdown-popup>
+    </sd-dropdown>
+  `,
+})
+export class SdDropdownTestSelfDisabling {
+  readonly isDisabled = signal(false);
+}
 

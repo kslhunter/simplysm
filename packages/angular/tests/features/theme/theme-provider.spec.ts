@@ -16,7 +16,7 @@ describe("테마 전환: SdThemeProvider", () => {
     expect(provider.theme()).toBe("light");
   });
 
-  it("themes 에 내장 테마 목록(light·blueprint·ide-dark)이 정의된다", () => {
+  it("themes 에 내장 테마 목록(light, blueprint, ide-dark)이 정의된다", () => {
     expect(provider.themes.map((def) => def.value)).toEqual(["light", "blueprint", "ide-dark"]);
   });
 
@@ -43,7 +43,7 @@ describe("테마 전환: SdThemeProvider", () => {
     expect(document.body.classList.contains("sd-theme-blueprint")).toBe(false);
   });
 
-  it("theme=light일 때 body에 blueprint·ide-dark 클래스가 없다", () => {
+  it("theme=light일 때 body에 blueprint, ide-dark 클래스가 없다", () => {
     provider.theme.set("blueprint");
     TestBed.inject(ApplicationRef).tick();
     provider.theme.set("light");

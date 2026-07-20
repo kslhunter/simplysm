@@ -31,7 +31,7 @@ export function collectAllExternals(
 
 /**
  * pnpm-lock.yaml의 packages 섹션을 파싱하여 name→version 맵을 생성한다.
- * 키 형태: "name@version" · "@scope/name@version" · "name@version(peer@ver)..."
+ * 키 형태: "name@version",  "@scope/name@version",  "name@version(peer@ver)..."
  */
 export function parseLockfileVersions(cwd: string): Map<string, string> {
   const lockfilePath = path.join(cwd, "pnpm-lock.yaml");

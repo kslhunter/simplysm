@@ -1,20 +1,25 @@
 # @simplysm/sd-excel — Low-level (OOXML 파트)
 
-워크북을 구성하는 각 OOXML 파트를 객체로 표현하는 저수준 클래스 묶음. 고수준 API(`SdExcelWorkbook`/`Worksheet`/`Cell`)가 내부에서 이들을 조작함. `workbook.zipCache.getAsync(path)` 로 직접 파트를 꺼내 쓸 때만 필요. 대부분 작업은 고수준 API 로 충분함.
+워크북을 구성하는 각 OOXML 파트를 객체로 표현하는 저수준 클래스 묶음.
+고수준 API(`SdExcelWorkbook`/`Worksheet`/`Cell`)가 내부에서 이들을 조작함.
+`workbook.zipCache.getAsync(path)` 로 직접 파트를 꺼내 쓸 때만 필요.
 
 ## 공통 인터페이스
 
-- `ISdExcelXml { readonly data: any; cleanup(): void }` — 모든 XML 파트 객체의 공통형. `data` 는 파싱된 트리, `cleanup()` 은 직렬화 직전 정렬/정리 훅(ZipCache.toBufferAsync 가 호출).
+- `ISdExcelXml { readonly data: any; cleanup(): void }` — 모든 XML 파트 객체의 공통형.
+  - `data` 는 파싱된 트리, `cleanup()` 은 직렬화 직전 정렬/정리 훅(ZipCache.toBufferAsync 가 호출).
 
 ## ZipCache
 
 `workbook.zipCache` 로 노출. 파트 경로→(XML객체|Buffer|undefined) 캐시 + `SdZip` 래핑.
 
 - `new ZipCache(arg?: Blob | Buffer)` — 기존 파일 로드 또는 빈 zip.
-- `getAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined>` — 파트 조회. `.xml`/`.rels` 는 경로별로 적합한 SdExcelXml* 클래스로 래핑(미인식 경로는 SdExcelXmlUnknown), 그 외는 Buffer. 없으면 undefined 캐시 후 반환.
+- `getAsync(filePath: string): Promise<ISdExcelXml | Buffer | undefined>` — 파트 조회.
+  - `.xml`/`.rels` 는 경로별로 적합한 SdExcelXml* 클래스로 래핑(미인식 경로는 SdExcelXmlUnknown), 그 외는 Buffer.
+  - 없으면 undefined 캐시 후 반환.
 - `existsAsync(filePath): Promise<boolean>` — 캐시 또는 zip 에 존재하는지.
 - `set(filePath, content: ISdExcelXml | Buffer): void` — 파트 교체/추가(동기).
-- `toBufferAsync(): Promise<Buffer>` — 캐시의 모든 XML 객체 cleanup 후 직렬화·압축.
+- `toBufferAsync(): Promise<Buffer>` — 캐시의 모든 XML 객체 cleanup 후 직렬화, 압축.
 - `closeAsync(): Promise<void>` — zip 닫고 캐시 clear.
 
 ## SdExcelXmlWorkbook (`xl/workbook.xml`)
@@ -24,7 +29,7 @@
 - `addWorksheet(name): this` — 시트 등록(이름의 `: \ / ? * [ ] '` → `_` 치환, r:id=last+1).
 - `getWsRelIdByName(name): number | undefined` / `getWsRelIdByIndex(index): number | undefined` — 이름/0-base 인덱스 → r:id.
 - `getWorksheetNameById(id): string | undefined` / `setWorksheetNameById(id, newName)` — r:id 기준 시트명 조회/변경.
-- `initializeView()` — bookViews 없으면 기본 추가(줌·틀고정 전 호출).
+- `initializeView()` — bookViews 없으면 기본 추가(줌, 틀고정 전 호출).
 - `cleanup()` — 직렬화 순서 정렬(bookViews→sheets).
 
 ## SdExcelXmlWorksheet (`xl/worksheets/sheetN.xml`)
@@ -41,10 +46,10 @@
 - `setMergeCells(startAddr, endAddr)` — 병합 추가(기존과 겹치면 throw, 시작셀 외 값 clear).
 - `getMergeCells(): {s,e}[]` / `removeMergeCells(fromAddr, toAddr)` — 병합 목록 조회/범위내 병합 제거.
 - `setColWidth(colIndex: string, width: string)` — 1-base 문자열 열번호의 너비 지정(필요시 col 구간 분할).
-- `setZoom(percent)` / `setFix(point: {r?,c?})` — 줌·틀고정 (고수준 setZoomAsync/setFixAsync 가 호출).
-- `insertEmptyRow(row)` — 빈 행 삽입+이하 행·병합 shift.
+- `setZoom(percent)` / `setFix(point: {r?,c?})` — 줌, 틀고정 (고수준 setZoomAsync/setFixAsync 가 호출).
+- `insertEmptyRow(row)` — 빈 행 삽입+이하 행, 병합 shift.
 - `copyRow(sourceR, targetR)` / `copyCell(sourceAddr, targetAddr)` — 행/셀 데이터(+행은 병합) 복제.
-- `cleanup()` — 파트 순서·행/셀 정렬, dimension ref 재계산.
+- `cleanup()` — 파트 순서, 행/셀 정렬, dimension ref 재계산.
 
 ## SdExcelXmlSharedString (`xl/sharedStrings.xml`)
 

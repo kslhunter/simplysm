@@ -1,6 +1,6 @@
 """MSG (Outlook) 핸들러. extract-msg 라이브러리 사용.
 
-본문·CID·envelope 헤더 규약은 eml_handler 와 동일.
+본문, CID, envelope 헤더 규약은 eml_handler 와 동일.
 """
 from __future__ import annotations
 
@@ -18,7 +18,9 @@ def run(input_path: Path, out_dir: Path) -> None:
     _common.ensure_pip("extract_msg", "extract-msg")
     import extract_msg
 
-    msg = extract_msg.Message(str(input_path))
+    # long path(260자 초과) 대응 — 경로 문자열 대신 바이트로 넘긴다.
+    with open(_common.long_str(input_path), "rb") as f:
+        msg = extract_msg.Message(f.read())
     try:
         raw_header = getattr(msg, "header", None) or ""
         # extract-msg 일부 버전 header 는 EmailMessage 객체 — str() 로 정규화
@@ -29,7 +31,9 @@ def run(input_path: Path, out_dir: Path) -> None:
         headers: dict = {}
         if raw_header:
             parsed = stdemail.message_from_string(raw_header)
-            for key, val in parsed.items():
+            for key, raw_value in parsed.items():
+                # raw header 값은 RFC2047 인코딩워드 상태 — eml 과 동일하게 디코드해 보관
+                val = _common.decode_mime_header(raw_value)
                 if key in headers:
                     existing = headers[key]
                     if isinstance(existing, list):
@@ -102,11 +106,22 @@ def run(input_path: Path, out_dir: Path) -> None:
             if cid:
                 cid = str(cid).strip("<>")
             data = att.data
-            if isinstance(data, str):
-                data = data.encode("utf-8")
-            elif data is None:
+            if data is None:
                 raise RuntimeError(
                     f"MSG 첨부 '{filename}' 추출 실패 (data 없음) — {input_path.name}"
+                )
+            if isinstance(data, str):
+                data = data.encode("utf-8")
+            elif hasattr(data, "exportBytes"):
+                # 임베디드 메일 첨부 — extract_msg 는 bytes 가 아닌 MSGFile 객체를 준다.
+                # .msg 바이트로 내보내 일반 첨부와 동일하게 저장, 재귀 풀이한다.
+                data = data.exportBytes()
+                if not filename.lower().endswith(".msg"):
+                    subject = getattr(att, "displayName", None) or Path(filename).stem
+                    filename = f"{subject}.msg"
+            elif not isinstance(data, bytes):
+                raise RuntimeError(
+                    f"MSG 첨부 '{filename}' 추출 실패 (예상치 못한 data 타입 {type(data).__name__}) — {input_path.name}"
                 )
             dst = _common.unique_path(attachments_dir, filename)
             _common.write_bytes(dst, data)
@@ -132,7 +147,7 @@ def run(input_path: Path, out_dir: Path) -> None:
                 attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
 
         # body.md: text 우선, 없으면 HTML→평문
-        # body.from_html.md: text·HTML 둘 다 있을 때 HTML→평문 변환본 별도 (이미지 위치 placeholder)
+        # body.from_html.md: text, HTML 둘 다 있을 때 HTML→평문 변환본 별도 (이미지 위치 placeholder)
         if body_text:
             body_md = body_text
         elif body_html:
@@ -168,7 +183,7 @@ def run(input_path: Path, out_dir: Path) -> None:
             tool="extract-msg + html2text",
             loss_notes=(
                 "본문은 body.md (text 우선, 없으면 HTML→평문). "
-                "text·HTML 둘 다 있을 때 HTML→평문(인라인 이미지 위치 placeholder 포함)은 body.from_html.md 별도. "
+                "text, HTML 둘 다 있을 때 HTML→평문(인라인 이미지 위치 placeholder 포함)은 body.from_html.md 별도. "
                 "원본 HTML 은 body.html, CID↔첨부 매핑은 images.rels.json (인라인 이미지 있을 때)."
             ),
             body_file_link=body_file_link,

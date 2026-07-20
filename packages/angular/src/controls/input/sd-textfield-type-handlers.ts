@@ -160,7 +160,7 @@ function createNumberHandler(): TextfieldTypeHandler {
     },
     isIncomplete(raw) {
       const inputValue = raw.replace(/[^0-9-.]/g, "");
-      // 부호·소수점 형식은 갖췄으나 아직 완성되지 않은 진행 상태 ("-", "12.", ".", "-.")
+      // 부호, 소수점 형식은 갖췄으나 아직 완성되지 않은 진행 상태 ("-", "12.", ".", "-.")
       // Number("12.")===12 이므로 endsWith(".") 를 별도 판정 (parse 의 실패 조건과 정합)
       return (
         /^-?\d*\.?\d*$/.test(inputValue)

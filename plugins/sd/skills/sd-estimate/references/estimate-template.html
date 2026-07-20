@@ -2,11 +2,11 @@
 <!--
   sd-estimate 고객용 견적서 템플릿 (A4 인쇄 / PDF 출력)
   - 이 파일을 복제해 「…」 플레이스홀더를 실제 값으로 채운다.
-  - 디자인 토큰(:root)·컴포넌트 클래스는 그대로 재사용. 새 컴포넌트를 임의로 만들지 않는다.
+  - 디자인 토큰(:root), 컴포넌트 클래스는 그대로 재사용. 새 컴포넌트를 임의로 만들지 않는다.
   - 액센트 1색(--accent)만 브랜드/도메인에 맞게 조정 가능. navy 베이스는 고정.
-  - 단일 자기완결 파일 — 외부 폰트·CDN·스크립트 의존 없음(오프라인/PDF 인쇄 안정).
-  - 섹션 주석 [공통·필수] / [선택] 표시를 따른다. [선택] 섹션은 불필요하면 통째로 삭제.
-  - 내부 산정 용어(PERT·O/M/P·델파이·KOSA·노임단가 등)·도구명은 절대 넣지 않는다.
+  - 단일 자기완결 파일 — 외부 폰트, CDN, 스크립트 의존 없음(오프라인/PDF 인쇄 안정).
+  - 섹션 주석 [공통, 필수] / [선택] 표시를 따른다. [선택] 섹션은 불필요하면 통째로 삭제.
+  - 내부 산정 용어(PERT, O/M/P, 델파이, KOSA, 노임단가 등), 도구명은 절대 넣지 않는다.
 -->
 <html lang="ko">
 <head>
@@ -18,7 +18,7 @@
     --navy:#13294b;     /* 주조 */
     --navy-2:#1f3f6e;
     --blue:#2f6fb0;     /* 강조 */
-    --accent:#c79a3a;   /* 포인트(상단 라인·섹션 좌측 바·골드). 브랜드에 맞게 1색만 조정 가능 */
+    --accent:#c79a3a;   /* 포인트(상단 라인, 섹션 좌측 바, 골드). 브랜드에 맞게 1색만 조정 가능 */
     --line:#d7e0ea;
     --line-2:#e8eef5;
     --soft:#f5f8fc;
@@ -157,7 +157,7 @@
   }
 
   /* ===== 페이지별 상하 여백 (running spacer) =====
-     @page margin:0 을 유지(브라우저 머리글·바닥글 차단)하면서 모든 페이지에 상하 여백을 주기 위해,
+     @page margin:0 을 유지(브라우저 머리글, 바닥글 차단)하면서 모든 페이지에 상하 여백을 주기 위해,
      전체 콘텐츠를 표로 감싸고 표의 thead/tfoot 을 매 페이지 반복되는 여백 띠로 사용한다. */
   .psheet{ width:100%; border-collapse:collapse; }
   .psheet > thead > tr > td.psheet-cell,
@@ -166,8 +166,8 @@
   .psheet > tbody > tr{ page-break-inside:auto; }
   .run-top, .run-bot{ height:0; }
 
-  /* ===== 인쇄 (A4 / PDF) — @page margin:0 은 수정하지 말 것(머리글·바닥글 차단) ===== */
-  /* @page 여백을 0 으로 둬야 브라우저 기본 머리글·바닥글(날짜·제목·URL·페이지번호)이 찍히지 않는다.
+  /* ===== 인쇄 (A4 / PDF) — @page margin:0 은 수정하지 말 것(머리글, 바닥글 차단) ===== */
+  /* @page 여백을 0 으로 둬야 브라우저 기본 머리글, 바닥글(날짜, 제목, URL, 페이지번호)이 찍히지 않는다.
      A4 여백은 페이지가 아니라 .sheet 패딩으로 준다(화면과 동일한 16mm 15mm 14mm). */
   @page{ size:A4; margin:0; }
   @media print{
@@ -177,7 +177,7 @@
     .sheet::before{display:none;}
     .run-top{ height:16mm; }   /* 매 페이지 상단 여백 */
     .run-bot{ height:14mm; }   /* 매 페이지 하단 여백 */
-    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }  /* 네이비 헤더·배너 음영을 PDF 에 출력 */
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }  /* 네이비 헤더, 배너 음영을 PDF 에 출력 */
   }
 </style>
 </head>
@@ -187,7 +187,7 @@
 <thead><tr><td class="psheet-cell"><div class="run-top"></div></td></tr></thead>
 <tbody><tr><td class="psheet-cell">
 
-  <!-- [공통·필수] 머리글 -->
+  <!-- [공통, 필수] 머리글 -->
   <header class="masthead">
     <div class="title">
       <h1>견 적 서</h1>
@@ -200,28 +200,28 @@
     </div>
   </header>
 
-  <!-- [공통·필수] 당사자 (수신=고객사, 공급=심플리즘 고정) -->
+  <!-- [공통, 필수] 당사자 (수신=고객사, 공급=심플리즘 고정) -->
   <div class="parties">
     <div class="party receiver">
-      <h3>RECEIVER · 수신</h3>
+      <h3>RECEIVER,  수신</h3>
       <div class="row"><span class="k">회사</span><span class="v">「고객사명」</span></div>
       <div class="row"><span class="k">건명</span><span class="v">「건명」</span></div>
     </div>
     <div class="party supplier">
-      <h3>SUPPLIER · 공급</h3>
+      <h3>SUPPLIER,  공급</h3>
       <div class="row"><span class="k">회사</span><span class="v">심플리즘(주)</span></div>
       <div class="row"><span class="k">주소</span><span class="v">「제안사 주소」</span></div>
-      <div class="row"><span class="k">문의</span><span class="v">「제안사 담당자명 · 연락처」</span></div>
+      <div class="row"><span class="k">문의</span><span class="v">「제안사 담당자명,  연락처」</span></div>
     </div>
   </div>
 
-  <!-- [공통·필수] 합계 배너 (VAT 별도/포함 라벨은 7-1 확인값에 맞춤) -->
+  <!-- [공통, 필수] 합계 배너 (VAT 별도/포함 라벨은 7-1 확인값에 맞춤) -->
   <div class="total-banner">
     <span class="lab"><b>합계 금액</b>부가세(VAT) 포함</span>
     <span class="amt"><span class="won">₩</span>「합계 금액」</span>
   </div>
 
-  <!-- [공통·필수] 견적 내역 -->
+  <!-- [공통, 필수] 견적 내역 -->
   <section>
     <h2>견적 내역</h2>
     <table class="items">
@@ -251,7 +251,7 @@
     </table>
   </section>
 
-  <!-- [공통·필수] 거래 조건 (값은 7-1 확인 후 확정) -->
+  <!-- [공통, 필수] 거래 조건 (값은 7-1 확인 후 확정) -->
   <section>
     <h2>거래 조건</h2>
     <div class="cond">
@@ -264,7 +264,7 @@
     </div>
   </section>
 
-  <!-- [선택] 견적 전제 조건 (일반어만. 산정 기법·단가 방법론·내부 용어 금지) -->
+  <!-- [선택] 견적 전제 조건 (일반어만. 산정 기법, 단가 방법론, 내부 용어 금지) -->
   <section>
     <h2>견적 전제 조건</h2>
     <ul class="assume">
@@ -274,21 +274,21 @@
     </ul>
   </section>
 
-  <!-- [선택] 과업 세부 내역 부록 (화면·항목 수십~백 단위의 큰 요구일 때만. 견적 내역 각 항목의 산출물 목록. 작을 땐 섹션 삭제) -->
+  <!-- [선택] 과업 세부 내역 부록 (화면, 항목 수십~백 단위의 큰 요구일 때만. 견적 내역 각 항목의 산출물 목록. 작을 땐 섹션 삭제) -->
   <section>
     <h2>[부록] 과업 세부 내역 — 항목별 산출물</h2>
-    <div class="note">「견적 내역」 각 항목에 포함되는 세부 산출물(화면·기능)입니다. 공수·금액은 견적 내역의 항목별 합계를 따릅니다.</div>
+    <div class="note">「견적 내역」 각 항목에 포함되는 세부 산출물(화면, 기능)입니다. 공수, 금액은 견적 내역의 항목별 합계를 따릅니다.</div>
     <table class="excl">
-      <thead><tr><th>견적 항목</th><th>세부 산출물 (화면 · 기능)</th></tr></thead>
+      <thead><tr><th>견적 항목</th><th>세부 산출물 (화면,  기능)</th></tr></thead>
       <tbody>
-        <!-- 견적 내역의 항목 수만큼 행 복제. 내부 용어(tier·복잡도·M/D 내재 등) 금지 — 산출물 명칭만 나열 -->
-        <tr><td>「견적 항목」</td><td>「세부 산출물(화면·기능) 나열」</td></tr>
-        <tr><td>「견적 항목」</td><td>「세부 산출물(화면·기능) 나열」</td></tr>
+        <!-- 견적 내역의 항목 수만큼 행 복제. 내부 용어(tier, 복잡도, M/D 내재 등) 금지 — 산출물 명칭만 나열 -->
+        <tr><td>「견적 항목」</td><td>「세부 산출물(화면, 기능) 나열」</td></tr>
+        <tr><td>「견적 항목」</td><td>「세부 산출물(화면, 기능) 나열」</td></tr>
       </tbody>
     </table>
   </section>
 
-  <!-- [공통·필수] 서명 / 직인 -->
+  <!-- [공통, 필수] 서명 / 직인 -->
   <div class="sign">
     <div class="stmt">
       위와 같이 견적합니다.
@@ -300,7 +300,7 @@
     </div>
   </div>
 
-  <!-- [공통·필수] 푸터 -->
+  <!-- [공통, 필수] 푸터 -->
   <div class="foot">
     심플리즘(주) &nbsp;|&nbsp; 「건명」 견적서 &nbsp;|&nbsp; 「YYYY. MM. DD.」
   </div>

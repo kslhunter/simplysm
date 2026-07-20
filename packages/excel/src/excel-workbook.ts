@@ -78,7 +78,7 @@ export class ExcelWorkbook {
     const wbXml = (await this.zipCache.get("xl/workbook.xml")) as IWorkbookModel;
     const newWsRelId = wbXml.addWorksheet(name).lastWsRelId!;
 
-    // content-type·rels·빈 worksheet 파트 등록 (포맷별 처리는 ZipCache 위임)
+    // content-type, rels, 빈 worksheet 파트 등록 (포맷별 처리는 ZipCache 위임)
     const fileName = await this.zipCache.registerWorksheet(newWsRelId);
 
     const ws = new ExcelWorksheet(this.zipCache, newWsRelId, fileName);

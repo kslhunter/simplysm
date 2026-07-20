@@ -2,7 +2,7 @@ import type { ExcelConditionalRuleStyle } from "../types";
 import type { ExcelStyle } from "./shared/excel-style";
 import type { IExcelModel } from "./excel-model";
 
-/** xl/styles.{xml,bin} 파트 모델 계약. numFmt·font·fill·border·xf·dxf 관리. */
+/** xl/styles.{xml,bin} 파트 모델 계약. numFmt, font, fill, border, xf, dxf 관리. */
 export interface IStyleModel extends IExcelModel {
   /** 스타일을 등록하고 styleId(문자열 핸들) 반환. 동일 스타일은 재사용. */
   add(style: ExcelStyle): string;

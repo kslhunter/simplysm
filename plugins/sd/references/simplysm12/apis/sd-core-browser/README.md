@@ -1,12 +1,14 @@
 # @simplysm/sd-core-browser
 
-브라우저 환경 전용 코어 모듈. `Blob`/`Element`/`HTMLElement` 프로토타입에 DOM 조작 헬퍼를 주입(side-effect import)하고, `IntersectionObserver` 기반 측정 유틸을 제공. `import "@simplysm/sd-core-browser"` 만 하면 전역 프로토타입 메서드가 추가됨 (`@simplysm/sd-core-common` 도 함께 로드).
+브라우저 환경 전용 코어 모듈.
+`Blob`/`Element`/`HTMLElement` 프로토타입에 DOM 조작 헬퍼를 주입(side-effect import)하고, `IntersectionObserver` 기반 측정 유틸을 제공.
+`import "@simplysm/sd-core-browser"` 만 하면 전역 프로토타입 메서드가 추가됨 (`@simplysm/sd-core-common` 도 함께 로드).
 
 ## 사용 트리거 인덱스
 
 - **Blob.download** — `Blob` 데이터를 파일로 다운로드 트리거할 때.
 - **Element 탐색 확장** — `:scope` 한정 셀렉터로 자식/부모 요소를 찾거나 부모 체인을 수집할 때 (`findAll`/`findFirst`/`getParents`/`prependChild`).
-- **Element 포커스 확장** — 포커스 가능한 요소를 판별·탐색할 때 (`isFocusable`/`findFocusableAll`/`findFocusableFirst`/`findFocusableParent`).
+- **Element 포커스 확장** — 포커스 가능한 요소를 판별, 탐색할 때 (`isFocusable`/`findFocusableAll`/`findFocusableFirst`/`findFocusableParent`).
 - **Element 가시성/위치 확장** — 요소가 보이는지/offset 컨테이너인지 판별할 때 (`isVisible`/`isOffsetElement`).
 - **Element 클립보드 확장** — 요소 내용을 클립보드에 복사/붙여넣기할 때 (`copyAsync`/`pasteAsync`).
 - **HTMLElement 레이아웃 확장** — 강제 리페인트, 부모 기준 상대 offset 계산, 조건부 스크롤 시 (`repaint`/`getRelativeOffset`/`scrollIntoViewIfNeeded`).
@@ -14,7 +16,9 @@
 
 ## Blob 확장 (`Blob.ext`)
 
-- `Blob.prototype.download(fileName: string): void` — `URL.createObjectURL`로 임시 링크를 만들고 `<a download>` 클릭을 트리거해 파일 저장 유도. `fileName`: 저장될 파일명. (ObjectURL 해제는 코드상 없음)
+- `Blob.prototype.download(fileName: string): void` — `URL.createObjectURL`로 임시 링크를 만들고 `<a download>` 클릭을 트리거해 파일 저장 유도.
+  - `fileName`: 저장될 파일명.
+  - (ObjectURL 해제는 코드상 없음)
 
 ## Element 탐색 확장 (`Element.ext`)
 
@@ -28,7 +32,12 @@
 
 ## Element 포커스 확장 (`Element.ext`)
 
-포커스 가능 판정 셀렉터 집합: `a[href]:not([hidden])`, `button:not([disabled])`, `area[href]:not([hidden])`, `input:not([disabled]):not([hidden]):not(.sd-invalid-input)`, `select`/`textarea`(disabled·hidden 제외), `iframe`/`object`/`embed`(hidden 제외), `*[tabindex]:not([hidden])`, `*[contenteditable]:not([hidden])`.
+포커스 가능 판정 셀렉터 집합:
+
+- `a[href]:not([hidden])`, `button:not([disabled])`, `area[href]:not([hidden])`.
+- `input:not([disabled]):not([hidden]):not(.sd-invalid-input)`.
+- `select`/`textarea`(disabled, hidden 제외), `iframe`/`object`/`embed`(hidden 제외).
+- `*[tabindex]:not([hidden])`, `*[contenteditable]:not([hidden])`.
 
 - `isFocusable(): boolean` — 자기 자신이 위 포커스 셀렉터 집합에 `matches` 하면 `true`.
 - `findFocusableAll(): TFocusableElement[]` — 하위(`:scope` 한정)에서 포커스 가능한 모든 요소 반환.
@@ -39,7 +48,7 @@
 ## Element 가시성/위치 확장 (`Element.ext`)
 
 - `isOffsetElement(): boolean` — `getComputedStyle(this).position`이 `relative`/`absolute`/`fixed`/`sticky` 중 하나면 `true`. offset 부모 컨테이너 여부 판별용.
-- `isVisible(): boolean` — `getClientRects().length > 0` 이고 `visibility !== "hidden"` 이며 `opacity !== "0"` 일 때 `true`. (display:none·투명·미렌더 요소를 false 처리)
+- `isVisible(): boolean` — `getClientRects().length > 0` 이고 `visibility !== "hidden"` 이며 `opacity !== "0"` 일 때 `true`. (display:none, 투명, 미렌더 요소를 false 처리)
 
 ## Element 클립보드 확장 (`Element.ext`)
 
@@ -51,12 +60,18 @@
 ## HTMLElement 레이아웃 확장 (`HtmlElement.ext`)
 
 - `repaint(): void` — `this.offsetHeight`를 읽어 강제 리플로우/리페인트를 유발(레이아웃 갱신 강제용).
-- `getRelativeOffset(parent: HTMLElement | string): { top: number; left: number }` — 요소의 `parent` 기준 상대 위치 계산. `parent`가 문자열이면 `closest(parent)`로 조상 탐색, 결과가 `HTMLElement`가 아니면 `Error("Parent element not found")` throw. `getBoundingClientRect` 차이에 스크롤(`scrollTop`/`scrollLeft`), 중간 조상들의 `borderTopWidth`/`borderLeftWidth`, transform `DOMMatrix` 보정을 반영.
-- `scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void` — `target` 위치가 현재 스크롤+`offset` 안쪽보다 위/왼쪽에 있을 때만 `scrollTop`/`scrollLeft`를 `target - offset`으로 조정. `offset` 기본값 `{ top: 0, left: 0 }`. (필요할 때만 스크롤)
+- `getRelativeOffset(parent: HTMLElement | string): { top: number; left: number }` — 요소의 `parent` 기준 상대 위치 계산.
+  - `parent`가 문자열이면 `closest(parent)`로 조상 탐색, 결과가 `HTMLElement`가 아니면 `Error("Parent element not found")` throw.
+  - `getBoundingClientRect` 차이에 스크롤(`scrollTop`/`scrollLeft`), 중간 조상들의 `borderTopWidth`/`borderLeftWidth`, transform `DOMMatrix` 보정을 반영.
+- `scrollIntoViewIfNeeded(target: { top: number; left: number }, offset?: { top: number; left: number }): void`
+  - `target` 위치가 현재 스크롤+`offset` 안쪽보다 위/왼쪽에 있을 때만 `scrollTop`/`scrollLeft`를 `target - offset`으로 조정.
+  - `offset` 기본값 `{ top: 0, left: 0 }`.
 
 ## HtmlElementUtils
 
-- `static getBoundsAsync(els: HTMLElement[]): Promise<{ target: HTMLElement; top: number; left: number; width: number; height: number }[]>` — `IntersectionObserver`로 전달된 요소들을 한 번 관찰해 첫 콜백에서 `disconnect` 후 각 요소의 `boundingClientRect`(top/left/width/height)와 `target`을 묶어 resolve. 레이아웃 thrashing 없이 다수 요소 bounds를 비동기 일괄 측정할 때 사용.
+- `static getBoundsAsync(els: HTMLElement[]): Promise<{ target: HTMLElement; top: number; left: number; width: number; height: number }[]>`
+  - `IntersectionObserver`로 전달된 요소들을 한 번 관찰해 첫 콜백에서 `disconnect` 후 각 요소의 `boundingClientRect`(top/left/width/height)와 `target`을 묶어 resolve.
+  - 레이아웃 thrashing 없이 다수 요소 bounds를 비동기 일괄 측정할 때 사용.
 
 ## 호환성
 

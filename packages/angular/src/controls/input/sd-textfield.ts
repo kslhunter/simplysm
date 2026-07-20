@@ -330,7 +330,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
 
   private readonly _inputElRef = viewChild<ElementRef<HTMLInputElement>>("inputEl");
 
-  // 실제 input 의 브라우저 native 제약 위반(이메일 형식·날짜 미완성 등) 메시지. onInput/onBlur 에서 갱신.
+  // 실제 input 의 브라우저 native 제약 위반(이메일 형식, 날짜 미완성 등) 메시지. onInput/onBlur 에서 갱신.
   private readonly _nativeInvalidMessage = signal("");
 
   // IME 조합(한글 등) 중 여부. 조합 중에는 미완성 자모가 model 로 흐르지 않도록 갱신을 보류.
@@ -373,11 +373,11 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
         if (this._composing) return;
 
         // 편집(포커스) 중이라도 변경 origin 을 구분한다.
-        // 사용자 입력이 만든 DOM(정규화 차이·진행 중 입력 포함)은 보호하고,
-        // 모델만 외부에서 바뀐 경우(프로그래밍적 리셋·prefill·표시옵션 변경)는 되써서 반영한다.
+        // 사용자 입력이 만든 DOM(정규화 차이, 진행 중 입력 포함)은 보호하고,
+        // 모델만 외부에서 바뀐 경우(프로그래밍적 리셋, prefill, 표시옵션 변경)는 되써서 반영한다.
         if (document.activeElement === inputEl) {
           const domParsed = this._handler().parse(inputEl.value, { format: this.format() });
-          // DOM raw 가 현재 모델의 유효한 표현이면(사용자 입력 유래) 되쓰지 않아 캐럿·IME 보호
+          // DOM raw 가 현재 모델의 유효한 표현이면(사용자 입력 유래) 되쓰지 않아 캐럿, IME 보호
           const domReflectsModel =
             domParsed != null &&
             this._handler().toControlValue(domParsed, {
@@ -397,9 +397,8 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
     }
 
     setupInvalid(() => {
-      // 비활성·읽기전용 필드는 사용자가 편집할 수 없으므로 검증에서 제외 (네이티브 disabled 동작과 동일)
-      if (this.disabled() || this.readonly()) return "";
-
+      // 검증은 편집 가능 여부와 무관하다. disabled, readonly 여도 값이 제약을 어기면 invalid 다.
+      // 값이 무의미한 맥락이면 소비자가 제약(required 등)을 함께 내려야 한다.
       const value = this.value();
       const handlerErrors = this._handler().validate(value, {
         required: this.required(),
@@ -420,7 +419,7 @@ export class SdTextfield<K extends keyof SdTextfieldTypes> {
         }
       }
 
-      // 브라우저 native 제약 위반(이메일 형식·날짜 미완성 등)을 우리 검증(빨간점)에 합류
+      // 브라우저 native 제약 위반(이메일 형식, 날짜 미완성 등)을 우리 검증(빨간점)에 합류
       const nativeMessage = this._nativeInvalidMessage();
       if (nativeMessage !== "") {
         errorMessages.push(nativeMessage);

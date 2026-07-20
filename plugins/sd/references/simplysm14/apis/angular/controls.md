@@ -1,10 +1,17 @@
-# @simplysm/angular — 폼·입력 컨트롤
+# @simplysm/angular — 폼, 입력 컨트롤
 
-버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination 컨트롤 군이다. 모두 standalone · OnPush · `ViewEncapsulation.None`. 값 컨트롤은 대부분 `value`/`from`/`to` 를 `model()` 로 노출하고 `required` 시 내부 `setupInvalid` 로 native validation에 참여함. 공통 lint/template 규칙: [client-rules.md](../../manuals/client-rules.md), `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
+버튼, 텍스트/날짜/숫자 입력, checkbox/switch, select/dropdown, form, collapse, tab, list, gap, pagination 컨트롤 군.
+모두 standalone, OnPush, `ViewEncapsulation.None`.
+값 컨트롤은 대부분 `value`/`from`/`to` 를 `model()` 로 노출하고 `required` 시 내부 `setupInvalid` 로 native validation에 참여함.
+
+- 공통 lint/template 규칙: [client-rules.md](../../manuals/client-rules.md)
+- `SdTab`/`SdTabItem` 사용법: [client-tab.md](../../manuals/client-tab.md)
 
 공통 패턴(여러 컨트롤 공유):
 
-- `theme` literal(8색) — `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"`. 컨트롤 배경/링크 색을 해당 테마로 칠함. `SdCheckbox` 만 `"white"` 추가.
+- `theme` literal(8색) — 컨트롤 배경/링크 색을 해당 테마로 칠함.
+  - 값: `"primary" | "secondary" | "info" | "success" | "warning" | "danger" | "gray" | "blue-gray"`.
+  - `SdCheckbox` 만 `"white"` 추가.
 - `size` — `"sm" | "lg"`(미지정=기본). padding/높이 단계. `SdButton` 만 `"xs"` 추가.
 - `inline`(boolean) — `inline-block` + 자동 너비(기본은 full-width block).
 - `inset`(boolean) — 테두리/라운드 제거(평면/오버레이 스타일).
@@ -30,9 +37,13 @@ class SdButton {
 native `<button>` 을 감싸고 `<ng-content>` 를 투영함. ripple은 `!disabled()` 일 때 켜짐.
 
 - `type` — `"button"`(기본) 일반 버튼, `"submit"` 폼 제출 버튼. native `type` 속성에 그대로.
-- `theme` — 19개 literal. 단색: `primary`/`secondary`/`info`/`success`/`warning`/`danger`/`gray`/`blue-gray`(테마 배경+반전 텍스트, hover 시 진해짐). 링크형: `link`(primary 텍스트), `link-primary`/`link-secondary`/`link-info`/`link-success`/`link-warning`/`link-danger`/`link-gray`/`link-blue-gray`(배경·테두리 투명, 색 텍스트만), `link-rev`(어두운 배경용 반전 텍스트). 미지정 시 기본(컨트롤 배경+primary 테두리).
+- `theme` — 19개 literal. 미지정 시 기본(컨트롤 배경+primary 테두리).
+  - 단색(테마 배경+반전 텍스트, hover 시 진해짐): `primary`/`secondary`/`info`/`success`/`warning`/`danger`/`gray`/`blue-gray`.
+  - 링크형(배경, 테두리 투명, 색 텍스트만): `link-primary`/`link-secondary`/`link-info`/`link-success`/`link-warning`/`link-danger`/`link-gray`/`link-blue-gray`.
+  - `link` — primary 텍스트.
+  - `link-rev` — 어두운 배경용 반전 텍스트.
 - `inline` — true면 `inline-block; width:auto`, false(기본)면 full-width block.
-- `inset` — true면 테두리 없음·라운드 0·primary 텍스트(플랫 링크형).
+- `inset` — true면 테두리 없음, 라운드 0, primary 텍스트(플랫 링크형).
 - `size` — `xs`(가장 작은 padding)/`sm`/`lg`. 미지정=기본 padding.
 - `buttonStyle`/`buttonClass` — 내부 `<button>` 에 적용할 inline style/class.
 
@@ -48,7 +59,8 @@ class SdAnchor {
 `cursor:pointer` 인 inline 링크. `<ng-content>` 투영.
 
 - `disabled` — true면 `opacity:0.3; pointer-events:none`, tabindex 제거.
-- `theme` — 8색(기본 `"primary"`). 링크 텍스트 색. hover 시 밑줄+진한 색(coarse pointer에선 밑줄 없음).
+- `theme` — 8색(기본 `"primary"`) 링크 텍스트 색.
+  - hover 시 밑줄+진한 색(coarse pointer에선 밑줄 없음).
 
 ### `SdAdditionalButton` (`sd-additional-button`)
 
@@ -59,10 +71,11 @@ class SdAdditionalButton {
 }
 ```
 
-좌측에 자유 콘텐츠, 우측에 투영된 `sd-anchor`/`sd-button`(좌측 구분선)을 배치하는 테두리 컨테이너. 콘텐츠는 기본 `<ng-content>`, 버튼은 `<ng-content select="sd-anchor">`/`<ng-content select="sd-button">`.
+좌측에 자유 콘텐츠, 우측에 투영된 `sd-anchor`/`sd-button`(좌측 구분선)을 배치하는 테두리 컨테이너.
+콘텐츠는 기본 `<ng-content>`, 버튼은 `<ng-content select="sd-anchor">`/`<ng-content select="sd-button">`.
 
-- `size` — `"sm"`/`"lg"` 콘텐츠·버튼 padding 단계.
-- `inset` — true면 라운드 0·테두리 없음.
+- `size` — `"sm"`/`"lg"` 콘텐츠, 버튼 padding 단계.
+- `inset` — true면 라운드 0, 테두리 없음.
 
 ### `SdModalSelectButton` (`sd-modal-select-button`)
 
@@ -93,12 +106,14 @@ type SdSelectModalInfo<T extends SdSelectModal<any>> = SdModalInfo<
 - `modal` — 띄울 모달 정의(`selectMode`/`selectedKeys` 는 버튼이 주입하므로 제외된 `SdSelectModalInfo`). **required**.
 - `value` — 선택 key. `selectMode==="multi"` → key 배열, `"single"` → 단일 key.
 - `selectMode` — `"single"`(기본)/`"multi"`. 모달에 전달되고 결과 해석 방식을 정함.
-- `disabled` — true면 검색·지우개 버튼 숨김.
+- `disabled` — true면 검색, 지우개 버튼 숨김.
 - `required` — true면 지우개 버튼 숨김 + 빈 값일 때 `"선택된 항목이 없습니다."` invalid.
 - `searchIcon` — 검색 버튼 아이콘(기본 `tablerSearch`).
-- 동작 — `onSearchClick` 은 `SdModalProvider.showAsync` 로 모달을 열고 결과의 `selectedKeys` 를 multi면 배열, single이면 `[0]` 로 `value` 에 반영. `onEraseClick` 은 multi면 `[]`, single이면 `undefined`.
+- 동작
+  - `onSearchClick` 은 `SdModalProvider.showAsync` 로 모달을 열고 결과의 `selectedKeys` 를 multi면 배열, single이면 `[0]` 로 `value` 에 반영.
+  - `onEraseClick` 은 multi면 `[]`, single이면 `undefined`.
 
-## 텍스트·숫자·날짜 입력
+## 텍스트, 숫자, 날짜 입력
 
 ### `SdTextfield<K>` (`sd-textfield`)
 
@@ -117,10 +132,13 @@ class SdTextfield<K extends keyof SdTextfieldTypes> {
 }
 ```
 
-`type` 으로 native input type·파싱·검증·표시 포맷이 한 번에 결정되는 타입 안전 입력 컨트롤. `value` 타입은 `SdTextfieldTypes[type]` 로 추론됨.
+`type` 으로 native input type, 파싱, 검증, 표시 포맷이 한 번에 결정되는 타입 안전 입력 컨트롤.
+`value` 타입은 `SdTextfieldTypes[type]` 로 추론됨.
 
 - `type` — **required**. `SdTextfieldTypes` key 중 하나(아래).
-- `value` — `type` 별 타입(number→`number`, date→`DateOnly` 등). 빈 입력은 `undefined`. 파싱 실패 시 직전 표시값 복원.
+- `value` — `type` 별 타입(number→`number`, date→`DateOnly` 등).
+  - 빈 입력은 `undefined`.
+  - 파싱 실패 시 직전 표시값 복원.
 - `min`/`max` — `value` 와 같은 타입 경계. 검증 + native attr.
 - `minlength`/`maxlength`/`pattern` — 문자열 타입 길이/정규식 검증.
 - `validatorFn` — 추가 검증 함수. 반환 문자열이 invalid 메시지.
@@ -133,12 +151,23 @@ class SdTextfield<K extends keyof SdTextfieldTypes> {
 
 `type` → 값 타입 매핑(13종). `sdTextfieldTypes` 는 같은 순서의 key 배열.
 
-- `number` → `number`. native control은 `"text"`(콤마 허용), 입력에서 `[0-9-.]` 외 제거 후 parseFloat.
-- `text`/`password`/`color`/`email` → `string`. `password` 표시는 `****`. `color` 는 길이·pattern 검증 생략.
-- `format` → `string`. `format` 마스크의 `X` 위치에만 값 문자를 채움(`XXX-XXXX` 등). `|` 로 길이별 후보.
-- `date`/`month`/`year` → `DateOnly`. native control `date`/`month`/`text`. 표시 `yyyy-MM-dd`/`yyyy-MM`/`yyyy`.
-- `datetime`/`datetime-sec` → `DateTime`. native `datetime-local`. `-sec` 는 초 포함.
-- `time`/`time-sec` → `Time`. native `time`. `-sec` 는 초 포함.
+- `number` → `number`
+  - native control은 `"text"`(콤마 허용), 입력에서 `[0-9-.]` 외 제거 후 parseFloat.
+- `text`/`password`/`color`/`email` → `string`
+  - `password` 표시는 `****`.
+  - `color` 는 길이, pattern 검증 생략.
+- `format` → `string`
+  - `format` 마스크의 `X` 위치에만 값 문자를 채움(`XXX-XXXX` 등).
+  - `|` 로 길이별 후보.
+- `date`/`month`/`year` → `DateOnly`
+  - native control `date`/`month`/`text`.
+  - 표시 `yyyy-MM-dd`/`yyyy-MM`/`yyyy`.
+- `datetime`/`datetime-sec` → `DateTime`
+  - native `datetime-local`.
+  - `-sec` 는 초 포함.
+- `time`/`time-sec` → `Time`
+  - native `time`.
+  - `-sec` 는 초 포함.
 
 ### `SdTextarea` (`sd-textarea`)
 
@@ -207,9 +236,10 @@ class SdDateRangePicker {
 
 기간 종류 select + 날짜 입력. `periodType` 별로 UI/동기화가 달라짐.
 
-- `periodType` — `"일"`(단일일, `to=from`), `"월"`(월 단위, `from`=그 달 1일·`to`=말일로 스냅), `"범위"`(기본, from/to range). 변경 시 그에 맞게 `from`/`to` 동기화.
+- `periodType` — 변경 시 그에 맞게 `from`/`to` 동기화.
+  - 값: `"일"`(단일일, `to=from`), `"월"`(월 단위, `from`=그 달 1일, `to`=말일로 스냅), `"범위"`(기본, from/to range).
 
-## checkbox·switch
+## checkbox, switch
 
 ### `SdCheckbox` (`sd-checkbox`)
 
@@ -244,7 +274,10 @@ class SdSwitch {
 }
 ```
 
-토글 스위치. `value` 클릭/Space 토글. on 상태(`data-sd-on`) 트랙 배경=`--sd-bg-{theme}-solid`, 테마 미지정 시 success 색.
+토글 스위치.
+
+- `value` — 클릭/Space 토글.
+- on 상태(`data-sd-on`) 트랙 배경=`--sd-bg-{theme}-solid`, 테마 미지정 시 success 색.
 
 ### `SdCheckboxGroup<T>` / `SdCheckboxGroupItem<T>` (`sd-checkbox-group` / `sd-checkbox-group-item`)
 
@@ -262,7 +295,7 @@ class SdCheckboxGroupItem<T> {
 - 그룹 `value` — 체크된 item value 배열. item이 체크되면 자기 `value` 를 push, 해제되면 strict `!==` 로 filter.
 - item `value` — **required**. `disabled` 는 그룹에서 상속.
 
-## select·dropdown
+## select, dropdown
 
 ### `SdSelect<M, T>` (`sd-select`)
 
@@ -302,9 +335,9 @@ class SdSelectItem<T> {
 ```
 
 - `value` — 항목 값. multi면 `isSelected` 시 체크박스 표시.
-- `disabled` — 선택 차단·전체선택 제외.
-- `hidden` — `display:none`·전체선택 제외.
-- 키보드 — Space는 항상 toggle(닫지 않음), Enter는 single이면 select(닫기)·multi면 toggle.
+- `disabled` — 선택 차단, 전체선택 제외.
+- `hidden` — `display:none`, 전체선택 제외.
+- 키보드 — Space는 항상 toggle(닫지 않음), Enter는 single이면 select(닫기), multi면 toggle.
 
 ### `SdSelectButton` (`sd-select-button`)
 
@@ -321,7 +354,7 @@ class SdDropdownPopup {} // 입력 없음, <ng-content> 투영
 ```
 
 - `open` — 팝업 열림 상태(양방향). 열리면 popup 요소를 `document.body` 로 옮겨 host 근처 위치(뷰포트에 따라 위/왼쪽 flip), 모바일(`max-width:520px`)은 backdrop + 슬라이드업.
-- `disabled` — true면 비포커스·열기 차단.
+- `disabled` — true면 비포커스, 열기 차단.
 - 키보드 — host에서 ArrowDown(열기/팝업 첫 요소 포커스), ArrowUp(닫기), Space(토글), Escape(닫기). popup은 내용 높이 300px 초과 시 스크롤.
 
 ## form
@@ -342,7 +375,7 @@ class SdForm {
 - `requestSubmit()` — 프로그램적으로 submit 트리거.
 - 검증 통합 — 자식 컨트롤이 `setupInvalid` 로 등록한 hidden `.sd-invalid-input` 의 customValidity를 native form이 집계함.
 
-## collapse·tab·list·gap·pagination
+## collapse, tab, list, gap, pagination
 
 ### `SdCollapse` (`sd-collapse`) / `SdCollapseIcon` (`sd-collapse-icon`)
 
@@ -371,7 +404,9 @@ class SdTabItem<T> {
 } // required
 ```
 
-- `SdTab.value` — 활성 탭 값. `SdTabItem` 은 `value()===parent.value()` 일 때 활성(strict `===`). item 클릭 시 `parent.value.set(value())`.
+- `SdTab.value` — 활성 탭 값.
+- `SdTabItem` 은 `value()===parent.value()` 일 때 활성(strict `===`).
+  - item 클릭 시 `parent.value.set(value())`.
 
 ### `SdList` (`sd-list`) / `SdListItem` (`sd-list-item`)
 
@@ -386,12 +421,14 @@ class SdListItem {
 }
 ```
 
-- `SdList.inset` — true면 배경·테두리 제거(중첩 list는 항상 카드 제거).
-- `layout` — `"accordion"`(기본): children 있으면 클릭 토글·collapse 아이콘·ripple·들여쓰기. `"flat"`: 헤더형(작은 글씨·dimmed·`cursor:default`), children 항상 펼침.
+- `SdList.inset` — true면 배경, 테두리 제거(중첩 list는 항상 카드 제거).
+- `layout`
+  - `"accordion"`(기본): children 있으면 클릭 토글, collapse 아이콘, ripple, 들여쓰기.
+  - `"flat"`: 헤더형(작은 글씨, dimmed, `cursor:default`), children 항상 펼침.
 - `open` — accordion 펼침 상태. children 있을 때 클릭 토글.
 - `selected` — 선택 강조(bold+highlight).
 - `selectedIcon` — children 없을 때 선택 색 아이콘 표시.
-- `readonly` — 클릭 토글·ripple 비활성.
+- `readonly` — 클릭 토글, ripple 비활성.
 
 ### `SdGap` (`sd-gap`)
 
@@ -423,6 +460,6 @@ class SdPagination {
 ```
 
 - `currentPage` — **0-based** 현재 페이지(표시는 +1). 페이지 변경은 output이 아니라 이 model 양방향 바인딩으로 전달.
-- `totalPageCount` — 총 페이지 수. `0` 이면 페이지 미표시·prev/next 비활성.
+- `totalPageCount` — 총 페이지 수. `0` 이면 페이지 미표시, prev/next 비활성.
 - `visiblePageCount` — 한 그룹에 보일 페이지 번호 수(기본 10).
 - 메서드 — `goToPage`/`goToNextGroup`/`goToPrevGroup`/`goToFirst`/`goToLast` 가 `currentPage.set` 호출.

@@ -1,6 +1,9 @@
 # @simplysm/sd-orm-common — 엔티티 정의 데코레이터
 
-클래스/프로퍼티에 붙여 테이블 정의(`ITableDef`)를 `Reflect` 메타데이터로 누적함. 정의는 `DbContext.tableDefs`/`Queryable`/초기화·마이그레이션에서 읽힘. 모든 데코레이터는 `@simplysm/sd-core-common` 의 `TClassDecoratorReturn`/`TPropertyDecoratorReturn` 을 반환. `@Column` 의 타입 추론은 `Reflect.getMetadata("design:type")` 에 의존하므로 emitDecoratorMetadata 활성화 필요.
+- 클래스/프로퍼티에 붙여 테이블 정의(`ITableDef`)를 `Reflect` 메타데이터로 누적함.
+- 정의는 `DbContext.tableDefs`/`Queryable`/초기화, 마이그레이션에서 읽힘.
+- 모든 데코레이터는 `@simplysm/sd-core-common` 의 `TClassDecoratorReturn`/`TPropertyDecoratorReturn` 을 반환.
+- `@Column` 의 타입 추론은 `Reflect.getMetadata("design:type")` 에 의존하므로 emitDecoratorMetadata 활성화 필요.
 
 ## @Table&lt;T&gt;(def)
 
@@ -43,7 +46,8 @@ FK 의 대상 측(부모)에서 역방향 컬렉션/단일을 노출.
 
 ## @ReferenceKey / @ReferenceKeyTarget
 
-`@ForeignKey`/`@ForeignKeyTarget` 와 동일한 인자·동작이지만 실제 DB FK 제약을 만들지 않는 논리적 관계(별도 메타 슬롯 `referenceKeys`/`referenceKeyTargets` 에 저장). `include` 시에는 FK 와 동일하게 JOIN 으로 처리되나 초기화 시 ADD FOREIGN KEY/INDEX 생성 대상에서 제외됨.
+`@ForeignKey`/`@ForeignKeyTarget` 와 동일한 인자, 동작이지만 실제 DB FK 제약을 만들지 않는 논리적 관계(별도 메타 슬롯 `referenceKeys`/`referenceKeyTargets` 에 저장).
+`include` 시에는 FK 와 동일하게 JOIN 으로 처리되나 초기화 시 ADD FOREIGN KEY/INDEX 생성 대상에서 제외됨.
 
 - `@ReferenceKey<T>(columnNames, targetTypeFwd, description)`.
 - `@ReferenceKeyTarget<T, P>(sourceTypeFwd, referenceKeyPropertyKey, description, multiplicity?)`.
@@ -62,4 +66,5 @@ FK 의 대상 측(부모)에서 역방향 컬렉션/단일을 노출.
 `@Table` 메타데이터의 형태(직접 다룰 일은 드묾, `DbDefUtils` 로 접근):
 
 - `ITableNameDef { database?; schema?; name }` / `ITableDef`(columns/foreignKeys/foreignKeyTargets/indexes/referenceKeys/referenceKeyTargets/view?/procedure? 포함).
-- `IColumnDef`, `IForeignKeyDef`, `IForeignKeyTargetDef`(`isSingle`), `IIndexDef`(`columns[].order/orderBy/unique`), `IReferenceKeyDef`, `IReferenceKeyTargetDef`. 각 Def 의 `typeFwd`/`targetTypeFwd`/`sourceTypeFwd` 는 지연 타입 해석 함수.
+- `IColumnDef`, `IForeignKeyDef`, `IForeignKeyTargetDef`(`isSingle`), `IIndexDef`(`columns[].order/orderBy/unique`), `IReferenceKeyDef`, `IReferenceKeyTargetDef`.
+  각 Def 의 `typeFwd`/`targetTypeFwd`/`sourceTypeFwd` 는 지연 타입 해석 함수.

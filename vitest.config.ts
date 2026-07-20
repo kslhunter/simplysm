@@ -9,7 +9,7 @@ process.env["VER"] = "1.0.0-test";
 // 소스맵 경고 억제:
 // - "Failed to load source map": typescript 등 제3자 패키지가 sourceMappingURL 주석만 남기고 .map 을 배포 안 함.
 // - "points to missing source files": 변환 체인 sourcesContent 부재 등으로 원본을 못 찾는 vite/vitest 노이즈.
-// 둘 다 기능·테스트 결과 무영향이며 우리 코드로 원천 수정 불가. 이 두 패턴만 버리고 나머지 경고는 그대로 통과시킨다.
+// 둘 다 기능, 테스트 결과 무영향이며 우리 코드로 원천 수정 불가. 이 두 패턴만 버리고 나머지 경고는 그대로 통과시킨다.
 // vitest 가 자체 로거를 주입해 root customLogger 를 덮으므로, configResolved 시점의 실제 config.logger 를 직접 감싼다.
 const sourcemapNoise = /points to missing source files|Failed to load source map/;
 function suppressSourcemapWarnings(): Plugin {
@@ -30,6 +30,13 @@ function suppressSourcemapWarnings(): Plugin {
     },
   };
 }
+
+// browser 모드 project 는 api.port 를 명시 고정한다.
+// vitest 기본 포트(63315)는 Windows 의 TCP 예약 포트 범위(Hyper-V/WinNAT 이 잡는 60000번대)에 걸려
+// listen EACCES 로 서버 자체가 못 뜬다. 예약 대역 밖 값을 project 마다 다르게 줘 병렬 실행 충돌도 피한다.
+const BROWSER_API_PORT = 5183;
+const ANGULAR_API_PORT = 5184;
+const SERVICE_API_PORT = 5185;
 
 export default defineConfig({
   plugins: [suppressSourcemapWarnings()],
@@ -65,7 +72,6 @@ export default defineConfig({
           name: "browser",
           include: ["packages/*/tests/**/*.spec.{ts,js,mjs,cjs}"],
           exclude: [
-            "packages/cc/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/sd-cli/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/core-node/tests/**/*.spec.{ts,js,mjs,cjs}",
             "packages/lint/tests/**/*.spec.{ts,js,mjs,cjs}",
@@ -75,6 +81,7 @@ export default defineConfig({
             "packages/angular/tests/**/*.spec.{ts,js,mjs,cjs}",
           ],
           browser: {
+            api: { port: BROWSER_API_PORT },
             provider: playwright(),
             enabled: true,
             headless: true,
@@ -92,21 +99,13 @@ export default defineConfig({
           include: ["packages/angular/tests/**/*.spec.{ts,js,mjs,cjs}"],
           setupFiles: ["./packages/angular/tests/vitest.setup.ts"],
           browser: {
+            api: { port: ANGULAR_API_PORT },
             provider: playwright(),
             enabled: true,
             headless: true,
             screenshotFailures: false,
             instances: [{ browser: "chromium", viewport: { width: 1920, height: 1080 } }],
           },
-        },
-      },
-      // Plugin tests (에이전트 확장 - rules 주입 구조 등)
-      {
-        extends: true,
-        test: {
-          name: "plugins",
-          environment: "node",
-          include: ["plugins/*/tests/**/*.spec.ts"],
         },
       },
       // Integration tests - esbuild banner env injection
@@ -169,6 +168,7 @@ export default defineConfig({
           globalSetup: "./tests/service/vitest.setup.ts",
           fileParallelism: true,
           browser: {
+            api: { port: SERVICE_API_PORT },
             provider: playwright(),
             enabled: true,
             headless: true,

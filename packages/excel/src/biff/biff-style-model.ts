@@ -14,7 +14,7 @@ const STYLE_WRITE_LIMIT =
 const hexBytes = (h: string): Uint8Array =>
   Uint8Array.from(h.split(" ").map((x) => parseInt(x, 16)));
 
-// boa-sample.xlsb 정답지에서 추출한 기본 슬롯 (Calibri 11 / none·gray125 fill / empty border / General xf).
+// boa-sample.xlsb 정답지에서 추출한 기본 슬롯 (Calibri 11 / none, gray125 fill / empty border / General xf).
 const SLOT_FONT = hexBytes(
   "dc 00 00 00 90 01 00 00 00 02 00 00 07 01 00 00 00 00 00 ff 02 07 00 00 00 43 00 61 00 6c 00 69 00 62 00 72 00 69 00",
 );
@@ -37,7 +37,7 @@ const SLOT_CELLSTYLEXF = hexBytes("ff ff 00 00 00 00 00 00 00 00 00 00 10 10 00 
  *
  * **쓰기**(새 워크북, 빈 모델): numberFormat 만 지원. 기본 슬롯(font/fill/border/cellStyleXF)을
  * 정답지 byte 로 고정하고, cellXFs 만 numFmtId 별로 추가하여 styles.bin 을 재생성한다.
- * 배경·테두리·폰트·정렬은 후속 단계.
+ * 배경, 테두리, 폰트, 정렬은 후속 단계.
  */
 export class BiffStyleModel implements IStyleModel {
   private readonly _raw: Bytes | undefined;

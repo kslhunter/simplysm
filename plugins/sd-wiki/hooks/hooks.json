@@ -5,19 +5,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-rootmap.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-rootmap.py\""
           },
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 00-remote.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 10-content.md"
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.ts\" 20-write.md"
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-rules.py\" sd-wiki.md"
           }
         ]
       }
@@ -27,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.py\""
           }
         ]
       }

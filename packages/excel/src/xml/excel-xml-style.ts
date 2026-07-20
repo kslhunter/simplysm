@@ -66,7 +66,7 @@ export class ExcelXmlStyle implements IStyleModel {
     }
   }
 
-  /** @internal 테스트·디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
+  /** @internal 테스트, 디버그용 내부 트리 접근. 상위 레이어는 인터페이스만 사용. */
   get data(): ExcelXmlStyleData {
     return this._data;
   }
@@ -82,9 +82,9 @@ export class ExcelXmlStyle implements IStyleModel {
    * 입력 옵션으로 덮어쓴다. 셀의 xf 가 fontId/fillId/borderId 를 명시하지 않으면 OOXML 스펙상 이 0번 슬롯이
    * 자동 fallback 되므로, "표준" 셀 스타일이 워크북 전역에 적용된다.
    *
-   * `cellXfs[0].xf[0]` 에는 numFmtId·alignment 만 박는다 (fontId/fillId/borderId 는 명시하지 않음).
+   * `cellXfs[0].xf[0]` 에는 numFmtId, alignment 만 박는다 (fontId/fillId/borderId 는 명시하지 않음).
    * 옵션이 없는 자원은 0번 슬롯이 빈 슬롯 (`{}` / patternType="none") 으로 reset 된다.
-   * 미호출 시 기존 cellXfs[0]·0번 슬롯 모두 그대로 보존된다.
+   * 미호출 시 기존 cellXfs[0], 0번 슬롯 모두 그대로 보존된다.
    */
   setDefaultStyle(style: ExcelStyle): void {
     this._data.styleSheet.fonts[0].font[0] = {};

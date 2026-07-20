@@ -1,6 +1,9 @@
 # @simplysm/capacitor-plugin-intent
 
-Android Intent 송수신 Capacitor 플러그인. 산업용 장치(바코드 스캐너, PDA 등) 연동용. 웹 환경에서는 미지원(alert 후 stub 반환).
+Android Intent 송수신 Capacitor 플러그인.
+
+- 용도: 산업용 장치(바코드 스캐너, PDA 등) 연동.
+- 웹 환경에서는 미지원(alert 후 stub 반환).
 
 ## 사용 트리거 인덱스
 
@@ -13,17 +16,26 @@ Android Intent 송수신 Capacitor 플러그인. 산업용 장치(바코드 스�
 `abstract class Intent` — 모든 메서드 static. 내부적으로 `registerPlugin("Intent")` 한 Capacitor 플러그인에 위임.
 
 - `static subscribe(filters: string[], callback: (result: IIntentResult) => void): Promise<() => Promise<void>>`
-  - `filters` — 수신할 Intent action 문자열 배열. 예: `["com.symbol.datawedge.api.RESULT_ACTION"]`. 이 action 들에 해당하는 Intent 가 들어오면 콜백 호출.
+  - `filters` — 수신할 Intent action 문자열 배열. 이 action 들에 해당하는 Intent 가 들어오면 콜백 호출.
+    - 예: `["com.symbol.datawedge.api.RESULT_ACTION"]`.
   - `callback` — 매칭 Intent 수신 시 호출. 인자는 `IIntentResult`.
   - 반환값 — 해제 함수. `await unsub()` 호출 시 해당 구독만 해제(내부적으로 `id` 기반 `unsubscribe`).
 - `static unsubscribeAll(): Promise<void>` — 등록된 모든 Intent 수신기 해제. 개별 해제 함수 없이 일괄 정리할 때.
 - `static send(options: { action: string; extras?: Record<string, unknown> }): Promise<void>` — Intent broadcast 전송.
   - `action` — 전송할 Intent action 문자열(필수).
   - `extras` — 함께 실어 보낼 키-값 데이터(선택).
-- `static getLaunchIntent(): Promise<IIntentResult>` — 앱을 시작시킨 Intent 를 조회. 외부 장치/딥링크가 앱을 띄운 경우 그 action/extras 확인용. 웹에서는 빈 객체 `{}` 반환.
+- `static getLaunchIntent(): Promise<IIntentResult>` — 앱을 시작시킨 Intent 를 조회.
+  - 외부 장치, 딥링크가 앱을 띄운 경우 그 action, extras 확인용.
+  - 웹에서는 빈 객체 `{}` 반환.
 - `static startActivityForResult(options: IStartActivityForResultOptions): Promise<IActivityResult>` — Activity 를 띄우고 그 결과를 await 로 수신.
 
-웹 환경 동작(IntentWeb stub): `subscribe`·`send`·`startActivityForResult` 는 `alert("[Intent] 웹 환경에서는 ... 지원하지 않습니다.")` 후 — `subscribe` 는 `{ id: "web-stub" }`, `send` 는 무동작, `startActivityForResult` 는 `{ resultCode: 0 }`(취소 취급) 반환. `getLaunchIntent` 는 `{}`, `unsubscribe`/`unsubscribeAll` 은 무동작.
+웹 환경 동작(IntentWeb stub): `subscribe`, `send`, `startActivityForResult` 는 `alert("[Intent] 웹 환경에서는 ... 지원하지 않습니다.")` 후 아래처럼 동작.
+
+- `subscribe` — `{ id: "web-stub" }` 반환.
+- `send` — 무동작.
+- `startActivityForResult` — `{ resultCode: 0 }`(취소 취급) 반환.
+- `getLaunchIntent` — `{}` 반환.
+- `unsubscribe`/`unsubscribeAll` — 무동작.
 
 ## 데이터 형태
 
@@ -43,7 +55,8 @@ Android Intent 송수신 Capacitor 플러그인. 산업용 장치(바코드 스�
 
 ### IActivityResult
 `startActivityForResult` 반환 형태.
-- `resultCode: number` — Activity 결과 코드. `-1` = RESULT_OK(성공), `0` = RESULT_CANCELED(취소). 성공 판정은 `resultCode === -1` 로.
+- `resultCode: number` — Activity 결과 코드. 성공 판정은 `resultCode === -1` 로.
+  - 값: `-1` = RESULT_OK(성공), `0` = RESULT_CANCELED(취소).
 - `data?: string` — 결과 데이터 URI.
 - `extras?: Record<string, unknown>` — 결과 추가 데이터.
 

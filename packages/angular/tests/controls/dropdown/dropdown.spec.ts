@@ -4,6 +4,7 @@ import {
   SdDropdownTestDefault,
   SdDropdownTestDisabled,
   SdDropdownTestScrollable,
+  SdDropdownTestSelfDisabling,
   SdDropdownTestWithTabbable,
 } from "./sd-dropdown-test.fixture";
 import { SdDropdown } from "../../../src/controls/dropdown/sd-dropdown";
@@ -426,6 +427,79 @@ describe("Feature 3.1 Slice 3: 외부 포커스 닫기", () => {
     TestBed.flushEffects();
 
     expect(isPopupInBody()).toBe(true);
+  });
+});
+
+describe("팝업 내부 요소가 렌더 중 disabled 될 때 (issue #40)", () => {
+  /**
+   * 포커스를 가진 native button 이 렌더 도중 disabled 되면 브라우저가 동기 blur 를 발사한다.
+   * 이 blur 는 Angular 렌더 콜스택 안에서 dropdown 의 capture 리스너를 실행시킨다.
+   *
+   * NG0600 은 detectChanges() 밖으로 throw 되지 않고 window "error" 로만 새어 나오므로
+   * 그 경로를 수집해 단언한다.
+   */
+  function collectWindowErrors(): { messages: string[]; stop: () => void } {
+    const messages: string[] = [];
+    const onWindowError = (event: ErrorEvent): void => {
+      messages.push(event.message);
+    };
+    window.addEventListener("error", onWindowError);
+    return {
+      messages,
+      stop: () => {
+        window.removeEventListener("error", onWindowError);
+      },
+    };
+  }
+
+  function openAndClickSelfDisablingButton(mouseoverTarget: "button" | "text" | "none"): {
+    errors: string[];
+    popupOpen: boolean;
+  } {
+    setupTestBed(SdDropdownTestSelfDisabling);
+    const fixture = TestBed.createComponent(SdDropdownTestSelfDisabling);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const dropdown = fixture.nativeElement.querySelector("sd-dropdown") as HTMLElement;
+    dropdown.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const popup = document.body.querySelector("sd-dropdown-popup") as HTMLElement;
+    const targetBtn = popup.querySelector(".self-disabling-button") as HTMLButtonElement;
+    const textEl = popup.querySelector(".popup-text") as HTMLElement;
+
+    if (mouseoverTarget === "button") {
+      targetBtn.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+    } else if (mouseoverTarget === "text") {
+      textEl.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+    }
+
+    const collected = collectWindowErrors();
+    targetBtn.focus();
+    targetBtn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    collected.stop();
+
+    return { errors: collected.messages, popupOpen: isPopupInBody() };
+  }
+
+  // Acceptance: 커서가 팝업 밖(키보드 조작 경로)이어도 크래시 없이 팝업이 유지된다
+  it("커서가 팝업 밖일 때 버튼이 자기를 disabled 시켜도 NG0600 없이 팝업이 유지된다", () => {
+    const result = openAndClickSelfDisablingButton("none");
+
+    expect(result.errors.filter((msg) => msg.includes("NG0600"))).toEqual([]);
+    expect(result.popupOpen).toBe(true);
+  });
+
+  // Acceptance: 커서가 팝업 내부여도 동일하게 동작한다
+  it("커서가 팝업 내부일 때 버튼이 자기를 disabled 시켜도 NG0600 없이 팝업이 유지된다", () => {
+    const result = openAndClickSelfDisablingButton("text");
+
+    expect(result.errors.filter((msg) => msg.includes("NG0600"))).toEqual([]);
+    expect(result.popupOpen).toBe(true);
   });
 });
 

@@ -225,7 +225,7 @@ export function patchDevService(
   existingExportNames: string[],
   data: RenderData,
   client: ClientSpec,
-  /** 권한 계산·import 에서 신규 export 로 대체할 기본 export 이름 (기존 라우팅 클라이언트 0개 케이스) */
+  /** 권한 계산, import 에서 신규 export 로 대체할 기본 export 이름 (기존 라우팅 클라이언트 0개 케이스) */
   replaceExportName?: string,
 ): FilePatch {
   const combinedNames = [...existingExportNames, client.appStructureName];

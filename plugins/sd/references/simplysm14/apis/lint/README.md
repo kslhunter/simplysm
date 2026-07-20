@@ -139,6 +139,5 @@ HTML 주석 내 TODO 표기(`<!-- TODO: ... -->`)를 감지해 경고하는 제�
 
 ## 규칙 상세 사용법
 
-각 규칙의 상세 동작, 메시지, 예제는 [rules.md](./rules.md)를 참고함.
-
-eslint-recommended 설정의 각 섹션(JS/TS/HTML/test/config) 역할과 규칙 조정은 [eslint-recommended.md](./eslint-recommended.md)를 참고함.
+- 각 규칙의 상세 동작, 메시지, 예제는 [rules.md](./rules.md)를 참고함.
+- eslint-recommended 설정의 각 섹션(JS/TS/HTML/test/config) 역할과 규칙 조정은 [eslint-recommended.md](./eslint-recommended.md)를 참고함.

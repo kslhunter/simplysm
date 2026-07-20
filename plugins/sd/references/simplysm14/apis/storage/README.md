@@ -1,6 +1,6 @@
 # @simplysm/storage
 
-FTP/FTPS/SFTP 프로토콜로 원격 스토리지(파일 서버)에 연결하여 파일 업로드·다운로드·삭제 등 파일 시스템 작업을 수행함.
+FTP/FTPS/SFTP 프로토콜로 원격 스토리지(파일 서버)에 연결하여 파일 업로드, 다운로드, 삭제 등 파일 시스템 작업을 수행함.
 
 ## 사용 트리거 인덱스
 
@@ -8,13 +8,13 @@ FTP/FTPS/SFTP 프로토콜로 원격 스토리지(파일 서버)에 연결하여
 - **FtpStorageClient** — FTP/FTPS 프로토콜 클라이언트 (직접 사용보다 StorageFactory 권장)
 - **SftpStorageClient** — SFTP 프로토콜 클라이언트 (직접 사용보다 StorageFactory 권장)
 - **StorageProtocol** — 스토리지 프로토콜 타입 정의
-- **StorageConnConfig** — 스토리지 연결 설정 (호스트·포트·사용자·암호)
+- **StorageConnConfig** — 스토리지 연결 설정 (호스트, 포트, 사용자, 암호)
 - **StorageClient** — 스토리지 클라이언트 인터페이스
-- **FileInfo** — 디렉토리 목록 조회 결과 (파일명·파일 여부)
+- **FileInfo** — 디렉토리 목록 조회 결과 (파일명, 파일 여부)
 
 ## StorageFactory
 
-스토리지 연결을 자동으로 생성·관리하는 팩토리. 콜백 패턴으로 연결/종료를 자동 처리하므로 직접 클라이언트를 사용하는 것보다 권장됨.
+스토리지 연결을 자동으로 생성, 관리하는 팩토리. 콜백 패턴으로 연결/종료를 자동 처리하므로 직접 클라이언트를 사용하는 것보다 권장됨.
 
 ### StorageFactory.connect<R>()
 
@@ -29,7 +29,7 @@ static connect<R>(
 스토리지에 연결하고, 콜백 함수를 실행한 뒤, 자동으로 연결을 종료함.
 
 - `type`: `"ftp"` | `"ftps"` | `"sftp"` — 사용할 프로토콜. `"ftp"` = 일반 FTP, `"ftps"` = TLS 암호화 FTP, `"sftp"` = SSH 터널 기반 SFTP.
-- `config`: 연결 설정 (호스트·포트·인증 정보).
+- `config`: 연결 설정 (호스트, 포트, 인증 정보).
 - `fn`: 콜백 함수. 연결된 클라이언트를 매개변수로 받아 동기 또는 비동기 작업을 수행함. 반환값이 Promise로 감싸져 반환됨.
 - 반환: 콜백 함수의 반환값을 Promise로 감싼 결과.
 

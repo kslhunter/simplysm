@@ -5,7 +5,7 @@
 - pptx → slides/<NN>_<title>.png + .jsonl (+ .notes.md 있을 때) (슬라이드별)
 - xlsx → sheets/<NN>_<name>.png + .jsonl (시트별) + workbook.meta.json
 
-xlsx jsonl 한 줄 = 한 행. 좌표는 행번호(`r`)·열문자 키로 명시. 값·수식·시트 메타 통합.
+xlsx jsonl 한 줄 = 한 행. 좌표는 행번호(`r`), 열문자 키로 명시. 값, 수식, 시트 메타 통합.
 
 Office COM 호출은 office_worker.py subprocess 로 격리 (cleanup race 회피).
 이 모듈 (office_com.py) 은 호출자 + Office 외 작업 (jsonl 직렬화, ZIP strip, 매크로 추출, README 생성).
@@ -13,6 +13,7 @@ Office COM 호출은 office_worker.py subprocess 로 격리 (cleanup race 회피
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -20,11 +21,10 @@ import sys
 import zipfile
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from . import _common
 from .dispatch import maybe_recurse_attachment
-
 
 # ====================================================================
 # 진입점
@@ -72,12 +72,13 @@ def _run_docx(
     input_path: Path,
     out_dir: Path,
     *,
-    source_name_override: Optional[str] = None,
+    source_name_override: str | None = None,
     tool_extra: str = "",
 ) -> None:
     """python-docx 로 구조 추출 → content.jsonl 단일 시퀀스. 페이지 단위 폐기.
 
-    PNG 는 fitz PDF 경유로 시각 검증용 유지. pages.meta.json 으로 페이지↔노드 best-effort 매핑.
+    PNG 는 fitz PDF 경유로 시각 검증용 유지. pages.meta.json 에는 페이지별 raw text 만 담는다
+    (노드 자동 매핑은 fitz, python-docx 의 분할 차이로 오매핑 위험이 있어 미적용).
     """
     _common.ensure_pip("docx", "python-docx")
 
@@ -93,7 +94,7 @@ def _run_docx(
         lines.append(json.dumps(n, ensure_ascii=False, default=_json_default))
     _common.write_text(out_dir / "content.jsonl", "\n".join(lines))
 
-    # 2. fitz PDF 경유 PNG + pages.meta.json (페이지↔노드 매핑 best-effort)
+    # 2. fitz PDF 경유 PNG + pages.meta.json (페이지별 raw text)
     with _common.com_lock(), _common.temp_workdir() as tmp:
         tmp_pdf = tmp / "out.pdf"
         _word_export_pdf(input_path, tmp_pdf)
@@ -114,12 +115,14 @@ def _run_docx(
     sections: dict[str, list[str]] = {}
     summary = (
         f"노드 {counts['nodes']}개 "
-        f"(heading {counts['headings']}·para {counts['paragraphs_plain']}·"
-        f"bullet {counts['bullets']}·table_cell {counts['table_cells']}·image {counts['images']})"
+        f"(heading {counts['headings']}, para {counts['paragraphs_plain']}, "
+        f"bullet {counts['bullets']}, table_cell {counts['table_cells']}, image {counts['images']})"
     )
     content_items = [f"`content.jsonl` — {summary}"]
     if page_count:
-        content_items.append(f"`pages.meta.json` — PNG ↔ 노드 매핑 ({page_count}페이지)")
+        content_items.append(
+            f"`pages.meta.json` — 페이지별 raw text ({page_count}페이지, PNG 대조용. 노드 매핑 아님)"
+        )
     sections["콘텐츠"] = content_items
     if macro_modules:
         sections[f"VBA 매크로 (총 {len(macro_modules)}개)"] = [f"`macros/{m}`" for m in macro_modules]
@@ -130,9 +133,10 @@ def _run_docx(
         source_size=source_size,
         tool=("python-docx + COM Word + PyMuPDF + ZIP " + tool_extra).strip(),
         loss_notes=(
-            "서식(폰트/색/볼드)·정확한 페이지 레이아웃은 PNG 안에서만 보존. "
+            "서식(폰트/색/볼드), 정확한 페이지 레이아웃은 PNG 안에서만 보존. "
             "구조는 content.jsonl 단일 시퀀스(heading/para/bullet/table_cell/image), "
-            "PNG↔노드 매핑은 pages.meta.json. 매크로(VBA)는 macros/ 로 별도 추출."
+            "pages.meta.json 은 페이지별 raw text (PNG 대조용, 노드 매핑 아님). "
+            "매크로(VBA)는 macros/ 로 별도 추출."
         ),
         sections=sections or None,
         attachments=attachment_links,
@@ -237,11 +241,28 @@ def _docx_extract_nodes(input_path: Path) -> tuple[list[dict], dict[str, int]]:
                     counts["table_cells"] += 1
                     node_idx += 1
 
+                    # 셀 안 이미지도 위치(표, 행, 열) 를 유지한 채 노드로 남긴다
+                    for cell_para in cell.paragraphs:
+                        for rid in _docx_inline_image_rids(cell_para):
+                            ref = img_rels.get(rid)
+                            if not ref:
+                                continue
+                            nodes.append({
+                                "node": node_idx,
+                                "type": "image",
+                                "ref": ref,
+                                "table_idx": table_idx,
+                                "row": r,
+                                "col": c,
+                            })
+                            counts["images"] += 1
+                            node_idx += 1
+
     counts["nodes"] = node_idx
     return nodes, counts
 
 
-def _docx_heading_level(style_name: str) -> Optional[int]:
+def _docx_heading_level(style_name: str) -> int | None:
     """python-docx 스타일명 → heading level. heading 아니면 None."""
     if not style_name:
         return None
@@ -255,7 +276,7 @@ def _docx_heading_level(style_name: str) -> Optional[int]:
     return None
 
 
-def _docx_bullet_level(para) -> Optional[int]:
+def _docx_bullet_level(para) -> int | None:
     """paragraph 의 numbering ilvl 추출. bullet/numbered 아니면 None."""
     from docx.oxml.ns import qn
 
@@ -332,7 +353,7 @@ def _docx_cell_colspan(cell) -> int:
         return 1
 
 
-def _docx_cell_vmerge(cell) -> Optional[str]:
+def _docx_cell_vmerge(cell) -> str | None:
     """docx 표 셀의 vMerge 상태. 'restart' | 'continue' | None."""
     from docx.oxml.ns import qn
 
@@ -354,7 +375,7 @@ def _docx_pages_from_pdf(
 ) -> int:
     """fitz PDF 경유 페이지별 PNG + pages.meta.json (페이지별 raw text 보존).
 
-    nodes 와의 매핑은 fitz·python-docx 간 텍스트 분할 차이로 자동 추정 시 오매핑 위험 →
+    nodes 와의 매핑은 fitz, python-docx 간 텍스트 분할 차이로 자동 추정 시 오매핑 위험 →
     raw text 만 보존. Claude 가 분석 시 페이지 text 와 content.jsonl 노드 text 를 직접 비교.
     """
     _common.ensure_pip("fitz", "PyMuPDF")
@@ -388,12 +409,12 @@ def _run_pptx(
     input_path: Path,
     out_dir: Path,
     *,
-    source_name_override: Optional[str] = None,
+    source_name_override: str | None = None,
     tool_extra: str = "",
 ) -> None:
     """python-pptx 로 구조 추출 → 슬라이드별 jsonl. 시각 순서 정렬 + pos EMU 좌표.
 
-    노드 type: title·heading·para·bullet·table_cell·image·chart·shape.
+    노드 type: title, heading, para, bullet, table_cell, image, chart, shape.
     PNG 은 COM PowerPoint 의 Slide.Export 로 슬라이드별 직접 출력.
     """
     _common.ensure_pip("pptx", "python-pptx")
@@ -466,8 +487,11 @@ def _run_pptx(
         for idx, safe_title in slide_titles:
             stem = _pptx_slide_stem(idx, safe_title)
             tmp_png = tmp / f"{stem}.png"
-            if tmp_png.exists():
-                _common.copy(tmp_png, slides_dir / f"{stem}.png")
+            if not tmp_png.exists():
+                raise RuntimeError(
+                    f"슬라이드 PNG 미생성 (Slide.Export 산출물 없음): {stem}.png — {input_path.name}"
+                )
+            _common.copy(tmp_png, slides_dir / f"{stem}.png")
 
     # pptx 의 시각은 슬라이드 PNG 에 모두 포함 → ZIP media 전체 복제 skip
     # (개별 picture shape 은 _pptx_extract_slide_nodes 에서 image ref 와 함께 저장됨).
@@ -493,9 +517,11 @@ def _run_pptx(
         source_size=source_size,
         tool=("python-pptx + COM PowerPoint + ZIP " + tool_extra).strip(),
         loss_notes=(
-            "애니메이션·슬라이드 전환·정확한 폰트는 미보존. "
-            "시각은 슬라이드별 PNG, 구조는 슬라이드별 .jsonl(시각 순서·pos EMU 좌표), "
-            "차트 데이터는 charts/*.data.json, picture shape 의 image 는 images/."
+            "애니메이션, 슬라이드 전환, 정확한 폰트는 미보존. "
+            "시각은 슬라이드별 PNG, 구조는 슬라이드별 .jsonl(시각 순서, pos EMU 좌표), "
+            "차트 데이터는 charts/*.data.json, picture shape 의 image 는 images/ "
+            "(외부 링크 그림은 파일에 데이터가 없어 노드에 missing 표기). "
+            "그룹 안 shape 는 재귀 추출되나, SmartArt 내부 요소는 python-pptx 로 접근 불가해 PNG 에만 남음."
         ),
         sections=sections or None,
         attachments=attachment_links,
@@ -526,31 +552,38 @@ def _pptx_extract_slide_nodes(
 ) -> tuple[list[dict], list[str]]:
     """슬라이드 안 shape → 노드 list + chart 파일 list.
 
-    text_frame 의 paragraph 별로 노드 분리 (heading·para·bullet).
-    표·차트·이미지는 각각 별도 노드.
-    그 외 (autoshape·SmartArt·group) 은 shape 노드.
+    text_frame 의 paragraph 별로 노드 분리 (heading, para, bullet).
+    표, 차트, 이미지는 각각 별도 노드.
+    그룹은 내부 shape 까지 재귀 순회한다 (그룹 노드 자체도 shape 노드로 남김).
+    그 외 (autoshape, SmartArt) 은 shape 노드. SmartArt 내부는 python-pptx 로 접근 불가.
     """
     nodes: list[dict] = []
     chart_refs: list[str] = []
+    table_idx = 0  # 슬라이드 내 표 순번 (docx, pdf 와 동일 규약)
 
     try:
         title_shape = slide.shapes.title
     except (AttributeError, ValueError):
         title_shape = None
 
-    for shape_idx, shape in enumerate(slide.shapes):
+    for shape_idx, group_path, shape in _iter_pptx_shapes(slide.shapes):
         pos = _pptx_shape_pos(shape)
-        common = {
+        common: dict = {
             "slide": slide_num,
             "pos": pos,
             "shape_idx": shape_idx,
         }
+        # 그룹 안 shape 는 shape_idx 가 부모와 같으므로 산출 파일명에 중첩 위치를 붙여 충돌을 막는다
+        name_suffix = ""
+        if group_path:
+            common["group_path"] = group_path
+            name_suffix = "_g" + "_".join(str(g + 1) for g in group_path)
 
         # 표
         if getattr(shape, "has_table", False):
             table = shape.table
             if table is not None:
-                table_idx = shape_idx + 1
+                table_idx += 1
                 for r_idx, row in enumerate(table.rows, start=1):
                     for c_idx, cell in enumerate(row.cells, start=1):
                         cell_text = cell.text or ""  # 원본 그대로 (strip X)
@@ -567,7 +600,7 @@ def _pptx_extract_slide_nodes(
         # 차트
         if getattr(shape, "has_chart", False):
             data = _extract_pptx_chart_data(shape.chart)
-            chart_filename = f"slide{slide_num:02d}_chart{shape_idx + 1:02d}.data.json"
+            chart_filename = f"slide{slide_num:02d}_chart{shape_idx + 1:02d}{name_suffix}.data.json"
             _common.mkdir(charts_dir)
             _common.write_text(
                 charts_dir / chart_filename,
@@ -583,14 +616,17 @@ def _pptx_extract_slide_nodes(
 
         # 그림 (picture)
         if _pptx_is_picture(shape):
-            ref = _pptx_save_picture(shape, slide_num, shape_idx, images_dir)
+            ref = _pptx_save_picture(shape, slide_num, shape_idx, images_dir, name_suffix)
             node = {**common, "type": "image"}
             if ref:
                 node["ref"] = ref
+            else:
+                # 파일에 이미지 데이터가 없음 (외부 링크 그림) — 누락 사실을 노드에 남긴다
+                node["missing"] = "linked_image (pptx 안에 blob 없음)"
             nodes.append(node)
             continue
 
-        # text_frame 보유 shape (placeholder·text box·autoshape with text)
+        # text_frame 보유 shape (placeholder, text box, autoshape with text)
         if getattr(shape, "has_text_frame", False):
             is_title = (title_shape is not None and shape == title_shape)
             for p_idx, para in enumerate(shape.text_frame.paragraphs):
@@ -611,12 +647,10 @@ def _pptx_extract_slide_nodes(
                 nodes.append(base_node)
             continue
 
-        # 그 외 (group·SmartArt·connector·autoshape 등)
+        # 그 외 (group, SmartArt, connector, autoshape 등)
         subtype = ""
-        try:
+        with contextlib.suppress(AttributeError, TypeError):
             subtype = str(shape.shape_type)
-        except (AttributeError, TypeError):
-            pass
         nodes.append({
             **common,
             "type": "shape",
@@ -624,6 +658,24 @@ def _pptx_extract_slide_nodes(
         })
 
     return nodes, chart_refs
+
+
+def _iter_pptx_shapes(shapes, _group_path: list[int] | None = None):
+    """slide.shapes 를 그룹 내부까지 재귀 순회.
+
+    yield (최상위 shape_idx, 그룹 내부 경로(list[int], 최상위면 빈 list), shape).
+    그룹 shape 자체도 yield 한 뒤 내부를 이어서 yield 한다 (그룹 존재 사실 보존).
+    """
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+    for idx, shape in enumerate(shapes):
+        if _group_path is None:
+            top_idx, path = idx, []
+        else:
+            top_idx, path = _group_path[0], _group_path[1:] + [idx]
+        yield top_idx, path, shape
+        if getattr(shape, "shape_type", None) == MSO_SHAPE_TYPE.GROUP:
+            yield from _iter_pptx_shapes(shape.shapes, [top_idx] + path)
 
 
 def _pptx_shape_pos(shape) -> list[int]:
@@ -647,7 +699,7 @@ def _pptx_is_picture(shape) -> bool:
             return True
     except Exception:
         pass
-    # placeholder picture 인 경우 shape_type 이 PLACEHOLDER 라 image 속성으로 보완
+    # shape_type 이 NotImplementedError 를 던지는 shape 대비 — image 속성 유무로 보완
     try:
         _ = shape.image
         return True
@@ -656,7 +708,7 @@ def _pptx_is_picture(shape) -> bool:
 
 
 def _pptx_run_hyperlinks(para) -> list[dict]:
-    """pptx paragraph 안 run 별 hyperlink list. 텍스트·URL."""
+    """pptx paragraph 안 run 별 hyperlink list. 텍스트, URL."""
     result: list[dict] = []
     for run in para.runs:
         try:
@@ -670,19 +722,23 @@ def _pptx_run_hyperlinks(para) -> list[dict]:
 
 
 def _pptx_save_picture(
-    shape, slide_num: int, shape_idx: int, images_dir: Path,
-) -> Optional[str]:
-    """shape.image.blob 을 images/ 에 저장하고 ref(상대경로) 반환. 실패 시 None."""
+    shape, slide_num: int, shape_idx: int, images_dir: Path, name_suffix: str = "",
+) -> str | None:
+    """shape.image.blob 을 images/ 에 저장하고 ref(상대경로) 반환.
+
+    외부 링크 그림은 pptx 안에 blob 이 없어(python-pptx 가 ValueError) None 을 반환한다 —
+    파일 자체에 데이터가 없는 정상 상황이라 호출자가 노드에 사유를 남긴다.
+    """
     try:
         img = shape.image
         ext = (img.ext or "bin").lstrip(".")
         blob = img.blob
-    except Exception:
+    except ValueError:
         return None
     if not blob:
         return None
     _common.mkdir(images_dir)
-    filename = f"slide{slide_num:02d}_shape{shape_idx + 1:02d}.{ext}"
+    filename = f"slide{slide_num:02d}_shape{shape_idx + 1:02d}{name_suffix}.{ext}"
     _common.write_bytes(images_dir / filename, blob)
     return f"images/{filename}"
 
@@ -696,8 +752,8 @@ def _xlsx_clean_nonfinite(src: Path, dst: Path) -> None:
 
     원인: 일부 third-party 라이브러리가 만든 xlsx 가 비유한 부동소수점(NaN/Inf) 을 numeric 셀에
     문자열 그대로 기록 → openpyxl 의 `_cast_number → int('NaN')` 에서 ValueError.
-    대응: 시트 XML 의 해당 `<v>` 요소만 제거(해당 셀은 빈 셀 처리). 다른 part(images·drawings·
-    styles·shared strings) 는 그대로 복사.
+    대응: 시트 XML 의 해당 `<v>` 요소만 제거(해당 셀은 빈 셀 처리). 다른 part(images, drawings, 
+    styles, shared strings) 는 그대로 복사.
     """
     pat = re.compile(rb"<v>(?:NaN|Infinity|-Infinity|INF|-INF)</v>")
     with zipfile.ZipFile(_common.long_str(src), "r") as zin, \
@@ -723,10 +779,11 @@ def _safe_load_xlsx_workbooks(
     호출(이미지 추출 등) 이 같은 정제본을 재사용하도록 path 노출. 정제 불필요시 input_path 그대로.
     """
     import tempfile
+
     from openpyxl import load_workbook
 
     def _is_nonfinite_error(e: BaseException) -> bool:
-        cur: Optional[BaseException] = e
+        cur: BaseException | None = e
         while cur is not None:
             msg = str(cur)
             if "NaN" in msg or "Infinity" in msg:
@@ -747,7 +804,7 @@ def _safe_load_xlsx_workbooks(
     fd, tmp_str = tempfile.mkstemp(prefix="sd-unpack-xlsx-clean-", suffix=".xlsx", dir=str(base))
     os.close(fd)
     cleaned = Path(tmp_str)
-    # 등록을 정제·로드 전에 수행 → 도중 throw 해도 호출자 finally 가 unlink.
+    # 등록을 정제, 로드 전에 수행 → 도중 throw 해도 호출자 finally 가 unlink.
     cleanup_paths.append(cleaned)
     _xlsx_clean_nonfinite(input_path, cleaned)
     wb_values = load_workbook(_common.long_str(cleaned), data_only=True)
@@ -759,11 +816,10 @@ def _run_xlsx(
     input_path: Path,
     out_dir: Path,
     *,
-    source_name_override: Optional[str] = None,
+    source_name_override: str | None = None,
     tool_extra: str = "",
 ) -> None:
     _common.ensure_pip("openpyxl")
-    from openpyxl import load_workbook
     from openpyxl.worksheet.worksheet import Worksheet
 
     sheets_dir = out_dir / "sheets"
@@ -784,10 +840,8 @@ def _run_xlsx(
             # openpyxl 의 sheetnames 는 일반 Worksheet 와 Chartsheet 둘 다 포함.
             # 시트 순서 그대로 idx 통합 부여 (사용자 워크북 순서 보존).
             # 일반 Worksheet 만 COM Excel PNG export 대상, Chartsheet 는 차트 데이터만 추출.
-            idx_counter = 0
-            for sheet_name in wb_values.sheetnames:
+            for idx_counter, sheet_name in enumerate(wb_values.sheetnames, start=1):
                 obj = wb_values[sheet_name]
-                idx_counter += 1
                 idx = f"{idx_counter:02d}"
                 safe_name = _common.slugify_filename(sheet_name, max_len=40)
                 if isinstance(obj, Worksheet):
@@ -828,7 +882,7 @@ def _run_xlsx(
 
             # Chartsheet 처리: 차트 데이터를 charts/sheet<idx>_chart.data.json 으로 저장
             chart_sheet_chart_files: dict[str, str] = {}  # idx -> chart filename
-            for idx, safe_name, raw_name in chart_sheet_names:
+            for idx, _safe_name, raw_name in chart_sheet_names:
                 cs = wb_formulas[raw_name]
                 chart = None
                 # Chartsheet.charts 또는 _charts 속성 (openpyxl 버전 따라 다름)
@@ -858,7 +912,7 @@ def _run_xlsx(
                         )
                         chart_sheet_chart_files[idx] = chart_filename
 
-            # 워크북 단위 메타 (defined names·pivots·sheet codeName 등) — 시트 jsonl 외부 분리.
+            # 워크북 단위 메타 (defined names, pivots, sheet codeName 등) — 시트 jsonl 외부 분리.
             wb_meta = _workbook_meta(wb_formulas, input_path)
             # VBA 시트 객체명 ↔ raw 시트명 매핑 (시트 codeName 기반)
             sheet_code_map: dict[str, str] = {}
@@ -897,8 +951,9 @@ def _run_xlsx(
             if png_path.exists():
                 parts = [f"`sheets/{idx}_{safe_name}.png`", "`.jsonl`"]
             else:
-                # 빈 시트(데이터 영역 없음) — PNG 없음. export 실패는 worker 에서 raise.
-                parts = [f"`sheets/{idx}_{safe_name}.jsonl`", "(PNG 미생성 — 빈 시트)"]
+                # 값, 수식이 없어 COM Find 가 데이터 영역을 못 잡은 시트 — PNG 없음.
+                # (서식만 있는 시트도 여기 해당. export 실패는 worker 에서 raise.)
+                parts = [f"`sheets/{idx}_{safe_name}.jsonl`", "(PNG 미생성 — 값, 수식 없음)"]
             chart_refs = sheet_charts.get(idx, [])
             if chart_refs:
                 parts.append("(차트: " + ", ".join(f"`charts/{c}`" for c in chart_refs) + ")")
@@ -911,15 +966,15 @@ def _run_xlsx(
             meta += ")"
             sheet_summary_map[idx] = " ".join(parts) + " " + meta
 
-        for idx, safe_name, raw_name in chart_sheet_names:
+        for idx, _safe_name, raw_name in chart_sheet_names:
             chart_filename = chart_sheet_chart_files.get(idx)
             if chart_filename:
                 sheet_summary_map[idx] = f"`charts/{chart_filename}` (chart sheet — \"{raw_name}\")"
             else:
-                sheet_summary_map[idx] = f"(chart sheet — \"{raw_name}\", 차트 데이터 추출 실패)"
+                sheet_summary_map[idx] = f"(chart sheet — \"{raw_name}\", 차트 객체 없음/파싱 불가)"
 
-        # idx 순서대로 통합
-        for idx in sorted(sheet_summary_map.keys()):
+        # 워크북 시트 순서대로 통합 (idx 는 "01" 형식 문자열이라 숫자로 정렬)
+        for idx in sorted(sheet_summary_map.keys(), key=int):
             sheet_summaries.append(sheet_summary_map[idx])
 
         source_name, source_size = _source_meta(input_path, out_dir, source_name_override)
@@ -931,25 +986,34 @@ def _run_xlsx(
         if macro_modules:
             sections[f"VBA 매크로 (총 {len(macro_modules)}개)"] = [f"`macros/{m}`" for m in macro_modules]
 
+        source_ext = Path(source_name).suffix.lstrip(".")
+        warnings: list[str] = []
+        if _xlsx_cleanups:
+            warnings.append(
+                "비유한 부동소수점(NaN/Infinity)을 담은 셀이 있어 해당 셀 값을 제거한 사본으로 처리했습니다. "
+                "그 셀들은 산출물에서 빈 셀로 나타납니다 (원래 빈 셀과 구분되지 않음). "
+                f"실제 값은 `_source.{source_ext}` 를 직접 확인하세요."
+            )
+
         _common.write_readme(
             out_dir,
             source_name=source_name,
             source_size=source_size,
             tool=("openpyxl + COM Excel + ZIP " + tool_extra).strip(),
             loss_notes=(
-                "셀 서식(바탕색·border·폰트)·frozen·dims 미보존 (필요 시 _source.xlsx 직접 추출). "
-                "시각은 시트별 PNG, 분석 데이터(셀값·number_format·수식·merges·hyperlinks·comments) 는 "
-                "시트별 .jsonl 한 줄=한 행(좌표 명시), 워크북 단위 메타(defined names 등) 는 workbook.meta.json."
+                f"셀 서식(바탕색, border, 폰트), frozen, dims 미보존 (필요 시 `_source.{source_ext}` 직접 추출). "
+                "시각은 시트별 PNG, 분석 데이터(셀값, number_format, 수식, merges, hyperlinks, comments) 는 "
+                "시트별 .jsonl 한 줄=한 행(좌표 명시), 워크북 단위 메타(defined names 등) 는 workbook.meta.json. "
+                "Chartsheet 에 붙은 이미지는 openpyxl 이 접근하지 못해 미추출."
             ),
             sections=sections or None,
+            warnings=warnings or None,
             attachments=attachment_links,
         )
     finally:
         for _p in _xlsx_cleanups:
-            try:
+            with contextlib.suppress(Exception):
                 _p.unlink()
-            except Exception:
-                pass
 
 
 # ====================================================================
@@ -1071,7 +1135,7 @@ def _convert_legacy(input_path: Path, target_path: Path) -> None:
 def _source_meta(
     input_path: Path,
     out_dir: Path,
-    source_name_override: Optional[str],
+    source_name_override: str | None,
 ) -> tuple[str, int]:
     if source_name_override:
         src_ext = Path(source_name_override).suffix.lstrip(".")
@@ -1185,11 +1249,12 @@ def _extract_zip_media(
     *,
     media_zip_prefix: str,
     embed_zip_prefix: str,
-    images_dir: Optional[Path] = None,
+    images_dir: Path | None = None,
 ) -> list[str]:
     """OOXML(docx/pptx/xlsx) ZIP 안의 media/ 와 embeddings/ 에서 이미지/첨부 추출.
 
-    images_dir=None 이면 media/ 추출 skip (PDF 가 시각 책임지는 형식: docx, pptx).
+    images_dir=None 이면 media/ 추출 skip — pptx 가 해당(슬라이드 PNG + picture shape 별
+    개별 저장으로 대체). docx 는 images_dir 를 전달해 media/ 전체를 복제한다.
     xlsx 는 별도 _extract_xlsx_images_with_position 으로 위치 정보 포함 추출.
     """
     attachment_links: list[str] = []
@@ -1234,14 +1299,14 @@ def _sheet_to_jsonl(
 ) -> tuple[list[str], int]:
     """openpyxl Worksheet 의 (1,1)~(last_row,last_col) → 행 단위 JSONL.
 
-    분석 핵심: 데이터·number_format·수식. 시각 표시(바탕색·border·폰트·frozen)·dims 는 미보존
-    (필요 시 Claude 가 _source.xlsx 직접 추출).
+    분석 핵심: 데이터, number_format, 수식. 시각 표시(바탕색, border, 폰트, frozen), dims 는 미보존
+    (필요 시 Claude 가 _source.<원본 확장자> 직접 추출).
 
     데이터 jsonl (한 줄=한 행. 빈 셀 키 생략):
     - 첫 줄: `{"_meta":{"merges":[...], "number_formats":{...}, "hyperlinks":{...}, "comments":{...}}}`
       - merges: 셀 좌표 해석 필수 (머지 영역 안 빈 셀 오해 차단)
-      - number_formats: Date·통화·% 등 셀 값 의미 단서
-      - hyperlinks·comments: 셀 부가 정보
+      - number_formats: Date, 통화, % 등 셀 값 의미 단서
+      - hyperlinks, comments: 셀 부가 정보
       - 비어있는 키는 생략
     - 데이터 줄: `{"r":N, "<col>":value, ..., "_f":{<col>:formula}}`
     - 빈 행도 `{"r":N}` 한 줄 유지
@@ -1284,16 +1349,16 @@ def _sheet_to_jsonl(
 
     rows_v = ws_v.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col, values_only=True)
     rows_f = ws_f.iter_rows(min_row=1, max_row=last_row, min_col=1, max_col=last_col)
-    for r_idx, (row_v, row_f) in enumerate(zip(rows_v, rows_f), start=1):
+    for r_idx, (row_v, row_f) in enumerate(zip(rows_v, rows_f, strict=True), start=1):
         row_data: dict[str, Any] = {"r": r_idx}
         fmap: dict[str, str] = {}
-        for c_idx, (v, fcell) in enumerate(zip(row_v, row_f), start=1):
+        for c_idx, (v, fcell) in enumerate(zip(row_v, row_f, strict=True), start=1):
             col_letter = get_column_letter(c_idx)
             if v is not None:
                 row_data[col_letter] = v
             if fcell.data_type == "f":
                 fv = fcell.value
-                # 일반·shared formula 는 str, array formula 는 ArrayFormula(.text 보유)
+                # 일반, shared formula 는 str, array formula 는 ArrayFormula(.text 보유)
                 fmap[col_letter] = fv if isinstance(fv, str) else getattr(fv, "text", str(fv))
                 formula_count += 1
         if fmap:
@@ -1304,7 +1369,7 @@ def _sheet_to_jsonl(
 
 
 def _workbook_meta(wb, input_path: Path) -> dict[str, Any]:
-    """워크북 단위 메타 (defined names·pivot tables 등). 비어있으면 빈 dict 반환."""
+    """워크북 단위 메타 (defined names, pivot tables 등). 비어있으면 빈 dict 반환."""
     meta: dict[str, Any] = {}
     defined_names: dict[str, list[str]] = {}
     # openpyxl 3.x: wb.defined_names 는 DefinedNameDict (dict-like)
@@ -1341,7 +1406,7 @@ def _extract_pivots(input_path: Path) -> list[dict]:
     - name: pivot table 이름
     - location: 펼쳐진 위치 (예: "A1:E20")
     - source: 원본 데이터 위치 (예: "'Sheet1'!A1:D100")
-    - rowFields/colFields/pageFields: 행·열·필터 필드명 list
+    - rowFields/colFields/pageFields: 행, 열, 필터 필드명 list
     - dataFields: 값 필드 [{name, field, subtotal}, ...] (subtotal = sum/count/average/...)
     """
     import xml.etree.ElementTree as ET
@@ -1424,7 +1489,7 @@ def _extract_pivots(input_path: Path) -> list[dict]:
                 if loc is not None:
                     pivot["location"] = loc.get("ref", "")
 
-                # row·col·page fields (인덱스 → 이름)
+                # row, col, page fields (인덱스 → 이름)
                 for tag, key in (
                     ("rowFields", "rowFields"),
                     ("colFields", "colFields"),

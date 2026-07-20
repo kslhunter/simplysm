@@ -1,6 +1,7 @@
-# @simplysm/angular — 공유 마스터 데이터·선택 매니저
+# @simplysm/angular — 공유 마스터 데이터, 선택 매니저
 
-공유 마스터 데이터 등록/갱신/선택 UI와 시트·리스트에서 쓰는 selection/sorting/expanding manager 군이다. 공유데이터 사용법: [client-shared-data.md](../../manuals/client-shared-data.md), 실시간 이벤트 사용법: [event.md](../../manuals/event.md)
+공유 마스터 데이터 등록/갱신/선택 UI와 시트, 리스트에서 쓰는 selection/sorting/expanding manager 군입니다.
+공유데이터 사용법: [client-shared-data.md](../../manuals/client-shared-data.md), 실시간 이벤트 사용법: [event.md](../../manuals/event.md)
 
 ## 공유 데이터 provider
 
@@ -38,19 +39,22 @@ const SdSharedDataChangeEvent = defineEvent<
 >("SdSharedDataChange");
 ```
 
-데이터 세트를 등록하고 이벤트 기반으로 캐시를 무효화하는 abstract provider. 앱은 subclass에서 `initialize()` 로 `register` 함.
+데이터 세트를 등록하고 이벤트 기반으로 캐시를 무효화하는 abstract provider. 앱은 subclass에서 `initialize()` 로 `register` 합니다.
 
-- `SharedDataBase` — 모든 항목이 만족해야 하는 베이스. `__valueKey`(고유 key), `__searchText`(검색 매칭용 텍스트), `__isHidden`(논리 숨김), `__parentKey?`(트리 부모 key). `id`/`name` 필드 없음.
+- `SharedDataBase` — 모든 항목이 만족해야 하는 베이스. `id`/`name` 필드 없음.
+  - `__valueKey`(고유 key), `__searchText`(검색 매칭용 텍스트), `__isHidden`(논리 숨김), `__parentKey?`(트리 부모 key).
 - `register(name, info)` — 데이터 세트 등록. 재등록 시 기존 listener 제거 + generation 증가로 in-flight 결과 무시.
-- `getHandle(name)` — 핸들 반환(미등록 시 throw). 최초 접근 시 lazy 로드. 핸들 `items` 는 읽기 전용 signal, `get(key)` 는 내부 Map 조회.
-- `SharedDataInfo` — `serviceKey`(서비스 클라이언트 key), `getter`(전체/부분 로드, `changeKeys` 인자 시 변경분만), `filter`(이벤트 매칭·listener 등록용), `orderBy`(부분 갱신 병합 시 정렬).
+- `getHandle(name)` — 핸들 반환(미등록 시 throw).
+  - 최초 접근 시 lazy 로드.
+  - 핸들 `items` 는 읽기 전용 signal, `get(key)` 는 내부 Map 조회.
+- `SharedDataInfo` — `serviceKey`(서비스 클라이언트 key), `getter`(전체/부분 로드, `changeKeys` 인자 시 변경분만), `filter`(이벤트 매칭, listener 등록용), `orderBy`(부분 갱신 병합 시 정렬).
 - `emitAsync(name, changeKeys)` — 변경 이벤트를 listener에 emit해 캐시 갱신 트리거(`changeKeys` 없으면 전체 reload).
 - `wait()` — `loadingCount <= 0` 까지 대기.
 - `SdSharedDataChangeEvent` — `"SdSharedDataChange"` defineEvent. listener info `{ name, filter }`, payload는 `changeKeys`.
 
 ## 선택 매니저 (composable)
 
-signal 기반 순수 헬퍼 함수들. 주입 컨텍스트에서 호출하며 `sd-sheet` 등이 내부에서 사용함.
+signal 기반 순수 헬퍼 함수들. 주입 컨텍스트에서 호출하며 `sd-sheet` 등이 내부에서 사용합니다.
 
 ### `useExpandingManager<T>`
 
@@ -135,7 +139,7 @@ interface SortingDef {
 
 ## 공유 데이터 선택 UI
 
-세 컨트롤 모두 `items: TItem[]`(보통 `getHandle(...).items()`)를 직접 받고, `SharedDataBase` 형태(`__valueKey`/`__searchText`/`__isHidden`/`__parentKey`)로 동작함.
+세 컨트롤 모두 `items: TItem[]`(보통 `getHandle(...).items()`)를 직접 받고, `SharedDataBase` 형태(`__valueKey`/`__searchText`/`__isHidden`/`__parentKey`)로 동작합니다.
 
 ### `SdSharedDataSelect<TItem, TMode, TModal>` (`sd-shared-data-select`)
 
@@ -183,7 +187,7 @@ class SdSharedDataSelectButton<...> {
 }
 ```
 
-`sd-modal-select-button` 래퍼. 선택 항목을 `itemTplRef` 템플릿(필수)으로 `,&nbsp;` 구분 렌더하고 검색 버튼으로 `modal`(필수)을 연다.
+`sd-modal-select-button` 래퍼. 선택 항목을 `itemTplRef` 템플릿(필수)으로 `,&nbsp;` 구분 렌더하고 검색 버튼으로 `modal`(필수)을 엽니다.
 
 ### `SdSharedDataSelectList<TItem, TModal>` (`sd-shared-data-select-list`)
 
@@ -201,7 +205,11 @@ class SdSharedDataSelectList<TItem extends SharedDataBase<...>, TModal extends S
 }
 ```
 
-단일 선택 검색 리스트(`sd-list` + 검색 + 페이지네이션). `selectedItem`(객체 ref) 양방향, `canChangeFn` 으로 변경 게이트(`setupModelHook`). `items` 변경 시 `__valueKey` 매칭으로 selectedItem ref 재동기화. 항목 재클릭 시 해제(toggle).
+단일 선택 검색 리스트(`sd-list` + 검색 + 페이지네이션).
+
+- `selectedItem`(객체 ref) 양방향, `canChangeFn` 으로 변경 게이트(`setupModelHook`).
+- `items` 변경 시 `__valueKey` 매칭으로 selectedItem ref 재동기화.
+- 항목 재클릭 시 해제(toggle).
 
 ### `matchesSearchText`
 

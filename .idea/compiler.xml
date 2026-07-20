@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="TypeScriptCompiler">
-    <option name="memoryLimit" value="16384" />
-    <option name="showAllErrors" value="false" />
-    <option name="showSuggestions" value="false" />
-    <option name="useServicePoweredTypesDisabledManually" value="true" />
-  </component>
-</project>

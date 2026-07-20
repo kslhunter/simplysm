@@ -226,7 +226,7 @@ export class SdModalProvider {
         // transition duration 확인 후 대기 또는 즉시 destroy
         const duration = parseFloat(getComputedStyle(modalEl).transitionDuration || "0");
         if (duration > 0) {
-          // transitionend 가 정상 경로. 단 백그라운드 탭·transition 인터럽트 시 미발화하므로
+          // transitionend 가 정상 경로. 단 백그라운드 탭, transition 인터럽트 시 미발화하므로
           // duration(초→ms) + 여유 100ms 후 발화하는 setTimeout 폴백을 함께 걸어 destroy 누락을 방지.
           modalEl.addEventListener("transitionend", doDestroy, { once: true });
           setTimeout(doDestroy, duration * 1000 + 100);

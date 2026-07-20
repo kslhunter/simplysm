@@ -26,47 +26,6 @@ export async function copySrcFiles(pkgDir: string, patterns: string[]): Promise<
 }
 
 /**
- * 패키지 외부 디렉토리의 파일을 지정 디렉토리로 복사한다.
- * 상대 경로가 유지된다: <fromDir>/a/b.ts → <toDir>/a/b.ts
- *
- * dot 파일(.claude-plugin 등)도 포함한다.
- *
- * @param fromDir 소스 디렉토리 (절대 경로)
- * @param toDir 대상 디렉토리 (절대 경로)
- * @param ignore 제외할 glob 패턴 (fromDir 기준)
- * @throws 소스 디렉토리가 존재하지 않으면 오류
- */
-export async function copyDirFiles(
-  fromDir: string,
-  toDir: string,
-  ignore?: string[],
-): Promise<void> {
-  const srcDir = pathx.posix(fromDir);
-  const distDir = pathx.posix(toDir);
-
-  if (!(await fsx.exists(srcDir))) {
-    throw new Error(`복사할 소스 디렉토리가 존재하지 않습니다: ${srcDir}`);
-  }
-
-  const files = await fsx.glob("**/*", {
-    cwd: srcDir,
-    absolute: true,
-    dot: true,
-    nodir: true,
-    ...(ignore != null ? { ignore } : {}),
-  });
-
-  await Promise.all(
-    files.map(async (file) => {
-      const relativePath = pathx.posix(path.relative(srcDir, file));
-      const distPath = pathx.posix(path.join(distDir, relativePath));
-      await fsx.mkdir(pathx.posix(path.dirname(distPath)));
-      await fsx.copy(file, distPath);
-    }),
-  );
-}
-
-/**
  * glob 패턴에 매칭되는 파일을 src/에서 dist/로 감시하며 복사한다.
  * 초기 복사 후 변경, 추가, 삭제를 자동으로 반영한다.
  *

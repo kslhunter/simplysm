@@ -8,7 +8,7 @@ import type {
 } from "../sd-config.types";
 import { loadAndValidateConfig } from "../utils/orchestrator-utils";
 import { getVersion } from "../utils/build-env";
-import { copyDirFiles, copySrcFiles } from "../utils/copy-src";
+import { copySrcFiles } from "../utils/copy-src";
 import { formatBuildMessages } from "../utils/output-utils";
 import { createBuildEngine } from "../engines/engine-factory";
 import type {
@@ -319,19 +319,6 @@ export class BuildOrchestrator implements OrchestratorLifecycle<boolean> {
           const pkgDir = pathx.posixResolve(this._cwd, "packages", name);
           this._logger.debug(`[${name}] copySrc 파일 복사 중 (${config.copySrc.length}개)`);
           await copySrcFiles(pkgDir, config.copySrc);
-        }
-
-        // 빌드 실패 시 복사하지 않는다 — 낡은 산출물에 최신 복사본만 얹힌 배포물이 만들어지는 것을 막는다.
-        if (result.success && config.copyFiles != null && config.copyFiles.length > 0) {
-          const distDir = pathx.posixResolve(this._cwd, "packages", name, "dist");
-          this._logger.debug(`[${name}] copyFiles 복사 중 (${config.copyFiles.length}개)`);
-          for (const copyFile of config.copyFiles) {
-            await copyDirFiles(
-              pathx.posixResolve(this._cwd, copyFile.from),
-              pathx.posixResolve(distDir, copyFile.to),
-              copyFile.ignore,
-            );
-          }
         }
         this._logger.debug(`[${name}] (${config.target}) 빌드 완료`);
       });

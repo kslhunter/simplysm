@@ -12,7 +12,7 @@ export interface DepsResult {
 
 /**
  * pnpm-workspace.yaml 기반으로 packages/(배포 대상) 패키지의 name → 상대 디렉토리 맵을 구성한다.
- * packages/ 가 아닌 워크스페이스(tests/·plugins/ 등)는 제외된다.
+ * packages/ 가 아닌 워크스페이스(tests/, plugins/ 등)는 제외된다.
  * 예: "@simplysm/core-node" → "packages/core-node"
  */
 function buildWorkspacePkgMap(cwd: string): Map<string, string> {

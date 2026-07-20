@@ -1,12 +1,17 @@
 # @simplysm/sd-orm-common — QueryHelper (db.qh) + CASE 헬퍼
 
-`class QueryHelper`. `db.qh` 로 노출. WHERE 조건과 SQL 함수/식을 dialect 인지하며 생성함. 조건 메서드는 `TQueryBuilderValue`(또는 그 배열)를 반환해 `Queryable.where`/`having`/`qh.and`/`qh.or` 인자로 쓰고, 필드/함수 메서드는 `QueryUnit<T>` 를 반환해 `select`/다른 함수의 인자로 합성함. 인자 `TEntityValue<T>` = 평면 값 `T` 또는 `QueryUnit<T>`.
+- `class QueryHelper`. `db.qh` 로 노출.
+- WHERE 조건과 SQL 함수/식을 dialect 인지하며 생성함.
+  - 조건 메서드는 `TQueryBuilderValue`(또는 그 배열)를 반환해 `Queryable.where`/`having`/`qh.and`/`qh.or` 인자로 씀.
+  - 필드/함수 메서드는 `QueryUnit<T>` 를 반환해 `select`/다른 함수의 인자로 합성함.
+- 인자 `TEntityValue<T>` = 평면 값 `T` 또는 `QueryUnit<T>`.
 
 생성: `new QueryHelper(dialect)`. dialect 가 mysql/sqlite/mssql/mssql-azure 인지에 따라 `<=>`, `||` vs `+`, `N'...'` vs `'...'`, `LONGTEXT` vs `NTEXT`, `TIMESTAMPDIFF` vs `DATEDIFF` 등이 갈림.
 
 ## WHERE 조건 (→ TQueryBuilderValue[])
 
-- `equal(source, target)` — `=`. target null 이면 `IS NULL`. mysql 은 `<=>`(null-safe), 그 외 QueryUnit 쌍이면 (둘다 null) OR (=) 로 null-safe 처리.
+- `equal(source, target)` — `=`. target null 이면 `IS NULL`.
+  - mysql 은 `<=>`(null-safe), 그 외 QueryUnit 쌍이면 (둘다 null) OR (=) 로 null-safe 처리.
 - `notEqual(source, target)` — `!=`. null 처리를 OR 조합으로 보정.
 - `isNull(source)` / `isNotNull(source)` — `IS NULL` / `IS NOT NULL`.
 - `isTrue(source)` / `isFalse(source)` — bool 참/거짓(false 는 null 포함).
@@ -16,7 +21,8 @@
 - `like` / `notLike(source, target)` — 원시 `LIKE` 패턴 그대로.
 - `regexp` / `notRegexp(source, target)` — `REGEXP` / `NOT REGEXP`.
 - `startsWith` / `notStartsWith` / `endsWith` / `notEndsWith(source, target)` — 접두/접미 매칭(dialect별 `||`/`+`/CONCAT).
-- `in(src, target[])` / `notIn(src, target[])` — `IN`/`NOT IN`. 빈 배열이면 항상 거짓(`1=0`)/참(`1=1`). null 포함 시 `IS NULL` OR 보정.
+- `in(src, target[])` / `notIn(src, target[])` — `IN`/`NOT IN`.
+  - 빈 배열이면 항상 거짓(`1=0`)/참(`1=1`). null 포함 시 `IS NULL` OR 보정.
 - `and(args)` / `or(args)` — 조건들을 `AND`/`OR` 결합. and 는 undefined 항목 스킵.
 
 ## 값 / 표현식 빌드 (→ QueryUnit)
@@ -32,7 +38,8 @@
 
 - `dateDiff(separator: TDbDateSeparator, from, to): QueryUnit<number>` — 차이(mysql TIMESTAMPDIFF / 그 외 DATEDIFF).
 - `dateAdd(separator, from, value): QueryUnit<T>` — 가감(DATE_ADD/DATEADD).
-- `dateToString(value, code: number): QueryUnit<string>` — 포맷 변환. mssql 은 `CONVERT(NVARCHAR(25), v, code)`, mysql 은 code 112/120/114 만 지원(그 외 NotImplementError). `code` 는 MSSQL CONVERT 스타일 코드.
+- `dateToString(value, code: number): QueryUnit<string>` — 포맷 변환. `code` 는 MSSQL CONVERT 스타일 코드.
+  - mssql 은 `CONVERT(NVARCHAR(25), v, code)`, mysql 은 code 112/120/114 만 지원(그 외 NotImplementError).
 - `year` / `month` / `day(value): QueryUnit<number>` — 연/월/일 추출.
 - `isoWeek` / `isoWeekStartDate` / `isoYearMonth(value)` — ISO 주차 번호 / 그 주 시작일 / ISO 기준 연-월. mysql/mssql 분기 내장.
 - `separator: TDbDateSeparator` — `"year"|"quarter"|"month"|"day"|"week"|"hour"|"minute"|"second"|"millisecond"|"microsecond"|"nanosecond"`.
@@ -60,7 +67,9 @@
 
 ## 변환/직렬화 헬퍼 (주로 내부/어댑터)
 
-- `getQueryValue(value): string` (Queryable 이면 `ISelectQueryDef`) — 값/QueryUnit/Queryable 을 SQL 단편으로. 문자열은 `N'...'`/`'...'`, bool→1/0, 날짜/Uuid/Buffer dialect별 직렬화. Queryable 은 서브쿼리(top 1·단일 컬럼 아니면 throw).
+- `getQueryValue(value): string` (Queryable 이면 `ISelectQueryDef`) — 값/QueryUnit/Queryable 을 SQL 단편으로.
+  - 문자열은 `N'...'`/`'...'`, bool→1/0, 날짜/Uuid/Buffer dialect별 직렬화.
+  - Queryable 은 서브쿼리(top 1, 단일 컬럼 아니면 throw).
 - `getBulkInsertQueryValue(value)` — 대량 INSERT용 raw 값 변환(따옴표 없이 원시값/포맷 문자열).
 - `type(type: Type | TSdOrmDataType | string | undefined): string` — TS 타입/`TSdOrmDataType`/문자열을 dialect별 DB 타입 문자열로. 미인식 타입은 TypeError.
 - `mysqlConvertType(type): string` — mysql `CONVERT` 대상 타입 매핑.

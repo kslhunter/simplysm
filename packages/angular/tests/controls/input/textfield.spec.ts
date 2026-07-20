@@ -7,6 +7,7 @@ import {
   SdTextfieldDisabledTest,
   SdTextfieldReadonlyTest,
   SdTextfieldRequiredTest,
+  SdTextfieldMaxlengthTest,
   SdTextfieldInlineTest,
   SdTextfieldPlaceholderTest,
   SdTextfieldTitleTest,
@@ -509,7 +510,7 @@ describe("Feature 2.4 Slice 2: sd-textfield number + format types", () => {
 
 // endregion
 
-// region A2: number 소수점·음수 진행 입력 (롤백 방지)
+// region A2: number 소수점, 음수 진행 입력 (롤백 방지)
 
 describe("A2: sd-textfield number 진행 입력", () => {
   it("소수점 진행('12.') 입력이 롤백되지 않고 완성 시 값이 저장된다", () => {
@@ -1116,9 +1117,9 @@ describe("B1: 포커스 중 프로그래밍적 model 변경 반영", () => {
 
 // endregion
 
-// region A5: 비활성/읽기전용 필드 검증 제외
+// region A5: 검증은 disabled, readonly 와 무관
 
-describe("A5: 비활성/읽기전용 필드 검증 제외", () => {
+describe("A5: 검증은 disabled, readonly 와 무관", () => {
   it("일반 + required 빈값 필드는 검증에 걸린다 (대조)", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
       .createComponent(SdTextfieldRequiredTest);
@@ -1128,24 +1129,34 @@ describe("A5: 비활성/읽기전용 필드 검증 제외", () => {
     expect(hidden.checkValidity()).toBe(false); // required + 빈값 → 검증 걸림
   });
 
-  it("disabled + required 빈값 필드는 검증에서 제외되어 저장을 막지 않는다 (A5)", () => {
+  it("disabled + required 빈값 필드도 검증에 걸려 빨간점이 뜨고 저장을 막는다 (A5)", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
       .createComponent(SdTextfieldRequiredTest);
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
 
     const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
-    expect(hidden.checkValidity()).toBe(true); // 비활성이라 검증 제외
+    expect(hidden.checkValidity()).toBe(false); // 비활성이어도 값 유효성은 요구
   });
 
-  it("readonly + required 빈값 필드는 검증에서 제외되어 저장을 막지 않는다 (A5)", () => {
+  it("readonly + required 빈값 필드도 검증에 걸려 빨간점이 뜨고 저장을 막는다 (A5)", () => {
     const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldRequiredTest] })
       .createComponent(SdTextfieldRequiredTest);
     fixture.componentInstance.readonly.set(true);
     fixture.detectChanges();
 
     const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
-    expect(hidden.checkValidity()).toBe(true); // 읽기전용이라 검증 제외
+    expect(hidden.checkValidity()).toBe(false); // 읽기전용이어도 값 유효성은 요구
+  });
+
+  it("disabled 여도 required 외 제약(maxlength) 위반이 검증에 걸린다 (A5)", () => {
+    const fixture = TestBed.configureTestingModule({ imports: [SdTextfieldMaxlengthTest] })
+      .createComponent(SdTextfieldMaxlengthTest);
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+
+    const hidden = fixture.nativeElement.querySelector(".sd-invalid-input") as HTMLInputElement;
+    expect(hidden.checkValidity()).toBe(false); // 비활성이어도 길이 제약은 유효
   });
 });
 
@@ -1227,7 +1238,7 @@ describe("D6: IME 조합 입력", () => {
       "input:not(.sd-invalid-input)",
     ) as HTMLInputElement;
 
-    // compositionstart 없이(모바일·비표준 IME) 브라우저가 isComposing=true 만 실어 보낸 조합 중 input
+    // compositionstart 없이(모바일, 비표준 IME) 브라우저가 isComposing=true 만 실어 보낸 조합 중 input
     input.value = "ㅎ";
     input.dispatchEvent(new InputEvent("input", { isComposing: true, bubbles: true }));
     fixture.detectChanges();
@@ -1243,7 +1254,7 @@ describe("D6: IME 조합 입력", () => {
       "input:not(.sd-invalid-input)",
     ) as HTMLInputElement;
 
-    // 조합 시작 후 compositionend 없이 blur (조합 취소·포커스 이탈)
+    // 조합 시작 후 compositionend 없이 blur (조합 취소, 포커스 이탈)
     input.dispatchEvent(new CompositionEvent("compositionstart"));
     input.value = "ㅎ";
     input.dispatchEvent(new Event("input", { bubbles: true }));

@@ -1,16 +1,20 @@
 # @simplysm/sd-service-client — 원격 ORM 접속
 
-`SdServiceClient` 를 경유해 서버 측 `SdOrmService` 에 붙어 DB 트랜잭션/쿼리를 실행함. 서버가 실제 DB 커넥션을 보유하고, 클라이언트는 `DbContext`(@simplysm/sd-orm-common) 를 로컬에 구성하되 모든 실행을 RPC 로 위임함.
+`SdServiceClient` 를 경유해 서버 측 `SdOrmService` 에 붙어 DB 트랜잭션/쿼리를 실행함.
+서버가 실제 DB 커넥션을 보유하고, 클라이언트는 `DbContext`(@simplysm/sd-orm-common) 를 로컬에 구성하되 모든 실행을 RPC 로 위임함.
 
 ## SdOrmServiceClientConnector
 
-`new SdOrmServiceClientConnector(serviceClient: SdServiceClient)` — 접속·콜백 실행 진입점.
+`new SdOrmServiceClientConnector(serviceClient: SdServiceClient)` — 접속, 콜백 실행 진입점.
 
 - `connectAsync<T extends DbContext, R>(config: ISdOrmServiceConnectConfig<T>, callback: (conn: T) => Promise<R> | R): Promise<R>`
   - 트랜잭션 안에서 `callback` 실행 후 결과 반환. 내부적으로 `DbContext.connectAsync` 사용(begin/commit/rollback 관리).
-  - 외래키 위반 에러(메시지에 `a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE` 포함)는 메시지를 `"경고! 연결된 작업에 의한 처리 거부. 후속작업 확인요망"` 으로 치환 후 재던짐.
+  - 외래키 위반 에러는 메시지를 `"경고! 연결된 작업에 의한 처리 거부. 후속작업 확인요망"` 으로 치환 후 재던짐.
+    - 판정 대상: 메시지에 `a parent row: a foreign key constraint` 또는 `conflicted with the REFERENCE` 포함.
 - `connectWithoutTransactionAsync<T extends DbContext, R>(config, callback): Promise<R>`
-  - 트랜잭션 없이 `callback` 실행(`DbContext.connectWithoutTransactionAsync`). 위 FK 에러 메시지 치환은 적용되지 않음. 조회 위주/대량 작업에 사용.
+  - 트랜잭션 없이 `callback` 실행(`DbContext.connectWithoutTransactionAsync`).
+    - 위 FK 에러 메시지 치환은 적용되지 않음.
+    - 조회 위주, 대량 작업에 사용.
 
 두 메소드 모두 `executor.getInfoAsync()` 로 서버에서 `dialect`/`database`/`schema` 를 받아 `DbContext` 를 생성함. `config.dbContextOpt` 가 주어지면 그 `database`/`schema` 가 서버 기본값을 덮어씀.
 
@@ -19,12 +23,15 @@
 `connectAsync`/`connectWithoutTransactionAsync` 의 첫 인자.
 
 - `dbContextType: Type<T>` — 생성할 `DbContext` 파생 클래스 생성자. `new dbContextType(executor, option)` 으로 인스턴스화됨.
-- `connOpt: TDbConnOptions & { configName: string }` — 서버 DB 접속 옵션. `configName`(서버 설정 키, 필수) + 선택 `config: Record<string, any>` + 임의 추가 필드(`Record<string, any>`). 서버 `SdOrmService.connect/getInfo` 로 그대로 전달.
+- `connOpt: TDbConnOptions & { configName: string }` — 서버 DB 접속 옵션. 서버 `SdOrmService.connect/getInfo` 로 그대로 전달.
+  - 구성: `configName`(서버 설정 키, 필수) + 선택 `config: Record<string, any>` + 임의 추가 필드(`Record<string, any>`).
 - `dbContextOpt?: { database: string; schema: string }` — DbContext 의 대상 DB/스키마 강제 지정. 미지정 시 서버 `getInfo` 반환값 사용.
 
 ## SdOrmServiceClientDbContextExecutor
 
-`new SdOrmServiceClientDbContextExecutor(client: SdServiceClient, opt: TDbConnOptions & { configName: string })` — `IDbContextExecutor`(@simplysm/sd-orm-common) 구현체. 위 Connector 가 내부에서 생성하므로 보통 직접 쓰지 않음. 생성 시 `client.getService<ISdOrmService>("SdOrmService")` 로 원격 서비스 Proxy 확보.
+`new SdOrmServiceClientDbContextExecutor(client: SdServiceClient, opt: TDbConnOptions & { configName: string })` — `IDbContextExecutor`(@simplysm/sd-orm-common) 구현체.
+위 Connector 가 내부에서 생성하므로 보통 직접 쓰지 않음.
+생성 시 `client.getService<ISdOrmService>("SdOrmService")` 로 원격 서비스 Proxy 확보.
 
 모든 실행 메소드는 `connectAsync` 이전 호출 시(`_connId` 미설정) `"DB에 연결되어있지 않습니다."` throw.
 

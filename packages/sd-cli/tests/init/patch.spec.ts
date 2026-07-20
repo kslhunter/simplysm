@@ -195,7 +195,7 @@ describe("patchDevService", () => {
     expect(r.patched).toBe(expected);
   });
 
-  it("0개 → 1개 (기본 export 워크스페이스) — import·권한 인자가 신규 단독으로 대체, init 동등 결과", async () => {
+  it("0개 → 1개 (기본 export 워크스페이스) — import, 권한 인자가 신규 단독으로 대체, init 동등 결과", async () => {
     const serverOnly: InitInput = { ...baseInput, clients: [] };
     const before = buildData(serverOnly); // appStructureNames = ["appStructureItems"]
     const after = buildData({

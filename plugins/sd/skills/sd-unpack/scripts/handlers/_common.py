@@ -1,4 +1,4 @@
-"""sd-unpack 공용 유틸 (슬러그·락·README 빌더·long path 헬퍼 등)."""
+"""sd-unpack 공용 유틸 (슬러그, 락, README 빌더, long path 헬퍼 등)."""
 from __future__ import annotations
 
 import contextlib
@@ -8,13 +8,11 @@ import shutil
 import sys
 import tempfile
 import threading
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
-def ensure_pip(import_name: str, pip_name: Optional[str] = None) -> None:
+def ensure_pip(import_name: str, pip_name: str | None = None) -> None:
     """import 가능한지 확인하고 없으면 pip install. 호출자는 이후 정상 import 사용."""
     import importlib
     try:
@@ -34,6 +32,14 @@ def decode_bytes(payload: bytes) -> str:
     if result is None:
         raise RuntimeError(f"encoding detection failed (payload size={len(payload)})")
     return str(result)
+
+
+def decode_mime_header(raw: str | None) -> str:
+    """RFC2047 인코딩워드(=?utf-8?B?...?=) 를 사람이 읽는 문자열로 디코드. eml, msg 공용."""
+    if not raw:
+        return ""
+    from email.header import decode_header, make_header
+    return str(make_header(decode_header(raw)))
 
 
 CONTAINER_EXTS = {".eml", ".msg", ".pdf", ".docx", ".pptx", ".xlsx", ".xlsb", ".doc", ".ppt", ".xls"}
@@ -92,11 +98,17 @@ def _ensure_tmp_base() -> Path:
 
 
 def slugify_filename(raw_name: str, max_len: int = 80) -> str:
-    """OS 금지 문자만 _ 로 치환. 한국어/공백 그대로."""
+    """OS 금지 문자만 _ 로 치환. 한국어/공백 그대로.
+
+    길이 제한은 stem 에만 적용한다 — 확장자를 자르면 재귀 풀이 대상 판정(is_container)이
+    깨지고 저장된 첨부도 열 수 없게 된다.
+    """
     cleaned = OS_FORBIDDEN_CHARS.sub("_", raw_name)
     cleaned = cleaned.strip().rstrip(".")
     if len(cleaned) > max_len:
-        cleaned = cleaned[:max_len]
+        suffix = Path(cleaned).suffix
+        stem = cleaned[: len(cleaned) - len(suffix)]
+        cleaned = stem[: max(1, max_len - len(suffix))] + suffix
     if not cleaned:
         cleaned = "untitled"
     return cleaned
@@ -169,7 +181,7 @@ def is_tnef(path: Path) -> bool:
 def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
     """TNEF (winmail.dat) 내부 첨부 추출. 추출된 path list 반환.
 
-    TNEF 아니면 빈 list. 파싱·추출 실패 시 raise (내부 첨부 손실을 묻지 않고 메일 풀이 중단).
+    TNEF 아니면 빈 list. 파싱, 추출 실패 시 raise (내부 첨부 손실을 묻지 않고 메일 풀이 중단).
     원본 winmail.dat 은 유지 (원본 보존).
     """
     if not is_tnef(path):
@@ -181,20 +193,24 @@ def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
 
     saved: list[Path] = []
     for att in getattr(t, "attachments", []):
-        att_name = None
+        # tnefparse 의 long_filename(), name 은 파일명 bytes 를 기본 인코딩으로 디코드하므로
+        # cp949 한글 파일명에서 UnicodeDecodeError 를 던진다 → raw bytes 로 직접 디코드.
+        att_name: str | bytes | None = None
         lf = getattr(att, "long_filename", None)
         if callable(lf):
             try:
                 att_name = lf()
-            except Exception:
-                att_name = None
+            except UnicodeDecodeError:
+                att_name = getattr(att, "_name", None)
         if not att_name:
-            att_name = getattr(att, "name", None)
+            att_name = getattr(att, "_name", None)
         if isinstance(att_name, bytes):
             try:
                 att_name = att_name.decode("utf-8")
             except UnicodeDecodeError:
-                att_name = att_name.decode("cp949", errors="replace")
+                att_name = att_name.decode("cp949")
+        if isinstance(att_name, str):
+            att_name = att_name.strip("\x00")
         if not att_name:
             att_name = "tnef_attachment.bin"
         data = att.data
@@ -238,14 +254,14 @@ def write_readme(
     source_size: int,
     tool: str,
     loss_notes: str,
-    body_inline: Optional[str] = None,
-    body_file_link: Optional[str] = None,
-    body_html_link: Optional[str] = None,
-    body_from_html_link: Optional[str] = None,
-    headers: Optional[dict] = None,
-    sections: Optional[dict] = None,
-    attachments: Optional[list] = None,
-    warnings: Optional[list] = None,
+    body_inline: str | None = None,
+    body_file_link: str | None = None,
+    body_html_link: str | None = None,
+    body_from_html_link: str | None = None,
+    headers: dict | None = None,
+    sections: dict | None = None,
+    attachments: list | None = None,
+    warnings: list | None = None,
 ) -> None:
     """README.md 생성. 모든 컨테이너 핸들러가 마지막에 호출."""
     ext = Path(source_name).suffix.lstrip(".")

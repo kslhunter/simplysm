@@ -1,6 +1,8 @@
 # @simplysm/sd-cli — Configuration Types
 
-sd.config.ts 작성 시 사용하는 설정 타입. 프로젝트 루트 `sd.config.ts` 는 SdConfigFn 함수를 default export 하며, 패키지별 빌드 target·배포·클라이언트/서버 패키징·Capacitor/Electron·PWA·watch 훅·의존성 교체를 정의.
+sd.config.ts 작성 시 사용하는 설정 타입.
+프로젝트 루트 `sd.config.ts` 는 SdConfigFn 함수를 default export 하며,
+패키지별 빌드 target, 배포, 클라이언트/서버 패키징, Capacitor/Electron, PWA, watch 훅, 의존성 교체를 정의.
 
 ## SdConfigFn, SdConfigParams, SdConfig
 
@@ -24,10 +26,15 @@ interface SdConfig {
 
 - `SdConfigFn`: default export 함수 타입. SdConfigParams 받아 동기 또는 async SdConfig 반환.
 - `SdConfigParams.cwd`: string — 현재 작업 디렉토리 (프로젝트 루트).
-- `SdConfigParams.dev`: boolean — 개발 모드 플래그. true = watch/dev 명령, false = build/publish. 설정 함수가 dev/prod 별 분기 시 사용.
+- `SdConfigParams.dev`: boolean — 개발 모드 플래그.
+  - true = watch/dev 명령, false = build/publish.
+  - 설정 함수가 dev/prod 별 분기 시 사용.
 - `SdConfigParams.opt`: string[] — CLI `-o` 플래그 전달 옵션 배열 (예: `["--custom-flag"]`).
-- `SdConfig.packages`: Record<string, SdPackageConfig | undefined> — 패키지별 설정. key = packages/ 하위 디렉토리명 (예: "core-common", "service-server"). value 에 undefined 허용하면 조건부 비활성화 가능.
-- `SdConfig.replaceDeps?`: Record<string, string> — node_modules 패키지를 로컬 소스로 심링크 교체. key = glob 패턴 (예: "@simplysm/*"), value = 소스 경로. key 의 `*` 캡처가 value 의 `*` 에 치환됨 (예: "@simplysm/core-common" 찾을 때 "../simplysm/packages/core-common" 로 교체).
+- `SdConfig.packages`: Record<string, SdPackageConfig | undefined> — 패키지별 설정.
+  key = packages/ 하위 디렉토리명 (예: "core-common", "service-server"). value 에 undefined 허용하면 조건부 비활성화 가능.
+- `SdConfig.replaceDeps?`: Record<string, string> — node_modules 패키지를 로컬 소스로 심링크 교체.
+  key = glob 패턴 (예: "@simplysm/*"), value = 소스 경로.
+  key 의 `*` 캡처가 value 의 `*` 에 치환됨 (예: "@simplysm/core-common" 찾을 때 "../simplysm/packages/core-common" 로 교체).
 - `SdConfig.postPublish?`: SdPostPublishScriptConfig[] — 배포 완료 후 실행 스크립트 목록.
 
 ## SdPackageConfig, BuildTarget
@@ -45,7 +52,11 @@ type SdPackageConfig =
   - "node": Node.js 전용 (CJS 진입점 포함).
   - "browser": 브라우저 ESM 전용 (Node API 제외).
   - "neutral": 환경 무관 ESM (DOM/Node API 제외).
-- `SdPackageConfig`: target 값으로 타입 판별. "node"|"browser"|"neutral" → SdBuildPackageConfig, "client" → SdClientPackageConfig, "server" → SdServerPackageConfig, "scripts" → SdScriptsPackageConfig.
+- `SdPackageConfig`: target 값으로 타입 판별.
+  - "node"|"browser"|"neutral" → SdBuildPackageConfig.
+  - "client" → SdClientPackageConfig.
+  - "server" → SdServerPackageConfig.
+  - "scripts" → SdScriptsPackageConfig.
 
 ## SdBuildPackageConfig
 
@@ -136,7 +147,7 @@ interface SdServerPackageConfig {
 
 ## SdScriptsPackageConfig
 
-빌드·배포 불필요한 스크립트 전용 패키지. watch 훅 설정 시만 watch 에 포함.
+빌드, 배포 불필요한 스크립트 전용 패키지. watch 훅 설정 시만 watch 에 포함.
 
 ```typescript
 interface SdScriptsPackageConfig {

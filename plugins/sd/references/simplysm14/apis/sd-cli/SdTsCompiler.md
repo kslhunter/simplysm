@@ -1,6 +1,10 @@
 # @simplysm/sd-cli — SdTsCompiler
 
-패키지 단위 TypeScript 및 Angular AOT 컴파일. 증분 컴파일, SCSS 처리, lint 통합, 진단/emit 결과 반환. tsconfig.json 의 angularCompilerOptions 존재 여부로 Angular 모드 자동 판별. 호출 간 상태(builderProgram, sourceFileCache, packageJsonCache) 재사용해 증분 빌드 최적화.
+패키지 단위 TypeScript 및 Angular AOT 컴파일.
+
+- 증분 컴파일, SCSS 처리, lint 통합, 진단/emit 결과 반환.
+- tsconfig.json 의 angularCompilerOptions 존재 여부로 Angular 모드 자동 판별.
+- 호출 간 상태(builderProgram, sourceFileCache, packageJsonCache) 재사용해 증분 빌드 최적화.
 
 ## SdTsCompiler
 
@@ -21,7 +25,10 @@ class SdTsCompiler {
 
 ### constructor(options: ISdTsCompilerOptions)
 
-생성자. 옵션만 저장. Angular 여부, 캐시 등 파생 상태는 첫 compileAsync 에서 결정.
+생성자.
+
+- 옵션만 저장.
+- Angular 여부, 캐시 등 파생 상태는 첫 compileAsync 에서 결정.
 
 ### async compileAsync(modifiedFiles?, emitOptions?): Promise<ISdTsCompilerResult>
 
@@ -119,9 +126,11 @@ interface ISdTsCompilerEmitOptions {
   - `before?`: ts.TransformerFactory<ts.SourceFile>[] — before 추가 transformer.
   - `after?`: ts.TransformerFactory<ts.SourceFile>[] — after 추가 transformer.
 
-### 크래시 처리
+## 크래시 처리
 
-analyze(Angular), affected 탐색, emit, 진단 수집, lint+global SCSS 각 단계는 개별 try/catch 로 보호. 단계 크래시 = SerializedDiagnostic Error 로 결과 진단·errorCount 에 합산. 최상위 예외 = 단일 크래시 진단으로 안전 반환.
+- analyze(Angular), affected 탐색, emit, 진단 수집, lint+global SCSS 각 단계는 개별 try/catch 로 보호.
+- 단계 크래시 = SerializedDiagnostic Error 로 결과 진단, errorCount 에 합산.
+- 최상위 예외 = 단일 크래시 진단으로 안전 반환.
 
 ## ISdTsCompilerResult
 

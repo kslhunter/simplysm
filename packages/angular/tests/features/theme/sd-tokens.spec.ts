@@ -10,7 +10,7 @@ import cssText from "../../../scss/commons/_theme-variables.scss?inline";
 const SEMANTIC_KEYS = ["gray", "blue-gray", "primary", "info", "success", "warning", "danger"];
 
 const CATALOG_TOKENS = [
-  // bg — 표면·필드
+  // bg — 표면, 필드
   ...[
     "canvas",
     "canvas-image",
@@ -40,7 +40,7 @@ const CATALOG_TOKENS = [
     `bd-${k}-solid-hover`,
     `bd-${k}-subtle`,
   ]),
-  // bg — 상태 오버레이·비활성·busy
+  // bg — 상태 오버레이, 비활성, busy
   "bg-state-hover",
   "bg-state-active",
   "bg-state-selected",

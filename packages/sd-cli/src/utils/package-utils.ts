@@ -22,7 +22,7 @@ export function findPackageRoot(startDir: string): string {
 /**
  * pnpm-workspace.yaml의 모든 워크스페이스 패키지를 탐색한다.
  * 디렉토리명 → 상대 경로의 맵을 반환한다 (예: "orm" → "tests/orm", "sd" → "plugins/sd").
- * packages/·tests/·plugins/ 등 종류를 가리지 않고 포함하며, 배포/검사 대상 구분은 소비자가 relPath로 판단한다.
+ * packages/, tests/, plugins/ 등 종류를 가리지 않고 포함하며, 배포/검사 대상 구분은 소비자가 relPath로 판단한다.
  */
 export function discoverWorkspacePackages(cwd: string): Map<string, string> {
   logger.debug("워크스페이스 패키지 탐색 시작");
@@ -63,7 +63,7 @@ export function buildPathMapFromConfig(
 }
 
 /**
- * workspace에서 발견된 비배포 워크스페이스(packages/ 가 아닌 tests/·plugins/ 등)를 sd.config.ts
+ * workspace에서 발견된 비배포 워크스페이스(packages/ 가 아닌 tests/, plugins/ 등)를 sd.config.ts
  * 패키지에 병합한다. 이들은 빌드 대상이 아니지만 각자 자기 tsconfig로 타입체크하기 위해
  * `{ target: "node" }`가 할당된다. 모든 패키지의 pathMap(name → 상대 경로)도 함께 구성한다.
  * 디렉터리명이 sd.config.ts 패키지명과 충돌하면 SdError를 던진다.

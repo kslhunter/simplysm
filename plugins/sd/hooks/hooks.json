@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/check-write.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/check-write.py\""
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/check-shell.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/check-shell.py\""
           }
         ]
       }
@@ -26,28 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/cache-read-hash.ts\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/formatter-collect.ts\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/formatter-flush.ts\"",
-            "timeout": 120
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/cache-read-hash.py\""
           }
         ]
       }
@@ -58,11 +37,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-simplysm.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reference-simplysm.py\""
           },
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-statusline.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-statusline.py\""
           }
         ]
       }
@@ -72,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-start-inject-style.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-start-inject-style.py\""
           }
         ]
       }
@@ -82,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.ts\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.py\""
           }
         ]
       }

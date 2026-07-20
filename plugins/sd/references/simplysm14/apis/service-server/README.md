@@ -1,34 +1,34 @@
 # @simplysm/service-server
 
-Fastify 기반 서비스 서버: 부트스트랩·서비스 작성·JWT 인증·서버 이벤트 발생·내장 ORM/자동업데이트·전송 계층 구성.
+Fastify 기반 서비스 서버: 부트스트랩, 서비스 작성, JWT 인증, 서버 이벤트 발생, 내장 ORM/자동업데이트, 전송 계층 구성.
 
 ## 사용 트리거 인덱스
 
-- **서버 부트스트랩·구성** — 서버 옵션 설정, SSL/TLS(Let's Encrypt/자체 인증서), 인증 설정, 포트 바인딩으로 서버를 초기화할 때.
-- **서비스 정의·작성** — 서비스와 메서드를 정의하고, 인증 권한 지정으로 RPC 엔드포인트를 구성할 때.
-- **JWT 토큰 관리** — JWT 토큰 서명·검증·디코딩으로 클라이언트 인증을 구현할 때.
-- **WebSocket 연결 관리** — 양방향 소켓 연결, 이벤트 리스너 등록·제거, 메시지 송수신을 다룰 때.
-- **HTTP 요청·응답** — 서비스 메서드 호출(GET/POST), Authorization 헤더 파싱, 클라이언트 이름 추적을 다룰 때.
-- **파일 업로드·다운로드** — 멀티파트 파일 업로드, 정적 파일 서빙, SPA 폴백(index.csr.html)을 구성할 때.
+- **서버 부트스트랩, 구성** — 서버 옵션 설정, SSL/TLS(Let's Encrypt/자체 인증서), 인증 설정, 포트 바인딩으로 서버를 초기화할 때.
+- **서비스 정의, 작성** — 서비스와 메서드를 정의하고, 인증 권한 지정으로 RPC 엔드포인트를 구성할 때.
+- **JWT 토큰 관리** — JWT 토큰 서명, 검증, 디코딩으로 클라이언트 인증을 구현할 때.
+- **WebSocket 연결 관리** — 양방향 소켓 연결, 이벤트 리스너 등록, 제거, 메시지 송수신을 다룰 때.
+- **HTTP 요청, 응답** — 서비스 메서드 호출(GET/POST), Authorization 헤더 파싱, 클라이언트 이름 추적을 다룰 때.
+- **파일 업로드, 다운로드** — 멀티파트 파일 업로드, 정적 파일 서빙, SPA 폴백(index.csr.html)을 구성할 때.
 - **메시지 프로토콜** — 바이너리 메시지 인코딩/디코딩, 청크 재조립, worker 스레드 위임을 다룰 때.
 - **내장 ORM 서비스** — 원격 DB 연결, 트랜잭션, ORM 쿼리 실행을 클라이언트에 노출할 때.
-- **자동 업데이트 서비스** — 클라이언트 플랫폼별 최신 APK/EXE 버전 조회 및 다운로드 경로 제공.
-- **설정 파일 관리** — JSON 기반 설정 파일(`.config.json`) 로드·캐싱·감시를 다룰 때.
+- **자동 업데이트 서비스** — 클라이언트 플랫폼별 최신 APK/EXE 버전 조회 및 다운로드 경로를 제공할 때.
+- **설정 파일 관리** — JSON 기반 설정 파일(`.config.json`) 로드, 캐싱, 감시를 다룰 때.
 - **서버 이벤트 발생** — 클라이언트에 실시간 푸시 이벤트 발생, 조건 기반 필터링을 할 때. 사용법: [event.md](../../manuals/event.md)
-- **V1 레거시 호환** — v1 클라이언트의 자동 업데이트 요청 처리, 사용자 정의 핸들러 추가.
+- **V1 레거시 호환** — v1 클라이언트의 자동 업데이트 요청 처리, 사용자 정의 핸들러를 추가할 때.
 
-## 서버 부트스트랩·구성
+## 서버 부트스트랩, 구성
 
 ### ServiceServerOptions
 
 서버 생성 옵션. 필수 항목:
 
-- rootPath: string — 정적 파일·클라이언트 디렉토리 루트(`www/` 자동 추가). 예: `/var/app`.
+- rootPath: string — 정적 파일, 클라이언트 디렉토리 루트(`www/` 자동 추가). 예: `/var/app`.
 - port: number — 바인딩 포트.
 - ssl?: 선택사항. 다음 중 하나:
   - pfxBytes + passphrase?: Uint8Array + string — PKCS#12 인증서 바이너리.
-  - pemKeyBytes + certBytes + caBytes? + passphrase?: Uint8Array — PEM 형식 키·인증서·CA 바이너리.
-  - letsencrypt: 도메인·이메일·DNS-01(Cloudflare) 옵션으로 Let's Encrypt 자동 발급.
+  - pemKeyBytes + certBytes + caBytes? + passphrase?: Uint8Array — PEM 형식 키, 인증서, CA 바이너리.
+  - letsencrypt: 도메인, 이메일, DNS-01(Cloudflare) 옵션으로 Let's Encrypt 자동 발급.
 - auth?: 인증 설정. `{ jwtSecret: string }` 또는 `false` (의도적 비활성화). 미지정 시 로그인 불요.
 - services: ServiceDefinition[] — 노출할 서비스 정의 배열.
 - legacyV1Handlers?: V1RequestHandler[] — V1 클라이언트 호환용 사용자 정의 핸들러.
@@ -52,7 +52,7 @@ class ServiceServer<TAuthInfo = unknown> {
 ```
 
 - isOpen: boolean — 서버 수신 중 플래그.
-- fastify: FastifyInstance — 내부 Fastify 인스턴스 (플러그인·라우트 커스터마이징용).
+- fastify: FastifyInstance — 내부 Fastify 인스턴스 (플러그인, 라우트 커스터마이징용).
 - listen() — 포트 바인딩 및 웹소켓/HTTP 라우트 등록. Let's Encrypt는 리슨 후 인증서 확보 (하이브리드 기동).
 - close() — 연결 종료 및 리소스 해제.
 - getEvent(eventDef) — 주어진 이벤트 정의로 ServerEventProxy 반환 (타입 안전한 이벤트 발생용).
@@ -72,7 +72,7 @@ function createServiceServer<TAuthInfo = unknown>(
 
 타입 매개변수 TAuthInfo로 인증 정보 타입 지정 가능.
 
-## 서비스 정의·작성
+## 서비스 정의, 작성
 
 ### ServiceDefinition
 
@@ -108,7 +108,7 @@ function defineService<TMethods extends Record<string, (...args: any[]) => any>>
 
 ### auth
 
-서비스·메서드 수준 인증 래퍼.
+서비스, 메서드 수준 인증 래퍼.
 
 ```typescript
 function auth<TFunction extends (...args: any[]) => any>(fn: TFunction): TFunction;
@@ -310,7 +310,7 @@ function createServiceSocket(
 - clientId: 고유한 클라이언트 식별자 (같은 클라이언트의 중복 연결 감지용).
 - Ping/Pong 5초 주기로 수행 (연결 유지 감지).
 
-## HTTP 요청·응답
+## HTTP 요청, 응답
 
 ### handleHttpRequest
 
@@ -339,7 +339,7 @@ async function handleHttpRequest<TAuthInfo = unknown>(
 - 성공 시 응답: 메서드 결과를 JSON 직렬화.
 - 실패 시: 401/400/405 상태코드로 에러 JSON 응답.
 
-## 파일 업로드·다운로드
+## 파일 업로드, 다운로드
 
 ### handleUpload
 
@@ -480,7 +480,7 @@ type AutoUpdateServiceMethods = ServiceMethods<typeof AutoUpdateService>;
 
 ### getConfig
 
-JSON 설정 파일 로드·캐싱·감시.
+JSON 설정 파일 로드, 캐싱, 감시.
 
 ```typescript
 async function getConfig<TConfig>(filePath: string): Promise<TConfig | undefined>;
