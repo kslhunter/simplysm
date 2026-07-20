@@ -139,7 +139,7 @@ hook으로 차단된 동작:
 - `git` 변경, 발행 명령은 차단되었습니다. 커밋 등은 사용자 직접 호출로 전용 Skill 사용해야 합니다.
   - 읽기전용 조회만 hook을 통과합니다. 통과되더라도 사용자 명시 없이 사용은 금지입니다.
 - 전역설치는 차단되었습니다: `npm`, `pnpm`, `yarn`, `bun`의 `-g`, `--global`, `yarn global`, `mise use`, `mise install`. 필요한 도구는 프로젝트 로컬(의존성)로 설치하거나 사용자에게 요청해야 합니다.
-- `playwright-cli`의 산출물 경로 지정이 차단되었습니다. 미지정시, 생략하면 `.playwright-cli/`에 자동 저장됩니다.
+- `playwright-cli`의 산출물 경로 지정이 차단되었습니다. 산출물 경로를 생략하면 `.playwright-cli/`에 자동 저장되오니, 지정없이 수행하세요.
 
 # Coding
 
