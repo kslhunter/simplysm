@@ -33,6 +33,38 @@ import { createLogger } from "@simplysm/core-common";
 
 const logger = createLogger("angular:sw-update");
 const themeLogger = createLogger("angular:theme");
+const errorLogger = createLogger("angular:global-error");
+
+// 브라우저 확장은 자기 스크립트를 페이지 main world 에 주입해 실행하므로,
+// 확장이 던진 오류도 페이지의 전역 error/unhandledrejection 이벤트로 올라온다.
+// 앱 결함이 아니므로 오버레이, 앱 종료 대상에서 제외한다.
+const EXTENSION_URL_SCHEMES = [
+  "chrome-extension://",
+  "moz-extension://",
+  "safari-web-extension://",
+];
+
+// URL 스킴은 표준상 대소문자를 구분하지 않는다(RFC 3986 §3.1).
+function isExtensionUrl(url: string): boolean {
+  const lowerUrl = url.toLowerCase();
+  return EXTENSION_URL_SCHEMES.some((scheme) => lowerUrl.startsWith(scheme));
+}
+
+// 스택 포맷은 엔진마다 다르다(V8 은 "at fn (URL)", SpiderMonkey, JSC 는 "fn@URL").
+// 포맷 대신 URL 이 처음 등장하는 줄을 최상단 프레임으로 보고, 그 URL 의 출처만 따진다.
+// V8 의 "Error: 메시지" 헤더는 대개 URL 이 없어 건너뛰지만, 메시지에 URL 이 박히면 헤더가 최상단으로 잡힌다.
+function isExtensionOriginRejection(reason: Error): boolean {
+  if (reason.stack == null) return false;
+
+  for (const line of reason.stack.split("\n")) {
+    const topFrameUrl = /[a-z][a-z\d+.-]*:\/\/\S*/i.exec(line)?.[0];
+    if (topFrameUrl == null) continue;
+
+    return isExtensionUrl(topFrameUrl);
+  }
+
+  return false;
+}
 
 export function provideSdAngular(opt: { clientName: string }): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -99,12 +131,28 @@ export function provideSdAngular(opt: { clientName: string }): EnvironmentProvid
 
       const rejectionListener = (event: PromiseRejectionEvent) => {
         event.preventDefault();
+
+        if (event.reason instanceof Error && isExtensionOriginRejection(event.reason)) {
+          errorLogger.warn("브라우저 확장 프로그램에서 발생한 오류로 판단해 무시함", event.reason);
+          return;
+        }
+
         const errorHandler = envInjector.get(ErrorHandler);
         errorHandler.handleError(event);
       };
 
       const errorListener = (event: ErrorEvent) => {
         event.preventDefault();
+
+        if (isExtensionUrl(event.filename)) {
+          errorLogger.warn(
+            "브라우저 확장 프로그램에서 발생한 오류로 판단해 무시함",
+            `${event.message}\n${event.filename}(${event.lineno}, ${event.colno})`,
+            event.error,
+          );
+          return;
+        }
+
         const errorHandler = envInjector.get(ErrorHandler);
         errorHandler.handleError(event);
       };

@@ -6,6 +6,7 @@
     "customConditions": ["browser"]
   },
   "angularCompilerOptions": {
+    "strictTemplates": true,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictStandalone": true,

@@ -13,6 +13,7 @@ import { SdOptionEventPlugin } from "../src/core/events/sd-option-event.plugin";
 import { SdThemeProvider } from "../src/features/theme/sd-theme-provider";
 import { SdLocalStorageProvider } from "../src/core/config/sd-local-storage.provider";
 import { SdBusyProvider } from "../src/core/busy/sd-busy.provider";
+import { SdSystemLogProvider } from "../src/core/config/sd-system-log.provider";
 
 describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
   afterEach(() => {
@@ -153,6 +154,231 @@ describe("Feature 1.10 Slice 1: provideSdAngular + commons", () => {
 
       handleErrorSpy.mockRestore();
       destroySpy.mockRestore();
+    });
+
+    it("브라우저 확장에서 발생한 uncaught error는 ErrorHandler로 전달되지 않는다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const event = new ErrorEvent("error", {
+        message: "Angular DevTools: Angular debugging APIs are not available.",
+        filename: "chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js",
+        error: new Error("devtools"),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(true);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("최상단 스택이 브라우저 확장인 promise rejection은 ErrorHandler로 전달되지 않는다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("devtools async");
+      reason.stack = [
+        "Error: devtools async",
+        "    at G (chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js:3:12173)",
+        "    at http://localhost/main.js:1:1",
+      ].join("\n");
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(true);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("최상단 스택이 앱 코드면 하위 스택에 확장이 있어도 ErrorHandler로 전달된다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("app failure");
+      reason.stack = [
+        "Error: app failure",
+        "    at appFn (http://localhost/main.js:1:1)",
+        "    at G (chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js:3:12173)",
+      ].join("\n");
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).toHaveBeenCalledWith(event);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("at 접두어가 없는 스택 포맷에서도 확장 rejection이 걸러진다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      // SpiderMonkey(Firefox), JSC(Safari) 는 "함수명@URL" 포맷을 쓴다
+      const reason = new Error("extension async");
+      reason.stack = [
+        "G@moz-extension://abcdef/app/backend_bundle.js:3:12173",
+        "run@http://localhost/main.js:1:1",
+      ].join("\n");
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(true);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("at 접두어가 없는 스택 포맷에서 최상단이 앱 코드면 전달된다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("app failure");
+      reason.stack = [
+        "run@http://localhost/main.js:1:1",
+        "G@safari-web-extension://abcdef/app/backend_bundle.js:3:12173",
+      ].join("\n");
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).toHaveBeenCalledWith(event);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("확장 스킴이 대문자로 표기되어도 걸러진다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("extension async");
+      reason.stack = "G@Chrome-Extension://abcdef/app/backend_bundle.js:3:12173";
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).not.toHaveBeenCalled();
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("걸러진 확장 오류는 서버 시스템 로그로 전송되지 않는다", () => {
+      const writeAsyncSpy = vi
+        .spyOn(TestBed.inject(SdSystemLogProvider), "writeAsync")
+        .mockResolvedValue();
+
+      const event = new ErrorEvent("error", {
+        message: "Angular DevTools: Angular debugging APIs are not available.",
+        filename: "chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js",
+        error: new Error("devtools"),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(writeAsyncSpy).not.toHaveBeenCalled();
+
+      writeAsyncSpy.mockRestore();
+    });
+
+    it("스택에 URL이 없으면 ErrorHandler로 전달된다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("no frames");
+      reason.stack = "Error: no frames";
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).toHaveBeenCalledWith(event);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("stack이 없는 Error reason은 ErrorHandler로 전달된다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const reason = new Error("no stack");
+      reason.stack = undefined;
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).toHaveBeenCalledWith(event);
+
+      handleErrorSpy.mockRestore();
+    });
+
+    it("걸러진 확장 promise rejection은 서버 시스템 로그로 전송되지 않는다", () => {
+      const writeAsyncSpy = vi
+        .spyOn(TestBed.inject(SdSystemLogProvider), "writeAsync")
+        .mockResolvedValue();
+
+      const reason = new Error("devtools async");
+      reason.stack = [
+        "Error: devtools async",
+        "    at G (chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js:3:12173)",
+      ].join("\n");
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason,
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(writeAsyncSpy).not.toHaveBeenCalled();
+
+      writeAsyncSpy.mockRestore();
+    });
+
+    it("reason이 Error가 아닌 promise rejection은 ErrorHandler로 전달된다", () => {
+      const errorHandler = TestBed.inject(ErrorHandler);
+      const handleErrorSpy = vi.spyOn(errorHandler, "handleError").mockImplementation(() => {});
+
+      const event = new PromiseRejectionEvent("unhandledrejection", {
+        reason: "chrome-extension://ienfalfjdbdpebioblfackkekamfmbnh/app/backend_bundle.js",
+        promise: Promise.resolve(),
+        cancelable: true,
+      });
+      window.dispatchEvent(event);
+
+      expect(handleErrorSpy).toHaveBeenCalledWith(event);
+
+      handleErrorSpy.mockRestore();
     });
 
     it("앱 파괴 시 에러 리스너가 정리된다", () => {
