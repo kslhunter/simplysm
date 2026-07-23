@@ -196,6 +196,45 @@ export class SdListItemDynamicIconTest {
 }
 
 @Component({
+  selector: "sd-list-item-depth-test",
+  template: `
+    <sd-list>
+      <sd-list-item [open]="true">
+        Level 1
+        <sd-list>
+          <sd-list-item [open]="true">
+            Level 2
+            <sd-list>
+              <sd-list-item>Level 3</sd-list-item>
+            </sd-list>
+          </sd-list-item>
+        </sd-list>
+      </sd-list-item>
+    </sd-list>
+  `,
+  standalone: true,
+  imports: [SdList, SdListItem],
+})
+export class SdListItemDepthTest {}
+
+@Component({
+  selector: "sd-list-item-flat-parent-depth-test",
+  template: `
+    <sd-list>
+      <sd-list-item [layout]="'flat'">
+        Flat Parent
+        <sd-list>
+          <sd-list-item>Child</sd-list-item>
+        </sd-list>
+      </sd-list-item>
+    </sd-list>
+  `,
+  standalone: true,
+  imports: [SdList, SdListItem],
+})
+export class SdListItemFlatParentDepthTest {}
+
+@Component({
   selector: "sd-list-item-tool-test",
   template: `
     <sd-list>

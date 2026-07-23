@@ -2,6 +2,7 @@
 
 블록 단위 (text_block, image_block) 는 bbox 좌표 보존. 표는 find_tables() 로 셀 단위 노드.
 """
+
 from __future__ import annotations
 
 import json
@@ -36,7 +37,9 @@ def run(input_path: Path, out_dir: Path) -> None:
                 f"blocks {counts['text_blocks'] + counts['image_blocks']}",
             ]
             if counts["tables"]:
-                parts.append(f"tables {counts['tables']} (cells {counts['table_cells']})")
+                parts.append(
+                    f"tables {counts['tables']} (cells {counts['table_cells']})"
+                )
             if counts["form_fields"]:
                 parts.append(f"form_fields {counts['form_fields']}")
             if counts["annotations"]:
@@ -50,7 +53,11 @@ def run(input_path: Path, out_dir: Path) -> None:
         for i in range(count):
             info = doc.embfile_info(i)
             data = doc.embfile_get(i)
-            filename = info.get("filename", f"embedded_{i}.bin") if isinstance(info, dict) else f"embedded_{i}.bin"
+            filename = (
+                info.get("filename", f"embedded_{i}.bin")
+                if isinstance(info, dict)
+                else f"embedded_{i}.bin"
+            )
             _common.mkdir(attachments_dir)
             dst = _common.unique_path(attachments_dir, filename)
             _common.write_bytes(dst, data)
@@ -58,9 +65,13 @@ def run(input_path: Path, out_dir: Path) -> None:
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
                 os.unlink(_common.long_str(dst))
-                attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
+                attachment_links.append(
+                    f"attachments/{recursed.name}/ ({_common.format_size(size)})"
+                )
             else:
-                attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
+                attachment_links.append(
+                    f"attachments/{dst.name} ({_common.format_size(size)})"
+                )
     finally:
         doc.close()
 
@@ -75,13 +86,17 @@ def run(input_path: Path, out_dir: Path) -> None:
             "구조는 pages/<NNN>.jsonl (블록 bbox + 표 셀 단위 노드), 시각은 .png. "
             "이미지 블록은 images/ 로 별도 저장."
         ),
-        sections={f"페이지 (총 {len(page_summaries)}개)": page_summaries} if page_summaries else None,
+        sections={f"페이지 (총 {len(page_summaries)}개)": page_summaries}
+        if page_summaries
+        else None,
         attachments=attachment_links,
     )
 
 
 def _pdf_page_to_jsonl(
-    page, page_num: int, images_dir: Path,
+    page,
+    page_num: int,
+    images_dir: Path,
 ) -> tuple[list[str], dict[str, int]]:
     """한 PDF 페이지 → jsonl 라인 list + counts.
 
@@ -117,13 +132,15 @@ def _pdf_page_to_jsonl(
                 line_text = "".join(span.get("text", "") for span in spans)
                 text_lines.append(line_text)
             text = "\n".join(text_lines)
-            node_lines.append({
-                "page": page_num,
-                "block": block_idx,
-                "type": "text_block",
-                "bbox": list(bbox),
-                "text": text,
-            })
+            node_lines.append(
+                {
+                    "page": page_num,
+                    "block": block_idx,
+                    "type": "text_block",
+                    "bbox": list(bbox),
+                    "text": text,
+                }
+            )
             counts["text_blocks"] += 1
             block_idx += 1
         elif btype == 1:
@@ -135,13 +152,15 @@ def _pdf_page_to_jsonl(
                 img_filename = f"p{page_num:03d}_b{block_idx:03d}.{ext}"
                 _common.write_bytes(images_dir / img_filename, img_bytes)
                 ref = f"images/{img_filename}"
-            node_lines.append({
-                "page": page_num,
-                "block": block_idx,
-                "type": "image_block",
-                "bbox": list(bbox),
-                "ref": ref,
-            })
+            node_lines.append(
+                {
+                    "page": page_num,
+                    "block": block_idx,
+                    "type": "image_block",
+                    "bbox": list(bbox),
+                    "ref": ref,
+                }
+            )
             counts["image_blocks"] += 1
             block_idx += 1
 
@@ -157,15 +176,17 @@ def _pdf_page_to_jsonl(
             for c_idx, cell_text in enumerate(row, start=1):
                 if cell_text is None:
                     continue
-                node_lines.append({
-                    "page": page_num,
-                    "type": "table_cell",
-                    "table_idx": t_idx,
-                    "table_bbox": t_bbox,
-                    "row": r_idx,
-                    "col": c_idx,
-                    "text": str(cell_text),
-                })
+                node_lines.append(
+                    {
+                        "page": page_num,
+                        "type": "table_cell",
+                        "table_idx": t_idx,
+                        "table_bbox": t_bbox,
+                        "row": r_idx,
+                        "col": c_idx,
+                        "text": str(cell_text),
+                    }
+                )
                 counts["table_cells"] += 1
 
     # form fields (양식 입력란)
@@ -177,14 +198,16 @@ def _pdf_page_to_jsonl(
             value = ""
         field_type = widget.field_type_string or str(widget.field_type)
         name = widget.field_name or ""
-        node_lines.append({
-            "page": page_num,
-            "type": "form_field",
-            "name": name,
-            "field_type": field_type,
-            "value": str(value),
-            "bbox": rect,
-        })
+        node_lines.append(
+            {
+                "page": page_num,
+                "type": "form_field",
+                "name": name,
+                "field_type": field_type,
+                "value": str(value),
+                "bbox": rect,
+            }
+        )
         counts["form_fields"] += 1
 
     # annotations (주석, highlight, sticky note 등)
@@ -192,7 +215,11 @@ def _pdf_page_to_jsonl(
     for annot in annots:
         rect = list(annot.rect)
         atype = annot.type
-        subtype = atype[1] if isinstance(atype, (tuple, list)) and len(atype) > 1 else str(atype)
+        subtype = (
+            atype[1]
+            if isinstance(atype, (tuple, list)) and len(atype) > 1
+            else str(atype)
+        )
         info = annot.info or {}
         node = {
             "page": page_num,

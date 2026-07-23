@@ -5,6 +5,7 @@ Usage: python unpack.py <file>
 입력 파일을 옆 디렉토리 <basename>_<ext>/ 로 풀어 떨군다.
 형식별 분기는 handlers/dispatch.py 에서 처리.
 """
+
 from __future__ import annotations
 
 import shutil

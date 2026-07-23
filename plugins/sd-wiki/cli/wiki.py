@@ -27,6 +27,7 @@ from shared.wiki_service import (  # noqa: E402
     WikiWriteConflict,
     browser_login,
     call_service,
+    clear_token,
     get_token,
     write_page,
 )
@@ -57,7 +58,7 @@ def build_parser() -> CliParser:
         sub = subparsers.add_parser(name, add_help=False)
         sub.add_argument("topic")
 
-    for name in ("toc", "rootmap", "lint"):
+    for name in ("toc", "rootmap", "lint", "login"):
         subparsers.add_parser(name, add_help=False)
 
     search = subparsers.add_parser("search", add_help=False)
@@ -90,6 +91,9 @@ def parse_argv(argv: list[str]) -> argparse.Namespace:
     if args.command == "move" and bool(args.parent) == bool(args.root):
         raise CliParseError("move 명령에는 --parent 또는 --root 중 하나가 필요합니다.")
 
+    if args.command == "login" and args.no_browser:
+        raise CliParseError("login 명령은 --no-browser 와 함께 쓸 수 없습니다.")
+
     return args
 
 
@@ -102,7 +106,9 @@ def read_body_file(file_path: str) -> str:
         with open(file_path, "rb") as handle:
             payload = handle.read()
     except OSError as error:
-        raise WikiApiError(f"본문 파일을 읽을 수 없습니다: {get_error_message(error)}") from error
+        raise WikiApiError(
+            f"본문 파일을 읽을 수 없습니다: {get_error_message(error)}"
+        ) from error
     return decode_utf8_strict(payload)
 
 
@@ -153,7 +159,9 @@ def run_command(args: argparse.Namespace, token: str, write_body: str | None) ->
 
     if args.command == "move":
         parent_topic = None if args.root else args.parent
-        return call_service("move", [{"topic": args.topic, "parentTopic": parent_topic}], token)
+        return call_service(
+            "move", [{"topic": args.topic, "parentTopic": parent_topic}], token
+        )
 
     raise WikiApiError(f"알 수 없는 명령: {args.command}")
 
@@ -168,6 +176,13 @@ def main(argv: list[str]) -> int:
     allow_browser = not args.no_browser
 
     try:
+        if args.command == "login":
+            # 강제 재로그인 — 저장된 토큰을 폐기해야 자동 refresh 를 타지 않고 브라우저가 뜬다.
+            clear_token()
+            browser_login()
+            print_json({"success": True})
+            return 0
+
         token = get_token(allow_browser)
         if token is None:
             print(

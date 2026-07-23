@@ -7,10 +7,13 @@
 명령 목록은 루트 `package.json` 의 `scripts` 를 읽으세요. `pnpm sd-cli <command>` 는 sd-cli 직접 실행의 단축입니다.
 
 - 검사는 `pnpm check --fix` 를 우선 사용하세요. `typecheck`, `lint` 개별 실행은 오류 분석, 자동수정이 필요할 때만 쓰세요.
-- `build`, `watch`, `dev`, `publish` 의 `--target/-t` 값은 `sd.config.ts` 의 `packages` 키입니다. `@simplysm/` 접두사를 붙이지 마세요. 예: `pnpm build -t core-common -t storage`.
+- `build`, `watch`, `dev`, `pub` 의 `--target/-t` 값은 `sd.config.ts` 의 `packages` 키입니다. `@simplysm/` 접두사를 붙이지 마세요. 예: `pnpm build -t core-common -t storage`.
 - `check`, `typecheck`, `lint` 의 `--target/-t` 값은 `packages/*` 또는 `tests/*` 아래 워크스페이스 디렉터리명입니다. 예: `pnpm check --fix -t core-common -t orm`.
-- `build`, `watch`, `dev`, `device`, `publish`, `replace-deps` 는 `--opt/-o` 값을 `sd.config.ts` 에 전달합니다.
+- `build`, `watch`, `dev`, `device`, `pub`, `replace-deps` 는 `--opt/-o` 값을 `sd.config.ts` 에 전달합니다.
 - ruff 는 `python -m ruff` 로 호출하세요. 실행 파일이 PATH 에 없을 수 있습니다.
+- 테스트는 `pnpm test` 로 실행하세요(루트 `vitest.config.ts` 의 vitest project 분할).
+  - 단일 파일: `pnpm test <spec 경로>`, project 단위: `pnpm test --project <이름>`.
+  - `orm`, `service-server-acme` project 는 Docker 가 필요합니다.
 
 ## 환경, 제약
 

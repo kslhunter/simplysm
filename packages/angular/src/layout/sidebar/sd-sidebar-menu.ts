@@ -55,6 +55,7 @@ import { NgIcon } from "@ng-icons/core";
             <sd-list [inset]="true">
               <ng-template
                 [ngTemplateOutlet]="itemTpl"
+                [ngTemplateOutletInjector]="'outlet'"
                 [ngTemplateOutletContext]="{
                   menus: menu.children,
                   depth: depth + 1,

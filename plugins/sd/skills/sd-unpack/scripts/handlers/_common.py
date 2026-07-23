@@ -1,4 +1,5 @@
 """sd-unpack 공용 유틸 (슬러그, 락, README 빌더, long path 헬퍼 등)."""
+
 from __future__ import annotations
 
 import contextlib
@@ -15,10 +16,12 @@ from pathlib import Path
 def ensure_pip(import_name: str, pip_name: str | None = None) -> None:
     """import 가능한지 확인하고 없으면 pip install. 호출자는 이후 정상 import 사용."""
     import importlib
+
     try:
         importlib.import_module(import_name)
     except ImportError:
         import subprocess
+
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", pip_name or import_name]
         )
@@ -28,6 +31,7 @@ def decode_bytes(payload: bytes) -> str:
     """바이트 → 문자열. charset-normalizer 로 인코딩 자동 감지. 실패 시 throw."""
     ensure_pip("charset_normalizer", "charset-normalizer")
     from charset_normalizer import from_bytes
+
     result = from_bytes(payload).best()
     if result is None:
         raise RuntimeError(f"encoding detection failed (payload size={len(payload)})")
@@ -39,10 +43,22 @@ def decode_mime_header(raw: str | None) -> str:
     if not raw:
         return ""
     from email.header import decode_header, make_header
+
     return str(make_header(decode_header(raw)))
 
 
-CONTAINER_EXTS = {".eml", ".msg", ".pdf", ".docx", ".pptx", ".xlsx", ".xlsb", ".doc", ".ppt", ".xls"}
+CONTAINER_EXTS = {
+    ".eml",
+    ".msg",
+    ".pdf",
+    ".docx",
+    ".pptx",
+    ".xlsx",
+    ".xlsb",
+    ".doc",
+    ".ppt",
+    ".xls",
+}
 
 OS_FORBIDDEN_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
@@ -188,6 +204,7 @@ def unpack_tnef(path: Path, attachments_dir: Path) -> list[Path]:
         return []
     ensure_pip("tnefparse")
     from tnefparse import TNEF
+
     with open(long_str(path), "rb") as f:
         t = TNEF(f.read())
 
@@ -290,7 +307,9 @@ def write_readme(
             lines.append(f"→ [{body_file_link}]({body_file_link})")
             lines.append("")
         if body_from_html_link:
-            lines.append(f"→ [{body_from_html_link}]({body_from_html_link}) (HTML→평문, 인라인 이미지 위치 placeholder 포함)")
+            lines.append(
+                f"→ [{body_from_html_link}]({body_from_html_link}) (HTML→평문, 인라인 이미지 위치 placeholder 포함)"
+            )
             lines.append("")
         if body_html_link:
             lines.append(f"→ [{body_html_link}]({body_html_link}) (원본 HTML)")

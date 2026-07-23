@@ -11,6 +11,15 @@
         ]
       },
       {
+        "matcher": "^Edit$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-sync.py\""
+          }
+        ]
+      },
+      {
         "matcher": "^(Bash|PowerShell)$",
         "hooks": [
           {
@@ -27,6 +36,15 @@
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/cache-read-hash.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "^(Write|Edit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/post-write-format-hash.py\""
           }
         ]
       }

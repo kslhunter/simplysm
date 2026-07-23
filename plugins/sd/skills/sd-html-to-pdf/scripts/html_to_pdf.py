@@ -6,6 +6,7 @@ HTML 의 @page, print CSS(여백, 페이지 크기, 배경 음영)를 그대로 
 사용: python html_to_pdf.py <입력.html> <출력.pdf>
 의존: 설치된 Chrome 또는 Edge (별도 다운로드 불필요). CHROME_PATH 로 경로 지정 가능.
 """
+
 from __future__ import annotations
 
 import os
@@ -41,8 +42,13 @@ def find_browser() -> str:
             "/Applications/Chromium.app/Contents/MacOS/Chromium",
         ]
     else:
-        for name in ("google-chrome", "google-chrome-stable", "chromium",
-                     "chromium-browser", "microsoft-edge"):
+        for name in (
+            "google-chrome",
+            "google-chrome-stable",
+            "chromium",
+            "chromium-browser",
+            "microsoft-edge",
+        ):
             found = shutil.which(name)
             if found:
                 candidates.append(found)
@@ -69,9 +75,17 @@ def html_to_pdf(html_path: Path, pdf_path: Path) -> Path:
     profile = Path(tempfile.mkdtemp(prefix="html2pdf-"))
     try:
         proc = subprocess.run(
-            [browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-             f"--user-data-dir={profile}", f"--print-to-pdf={pdf_path}", url],
-            capture_output=True, text=True,
+            [
+                browser,
+                "--headless=new",
+                "--disable-gpu",
+                "--no-pdf-header-footer",
+                f"--user-data-dir={profile}",
+                f"--print-to-pdf={pdf_path}",
+                url,
+            ],
+            capture_output=True,
+            text=True,
         )
         if proc.returncode != 0 or not pdf_path.exists():
             raise RuntimeError(

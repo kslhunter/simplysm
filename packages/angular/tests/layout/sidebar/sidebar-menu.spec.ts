@@ -170,6 +170,22 @@ describe("Feature 4.3 Slice 2: SdSidebarMenu 계층 메뉴", () => {
     expect(parentItem.getAttribute("data-sd-open")).toBe("false");
   });
 
+  it("재귀 렌더링된 3레벨 메뉴에서 깊이가 관통 누적된다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SidebarMenuExpandedTest],
+      providers: [provideRouter([])],
+    }).createComponent(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 3중 중첩된 손자 항목(Grandchild)만 sd-list 3단 아래에 위치
+    const grandchild = fixture.nativeElement.querySelector(
+      "sd-list sd-list-item sd-list sd-list-item sd-list sd-list-item",
+    ) as HTMLElement;
+    expect(grandchild).toBeTruthy();
+    expect(grandchild.style.getPropertyValue("--sd-list-item-depth").trim()).toBe("2");
+  });
+
   it("메뉴에 아이콘이 있으면 제목 앞에 표시된다", async () => {
     const fixture = TestBed.configureTestingModule({
       imports: [SidebarMenuIconTest],

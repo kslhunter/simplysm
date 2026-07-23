@@ -14,7 +14,11 @@ def default_data_dir() -> str:
     에이전트의 일반 셸엔 플러그인 환경변수가 주입되지 않으므로,
     hook 과 CLI 가 같은 토큰을 보려면 환경변수에 기대지 않는 고정경로여야 한다.
     """
-    home = os.environ.get("HOME") or os.environ.get("USERPROFILE") or os.path.expanduser("~")
+    home = (
+        os.environ.get("HOME")
+        or os.environ.get("USERPROFILE")
+        or os.path.expanduser("~")
+    )
     return os.path.join(home, ".claude", "sd")
 
 

@@ -55,7 +55,7 @@ BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     ),
     (
         re.compile(
-            rf"{COMMAND_POSITION_PATTERN}(npx\s+)?playwright-cli\s+(?:-s=\S+\s+)?"
+            rf"{COMMAND_POSITION_PATTERN}(?:npx\s+)?playwright(?:-|\s+)cli\s+(?:(?:-s\s+\S+|-\S+)\s+)*"
             r"(screenshot|pdf|snapshot)\b[^|;&\n]*[ \t]--filename\b",
             re.IGNORECASE,
         ),
@@ -64,7 +64,7 @@ BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     ),
     (
         re.compile(
-            rf"{COMMAND_POSITION_PATTERN}(npx\s+)?playwright-cli\s+(?:-s=\S+\s+)?"
+            rf"{COMMAND_POSITION_PATTERN}(?:npx\s+)?playwright(?:-|\s+)cli\s+(?:(?:-s\s+\S+|-\S+)\s+)*"
             r"(state-save|video-start)[ \t]+\S",
             re.IGNORECASE,
         ),
@@ -91,7 +91,9 @@ BLOCKED_PATTERNS: list[tuple[re.Pattern[str], str]] = [
         "drop it — `pnpm <script> <args>`)",
     ),
     (
-        re.compile(rf"{COMMAND_POSITION_PATTERN}yarn(?:\.cmd)?\s+global\b", re.IGNORECASE),
+        re.compile(
+            rf"{COMMAND_POSITION_PATTERN}yarn(?:\.cmd)?\s+global\b", re.IGNORECASE
+        ),
         "global install forbidden (yarn global). Install locally or ask the user.",
     ),
     (
@@ -120,7 +122,9 @@ def is_blocked_git_command(command_text: str) -> bool:
     if GIT_ALLOW_TOKEN in command_text:
         return False
 
-    git_command_starts = [match.start() for match in GIT_COMMAND_PATTERN.finditer(command_text)]
+    git_command_starts = [
+        match.start() for match in GIT_COMMAND_PATTERN.finditer(command_text)
+    ]
     if not git_command_starts:
         return False
 
@@ -146,7 +150,10 @@ def main() -> None:
     except SystemExit:
         raise
     except Exception as error:
-        print(f"Blocked: check-shell failed: {format_error_message(error)}", file=sys.stderr)
+        print(
+            f"Blocked: check-shell failed: {format_error_message(error)}",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
 

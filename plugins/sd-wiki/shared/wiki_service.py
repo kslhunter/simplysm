@@ -109,7 +109,7 @@ def load_token() -> str | None:
 
     try:
         data = json.loads(decode_utf8_strict(payload))
-    except (ValueError, UnicodeDecodeError):
+    except ValueError, UnicodeDecodeError:
         return None
 
     token = data.get("token") if isinstance(data, dict) else None
@@ -159,7 +159,9 @@ def refresh_token(token: str) -> str:
     try:
         status, body = _post(f"{API_BASE}/api/AuthService/refresh", "[]", token)
     except OSError as error:
-        raise WikiAuthError(f"위키 서버에 연결할 수 없습니다: {get_error_message(error)}") from error
+        raise WikiAuthError(
+            f"위키 서버에 연결할 수 없습니다: {get_error_message(error)}"
+        ) from error
 
     if status == 401:
         raise WikiAuthExpired("토큰이 만료되었거나 유효하지 않습니다.")
@@ -204,7 +206,9 @@ def open_browser(login_url: str) -> None:
 
 def browser_login(timeout_sec: int = LOGIN_TIMEOUT_SEC) -> str:
     """단발 콜백 서버를 띄우고 브라우저로 로그인 → 토큰 수신, 저장 후 반환."""
-    state = base64.urlsafe_b64encode(secrets.token_bytes(12)).decode("ascii").rstrip("=")
+    state = (
+        base64.urlsafe_b64encode(secrets.token_bytes(12)).decode("ascii").rstrip("=")
+    )
     received: dict[str, str] = {}
     done = threading.Event()
 
@@ -323,7 +327,9 @@ def call_service(method: str, params: list, token: str) -> Any:
     try:
         return json.loads(body)
     except ValueError as error:
-        raise WikiApiError(f"{method} 실패: 응답 JSON 을 해석할 수 없습니다.") from error
+        raise WikiApiError(
+            f"{method} 실패: 응답 JSON 을 해석할 수 없습니다."
+        ) from error
 
 
 # ── ⑥ 낙관락 ──────────────────────────────────────────────────────────

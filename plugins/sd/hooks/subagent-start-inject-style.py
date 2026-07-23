@@ -19,14 +19,16 @@ from shared.hook_io import (
     resolve_plugin_root,
 )
 
-MARKER_START = "<!-- main-only:start -->"
-MARKER_END = "<!-- main-only:end -->"
+MARKER_START = "<!-- strip-for-subagent:start -->"
+MARKER_END = "<!-- strip-for-subagent:end -->"
 
-SUBAGENT_PREAMBLE = "\n".join([
-    "아래는 이 워크스페이스의 최우선 행동지침입니다. 모든 판단, 조사, 출력에 그대로 적용하세요.",
-    "당신은 서브에이전트라 사용자와 직접 대화할 통로가 없습니다.",
-    "`논의`나 승인이 필요한 지점을 만나면 멈추지 말고, 그 지점과 선택지를 호출자에게 보고하세요.",
-])
+SUBAGENT_PREAMBLE = "\n".join(
+    [
+        "아래는 이 워크스페이스의 최우선 행동지침입니다. 모든 판단, 조사, 출력에 그대로 적용하세요.",
+        "당신은 서브에이전트라 사용자와 직접 대화할 통로가 없습니다.",
+        "`논의`나 승인이 필요한 지점을 만나면 멈추지 말고, 그 지점과 선택지를 호출자에게 보고하세요.",
+    ]
+)
 
 
 class MarkerPairError(Exception):
@@ -38,11 +40,15 @@ def main() -> None:
     if not is_target_agent(data):
         return
 
-    style_path = os.path.join(resolve_plugin_root(data, __file__), "output-styles", "sd.md")
+    style_path = os.path.join(
+        resolve_plugin_root(data, __file__), "output-styles", "sd.md"
+    )
 
     try:
         raw = read_text(style_path)
-        context = "\n\n".join([SUBAGENT_PREAMBLE, strip_main_only(strip_frontmatter(raw))])
+        context = "\n\n".join(
+            [SUBAGENT_PREAMBLE, strip_main_only(strip_frontmatter(raw))]
+        )
     except Exception as error:
         # SubagentStart 는 spawn 을 막을 수 없어 여기서 throw 해도 서브에이전트는 그대로 실행됩니다.
         # 지침 공백을 만들지 않도록 원문을 그대로 싣고, 실패 사실을 보고에 드러내도록 지시합니다.
@@ -81,7 +87,7 @@ def strip_frontmatter(source: str) -> str:
 
 
 def strip_main_only(source: str) -> str:
-    """`main-only` 구간을 제거합니다.
+    """`strip-for-subagent` 구간을 제거합니다.
 
     해당 구간은 메인 대화 전용 규칙(`논의`, 작업수행 게이트)이라 서브에이전트에 주면 멈춤을
     유발합니다. 마커 짝이 맞지 않으면 잘라낸 범위를 신뢰할 수 없으므로 raise 해 fallback 으로
@@ -97,7 +103,9 @@ def strip_main_only(source: str) -> str:
 
         end = source.find(MARKER_END, start)
         if end == -1:
-            raise MarkerPairError(f"{MARKER_START} 에 대응하는 {MARKER_END} 가 없습니다.")
+            raise MarkerPairError(
+                f"{MARKER_START} 에 대응하는 {MARKER_END} 가 없습니다."
+            )
 
         segments.append(source[cursor:start])
         cursor = end + len(MARKER_END)
@@ -110,10 +118,12 @@ def strip_main_only(source: str) -> str:
 
 
 def build_fallback_context(style_path: str, error: Exception) -> str:
-    notice = "\n".join([
-        f"IMPORTANT: 행동지침({style_path}) 로드에 실패했습니다 — {format_error_message(error)}",
-        "최종 보고 첫 줄에 이 실패 사실을 그대로 포함해 호출자가 인지하게 하세요.",
-    ])
+    notice = "\n".join(
+        [
+            f"IMPORTANT: 행동지침({style_path}) 로드에 실패했습니다 — {format_error_message(error)}",
+            "최종 보고 첫 줄에 이 실패 사실을 그대로 포함해 호출자가 인지하게 하세요.",
+        ]
+    )
 
     try:
         return "\n\n".join([notice, SUBAGENT_PREAMBLE, read_text(style_path).strip()])

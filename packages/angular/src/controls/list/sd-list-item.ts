@@ -5,8 +5,10 @@ import {
   computed,
   contentChild,
   contentChildren,
+  inject,
   input,
   model,
+  type Signal,
   TemplateRef,
   ViewEncapsulation,
 } from "@angular/core";
@@ -108,8 +110,9 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
         }
 
         // 중첩 자식 영역: 세로 가이드선을 그리기 위한 기준 컨테이너.
-        // 깊이별 들여쓰기는 중첩 sd-list 의 padding 으로 누적되므로, 이 컨테이너
-        // 좌측은 항상 현재 항목 기준이라 가이드선 위치는 고정값이면 충분함.
+        // 가이드선 좌측은 현재 항목의 accordion 깊이(--sd-list-item-depth)에
+        // 비례해 누적됨. 깊이는 각 항목이 DI 로 자기산출해 host 변수로 상속됨.
+        // 오프셋 0.65em 은 부모 아이콘(1.3em)의 정중앙이라 세로선이 아이콘을 관통함.
         > sd-collapse > ._content > ._children {
           position: relative;
 
@@ -117,7 +120,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 1em;
+            left: calc(0.65em + 1.3em * var(--sd-list-item-depth, 0));
             width: 0;
             border-left: 1px solid var(--sd-bd-soft);
             pointer-events: none;
@@ -132,10 +135,11 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
             }
           }
 
-          // 깊이별 들여쓰기: accordion 항목의 자식 리스트를 한 칸씩 누적 들여씀.
-          // (flat 항목의 자식 리스트는 들여쓰지 않음)
+          // 깊이별 들여쓰기: 자식 항목의 accordion 깊이(--sd-list-item-depth)에
+          // 비례해 누적. 한 단계 1.3em(아이콘 한 칸): depth1=1.3em, depth2=2.6em.
+          // (flat 항목의 자식 리스트는 깊이를 증가시키지 않아 들여쓰지 않음)
           > sd-collapse > ._content > ._children > sd-list > sd-list-item > ._content {
-            padding-left: 1.5em;
+            padding-left: calc(1.3em * var(--sd-list-item-depth, 1));
           }
         }
 
@@ -165,6 +169,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
     "[attr.data-sd-readonly]": "readonly()",
     "[attr.data-sd-has-children]": "hasChildren()",
     "[attr.data-sd-has-selected-icon]": "selectedIcon() != null",
+    "[style.--sd-list-item-depth]": "depth()",
   },
 })
 export class SdListItem {
@@ -177,6 +182,15 @@ export class SdListItem {
   contentClass = input<string>();
 
   toolTpl = contentChild<TemplateRef<void>>("toolTpl");
+
+  private readonly _parentItem = inject(SdListItem, { optional: true, skipSelf: true });
+
+  // accordion 조상 수 = 들여쓰기 단계. flat 조상은 단계에 포함하지 않음.
+  readonly depth: Signal<number> = computed(() =>
+    this._parentItem == null
+      ? 0
+      : this._parentItem.depth() + (this._parentItem.layout() === "accordion" ? 1 : 0),
+  );
 
   private readonly _childLists = contentChildren(SdList);
 

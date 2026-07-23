@@ -32,7 +32,9 @@ def wiki_data_dir() -> str:
 
 def session_skip_path(session_id: str) -> str:
     safe_session_id = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id)
-    return os.path.join(wiki_data_dir(), f"wiki-session-no-context-{safe_session_id}.lock")
+    return os.path.join(
+        wiki_data_dir(), f"wiki-session-no-context-{safe_session_id}.lock"
+    )
 
 
 def mark_session_skipped(session_id: str) -> None:
@@ -54,9 +56,11 @@ def login_lock_age_sec(lock_path: str) -> float | None:
     try:
         with open(lock_path, encoding="utf-8") as handle:
             parsed = json.load(handle)
-        if isinstance(parsed, dict) and isinstance(parsed.get("startedAt"), (int, float)):
+        if isinstance(parsed, dict) and isinstance(
+            parsed.get("startedAt"), (int, float)
+        ):
             started_at = float(parsed["startedAt"])
-    except (OSError, ValueError):
+    except OSError, ValueError:
         # lock 본문 손상, 미기록 — 파일 시각으로 폴백한다.
         pass
 

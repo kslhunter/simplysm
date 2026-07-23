@@ -118,14 +118,17 @@ def read_cache() -> dict | None:
     try:
         with open(cache_file_path(), encoding="utf-8") as handle:
             return as_record(json.load(handle))
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return None
 
 
 def should_fetch(cache: dict | None) -> bool:
     if not cache:
         return True
-    return time.time() - (as_number(cache.get("last_fetch_ts")) or 0) > FETCH_INTERVAL_SECONDS
+    return (
+        time.time() - (as_number(cache.get("last_fetch_ts")) or 0)
+        > FETCH_INTERVAL_SECONDS
+    )
 
 
 def write_cache_atomic(data: dict) -> None:
@@ -292,14 +295,16 @@ def do_fetch_locked(version: str) -> None:
 
         usage_data = fetch_usage(token, version)
         extra_usage = as_record(usage_data.get("extra_usage")) or {}
-        write_cache_atomic({
-            "last_fetch_ts": time.time(),
-            "extra_usage": {
-                "is_enabled": extra_usage.get("is_enabled") is True,
-                "used_credits": extra_usage.get("used_credits"),
-            },
-            "error": None,
-        })
+        write_cache_atomic(
+            {
+                "last_fetch_ts": time.time(),
+                "extra_usage": {
+                    "is_enabled": extra_usage.get("is_enabled") is True,
+                    "used_credits": extra_usage.get("used_credits"),
+                },
+                "error": None,
+            }
+        )
     except Exception as error:
         write_cache(cache, str(error) or type(error).__name__)
 
@@ -342,7 +347,9 @@ def main() -> None:
     if effort_level:
         model = f"{model} {effort_level}"
 
-    used_percentage = (as_record(stdin_data.get("context_window")) or {}).get("used_percentage")
+    used_percentage = (as_record(stdin_data.get("context_window")) or {}).get(
+        "used_percentage"
+    )
     context_text = f"{used_percentage}%" if used_percentage is not None else "?"
 
     rate_limits = as_record(stdin_data.get("rate_limits")) or {}
@@ -385,7 +392,11 @@ def as_string(value: object) -> str | None:
 
 
 def as_number(value: object) -> float | None:
-    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+    return (
+        float(value)
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+        else None
+    )
 
 
 if __name__ == "__main__":
@@ -396,7 +407,9 @@ if __name__ == "__main__":
 
         if "--fetch" in sys.argv:
             index = sys.argv.index("--fetch")
-            do_fetch(sys.argv[index + 1] if index + 1 < len(sys.argv) else DEFAULT_VERSION)
+            do_fetch(
+                sys.argv[index + 1] if index + 1 < len(sys.argv) else DEFAULT_VERSION
+            )
         else:
             main()
     except Exception:

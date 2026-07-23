@@ -9,6 +9,7 @@ CID 매핑:
 - Content-ID 헤더 있는 첨부는 cid_map 에 등록
 - images.rels.json 으로 CID↔파일명 양방향 추적
 """
+
 from __future__ import annotations
 
 import email
@@ -33,7 +34,7 @@ def _decode_payload(part) -> str:
     if charset:
         try:
             return payload.decode(charset)
-        except (LookupError, UnicodeDecodeError):
+        except LookupError, UnicodeDecodeError:
             pass
     return _common.decode_bytes(payload)
 
@@ -78,8 +79,16 @@ def run(input_path: Path, out_dir: Path) -> None:
 
     # README 의 헤더 섹션 표기용 envelope 키 (write_readme 의 dict 출력 한정)
     envelope_keys = [
-        "From", "To", "Cc", "Bcc", "Subject", "Date", "Message-ID",
-        "Reply-To", "In-Reply-To", "References",
+        "From",
+        "To",
+        "Cc",
+        "Bcc",
+        "Subject",
+        "Date",
+        "Message-ID",
+        "Reply-To",
+        "In-Reply-To",
+        "References",
     ]
     readme_headers = {k: headers.get(k, "") for k in envelope_keys}
 
@@ -103,7 +112,9 @@ def run(input_path: Path, out_dir: Path) -> None:
         cid = cid_raw.strip("<>") if cid_raw else ""
 
         is_embedded_mail = ctype == "message/rfc822"
-        is_attachment = is_embedded_mail or bool(filename) or "attachment" in disp or bool(cid)
+        is_attachment = (
+            is_embedded_mail or bool(filename) or "attachment" in disp or bool(cid)
+        )
 
         if is_attachment:
             if is_embedded_mail:
@@ -197,9 +208,13 @@ def run(input_path: Path, out_dir: Path) -> None:
         recursed = maybe_recurse_attachment(ap, attachments_dir)
         if recursed is not None:
             os.unlink(_common.long_str(ap))
-            attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
+            attachment_links.append(
+                f"attachments/{recursed.name}/ ({_common.format_size(size)})"
+            )
         else:
-            attachment_links.append(f"attachments/{ap.name} ({_common.format_size(size)})")
+            attachment_links.append(
+                f"attachments/{ap.name} ({_common.format_size(size)})"
+            )
 
     _common.write_readme(
         out_dir,

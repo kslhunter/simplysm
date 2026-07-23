@@ -1,7 +1,8 @@
-"""PreToolUse(Write) hook — Read 시점 이후 내용이 바뀐 파일의 덮어쓰기를 막는다.
+"""PreToolUse(Write) hook — 전체 내용을 모르는 파일의 덮어쓰기를 막는다.
 
-Read 시 기록해 둔 해시와 현재 파일 해시를 대조한다. 기록이 없으면(= Read 하지 않았으면)
-역시 막는다. 차단은 종료코드 2 로만 성립한다.
+전체앎 시점(전체 Read, Write/Edit 성공 후)에 기록해 둔 해시와 현재 파일 해시를
+대조한다. 기록이 없으면(부분 Read 만 했거나 외부 수정으로 무효화됨) 역시 막는다.
+차단은 종료코드 2 로만 성립한다.
 """
 
 from __future__ import annotations
@@ -32,7 +33,9 @@ def main() -> None:
         if not file_path or not is_regular_file(file_path):
             return
 
-        cache_path = os.path.join(read_hash_dir(get_session_id(data)), path_hash(file_path))
+        cache_path = os.path.join(
+            read_hash_dir(get_session_id(data)), path_hash(file_path)
+        )
         if read_cached_hash(cache_path) != file_hash(file_path):
             raise WriteHashViolationError(
                 "CRITICAL: File content has changed or was never Read. "

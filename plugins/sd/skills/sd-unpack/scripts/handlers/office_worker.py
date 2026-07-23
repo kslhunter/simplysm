@@ -13,6 +13,7 @@ sub-commands:
 Office 외 작업 (.xlsx zip strip, .md/.formulas.json 추출 등) 은 호출자에서 처리.
 worker 는 COM 호출만 담당.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,6 +27,7 @@ from pathlib import Path
 # ====================================================================
 # path helpers (worker 단독 동작 위해 inline)
 # ====================================================================
+
 
 def long_str(p: Path) -> str:
     s = str(p)
@@ -50,6 +52,7 @@ def short_str(p: Path) -> str:
 # ====================================================================
 # Word
 # ====================================================================
+
 
 def cmd_word_pdf(args) -> None:
     import pythoncom
@@ -82,6 +85,7 @@ def cmd_word_pdf(args) -> None:
 # ====================================================================
 # PowerPoint
 # ====================================================================
+
 
 def cmd_ppt_png(args) -> None:
     import pythoncom
@@ -121,6 +125,7 @@ def cmd_ppt_png(args) -> None:
 # Excel sheets PNG (ChartObject + CopyPicture hack)
 # ====================================================================
 
+
 def cmd_excel_sheets(args) -> None:
     """input 은 이미 sheetProtection strip 된 사본 (호출자가 처리).
 
@@ -152,7 +157,9 @@ def cmd_excel_sheets(args) -> None:
                 excel.Calculation = -4135  # xlCalculationManual
                 wb.RemovePersonalInformation = False
                 for idx, safe_name, raw_name in sheet_names:
-                    _export_one_sheet(wb, tmp_dir, sheets_dir, idx, safe_name, raw_name, sheet_ranges)
+                    _export_one_sheet(
+                        wb, tmp_dir, sheets_dir, idx, safe_name, raw_name, sheet_ranges
+                    )
             finally:
                 wb.Close(SaveChanges=False)
         finally:
@@ -164,9 +171,15 @@ def cmd_excel_sheets(args) -> None:
     sys.stdout.write(json.dumps({"sheet_ranges": sheet_ranges}))
 
 
-def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
-                      idx: str, safe_name: str, raw_name: str,
-                      sheet_ranges: dict) -> None:
+def _export_one_sheet(
+    wb,
+    tmp: Path,
+    sheets_dir: Path,
+    idx: str,
+    safe_name: str,
+    raw_name: str,
+    sheet_ranges: dict,
+) -> None:
     """한 시트 데이터 영역 → PNG. sheet_ranges 에 (last_row, last_col) 기록.
 
     PNG export 실패는 raise (부분 산출물을 완료로 오인 방지). 빈 시트만 정상 skip.
@@ -185,12 +198,22 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
         # xlFormulas=-4123, xlPart=2, xlByRows=1, xlByColumns=2, xlPrevious=2
         a1 = ws.Cells(1, 1)
         last_row_cell = ws.Cells.Find(
-            What="*", After=a1, LookIn=-4123, LookAt=2,
-            SearchOrder=1, SearchDirection=2, MatchCase=False,
+            What="*",
+            After=a1,
+            LookIn=-4123,
+            LookAt=2,
+            SearchOrder=1,
+            SearchDirection=2,
+            MatchCase=False,
         )
         last_col_cell = ws.Cells.Find(
-            What="*", After=a1, LookIn=-4123, LookAt=2,
-            SearchOrder=2, SearchDirection=2, MatchCase=False,
+            What="*",
+            After=a1,
+            LookIn=-4123,
+            LookAt=2,
+            SearchOrder=2,
+            SearchDirection=2,
+            MatchCase=False,
         )
         if last_row_cell is None or last_col_cell is None:
             return  # 빈 시트 → PNG skip, sheet_ranges 도 미기록
@@ -228,7 +251,9 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
                 if not tmp_png.exists():
                     raise RuntimeError("Chart.Export 산출 PNG 미생성")
                 # long-path-safe copy
-                shutil.copy2(long_str(tmp_png), long_str(sheets_dir / f"{idx}_{safe_name}.png"))
+                shutil.copy2(
+                    long_str(tmp_png), long_str(sheets_dir / f"{idx}_{safe_name}.png")
+                )
             finally:
                 chart_obj.Delete()
         except Exception as e:
@@ -246,6 +271,7 @@ def _export_one_sheet(wb, tmp: Path, sheets_dir: Path,
 # ====================================================================
 # Convert legacy (.doc/.ppt/.xls/.xlsb → .docx/.pptx/.xlsx)
 # ====================================================================
+
 
 def cmd_convert_legacy(args) -> None:
     import pythoncom
@@ -266,7 +292,9 @@ def cmd_convert_legacy(args) -> None:
                     doc = app.Documents.Open(short_str(input_path), ReadOnly=True)
                     try:
                         doc.RemovePersonalInformation = False
-                        doc.SaveAs2(short_str(output_path), FileFormat=16)  # wdFormatDocumentDefault
+                        doc.SaveAs2(
+                            short_str(output_path), FileFormat=16
+                        )  # wdFormatDocumentDefault
                     finally:
                         doc.Close(SaveChanges=False)
                 finally:
@@ -274,10 +302,14 @@ def cmd_convert_legacy(args) -> None:
             elif ext == ".ppt":
                 app = win32com.client.DispatchEx("PowerPoint.Application")
                 try:
-                    pres = app.Presentations.Open(short_str(input_path), WithWindow=False)
+                    pres = app.Presentations.Open(
+                        short_str(input_path), WithWindow=False
+                    )
                     try:
                         pres.RemovePersonalInformation = False
-                        pres.SaveAs(short_str(output_path), FileFormat=24)  # ppSaveAsOpenXMLPresentation
+                        pres.SaveAs(
+                            short_str(output_path), FileFormat=24
+                        )  # ppSaveAsOpenXMLPresentation
                     finally:
                         pres.Close()
                 finally:
@@ -293,9 +325,13 @@ def cmd_convert_legacy(args) -> None:
                 try:
                     wb = app.Workbooks.Open(short_str(input_path), ReadOnly=True)
                     try:
-                        app.Calculation = -4135  # xlCalculationManual (워크북 열린 후만 가능)
+                        app.Calculation = (
+                            -4135
+                        )  # xlCalculationManual (워크북 열린 후만 가능)
                         wb.RemovePersonalInformation = False
-                        wb.SaveAs(short_str(output_path), FileFormat=51)  # xlOpenXMLWorkbook
+                        wb.SaveAs(
+                            short_str(output_path), FileFormat=51
+                        )  # xlOpenXMLWorkbook
                     finally:
                         wb.Close(SaveChanges=False)
                 finally:
@@ -314,6 +350,7 @@ def cmd_convert_legacy(args) -> None:
 # ====================================================================
 # main
 # ====================================================================
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()

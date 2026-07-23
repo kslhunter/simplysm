@@ -9,6 +9,7 @@
       PDF 는 sd-html-to-pdf 스킬로 먼저 생성하세요.
 의존: PyMuPDF(fitz)
 """
+
 from __future__ import annotations
 
 import sys
@@ -16,9 +17,9 @@ from pathlib import Path
 
 import fitz  # (PyMuPDF)
 
-MM = 2.834645669   # 1mm in PDF points (72dpi)
-RUN_TOP_MM = 16    # 템플릿 상단 여백 spacer(.run-top, @media print)
-RUN_BOT_MM = 14    # 템플릿 하단 여백 spacer(.run-bot) — 정상 여백이라 빈 공간에서 제외
+MM = 2.834645669  # 1mm in PDF points (72dpi)
+RUN_TOP_MM = 16  # 템플릿 상단 여백 spacer(.run-top, @media print)
+RUN_BOT_MM = 14  # 템플릿 하단 여백 spacer(.run-bot) — 정상 여백이라 빈 공간에서 제외
 
 
 def _content_bottom(page) -> float:
@@ -44,14 +45,19 @@ def _first_text_label(page) -> str:
 
 def main() -> int:
     if len(sys.argv) < 2:
-        print("사용: python check-page-fill.py <견적서.pdf 경로> [임계비율(기본 0.35)]",
-              file=sys.stderr)
+        print(
+            "사용: python check-page-fill.py <견적서.pdf 경로> [임계비율(기본 0.35)]",
+            file=sys.stderr,
+        )
         return 2
     pdf_path = Path(sys.argv[1])
     threshold = float(sys.argv[2]) if len(sys.argv) > 2 else 0.35
 
     if not pdf_path.exists():
-        print(f"PDF 없음: {pdf_path} — sd-html-to-pdf 스킬로 먼저 생성하세요.", file=sys.stderr)
+        print(
+            f"PDF 없음: {pdf_path} — sd-html-to-pdf 스킬로 먼저 생성하세요.",
+            file=sys.stderr,
+        )
         return 2
 
     with fitz.open(pdf_path) as doc:
@@ -67,7 +73,9 @@ def main() -> int:
             empty_pt = (H - RUN_BOT_MM * MM) - cb
             empty = max(0.0, empty_pt / content_area)
             if empty >= threshold:
-                warnings.append((i + 1, round(empty * 100), _first_text_label(doc[i + 1])))
+                warnings.append(
+                    (i + 1, round(empty * 100), _first_text_label(doc[i + 1]))
+                )
 
     print(f"총 {n}쪽 | 임계 {round(threshold * 100)}%")
     if not warnings:
@@ -77,7 +85,9 @@ def main() -> int:
     for pg, pct, nxt in warnings:
         tail = f" — 다음 블록이 통째로 밀림: {nxt}" if nxt else ""
         print(f"  - {pg}쪽 하단 {pct}% 빔{tail}")
-    print("→ 표 셀 padding, 폰트를 축소해 압축하거나, 밀린 섹션의 page-break-inside 를 조정.")
+    print(
+        "→ 표 셀 padding, 폰트를 축소해 압축하거나, 밀린 섹션의 page-break-inside 를 조정."
+    )
     return 1
 
 

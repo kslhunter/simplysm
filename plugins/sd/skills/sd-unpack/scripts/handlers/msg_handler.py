@@ -2,6 +2,7 @@
 
 본문, CID, envelope 헤더 규약은 eml_handler 와 동일.
 """
+
 from __future__ import annotations
 
 import email as stdemail
@@ -58,8 +59,16 @@ def run(input_path: Path, out_dir: Path) -> None:
         )
 
         envelope_keys = [
-            "From", "To", "Cc", "Bcc", "Subject", "Date", "Message-ID",
-            "Reply-To", "In-Reply-To", "References",
+            "From",
+            "To",
+            "Cc",
+            "Bcc",
+            "Subject",
+            "Date",
+            "Message-ID",
+            "Reply-To",
+            "In-Reply-To",
+            "References",
         ]
         readme_headers: dict = {}
         for k in envelope_keys:
@@ -98,11 +107,7 @@ def run(input_path: Path, out_dir: Path) -> None:
                 or getattr(att, "shortFilename", None)
                 or "attachment.bin"
             )
-            cid = (
-                getattr(att, "cid", None)
-                or getattr(att, "contentId", None)
-                or ""
-            )
+            cid = getattr(att, "cid", None) or getattr(att, "contentId", None) or ""
             if cid:
                 cid = str(cid).strip("<>")
             data = att.data
@@ -135,16 +140,24 @@ def run(input_path: Path, out_dir: Path) -> None:
                 t_recursed = maybe_recurse_attachment(tnef_ap, attachments_dir)
                 if t_recursed is not None:
                     os.unlink(_common.long_str(tnef_ap))
-                    attachment_links.append(f"attachments/{t_recursed.name}/ ({_common.format_size(t_size)})")
+                    attachment_links.append(
+                        f"attachments/{t_recursed.name}/ ({_common.format_size(t_size)})"
+                    )
                 else:
-                    attachment_links.append(f"attachments/{tnef_ap.name} ({_common.format_size(t_size)})")
+                    attachment_links.append(
+                        f"attachments/{tnef_ap.name} ({_common.format_size(t_size)})"
+                    )
 
             recursed = maybe_recurse_attachment(dst, attachments_dir)
             if recursed is not None:
                 os.unlink(_common.long_str(dst))
-                attachment_links.append(f"attachments/{recursed.name}/ ({_common.format_size(size)})")
+                attachment_links.append(
+                    f"attachments/{recursed.name}/ ({_common.format_size(size)})"
+                )
             else:
-                attachment_links.append(f"attachments/{dst.name} ({_common.format_size(size)})")
+                attachment_links.append(
+                    f"attachments/{dst.name} ({_common.format_size(size)})"
+                )
 
         # body.md: text 우선, 없으면 HTML→평문
         # body.from_html.md: text, HTML 둘 다 있을 때 HTML→평문 변환본 별도 (이미지 위치 placeholder)

@@ -85,6 +85,7 @@ description: 개발 착수 전 개발계획서(plan.md)를 작성. Use when 사�
 | UI, 사용자 흐름 중심            | User Story Mapping               | 사용자 단계, 핵심 흐름, release slice, 누락 흐름                             |
 | 복잡한 업무, 도메인 흐름        | Event Storming 초안              | 이벤트, 명령, 정책, 예외, hotspot. 이해관계자 검증 전에는 확정으로 쓰지 않음 |
 | 시스템 경계, 외부 연동 중심     | C4 / Context Mapping             | actor, system/container/component, 인터페이스, 책임 경계                     |
+| 기존 인터페이스, 데이터 모델을 깨는 변경 | Parallel Change / Branch by Abstraction | expand(신구 병존), migrate(소비자 전수 이전), contract(구 제거)를 각각 TASK 로 분해. 각 단계의 소비자 목록 |
 | 중요한 기술, 정책 결정          | ADR/RFC 후보                     | 맥락, 선택지, 결정, 결과, 재검토 조건                                        |
 | 버그, 실패 해결 계획            | RCA                              | 최소 2개 원인 가설, 근거, 채택, 기각, 해결 방향                               |
 | 우선순위, 범위 조정             | MoSCoW                           | Must/Should/Could/Won't, 순서 근거                                           |
@@ -120,7 +121,7 @@ description: 개발 착수 전 개발계획서(plan.md)를 작성. Use when 사�
 - 근거 검증 — 비자명 결정, 작업, 리스크의 근거가 실제 존재하는가.
 - 과계획 — 요청, 근거에 없는 기능, 옵션, 추상화가 들어갔는가.
 - 실행 가능성 — 순서, 의존, 검증 방법, 롤백이 모순 없이 실행 가능한가. TASK 번호순과 §8 이 일치하는가.
-- 참조 무결성 — SCOPE/FIND/DEC/TASK/AC/TEST/GATE/ASM/OPEN/RISK/BLOCK 참조가 끊기지 않았는가.
+- 참조 무결성 — SCOPE/FIND/DEC/IMPACT/TASK/AC/TEST/GATE/ASM/OPEN/RISK/BLOCK 참조가 끊기지 않았는가. 처리 TASK 가 비어 있는 IMPACT 가 있는가.
 - TASK 완결성 — 각 TASK 가 자체 테스트, 검증, 원천 자료 반영을 포함하는가. 후처리 전용 TASK 가 있는가.
 
 결과 처리:

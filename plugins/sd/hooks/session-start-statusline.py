@@ -39,10 +39,14 @@ def build_command(script_path: str) -> str:
 #: 과거에 이 훅이 심었던 명령들 — 이것과 일치할 때만 교체한다.
 LEGACY_COMMAND_BUILDERS: tuple[Callable[[str], str], ...] = (
     # Bun 런타임 시절
-    lambda home: f'bun "{to_posix_path(os.path.join(home, ".claude", "sd", "statusline.ts"))}"',
+    lambda home: (
+        f'bun "{to_posix_path(os.path.join(home, ".claude", "sd", "statusline.ts"))}"'
+    ),
     # 별도 설치 경로에 심겼던 Python 버전
     lambda home: build_command(
-        os.path.join(home, ".claude", "plugins", "data", "sd-claude-inline", "statusline.py")
+        os.path.join(
+            home, ".claude", "plugins", "data", "sd-claude-inline", "statusline.py"
+        )
     ),
 )
 
@@ -73,9 +77,9 @@ def copy_statusline_if_needed(source_path: str, target_path: str) -> None:
     source_stat = os.stat(source_path)
     try:
         target_stat = os.stat(target_path)
-        if source_stat.st_size == target_stat.st_size and int(source_stat.st_mtime) == int(
-            target_stat.st_mtime
-        ):
+        if source_stat.st_size == target_stat.st_size and int(
+            source_stat.st_mtime
+        ) == int(target_stat.st_mtime):
             return
     except OSError:
         pass
@@ -110,7 +114,7 @@ def read_settings(settings_path: str) -> dict:
     try:
         with open(settings_path, encoding="utf-8") as handle:
             return as_record(json.load(handle)) or {}
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return {}
 
 

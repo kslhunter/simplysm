@@ -1,4 +1,5 @@
 """형식별 핸들러 분기. 재귀 첨부 풀이에서도 동일 함수 사용."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,18 +14,23 @@ def unpack_to(input_path: Path, out_dir: Path) -> None:
     ext = input_path.suffix.lower()
     if ext == ".eml":
         from . import eml_handler
+
         eml_handler.run(input_path, out_dir)
     elif ext == ".msg":
         from . import msg_handler
+
         msg_handler.run(input_path, out_dir)
     elif ext == ".pdf":
         from . import pdf_handler
+
         pdf_handler.run(input_path, out_dir)
     elif ext in (".docx", ".pptx", ".xlsx"):
         from . import office_com
+
         office_com.run(input_path, out_dir)
     elif ext in (".doc", ".ppt", ".xls", ".xlsb"):
         from . import office_com
+
         office_com.run_legacy(input_path, out_dir)
     else:
         # 비컨테이너: _source 보존 + README 만 작성
@@ -37,7 +43,9 @@ def unpack_to(input_path: Path, out_dir: Path) -> None:
         )
 
 
-def maybe_recurse_attachment(saved_attachment_path: Path, attachments_dir: Path) -> Path | None:
+def maybe_recurse_attachment(
+    saved_attachment_path: Path, attachments_dir: Path
+) -> Path | None:
     """저장된 첨부가 컨테이너 형식이면 재귀 풀이.
 
     - 풀린 폴더(<basename>_<ext>/) 반환 (재귀했을 때).

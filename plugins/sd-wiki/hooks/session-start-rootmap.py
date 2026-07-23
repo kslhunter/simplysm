@@ -112,7 +112,10 @@ def inject_rootmap() -> None:
 
     # 응답 손상이면 format_rootmap_items 가 raise → main 의 except 가 무주입 fail-open.
     items = format_rootmap_items(rootmap)
-    print(f"## 원격 공용 위키 ROOT MAP (최상위)\n\n{items or 'ROOT MAP 항목 없음'}", end="")
+    print(
+        f"## 원격 공용 위키 ROOT MAP (최상위)\n\n{items or 'ROOT MAP 항목 없음'}",
+        end="",
+    )
 
 
 def main() -> None:

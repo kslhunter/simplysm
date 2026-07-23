@@ -1,205 +1,207 @@
-// IDE 다크 테마 — VSCode "Dark 2026"(v1.113 기본, 2026-dark.json)을 --sd-* 역할 토큰 값 맵으로 구성.
-// 색 원천: 리터럴 rgb(팔레트 배타 폐기 — 테마 값 자립). Dark 2026 은 near-black 3단 surface +
-//   solid 텍스트/보더 + 상태만 흰알파(하이브리드) + 죽인 teal 액센트가 핵심 의도.
-// surface 3단: content #121314(editor) < canvas #191A1B(chrome/input) < elevated/overlay #202122(widget/menu).
+// IDE 다크 테마 — VSCode "Dark+"(theme-defaults dark_plus/dark_vs + workbench 기본값)를 --sd-* 역할 토큰 값 맵으로 구성.
+// 색 원천: 리터럴 rgb. Dark+ 는 surface 3값(editor #1E1E1E < sideBar/widget #252526 < input/titleBar #3C3C3C) +
+//   무채 상태(hover/선택은 흰알파 오버레이로 Dark+ 명도 재현) + 파랑 액센트(button #0E639C, focus #007FD4)가 핵심 의도.
 // 치수(gap, radius, sheet pv/ph, topbar), 폰트(Sarasa Fixed K), 그림자(off)는 IDE 컨셉 — 색 외 항목 불변.
 $dark: (
   bg: (
-    // 계층: content #121314(메인/에디터 — 제일 어두움) < canvas #191A1B(배경, 사이드바, 토프바) < elevated/overlay #202122(카드, 팝업)
-    // editor.background #121314 = 메인 콘텐츠(content) / sideBar.background #191A1B = 배경(canvas)
-    canvas: rgb(25, 26, 27),
-    // 콘텐츠 면 = editor.background #121314 (메인/에디터/시트셀/리스트 — 제일 어두움)
-    content: rgb(18, 19, 20),
-    elevated: rgb(32, 33, 34),
-    overlay: rgb(32, 33, 34),
-    sheet: rgb(18, 19, 20),
+    // 계층: content #1E1E1E(editor — 제일 어두움) < canvas/elevated/overlay #252526(sideBar/widget/menu)
+    canvas: rgb(37, 37, 38),
+    // 콘텐츠 면 = editor.background #1E1E1E (메인/에디터/시트셀/리스트)
+    content: rgb(30, 30, 30),
+    elevated: rgb(37, 37, 38),
+    overlay: rgb(37, 37, 38),
+    sheet: rgb(30, 30, 30),
     inverse: white,
-    // 필드 배경 — input.background #191A1B
-    field: rgb(25, 26, 27),
-    // 트랙 — inactive-selection #2C2D2E 근사
-    track: rgb(44, 45, 46),
-    // 노브 — 강조텍스트 #ededed 와 통일한 밝은 손잡이(트랙, success-solid 위 대비)
-    knob: rgb(237, 237, 237),
-    // 체크박스 박스 면 = checkbox.background #242526 (별도 면 — canvas 보다 밝음)
-    checkbox: rgb(36, 37, 38),
-    // 시맨틱 solid = 뮤트 중암 채움, hover 는 더 밝게(다크 hover 밝힘 — button #297AA0→#2B7DA3)
+    // 필드 배경 — input.background #3C3C3C
+    field: rgb(60, 60, 60),
+    // 트랙 — button.secondaryBackground #3A3D41
+    track: rgb(58, 61, 65),
+    // 노브 — foreground #CCCCCC 와 통일한 밝은 손잡이(트랙, success-solid 위 대비)
+    knob: rgb(204, 204, 204),
+    // 체크박스 박스 면 = checkbox.background #3C3C3C (input 과 동일 면)
+    checkbox: rgb(60, 60, 60),
+    // 시맨틱 solid, hover 는 +10% 밝힘 파생
+    // gray solid = badge.background #4D4D4D
     "gray": (
-        solid: rgb(135, 136, 137),
-        solid-hover: rgb(160, 161, 162),
-        subtle: rgb(32, 33, 34),
-        subtle-hover: rgb(42, 43, 44),
+        solid: rgb(77, 77, 77),
+        solid-hover: rgb(95, 95, 95),
+        subtle: rgb(42, 45, 46),
+        subtle-hover: rgb(51, 55, 56),
       ),
+    // blue-gray solid = button.secondaryBackground #3A3D41
     blue-gray: (
-      solid: rgb(100, 116, 139),
-      solid-hover: rgb(120, 136, 159),
-      subtle: rgb(28, 34, 44),
-      subtle-hover: rgb(38, 46, 58),
-    ),
-    // 액센트 = 죽인 teal(button.background #297AA0 / hover #2B7DA3)
+        solid: rgb(58, 61, 65),
+        solid-hover: rgb(69, 73, 78),
+        subtle: rgb(42, 45, 46),
+        subtle-hover: rgb(51, 55, 56),
+      ),
+    // 액센트 = button.background #0E639C / hover #1177BB
     primary: (
-        solid: rgb(41, 122, 160),
-        solid-hover: rgb(43, 125, 163),
-        subtle: rgb(20, 50, 63),
-        subtle-hover: rgb(26, 63, 78),
+        solid: rgb(14, 99, 156),
+        solid-hover: rgb(17, 119, 187),
+        subtle: rgb(6, 47, 74),
+        subtle-hover: rgb(9, 60, 94),
       ),
+    // info = statusBar/inputValidation.infoBorder #007ACC, subtle = infoBackground #063B49
     info: (
-      solid: rgb(57, 148, 188),
-      solid-hover: rgb(66, 158, 200),
-      subtle: rgb(16, 45, 60),
-      subtle-hover: rgb(22, 58, 76),
-    ),
-    // success solid = 뮤트 다크그린(파생), tx 는 charts.green #86CF86
-    success: (
-        solid: rgb(56, 125, 86),
-        solid-hover: rgb(64, 140, 97),
-        subtle: rgb(16, 45, 30),
-        subtle-hover: rgb(22, 58, 40),
+        solid: rgb(0, 122, 204),
+        solid-hover: rgb(14, 138, 224),
+        subtle: rgb(6, 59, 73),
+        subtle-hover: rgb(9, 74, 92),
       ),
-    // warning = inputValidation.warningBorder #B89500
+    // success solid = statusBarItem.remoteBackground #16825D (Dark+ 실존 초록 채움), tx 는 charts.green #89D185
+    success: (
+        solid: rgb(22, 130, 93),
+        solid-hover: rgb(26, 145, 105),
+        subtle: rgb(17, 59, 43),
+        subtle-hover: rgb(22, 74, 54),
+      ),
+    // warning = inputValidation.warningBorder #B89500, subtle = warningBackground #352A05
     warning: (
         solid: rgb(184, 149, 0),
         solid-hover: rgb(200, 163, 10),
-        subtle: rgb(48, 40, 4),
-        subtle-hover: rgb(60, 50, 6),
+        subtle: rgb(53, 42, 5),
+        subtle-hover: rgb(66, 53, 8),
       ),
-    // danger solid = inputValidation.errorBorder #BE1100, tx 는 errorForeground #f48771
+    // danger solid = inputValidation.errorBorder #BE1100, subtle = errorBackground #5A1D1D, tx 는 errorForeground #F48771
     danger: (
         solid: rgb(190, 17, 0),
         solid-hover: rgb(215, 25, 5),
-        subtle: rgb(58, 14, 8),
-        subtle-hover: rgb(74, 18, 10),
+        subtle: rgb(90, 29, 29),
+        subtle-hover: rgb(108, 36, 36),
       ),
-    // 상태 오버레이 = 흰알파(list.hover #FFFFFF14 / active, focus #FFFFFF22)
+    // 상태 = 흰알파 오버레이(글자 위에 겹침) — 합성 결과가 Dark+ 명도와 일치하도록 조정
+    // hover 0.06 ≈ list.hover #2A2D2E, selected 0.11 ≈ list.inactiveSelection #37373D (#1E1E1E 기준)
     state: (
-        hover: rgba(255, 255, 255, 0.08),
-        active: rgba(255, 255, 255, 0.13),
-        selected: rgba(255, 255, 255, 0.13),
-        // 포커스 없는 선택행 solid (list.inactiveSelection #2C2D2E)
-        selected-inactive: rgb(44, 45, 46),
+        hover: rgba(255, 255, 255, 0.06),
+        active: rgba(255, 255, 255, 0.12),
+        selected: rgba(255, 255, 255, 0.11),
+        // 포커스 없는 선택행 solid (list.inactiveSelection #37373D)
+        selected-inactive: rgb(55, 55, 61),
       ),
-    // 드롭 자리, 텍스트 선택 (list.dropBackground #3994BC1A / editor.selection #276782dd)
-    drop-target: rgba(57, 148, 188, 0.1),
-    selection: rgba(39, 103, 130, 0.87),
-    // 비활성 = 가라앉음(canvas 보다 어둡게)
-    disabled: rgb(22, 23, 24),
+    // 드롭 자리(무채 오버레이), 텍스트 선택 (editor.selection #264F78 + 알파)
+    drop-target: rgba(255, 255, 255, 0.08),
+    selection: rgba(38, 79, 120, 0.87),
+    // 비활성 필드 = field 가라앉힘 파생
+    disabled: rgb(45, 45, 48),
     busy-overlay: rgba(0, 0, 0, 0.6),
-    // 진행/로딩 중립 (progressBar.background #878889)
-    busy-indicator: rgb(135, 136, 137)
+    // 진행/로딩 (progressBar.background #0E70C0)
+    busy-indicator: rgb(14, 112, 192)
   ),
-  // 텍스트 = solid 그레이(foreground #bfbfbf, description #8c8c8c, disabled #555, activeSelection #ededed)
+  // 텍스트 = foreground #CCCCCC, description #CCCCCCB3(합성 #9D9D9D), disabled #757575, 선택행 #FFFFFF
   tx: (
-      strong: rgb(237, 237, 237),
-      default: rgb(191, 191, 191),
-      muted: rgb(140, 140, 140),
-      faint: rgb(85, 85, 85),
+      strong: rgb(255, 255, 255),
+      default: rgb(204, 204, 204),
+      muted: rgb(157, 157, 157),
+      faint: rgb(117, 117, 117),
       on-inverse: white,
       on-inverse-muted: rgba(255, 255, 255, 0.75),
       on-inverse-disabled: rgba(255, 255, 255, 0.55),
-      disabled: rgb(85, 85, 85),
-      // 시맨틱 텍스트 = VSCode 라이트 foreground(link #48A0C7, charts.* 등)
-      "gray": rgb(140, 140, 140),
-      gray-hover: rgb(191, 191, 191),
-      gray-subtle: rgb(191, 191, 191),
+      disabled: rgb(117, 117, 117),
+      // 시맨틱 텍스트 = textLink #3794FF, charts.green #89D185, editorWarning #CCA700, errorForeground #F48771
+      "gray": rgb(157, 157, 157),
+      gray-hover: rgb(204, 204, 204),
+      gray-subtle: rgb(204, 204, 204),
       blue-gray: rgb(148, 163, 184),
       blue-gray-hover: rgb(170, 183, 200),
       blue-gray-subtle: rgb(170, 183, 200),
-      primary: rgb(72, 160, 199),
-      primary-hover: rgb(83, 165, 202),
-      primary-subtle: rgb(130, 197, 224),
-      info: rgb(87, 163, 248),
-      info-hover: rgb(120, 185, 250),
-      info-subtle: rgb(130, 190, 250),
-      success: rgb(134, 207, 134),
-      success-hover: rgb(160, 220, 160),
-      success-subtle: rgb(150, 215, 150),
-      warning: rgb(224, 185, 127),
-      warning-hover: rgb(232, 200, 150),
-      warning-subtle: rgb(232, 205, 160),
+      primary: rgb(55, 148, 255),
+      primary-hover: rgb(85, 165, 255),
+      primary-subtle: rgb(120, 185, 255),
+      info: rgb(55, 148, 255),
+      info-hover: rgb(85, 165, 255),
+      info-subtle: rgb(120, 185, 255),
+      success: rgb(137, 209, 133),
+      success-hover: rgb(160, 220, 158),
+      success-subtle: rgb(160, 220, 158),
+      warning: rgb(204, 167, 0),
+      warning-hover: rgb(220, 183, 20),
+      warning-subtle: rgb(224, 192, 60),
       danger: rgb(244, 135, 113),
       danger-hover: rgb(248, 160, 140),
       danger-subtle: rgb(248, 170, 152),
     ),
-  // 보더 = solid 그레이(widget.border #2A2B2C, input.border #333536, checkbox #707070)
+  // 보더 = menu.border #454545, checkbox.border #6B6B6B, input 면 #3C3C3C
   bd: (
-      hairline: rgb(36, 37, 38),
-      soft: rgb(42, 43, 44),
-      default: rgb(42, 43, 44),
-      strong: rgb(51, 53, 54),
-      emphasis: rgb(112, 112, 112),
-      field: rgb(51, 53, 54),
-      disabled: rgb(42, 43, 44),
+      hairline: rgb(51, 51, 51),
+      soft: rgb(69, 69, 69),
+      default: rgb(69, 69, 69),
+      strong: rgb(69, 69, 69),
+      emphasis: rgb(107, 107, 107),
+      field: rgb(60, 60, 60),
+      disabled: rgb(51, 51, 51),
       "gray": (
-        solid: rgb(135, 136, 137),
-        solid-hover: rgb(160, 161, 162),
-        subtle: rgb(51, 53, 54),
+        solid: rgb(77, 77, 77),
+        solid-hover: rgb(95, 95, 95),
+        subtle: rgb(69, 69, 69),
       ),
       blue-gray: (
-        solid: rgb(100, 116, 139),
-        solid-hover: rgb(120, 136, 159),
-        subtle: rgb(51, 53, 54),
+        solid: rgb(58, 61, 65),
+        solid-hover: rgb(69, 73, 78),
+        subtle: rgb(69, 69, 69),
       ),
       primary: (
-        solid: rgb(41, 122, 160),
-        solid-hover: rgb(43, 125, 163),
-        subtle: rgb(38, 90, 110),
+        solid: rgb(14, 99, 156),
+        solid-hover: rgb(17, 119, 187),
+        subtle: rgb(12, 74, 116),
       ),
       info: (
-        solid: rgb(57, 148, 188),
-        solid-hover: rgb(66, 158, 200),
-        subtle: rgb(30, 74, 96),
+        solid: rgb(0, 122, 204),
+        solid-hover: rgb(14, 138, 224),
+        subtle: rgb(10, 82, 128),
       ),
       success: (
-        solid: rgb(56, 125, 86),
-        solid-hover: rgb(64, 140, 97),
-        subtle: rgb(34, 72, 52),
+        solid: rgb(22, 130, 93),
+        solid-hover: rgb(26, 145, 105),
+        subtle: rgb(20, 88, 64),
       ),
       warning: (
         solid: rgb(184, 149, 0),
         solid-hover: rgb(200, 163, 10),
-        subtle: rgb(90, 74, 10),
+        subtle: rgb(110, 90, 12),
       ),
       danger: (
         solid: rgb(190, 17, 0),
         solid-hover: rgb(215, 25, 5),
-        subtle: rgb(96, 30, 20),
+        subtle: rgb(120, 36, 30),
       ),
     ),
-  // focusBorder #3994BCB3 (70% 알파 teal)
+  // focusBorder #007FD4
   focus-ring: (
-      color: rgba(57, 148, 188, 0.7),
+      color: rgb(0, 127, 212),
     ),
-  // scrollbarSlider #A8A9AA85/90
+  // scrollbarSlider #79797933 / hover #646464B3
   scrollbar: (
-      thumb: rgba(168, 169, 170, 0.52),
-      thumb-hover: rgba(168, 169, 170, 0.565),
+      thumb: rgba(121, 121, 121, 0.2),
+      thumb-hover: rgba(100, 100, 100, 0.7),
       track: rgba(255, 255, 255, 0.03),
     ),
-  // 그림자 전면 제거 — dark JSON 은 widget.shadow 부재, 계층을 휘도 3단으로 표현
+  // 그림자 전면 제거 — 계층을 휘도 3단으로 표현 (색 외 항목 불변)
   shadow: (
       size: 0,
       blur-mult: 0,
     ),
-  // 카드 경계 = solid widget.border #2A2B2C. focus 는 전체 outline(focus-ring)으로 — 상단 액센트 라인 제거
+  // 카드 경계 = menu.border #454545. focus 는 전체 outline(focus-ring)으로 — 상단 액센트 라인 제거
   card: (
-      bd: rgb(42, 43, 44),
+      bd: rgb(69, 69, 69),
       bd-active: transparent,
       shadow: none,
       shadow-hover: none,
     ),
-  // 오버레이 경계 — editorWidget/menu 배경(#202122) + widget.border #2A2B2C solid
+  // 오버레이 — widget/menu 배경(#252526) + 헤더는 titleBar #3C3C3C
   modal: (
-      bd: rgb(42, 43, 44),
-      header-bg: rgb(32, 33, 34),
-      header-tx: rgb(191, 191, 191),
-      header-tx-muted: rgb(140, 140, 140),
+      bd: rgb(69, 69, 69),
+      header-bg: rgb(60, 60, 60),
+      header-tx: rgb(204, 204, 204),
+      header-tx-muted: rgb(157, 157, 157),
     ),
   dropdown: (
-    bd: rgb(42, 43, 44),
+    bd: rgb(69, 69, 69),
   ),
-  // 권한표 그룹 행 — 원색 solid 를 무채 어두운 행으로
+  // 권한표 그룹 행 — 원색 solid 를 무채 어두운 행으로 (inactiveSelection #37373D)
   permission-group: (
-      bg: rgb(32, 33, 34),
-      tx: rgba(255, 255, 255, 0.75),
+      bg: rgb(55, 55, 61),
+      tx: rgb(204, 204, 204),
     ),
   // VSCode 수준 소형 라운드 — 버튼, 인풋 2px, 위젯, 메뉴 4px 급(12px 기준)
   radius: (
@@ -220,8 +222,8 @@ $dark: (
       xl: 0.6667rem,
       xxl: 1rem,
     ),
-  // line-height: 1.5em,
-  // line-height-strip-unit: 1.5,
+  line-height: 1.35em,
+  line-height-strip-unit: 1.35,
   sheet: (
       pv: 0.0833rem,
       ph: 0.1667rem,

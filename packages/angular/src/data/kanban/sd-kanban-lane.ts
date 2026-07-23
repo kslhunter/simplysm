@@ -55,7 +55,7 @@ import { tablerEye, tablerEyeOff } from "@ng-icons/tabler-icons";
     <div class="flex-fill">
       <sd-busy-container [busy]="busy()" style="min-height: 3em" [type]="'bar'">
         @if (selectableKanbanLength() > 0 || toolTplRef()) {
-          <div class="tx-center mb-xl">
+          <div class="tx-center mb-xl" style="display: flow-root">
             @if (selectableKanbanLength() > 0) {
               <sd-checkbox
                 style="float: left"

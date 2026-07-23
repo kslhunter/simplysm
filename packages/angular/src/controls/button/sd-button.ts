@@ -38,7 +38,7 @@ import { SdRipple } from "../../core/ripple/sd-ripple";
           width: 100%;
 
           background-color: var(--sd-bg-content);
-          border-color: var(--sd-bd-primary-solid);
+          border-color: var(--sd-bd-strong);
           border-radius: var(--sd-radius-default);
 
           font-weight: bold;

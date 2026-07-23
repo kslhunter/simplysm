@@ -64,36 +64,42 @@ def build_context(
     major = read_simplysm_major(project_dir)
 
     if not major:
-        return "\n".join([
-            f"## 활성 simplysm references (`{to_posix_path(reference_root)}`)",
-            "",
-            PATH_WARNING,
-            "- (`@simplysm/sd-cli` 의존 미선언 — 버전별 `simplysm<major>` references 비활성)",
-        ])
+        return "\n".join(
+            [
+                f"## 활성 simplysm references (`{to_posix_path(reference_root)}`)",
+                "",
+                PATH_WARNING,
+                "- (`@simplysm/sd-cli` 의존 미선언 — 버전별 `simplysm<major>` references 비활성)",
+            ]
+        )
 
     base = os.path.join(reference_root, f"simplysm{major}")
     readme_path = os.path.join(base, "README.md")
     if not os.path.exists(readme_path):
-        return "\n".join([
-            f"## 활성 simplysm references (`{to_posix_path(base)}`)",
-            "",
-            PATH_WARNING,
-            f"- (`simplysm{major}` references 디렉터리 없음)",
-        ])
+        return "\n".join(
+            [
+                f"## 활성 simplysm references (`{to_posix_path(base)}`)",
+                "",
+                PATH_WARNING,
+                f"- (`simplysm{major}` references 디렉터리 없음)",
+            ]
+        )
 
     with open(readme_path, encoding="utf-8") as handle:
         readme = handle.read().strip()
 
-    return "\n".join([
-        f"## 활성 simplysm references (`{to_posix_path(base)}`)",
-        "",
-        PATH_WARNING,
-        "",
-        f"아래는 `{to_posix_path(readme_path)}` 전문. "
-        f"본문의 `./` 상대링크는 `{to_posix_path(base)}` 기준으로 Read.",
-        "",
-        readme,
-    ])
+    return "\n".join(
+        [
+            f"## 활성 simplysm references (`{to_posix_path(base)}`)",
+            "",
+            PATH_WARNING,
+            "",
+            f"아래는 `{to_posix_path(readme_path)}` 전문. "
+            f"본문의 `./` 상대링크는 `{to_posix_path(base)}` 기준으로 Read.",
+            "",
+            readme,
+        ]
+    )
 
 
 def main() -> None:
