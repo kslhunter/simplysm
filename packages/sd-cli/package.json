@@ -2,30 +2,30 @@
   "name": "@simplysm/sd-cli",
   "version": "14.2.4",
   "description": "Simplysm package - CLI tool",
-  "author": "simplysm",
   "license": "Apache-2.0",
+  "author": "simplysm",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/sd-cli"
   },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "src",
     "tests"
   ],
+  "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "publishConfig": {
     "bin": {
       "sd-cli": "./dist/sd-cli.js"
     }
   },
   "dependencies": {
-    "@angular/build": "^22.0.7",
-    "@angular/compiler-cli": "^22.0.7",
+    "@angular/build": "^22.0.8",
+    "@angular/compiler-cli": "^22.0.8",
     "@fastify/http-proxy": "^11.6.0",
     "@inquirer/prompts": "^8.5.2",
     "@simplysm/core-common": "workspace:*",
@@ -37,24 +37,24 @@
     "consola": "^3.4.2",
     "es-module-lexer": "^2.3.1",
     "esbuild": "^0.28.1",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "glob": "^13.0.6",
     "handlebars": "^4.7.9",
     "lmdb": "^3.5.6",
     "mime": "^4.1.0",
-    "postcss": "^8.5.20",
-    "sass": "^1.101.0",
+    "postcss": "^8.5.23",
+    "sass": "^1.102.0",
     "semver": "^7.8.5",
     "sharp": "^0.35.3",
-    "smol-toml": "^1.7.0",
+    "smol-toml": "^1.7.1",
     "ssh2": "^1.17.0",
     "typescript": "~6.0.3",
     "ws": "^8.21.1",
     "yaml": "^2.9.0",
-    "yargs": "^18.0.0"
+    "yargs": "^18.1.0"
   },
   "devDependencies": {
-    "@angular/core": "^22.0.7",
+    "@angular/core": "^22.0.8",
     "@types/node": "^24.13.3",
     "@types/semver": "^7.7.1",
     "@types/ssh2": "^1.15.5",

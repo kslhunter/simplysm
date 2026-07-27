@@ -2,18 +2,18 @@
   "name": "@simplysm/lint",
   "version": "14.2.4",
   "description": "심플리즘 패키지 - ESLint plugin",
-  "author": "심플리즘",
   "license": "Apache-2.0",
+  "author": "심플리즘",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/lint"
   },
-  "type": "module",
   "files": [
     "dist",
     "src"
   ],
+  "type": "module",
   "sideEffects": false,
   "exports": {
     "./eslint-plugin": {
@@ -27,19 +27,19 @@
   },
   "dependencies": {
     "@angular-eslint/utils": "^22.1.0",
-    "@angular/compiler": "^22.0.7",
-    "@typescript-eslint/utils": "^8.64.0",
+    "@angular/compiler": "^22.0.8",
+    "@typescript-eslint/utils": "^8.65.0",
     "angular-eslint": "^22.1.0",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import-x": "^4.17.1",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.7.0",
+    "globals": "^17.8.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.64.0"
+    "typescript-eslint": "^8.65.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
-    "@typescript-eslint/rule-tester": "^8.64.0"
+    "@typescript-eslint/rule-tester": "^8.65.0"
   }
 }

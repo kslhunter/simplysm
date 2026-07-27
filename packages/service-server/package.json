@@ -2,26 +2,26 @@
   "name": "@simplysm/service-server",
   "version": "14.2.4",
   "description": "심플리즘 패키지 - 서비스 (server)",
-  "author": "심플리즘",
   "license": "Apache-2.0",
+  "author": "심플리즘",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/service-server"
   },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
+  "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "@fastify/cors": "^11.3.0",
     "@fastify/helmet": "^13.1.0",
     "@fastify/multipart": "^10.1.0",
-    "@fastify/static": "^10.1.0",
+    "@fastify/static": "^10.1.2",
     "@fastify/websocket": "^11.3.0",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/core-node": "workspace:*",
@@ -31,7 +31,7 @@
     "acme-client": "^5.4.0",
     "bufferutil": "^4.1.0",
     "fastify": "^5.10.0",
-    "jose": "^6.2.3",
+    "jose": "^6.2.4",
     "semver": "^7.8.5",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.21.1"

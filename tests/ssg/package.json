@@ -1,24 +1,24 @@
 {
   "name": "@simplysm-test/ssg",
   "version": "14.2.4",
+  "private": true,
   "description": "심플리즘 패키지 - SSG(빌드 타임 프리렌더) 통합 테스트",
+  "license": "Apache-2.0",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "tests/ssg"
   },
-  "sideEffects": false,
-  "license": "Apache-2.0",
   "type": "module",
-  "private": true,
+  "sideEffects": false,
   "dependencies": {
-    "@angular/common": "^22.0.7",
-    "@angular/compiler": "^22.0.7",
-    "@angular/core": "^22.0.7",
-    "@angular/platform-browser": "^22.0.7",
-    "@angular/platform-server": "^22.0.7",
-    "@angular/router": "^22.0.7",
+    "@angular/common": "^22.0.8",
+    "@angular/compiler": "^22.0.8",
+    "@angular/core": "^22.0.8",
+    "@angular/platform-browser": "^22.0.8",
+    "@angular/platform-server": "^22.0.8",
+    "@angular/router": "^22.0.8",
     "@simplysm/angular": "workspace:*",
     "rxjs": "^7.8.2"
   },

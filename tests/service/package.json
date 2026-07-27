@@ -1,24 +1,24 @@
 {
   "name": "@simplysm-test/service",
   "version": "14.2.4",
+  "private": true,
   "description": "심플리즘 패키지 - 서비스 통합 테스트",
+  "license": "Apache-2.0",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "tests/service"
   },
-  "sideEffects": false,
-  "license": "Apache-2.0",
   "type": "module",
-  "private": true,
+  "sideEffects": false,
   "devDependencies": {
     "@simplysm/core-common": "workspace:*",
     "@simplysm/service-client": "workspace:*",
     "@simplysm/service-common": "workspace:*",
     "@simplysm/service-server": "workspace:*",
     "@types/ws": "^8.18.1",
-    "jose": "^6.2.3",
+    "jose": "^6.2.4",
     "ws": "^8.21.1"
   }
 }

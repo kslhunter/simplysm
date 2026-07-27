@@ -2,14 +2,26 @@
   "name": "@simplysm/angular",
   "version": "14.2.4",
   "description": "심플리즘 패키지 - Angular",
-  "author": "심플리즘",
   "license": "Apache-2.0",
+  "author": "심플리즘",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm.git",
     "directory": "packages/angular"
   },
+  "style": "./styles.css",
+  "files": [
+    "dist",
+    "styles.css",
+    "src",
+    "scss"
+  ],
   "type": "module",
+  "sideEffects": [
+    "./src/index.ts",
+    "./dist/index.js",
+    "./styles.css"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "typesVersions": {
@@ -19,43 +31,32 @@
       ]
     }
   },
-  "style": "./styles.css",
-  "files": [
-    "dist",
-    "styles.css",
-    "src",
-    "scss"
-  ],
-  "sideEffects": [
-    "./src/index.ts",
-    "./dist/index.js",
-    "./styles.css"
-  ],
+  "scripts": {},
   "dependencies": {
-    "@angular/common": "^22.0.7",
-    "@angular/core": "^22.0.7",
-    "@angular/platform-browser": "^22.0.7",
-    "@angular/router": "^22.0.7",
-    "@angular/service-worker": "^22.0.7",
+    "@angular/common": "^22.0.8",
+    "@angular/core": "^22.0.8",
+    "@angular/platform-browser": "^22.0.8",
+    "@angular/router": "^22.0.8",
+    "@angular/service-worker": "^22.0.8",
     "@ng-icons/core": "^34.0.0",
     "@ng-icons/tabler-icons": "^34.0.0",
     "@simplysm/core-browser": "workspace:*",
     "@simplysm/core-common": "workspace:*",
     "@simplysm/service-client": "workspace:*",
     "@simplysm/service-common": "workspace:*",
-    "@tiptap/core": "^3.28.0",
-    "@tiptap/extension-color": "^3.28.0",
-    "@tiptap/extension-document": "^3.28.0",
-    "@tiptap/extension-highlight": "^3.28.0",
-    "@tiptap/extension-image": "^3.28.0",
-    "@tiptap/extension-paragraph": "^3.28.0",
-    "@tiptap/extension-placeholder": "^3.28.0",
-    "@tiptap/extension-text": "^3.28.0",
-    "@tiptap/extension-text-align": "^3.28.0",
-    "@tiptap/extension-text-style": "^3.28.0",
-    "@tiptap/extension-underline": "^3.28.0",
-    "@tiptap/markdown": "^3.28.0",
-    "@tiptap/starter-kit": "^3.28.0",
+    "@tiptap/core": "^3.29.0",
+    "@tiptap/extension-color": "^3.29.0",
+    "@tiptap/extension-document": "^3.29.0",
+    "@tiptap/extension-highlight": "^3.29.0",
+    "@tiptap/extension-image": "^3.29.0",
+    "@tiptap/extension-paragraph": "^3.29.0",
+    "@tiptap/extension-placeholder": "^3.29.0",
+    "@tiptap/extension-text": "^3.29.0",
+    "@tiptap/extension-text-align": "^3.29.0",
+    "@tiptap/extension-text-style": "^3.29.0",
+    "@tiptap/extension-underline": "^3.29.0",
+    "@tiptap/markdown": "^3.29.0",
+    "@tiptap/starter-kit": "^3.29.0",
     "bwip-js": "^4.11.2",
     "echarts": "^6.1.0",
     "html-to-image": "^1.11.13",
@@ -64,7 +65,6 @@
     "tabbable": "^6.5.0"
   },
   "devDependencies": {
-    "@angular/compiler": "^22.0.7"
-  },
-  "scripts": {}
+    "@angular/compiler": "^22.0.8"
+  }
 }
