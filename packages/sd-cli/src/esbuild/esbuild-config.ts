@@ -27,9 +27,10 @@ export async function writeChangedOutputFiles(
   logger.debug(`변경된 출력 파일 쓰기 시작 (${outputFiles.length}개)`);
   await Promise.all(
     outputFiles.map(async (file) => {
-      const finalText = file.path.endsWith(".js") && rewriteJsExtensions
-        ? addJsExtensionToImports(file.text)
-        : file.text;
+      const finalText =
+        file.path.endsWith(".js") && rewriteJsExtensions
+          ? addJsExtensionToImports(file.text)
+          : file.text;
 
       try {
         const existing = await fsx.read(file.path);
@@ -91,6 +92,8 @@ export function createServerEsbuildOptions(options: ServerEsbuildOptions): esbui
     platform: "node",
     target: "node24",
     bundle: true,
+    // 번들에 포함된 제3자 패키지를 식별해 라이선스 고지를 생성하는 데 사용한다
+    metafile: true,
     banner: { js: bannerJs },
     external: options.external,
     tsconfig: path.join(options.pkgDir, "tsconfig.json"),
@@ -161,46 +164,38 @@ export function collectAllDependencyExternals(pkgDir: string): {
   const nativeModules = new Set<string>();
   const visited = new Set<string>();
 
-  const pkgJson = JSON.parse(
-    fsx.readSync(path.join(pkgDir, "package.json")),
-  ) as PkgJson;
+  const pkgJson = JSON.parse(fsx.readSync(path.join(pkgDir, "package.json"))) as PkgJson;
   const deps = Object.keys(pkgJson.dependencies ?? {});
   logger.debug(
     `[collectAllDependencyExternals] Scanning ${String(deps.length)} top-level dependencies...`,
   );
 
   for (const dep of deps) {
-    scanDependencyTree(
-      dep,
-      pkgDir,
-      optionalPeerDeps,
-      visited,
-      (pkgName, depDir, depPkgJson) => {
-        const found: string[] = [];
+    scanDependencyTree(dep, pkgDir, optionalPeerDeps, visited, (pkgName, depDir, depPkgJson) => {
+      const found: string[] = [];
 
-        // Optional peer deps 확인
-        if (depPkgJson.peerDependenciesMeta != null) {
-          const peerDeps = depPkgJson.peerDependencies ?? {};
-          const depReq = createRequire(path.join(depDir, "noop.js"));
-          for (const [name, meta] of Object.entries(depPkgJson.peerDependenciesMeta)) {
-            if (meta.optional === true && name in peerDeps) {
-              try {
-                depReq.resolve(name);
-              } catch {
-                found.push(name);
-              }
+      // Optional peer deps 확인
+      if (depPkgJson.peerDependenciesMeta != null) {
+        const peerDeps = depPkgJson.peerDependencies ?? {};
+        const depReq = createRequire(path.join(depDir, "noop.js"));
+        for (const [name, meta] of Object.entries(depPkgJson.peerDependenciesMeta)) {
+          if (meta.optional === true && name in peerDeps) {
+            try {
+              depReq.resolve(name);
+            } catch {
+              found.push(name);
             }
           }
         }
+      }
 
-        // 네이티브 모듈 확인
-        if (fsx.existsSync(path.join(depDir, "binding.gyp"))) {
-          nativeModules.add(pkgName);
-        }
+      // 네이티브 모듈 확인
+      if (fsx.existsSync(path.join(depDir, "binding.gyp"))) {
+        nativeModules.add(pkgName);
+      }
 
-        return found;
-      },
-    );
+      return found;
+    });
   }
 
   logger.debug(

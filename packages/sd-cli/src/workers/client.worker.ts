@@ -13,6 +13,7 @@ import { createDevHttpServer, type DevHttpServer } from "../dev-server/dev-http-
 import { createHmrService, type HmrService } from "../dev-server/hmr-service";
 import { createHmrPostTransform } from "../dev-server/hmr-client-script";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
+import { extractLicenses, LICENSE_NOTICE_FILE_NAME } from "../utils/license-extractor";
 import { buildSsrBundle } from "../esbuild/esbuild-ssr-config";
 import { prerenderRoutes } from "../ssg/prerender";
 import type { SdBrowserSupportConfig, SdPwaConfig } from "../sd-config.types";
@@ -99,8 +100,7 @@ function resolvePackageInfo(info: ClientBuildInfo): {
 async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
   logger.debug(`[${info.name}] client worker build 시작`);
   try {
-    const { pkgName, legacyModule, browserslist, postcssPlugins } =
-      resolvePackageInfo(info);
+    const { pkgName, legacyModule, browserslist, postcssPlugins } = resolvePackageInfo(info);
 
     const outdir = info.outDir ?? path.join(info.pkgDir, "dist");
 
@@ -136,8 +136,7 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     const basePath = info.base ?? `/${name}/`;
     const indexPath = path.join(info.pkgDir, "src", "index.html");
 
-    const pwaHtmlTransform =
-      info.pwa !== false ? createPwaHtmlTransform() : undefined;
+    const pwaHtmlTransform = info.pwa !== false ? createPwaHtmlTransform() : undefined;
 
     const indexResult = await generateIndexHtml({
       indexPath,
@@ -188,8 +187,12 @@ async function build(info: ClientBuildInfo): Promise<ClientBuildResult> {
     await ctx.context.dispose();
     // SourceFileCache는 LMDB 기반. context.dispose()에 의해 정리됨.
 
-    // 8. .config.json 기록
+    // 8. .config.json + 제3자 라이선스 고지 기록
     writeConfigJson(outdir, info.configs);
+    fsx.writeSync(
+      path.join(outdir, LICENSE_NOTICE_FILE_NAME),
+      await extractLicenses(result.metafile!, process.cwd()),
+    );
 
     logger.debug(`[${info.name}] client worker build 완료`);
     return {
@@ -224,13 +227,9 @@ function createSourceFileCachePlugin(): esbuild.Plugin {
       pluginBuild.onStart(() => {
         // sourceFileCache 무효화: 변경된 파일의 loadResultCache + TypeScript 소스 캐시 모두 제거
         if (esbuildResult != null) {
-          const { loadResultCache, typeScriptFileCache } =
-            esbuildResult.sourceFileCache;
+          const { loadResultCache, typeScriptFileCache } = esbuildResult.sourceFileCache;
           // JS 파일 (loadResultCache) + TS 파일 (typeScriptFileCache) 모두 감시
-          const watchTargets = [
-            ...loadResultCache.watchFiles,
-            ...typeScriptFileCache.keys(),
-          ];
+          const watchTargets = [...loadResultCache.watchFiles, ...typeScriptFileCache.keys()];
           const changedFiles = mtimeTracker.detectChanges(watchTargets);
           const normalizedChangedFiles = new Set<string>();
           for (const file of changedFiles) {
@@ -296,12 +295,10 @@ function createDevBuildEndHandler(
 
       // build 이벤트 전송
       const success = result.errors.length === 0;
-      const errors = result.errors.length > 0
-        ? formatEsbuildMessages(result.errors, "error")
-        : undefined;
-      const warnings = result.warnings.length > 0
-        ? formatEsbuildMessages(result.warnings, "warning")
-        : undefined;
+      const errors =
+        result.errors.length > 0 ? formatEsbuildMessages(result.errors, "error") : undefined;
+      const warnings =
+        result.warnings.length > 0 ? formatEsbuildMessages(result.warnings, "warning") : undefined;
 
       if (!isInitialBuild) {
         sender.send("build", { success, errors, warnings });
@@ -338,8 +335,7 @@ function createDevBuildEndHandler(
  */
 async function startWatch(info: ClientBuildInfo): Promise<ClientBuildResult> {
   guardStartWatch();
-  const { pkgName, legacyModule, browserslist, postcssPlugins } =
-    resolvePackageInfo(info);
+  const { pkgName, legacyModule, browserslist, postcssPlugins } = resolvePackageInfo(info);
 
   logger.debug(
     `[${info.name}] client worker startWatch 시작 (port: ${info.port ?? "auto"}, legacy: ${legacyModule})`,
@@ -492,10 +488,7 @@ async function stopWatch(): Promise<void> {
 }
 
 /** .config.json 생성 */
-function writeConfigJson(
-  distDir: string,
-  configs?: Record<string, unknown>,
-): void {
+function writeConfigJson(distDir: string, configs?: Record<string, unknown>): void {
   fsx.writeJsonSync(path.join(distDir, ".config.json"), configs ?? {}, { space: 2 });
 }
 

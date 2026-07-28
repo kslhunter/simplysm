@@ -7,21 +7,19 @@ import { formatEsbuildMessages } from "../utils/output-utils";
 import type { BuildOutput } from "../engines/types";
 import type { SerializedDiagnostic } from "../typecheck/typecheck-serialization";
 import type { LintWithProgramResult } from "../lint/lint-with-program";
+import { parseTsconfig, getPackageSourceFiles } from "../utils/tsconfig";
+import { createServerEsbuildOptions, writeChangedOutputFiles } from "../esbuild/esbuild-config";
 import {
-  parseTsconfig,
-  getPackageSourceFiles,
-} from "../utils/tsconfig";
-import {
-  createServerEsbuildOptions,
-  writeChangedOutputFiles,
-} from "../esbuild/esbuild-config";
-import { collectAllExternals, generateProductionFiles } from "../deps/server-externals/server-production-files";
+  collectAllExternals,
+  generateProductionFiles,
+} from "../deps/server-externals/server-production-files";
 import { SdTsCompiler } from "../ts-compiler/SdTsCompiler";
 import { createTscPlugin } from "../esbuild/esbuild-tsc-plugin";
 import { createWorkerBundlePlugin } from "../esbuild/esbuild-worker-plugin";
 import { setupWorkerLifecycle } from "./shared-worker-lifecycle";
 import { buildWatchPaths } from "./build-watch-paths";
 import { copyPublicFiles, watchPublicFiles } from "../utils/copy-public";
+import { extractLicenses, LICENSE_NOTICE_FILE_NAME } from "../utils/license-extractor";
 import * as esbuildCtx from "./server-esbuild-context";
 import { startServerWatchLoop } from "./server-watch-manager";
 
@@ -72,7 +70,12 @@ export interface ServerWatchInfo {
  * 서버 빌드 결과 (LibraryBuildResult + mainJsPath 형태)
  */
 export interface ServerBuildResult {
-  build: { success: boolean; errors?: string[]; warnings?: string[]; diagnostics: SerializedDiagnostic[] };
+  build: {
+    success: boolean;
+    errors?: string[];
+    warnings?: string[];
+    diagnostics: SerializedDiagnostic[];
+  };
   lint?: LintWithProgramResult;
   mainJsPath: string;
 }
@@ -133,7 +136,9 @@ const { logger, guardStartWatch } = setupWorkerLifecycle("server-build", cleanup
  */
 async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
   const mainJsPath = pathx.posixResolve(info.pkgDir, "dist", "main.js");
-  logger.debug(`[${info.name}] server worker build 시작 (js: ${info.output.js}, dts: ${info.output.dts})`);
+  logger.debug(
+    `[${info.name}] server worker build 시작 (js: ${info.output.js}, dts: ${info.output.dts})`,
+  );
 
   try {
     // tsconfig 파싱
@@ -147,6 +152,7 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
     let tscErrors: string[];
     let tscDiagnostics: SerializedDiagnostic[];
     let lint: LintWithProgramResult | undefined;
+    let bundleMetafile: esbuild.Metafile | undefined;
 
     if (info.output.js) {
       // js=true: tsc 플러그인 통합 — 단일 esbuild.build() 호출
@@ -166,8 +172,10 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
         external: bundleExternals,
       });
 
-      jsResult = await esbuild.build({ ...esbuildOptions, plugins: [createWorkerBundlePlugin(), tscPlugin.plugin] })
+      jsResult = await esbuild
+        .build({ ...esbuildOptions, plugins: [createWorkerBundlePlugin(), tscPlugin.plugin] })
         .then(async (result) => {
+          bundleMetafile = result.metafile;
           if (result.outputFiles) {
             await writeChangedOutputFiles(result.outputFiles, { rewriteJsExtensions: false });
           }
@@ -217,11 +225,23 @@ async function build(info: ServerBuildInfo): Promise<ServerBuildResult> {
       await copyPublicFiles(info.pkgDir, false);
 
       generateProductionFiles(info, prodDependencies);
+
+      if (jsResult.success) {
+        if (bundleMetafile == null) {
+          throw new Error("번들 metafile이 없어 제3자 라이선스 고지를 생성할 수 없습니다.");
+        }
+        await fsx.write(
+          path.join(info.pkgDir, "dist", LICENSE_NOTICE_FILE_NAME),
+          await extractLicenses(bundleMetafile, process.cwd()),
+        );
+      }
     }
 
     const allErrors = [...(jsResult.errors ?? []), ...tscErrors];
     const tscSuccess = tscErrors.length === 0;
-    logger.debug(`[${info.name}] server worker build 완료 (js: ${jsResult.success}, tsc: ${tscSuccess})`);
+    logger.debug(
+      `[${info.name}] server worker build 완료 (js: ${jsResult.success}, tsc: ${tscSuccess})`,
+    );
     return {
       build: {
         success: jsResult.success && tscSuccess,

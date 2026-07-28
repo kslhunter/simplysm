@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/post-write-format-hash.py\""
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/post-write-hash.py\""
           }
         ]
       }
