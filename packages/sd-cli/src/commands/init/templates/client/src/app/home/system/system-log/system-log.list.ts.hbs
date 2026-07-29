@@ -97,7 +97,7 @@ type TSeverity = "error" | "warn" | "log";
           <label>심각도</label>
           <sd-select [(value)]="filter().severity" (valueChange)="mark(filter)">
             <sd-select-item [value]="undefined">
-              <span class="tx-theme-gray-default">전체</span>
+              <span class="tx-gray">전체</span>
             </sd-select-item>
             <sd-select-item [value]="'error'">
               <sd-label [theme]="'danger'">error</sd-label>

@@ -1,7 +1,7 @@
 ---
 name: sd-html-to-pdf
 description: HTML 파일을 브라우저 인쇄와 동일한 엔진으로 PDF 출력. Use when 견적서, 제안서 등 @page, print CSS 로 조판한 HTML 을 PDF 로 내보낼 때.
-model: haiku
+effort: low
 ---
 
 설치된 Chrome/Edge 의 headless print-to-pdf 로 변환합니다. `@page`, print CSS(여백, 페이지 크기, 배경 음영)가 그대로 반영됩니다.

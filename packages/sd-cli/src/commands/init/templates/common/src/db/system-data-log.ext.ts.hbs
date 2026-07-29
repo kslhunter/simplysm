@@ -28,7 +28,7 @@ export type IInsertDataLogParam = {
 };
 
 declare module "@simplysm/orm-common" {
-  interface Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any, any> | never> {
+  interface Queryable<TData extends DataRecord, TFrom extends TableBuilder<any, any> | never> {
     joinLastDataLog(
       opts?: IDataLogJoinOptions,
     ): Queryable<TData & { lastDataLog?: IDataLogJoinResult }, TFrom>;
@@ -47,7 +47,7 @@ Queryable.prototype.insertDataLog = async function (
   this: Queryable<any, any>,
   log: IInsertDataLogParam,
 ): Promise<void> {
-  const fromTable = this.meta.from as TableBuilder<any, any, any>;
+  const fromTable = this.meta.from as TableBuilder<any, any>;
   const qr = queryable(this.meta.db, SystemDataLog);
 
   await qr().insert([
@@ -71,7 +71,7 @@ Queryable.prototype.joinLastDataLog = function (
   this: Queryable<any, any>,
   opts?: IDataLogJoinOptions,
 ) {
-  const tableName = (this.meta.from as TableBuilder<any, any, any>).meta.name;
+  const tableName = (this.meta.from as TableBuilder<any, any>).meta.name;
 
   return this.joinSingle("lastDataLog", (qr, en) =>
     qr
@@ -107,7 +107,7 @@ Queryable.prototype.joinFirstDataLog = function (
   this: Queryable<any, any>,
   opts?: IDataLogJoinOptions,
 ) {
-  const tableName = (this.meta.from as TableBuilder<any, any, any>).meta.name;
+  const tableName = (this.meta.from as TableBuilder<any, any>).meta.name;
 
   return this.joinSingle("firstDataLog", (qr, en) =>
     qr

@@ -31,6 +31,7 @@ export interface ClientSpec {
   isMobile: boolean;
   appStructureName: string;
   needsNgIcons: boolean;
+  needsExcel: boolean;
   useSsg: boolean;
   /** robots.txt 지시문 — SSG(SEO) 클라이언트는 전체 허용, 그 외는 전체 차단 */
   robotsDirective: string;

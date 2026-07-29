@@ -132,6 +132,10 @@ export class RoleDetail implements SdModalContentDef<{ id: number } | undefined>
 
     this.busyCount.update((v) => v + 1);
     await this._sdToast.try(async () => {
+      const roleName = data.name;
+      if (roleName == null) {
+        throw new Error("이름을 입력하세요.");
+      }
       const roleId = this.roleId();
       const {{userEntityCamel}}Id = this._appAuth.authInfo()?.{{userEntityCamel}}Id;
 
@@ -140,7 +144,7 @@ export class RoleDetail implements SdModalContentDef<{ id: number } | undefined>
         const isDuplicated = await db
           .role()
           .where((c) => [
-            expr.eq(c.name, data.name),
+            expr.eq(c.name, roleName),
             expr.eq(c.isDeleted, false),
             ...(roleId == null ? [] : [expr.not(expr.eq(c.id, roleId))]),
           ])
@@ -150,16 +154,14 @@ export class RoleDetail implements SdModalContentDef<{ id: number } | undefined>
         }
 
         if (roleId == null) {
-          const [inserted] = await db
-            .role()
-            .insert([{ name: data.name, isDeleted: false }], ["id"]);
+          const [inserted] = await db.role().insert([{ name: roleName, isDeleted: false }], ["id"]);
           await db.role().insertDataLog({ action: "등록", itemId: inserted.id, {{userEntityCamel}}Id });
           return inserted.id;
         }
         await db
           .role()
           .where((c) => [expr.eq(c.id, roleId)])
-          .update(() => ({ name: data.name }));
+          .update(() => ({ name: roleName }));
         await db.role().insertDataLog({ action: "수정", itemId: roleId, {{userEntityCamel}}Id });
         return roleId;
       });

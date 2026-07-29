@@ -370,6 +370,27 @@ describe("client 인증 로그인 (routes / login.view / ng-icons)", () => {
     expect(out).toContain('"@ng-icons/tabler-icons"');
   });
 
+  it("client/package.json: 인증 ON + router → 목록 엑셀 입출력용 @simplysm/excel + zod 포함", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(true));
+    expect(out).toContain('"@simplysm/excel"');
+    expect(out).toContain('"zod"');
+  });
+
+  it("client/package.json: 인증 ON + router 없음 → @simplysm/excel, zod 없음", async () => {
+    const out = await renderTemplate(
+      path.join(TPL_ROOT, "client/package.json.hbs"),
+      authClientCtx(true, false),
+    );
+    expect(out).not.toContain('"@simplysm/excel"');
+    expect(out).not.toContain('"zod"');
+  });
+
+  it("client/package.json: 인증 OFF → @simplysm/excel, zod 없음", async () => {
+    const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(false));
+    expect(out).not.toContain('"@simplysm/excel"');
+    expect(out).not.toContain('"zod"');
+  });
+
   it("client/package.json: 인증 OFF + DB ON → dev 모달용 @ng-icons 포함", async () => {
     const out = await renderTemplate(path.join(TPL_ROOT, "client/package.json.hbs"), authClientCtx(false));
     expect(out).toContain('"@ng-icons/core"');

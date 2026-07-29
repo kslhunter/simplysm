@@ -107,7 +107,7 @@ import type { I{{userEntityPascal}}ConfigMap } from "@{{workspaceName}}/server";
                     (valueChange)="mark(data)"
                   >
                     <sd-select-item [value]="undefined">
-                      <span class="tx-theme-gray-default">미지정</span>
+                      <span class="tx-gray">미지정</span>
                     </sd-select-item>
                     @for (flatMenu of flatMenus(); track flatMenu.codeChain.join(".")) {
                       <sd-select-item [value]="'/home/' + flatMenu.codeChain.join('/')">
@@ -121,7 +121,7 @@ import type { I{{userEntityPascal}}ConfigMap } from "@{{workspaceName}}/server";
           </table>
 
           @if (data().lastModifiedAt != null || data().lastModifiedBy != null) {
-            <div class="p-sm-default tx-theme-gray-default">
+            <div class="p-sm-default tx-gray">
               최종수정:
               @if (data().lastModifiedAt != null) {
                 \{{ data().lastModifiedAt | format: "yyyy-MM-dd HH:mm" }}

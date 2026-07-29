@@ -58,6 +58,7 @@ export function normalize(input: InitInput): NormalizedInput {
       isMobile,
       appStructureName: `${str.toCamelCase(baseName)}AppStructureItems`,
       needsNgIcons: (hasRouter && hasAuth) || hasDb,
+      needsExcel: hasRouter && hasAuth,
       useSsg,
       robotsDirective: useSsg ? "Allow: /" : "Disallow: /",
     };

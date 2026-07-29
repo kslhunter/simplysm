@@ -64,9 +64,13 @@ export async function runDevice(options: DeviceOptions): Promise<void> {
     if (typeof clientConfig.server === "number") {
       serverUrl = `http://localhost:${clientConfig.server}/${targetName}/`;
     } else {
-      // server가 패키지명(string)인 경우: 서버 패키지의 .dev-port 파일에서 포트 자동 탐지
-      const serverPkgDir = pathx.posixResolve(cwd, "packages", clientConfig.server);
-      const portFile = path.join(serverPkgDir, "dist", ".dev-port");
+      // server 가 패키지명(string)이면 그 서버가 클라이언트를 서빙하고,
+      // 미지정이면 클라이언트 자신의 dev server 가 서빙한다. 양쪽 다 .dev-port 로 포트를 탐지
+      const servingPkgDir =
+        clientConfig.server != null
+          ? pathx.posixResolve(cwd, "packages", clientConfig.server)
+          : pkgDir;
+      const portFile = path.join(servingPkgDir, "dist", ".dev-port");
       let portStr: string;
       try {
         portStr = fsx.readSync(portFile).trim();

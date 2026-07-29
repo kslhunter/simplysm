@@ -43,7 +43,7 @@ import { RoleList } from "./role.list";
         <div class="flex-row fill">
           <!-- min-width: 좌측 역할 목록이 너무 좁아져 가독성이 떨어지는 것을 막는 의도적 고정 폭 (사용자 지시) -->
           <sd-shared-data-select-list
-            class="flex-min bdr bdr-color-lighter"
+            class="flex-min bdr bdr-soft"
             style="min-width: 12rem;"
             [items]="sharedRoles.items()"
             [(selectedItem)]="selectedRole"
@@ -59,7 +59,7 @@ import { RoleList } from "./role.list";
           @let _selectedRole = selectedRole();
           @if (_selectedRole == null) {
             <div
-              class="flex-fill tx-theme-gray-default p-xxl"
+              class="flex-fill tx-gray p-xxl"
               style="font-size: 48px; line-height: 1.5em"
             >
               <ng-icon [svg]="tablerArrowLeft" />

@@ -225,8 +225,9 @@ export interface SdClientPackageConfig {
    * 서버 설정
    * - string: 연결할 서버 패키지명 (예: "demo-server")
    * - number: 포트 직접 지정 (하위 호환)
+   * - 미지정: 독립 실행 (dev 서버 포트 자동 할당)
    */
-  server: string | number;
+  server?: string | number;
   /** 빌드 시 치환할 환경 변수 (process.env를 객체로 치환) */
   env?: Record<string, string>;
   /** 배포 설정 */

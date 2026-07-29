@@ -1,7 +1,7 @@
 ---
 name: sd-docs
 description: 라이브러리 패키지 `@simplysm/*` 의 API 문서를 작성, 갱신. Use when 라이브러리 API 문서를 새로 작성하거나 코드 변경을 반영해 갱신할 때.
-model: haiku
+effort: low
 ---
 
 # sd-docs

@@ -10,6 +10,7 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictStandalone": true,
+    "typeCheckHostBindings": true,
     "enableI18nLegacyMessageIdFormat": false,
     "extendedDiagnostics": {
       "defaultCategory": "error"
