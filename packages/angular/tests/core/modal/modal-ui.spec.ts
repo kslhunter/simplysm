@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
-import {
-  SdModalTestTabbable,
-  SdModalProviderTestHost,
-} from "./sd-modal-test.fixture";
+import { SdModalTestTabbable, SdModalProviderTestHost } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
 
 function setupHost() {
@@ -62,6 +59,9 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const rightHandle = modal.querySelector('[data-resize-dir="right"]') as HTMLElement;
     expect(rightHandle).not.toBeNull();
 
+    const beforeWidth = dialog.offsetWidth;
+    const beforeLeft = dialog.getBoundingClientRect().left;
+
     // mousedown on handle
     rightHandle.dispatchEvent(
       new MouseEvent("mousedown", { clientX: 400, clientY: 200, bubbles: true }),
@@ -75,9 +75,9 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // 너비가 100px 증가해야 함
-    const width = parseInt(dialog.style.width || "0", 10);
-    expect(width).toBeGreaterThanOrEqual(500);
+    // 오른쪽 핸들이므로 좌변은 고정된 채 너비만 100px 증가해야 함
+    expect(parseFloat(dialog.style.width)).toBe(beforeWidth + 100);
+    expect(dialog.getBoundingClientRect().left).toBe(beforeLeft);
 
     await closeModal(fixture, modal, promise);
   });
@@ -91,12 +91,10 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const header = modal.querySelector("._header") as HTMLElement;
     expect(header).not.toBeNull();
 
-    const initialLeft = dialog.style.left;
+    const before = dialog.getBoundingClientRect();
 
     // 헤더 드래그
-    header.dispatchEvent(
-      new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }),
-    );
+    header.dispatchEvent(new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }));
     document.dispatchEvent(
       new MouseEvent("mousemove", { clientX: 350, clientY: 50, bubbles: true }),
     );
@@ -104,8 +102,40 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // left 값이 변경되어야 함
-    expect(dialog.style.left).not.toBe(initialLeft);
+    // 커서 이동량만큼만 이동해야 함
+    const after = dialog.getBoundingClientRect();
+    expect(after.left - before.left).toBe(150);
+    expect(after.top - before.top).toBe(0);
+
+    await closeModal(fixture, modal, promise);
+  });
+
+  // Acceptance: 우하단 고정 모달도 드래그로 찌그러지지 않는다
+  it("position='bottom-right' 모달을 아래로 드래그해도 높이가 유지된다", async () => {
+    const fixture = setupHost();
+    const { modal, promise } = await openModal(fixture, {
+      movable: true,
+      position: "bottom-right",
+    });
+
+    const dialog = modal.querySelector("._dialog") as HTMLElement;
+    const header = modal.querySelector("._header") as HTMLElement;
+
+    // 우하단 앵커(CSS 의 bottom)는 전역 CSS 변수에 의존해 테스트 환경에서 풀리므로 직접 재현한다
+    dialog.style.bottom = "40px";
+    const before = dialog.getBoundingClientRect();
+
+    header.dispatchEvent(new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }));
+    document.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: 200, clientY: 150, bubbles: true }),
+    );
+    document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const after = dialog.getBoundingClientRect();
+    expect(after.height).toBe(before.height);
+    expect(after.top - before.top).toBe(100);
 
     await closeModal(fixture, modal, promise);
   });
@@ -124,6 +154,9 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const dialog = modal.querySelector("._dialog") as HTMLElement;
     const leftHandle = modal.querySelector('[data-resize-dir="left"]') as HTMLElement;
 
+    const beforeWidth = dialog.offsetWidth;
+    const beforeLeft = dialog.getBoundingClientRect().left;
+
     // 왼쪽 핸들을 오른쪽으로 200px 드래그 (너비 200px 감소 시도)
     leftHandle.dispatchEvent(
       new MouseEvent("mousedown", { clientX: 100, clientY: 200, bubbles: true }),
@@ -135,9 +168,9 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // minWidthPx(300) 이하로 줄지 않아야 함
-    const width = parseInt(dialog.style.width || "0", 10);
-    expect(width).toBeGreaterThanOrEqual(300);
+    // minWidthPx(300) 미만이 되므로 너비도 좌변도 그대로여야 함
+    expect(parseFloat(dialog.style.width)).toBe(beforeWidth);
+    expect(dialog.getBoundingClientRect().left).toBe(beforeLeft);
 
     await closeModal(fixture, modal, promise);
   });
@@ -182,6 +215,50 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     // 이전 크기가 복원되어야 함
     expect(dialog2.style.width).toBe("600px");
     expect(dialog2.style.height).toBe("500px");
+
+    await closeModal(fixture, modal2, promise2);
+  });
+
+  // Acceptance: 위치 저장 및 복원
+  it("key가 지정되면 드래그한 위치를 저장하고 다시 열 때 같은 자리에 뜬다", async () => {
+    const fixture = setupHost();
+    const provider = TestBed.inject(SdModalProvider);
+
+    const promise1 = provider.showAsync(
+      { title: "Persist", type: SdModalTestTabbable, inputs: { title: "test" } },
+      { key: "test-modal-position", movable: true },
+    );
+    await tick(fixture);
+
+    const modal1 = getModalInBody()!;
+    const dialog1 = modal1.querySelector("._dialog") as HTMLElement;
+    const header1 = modal1.querySelector("._header") as HTMLElement;
+
+    header1.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: 260, clientY: 90, bubbles: true }),
+    );
+    document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    await tick(fixture);
+
+    const draggedLeft = dialog1.offsetLeft;
+    const draggedTop = dialog1.offsetTop;
+    await closeModal(fixture, modal1, promise1);
+
+    // 같은 key로 다시 열기
+    const promise2 = provider.showAsync(
+      { title: "Persist", type: SdModalTestTabbable, inputs: { title: "test" } },
+      { key: "test-modal-position", movable: true },
+    );
+    await tick(fixture);
+
+    const modal2 = getModalInBody()!;
+    const dialog2 = modal2.querySelector("._dialog") as HTMLElement;
+
+    expect(dialog2.offsetLeft).toBe(draggedLeft);
+    expect(dialog2.offsetTop).toBe(draggedTop);
 
     await closeModal(fixture, modal2, promise2);
   });

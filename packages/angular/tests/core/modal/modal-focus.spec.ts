@@ -34,9 +34,11 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
-    );
+    const promise = provider.showAsync({
+      title: "Focus Test",
+      type: SdModalTestTabbable,
+      inputs: { title: "test" },
+    });
 
     await tick(fixture);
 
@@ -84,9 +86,11 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     expect(document.activeElement).toBe(triggerBtn);
 
     const provider = TestBed.inject(SdModalProvider);
-    const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
-    );
+    const promise = provider.showAsync({
+      title: "Focus Test",
+      type: SdModalTestTabbable,
+      inputs: { title: "test" },
+    });
 
     await tick(fixture);
 
@@ -106,9 +110,11 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
-    );
+    const promise = provider.showAsync({
+      title: "Focus Test",
+      type: SdModalTestTabbable,
+      inputs: { title: "test" },
+    });
 
     await tick(fixture);
 
@@ -144,9 +150,11 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Focus Test", type: SdModalTestTabbable, inputs: { title: "test" } },
-    );
+    const promise = provider.showAsync({
+      title: "Focus Test",
+      type: SdModalTestTabbable,
+      inputs: { title: "test" },
+    });
 
     await tick(fixture);
 
@@ -186,15 +194,19 @@ describe("Feature 3.2 Slice 4: 포커스 관리", () => {
     const provider = TestBed.inject(SdModalProvider);
 
     // 모달 A 열기
-    const promiseA = provider.showAsync(
-      { title: "Modal A", type: SdModalTestTabbable, inputs: { title: "A" } },
-    );
+    const promiseA = provider.showAsync({
+      title: "Modal A",
+      type: SdModalTestTabbable,
+      inputs: { title: "A" },
+    });
     await tick(fixture);
 
     // 모달 B 열기
-    const promiseB = provider.showAsync(
-      { title: "Modal B", type: SdModalTestTabbable, inputs: { title: "B" } },
-    );
+    const promiseB = provider.showAsync({
+      title: "Modal B",
+      type: SdModalTestTabbable,
+      inputs: { title: "B" },
+    });
     await tick(fixture);
 
     const modals = Array.from(document.body.querySelectorAll<HTMLElement>("sd-modal"));

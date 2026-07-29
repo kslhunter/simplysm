@@ -18,7 +18,7 @@ import { tablerX } from "@ng-icons/tabler-icons";
 import { SdActivatedModalProvider } from "./sd-activated-modal.provider";
 import { SdSystemConfigProvider } from "../config/sd-system-config.provider";
 import { injectFocusTrap } from "./injectFocusTrap";
-import { injectDragResize } from "./injectDragResize";
+import { injectDragResize, pinDialogAbsolute } from "./injectDragResize";
 import { SdAnchor } from "../../controls/button/sd-anchor";
 import { SdResizeDirective, type SdResizeEvent } from "../events/sd-resize";
 import "@simplysm/core-browser";
@@ -449,12 +449,20 @@ export class SdModal {
   onWindowResize(): void {
     const dialogEl = this._getDialogEl();
     if (dialogEl == null) return;
+    // 위치를 잡지 않은 모달은 CSS 중앙 정렬이 창 크기를 따라가므로 보정 대상이 아니다.
+    if (dialogEl.style.left === "" && dialogEl.style.top === "") return;
+    this._clampIntoHost(dialogEl);
+  }
+
+  private _clampIntoHost(dialogEl: HTMLElement): void {
     const hostEl = this._elRef.nativeElement;
-    if (dialogEl.offsetLeft > hostEl.offsetWidth - 100) {
-      dialogEl.style.left = hostEl.offsetWidth - 100 + "px";
+    const maxLeft = Math.max(0, hostEl.offsetWidth - 100);
+    if (dialogEl.offsetLeft > maxLeft) {
+      dialogEl.style.left = `${maxLeft}px`;
     }
-    if (dialogEl.offsetTop > hostEl.offsetHeight - 100) {
-      dialogEl.style.top = hostEl.offsetHeight - 100 + "px";
+    const maxTop = Math.max(0, hostEl.offsetHeight - 100);
+    if (dialogEl.offsetTop > maxTop) {
+      dialogEl.style.top = `${maxTop}px`;
     }
   }
 
@@ -526,7 +534,8 @@ export class SdModal {
     if (this._sdSystemConfig == null) return;
 
     const config = (await this._sdSystemConfig.getAsync(`sd-modal.${k}`)) as
-      Record<string, string | undefined> | undefined;
+      | Record<string, string | undefined>
+      | undefined;
     if (config == null) return;
 
     const dialogEl = this._getDialogEl();
@@ -534,7 +543,12 @@ export class SdModal {
 
     if (config["width"] != null) dialogEl.style.width = config["width"];
     if (config["height"] != null) dialogEl.style.height = config["height"];
-    if (config["left"] != null) dialogEl.style.left = config["left"];
-    if (config["top"] != null) dialogEl.style.top = config["top"];
+
+    if (config["left"] != null || config["top"] != null) {
+      pinDialogAbsolute(dialogEl);
+      if (config["left"] != null) dialogEl.style.left = config["left"];
+      if (config["top"] != null) dialogEl.style.top = config["top"];
+      this._clampIntoHost(dialogEl);
+    }
   }
 }

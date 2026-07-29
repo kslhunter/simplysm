@@ -70,7 +70,9 @@ describe("Feature 5.3 Slice 2: SdPromptModal", () => {
 
     const modal = getModalInBody();
     // input에 값 입력
-    const inputEl = modal!.querySelector("sd-textfield input:not(.sd-invalid-input)") as HTMLInputElement;
+    const inputEl = modal!.querySelector(
+      "sd-textfield input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
     expect(inputEl).not.toBeNull();
     inputEl.value = "테스트 이름";
     inputEl.dispatchEvent(new Event("input", { bubbles: true }));

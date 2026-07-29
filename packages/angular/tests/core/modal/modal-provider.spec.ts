@@ -59,9 +59,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Test", type: SdModalTestBasic, inputs: { title: "hello" } },
-    );
+    const promise = provider.showAsync({
+      title: "Test",
+      type: SdModalTestBasic,
+      inputs: { title: "hello" },
+    });
 
     await tick(fixture);
 
@@ -117,9 +119,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Test", type: SdModalTestBasic, inputs: { title: "hello" } },
-    );
+    const promise = provider.showAsync({
+      title: "Test",
+      type: SdModalTestBasic,
+      inputs: { title: "hello" },
+    });
 
     await tick(fixture);
 
@@ -144,9 +148,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Test", type: SdModalTestBasic, inputs: { title: "hello" } },
-    );
+    const promise = provider.showAsync({
+      title: "Test",
+      type: SdModalTestBasic,
+      inputs: { title: "hello" },
+    });
 
     await tick(fixture);
 
@@ -171,9 +177,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
 
     // SdModalTestBasic의 title은 input.required<string>()
     // setInput이 attachView보다 먼저 호출되지 않으면 NG0950 에러 발생
-    const promise = provider.showAsync(
-      { title: "Required Input Test", type: SdModalTestBasic, inputs: { title: "required-value" } },
-    );
+    const promise = provider.showAsync({
+      title: "Required Input Test",
+      type: SdModalTestBasic,
+      inputs: { title: "required-value" },
+    });
 
     await tick(fixture);
 
@@ -196,9 +204,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "Test", type: SdModalTestBasic, inputs: { title: "hello" } },
-    );
+    const promise = provider.showAsync({
+      title: "Test",
+      type: SdModalTestBasic,
+      inputs: { title: "hello" },
+    });
 
     await tick(fixture);
 
@@ -231,9 +241,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
 
     expect(provider.modalCount()).toBe(0);
 
-    const promise = provider.showAsync(
-      { title: "Fail", type: SdModalTestThrow, inputs: {} } as any,
-    );
+    const promise = provider.showAsync({
+      title: "Fail",
+      type: SdModalTestThrow,
+      inputs: {},
+    } as any);
 
     await expect(promise).rejects.toThrow("Component creation failed");
     expect(provider.modalCount()).toBe(0);
@@ -244,9 +256,11 @@ describe("Feature 3.2 Slice 3: SdModalProvider 동적 생성", () => {
     const fixture = setupHost();
     const provider = TestBed.inject(SdModalProvider);
 
-    const promise = provider.showAsync(
-      { title: "My Modal", type: SdModalTestBasic, inputs: { title: "content-title" } },
-    );
+    const promise = provider.showAsync({
+      title: "My Modal",
+      type: SdModalTestBasic,
+      inputs: { title: "content-title" },
+    });
 
     await tick(fixture);
 

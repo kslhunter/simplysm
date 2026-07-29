@@ -126,7 +126,12 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       Object.defineProperty(dialog, "offsetHeight", { value: 800, configurable: true });
       Object.defineProperty(modal, "offsetHeight", { value: 600, configurable: true });
 
-      sdModal.onHostResize({ heightChanged: true, widthChanged: false, target: modal, contentRect: new DOMRect() });
+      sdModal.onHostResize({
+        heightChanged: true,
+        widthChanged: false,
+        target: modal,
+        contentRect: new DOMRect(),
+      });
 
       expect(dialog.style.maxHeight).toBe("100%");
       expect(dialog.style.height).toBe("100%");
@@ -142,7 +147,12 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       Object.defineProperty(dialog, "offsetWidth", { value: 1200, configurable: true });
       Object.defineProperty(modal, "offsetWidth", { value: 1024, configurable: true });
 
-      sdModal.onHostResize({ heightChanged: false, widthChanged: true, target: modal, contentRect: new DOMRect() });
+      sdModal.onHostResize({
+        heightChanged: false,
+        widthChanged: true,
+        target: modal,
+        contentRect: new DOMRect(),
+      });
 
       expect(dialog.style.maxWidth).toBe("100%");
       expect(dialog.style.width).toBe("100%");
@@ -160,7 +170,12 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       Object.defineProperty(modal, "offsetHeight", { value: 600, configurable: true });
       Object.defineProperty(modal, "offsetWidth", { value: 1024, configurable: true });
 
-      sdModal.onHostResize({ heightChanged: true, widthChanged: true, target: modal, contentRect: new DOMRect() });
+      sdModal.onHostResize({
+        heightChanged: true,
+        widthChanged: true,
+        target: modal,
+        contentRect: new DOMRect(),
+      });
 
       expect(dialog.style.maxHeight).toBe("");
       expect(dialog.style.maxWidth).toBe("");
@@ -174,7 +189,8 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       const dialog = modal.querySelector("._dialog") as HTMLElement;
       const sdModal = getSdModalInstance(fixture);
 
-      // dialog가 호스트 오른쪽 밖
+      // 드래그로 위치를 잡은 뒤 호스트가 좁아져 dialog가 오른쪽 밖으로 나간 상태
+      dialog.style.left = "1000px";
       Object.defineProperty(dialog, "offsetLeft", { value: 1000, configurable: true });
       Object.defineProperty(modal, "offsetWidth", { value: 800, configurable: true });
 
@@ -189,13 +205,29 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       const dialog = modal.querySelector("._dialog") as HTMLElement;
       const sdModal = getSdModalInstance(fixture);
 
-      // dialog가 호스트 아래쪽 밖
+      // 드래그로 위치를 잡은 뒤 호스트가 낮아져 dialog가 아래로 나간 상태
+      dialog.style.top = "700px";
       Object.defineProperty(dialog, "offsetTop", { value: 700, configurable: true });
       Object.defineProperty(modal, "offsetHeight", { value: 600, configurable: true });
 
       sdModal.onWindowResize();
 
       expect(dialog.style.top).toBe("500px"); // 600 - 100
+    });
+
+    it("호스트가 100px보다 좁아도 dialog를 호스트 밖으로 밀어내지 않는다", () => {
+      const fixture = setup(SdModalTestControlDefault);
+      const modal = getModal(fixture);
+      const dialog = modal.querySelector("._dialog") as HTMLElement;
+      const sdModal = getSdModalInstance(fixture);
+
+      dialog.style.left = "60px";
+      Object.defineProperty(dialog, "offsetLeft", { value: 60, configurable: true });
+      Object.defineProperty(modal, "offsetWidth", { value: 50, configurable: true });
+
+      sdModal.onWindowResize();
+
+      expect(dialog.style.left).toBe("0px");
     });
 
     it("dialog가 뷰포트 내에 있으면 위치가 변경되지 않는다", () => {
@@ -205,10 +237,27 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       const sdModal = getSdModalInstance(fixture);
 
       // dialog가 호스트 내
+      dialog.style.left = "100px";
+      dialog.style.top = "100px";
       Object.defineProperty(dialog, "offsetLeft", { value: 100, configurable: true });
       Object.defineProperty(dialog, "offsetTop", { value: 100, configurable: true });
       Object.defineProperty(modal, "offsetWidth", { value: 800, configurable: true });
       Object.defineProperty(modal, "offsetHeight", { value: 600, configurable: true });
+
+      sdModal.onWindowResize();
+
+      expect(dialog.style.left).toBe("100px");
+      expect(dialog.style.top).toBe("100px");
+    });
+
+    it("위치를 잡지 않은 dialog는 중앙 정렬을 유지한다", () => {
+      const fixture = setup(SdModalTestControlDefault);
+      const modal = getModal(fixture);
+      const dialog = modal.querySelector("._dialog") as HTMLElement;
+      const sdModal = getSdModalInstance(fixture);
+
+      Object.defineProperty(dialog, "offsetLeft", { value: 1000, configurable: true });
+      Object.defineProperty(modal, "offsetWidth", { value: 800, configurable: true });
 
       sdModal.onWindowResize();
 

@@ -48,7 +48,12 @@ export class SdModalTestControlDefault {
   standalone: true,
   imports: [SdModal],
   template: `
-    <sd-modal [open]="true" [title]="'Test'" [useCloseByBackdrop]="false" (closeRequest)="onClose()">
+    <sd-modal
+      [open]="true"
+      [title]="'Test'"
+      [useCloseByBackdrop]="false"
+      (closeRequest)="onClose()"
+    >
       <div class="modal-body">body</div>
     </sd-modal>
   `,
@@ -68,7 +73,12 @@ export class SdModalTestNoBackdrop {
   standalone: true,
   imports: [SdModal],
   template: `
-    <sd-modal [open]="true" [title]="'Test'" [useCloseByEscapeKey]="false" (closeRequest)="onClose()">
+    <sd-modal
+      [open]="true"
+      [title]="'Test'"
+      [useCloseByEscapeKey]="false"
+      (closeRequest)="onClose()"
+    >
       <div class="modal-body">body</div>
     </sd-modal>
   `,
@@ -155,8 +165,7 @@ export class SdModalTestThrow implements SdModalContentDef<void> {
   standalone: true,
   template: `<div class="host"></div>`,
 })
-export class SdModalProviderTestHost {
-}
+export class SdModalProviderTestHost {}
 
 /**
  * 탭 이동 가능한 요소가 있는 모달 컴포넌트
@@ -185,8 +194,7 @@ export class SdModalTestTabbable implements SdModalContentDef<void> {
   standalone: true,
   template: `<button class="trigger-btn">Open Modal</button>`,
 })
-export class SdModalFocusTestHost {
-}
+export class SdModalFocusTestHost {}
 
 /**
  * headerStyle 테스트

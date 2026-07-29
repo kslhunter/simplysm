@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import {
@@ -194,24 +194,14 @@ describe("Feature 3.2 Slice 2: SdModal 렌더링 + 닫기", () => {
 // region Feature 3.2 Slice 2: 모달 좌표 및 z-index
 
 describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
-  // Acceptance: drag 초기 위치가 getBoundingClientRect 기반이다
-  it("drag 시작 시 getBoundingClientRect 기반 초기 위치를 사용한다", () => {
+  // Acceptance: 헤더 드래그가 커서 이동량만큼만 모달을 옮긴다
+  it("헤더를 드래그하면 커서 이동량만큼만 이동한다", () => {
     const fixture = setup(SdModalTestMovable);
     const modal = getModal(fixture);
     const dialog = getDialog(modal)!;
     const header = getHeader(modal)!;
 
-    // dialog.offsetLeft는 jsdom에서 0이지만, getBoundingClientRect는 mock 가능
-    vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue({
-      top: 200, left: 150, bottom: 400, right: 550, width: 400, height: 200,
-      x: 150, y: 200, toJSON: () => ({}),
-    });
-    // offsetParent mock
-    Object.defineProperty(dialog, "offsetParent", { value: modal, configurable: true });
-    vi.spyOn(modal, "getBoundingClientRect").mockReturnValue({
-      top: 0, left: 0, bottom: 768, right: 1024, width: 1024, height: 768,
-      x: 0, y: 0, toJSON: () => ({}),
-    });
+    const before = dialog.getBoundingClientRect();
 
     // drag: (200, 100) → (300, 150)
     header.dispatchEvent(
@@ -223,10 +213,9 @@ describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
     document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
     fixture.detectChanges();
 
-    // startLeft=150 (rect.left - parentRect.left), dx=100 → 250
-    // startTop=200 (rect.top - parentRect.top), dy=50 → 250
-    expect(dialog.style.left).toBe("250px");
-    expect(dialog.style.top).toBe("250px");
+    const after = dialog.getBoundingClientRect();
+    expect(after.left - before.left).toBe(100);
+    expect(after.top - before.top).toBe(50);
   });
 
   // Acceptance: zIndex 미설정 모달에 focus 시 기본값 할당

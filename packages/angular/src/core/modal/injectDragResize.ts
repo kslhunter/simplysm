@@ -7,6 +7,62 @@ interface DragResizeOptions {
   onEnd: () => void;
 }
 
+type SizeStyleProp = "width" | "height" | "maxWidth" | "maxHeight";
+
+function shiftPercentSize(
+  dialogStyle: CSSStyleDeclaration,
+  prop: SizeStyleProp,
+  padPx: number,
+): void {
+  if (padPx === 0) return;
+
+  const value = dialogStyle[prop];
+  if (!value.includes("%")) return;
+
+  dialogStyle[prop] = `calc(${value} - ${padPx}px)`;
+}
+
+/**
+ * `._dialog` 는 평소 CSS 로 중앙 정렬(`position: relative` + `margin: 0 auto`)되어 있어
+ * `left`/`top` 이 "정상 배치 위치 대비 상대 offset" 으로 해석된다.
+ * 드래그, 리사이즈는 절대 좌표로 계산하므로 시작 시점에 절대 좌표계로 전환한다.
+ * 전환만으로는 위치, 크기가 변하지 않으며, 이미 전환된 요소에 다시 적용해도 결과가 같다.
+ */
+export function pinDialogAbsolute(dialogEl: HTMLElement): { left: number; top: number } {
+  const wasRelative = getComputedStyle(dialogEl).position === "relative";
+  const parentEl = dialogEl.offsetParent as HTMLElement | null;
+  const beforeRect = dialogEl.getBoundingClientRect();
+  const roundedLeft = dialogEl.offsetLeft;
+  const roundedTop = dialogEl.offsetTop;
+
+  dialogEl.style.position = "absolute";
+  dialogEl.style.margin = "0";
+  dialogEl.style.right = "auto";
+  dialogEl.style.bottom = "auto";
+  dialogEl.style.left = `${roundedLeft}px`;
+  dialogEl.style.top = `${roundedTop}px`;
+
+  if (wasRelative && parentEl != null) {
+    // 백분율 크기의 기준 박스가 부모 content box 에서 offsetParent padding box 로 바뀐다.
+    const parentStyle = getComputedStyle(parentEl);
+    const padX = parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight);
+    const padY = parseFloat(parentStyle.paddingTop) + parseFloat(parentStyle.paddingBottom);
+    shiftPercentSize(dialogEl.style, "width", padX);
+    shiftPercentSize(dialogEl.style, "maxWidth", padX);
+    shiftPercentSize(dialogEl.style, "height", padY);
+    shiftPercentSize(dialogEl.style, "maxHeight", padY);
+  }
+
+  // offsetLeft/offsetTop 은 정수로 반올림되므로, 전환 전후 실제 위치 차이만큼 되돌린다.
+  const afterRect = dialogEl.getBoundingClientRect();
+  const pinnedLeft = roundedLeft - (afterRect.left - beforeRect.left);
+  const pinnedTop = roundedTop - (afterRect.top - beforeRect.top);
+  dialogEl.style.left = `${pinnedLeft}px`;
+  dialogEl.style.top = `${pinnedTop}px`;
+
+  return { left: pinnedLeft, top: pinnedTop };
+}
+
 export function injectDragResize(opt: DragResizeOptions): {
   startDrag: (event: MouseEvent) => void;
   startResize: (event: MouseEvent, dir: string) => void;
@@ -105,25 +161,17 @@ export function injectDragResize(opt: DragResizeOptions): {
     }
   }
 
-  function getParentRect(dialogEl: HTMLElement): { left: number; top: number } {
-    return (dialogEl.offsetParent as HTMLElement | null)?.getBoundingClientRect() ?? {
-      left: 0,
-      top: 0,
-    };
-  }
-
   function startDrag(event: MouseEvent): void {
     const dialogEl = opt.getDialogEl();
     if (dialogEl == null) return;
 
-    const dialogRect = dialogEl.getBoundingClientRect();
-    const parentRect = getParentRect(dialogEl);
+    const pinned = pinDialogAbsolute(dialogEl);
 
     dragState = {
       startX: event.clientX,
       startY: event.clientY,
-      startLeft: dialogRect.left - parentRect.left,
-      startTop: dialogRect.top - parentRect.top,
+      startLeft: pinned.left,
+      startTop: pinned.top,
     };
     document.addEventListener("mousemove", onDocumentMouseMove);
     document.addEventListener("mouseup", onDocumentMouseUp);
@@ -133,8 +181,7 @@ export function injectDragResize(opt: DragResizeOptions): {
     const dialogEl = opt.getDialogEl();
     if (dialogEl == null) return;
 
-    const dialogRect = dialogEl.getBoundingClientRect();
-    const parentRect = getParentRect(dialogEl);
+    const pinned = pinDialogAbsolute(dialogEl);
 
     resizeState = {
       dir,
@@ -142,8 +189,8 @@ export function injectDragResize(opt: DragResizeOptions): {
       startY: event.clientY,
       startWidth: dialogEl.offsetWidth,
       startHeight: dialogEl.offsetHeight,
-      startLeft: dialogRect.left - parentRect.left,
-      startTop: dialogRect.top - parentRect.top,
+      startLeft: pinned.left,
+      startTop: pinned.top,
     };
     document.addEventListener("mousemove", onDocumentMouseMove);
     document.addEventListener("mouseup", onDocumentMouseUp);

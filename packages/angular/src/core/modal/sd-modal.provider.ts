@@ -14,10 +14,7 @@ import {
 } from "@angular/core";
 import { outputToObservable } from "@angular/core/rxjs-interop";
 import { Subscription } from "rxjs";
-import type {
-  DirectiveInputSignals,
-  WithOptional,
-} from "../directive-input-signals";
+import type { DirectiveInputSignals, WithOptional } from "../directive-input-signals";
 import { SdModal } from "./sd-modal";
 import { SdActivatedModalProvider } from "./sd-activated-modal.provider";
 import "@simplysm/core-browser";

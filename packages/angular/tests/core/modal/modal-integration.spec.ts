@@ -5,7 +5,10 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { describe, it, expect, vi } from "vitest";
 import { SdAppStructureProvider } from "../../../src/core/app-structure/sd-app-structure.provider";
 import { injectViewTitleSignal } from "../../../src/core/routing/injectViewTitleSignal";
-import { injectViewTypeSignal, type SdViewType } from "../../../src/core/routing/injectViewTypeSignal";
+import {
+  injectViewTypeSignal,
+  type SdViewType,
+} from "../../../src/core/routing/injectViewTypeSignal";
 import { setupCanDeactivate } from "../../../src/core/routing/setupCanDeactivate";
 import { SdActivatedModalProvider } from "../../../src/core/modal/sd-activated-modal.provider";
 import type { SdModal } from "../../../src/core/modal/sd-modal";

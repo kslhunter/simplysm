@@ -115,7 +115,9 @@ describe("Feature 1.1: sd-prompt-modal 템플릿 정리", () => {
     await tick(fixture);
 
     const modal = getModalInBody();
-    const inputEl = modal!.querySelector("sd-textfield input:not(.sd-invalid-input)") as HTMLInputElement;
+    const inputEl = modal!.querySelector(
+      "sd-textfield input:not(.sd-invalid-input)",
+    ) as HTMLInputElement;
     inputEl.value = "엔터 테스트";
     inputEl.dispatchEvent(new Event("input", { bubbles: true }));
     await tick(fixture);
