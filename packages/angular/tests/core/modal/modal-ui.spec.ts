@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { TestBed } from "@angular/core/testing";
 import { SdModalProvider } from "../../../src/core/modal/sd-modal.provider";
+import { SdSystemConfigProvider } from "../../../src/core/config/sd-system-config.provider";
 import { SdModalTestTabbable, SdModalProviderTestHost } from "./sd-modal-test.fixture";
 import "@simplysm/core-browser";
 
@@ -59,8 +60,7 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const rightHandle = modal.querySelector('[data-resize-dir="right"]') as HTMLElement;
     expect(rightHandle).not.toBeNull();
 
-    const beforeWidth = dialog.offsetWidth;
-    const beforeLeft = dialog.getBoundingClientRect().left;
+    const before = dialog.getBoundingClientRect();
 
     // mousedown on handle
     rightHandle.dispatchEvent(
@@ -76,8 +76,9 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     TestBed.flushEffects();
 
     // 오른쪽 핸들이므로 좌변은 고정된 채 너비만 100px 증가해야 함
-    expect(parseFloat(dialog.style.width)).toBe(beforeWidth + 100);
-    expect(dialog.getBoundingClientRect().left).toBe(beforeLeft);
+    const after = dialog.getBoundingClientRect();
+    expect(after.width).toBe(before.width + 100);
+    expect(after.left).toBe(before.left);
 
     await closeModal(fixture, modal, promise);
   });
@@ -121,8 +122,6 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const dialog = modal.querySelector("._dialog") as HTMLElement;
     const header = modal.querySelector("._header") as HTMLElement;
 
-    // 우하단 앵커(CSS 의 bottom)는 전역 CSS 변수에 의존해 테스트 환경에서 풀리므로 직접 재현한다
-    dialog.style.bottom = "40px";
     const before = dialog.getBoundingClientRect();
 
     header.dispatchEvent(new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }));
@@ -154,8 +153,7 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     const dialog = modal.querySelector("._dialog") as HTMLElement;
     const leftHandle = modal.querySelector('[data-resize-dir="left"]') as HTMLElement;
 
-    const beforeWidth = dialog.offsetWidth;
-    const beforeLeft = dialog.getBoundingClientRect().left;
+    const before = dialog.getBoundingClientRect();
 
     // 왼쪽 핸들을 오른쪽으로 200px 드래그 (너비 200px 감소 시도)
     leftHandle.dispatchEvent(
@@ -169,8 +167,38 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     TestBed.flushEffects();
 
     // minWidthPx(300) 미만이 되므로 너비도 좌변도 그대로여야 함
-    expect(parseFloat(dialog.style.width)).toBe(beforeWidth);
-    expect(dialog.getBoundingClientRect().left).toBe(beforeLeft);
+    const after = dialog.getBoundingClientRect();
+    expect(after.width).toBe(before.width);
+    expect(after.left).toBe(before.left);
+
+    await closeModal(fixture, modal, promise);
+  });
+
+  // Acceptance: minWidthPx 미지정 모달도 CSS 최소 너비를 하한으로 지킨다
+  it("minWidthPx를 주지 않아도 CSS 최소 너비 아래로 끌 때 모달이 밀려나지 않는다", async () => {
+    const fixture = setupHost();
+    const { modal, promise } = await openModal(fixture, { resizable: true, widthPx: 400 });
+
+    const dialog = modal.querySelector("._dialog") as HTMLElement;
+    const leftHandle = modal.querySelector('[data-resize-dir="left"]') as HTMLElement;
+
+    const before = dialog.getBoundingClientRect();
+
+    // CSS min-width(200px)를 넘겨 줄이려 시도
+    leftHandle.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: before.left, clientY: 200, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: before.left + 350, clientY: 200, bubbles: true }),
+    );
+    document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // 하한을 넘기면 폭이 안 줄어드는데, 좌변만 이동하면 우변이 오른쪽으로 밀려난다
+    const after = dialog.getBoundingClientRect();
+    expect(after.width).toBe(before.width);
+    expect(after.right).toBe(before.right);
 
     await closeModal(fixture, modal, promise);
   });
@@ -217,6 +245,31 @@ describe("Feature 3.2 Slice 5: UI 커스터마이즈", () => {
     expect(dialog2.style.height).toBe("500px");
 
     await closeModal(fixture, modal2, promise2);
+  });
+
+  // Acceptance: 화면 넘침 클램프 값이 아니라 원래 크기가 저장된다
+  it("화면보다 큰 모달을 닫으면 화면에 맞춘 크기가 아니라 지정한 크기가 저장된다", async () => {
+    const fixture = setupHost();
+    const provider = TestBed.inject(SdModalProvider);
+
+    const promise = provider.showAsync(
+      { title: "Clamp", type: SdModalTestTabbable, inputs: { title: "test" } },
+      { key: "test-modal-clamp", heightPx: 5000 },
+    );
+    await tick(fixture);
+
+    const modal = getModalInBody()!;
+    const dialog = modal.querySelector("._dialog") as HTMLElement;
+
+    // 화면을 넘치므로 100%로 클램프된 상태
+    expect(dialog.style.height).toBe("100%");
+
+    await closeModal(fixture, modal, promise);
+
+    const config = await TestBed.inject(SdSystemConfigProvider).getAsync(
+      "sd-modal.test-modal-clamp",
+    );
+    expect((config as Record<string, string>)["height"]).toBe("5000px");
   });
 
   // Acceptance: 위치 저장 및 복원

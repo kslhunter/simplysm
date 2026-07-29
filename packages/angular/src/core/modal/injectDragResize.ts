@@ -9,6 +9,12 @@ interface DragResizeOptions {
 
 type SizeStyleProp = "width" | "height" | "maxWidth" | "maxHeight";
 
+/** `auto`, `none` 등 길이가 아닌 값은 하한 없음(0)으로 본다. */
+function parseCssMinPx(value: string): number {
+  const parsed = parseFloat(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function shiftPercentSize(
   dialogStyle: CSSStyleDeclaration,
   prop: SizeStyleProp,
@@ -82,6 +88,8 @@ export function injectDragResize(opt: DragResizeOptions): {
         startHeight: number;
         startLeft: number;
         startTop: number;
+        minWidth: number;
+        minHeight: number;
       }
     | undefined;
 
@@ -106,8 +114,8 @@ export function injectDragResize(opt: DragResizeOptions): {
 
     const dx = event.clientX - resizeState.startX;
     const dy = event.clientY - resizeState.startY;
-    const minW = opt.minWidthPx() ?? 0;
-    const minH = opt.minHeightPx() ?? 0;
+    const minW = resizeState.minWidth;
+    const minH = resizeState.minHeight;
 
     let newWidth = resizeState.startWidth;
     let newHeight = resizeState.startHeight;
@@ -182,6 +190,7 @@ export function injectDragResize(opt: DragResizeOptions): {
     if (dialogEl == null) return;
 
     const pinned = pinDialogAbsolute(dialogEl);
+    const dialogStyle = getComputedStyle(dialogEl);
 
     resizeState = {
       dir,
@@ -191,6 +200,9 @@ export function injectDragResize(opt: DragResizeOptions): {
       startHeight: dialogEl.offsetHeight,
       startLeft: pinned.left,
       startTop: pinned.top,
+      // CSS 하한을 넘겨 줄이면 실제 크기는 안 줄고 반대쪽 변만 밀려나므로, 실제 제약을 하한으로 삼는다.
+      minWidth: Math.max(opt.minWidthPx() ?? 0, parseCssMinPx(dialogStyle.minWidth)),
+      minHeight: Math.max(opt.minHeightPx() ?? 0, parseCssMinPx(dialogStyle.minHeight)),
     };
     document.addEventListener("mousemove", onDocumentMouseMove);
     document.addEventListener("mouseup", onDocumentMouseUp);

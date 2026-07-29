@@ -180,6 +180,39 @@ describe("Feature 3.3 Slice 2: sdResize 자동 크기 조정 + window:resize", (
       expect(dialog.style.maxHeight).toBe("");
       expect(dialog.style.maxWidth).toBe("");
     });
+
+    it("화면에 다시 들어오면 클램프 직전 크기로 되돌린다", () => {
+      const fixture = setup(SdModalTestControlDefault);
+      const modal = getModal(fixture);
+      const dialog = modal.querySelector("._dialog") as HTMLElement;
+      const sdModal = getSdModalInstance(fixture);
+
+      dialog.style.height = "500px";
+      Object.defineProperty(dialog, "offsetHeight", { value: 800, configurable: true });
+      Object.defineProperty(modal, "offsetHeight", { value: 600, configurable: true });
+
+      sdModal.onHostResize({
+        heightChanged: true,
+        widthChanged: false,
+        target: modal,
+        contentRect: new DOMRect(),
+      });
+
+      expect(dialog.style.height).toBe("100%");
+
+      // 창이 커져 dialog 가 다시 화면 안에 들어감
+      Object.defineProperty(modal, "offsetHeight", { value: 1000, configurable: true });
+
+      sdModal.onHostResize({
+        heightChanged: true,
+        widthChanged: false,
+        target: modal,
+        contentRect: new DOMRect(),
+      });
+
+      expect(dialog.style.height).toBe("500px");
+      expect(dialog.style.maxHeight).toBe("");
+    });
   });
 
   describe("Rule: 윈도우 리사이즈 시 dialog 위치 보정", () => {

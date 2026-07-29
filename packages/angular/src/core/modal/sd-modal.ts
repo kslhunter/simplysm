@@ -49,6 +49,7 @@ import "@simplysm/core-browser";
     <div
       class="_dialog"
       tabindex="-1"
+      (mousedown)="onDialogMouseDown()"
       (keydown)="onDialogKeydown($event)"
       (focus)="onDialogFocus()"
       (sdResize)="onDialogResize($event)"
@@ -368,6 +369,10 @@ export class SdModal {
     onEnd: () => void this._saveConfig().catch((err) => this._errorHandler.handleError(err)),
   });
 
+  /** 화면 넘침 클램프로 덮기 직전의 크기. 클램프 중이 아니면 undefined. */
+  private _clampedWidth: string | undefined;
+  private _clampedHeight: string | undefined;
+
   constructor() {
     // data-sd-init: 첫 렌더 후 설정하여 CSS transition 트리거 허용
     afterNextRender(() => {
@@ -391,6 +396,7 @@ export class SdModal {
       } else {
         dialogEl.style.height = "";
       }
+      this._forgetClampedSize();
     });
 
     // key 기반 설정 복원
@@ -404,7 +410,13 @@ export class SdModal {
 
   onResizeMouseDown(event: MouseEvent, dir: string): void {
     event.preventDefault();
+    // 사용자가 직접 정하는 크기가 자동 클램프 이전 크기보다 우선한다.
+    this._forgetClampedSize();
     this._dragResize.startResize(event, dir);
+  }
+
+  onDialogMouseDown(): void {
+    this._bringToFront();
   }
 
   onHeaderMouseDown(event: MouseEvent): void {
@@ -490,23 +502,50 @@ export class SdModal {
     hostEl.style.zIndex = String(maxZ + 1);
   }
 
+  private _forgetClampedSize(): void {
+    this._clampedWidth = undefined;
+    this._clampedHeight = undefined;
+  }
+
   private _calcHeight(): void {
     const dialogEl = this._getDialogEl();
     if (dialogEl == null) return;
-    const style = getComputedStyle(this._elRef.nativeElement);
-    const paddingTop = style.paddingTop === "" ? 0 : parseInt(style.paddingTop, 10) || 0;
-    if (dialogEl.offsetHeight > this._elRef.nativeElement.offsetHeight - paddingTop) {
+
+    // 클램프 중이면 dialog 높이가 호스트에 맞춰져 있어 실제 필요 높이를 알 수 없다. 먼저 되돌려 잰다.
+    if (this._clampedHeight != null) {
+      dialogEl.style.height = this._clampedHeight;
+      dialogEl.style.maxHeight = "";
+    }
+
+    const hostEl = this._elRef.nativeElement;
+    const paddingTop = parseFloat(getComputedStyle(hostEl).paddingTop) || 0;
+
+    if (dialogEl.offsetHeight > hostEl.offsetHeight - paddingTop) {
+      this._clampedHeight ??= dialogEl.style.height;
       dialogEl.style.maxHeight = "100%";
       dialogEl.style.height = "100%";
+    } else {
+      this._clampedHeight = undefined;
     }
   }
 
   private _calcWidth(): void {
     const dialogEl = this._getDialogEl();
     if (dialogEl == null) return;
-    if (dialogEl.offsetWidth > this._elRef.nativeElement.offsetWidth) {
+
+    if (this._clampedWidth != null) {
+      dialogEl.style.width = this._clampedWidth;
+      dialogEl.style.maxWidth = "";
+    }
+
+    const hostEl = this._elRef.nativeElement;
+
+    if (dialogEl.offsetWidth > hostEl.offsetWidth) {
+      this._clampedWidth ??= dialogEl.style.width;
       dialogEl.style.maxWidth = "100%";
       dialogEl.style.width = "100%";
+    } else {
+      this._clampedWidth = undefined;
     }
   }
 
@@ -521,9 +560,13 @@ export class SdModal {
     const dialogEl = this._getDialogEl();
     if (dialogEl == null) return;
 
+    // 클램프 중이면 화면에 맞춘 값이 아니라 그 직전 크기를 저장해야 다시 열 때 원래 크기로 뜬다.
+    const savedWidth = this._clampedWidth ?? dialogEl.style.width;
+    const savedHeight = this._clampedHeight ?? dialogEl.style.height;
+
     const config: Record<string, string> = {};
-    if (dialogEl.style.width !== "") config["width"] = dialogEl.style.width;
-    if (dialogEl.style.height !== "") config["height"] = dialogEl.style.height;
+    if (savedWidth !== "") config["width"] = savedWidth;
+    if (savedHeight !== "") config["height"] = savedHeight;
     if (dialogEl.style.left !== "") config["left"] = dialogEl.style.left;
     if (dialogEl.style.top !== "") config["top"] = dialogEl.style.top;
 
@@ -543,6 +586,7 @@ export class SdModal {
 
     if (config["width"] != null) dialogEl.style.width = config["width"];
     if (config["height"] != null) dialogEl.style.height = config["height"];
+    this._forgetClampedSize();
 
     if (config["left"] != null || config["top"] != null) {
       pinDialogAbsolute(dialogEl);

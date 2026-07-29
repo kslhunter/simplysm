@@ -218,6 +218,21 @@ describe("Feature 3.2 Slice 2: 모달 drag/resize 좌표 + z-index", () => {
     expect(after.top - before.top).toBe(50);
   });
 
+  // Acceptance: 헤더를 잡아 끌 때도 모달이 앞으로 나온다
+  it("헤더를 누르면 모달이 앞으로 나온다", () => {
+    const fixture = setup(SdModalTestMovable);
+    const modal = getModal(fixture);
+    const header = getHeader(modal)!;
+
+    expect(modal.style.zIndex).toBe("");
+
+    header.dispatchEvent(new MouseEvent("mousedown", { clientX: 200, clientY: 50, bubbles: true }));
+    document.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(parseInt(modal.style.zIndex, 10)).toBe(4001);
+  });
+
   // Acceptance: zIndex 미설정 모달에 focus 시 기본값 할당
   it("zIndex 미설정 모달에 focus하면 4001이 할당된다", () => {
     const fixture = setup(SdModalTestControlDefault);
