@@ -14,7 +14,7 @@ from __future__ import annotations
 import _bootstrap  # noqa: F401  (sys.path 준비)
 from shared.hook_io import configure_stdio
 
-SD_REMINDER = "sd plugin is active. 출력은 핵심만 간결하게 + 긴줄은 bullet 분리"
+SD_REMINDER = "sd plugin is active. 줄일 것은 내용이고 낱말이 아닙니다. 조사와 서술어를 살려 서술식으로 쓰세요."
 
 try:
     configure_stdio()
