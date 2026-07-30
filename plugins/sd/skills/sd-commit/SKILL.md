@@ -1,6 +1,7 @@
 ---
 name: sd-commit
 description: 변경분을 확인해 conventional commits 메시지를 작성하고 git commit까지 수행. Use when 사용자가 직접 호출할 때만.
+model: sonnet[1m]
 effort: low
 ---
 

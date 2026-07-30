@@ -1,6 +1,7 @@
 ---
 name: sd-html-to-pdf
 description: HTML 파일을 브라우저 인쇄와 동일한 엔진으로 PDF 출력. Use when 견적서, 제안서 등 @page, print CSS 로 조판한 HTML 을 PDF 로 내보낼 때.
+model: sonnet[1m]
 effort: low
 ---
 
