@@ -23,7 +23,7 @@
     "chokidar": "^5.0.0",
     "consola": "^3.4.2",
     "glob": "^13.0.6",
-    "minimatch": "^10.2.5",
+    "minimatch": "^10.2.6",
     "tsx": "^4.23.1"
   },
   "devDependencies": {
