@@ -19,7 +19,7 @@
 ### 1.2 주요 목표
 
 - 앱 부팅 시 1회 호출로 검증된 설정 객체를 수령합니다.
-- 결측(미설정 키)을 임의 기본값으로 덮지 않고 그대로 전달합니다.
+- 미설정 키(undefined)를 임의 기본값으로 덮지 않고 그대로 전달합니다.
 
 ### 1.3 소비자/이해관계자
 
@@ -42,13 +42,17 @@
 3. 병합, 검증된 설정 객체를 수령합니다. 검증 실패 시 `ConfigError` 를 throw 해 부팅을 중단합니다.
 
 ```ts
-const schema = defineSchema({ port: "number", dbUrl: "string", debug: "boolean?" });
+const schema = defineSchema({
+  port: "number",
+  dbUrl: "string",
+  debug: "boolean?",
+});
 const config = loadConfig(schema, { env: "production" });
 ```
 
 ## 3. 기타 요구사항
 
-### 3.1 결측 보존
+### 3.1 undefined 보존
 
 - 관련 섹션: [단위.loadConfig], [단위.우선순위 병합 규칙], [타입.ConfigSchema]
 - 요구 의도: 미설정 선택 키는 `undefined` 로 전달합니다. `""`, `0`, `false` 로 치환하지 마세요. 소비자가 "미설정"과 "설정된 falsy 값"을 구분할 수 있어야 합니다.
@@ -60,29 +64,29 @@ const config = loadConfig(schema, { env: "production" });
 
 ## 4. 산출 단위
 
-| ref | 이름               | kind  | 파일                               | 요약                                            | 구현   |
-| --- | ------------------ | ----- | ---------------------------------- | ----------------------------------------------- | ------ |
+| ref | 이름               | kind  | 파일                               | 요약                                             | 구현   |
+| --- | ------------------ | ----- | ---------------------------------- | ------------------------------------------------ | ------ |
 | 4.1 | loadConfig         | api   | design/units/loadConfig.md         | 스키마+옵션으로 병합, 검증된 설정 객체 동기 반환 | [구현] |
-| 4.2 | defineSchema       | api   | design/units/defineSchema.md       | 설정 스키마 선언, 추론 타입 핸들 반환           | [구현] |
+| 4.2 | defineSchema       | api   | design/units/defineSchema.md       | 설정 스키마 선언, 추론 타입 핸들 반환            | [구현] |
 | 4.3 | ConfigError        | api   | design/units/ConfigError.md        | 설정 로드, 검증 실패 공개 에러 타입              | [구현] |
-| 4.4 | 우선순위 병합 규칙 | infra | design/units/우선순위 병합 규칙.md | 여러 소스의 병합 우선순위를 한 곳에 고정        |        |
+| 4.4 | 우선순위 병합 규칙 | infra | design/units/우선순위 병합 규칙.md | 여러 소스의 병합 우선순위를 한 곳에 고정         |        |
 
 #### 4.1 loadConfig (kind: api)
 
-관련 섹션: [기타 요구.결측 보존], [기타 요구.동기 로드], [단위.defineSchema], [단위.ConfigError], [단위.우선순위 병합 규칙], [타입.ConfigSchema], [타입.LoadOptions], [외부 의존.파일시스템]
+관련 섹션: [기타 요구.undefined 보존], [기타 요구.동기 로드], [단위.defineSchema], [단위.ConfigError], [단위.우선순위 병합 규칙], [타입.ConfigSchema], [타입.LoadOptions], [외부 의존.파일시스템]
 
 - 목적: 스키마 + 옵션을 받아 병합, 검증된 설정 객체를 동기로 반환합니다.
 - 인터페이스, 계약: `loadConfig(schema, options?)` 입니다.
   - `schema` 는 [단위.defineSchema] 가 반환한 [타입.ConfigSchema] 핸들이고, `options` 는 [타입.LoadOptions] 입니다.
   - 반환은 그 스키마에서 추론된 설정 객체이며, 선택 키는 `T | undefined` 입니다.
   - 검증 실패 시 [단위.ConfigError] 를 throw 합니다.
-- 동작, 내용: [단위.우선순위 병합 규칙] 순서로 소스를 병합하고 스키마 타입을 검증합니다. 결측 선택 키는 `undefined` 로 유지합니다([기타 요구.결측 보존]).
+- 동작, 내용: [단위.우선순위 병합 규칙] 순서로 소스를 병합하고 스키마 타입을 검증합니다. 미설정 선택 키는 `undefined` 로 유지합니다([기타 요구.undefined 보존]).
 - 경계, 예외:
-  - 필수 키 결측이면 [단위.ConfigError] 를 throw 합니다 (어느 키인지 메시지에 포함합니다).
+  - 필수 키가 없으면 [단위.ConfigError] 를 throw 합니다 (어느 키인지 메시지에 포함합니다).
   - 타입 불일치(예: `port` 가 비숫자)면 [단위.ConfigError] 입니다.
   - 설정 파일이 없으면 그 소스만 건너뛰고(에러가 아닙니다) 다른 소스로 진행합니다.
   - 파일 읽기 권한 오류면 throw 합니다 ([외부 의존.파일시스템] 예외 처리).
-- 완료 기준: 위 각 경계 케이스(필수 결측, 타입 불일치, 파일 부재, 권한 오류)와 정상 병합이 단위 테스트로 검증됩니다. 결측 선택 키가 `undefined` 로 보존됨을 단언합니다.
+- 완료 기준: 위 각 경계 케이스(필수 키 부재, 타입 불일치, 파일 부재, 권한 오류)와 정상 병합이 단위 테스트로 검증됩니다. 미설정 선택 키가 `undefined` 로 보존됨을 단언합니다.
 
 #### 4.2 defineSchema (kind: api)
 
@@ -106,16 +110,16 @@ const config = loadConfig(schema, { env: "production" });
 
 #### 4.4 우선순위 병합 규칙 (kind: infra)
 
-관련 섹션: [기타 요구.결측 보존], [단위.loadConfig], [타입.LoadOptions], [공통 정의.병합 우선순위]
+관련 섹션: [기타 요구.undefined 보존], [단위.loadConfig], [타입.LoadOptions], [공통 정의.병합 우선순위]
 
 - 목적: 여러 소스의 병합 우선순위를 한 곳에 고정합니다.
 - 인터페이스, 계약: 외부 노출이 없습니다. [단위.loadConfig] 내부 규칙이며 적용 범위는 모든 로드입니다.
 - 동작, 내용: [공통 정의.병합 우선순위] 를 모든 로드에 적용합니다. 파일 매핑은 환경별 파일이 `config.<env>.json`, 기본 파일이 `config.json` 입니다. 상위 소스의 키가 하위를 덮습니다.
 - 경계, 예외:
   - 같은 키가 여러 소스에 있으면 [공통 정의.병합 우선순위] 로 상위만 채택합니다.
-  - 어느 소스에도 없으면 결측입니다([기타 요구.결측 보존]).
-  - [타입.LoadOptions] 의 `env` 가 결측이고 `process.env.NODE_ENV` 도 없으면 환경별 파일 소스 자체를 생략하고 나머지 소스로 병합합니다.
-- 완료 기준: 우선순위 덮어쓰기, 결측 전파, 환경 미해석 시 환경별 파일 소스 생략이 테스트로 검증됩니다.
+  - 어느 소스에도 없으면 undefined 입니다([기타 요구.undefined 보존]).
+  - [타입.LoadOptions] 의 `env` 가 undefined 이고 `process.env.NODE_ENV` 도 없으면 환경별 파일 소스 자체를 생략하고 나머지 소스로 병합합니다.
+- 완료 기준: 우선순위 덮어쓰기, undefined 전파, 환경 미해석 시 환경별 파일 소스 생략이 테스트로 검증됩니다.
 
 ## 5. 공통 정의
 
