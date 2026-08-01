@@ -14,7 +14,11 @@ from __future__ import annotations
 import _bootstrap  # noqa: F401  (sys.path 준비)
 from shared.hook_io import configure_stdio
 
-SD_REMINDER = "sd plugin is active. 줄일 것은 내용이고 낱말이 아닙니다. 조사와 서술어를 살려 서술식으로 쓰세요."
+SD_REMINDER = """사용자 가독성 최우선:
+- 한 줄에 문장 하나, 정보 하나. 산문 덩어리 대신 불릿·단계로 구조화.
+- 조사·서술어를 살린 자연스러운 한국어. 명사 나열·번역체·에두름 금지.
+- 결론부터 핵심만 간결하게.
+- 결론에 이른 배경(조사 경위·수정 위치)은 사용자가 물을 때만."""
 
 try:
     configure_stdio()
