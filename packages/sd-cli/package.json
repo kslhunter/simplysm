@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "14.2.12",
+  "version": "14.2.13",
   "description": "Simplysm package - CLI tool",
   "license": "Apache-2.0",
   "author": "simplysm",
