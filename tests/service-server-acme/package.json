@@ -1,7 +1,7 @@
 {
   "name": "@simplysm-test/service-server-acme",
   "sideEffects": false,
-  "version": "14.2.13",
+  "version": "14.2.14",
   "description": "심플리즘 패키지 - service-server Let's Encrypt(ACME) 통합 테스트",
   "author": "심플리즘",
   "repository": {
