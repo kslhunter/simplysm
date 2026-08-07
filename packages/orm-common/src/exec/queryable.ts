@@ -587,7 +587,8 @@ export class Queryable<
             const fkCol = srcCols[fkColKeys[i]];
             const pkCol = qr.meta.columns[targetPkColKeys[i]] as ExprUnit<ColumnPrimitive>;
 
-            conditions.push(expr.eq(pkCol, fkCol));
+            // PK는 NOT NULL이므로 null-safe eq와 결과 동일 + index/hash join 활용 가능
+            conditions.push(expr.eqStrict(pkCol, fkCol));
           }
 
           return qr.where(() => conditions);
@@ -625,7 +626,8 @@ export class Queryable<
             const pkCol = srcCols[pkColKeys[i]] as ExprUnit<ColumnPrimitive>;
             const fkCol = qr.meta.columns[fkColKeys[i]] as ExprUnit<ColumnPrimitive>;
 
-            conditions.push(expr.eq(fkCol, pkCol));
+            // PK는 NOT NULL이므로 null-safe eq와 결과 동일 + index/hash join 활용 가능
+            conditions.push(expr.eqStrict(fkCol, pkCol));
           }
 
           return qr.where(() => conditions);

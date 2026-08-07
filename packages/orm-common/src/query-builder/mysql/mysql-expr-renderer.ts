@@ -4,6 +4,7 @@ import type {
   ExprValue,
   ExprRaw,
   ExprEq,
+  ExprEqStrict,
   ExprGt,
   ExprLt,
   ExprGte,
@@ -184,6 +185,10 @@ export class MysqlExprRenderer extends ExprRendererBase {
   protected eq(expr: ExprEq): string {
     // MySQL: <=> 연산자 (NULL 안전 동등 비교)
     return `${this.render(expr.source)} <=> ${this.render(expr.target)}`;
+  }
+
+  protected eqStrict(expr: ExprEqStrict): string {
+    return `${this.render(expr.source)} = ${this.render(expr.target)}`;
   }
 
   protected gt(expr: ExprGt): string {

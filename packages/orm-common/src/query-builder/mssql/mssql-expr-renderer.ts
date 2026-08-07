@@ -4,6 +4,7 @@ import type {
   ExprValue,
   ExprRaw,
   ExprEq,
+  ExprEqStrict,
   ExprGt,
   ExprLt,
   ExprGte,
@@ -180,6 +181,10 @@ export class MssqlExprRenderer extends ExprRendererBase {
     const left = this.render(expr.source);
     const right = this.render(expr.target);
     return `((${left} IS NULL AND ${right} IS NULL) OR ${left} = ${right})`;
+  }
+
+  protected eqStrict(expr: ExprEqStrict): string {
+    return `${this.render(expr.source)} = ${this.render(expr.target)}`;
   }
 
   protected gt(expr: ExprGt): string {

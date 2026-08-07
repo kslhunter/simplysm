@@ -34,6 +34,43 @@ describe("Expr - 비교 연산자 (null-safe)", () => {
     });
   });
 
+  describe("eqStrict - value comparison (standard =)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.eqStrict(item.id, 1)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.eqStrictValue[dialect]);
+    });
+  });
+
+  describe("eqStrict - column comparison (nullable columns allowed)", () => {
+    const db = createTestDb();
+    const def = db
+      .user()
+      .where((item) => [expr.eqStrict(item.name, item.email)])
+      .getSelectQueryDef();
+
+    it.each(dialects)("[%s] Verify SQL", (dialect) => {
+      const builder = createQueryBuilder(dialect);
+      expect(builder.build(def)).toMatchSql(expected.eqStrictColumns[dialect]);
+    });
+  });
+
+  describe("eqStrict - undefined target rejected at compile time", () => {
+    it("type check", () => {
+      const db = createTestDb();
+      db.user()
+        // @ts-expect-error - undefined 리터럴은 항상 미매칭이므로 컴파일 타임 차단
+        .where((item) => [expr.eqStrict(item.email, undefined)])
+        .getSelectQueryDef();
+      expect(true).toBe(true);
+    });
+  });
+
   describe("gt - greater than comparison", () => {
     const db = createTestDb();
     const def = db

@@ -43,6 +43,42 @@ export const eqValue: ExpectedSql = {
   `,
 };
 
+export const eqStrictValue: ExpectedSql = {
+  mysql: mysql`
+    SELECT *
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+    WHERE \`T1\`.\`id\` = 1
+  `,
+  mssql: tsql`
+    SELECT *
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+    WHERE [T1].[id] = 1
+  `,
+  postgresql: pgsql`
+    SELECT *
+    FROM "TestSchema"."User" AS "T1"
+    WHERE "T1"."id" = 1
+  `,
+};
+
+export const eqStrictColumns: ExpectedSql = {
+  mysql: mysql`
+    SELECT *
+    FROM \`TestDb\`.\`User\` AS \`T1\`
+    WHERE \`T1\`.\`name\` = \`T1\`.\`email\`
+  `,
+  mssql: tsql`
+    SELECT *
+    FROM [TestDb].[TestSchema].[User] AS [T1]
+    WHERE [T1].[name] = [T1].[email]
+  `,
+  postgresql: pgsql`
+    SELECT *
+    FROM "TestSchema"."User" AS "T1"
+    WHERE "T1"."name" = "T1"."email"
+  `,
+};
+
 export const gt: ExpectedSql = {
   mysql: mysql`
     SELECT *

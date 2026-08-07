@@ -53,6 +53,13 @@ export interface ExprEq {
   target: Expr;
 }
 
+/** 동등 비교 (=) - SQL 표준 3값 논리 (NULL이 끼면 항상 미매칭) */
+export interface ExprEqStrict {
+  type: "eqStrict";
+  source: Expr;
+  target: Expr;
+}
+
 /** 초과 비교 (>) */
 export interface ExprGt {
   type: "gt";
@@ -602,6 +609,7 @@ export interface ExprSubquery {
 export type WhereExpr =
   // 비교
   | ExprEq
+  | ExprEqStrict
   | ExprGt
   | ExprLt
   | ExprGte

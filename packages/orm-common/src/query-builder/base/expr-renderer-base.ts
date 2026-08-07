@@ -6,6 +6,7 @@ import type {
   ExprValue,
   ExprRaw,
   ExprEq,
+  ExprEqStrict,
   ExprGt,
   ExprLt,
   ExprGte,
@@ -129,6 +130,7 @@ export abstract class ExprRendererBase {
   //#region ========== Abstract - 비교 (null-safe 필수) ==========
 
   protected abstract eq(expr: ExprEq): string;
+  protected abstract eqStrict(expr: ExprEqStrict): string;
   protected abstract gt(expr: ExprGt): string;
   protected abstract lt(expr: ExprLt): string;
   protected abstract gte(expr: ExprGte): string;

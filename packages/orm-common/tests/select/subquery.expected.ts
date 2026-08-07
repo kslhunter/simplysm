@@ -98,7 +98,7 @@ export const includeThenWrapThenSelect: ExpectedSql = {
              \`T1.posts\`.\`title\` AS \`posts.title\`, \`T1.posts\`.\`content\` AS \`posts.content\`,
              \`T1.posts\`.\`viewCount\` AS \`posts.viewCount\`, \`T1.posts\`.\`publishedAt\` AS \`posts.publishedAt\`
       FROM \`TestDb\`.\`User\` AS \`T1\`
-      LEFT OUTER JOIN \`TestDb\`.\`Post\` AS \`T1.posts\` ON \`T1.posts\`.\`userId\` <=> \`T1\`.\`id\`
+      LEFT OUTER JOIN \`TestDb\`.\`Post\` AS \`T1.posts\` ON \`T1.posts\`.\`userId\` = \`T1\`.\`id\`
     ) AS \`T2\`
   `,
   mssql: tsql`
@@ -112,7 +112,7 @@ export const includeThenWrapThenSelect: ExpectedSql = {
              [T1.posts].[viewCount] AS [posts.viewCount], [T1.posts].[publishedAt] AS [posts.publishedAt]
       FROM [TestDb].[TestSchema].[User] AS [T1]
       LEFT OUTER JOIN [TestDb].[TestSchema].[Post] AS [T1.posts]
-        ON (([T1.posts].[userId] IS NULL AND [T1].[id] IS NULL) OR [T1.posts].[userId] = [T1].[id])
+        ON [T1.posts].[userId] = [T1].[id]
     ) AS [T2]
   `,
   postgresql: pgsql`
@@ -126,7 +126,7 @@ export const includeThenWrapThenSelect: ExpectedSql = {
              "T1.posts"."viewCount" AS "posts.viewCount", "T1.posts"."publishedAt" AS "posts.publishedAt"
       FROM "TestSchema"."User" AS "T1"
       LEFT OUTER JOIN "TestSchema"."Post" AS "T1.posts"
-        ON "T1.posts"."userId" IS NOT DISTINCT FROM "T1"."id"
+        ON "T1.posts"."userId" = "T1"."id"
     ) AS "T2"
   `,
 };

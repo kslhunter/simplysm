@@ -231,7 +231,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user", "id"] },
               target: { type: "column", path: ["T1", "userId"] },
             },
@@ -275,7 +275,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: false,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.posts", "userId"] },
               target: { type: "column", path: ["T1", "id"] },
             },
@@ -322,7 +322,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user", "id"] },
               target: { type: "column", path: ["T1", "userId"] },
             },
@@ -335,7 +335,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user.company", "id"] },
               target: { type: "column", path: ["T1.user", "companyId"] },
             },
@@ -372,7 +372,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user", "id"] },
               target: { type: "column", path: ["T1", "userId"] },
             },
@@ -424,7 +424,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user", "id"] },
               target: { type: "column", path: ["T1", "userId"] },
             },
@@ -480,7 +480,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: false,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.posts", "userId"] },
               target: { type: "column", path: ["T1", "id"] },
             },
@@ -493,7 +493,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.posts.user", "id"] },
               target: { type: "column", path: ["T1.posts", "userId"] },
             },
@@ -533,7 +533,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user", "id"] },
               target: { type: "column", path: ["T1", "userId"] },
             },
@@ -546,7 +546,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: false,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user.posts", "userId"] },
               target: { type: "column", path: ["T1.user", "id"] },
             },
@@ -559,7 +559,7 @@ describe("SELECT - INCLUDE", () => {
           isSingle: true,
           where: [
             {
-              type: "eq",
+              type: "eqStrict",
               source: { type: "column", path: ["T1.user.posts.user", "id"] },
               target: { type: "column", path: ["T1.user.posts", "userId"] },
             },

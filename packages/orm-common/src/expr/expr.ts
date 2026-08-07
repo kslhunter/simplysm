@@ -125,6 +125,27 @@ export const expr = {
   },
 
   /**
+   * 동등 비교 (SQL 표준 `=`)
+   *
+   * SQL 표준 3값 논리를 따르므로 NULL이 끼면 항상 미매칭.
+   * `eq`와 달리 세 dialect 모두 표준 `=`로 렌더되어 index scan, hash/merge join에 활용 가능
+   *
+   * @param source - 비교할 column 또는 expression
+   * @param target - 비교 대상 값 또는 expression (undefined 리터럴 비허용 - 항상 빈 결과가 되는 실수 방지)
+   * @returns WHERE 조건 expression
+   */
+  eqStrict<T extends ColumnPrimitive>(
+    source: ExprUnit<T>,
+    target: ExprUnit<T> | NonNullable<T>,
+  ): WhereExprUnit {
+    return new WhereExprUnit({
+      type: "eqStrict",
+      source: toExpr(source),
+      target: toExpr(target),
+    });
+  },
+
+  /**
    * 초과 비교 (>)
    *
    * @param source - 비교할 column 또는 expression
