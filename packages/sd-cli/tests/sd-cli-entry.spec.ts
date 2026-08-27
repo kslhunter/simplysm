@@ -61,6 +61,26 @@ describe("sd-cli-entry createCliParser", () => {
     ).resolves.toBeDefined();
   });
 
+  it("passes publish --otp through to runPublish", async () => {
+    const { createCliParser } = await import("../src/sd-cli-entry");
+
+    await createCliParser(["publish", "--otp", "012345"]).exitProcess(false).parse();
+
+    expect(publishCmd.runPublish).toHaveBeenCalledWith(
+      expect.objectContaining({ otp: "012345" }),
+    );
+  });
+
+  it("leaves publish otp undefined when not given", async () => {
+    const { createCliParser } = await import("../src/sd-cli-entry");
+
+    await createCliParser(["publish"]).exitProcess(false).parse();
+
+    expect(publishCmd.runPublish).toHaveBeenCalledWith(
+      expect.objectContaining({ otp: undefined }),
+    );
+  });
+
   it("throws on --type test (removed type)", async () => {
     const { createCliParser } = await import("../src/sd-cli-entry");
 

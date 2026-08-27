@@ -13,6 +13,7 @@ import { type PackageJson, upgradeVersion } from "./version-upgrade";
 import { waitWithCountdown } from "./env-utils";
 import { ensureCleanWorkingTree, commitTagAndPush } from "./git-phase";
 import { runDeployment } from "./deployment-phase";
+import { validateOtp } from "./npm-publisher";
 import { runPostPublish } from "./post-publish-phase";
 
 //#region Types
@@ -27,6 +28,8 @@ export interface PublishOptions {
   noBuild: boolean;
   /** 실제 배포 없이 시뮬레이션 */
   dryRun: boolean;
+  /** npm 2FA OTP 코드 (미지정 시 npm 이 배포 중 직접 인증을 처리한다) */
+  otp?: string;
   /** sd.config.ts에 전달할 추가 옵션 */
   options: string[];
 }
@@ -123,7 +126,9 @@ export async function runPublish(options: PublishOptions): Promise<void> {
   //#region Phase 1: Pre-validation
 
   // npm 인증 검증 (npm publish 설정이 있는 경우)
-  if (publishPackages.some((p) => p.config.type === "npm")) {
+  const hasNpmPublish = publishPackages.some((p) => p.config.type === "npm");
+
+  if (hasNpmPublish) {
     logger.debug("npm 인증 검증 중...");
     try {
       const { stdout: whoami } = await shellSpawn("npm", ["whoami"]);
@@ -138,6 +143,19 @@ export async function runPublish(options: PublishOptions): Promise<void> {
           "  npm login               # 로그인\n" +
           "  npm config set //registry.npmjs.org/:_authToken <token>  # 토큰 직접 설정",
       );
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  // --otp 값 형식 검증 (--dry-run 이라도 사전 점검 용도로 쓸 수 있게 항상 검증한다)
+  // 값을 주지 않으면 2FA 인증은 npm 이 배포 단계에서 직접 처리한다(브라우저 로그인 창 등).
+  let otpOption: string | undefined;
+  if (options.otp != null) {
+    try {
+      otpOption = validateOtp(options.otp);
+    } catch (err) {
+      logger.error(errNs.message(err));
       process.exitCode = 1;
       return;
     }
@@ -236,8 +254,25 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   //#region Phase 4: Deployment
 
-  await runDeployment(publishPackages, version, cwd, logger, dryRun);
-  if (process.exitCode === 1) return;
+  // 배포 단계에서 멈추면 버전 상향과 git commit/tag/push 는 이미 끝난 상태다.
+  // 다시 `pnpm pub` 을 돌리면 버전이 또 올라가므로, 같은 버전으로 이어서 배포하는 방법을 알린다.
+  const reportResumeHint = (): void => {
+    if (dryRun || noBuild) return;
+    logger.error(
+      `v${version} 커밋, 태그는 이미 생성되었습니다. 같은 버전으로 이어서 배포하려면:\n` +
+        "  pnpm pub:no-build       # 버전 상향, 빌드 없이 배포만 재실행",
+    );
+  };
+
+  if (hasNpmPublish && !dryRun && otpOption == null) {
+    logger.info("npm 이 2FA 인증을 요구하면 화면 안내(브라우저 로그인 등)에 따라 진행하세요.");
+  }
+
+  await runDeployment(publishPackages, version, cwd, logger, dryRun, otpOption);
+  if (process.exitCode === 1) {
+    reportResumeHint();
+    return;
+  }
 
   //#endregion
 

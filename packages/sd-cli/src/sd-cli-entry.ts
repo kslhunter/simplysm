@@ -245,6 +245,10 @@ export function createCliParser(argv: string[]): Argv {
               describe: "Simulate without actual deployment",
               default: false,
             },
+            "otp": {
+              type: "string",
+              describe: "npm 2FA one-time password (omit to let npm handle auth interactively)",
+            },
             "opt": {
               type: "string",
               array: true,
@@ -259,6 +263,7 @@ export function createCliParser(argv: string[]): Argv {
           targets: args.target,
           noBuild: !args.build,
           dryRun: args.dryRun,
+          otp: args.otp,
           options: args.opt,
         });
       },
