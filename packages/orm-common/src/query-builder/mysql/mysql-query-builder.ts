@@ -183,7 +183,7 @@ export class MysqlQueryBuilder extends QueryBuilderBase {
       throw new Error("INSERT에는 최소 1개의 레코드가 필요합니다.");
     }
 
-    const columns = Object.keys(def.records[0]);
+    const columns = this.getInsertColumns(def.records);
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
 
     // OUTPUT 불필요: 단순 배치 INSERT

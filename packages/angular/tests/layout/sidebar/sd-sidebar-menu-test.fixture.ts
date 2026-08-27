@@ -94,6 +94,56 @@ export class SidebarMenuExpandedTest {
   ]);
 }
 
+const EXPAND_TEST_MENUS: SdMenu[] = [
+  {
+    title: "Parent 1",
+    codeChain: ["p1"],
+    children: [
+      { title: "Child 1", codeChain: ["p1", "c1"] },
+      {
+        title: "Child 2",
+        codeChain: ["p1", "c2"],
+        children: [{ title: "Grandchild", codeChain: ["p1", "c2", "g1"] }],
+      },
+    ],
+  },
+  {
+    title: "Parent 2",
+    codeChain: ["p2"],
+    children: [{ title: "Child 3", codeChain: ["p2", "c3"] }],
+  },
+];
+
+@Component({
+  selector: "sd-sidebar-menu-expand-control-test",
+  template: `<sd-sidebar-menu
+    [menus]="menus()"
+    [layout]="layout()"
+    [(expandedMenuCodes)]="expandedMenuCodes"
+  />`,
+  standalone: true,
+  imports: [SdSidebarMenu],
+})
+export class SidebarMenuExpandControlTest {
+  menus = signal<SdMenu[]>(EXPAND_TEST_MENUS);
+  layout = signal<"accordion" | "accordion-expanded">("accordion");
+  expandedMenuCodes = signal<string[] | undefined>([]);
+}
+
+@Component({
+  selector: "sd-sidebar-menu-async-expanded-test",
+  template: `<sd-sidebar-menu [menus]="menus()" [layout]="'accordion-expanded'" />`,
+  standalone: true,
+  imports: [SdSidebarMenu],
+})
+export class SidebarMenuAsyncExpandedTest {
+  menus = signal<SdMenu[]>([]);
+
+  load(): void {
+    this.menus.set(EXPAND_TEST_MENUS);
+  }
+}
+
 @Component({
   selector: "sd-sidebar-menu-icon-test",
   template: `<sd-sidebar-menu [menus]="menus()" />`,

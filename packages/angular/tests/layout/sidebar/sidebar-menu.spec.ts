@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { TestBed } from "@angular/core/testing";
+import type { Type } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { SdSidebarMenu } from "../../../src/layout/sidebar/sd-sidebar-menu";
 import {
@@ -12,6 +13,8 @@ import {
   SidebarMenuUrlTest,
   SidebarMenuQueryStringTest,
   SidebarMenuCustomSelectedFnTest,
+  SidebarMenuExpandControlTest,
+  SidebarMenuAsyncExpandedTest,
 } from "./sd-sidebar-menu-test.fixture";
 
 describe("Feature 4.3 Slice 2: SdSidebarMenu 계층 메뉴", () => {
@@ -282,5 +285,165 @@ describe("Feature 4.3 Slice 2: SdSidebarMenu 계층 메뉴", () => {
       .componentInstance as SdSidebarMenu;
     const menu = { title: "Custom", codeChain: ["custom"] };
     expect(ctrl.getIsMenuSelected(menu)).toBe(true);
+  });
+});
+
+describe("SdSidebarMenu 전체 펼치기/접기", () => {
+  function createFixture<T>(type: Type<T>) {
+    return TestBed.configureTestingModule({
+      imports: [type],
+      providers: [provideRouter([])],
+    }).createComponent(type);
+  }
+
+  function getHeaderAnchors(fixture: { nativeElement: HTMLElement }): HTMLElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll<HTMLElement>(
+        "sd-sidebar-menu > .control-header sd-anchor",
+      ),
+    );
+  }
+
+  // 헤더 버튼 순서: [전체 펼치기, 전체 접기]
+  function getExpandAllAnchor(fixture: { nativeElement: HTMLElement }): HTMLElement | undefined {
+    return getHeaderAnchors(fixture)[0];
+  }
+
+  function getCollapseAllAnchor(fixture: { nativeElement: HTMLElement }): HTMLElement | undefined {
+    return getHeaderAnchors(fixture)[1];
+  }
+
+  function getParentItems(fixture: { nativeElement: HTMLElement }): HTMLElement[] {
+    return Array.from(
+      fixture.nativeElement.querySelectorAll<HTMLElement>(
+        'sd-list-item[data-sd-has-children="true"]',
+      ),
+    );
+  }
+
+  it("하위 보유 메뉴가 없으면 헤더 버튼을 렌더하지 않는다", async () => {
+    const fixture = createFixture(SidebarMenuFlatTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getHeaderAnchors(fixture)).toHaveLength(0);
+  });
+
+  it("flat 로 렌더되는 depth-0 그룹만 있으면 대상이 없어 헤더 버튼을 렌더하지 않는다", async () => {
+    // 최상위 1개(flat) + 그 자식들은 하위가 없음 → 접을 수 있는 항목 없음
+    const fixture = createFixture(SidebarMenuChildrenTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const ctrl = fixture.debugElement.children[0].componentInstance as SdSidebarMenu;
+    expect(ctrl.rootLayout()).toBe("flat");
+    expect(ctrl.hasExpandable()).toBe(false);
+    expect(getHeaderAnchors(fixture)).toHaveLength(0);
+  });
+
+  it("헤더의 전체 접기 버튼으로 모두 접고, 전체 펼치기 버튼으로 모두 펼친다", async () => {
+    const fixture = createFixture(SidebarMenuExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getHeaderAnchors(fixture)).toHaveLength(2);
+    expect(getParentItems(fixture).every((el) => el.getAttribute("data-sd-open") === "true")).toBe(
+      true,
+    );
+
+    getCollapseAllAnchor(fixture)!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(getParentItems(fixture).every((el) => el.getAttribute("data-sd-open") === "false")).toBe(
+      true,
+    );
+
+    getExpandAllAnchor(fixture)!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(getParentItems(fixture).every((el) => el.getAttribute("data-sd-open") === "true")).toBe(
+      true,
+    );
+  });
+
+  it("무의미한 동작의 버튼은 비활성된다", async () => {
+    const fixture = createFixture(SidebarMenuExpandControlTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 전부 접힌 상태 → 접기 비활성, 펼치기 활성
+    expect(getExpandAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("false");
+    expect(getCollapseAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("true");
+
+    getExpandAllAnchor(fixture)!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // 전부 펼친 상태 → 펼치기 비활성, 접기 활성
+    expect(getExpandAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("true");
+    expect(getCollapseAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("false");
+  });
+
+  it("일부만 펼쳐진 중간 상태에서는 두 버튼이 모두 활성된다", async () => {
+    const fixture = createFixture(SidebarMenuExpandControlTest);
+    fixture.componentInstance.expandedMenuCodes.set(["p1"]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getExpandAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("false");
+    expect(getCollapseAllAnchor(fixture)!.getAttribute("data-sd-disabled")).toBe("false");
+  });
+
+  it("호스트가 expandedMenuCodes 로 펼침 상태를 제어한다", async () => {
+    const fixture = createFixture(SidebarMenuExpandControlTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    fixture.componentInstance.expandedMenuCodes.set(["p1"]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // DOM 순서: p1, p1.c2, p2
+    const openStates = getParentItems(fixture).map((el) => el.getAttribute("data-sd-open"));
+    expect(openStates).toEqual(["true", "false", "false"]);
+  });
+
+  it("사용자가 항목을 토글하면 expandedMenuCodes 에 반영된다", async () => {
+    const fixture = createFixture(SidebarMenuExpandControlTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const parentContent = getParentItems(fixture)[0].querySelector("._content") as HTMLElement;
+    parentContent.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.expandedMenuCodes()).toEqual(["p1"]);
+  });
+
+  it("메뉴가 늦게 도착해도 accordion-expanded 초기 펼침이 적용된다", async () => {
+    const fixture = createFixture(SidebarMenuAsyncExpandedTest);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(getParentItems(fixture)).toHaveLength(0);
+
+    fixture.componentInstance.load();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const parentItems = getParentItems(fixture);
+    expect(parentItems).toHaveLength(3);
+    expect(parentItems.every((el) => el.getAttribute("data-sd-open") === "true")).toBe(true);
+  });
+
+  it("호스트가 지정한 expandedMenuCodes 가 accordion-expanded 보다 우선한다", async () => {
+    const fixture = createFixture(SidebarMenuExpandControlTest);
+    fixture.componentInstance.layout.set("accordion-expanded");
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getParentItems(fixture).every((el) => el.getAttribute("data-sd-open") === "false")).toBe(
+      true,
+    );
   });
 });

@@ -147,6 +147,25 @@ export abstract class QueryBuilderBase {
     return typeof join.from === "string" && join.as.endsWith(".self");
   }
 
+  /**
+   * INSERT 대상 컬럼 목록 산출 (전체 레코드의 key 합집합, 등장 순서 유지)
+   *
+   * 첫 레코드의 key만 사용하면 이후 레코드에만 존재하는 컬럼 값이 조용히 유실된다.
+   * (nullable 컬럼은 값이 없는 레코드에서 key 자체가 빠질 수 있음)
+   * 합집합에서 빠진 값은 escapeValue(undefined) → NULL로 렌더링된다.
+   */
+  protected getInsertColumns(records: Record<string, unknown>[]): string[] {
+    const columns: string[] = [];
+    for (const record of records) {
+      for (const key of Object.keys(record)) {
+        if (!columns.includes(key)) {
+          columns.push(key);
+        }
+      }
+    }
+    return columns;
+  }
+
   /** FROM 절 소스 렌더링 */
   protected renderFrom(from: SelectQueryDef["from"]): string {
     if (from == null) {

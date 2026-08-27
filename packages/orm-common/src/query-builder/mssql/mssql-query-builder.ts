@@ -163,7 +163,7 @@ export class MssqlQueryBuilder extends QueryBuilderBase {
       throw new Error("INSERT에는 최소 1개의 레코드가 필요합니다.");
     }
 
-    const columns = Object.keys(def.records[0]);
+    const columns = this.getInsertColumns(def.records);
     const colList = columns.map((c) => this.expr.wrap(c)).join(", ");
 
     let sql = "";

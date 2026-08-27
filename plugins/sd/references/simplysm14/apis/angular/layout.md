@@ -36,17 +36,31 @@ desktop은 `toggle` 시 `translateX(-100%)`(왼쪽으로 슬라이드 아웃), m
 class SdSidebarMenu {
   menus: InputSignal<SdMenu[]>; // default []
   layout: InputSignal<"accordion" | "accordion-expanded" | "flat" | undefined>;
+  expandedMenuCodes: ModelSignal<string[] | undefined>; // default undefined
   getMenuIsSelectedFn: InputSignal<((menu: SdMenu) => boolean) | undefined>;
+
+  hasExpandable: Signal<boolean>;
+  isAllExpanded: Signal<boolean>;
+  isAllCollapsed: Signal<boolean>;
+  expandAll(): void;
+  collapseAll(): void;
 }
 ```
 
 `menus` 데이터로 중첩 `sd-list` 메뉴를 렌더(content 투영 없음).
+헤더(`MENU`) 오른쪽에 전체 펼치기, 전체 접기 버튼을 각각 렌더(`hasExpandable()` 일 때만).
+트리는 일부만 펼쳐진 중간 상태가 흔해 다음 동작을 예측할 수 없으므로 토글 1개가 아니라 독립 동작 2개임.
+무의미한 쪽 버튼은 비활성(`isAllExpanded` 면 펼치기, `isAllCollapsed` 면 접기).
 
 - `menus` — `SdMenu[]` 메뉴 트리. `codeChain` 으로 routerLink, 선택 판정.
 - `layout` — 미지정 시 top 메뉴 ≤3개면 `flat`, 아니면 `accordion` 자동 선택.
   - `"flat"` — depth-0 평면 헤더형.
   - `"accordion"` — 접기 가능, 접힌 상태 시작.
-  - `"accordion-expanded"` — accordion + 모든 children 초기 펼침.
+  - `"accordion-expanded"` — accordion + `expandedMenuCodes` 기본값을 하위 보유 메뉴 전체로 채움.
+- `expandedMenuCodes` — 펼쳐진 메뉴 코드(`codeChain.join(".")`) 목록. 펼침 상태의 단일 진리원.
+  - `undefined`(기본) — `layout` 이 정하는 기본 펼침 상태를 따름. `menus` 가 늦게 도착해도 적용됨.
+  - 사용자가 토글하거나 호스트가 값을 세팅하면 그 값이 우선하며, 이후 `menus` 가 재계산돼도 유지됨(참조가 아니라 코드 기준).
+  - 대상은 accordion 항목뿐임. `flat` 로 렌더되는 depth-0 그룹은 항상 펼쳐진 구조라 `hasExpandable`, `isAllExpanded`, `isAllCollapsed`, `expandAll`, `collapseAll` 판정에서 제외됨.
 - `getMenuIsSelectedFn` — 선택 판정 커스텀 함수. 없으면 `fullPageCode === codeChain.join(".")`.
 
 ### `SdSidebarUser` (`sd-sidebar-user`)

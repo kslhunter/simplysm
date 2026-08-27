@@ -23,16 +23,16 @@ export const insertSingle: ExpectedSql = {
 
 export const insertBulk: ExpectedSql = {
   mysql: mysql`
-    INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`departmentId\`)
-    VALUES ('Hong Gildong', 1), ('Kim Chulsu', 1), ('Lee Younghee', 2)
+    INSERT INTO \`TestDb\`.\`Employee\` (\`name\`, \`departmentId\`, \`managerId\`)
+    VALUES ('Hong Gildong', 1, NULL), ('Kim Chulsu', 1, 1), ('Lee Younghee', 2, 1)
   `,
   mssql: tsql`
-    INSERT INTO [TestDb].[TestSchema].[Employee] ([name], [departmentId])
-    VALUES (N'Hong Gildong', 1), (N'Kim Chulsu', 1), (N'Lee Younghee', 2)
+    INSERT INTO [TestDb].[TestSchema].[Employee] ([name], [departmentId], [managerId])
+    VALUES (N'Hong Gildong', 1, NULL), (N'Kim Chulsu', 1, 1), (N'Lee Younghee', 2, 1)
   `,
   postgresql: pgsql`
-    INSERT INTO "TestSchema"."Employee" ("name", "departmentId")
-    VALUES ('Hong Gildong', 1), ('Kim Chulsu', 1), ('Lee Younghee', 2)
+    INSERT INTO "TestSchema"."Employee" ("name", "departmentId", "managerId")
+    VALUES ('Hong Gildong', 1, NULL), ('Kim Chulsu', 1, 1), ('Lee Younghee', 2, 1)
   `,
 };
 
