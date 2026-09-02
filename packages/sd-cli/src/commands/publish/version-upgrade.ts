@@ -76,20 +76,6 @@ export async function upgradeVersion(
   );
   changedFiles.push(...templateChangedFiles.filter((f) => f != null));
 
-  const pluginManifestPaths = await fsx.glob(
-    path.resolve(cwd, "plugins/*/*-plugin/plugin.json"),
-    { dot: true },
-  );
-  const pluginManifestChangedFiles = await Promise.all(
-    pluginManifestPaths.map(async (pluginManifestPath) => {
-      const pluginManifest = await fsx.readJson<{ version: string }>(pluginManifestPath);
-      pluginManifest.version = newVersion;
-      await fsx.write(pluginManifestPath, json.stringify(pluginManifest, { space: 2 }) + "\n");
-      return pluginManifestPath;
-    }),
-  );
-  changedFiles.push(...pluginManifestChangedFiles);
-
   return { version: newVersion, changedFiles };
 }
 

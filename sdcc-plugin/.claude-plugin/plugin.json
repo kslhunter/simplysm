@@ -1,0 +1,8 @@
+{
+  "name": "simplysm14",
+  "description": "@simplysm 14.x 패키지(angular·orm·service·core·excel·sd-cli·capacitor) 사용 안내 스킬과 앱 공통 규칙",
+  "author": {
+    "name": "심플리즘"
+  },
+  "license": "Apache-2.0"
+}

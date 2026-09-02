@@ -3,7 +3,7 @@ import { globalIgnores } from "eslint/config";
 
 export default [
   globalIgnores([
-    "plugins/**",
+    "sdcc-plugin/**",
     "packages/sd-cli/src/commands/init/templates/**",
     "**/tests/*/fixtures/**",
   ]),

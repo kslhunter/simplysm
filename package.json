@@ -22,8 +22,6 @@
     "test": "tsx node_modules/vitest/vitest.mjs run --configLoader native --reporter=dot --silent=passed-only",
     "lint": "pnpm sd-cli check --type lint",
     "----": "",
-    "lint:py": "python -m ruff check plugins",
-    "-----": "",
     "sd-cli": "node --max-old-space-size=8192 --import tsx packages/sd-cli/src/sd-cli.ts",
     "postinstall": "npx -y skills add angular/skills --skill angular-developer -a claude-code -y && playwright-cli install --skills && playwright install chromium"
   },
