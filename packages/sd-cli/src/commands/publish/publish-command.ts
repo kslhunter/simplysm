@@ -130,13 +130,20 @@ export async function runPublish(options: PublishOptions): Promise<void> {
 
   if (hasNpmPublish) {
     logger.debug("npm 인증 검증 중...");
-    try {
-      const { stdout: whoami } = await shellSpawn("npm", ["whoami"]);
-      if (whoami.trim() === "") {
-        throw new Error("npm 로그인 정보를 찾을 수 없습니다.");
+    let npmUser = await getNpmUser();
+    if (npmUser == null) {
+      // 토큰이 없으면 npm publish 는 로그인 창 없이 ENEEDAUTH 로 실패한다. 브라우저 로그인은
+      // npm login 만 시작하므로 여기서 TTY 를 물려줘 npm 이 사용자와 직접 로그인을 진행하게 한다.
+      logger.info("npm 로그인이 필요합니다. 브라우저 로그인을 시작합니다...");
+      try {
+        await shellSpawn("npm", ["login"], { stdio: "inherit" });
+      } catch (err) {
+        logger.debug(`npm login 실패: ${errNs.message(err)}`);
       }
-      logger.debug(`npm 로그인 확인됨: ${whoami.trim()}`);
-    } catch {
+      npmUser = await getNpmUser();
+    }
+
+    if (npmUser == null) {
       logger.error(
         "npm 인증 실패. 로그인 상태를 확인해주세요.\n" +
           "  npm whoami              # 현재 로그인 확인\n" +
@@ -146,6 +153,7 @@ export async function runPublish(options: PublishOptions): Promise<void> {
       process.exitCode = 1;
       return;
     }
+    logger.debug(`npm 로그인 확인됨: ${npmUser}`);
   }
 
   // --otp 값 형식 검증 (--dry-run 이라도 사전 점검 용도로 쓸 수 있게 항상 검증한다)
@@ -288,6 +296,17 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     logger.info(`[DRY-RUN] 시뮬레이션 완료. 실제 배포 버전: v${version}`);
   } else {
     logger.info(`모든 배포 완료. (v${version})`);
+  }
+}
+
+/** 현재 npm 로그인 사용자명. 토큰이 없거나 유효하지 않으면 undefined. */
+async function getNpmUser(): Promise<string | undefined> {
+  try {
+    const { stdout } = await shellSpawn("npm", ["whoami"]);
+    const user = stdout.trim();
+    return user === "" ? undefined : user;
+  } catch {
+    return undefined;
   }
 }
 
