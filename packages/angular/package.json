@@ -66,5 +66,8 @@
   },
   "devDependencies": {
     "@angular/compiler": "^22.1.0"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

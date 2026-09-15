@@ -33,5 +33,8 @@
     "ws": {
       "optional": true
     }
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

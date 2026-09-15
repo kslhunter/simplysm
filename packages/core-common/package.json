@@ -34,5 +34,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

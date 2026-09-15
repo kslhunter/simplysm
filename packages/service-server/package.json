@@ -40,5 +40,8 @@
     "@types/node": "^24.13.3",
     "@types/semver": "^7.7.1",
     "@types/ws": "^8.18.1"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

@@ -23,5 +23,8 @@
   "dependencies": {
     "@simplysm/core-common": "workspace:*",
     "@simplysm/orm-common": "workspace:*"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

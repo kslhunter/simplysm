@@ -21,7 +21,8 @@
   "publishConfig": {
     "bin": {
       "sd-cli": "./dist/sd-cli.js"
-    }
+    },
+    "@simplysm:registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@angular/build": "^22.1.0",

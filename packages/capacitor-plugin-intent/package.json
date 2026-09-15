@@ -30,5 +30,8 @@
     "android": {
       "src": "android"
     }
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

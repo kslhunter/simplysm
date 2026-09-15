@@ -24,5 +24,8 @@
     "@simplysm/core-common": "workspace:*",
     "mime": "^4.1.0",
     "zod": "^4.4.3"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }

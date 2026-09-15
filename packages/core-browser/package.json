@@ -28,5 +28,8 @@
     "@simplysm/core-common": "workspace:*",
     "sanitize-filename": "^1.6.4",
     "tabbable": "^6.5.0"
+  },
+  "publishConfig": {
+    "@simplysm:registry": "https://registry.npmjs.org/"
   }
 }
