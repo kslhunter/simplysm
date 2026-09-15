@@ -9,6 +9,7 @@ import {
   SdModalSelectButtonErasableTest,
   SdModalSelectButtonMultiErasableTest,
   SdModalSelectButtonEventTest,
+  SdModalSelectButtonModalOptionsTest,
   TestSelectModalComponent,
 } from "./sd-modal-select-button-test.fixture";
 import "@simplysm/core-browser";
@@ -50,6 +51,58 @@ describe("Feature 5.3 Slice 1: SdModalSelectButton", () => {
 
     // value가 반영되었는지 (single → 단일값)
     expect(fixture.componentInstance.value()).toBe(42);
+  });
+
+  // Acceptance: modalOptions가 showAsync 두번째 인자로 전달된다
+  it("modalOptions를 지정하면 검색 버튼 클릭 시 showAsync 두번째 인자로 그대로 전달된다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdModalSelectButtonModalOptionsTest],
+    }).createComponent(SdModalSelectButtonModalOptionsTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const host = fixture.nativeElement.querySelector("sd-modal-select-button") as HTMLElement;
+    const searchBtn = host.querySelector("._button sd-button button") as HTMLElement;
+    expect(searchBtn).not.toBeNull();
+
+    const modalProvider = TestBed.inject(SdModalProvider);
+    const showAsyncSpy = vi.spyOn(modalProvider, "showAsync").mockResolvedValue({
+      selectedKeys: [7],
+    });
+
+    searchBtn.click();
+    await tick(fixture);
+
+    expect(showAsyncSpy).toHaveBeenCalledTimes(1);
+    expect(showAsyncSpy.mock.calls[0][1]).toEqual({ movable: true, resizable: true });
+    expect(showAsyncSpy.mock.calls[0][1]).toBe(fixture.componentInstance.modalOptions());
+
+    // 선택 결과 반영은 그대로 유지
+    expect(fixture.componentInstance.value()).toBe(7);
+  });
+
+  // Acceptance: modalOptions 미지정이면 undefined 전달
+  it("modalOptions를 지정하지 않으면 showAsync 두번째 인자로 undefined가 전달되고 선택 결과는 반영된다", async () => {
+    const fixture = TestBed.configureTestingModule({
+      imports: [SdModalSelectButtonSingleTest],
+    }).createComponent(SdModalSelectButtonSingleTest);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const host = fixture.nativeElement.querySelector("sd-modal-select-button") as HTMLElement;
+    const searchBtn = host.querySelector("._button sd-button button") as HTMLElement;
+
+    const modalProvider = TestBed.inject(SdModalProvider);
+    const showAsyncSpy = vi.spyOn(modalProvider, "showAsync").mockResolvedValue({
+      selectedKeys: [5],
+    });
+
+    searchBtn.click();
+    await tick(fixture);
+
+    expect(showAsyncSpy).toHaveBeenCalledTimes(1);
+    expect(showAsyncSpy.mock.calls[0][1]).toBeUndefined();
+    expect(fixture.componentInstance.value()).toBe(5);
   });
 
   // Acceptance: multi 모드에서 모달로 여러 항목 선택

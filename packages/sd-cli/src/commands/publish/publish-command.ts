@@ -13,7 +13,6 @@ import { type PackageJson, upgradeVersion } from "./version-upgrade";
 import { waitWithCountdown } from "./env-utils";
 import { ensureCleanWorkingTree, commitTagAndPush } from "./git-phase";
 import { runDeployment } from "./deployment-phase";
-import { validateOtp } from "./npm-publisher";
 import { runPostPublish } from "./post-publish-phase";
 
 //#region Types
@@ -28,8 +27,6 @@ export interface PublishOptions {
   noBuild: boolean;
   /** 실제 배포 없이 시뮬레이션 */
   dryRun: boolean;
-  /** npm 2FA OTP 코드 (미지정 시 npm 이 배포 중 직접 인증을 처리한다) */
-  otp?: string;
   /** sd.config.ts에 전달할 추가 옵션 */
   options: string[];
 }
@@ -156,19 +153,6 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     logger.debug(`npm 로그인 확인됨: ${npmUser}`);
   }
 
-  // --otp 값 형식 검증 (--dry-run 이라도 사전 점검 용도로 쓸 수 있게 항상 검증한다)
-  // 값을 주지 않으면 2FA 인증은 npm 이 배포 단계에서 직접 처리한다(브라우저 로그인 창 등).
-  let otpOption: string | undefined;
-  if (options.otp != null) {
-    try {
-      otpOption = validateOtp(options.otp);
-    } catch (err) {
-      logger.error(errNs.message(err));
-      process.exitCode = 1;
-      return;
-    }
-  }
-
   // SSH 키 인증 검증 (비밀번호 없는 SFTP publish 설정이 있는 경우)
   try {
     await ensureSshAuth(publishPackages, logger);
@@ -272,11 +256,11 @@ export async function runPublish(options: PublishOptions): Promise<void> {
     );
   };
 
-  if (hasNpmPublish && !dryRun && otpOption == null) {
+  if (hasNpmPublish && !dryRun) {
     logger.info("npm 이 2FA 인증을 요구하면 화면 안내(브라우저 로그인 등)에 따라 진행하세요.");
   }
 
-  await runDeployment(publishPackages, version, cwd, logger, dryRun, otpOption);
+  await runDeployment(publishPackages, version, cwd, logger, dryRun);
   if (process.exitCode === 1) {
     reportResumeHint();
     return;

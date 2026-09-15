@@ -90,7 +90,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     const aIdx = publishOrder.indexOf("pkg-a");
@@ -126,7 +125,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     expect(maxActive).toBe(1);
@@ -155,7 +153,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     expect(maxActive).toBe(2);
@@ -182,7 +179,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     // 재시도하면 npm 인증 UI 가 다시 뜨고, 인증·권한·버전 충돌은 재시도해도 같은 결과다
@@ -205,7 +201,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     expect(attempts).toBe(3);
@@ -235,7 +230,6 @@ describe("runDeployment", () => {
       CWD,
       logger,
       false,
-      undefined,
     );
 
     expect(process.exitCode).toBe(1);
@@ -245,26 +239,5 @@ describe("runDeployment", () => {
       String(c[0]).includes("이미 배포된 패키지"),
     );
     expect(hasPartialMsg).toBe(true);
-  });
-
-  it("passes the OTP through to npm publish", async () => {
-    mockIndependentPackages();
-    const npmArgs: string[][] = [];
-    mocks.execa.mockImplementation(((cmd: string, args?: string[]) => {
-      if (isNpmPublish(cmd, args)) npmArgs.push(args ?? []);
-      return { stdout: "", stderr: "", exitCode: 0 };
-    }) as never);
-
-    const logger = createMockLogger();
-    await runDeployment(
-      [{ name: "pkg-a", path: pkgPath("pkg-a"), config: { type: "npm" } }],
-      "14.0.1",
-      CWD,
-      logger,
-      false,
-      "123456",
-    );
-
-    expect(npmArgs[0][npmArgs[0].indexOf("--otp") + 1]).toBe("123456");
   });
 });

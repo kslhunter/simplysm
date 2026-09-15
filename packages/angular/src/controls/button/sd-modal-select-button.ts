@@ -189,17 +189,20 @@ export class SdModalSelectButton<K, M extends keyof SelectModeValue<K> = keyof S
     event.stopPropagation();
 
     const modal = this.modal();
-    const result = await this._sdModal.showAsync({
-      ...modal,
-      inputs: {
-        selectMode: this.selectMode(),
-        selectedKeys: (this.selectMode() === "multi"
-          ? ((this.value() as any[] | undefined) ?? [])
-          : [this.value()]
-        ).filterExists(),
-        ...modal.inputs,
+    const result = await this._sdModal.showAsync(
+      {
+        ...modal,
+        inputs: {
+          selectMode: this.selectMode(),
+          selectedKeys: (this.selectMode() === "multi"
+            ? ((this.value() as any[] | undefined) ?? [])
+            : [this.value()]
+          ).filterExists(),
+          ...modal.inputs,
+        },
       },
-    });
+      this.modalOptions(),
+    );
 
     if (result) {
       const newValue = this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];

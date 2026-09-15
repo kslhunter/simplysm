@@ -5,6 +5,7 @@ import {
   type SdSelectModalInfo,
 } from "../../../src/controls/button/sd-modal-select-button";
 import type { SelectModalOutputResult } from "../../../src/core/select-modal-output-result";
+import type { SdModalOptions } from "../../../src/core/modal/sd-modal.provider";
 
 export interface TestModalItem {
   id: number;
@@ -176,6 +177,30 @@ export class SdModalSelectButtonEventTest {
   onParentClick(): void {
     this.parentClicked.set(true);
   }
+}
+
+/**
+ * modalOptions 전달 테스트 호스트
+ */
+@Component({
+  selector: "sd-modal-select-button-modal-options-test",
+  standalone: true,
+  imports: [SdModalSelectButton],
+  template: `
+    <sd-modal-select-button
+      [selectMode]="'single'"
+      [(value)]="value"
+      [modal]="modalInfo"
+      [modalOptions]="modalOptions()"
+    >
+      선택하세요
+    </sd-modal-select-button>
+  `,
+})
+export class SdModalSelectButtonModalOptionsTest {
+  value = signal<number | undefined>(undefined);
+  modalInfo = TEST_MODAL_INFO;
+  modalOptions = signal<SdModalOptions>({ movable: true, resizable: true });
 }
 
 /**

@@ -24,12 +24,11 @@ async function publishPackage(
   projectPath: string,
   logger: ConsolaInstance,
   dryRun: boolean,
-  otp: string | undefined,
 ): Promise<void> {
   const pkgName = path.basename(pkgPath);
 
   if (publishConfig.type === "npm") {
-    await publishNpm(pkgPath, pkgName, version, logger, dryRun, otp);
+    await publishNpm(pkgPath, pkgName, version, logger, dryRun);
   } else if (publishConfig.type === "local-directory") {
     const targetPath = replaceEnvVariables(publishConfig.path, version, projectPath);
     await publishToLocal(pkgPath, pkgName, targetPath, logger, dryRun);
@@ -56,12 +55,11 @@ async function publishWithRetry(
   projectPath: string,
   logger: ConsolaInstance,
   dryRun: boolean,
-  otp: string | undefined,
 ): Promise<PublishResult> {
   const maxRetries = pkg.config.type === "npm" ? 1 : 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      await publishPackage(pkg.path, pkg.config, version, projectPath, logger, dryRun, otp);
+      await publishPackage(pkg.path, pkg.config, version, projectPath, logger, dryRun);
       if (dryRun) {
         logger.info(`[DRY-RUN] ${pkg.name}`);
       } else {
@@ -84,8 +82,8 @@ async function publishWithRetry(
 /**
  * 한 레벨의 패키지를 배포한다.
  *
- * npm 배포는 순차로 돈다. npm 이 2FA 인증을 직접 처리하며 터미널을 점유하므로(브라우저 안내,
- * OTP 프롬프트), 동시에 띄우면 서로 입력을 뺏는다. 나머지 배포는 그대로 병렬로 돈다.
+ * npm 배포는 순차로 돈다. npm 이 2FA 인증을 직접 처리하며 터미널을 점유하므로(브라우저 안내),
+ * 동시에 띄우면 서로 입력을 뺏는다. 나머지 배포는 그대로 병렬로 돈다.
  */
 async function publishLevel(
   pkgs: DeploymentPackage[],
@@ -93,10 +91,9 @@ async function publishLevel(
   projectPath: string,
   logger: ConsolaInstance,
   dryRun: boolean,
-  otp: string | undefined,
 ): Promise<PublishResult[]> {
   const run = async (pkg: DeploymentPackage): Promise<PublishResult> =>
-    publishWithRetry(pkg, version, projectPath, logger, dryRun, otp);
+    publishWithRetry(pkg, version, projectPath, logger, dryRun);
 
   const [npmResults, otherResults] = await Promise.all([
     (async () => {
@@ -121,7 +118,6 @@ export async function runDeployment(
   projectPath: string,
   logger: ConsolaInstance,
   dryRun: boolean,
-  otp: string | undefined,
 ): Promise<void> {
   const levels = await computePublishLevels(publishPackages);
   const publishedPackages: string[] = [];
@@ -131,7 +127,7 @@ export async function runDeployment(
     const levelPkgs = levels[levelIdx];
     logger.start(`Level ${levelIdx + 1}/${levels.length}`);
 
-    const results = await publishLevel(levelPkgs, version, projectPath, logger, dryRun, otp);
+    const results = await publishLevel(levelPkgs, version, projectPath, logger, dryRun);
 
     publishedPackages.push(...results.filter((r) => r.error == null).map((r) => r.name));
     const failures = results.filter((r) => r.error != null);

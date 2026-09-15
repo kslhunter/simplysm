@@ -6,25 +6,6 @@ import { err as errNs } from "@simplysm/core-common";
 import { fsx } from "@simplysm/core-node";
 import { shellSpawn } from "../../utils/shell-spawn";
 
-/** npm classic OTP 형식 (6자리 숫자) */
-const OTP_PATTERN = /^\d{6}$/;
-
-/** 로그, 에러 메시지에 OTP 코드 대신 남길 문자열 */
-const OTP_MASK = "******";
-
-/**
- * OTP 코드 형식을 검증한다.
- *
- * 셸을 거쳐 `--otp` 인자로 전달되므로, 형식을 벗어난 값은 주입 위험이 있어 거부한다.
- */
-export function validateOtp(otp: string): string {
-  const trimmed = otp.trim();
-  if (!OTP_PATTERN.test(trimmed)) {
-    throw new Error("OTP 는 6자리 숫자여야 합니다.");
-  }
-  return trimmed;
-}
-
 /**
  * 배포에 쓸 dist-tag 를 정한다. `undefined` 면 태그 없이 올려 `latest` 를 갱신한다.
  *
@@ -71,7 +52,7 @@ async function resolveDistTag(
  *
  * `pnpm pack` 으로 tarball 을 만든 뒤 `npm publish` 로 올린다. 두 단계로 나누는 이유:
  * - `workspace:*` 치환과 `publishConfig` 머지는 pnpm 만 해준다. → pack 을 pnpm 으로 한다.
- * - 2FA 인증(브라우저 로그인 창, OTP 프롬프트)은 npm 이 처리해준다. → publish 를 npm 으로 하고
+ * - 2FA 인증(브라우저 로그인 창)은 npm 이 처리해준다. → publish 를 npm 으로 하고
  *   TTY 를 그대로 물려줘(`stdio: "inherit"`) npm 이 사용자와 직접 대화하게 한다.
  */
 export async function publishNpm(
@@ -80,7 +61,6 @@ export async function publishNpm(
   version: string,
   logger: ConsolaInstance,
   dryRun: boolean,
-  otp: string | undefined,
 ): Promise<void> {
   const tmpDir = path.join(os.tmpdir(), `sd-cli-pack-${pkgName}-${Date.now().toString(36)}`);
   await fsx.mkdir(tmpDir);
@@ -104,22 +84,11 @@ export async function publishNpm(
       args.push("--tag", tag);
     }
 
-    // 명령줄에 들어가는 값과 마스킹 대상이 어긋나지 않도록 검증본 하나만 쓴다.
-    const otpCode = otp == null ? undefined : validateOtp(otp);
-    if (otpCode != null) {
-      args.push("--otp", otpCode);
-    }
-
     if (dryRun) {
       args.push("--dry-run");
-    }
-
-    // OTP 코드가 로그에 남지 않도록 마스킹한다.
-    const maskedArgs = args.map((arg, i) => (args[i - 1] === "--otp" ? OTP_MASK : arg));
-    if (dryRun) {
-      logger.info(`[DRY-RUN] [${pkgName}] npm ${maskedArgs.join(" ")}`);
+      logger.info(`[DRY-RUN] [${pkgName}] npm ${args.join(" ")}`);
     } else {
-      logger.debug(`[${pkgName}] npm ${maskedArgs.join(" ")}`);
+      logger.debug(`[${pkgName}] npm ${args.join(" ")}`);
     }
 
     try {
@@ -127,14 +96,9 @@ export async function publishNpm(
       await shellSpawn("npm", args, { cwd: pkgPath, stdio: "inherit" });
     } catch (err) {
       // stdio 를 넘겼으므로 실패 사유는 캡처되지 않고 화면에만 남는다. 어디를 봐야 하는지 알린다.
-      const hint = `\n실패 사유는 위 npm 출력을 확인하세요.`;
-      // 실패 메시지에는 실행된 명령줄이 그대로 담기므로 OTP 코드를 마스킹한다.
-      const mask = (s: string): string =>
-        otpCode == null ? s : s.replaceAll(otpCode, OTP_MASK);
-
-      const wrapped = new Error(mask(errNs.message(err)) + hint);
-      // 원본 스택을 잃지 않도록 마스킹한 스택을 그대로 옮긴다.
-      wrapped.stack = mask(errNs.stack(err));
+      const wrapped = new Error(`${errNs.message(err)}\n실패 사유는 위 npm 출력을 확인하세요.`);
+      // 원본 스택을 잃지 않도록 그대로 옮긴다.
+      wrapped.stack = errNs.stack(err);
       throw wrapped;
     }
   } finally {
