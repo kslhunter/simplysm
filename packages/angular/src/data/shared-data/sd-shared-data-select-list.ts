@@ -21,7 +21,7 @@ import {
   SdItemOfTemplate,
   type SdItemOfTemplateContext,
 } from "../../core/template/sd-item-of-template";
-import { SdModalProvider } from "../../core/modal/sd-modal.provider";
+import { SdModalProvider, type SdModalOptions } from "../../core/modal/sd-modal.provider";
 import type {
   SdSelectModal,
   SdSelectModalInfo,
@@ -132,6 +132,7 @@ export class SdSharedDataSelectList<
   filterFn = input<(item: TItem, index: number) => boolean>();
 
   modal = input<SdSelectModalInfo<TModal>>();
+  modalOptions = input<SdModalOptions>();
 
   header = input<string>();
 
@@ -224,7 +225,7 @@ export class SdSharedDataSelectList<
           .map((item) => item.__valueKey),
         ...modalInfo.inputs,
       } as any,
-    });
+    }, this.modalOptions());
 
     if (result != null) {
       const newSelectedItem = this.items().find(

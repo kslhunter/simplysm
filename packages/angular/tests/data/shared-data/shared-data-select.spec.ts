@@ -382,6 +382,69 @@ describe("SdSharedDataSelect", () => {
 
       expect(host.value()).toEqual([1, 3]);
     });
+
+    it("modalOptions가 선택 모달 showAsync의 두 번째 인자로 전달된다", async () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A"), item(2, "B")]);
+      host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
+      host.modalOptions.set({ movable: true, resizable: true });
+      fixture.detectChanges();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
+
+      await ctrl.onModalButtonClick(new MouseEvent("click"));
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toEqual({ movable: true, resizable: true });
+      expect(host.value()).toBe(2);
+    });
+
+    it("modalOptions 미지정 시 showAsync의 두 번째 인자가 undefined이다", async () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A"), item(2, "B")]);
+      host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
+      fixture.detectChanges();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
+
+      await ctrl.onModalButtonClick(new MouseEvent("click"));
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toBeUndefined();
+    });
+  });
+
+  describe("onEditModalButtonClick", () => {
+    it("modalOptions가 편집 모달 showAsync의 두 번째 인자로 전달되고 선택값은 유지된다", async () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A"), item(2, "B")]);
+      host.value.set(1);
+      host.editModal.set({ title: "Edit", type: class {} as any, inputs: {} });
+      host.modalOptions.set({ movable: true, resizable: true });
+      fixture.detectChanges();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
+      mockModal.showAsync.mockResolvedValue(true);
+
+      await ctrl.onEditModalButtonClick(new MouseEvent("click"));
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toEqual({ movable: true, resizable: true });
+      expect(host.value()).toBe(1);
+    });
+
+    it("modalOptions 미지정 시 편집 모달 showAsync의 두 번째 인자가 undefined이다", async () => {
+      const { fixture, host } = createFixture();
+      host.items.set([item(1, "A")]);
+      host.editModal.set({ title: "Edit", type: class {} as any, inputs: {} });
+      fixture.detectChanges();
+
+      const ctrl = fixture.debugElement.children[0].componentInstance as SdSharedDataSelect<TestSharedItem, any, SdSelectModal<any>>;
+      mockModal.showAsync.mockResolvedValue(true);
+
+      await ctrl.onEditModalButtonClick(new MouseEvent("click"));
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toBeUndefined();
+    });
   });
 
   //#endregion

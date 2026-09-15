@@ -3,6 +3,7 @@ import type { SharedDataBase } from "../../../src/core/shared-data/sd-shared-dat
 import { SdSharedDataSelectList } from "../../../src/data/shared-data/sd-shared-data-select-list";
 import { SdItemOfTemplate } from "../../../src/core/template/sd-item-of-template";
 import type { SdSelectModalInfo, SdSelectModal } from "../../../src/controls/button/sd-modal-select-button";
+import type { SdModalOptions } from "../../../src/core/modal/sd-modal.provider";
 
 export interface TestListItem extends SharedDataBase<number> {
   __valueKey: number;
@@ -37,6 +38,7 @@ export function listItem(
       [pageItemCount]="pageItemCount()"
       [useUndefined]="useUndefined()"
       [modal]="modal()"
+      [modalOptions]="modalOptions()"
     >
       <ng-template [itemOf]="items()" let-item>
         <span class="item-name">{{ item.name }}</span>
@@ -52,4 +54,5 @@ export class SDSLTestHost {
   pageItemCount = signal<number | undefined>(undefined);
   useUndefined = signal(false);
   modal = signal<SdSelectModalInfo<SdSelectModal<any>> | undefined>(undefined);
+  modalOptions = signal<SdModalOptions | undefined>(undefined);
 }

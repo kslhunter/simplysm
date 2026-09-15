@@ -3,6 +3,11 @@ import type { SharedDataBase } from "../../../src/core/shared-data/sd-shared-dat
 import { SdSharedDataSelect } from "../../../src/data/shared-data/sd-shared-data-select";
 import { SdItemOfTemplate } from "../../../src/core/template/sd-item-of-template";
 import type { SdSelectModalInfo, SdSelectModal } from "../../../src/controls/button/sd-modal-select-button";
+import type {
+  SdModalContentDef,
+  SdModalInfo,
+  SdModalOptions,
+} from "../../../src/core/modal/sd-modal.provider";
 
 export interface TestSharedItem extends SharedDataBase<number> {
   __valueKey: number;
@@ -42,6 +47,8 @@ export function item(
       [filterFn]="filterFn()"
       [displayOrderByFn]="displayOrderByFn()"
       [modal]="modal()"
+      [editModal]="editModal()"
+      [modalOptions]="modalOptions()"
     >
       <ng-template [itemOf]="items()" let-item>
         <span class="item-name">{{ item.name }}</span>
@@ -58,4 +65,6 @@ export class SharedDataSelectTestHost {
   filterFn = signal<((item: TestSharedItem, index: number) => boolean) | undefined>(undefined);
   displayOrderByFn = signal<((item: TestSharedItem) => number | undefined) | undefined>(undefined);
   modal = signal<SdSelectModalInfo<SdSelectModal<any>> | undefined>(undefined);
+  editModal = signal<SdModalInfo<SdModalContentDef<boolean>> | undefined>(undefined);
+  modalOptions = signal<SdModalOptions | undefined>(undefined);
 }

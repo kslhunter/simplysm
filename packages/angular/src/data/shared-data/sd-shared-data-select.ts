@@ -29,6 +29,7 @@ import {
   SdModalProvider,
   type SdModalContentDef,
   type SdModalInfo,
+  type SdModalOptions,
 } from "../../core/modal/sd-modal.provider";
 import type {
   SdSelectModal,
@@ -159,6 +160,7 @@ export class SdSharedDataSelect<
 
   modal = input<SdSelectModalInfo<TModal>>();
   editModal = input<SdModalInfo<SdModalContentDef<boolean>>>();
+  modalOptions = input<SdModalOptions>();
 
   selectClass = input<string>();
   multiSelectionDisplayDirection = input<"vertical">();
@@ -334,7 +336,7 @@ export class SdSharedDataSelect<
         selectedKeys: this.selectedKeys(),
         ...modalInfo.inputs,
       } as any,
-    });
+    }, this.modalOptions());
 
     if (result != null) {
       const newValue = this.selectMode() === "multi" ? result.selectedKeys : result.selectedKeys[0];
@@ -349,7 +351,7 @@ export class SdSharedDataSelect<
     const modalInfo = this.editModal();
     if (modalInfo == null) return;
 
-    await this._sdModal.showAsync(modalInfo);
+    await this._sdModal.showAsync(modalInfo, this.modalOptions());
   }
 
   protected readonly tablerSearch = tablerSearch;

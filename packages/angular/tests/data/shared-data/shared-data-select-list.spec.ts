@@ -293,6 +293,38 @@ describe("SdSharedDataSelectList", () => {
 
       expect(host.selectedItem()).toBe(items[0]);
     });
+
+    it("modalOptions가 showAsync의 두 번째 인자로 전달된다", async () => {
+      const { fixture, host } = createFixture();
+      const items = [listItem(1, "A"), listItem(2, "B")];
+      host.items.set(items);
+      host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
+      host.modalOptions.set({ movable: true, resizable: true });
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
+
+      await ctrl.onModalButtonClick();
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toEqual({ movable: true, resizable: true });
+      expect(host.selectedItem()).toBe(items[1]);
+    });
+
+    it("modalOptions 미지정 시 showAsync의 두 번째 인자가 undefined이다", async () => {
+      const { fixture, host } = createFixture();
+      const items = [listItem(1, "A"), listItem(2, "B")];
+      host.items.set(items);
+      host.modal.set({ title: "Test", type: class {} as any, inputs: {} });
+      fixture.detectChanges();
+
+      const ctrl = getCtrl(fixture);
+      mockModal.showAsync.mockResolvedValue({ selectedKeys: [2] });
+
+      await ctrl.onModalButtonClick();
+
+      expect(mockModal.showAsync.mock.calls[0][1]).toBeUndefined();
+    });
   });
 
   //#endregion
